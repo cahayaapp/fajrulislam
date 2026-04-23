@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CAHAYA APP – Ruang Akademik</title>
+  <link rel="icon" type="image/png" href="logofi.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="../js/data-pusat.js"></script>
+
+  <style>
+    :root {
+      --navy-dark: #0f172a;
+      --navy-light: #1e293b;
+      --gold-light: #fef08a;
+      --gold-main: #d4af37;
+      --gold-dark: #b49126;
+      --bg-pearl: #f8fafc;
+      --sidebar-bg: #ffffff;
+      --glass-border: rgba(212, 175, 55, 0.2);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --input-border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body { 
+      font-family: "Poppins", sans-serif; 
+      background-color: var(--bg-pearl); 
+      color: var(--text-main); 
+      display: flex; 
+      height: 100vh; 
+      width: 100vw;
+      overflow: hidden; 
+    }
+
+    /* SIDEBAR DESKTOP */
+    .sidebar { 
+      width: 280px; background: var(--sidebar-bg); 
+      border-right: 1px solid var(--glass-border); 
+      display: flex; flex-direction: column; padding: 30px 20px; 
+      z-index: 10; box-shadow: 10px 0 30px rgba(15, 23, 42, 0.03); 
+    }
+    .brand-header { display: flex; align-items: center; gap: 15px; margin-bottom: 40px; padding: 0 10px; }
+    .brand-logo { 
+      width: 45px; height: 45px; background: linear-gradient(135deg, var(--gold-main), var(--gold-dark)); 
+      border-radius: 12px; display: flex; justify-content: center; align-items: center; 
+      color: white; font-size: 1.5rem; box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); 
+    }
+    .brand-text h1 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 800; color: var(--navy-dark); margin: 0; }
+    .brand-text p { font-size: 0.7rem; color: var(--gold-dark); text-transform: uppercase; font-weight: 600; margin: 0; }
+
+    .nav-menu { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+    .nav-item { display: flex; align-items: center; gap: 15px; padding: 12px 18px; border-radius: 14px; color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: 0.3s; }
+    .desktop-nav .nav-item:hover { background: var(--hover-bg); color: var(--navy-dark); transform: translateX(5px); }
+    .desktop-nav .nav-item.active { background: var(--navy-dark); color: var(--gold-light); box-shadow: 0 8px 15px rgba(15, 23, 42, 0.2); }
+    .nav-icon { font-size: 1.3rem; }
+
+    /* AREA KONTEN UTAMA */
+    .main-content { 
+      flex: 1; display: flex; flex-direction: column; 
+      padding: 30px 40px; height: 100vh; overflow: hidden;
+    }
+
+    /* CARD AHLAN ELEGAN (Persistent Header) */
+    .welcome-card {
+      background: linear-gradient(135deg, var(--navy-dark), var(--navy-light));
+      border-radius: 24px; padding: 35px 40px; color: white; position: relative; overflow: hidden;
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.15); flex-shrink: 0;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 20px;
+    }
+    .welcome-card::after { content: '🕌'; position: absolute; right: 20px; bottom: -20px; font-size: 10rem; opacity: 0.05; transition: 0.4s; }
+    .welcome-card h3 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 10px; color: var(--gold-main); transition: 0.4s; }
+    .welcome-card p { opacity: 0.9; max-width: 600px; line-height: 1.6; font-size: 0.95rem; }
+    
+    /* Mode Menyusut agar Iframe Luas */
+    .welcome-card.shrunk { padding: 15px 30px; border-radius: 16px; margin-bottom: 15px; }
+    .welcome-card.shrunk h3 { font-size: 1.4rem; margin-bottom: 0; }
+    .welcome-card.shrunk::after { opacity: 0; }
+
+    /* WADAH KONTEN BAWAH */
+    .content-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    #homeSection { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .stat-card { background: white; padding: 25px; border-radius: 20px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+    .stat-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .stat-value { font-size: 1.6rem; font-weight: 800; color: var(--navy-dark); font-family: 'Playfair Display'; }
+    #contentFrame { width: 100%; flex: 1; border: none; border-radius: 20px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: none; }
+
+    /* MOBILE LAYOUT */
+    .mobile-nav, .top-bar-mobile { display: none; }
+
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .sidebar { display: none; }
+      .main-content { padding: 15px; }
+
+      .top-bar-mobile { 
+        display: flex; justify-content: space-between; align-items: center; 
+        padding: 5px 0 15px 0; flex-shrink: 0;
+      }
+      .top-bar-mobile .brand-area { display: flex; align-items: center; gap: 10px; }
+      .btn-logout-mobile { 
+        background: #fff1f2; border: 1px solid #fecaca; color: #e11d48; 
+        width: 40px; height: 40px; border-radius: 12px; display: flex; 
+        justify-content: center; align-items: center; cursor: pointer; transition: 0.3s;
+      }
+      .btn-logout-mobile:active { transform: scale(0.95); }
+
+      .welcome-card { padding: 25px 20px; border-radius: 20px; margin-bottom: 15px; }
+      .welcome-card h3 { font-size: 1.7rem; }
+      .welcome-card p { font-size: 0.85rem; }
+      .welcome-card.shrunk { padding: 15px 20px; }
+
+      .mobile-nav {
+        display: flex; flex-direction: row; gap: 10px; padding: 5px 0 15px 0;
+        overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+        flex-shrink: 0;
+      }
+      .mobile-nav::-webkit-scrollbar { display: none; }
+      .mobile-nav .nav-item {
+        flex: 0 0 auto; min-width: 70px; display: flex; flex-direction: column; 
+        align-items: center; gap: 6px; text-decoration: none; cursor: pointer;
+      }
+      .mobile-nav .icon-wrapper {
+        width: 50px; height: 50px; background: white; border: 1px solid var(--input-border);
+        border-radius: 16px; display: flex; justify-content: center; align-items: center; 
+        font-size: 1.3rem; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: 0.3s;
+      }
+      .mobile-nav .nav-text { font-size: 0.6rem; font-weight: 600; color: var(--text-muted); text-align: center; }
+
+      .mobile-nav .nav-item.active .icon-wrapper {
+        background: linear-gradient(135deg, var(--navy-light), var(--navy-dark));
+        border-color: var(--navy-dark); color: var(--gold-light); transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(15, 23, 42, 0.2);
+      }
+      .mobile-nav .nav-item.active .nav-text { color: var(--navy-dark); font-weight: 700; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="sidebar">
+    <div class="brand-header">
+      <div class="brand-logo">☀</div>
+      <div class="brand-text">
+        <h1>CAHAYA APP</h1>
+        <p>Ruang Akademik</p>
+      </div>
+    </div>
+    <nav class="nav-menu desktop-nav">
+      <a class="nav-item active" data-page="home" onclick="switchMenu('home', 'Beranda')"><span class="nav-icon">🏠</span><span class="nav-text">Beranda</span></a>
+      <a class="nav-item" data-page="absensiPembelajaran.html" onclick="switchMenu('absensiPembelajaran.html', 'Absensi')"><span class="nav-icon">📋</span><span class="nav-text">Absensi</span></a>
+      <a class="nav-item" data-page="inputSetoranTahfiz.html" onclick="switchMenu('inputSetoranTahfiz.html', 'Tahfiz')"><span class="nav-icon">📖</span><span class="nav-text">Tahfiz</span></a>
+      <a class="nav-item" data-page="inputNilaiBulanan.html" onclick="switchMenu('inputNilaiBulanan.html', 'Nilai')"><span class="nav-icon">📝</span><span class="nav-text">Nilai Bulanan</span></a>
+      <a class="nav-item" data-page="inputRaportBulanan.html" onclick="switchMenu('inputRaportBulanan.html', 'Raport')"><span class="nav-icon">📊</span><span class="nav-text">Raport Bulanan</span></a>
+      <a class="nav-item" data-page="inputSelfAssessment.html" onclick="switchMenu('inputSelfAssessment.html', 'Self')"><span class="nav-icon">🧘</span><span class="nav-text">Self Assessment</span></a>
+      <a class="nav-item" data-page="edit-kelas.html" onclick="switchMenu('edit-kelas.html', 'Halqah')"><span class="nav-icon">⚙️</span><span class="nav-text">Manajemen Halqah</span></a>
+    </nav>
+    <div class="sidebar-footer" style="margin-top:auto; padding-top:20px; border-top:1px solid #f1f5f9;">
+      <button onclick="logout()" style="width:100%; padding:14px; border-radius:12px; border:1px solid #fecaca; color:#e11d48; background:#fff1f2; cursor:pointer; font-weight:700; display:flex; justify-content:center; align-items:center; gap:8px;">
+        <!-- SVG Logout Standar -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        Keluar Sistem
+      </button>
+    </div>
+  </aside>
+
+  <!-- KONTEN UTAMA -->
+  <main class="main-content">
+    
+    <!-- TOP BAR HP -->
+    <div class="top-bar-mobile">
+      <div class="brand-area">
+        <div class="brand-logo" style="width:35px; height:35px; font-size:1.1rem; border-radius:8px;">☀</div>
+        <h1 style="font-family:'Playfair Display'; font-size:1.1rem; color:var(--navy-dark); margin:0;">CAHAYA</h1>
+      </div>
+      <button class="btn-logout-mobile" onclick="logout()" title="Keluar">
+        <!-- SVG Logout Standar Mobile -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      </button>
+    </div>
+
+    <!-- HEADER AHLAN ELEGAN (Selalu Tampil) -->
+    <div class="welcome-card" id="mainWelcomeCard">
+      <h3 id="welcomeName">Ahlan, Mu'allim</h3>
+      <p id="welcomeDesc">Khidmat ikhlas Anda adalah investasi peradaban. Kelola perkembangan akademik dan spiritual santri dalam satu sistem terpadu Kurikulum CAHAYA.</p>
+      <div id="welcomeAction" style="margin-top: 20px;">
+        <button onclick="switchMenu('absensiPembelajaran.html', 'Absensi')" style="background:var(--gold-main); border:none; padding:12px 25px; border-radius:10px; color:var(--navy-dark); font-weight:700; cursor:pointer; box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);">Presensi Harian 📋</button>
+      </div>
+    </div>
+
+    <!-- MENU MOBILE 1 BARIS -->
+    <nav class="mobile-nav">
+      <a class="nav-item active" data-page="home" onclick="switchMenu('home', 'Beranda')">
+        <div class="icon-wrapper">🏠</div><span class="nav-text">Beranda</span>
+      </a>
+      <a class="nav-item" data-page="absensiPembelajaran.html" onclick="switchMenu('absensiPembelajaran.html', 'Absen')">
+        <div class="icon-wrapper">📋</div><span class="nav-text">Absen</span>
+      </a>
+      <a class="nav-item" data-page="inputSetoranTahfiz.html" onclick="switchMenu('inputSetoranTahfiz.html', 'Tahfiz')">
+        <div class="icon-wrapper">📖</div><span class="nav-text">Tahfiz</span>
+      </a>
+      <a class="nav-item" data-page="inputNilaiBulanan.html" onclick="switchMenu('inputNilaiBulanan.html', 'Nilai')">
+        <div class="icon-wrapper">📝</div><span class="nav-text">Nilai</span>
+      </a>
+      <a class="nav-item" data-page="inputRaportBulanan.html" onclick="switchMenu('inputRaportBulanan.html', 'Raport')">
+        <div class="icon-wrapper">📊</div><span class="nav-text">Raport</span>
+      </a>
+      <a class="nav-item" data-page="inputSelfAssessment.html" onclick="switchMenu('inputSelfAssessment.html', 'Self')">
+        <div class="icon-wrapper">🧘</div><span class="nav-text">Self</span>
+      </a>
+      <a class="nav-item" data-page="edit-kelas.html" onclick="switchMenu('edit-kelas.html', 'Halqah')">
+        <div class="icon-wrapper">⚙️</div><span class="nav-text">Halqah</span>
+      </a>
+    </nav>
+
+    <!-- AREA KONTEN BAWAH -->
+    <div class="content-body">
+      <div id="homeSection">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">🎓 Ilmiyah</div><div class="stat-value" id="countIlmiyah">...</div></div>
+          <div class="stat-card"><div class="stat-label">📖 Quraniyah</div><div class="stat-value" id="countQurani">...</div></div>
+          <div class="stat-card"><div class="stat-label">🌍 Lughowiyah</div><div class="stat-value" id="countLughowiyah">...</div></div>
+        </div>
+      </div>
+      
+      <iframe id="contentFrame"></iframe>
+    </div>
+  </main>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+    const capitalizeName = (str) => {
+        if (!str) return 'Muallim';
+        return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+    };
+    document.getElementById("welcomeName").textContent = `Ahlan, ${capitalizeName(user.username)}`;
+
+    function syncStats() {
+      if (window.dataSantri) {
+        document.getElementById('countIlmiyah').textContent = Object.keys(window.dataSantri["Halqah Ilmiyah"] || {}).length + " Kelas";
+        document.getElementById('countLughowiyah').textContent = Object.keys(window.dataSantri["Halqah Lughowiyah"] || {}).length + " Kelas";
+        document.getElementById('countQurani').textContent = Object.keys(window.dataSantri["Halqah Quraniyah"] || {}).length + " Halaqah";
+      }
+    }
+
+    function switchMenu(page, title) {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll(`[data-page="${page}"]`).forEach(el => el.classList.add('active'));
+      
+      const home = document.getElementById('homeSection');
+      const frame = document.getElementById('contentFrame');
+      const card = document.getElementById('mainWelcomeCard');
+      const desc = document.getElementById('welcomeDesc');
+      const action = document.getElementById('welcomeAction');
+
+      if (page === 'home') {
+        home.style.display = 'block';
+        frame.style.display = 'none';
+        frame.src = '';
+        card.classList.remove('shrunk');
+        desc.style.display = 'block';
+        action.style.display = 'block';
+        syncStats();
+      } else {
+        home.style.display = 'none';
+        frame.style.display = 'block';
+        frame.src = page;
+        card.classList.add('shrunk');
+        desc.style.display = 'none';
+        action.style.display = 'none';
+      }
+    }
+
+    function logout() { localStorage.removeItem('cahayaCurrentUser'); window.location.href = '../index.html'; }
+    document.addEventListener('DOMContentLoaded', syncStats);
+  </script>
+</body>
+</html>
