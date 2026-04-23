@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CAHAYA APP - Portal Utama</title>
+  <link rel="icon" type="image/png" href="logofi.png" />
+  <!-- Kombinasi Font Premium: Playfair Display untuk sentuhan elegan, Poppins untuk clean UI -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy-dark: #0f172a;
+      --navy-light: #1e293b;
+      --gold-light: #fef08a;
+      --gold-main: #d4af37;
+      --gold-dark: #b49126;
+      --bg-pearl: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --input-bg: #f1f5f9;
+      --input-border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    * { box-sizing: border-box; }
+
+    /* ===== BODY LIGHT LUXURY ===== */
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--bg-pearl);
+      background-image: 
+        radial-gradient(circle at 15% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 100%, rgba(15, 23, 42, 0.05) 0%, transparent 40%);
+      color: var(--text-main);
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    /* Tekstur Halus agar tidak terlalu polos */
+    body::after {
+      content: ""; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4af37' fill-opacity='0.03' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none; z-index: -1;
+    }
+
+    /* ===== SPLASH SCREEN PREMIUM ===== */
+    #splash {
+      position: fixed; inset: 0;
+      background: var(--bg-pearl);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 100;
+      animation: fadeOutSplash 1s cubic-bezier(0.7,0,0.3,1) forwards;
+      animation-delay: 1.5s; 
+    }
+    #splash img {
+      width: 140px;
+      animation: elegantZoom 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+      filter: drop-shadow(0 15px 30px rgba(212, 175, 55, 0.2));
+    }
+    @keyframes elegantZoom { 
+      0% { transform: scale(0.8); opacity: 0; filter: blur(10px); } 
+      100% { transform: scale(1); opacity: 1; filter: blur(0); } 
+    }
+    @keyframes fadeOutSplash { to { opacity: 0; visibility: hidden; transform: scale(1.05); } }
+
+    /* ===== KARTU UTAMA PRESISI & ELEGAN ===== */
+    .main-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      width: 100%;
+      max-width: 440px;
+      border-radius: 28px;
+      padding: 45px 40px;
+      /* Bayangan super lembut yang memberikan kesan melayang & mahal */
+      box-shadow: 
+        0 30px 60px rgba(15, 23, 42, 0.08), 
+        0 0 0 1px rgba(212, 175, 55, 0.2) inset;
+      text-align: center;
+      position: relative;
+      animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.6s both;
+    }
+    /* Aksen Emas di Atas Kartu */
+    .main-card::before {
+      content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold-main), transparent);
+      border-radius: 3px 3px 0 0;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ===== BAGIAN LOGO & JUDUL ===== */
+    .brand-area {
+      margin-bottom: 35px;
+    }
+    .brand-area img {
+      width: 90px;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 10px 15px rgba(0,0,0,0.05));
+    }
+    .brand-area h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(to right, var(--navy-dark), var(--navy-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 8px 0;
+    }
+    .brand-area p {
+      font-size: 0.85rem;
+      color: var(--gold-dark);
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    /* ===== FORM LOGIN ===== */
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .input-group input {
+      width: 100%;
+      height: 56px;
+      padding: 0 22px;
+      border-radius: 16px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-main);
+      font-size: 1rem;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 400;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+    }
+    .input-group input::placeholder {
+      color: #94a3b8;
+    }
+    .input-group input:focus {
+      outline: none;
+      background: #ffffff;
+      border-color: var(--gold-main);
+      box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+      transform: translateY(-1px);
+    }
+
+    /* ===== TOMBOL LOGIN PREMIUM ===== */
+    .btn-login {
+      height: 56px;
+      border-radius: 16px;
+      border: none;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: 1.05rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, var(--navy-light), var(--navy-dark));
+      transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      margin-top: 10px;
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Efek Kilau pada tombol */
+    .btn-login::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: all 0.6s ease;
+    }
+    .btn-login:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 25px rgba(15, 23, 42, 0.3);
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold-main));
+    }
+    .btn-login:hover::after { left: 100%; }
+    .btn-login:active { transform: translateY(0); }
+
+    /* ===== FOOTER ===== */
+    .footer-note {
+      margin-top: 35px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media(max-width: 480px) {
+      .main-card { padding: 40px 25px; border-radius: 24px; }
+      .brand-area h1 { font-size: 1.9rem; }
+      .input-group input, .btn-login { height: 50px; border-radius: 14px; }
+    }
+
+    /* === MODAL PILIHAN PERAN === */
+    .modal {
+      display: none; position: fixed; z-index: 999; inset: 0;
+      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(6px);
+      justify-content: center; align-items: center;
+      padding: 20px; animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+    
+    .modal-content {
+      background: #ffffff;
+      border-radius: 24px; padding: 40px 30px;
+      width: 100%; max-width: 380px; text-align: center;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .modal-logo { width: 65px; margin-bottom: 15px; }
+    .modal-content h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 10px; color: var(--navy-dark); font-weight: 700;}
+    .modal-content p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
+    
+    .role-buttons { display: flex; flex-direction: column; gap: 12px; }
+    .role-btn {
+      border: 1px solid var(--input-border); background: var(--input-bg);
+      padding: 15px; border-radius: 14px; font-family: 'Poppins', sans-serif; font-weight: 500;
+      color: var(--navy-dark); cursor: pointer; transition: all 0.3s;
+    }
+    .role-btn:hover {
+      background: var(--gold-main); border-color: var(--gold-main); color: white;
+      transform: translateY(-2px); box-shadow: 0 8px 15px rgba(212, 175, 55, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Layar Splash Elegan -->
+  <div id="splash">
+    <img src="logofi.png" alt="Logo Cahaya App" />
+  </div>
+
+  <!-- KARTU UTAMA -->
+  <div class="main-card">
+    
+    <div class="brand-area">
+      <img src="logofi.png" alt="Logo Pesantren" />
+      <h1>CAHAYA APP</h1>
+      <p>Pesantren Fajrul Islam</p>
+    </div>
+
+    <div class="login-form">
+      <div class="input-group">
+        <input type="text" id="username" placeholder="Username / ID Santri" autocomplete="off" />
+      </div>
+      <div class="input-group">
+        <input type="password" id="password" placeholder="Password" />
+      </div>
+      <!-- Tombol ini berubah dari Navy ke Emas saat di-hover -->
+      <button class="btn-login" onclick="login()">Masuk Portal</button>
+    </div>
+
+    <div class="footer-note">"Bismillaahirrohmaanirrohiim"</div>
+    
+  </div>
+
+  <!-- SCRIPT FIREBASE -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    // === Konfigurasi Firebase ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+      projectId: "absensi-santri-fajrul-islam",
+      storageBucket: "absensi-santri-fajrul-islam.firebasestorage.app",
+      messagingSenderId: "739982369926",
+      appId: "1:739982369926:web:7e5375c3ddbaf0584cdd07"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <script>
+  /* === DAFTAR USER PETUGAS === */
+  const users = [
+    { username: "multazam", password: "guru123", role: "guru", label: "Abah Multazam Zakaria" },
+    { username: "alvin", password: "guru123", role: "guru", label: "Mu'allim Alvin Dwianto" },
+    { username: "alzam", password: "guru123", role: "guru", label: "Mu'allim Alzam" },
+    { username: "faiq", password: "guru123", role: "guru", label: "Mu'allim Faiq" },
+    { username: "khaizuran", password: "guru123", role: "guru", label: "Mu'allim Khaizuran" },
+    { username: "mulia", password: "guru123", role: "guru", label: "Mu'allim Mulia" },
+    { username: "fahmi", password: "guru123", role: "guru", label: "Mu'allim Fahmi" },
+    { username: "meilisa", password: "guru123", role: "guru", label: "Mu'allimah Meilisa" },
+    { username: "rosyidin", password: "guru123", role: "guru", label: "Mu'allim Rosyidin" },
+    { username: "naqieb", password: "guru123", role: "guru", label: "Mu'allim Naqieb" },
+    { username: "kamal", password: "guru123", roles: ["guru", "naqib"], label: "Mu'allim Kamal" },
+    { username: "favian", password: "guru123", roles: ["guru", "naqib"], label: "Mu'allim Favian" },
+    { username: "fatimah", password: "guru123", roles: ["guru", "naqib"], label: "Mu'allimah Fatimah" },
+    { username: "evita", password: "guru123", roles: ["guru", "naqib"], label: "Mrs Evita" },
+    { username: "shafwan", password: "guru123", roles: ["guru", "naqib"], label: "Mu'allim Shafwan" },
+    { username: "dimas", password: "dimas123", role: "naqib", label: "Naqib Dimas" },
+    { username: "regen", password: "regen123", role: "naqib", label: "Naqib Regen" },
+    { username: "admin", password: "cahaya2026", role: "admin", label: "Admin Pesantren" }
+  ];
+
+  /* === DAFTAR WALI SANTRI === */
+  const waliList = [
+    {nama:"Ahmad Maulana",username:"ahmad312",password:"Cahaya@8723"},
+    {nama:"Juanda Nur Ilham",username:"juanda491",password:"Cahaya@1049"},
+    {nama:"Najmihadi Syauqii Tamaam",username:"najmi827",password:"Cahaya@7721"},
+    {nama:"Nizam Kabisat",username:"nizam643",password:"Cahaya@6605"},
+    {nama:"Mohammad Ikhsan Hairuli",username:"ikhsan984",password:"Cahaya@2042"},
+    {nama:"Reyfas Ramadhan",username:"reyfas135",password:"Cahaya@8812"},
+    {nama:"Eza Febri Al Fadzri",username:"eza209",password:"Cahaya@9901"},
+    {nama:"Hafidz Al Rozi",username:"hafidz413",password:"Cahaya@2227"},
+    {nama:"Andes Afendra",username:"andes551",password:"Cahaya@1128"},
+    {nama:"Febri Ghalih Al Farobi",username:"febri728",password:"Cahaya@3159"},
+    {nama:"Danang Prasditya Santoso",username:"danang605",password:"Cahaya@8443"},
+    {nama:"M. Raid Mahrus",username:"raid998",password:"Cahaya@7351"},
+    {nama:"M. Dirgatama",username:"dirga822",password:"Cahaya@4033"},
+    {nama:"Canza Ryanda Hutasuhut",username:"canza574",password:"Cahaya@9800"},
+    {nama:"Falizh Daffa Qatrunnada",username:"falizh309",password:"Cahaya@6514"},
+    {nama:"Daffa Al Musyari",username:"daffa237",password:"Cahaya@1257"},
+    {nama:"Rafi Ramadhan",username:"rafi765",password:"Cahaya@9026"},
+    {nama:"Wahyu Reydinata",username:"wahyu621",password:"Cahaya@1778"},
+    {nama:"Akbar Prayoga",username:"akbar308",password:"Cahaya@5194"},
+    {nama:"Very Syach",username:"very429",password:"Cahaya@4130"},
+    {nama:"M. Al Falah",username:"alfalah711",password:"Cahaya@6559"},
+    {nama:"Aditya Putra Ibrahim",username:"aditya311",password:"Cahaya@1182"},
+    {nama:"Airlangga Azka Abqori",username:"airlangga915",password:"Cahaya@3048"},
+    {nama:"Aqiela Marsyah",username:"aqiela842",password:"Cahaya@2299"},
+    {nama:"Brilly Handrian",username:"brilly244",password:"Cahaya@9100"},
+    {nama:"Darren Athaya",username:"darren712",password:"Cahaya@5013"},
+    {nama:"Dzikri Mudhoffar",username:"dzikri133",password:"Cahaya@6627"},
+    {nama:"Elleno Quthbie Hermawan",username:"elleno984",password:"Cahaya@7172"},
+    {nama:"Fadil Nurhalim",username:"fadil408",password:"Cahaya@2145"},
+    {nama:"Gabriel Al Fatih",username:"gabriel690",password:"Cahaya@8544"},
+    {nama:"Hadinata Saputra",username:"hadinata217",password:"Cahaya@1451"},
+    {nama:"Miko Vajar",username:"miko825",password:"Cahaya@7157"},
+    {nama:"M. Almisky Pratama",username:"almisky991",password:"Cahaya@1002"},
+    {nama:"M. Aqil Ridho",username:"aqil220",password:"Cahaya@9175"},
+    {nama:"M. Izam Saputra",username:"izam385",password:"Cahaya@5432"},
+    {nama:"M. Syakir Hutabarat",username:"syakir642",password:"Cahaya@9981"},
+    {nama:"M. Ziyad Zhazha",username:"ziyad503",password:"Cahaya@8440"},
+    {nama:"M. Yasir Al Fazar Jhira",username:"yasir260",password:"Cahaya@7114"},
+    {nama:"Rafa",username:"rafa909",password:"Cahaya@3642"},
+    {nama:"Angga Pratama Putra",username:"angga511",password:"Cahaya@8834"},
+    {nama:"Prawiro Pujo Tunggal Jati",username:"prawiro832",password:"Cahaya@3007"},
+    {nama:"Muhammad Marpin",username:"marpin760",password:"Cahaya@2295"},
+    {nama:"Marfel Saputra",username:"marfel273",password:"Cahaya@4311"},
+    {nama:"Meldi Novriansyah",username:"meldi622",password:"Cahaya@4405"},
+    {nama:"Fauzan Ibni Jabar",username:"fauzan917",password:"Cahaya@2350"},
+    {nama:"M. Fadhil Buana",username:"fadhil609",password:"Cahaya@6433"},
+    {nama:"Qheizan Alqiza Arisda",username:"qheizan739",password:"Cahaya@1872"},
+    {nama:"Rezfy Fakhryazka",username:"rezfy801",password:"Cahaya@5142"},
+    {nama:"Mika Rahiel Yusuf",username:"mika325",password:"Cahaya@6544"},
+    {nama:"Ki Agus Muhammad Abdullah Shiddiq Agtsali",username:"kiagus661",password:"Cahaya@9863"},
+    {nama:"Arya Difa Alsya",username:"arya990",password:"Cahaya@1278"},
+    {nama:"Reynaldi Malik Ibrahim Alfaridzi",username:"reynaldi443",password:"Cahaya@8276"},
+    {nama:"M. Xavi NF",username:"xavi561",password:"Cahaya@9181"},
+    {nama:"M. Faisal Fikriansyah",username:"faisal232",password:"Cahaya@3291"},
+    {nama:"Hafidz Alrizky",username:"hafidz401",password:"Cahaya@6621"},
+    {nama:"Naufal Akbar Alkhatiri",username:"naufal502",password:"Cahaya@8888"},
+    {nama:"Farazh Sayyid Putra Kenega",username:"farazh910",password:"Cahaya@4253"},
+    {nama:"Syahrul Ramadhan",username:"syahrul881",password:"Cahaya@7320"},
+    {nama:"Luthfan Adzaki",username:"luthfan332",password:"Cahaya@9812"},
+    {nama:"M. Abil Irwansyah",username:"abil773",password:"Cahaya@5533"},
+    {nama:"Alif Samudra",username:"alif204",password:"Cahaya@7124"},
+    {nama:"Fahrie Oktavirano Fitris",username:"fahrie519",password:"Cahaya@9340"},
+    {nama:"Dikki Kurniawan",username:"dikki411",password:"Cahaya@3417"},
+    {nama:"Ghozy Faturrahman",username:"ghozy229",password:"Cahaya@6422"},
+    {nama:"Muhammad Thooriq",username:"thooriq517",password:"Cahaya@7441"},
+    {nama:"Ahmad Riyadi",username:"ahmad709",password:"Cahaya@9825"},
+    {nama:"Alif Muhammad Yusuf",username:"alif401",password:"Cahaya@2458"},
+    {nama:"Basri Al Haziq Zulfahmi",username:"basri318",password:"Cahaya@8762"},
+    {nama:"M. Faqih Hafidzallah",username:"faqih921",password:"Cahaya@3119"},
+    {nama:"Abdullah Mukti Hafidzallah",username:"abdullah551",password:"Cahaya@4498"},
+    {nama:"Dedi Setiadi",username:"dedi204",password:"Cahaya@5561"},
+    {nama:"Fakhri Al Muzakki",username:"fakhri623",password:"Cahaya@8854"},
+    {nama:"Ilham Mukmin Al Farabi",username:"ilham432",password:"Cahaya@7119"},
+    {nama:"Muhammad Allam Nur Hushain",username:"allam365",password:"Cahaya@5640"},
+    {nama:"M. Firaas Al Insyiroh",username:"firaas999",password:"Cahaya@7238"},
+    {nama:"Nabil Najmi",username:"nabil815",password:"Cahaya@1822"},
+    {nama:"Satrio Abimayu",username:"satrio304",password:"Cahaya@9992"},
+    {nama:"Tegar Hidayat",username:"tegar532",password:"Cahaya@1107"},
+    {nama:"Wafii Fadhlurrohman",username:"wafii620",password:"Cahaya@6555"},
+    {nama:"M. Rijalul Kamil",username:"rijal544",password:"Cahaya@4029"},
+    {nama:"Alvin Herfiantino",username:"alvin880",password:"Cahaya@2051"},
+    {nama:"Zahir Zibran",username:"zahir703",password:"Cahaya@9185"},
+    {nama:"Raden Azaa Panca Putra",username:"raden555",password:"Cahaya@3148"},
+    {nama:"Zulfakih Haerunnasihin",username:"zulfakih766",password:"Cahaya@8571"},
+    {nama:"Ahmad Farhaan",username:"ahmad233",password:"Cahaya@7150"},
+    {nama:"Anugrah Pratama",username:"anugrah820",password:"Cahaya@4516"},
+    {nama:"Cahyis Iszam",username:"cahyis921",password:"Cahaya@8843"},
+    {nama:"Fahry Akbar Ramdhani",username:"fahry654",password:"Cahaya@3295"},
+    {nama:"Habib Ramadhan",username:"habib438",password:"Cahaya@9312"},
+    {nama:"Ihza Trinandi",username:"ihza587",password:"Cahaya@1108"},
+    {nama:"Ilham",username:"ilham993",password:"Cahaya@7540"},
+    {nama:"M. Arya Mahdi Wafi El-Fauzani",username:"arya782",password:"Cahaya@8473"},
+    {nama:"Mahesa Aulia Giffari",username:"mahesa652",password:"Cahaya@4299"},
+    {nama:"Muhamad Yusuf Arrosiyd",username:"yusuf407",password:"Cahaya@3128"},
+    {nama:"M. Usamah",username:"usamah950",password:"Cahaya@2639"},
+    {nama:"Nafis",username:"nafis841",password:"Cahaya@7566"},
+    {nama:"Raka Septian",username:"raka229",password:"Cahaya@6570"},
+    {nama:"Renal Martin",username:"renal316",password:"Cahaya@7182"},
+    {nama:"Rohadin Firdaus Al Qausar",username:"rohadi882",password:"Cahaya@5914"},
+    {nama:"Roid Afdal",username:"roid312",password:"Cahaya@8211"},
+    {nama:"Nilam Cahya",username:"nilam663",password:"Cahaya@9182"},
+    {nama:"Qelza Ramadhani Ath Thahirah",username:"qelza455",password:"Cahaya@7023"},
+    {nama:"Ashifa Fitri Ramadhoni",username:"ashifa911",password:"Cahaya@5466"},
+    {nama:"Adiba Aila Khanza",username:"adiba203",password:"Cahaya@9011"},
+    {nama:"Aisyah Nur Khalifah",username:"aisyah528",password:"Cahaya@3142"},
+    {nama:"Nyayu Marlitsa Ardhani",username:"nyayu707",password:"Cahaya@6648"},
+    {nama:"Wilda",username:"wilda988",password:"Cahaya@5061"},
+    {nama:"Windy Windari",username:"windy212",password:"Cahaya@9775"},
+    {nama:"Aisyah Nurul Aulia",username:"aisyahnur287",password:"Cahaya@2029"},
+    {nama:"Nessya Ramadhany",username:"nessya501",password:"Cahaya@7332"},
+    {nama:"Amirah Balqis Rahadatul A'isyah",username:"amirah673",password:"Cahaya@8827"},
+    {nama:"Earlyta Arsyfa Salsabila",username:"earlyta419",password:"Cahaya@6210"},
+    {nama:"Dafia Nafla Syakira",username:"dafia833",password:"Cahaya@4920"},
+    {nama:"Anisya Septiani",username:"anisya905",password:"Cahaya@8746"},
+    {nama:"Bilqis Nur Anisah",username:"bilqis311",password:"Cahaya@4152"},
+    {nama:"Jessica Putry Ayra",username:"jessica512",password:"Cahaya@9665"},
+    {nama:"Ghenis Andientiaz",username:"ghenis744",password:"Cahaya@2594"},
+    {nama:"Dina Ruhayah",username:"dina918",password:"Cahaya@4712"},
+    {nama:"Pitri Ramadani",username:"pitri283",password:"Cahaya@8021"},
+    {nama:"Grinneta Nalani Putri",username:"grinneta440",password:"Cahaya@3385"},
+    {nama:"Inayah Nourah Anindya",username:"inayah220",password:"Cahaya@6197"},
+    {nama:"Shelena",username:"shelena937",password:"Cahaya@5284"},
+    {nama:"Fitrah Kirana",username:"fitrah607",password:"Cahaya@7839"}
+  ];
+
+  /* === LOGIN UTAMA === */
+  async function login() {
+    let u = document.getElementById("username").value.trim().toLowerCase();
+    const p = document.getElementById("password").value.trim();
+
+    if (!u.includes("@") && !waliList.some(w => w.username.toLowerCase() === u)) {
+      u = u + "@cahayaapp.id";
+    }
+
+    // === LOGIN WALI SANTRI ===
+    if (!u.endsWith("@cahayaapp.id")) {
+      const wali = waliList.find(w => w.username.toLowerCase() === u && w.password === p);
+      if (!wali) {
+        alert("❌ Username atau password salah.");
+        return;
+      }
+      const found = { role: "wali", namaAnak: wali.nama, username: wali.username, label: `Wali ${wali.nama}` };
+      localStorage.setItem("cahayaCurrentUser", JSON.stringify(found));
+      location.href = "wali/dashboard/index.html";
+      return;
+    }
+
+    // === LOGIN PETUGAS (Firebase Auth) ===
+    try {
+      const email = u;
+      const userCredential = await firebase.auth().signInWithEmailAndPassword(email, p);
+      const user = userCredential.user;
+      const uname = email.split("@")[0];
+      const localUser = users.find(a => a.username === uname);
+
+      if (!localUser) {
+        alert("❌ Akun tidak terdaftar di sistem lokal.");
+        await firebase.auth().signOut();
+        return;
+      }
+
+      if (localUser.roles && localUser.roles.length > 1) {
+        tampilModalPeran(localUser);
+        return;
+      }
+
+      const role = localUser.role;
+      const found = { role, email: user.email, username: uname, label: localUser.label, uid: user.uid };
+      localStorage.setItem("cahayaCurrentUser", JSON.stringify(found));
+
+      const db = firebase.database();
+      await db.ref("users/" + user.uid).set({
+        nama: localUser.label, username: uname, email: user.email, role: role, waktu_login: new Date().toISOString()
+      });
+
+      tampilkanLoadingPosh(`Mengautentikasi ${role.toUpperCase()}...`);
+      setTimeout(() => {
+        if(role === "guru") location.href = "guru/fitur.html";
+        else if(role === "naqib") location.href = "naqib/dashboard.html";
+        else if(role === "admin") location.href = "admin/index.html";
+      }, 1500);
+
+    } catch (error) {
+      alert("❌ Gagal login: " + error.message);
+    }
+  }
+
+  /* === AUTO LOGIN === */
+  (function autoLogin() {
+    const user = JSON.parse(localStorage.getItem("cahayaCurrentUser") || "null");
+    if (!user) return;
+    switch (user.role) {
+      case "guru": window.location.href = "guru/fitur.html"; break;
+      case "naqib": window.location.href = "naqib/dashboard.html"; break;
+      case "admin": window.location.href = "admin/index.html"; break;
+      case "wali": window.location.href = "wali/dashboard/index.html"; break;
+      default: localStorage.removeItem("cahayaCurrentUser"); break;
+    }
+  })();
+
+  /* === Modal Peran & Efek Loading === */
+  let pendingUser = null;
+  function tampilModalPeran(user) {
+    pendingUser = user;
+    document.getElementById('roleModal').style.display = 'flex';
+  }
+
+  async function pilihPeran(role) {
+    document.getElementById('roleModal').style.display = 'none';
+    const uname = pendingUser.username;
+    const label = pendingUser.label;
+    const email = uname + "@cahayaapp.id";
+    const found = { role, email, username: uname, label };
+    localStorage.setItem("cahayaCurrentUser", JSON.stringify(found));
+
+    tampilkanLoadingPosh(`Mempersiapkan area ${role.toUpperCase()}...`);
+    setTimeout(() => {
+      if (role === 'guru') window.location.href = 'guru/fitur.html';
+      else if (role === 'naqib') window.location.href = 'naqib/dashboard.html';
+    }, 1500);
+  }
+
+  function tampilkanLoadingPosh(text) {
+    const loading = document.createElement('div');
+    loading.style.cssText = `position:fixed; inset:0; background:rgba(248, 250, 252, 0.95); backdrop-filter:blur(10px); z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#0f172a; font-family:'Playfair Display',serif; font-weight:700; font-size:1.4rem; letter-spacing:1px; animation: fadeIn 0.4s ease;`;
+    loading.innerHTML = `<img src="logofi.png" alt="Loading" style="width:80px; margin-bottom:20px; filter:drop-shadow(0 10px 20px rgba(212, 175, 55, 0.3)); animation:elegantZoom 1.2s infinite alternate;" /><div>${text}</div>`;
+    document.body.appendChild(loading);
+  }
+  </script>
+
+  <!-- Modal Pilihan Peran -->
+  <div id="roleModal" class="modal">
+    <div class="modal-content">
+      <img src="logofi.png" alt="Logo" class="modal-logo">
+      <h2>Otorisasi Ganda</h2>
+      <p>Kredensial Anda memiliki lebih dari satu akses. Silakan pilih ruang kerja Anda.</p>
+      <div class="role-buttons">
+        <button class="role-btn" onclick="pilihPeran('guru')">Akses Akademik (Guru)</button>
+        <button class="role-btn" onclick="pilihPeran('naqib')">Akses Asrama (Naqib)</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
