@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CAHAYA APP - Self Assessment Guru</title>
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  
+  <style>
+    .header-sa {
+      background: linear-gradient(135deg, var(--navy-dark), #1e3a8a);
+      padding: 35px 40px; border-radius: var(--radius-lg); color: white;
+      margin-bottom: 25px; box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
+      position: relative; overflow: hidden; text-align: center;
+    }
+    .header-sa::after {
+      content: '🪞'; position: absolute; right: 10%; top: -20px;
+      font-size: 10rem; opacity: 0.05; pointer-events: none;
+    }
+    .header-sa h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--gold-light); margin-bottom: 10px; }
+    .header-sa p { max-width: 600px; margin: 0 auto; font-weight: 300; opacity: 0.9; line-height: 1.6; }
+
+    /* Penataan Seksi Formulir */
+    .section-title {
+      font-family: 'Playfair Display', serif; color: var(--navy-dark); 
+      font-size: 1.3rem; margin-bottom: 15px; padding-bottom: 10px; 
+      border-bottom: 2px dashed #cbd5e1; display: flex; align-items: center; gap: 10px;
+    }
+    
+    .question-box {
+      background: #f8fafc; border: 1px solid var(--input-border);
+      border-radius: 12px; padding: 20px; margin-bottom: 15px;
+      transition: 0.3s;
+    }
+    .question-box:hover { border-color: var(--gold-main); background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .q-text { font-weight: 600; color: var(--navy-dark); margin-bottom: 15px; font-size: 0.95rem; line-height: 1.5; }
+    
+    /* Skala Penilaian 1-5 Custom */
+    .scale-group { display: flex; justify-content: space-between; gap: 10px; max-width: 400px; }
+    .scale-label { flex: 1; text-align: center; cursor: pointer; position: relative; }
+    .scale-label input { display: none; }
+    .scale-number {
+      display: flex; justify-content: center; align-items: center;
+      height: 45px; border-radius: 8px; background: white; border: 2px solid #cbd5e1;
+      font-weight: 700; color: #64748b; transition: 0.2s; font-size: 1.1rem;
+    }
+    
+    /* Warna Dinamis Berdasarkan Skala */
+    .scale-label input[value="1"]:checked + .scale-number { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+    .scale-label input[value="2"]:checked + .scale-number { background: #ffedd5; border-color: #f97316; color: #c2410c; }
+    .scale-label input[value="3"]:checked + .scale-number { background: #fef9c3; border-color: #eab308; color: #a16207; }
+    .scale-label input[value="4"]:checked + .scale-number { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+    .scale-label input[value="5"]:checked + .scale-number { background: #d1fae5; border-color: #10b981; color: #047857; }
+
+    .scale-desc { display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; margin-top: 5px; font-weight: 500; max-width: 400px; }
+
+    /* Area Refleksi */
+    .reflection-area textarea { border-left: 4px solid var(--gold-main); background: #fffbeb; resize: vertical; min-height: 100px; }
+    .reflection-area textarea:focus { background: white; }
+
+    #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">🪞</div>
+  <div style="font-weight: 700;">Memuat Ruang Refleksi...</div>
+</div>
+
+<main class="cahaya-container" style="max-width: 800px; margin: 0 auto;">
+  <div class="header-sa">
+    <h1>Self Assessment Pekanan</h1>
+    <p>"Hisablah diri kalian sebelum kalian dihisab." Jadikan lembar ini sebagai cermin kejujuran atas amanah tarbiyah yang kita emban pekan ini.</p>
+  </div>
+
+  <div class="cahaya-card">
+    <!-- IDENTITAS & WAKTU -->
+    <div class="grid-2" style="margin-bottom: 30px;">
+      <div class="form-group">
+        <label>📅 Pekan Ke / Tanggal Penilaian</label>
+        <input type="date" class="form-control" id="saTanggal">
+      </div>
+      <div class="form-group">
+        <label>👨‍🏫 Nama Guru</label>
+        <input type="text" class="form-control" id="saNamaGuru" readonly style="background: #f1f5f9; font-weight: bold; color: var(--navy-dark);">
+      </div>
+    </div>
+
+    <!-- BAGIAN 1: REFLEKSI RUHANI & PERSIAPAN -->
+    <h2 class="section-title">🤍 Bagian I: Ruhani & Persiapan Mengajar</h2>
+    
+    <div class="question-box">
+      <div class="q-text">1. Sejauh mana saya mampu menjaga kemurnian niat mengajar semata-mata karena Allah (Keikhlasan) pada pekan ini?</div>
+      <div class="scale-group">
+        <label class="scale-label"><input type="radio" name="q1" value="1"><div class="scale-number">1</div></label>
+        <label class="scale-label"><input type="radio" name="q1" value="2"><div class="scale-number">2</div></label>
+        <label class="scale-label"><input type="radio" name="q1" value="3"><div class="scale-number">3</div></label>
+        <label class="scale-label"><input type="radio" name="q1" value="4"><div class="scale-number">4</div></label>
+        <label class="scale-label"><input type="radio" name="q1" value="5" checked><div class="scale-number">5</div></label>
+      </div>
+      <div class="scale-desc"><span>Sangat Kurang</span><span>Sangat Baik</span></div>
+    </div>
+
+    <div class="question-box">
+      <div class="q-text">2. Sejauh mana saya memandang dan memperlakukan setiap santri di kelas sebagai amanah agung dari Rasulullah ﷺ?</div>
+      <div class="scale-group">
+        <label class="scale-label"><input type="radio" name="q2" value="1"><div class="scale-number">1</div></label>
+        <label class="scale-label"><input type="radio" name="q2" value="2"><div class="scale-number">2</div></label>
+        <label class="scale-label"><input type="radio" name="q2" value="3"><div class="scale-number">3</div></label>
+        <label class="scale-label"><input type="radio" name="q2" value="4"><div class="scale-number">4</div></label>
+        <label class="scale-label"><input type="radio" name="q2" value="5" checked><div class="scale-number">5</div></label>
+      </div>
+      <div class="scale-desc"><span>Sering Lupa</span><span>Selalu Mengingat</span></div>
+    </div>
+
+    <div class="question-box">
+      <div class="q-text">3. Bagaimana kesungguhan saya dalam melakukan muthola'ah dan menyiapkan bahan ajar sebelum masuk ke ruang kelas?</div>
+      <div class="scale-group">
+        <label class="scale-label"><input type="radio" name="q3" value="1"><div class="scale-number">1</div></label>
+        <label class="scale-label"><input type="radio" name="q3" value="2"><div class="scale-number">2</div></label>
+        <label class="scale-label"><input type="radio" name="q3" value="3"><div class="scale-number">3</div></label>
+        <label class="scale-label"><input type="radio" name="q3" value="4"><div class="scale-number">4</div></label>
+        <label class="scale-label"><input type="radio" name="q3" value="5" checked><div class="scale-number">5</div></label>
+      </div>
+      <div class="scale-desc"><span>Masuk Tanpa Persiapan</span><span>Persiapan Sangat Matang</span></div>
+    </div>
+
+    <!-- BAGIAN 2: EVALUASI SOP KBM (120 MENIT) -->
+    <h2 class="section-title" style="margin-top: 40px;">⏱️ Bagian II: Eksekusi Alur KBM (120 Menit)</h2>
+
+    <div class="question-box">
+      <div class="q-text">4. [Pembukaan & Doa] Apakah saya senantiasa memulai KBM dengan menyapa santri dan memimpin <i>mindful praying</i> dengan khusyu'?</div>
+      <div class="scale-group">
+        <label class="scale-label"><input type="radio" name="q4" value="1"><div class="scale-number">1</div></label>
+        <label class="scale-label"><input type="radio" name="q4" value="2"><div class="scale-number">2</div></label>
+        <label class="scale-label"><input type="radio" name="q4" value="3"><div class="scale-number">3</div></label>
+        <label class="scale-label"><input type="radio" name="q4" value="4"><div class="scale-number">4</div></label>
+        <label class="scale-label"><input type="radio" name="q4" value="5" checked><div class="scale-number">5</div></label>
+      </div>
+      <div class="scale-desc"><span>Sering Terlewat</span><span>Konsisten & Khusyu'</span></div>
+    </div>
+
+    <div class="question-box">
+      <div class="q-text">5. [Hafalan & Setoran Matan] Sejauh mana efektivitas pengelolaan waktu 30 menit untuk menyimak hafalan dan setoran santri?</div>
+      <div class="scale-group">
+        <label class="scale-label"><input type="radio" name="q5" value="1"><div class="scale-number">1</div></label>
+        <label class="scale-label"><input type="radio" name="q5" value="2"><div class="scale-number">2</div></label>
+        <label class="scale-label"><input type="radio" name="q5" value="3"><div class="scale-number">3</div></label>
+        <label class="scale-label"><input type="radio" name="q5" value="4"><div class="scale-number">4</div></label>
+        <label class="scale-label"><input type="radio" name="q5" value="5" checked><div class="scale-number">5</div></label>
+      </div>
+      <div class="scale-desc"><span>Tidak Efektif</span><span>Sangat Efektif</span></div>
+    </div>
+
+    <div class="question-box">
+      <div class="q-text">6. [Penjelasan Materi] Apakah saya menjelaskan makna matan dengan gamblang, rujukan yang mu'tabar, dan memastikan santri benar-benar paham?</div>
+      <div class="scale-group">
+        <label class="scale-label"><input type="radio" name="q6" value="1"><div class="scale-number">1</div></label>
+        <label class="scale-label"><input type="radio" name="q6" value="2"><div class="scale-number">2</div></label>
+        <label class="scale-label"><input type="radio" name="q6" value="3"><div class="scale-number">3</div></label>
+        <label class="scale-label"><input type="radio" name="q6" value="4"><div class="scale-number">4</div></label>
+        <label class="scale-label"><input type="radio" name="q6" value="5" checked><div class="scale-number">5</div></label>
+      </div>
+      <div class="scale-desc"><span>Hanya Membaca</span><span>Gamblang & Interaktif</span></div>
+    </div>
+
+    <div class="question-box">
+      <div class="q-text">7. [Tashnif & Peer Teaching] Bagaimana kesungguhan saya mendampingi santri saat menyusun terjemah/mind-map (Tashnif) dan saling menjelaskan (Peer Teaching)?</div>
+      <div class="scale-group">
+        <label class="scale-label"><input type="radio" name="q7" value="1"><div class="scale-number">1</div></label>
+        <label class="scale-label"><input type="radio" name="q7" value="2"><div class="scale-number">2</div></label>
+        <label class="scale-label"><input type="radio" name="q7" value="3"><div class="scale-number">3</div></label>
+        <label class="scale-label"><input type="radio" name="q7" value="4"><div class="scale-number">4</div></label>
+        <label class="scale-label"><input type="radio" name="q7" value="5" checked><div class="scale-number">5</div></label>
+      </div>
+      <div class="scale-desc"><span>Dibiarkan Sendiri</span><span>Didampingi Aktif</span></div>
+    </div>
+
+    <div class="question-box">
+      <div class="q-text">8. [Taftisy Akhir Pekan] Sejauh mana kesungguhan dan ketelitian saya dalam mereview (Taftisy) dan memparaf buku Tashnif santri di akhir pekan ini?</div>
+      <div class="scale-group">
+        <label class="scale-label"><input type="radio" name="q8" value="1"><div class="scale-number">1</div></label>
+        <label class="scale-label"><input type="radio" name="q8" value="2"><div class="scale-number">2</div></label>
+        <label class="scale-label"><input type="radio" name="q8" value="3"><div class="scale-number">3</div></label>
+        <label class="scale-label"><input type="radio" name="q8" value="4"><div class="scale-number">4</div></label>
+        <label class="scale-label"><input type="radio" name="q8" value="5" checked><div class="scale-number">5</div></label>
+      </div>
+      <div class="scale-desc"><span>Tidak Diperiksa</span><span>Diperiksa & Diberi Catatan</span></div>
+    </div>
+
+    <!-- BAGIAN 3: JURNAL MUSYAHADAH & TINDAK LANJUT -->
+    <h2 class="section-title" style="margin-top: 40px;">📝 Bagian III: Jurnal Musyahadah & Tindak Lanjut</h2>
+
+    <div class="reflection-area">
+      <div class="form-group">
+        <label>✨ Tuliskan 3 hal yang paling Anda syukuri terjadi di ruang kelas pekan ini:</label>
+        <textarea class="form-control" id="saSyukur" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label>🚀 Berdasarkan evaluasi di atas, hal spesifik apa yang ingin Anda perbaiki/tingkatkan di pekan depan?</label>
+        <textarea class="form-control" id="saPerbaikan" placeholder="Contoh: Saya akan lebih memperbanyak referensi kisah saat menjelaskan adab agar santri tidak bosan..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>❤️ Sebutkan nama santri yang membutuhkan perhatian khusus pekan depan, beserta sebab/kendalanya:</label>
+        <textarea class="form-control" id="saPerhatian" placeholder="Contoh: Ananda Fulan (Kelas 2) - Hafalan matan sering tertinggal karena kurang fokus saat muthola'ah malam..."></textarea>
+      </div>
+    </div>
+
+    <button class="btn-cahaya btn-gold" id="btnSimpanSA" style="margin-top: 20px; width: 100%; font-size: 1.1rem; padding: 15px;" onclick="simpanSelfAssessment()">💾 SIMPAN EVALUASI PEKANAN</button>
+  </div>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  
+  // Ambil Data User Login
+  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set Tanggal Hari Ini
+    document.getElementById('saTanggal').value = new Date().toISOString().split('T')[0];
+    
+    // Set Nama Guru
+    if(user && user.label) {
+        document.getElementById('saNamaGuru').value = user.label.toUpperCase();
+    } else {
+        document.getElementById('saNamaGuru').value = "GURU CAHAYA";
+    }
+
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  });
+
+  window.simpanSelfAssessment = async function() {
+    const tanggal = document.getElementById('saTanggal').value;
+    const namaGuru = document.getElementById('saNamaGuru').value;
+    
+    const syukur = document.getElementById('saSyukur').value.trim();
+    const perbaikan = document.getElementById('saPerbaikan').value.trim();
+    const perhatian = document.getElementById('saPerhatian').value.trim();
+
+    if(!syukur || !perbaikan) {
+        return alert("⚠️ Mohon isi jurnal refleksi (Syukur & Perbaikan) sebelum menyimpan.");
+    }
+
+    const btn = document.getElementById('btnSimpanSA');
+    btn.disabled = true;
+    btn.innerHTML = "⏳ MENYIMPAN KEJUJURAN ANDA...";
+
+    // Mengambil nilai Radio Button (Skala 1-5) dan MENGALIKANNYA DENGAN 5 sesuai aturan sistem
+    const getScore = (name) => {
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        return checked ? parseInt(checked.value) * 5 : 0; 
+    };
+
+    const payload = {
+        tanggal: tanggal,
+        namaGuru: namaGuru,
+        waktuSubmit: new Date().toISOString(),
+        skor_penilaian: {
+            q1_niat: getScore("q1"),
+            q2_amanah: getScore("q2"),
+            q3_mutholaah: getScore("q3"),
+            q4_pembukaan: getScore("q4"),
+            q5_setoran: getScore("q5"),
+            q6_penjelasan: getScore("q6"),
+            q7_tashnif_peer: getScore("q7"),
+            q8_taftisy: getScore("q8")
+        },
+        jurnal_refleksi: {
+            syukur: syukur,
+            perbaikan: perbaikan,
+            perhatianKhusus: perhatian || "Nihil"
+        }
+    };
+
+    try {
+        await push(ref(db, 'cahaya_app/self_assessment_guru'), payload);
+        alert("✅ Alhamdulillah! Evaluasi pekanan Anda berhasil direkam. Semoga Allah membalas dedikasi Anda dengan kebaikan yang berlimpah.");
+        
+        // Reset Textarea
+        document.getElementById('saSyukur').value = '';
+        document.getElementById('saPerbaikan').value = '';
+        document.getElementById('saPerhatian').value = '';
+        
+        // Reset Radio Button ke Default (5)
+        for(let i=1; i<=8; i++) {
+            const defaultRadio = document.querySelector(`input[name="q${i}"][value="5"]`);
+            if(defaultRadio) defaultRadio.checked = true;
+        }
+
+    } catch (error) {
+        alert("❌ Terjadi kesalahan saat menyimpan: " + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = "💾 SIMPAN EVALUASI PEKANAN";
+    }
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAHAYA APP - Raport Triwulan Terpadu</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS MANDIRI KHUSUS RAPORT (Jangan ditumpuk dengan cahaya-theme.css) */
+    :root {
+      --primary-dark: #0f172a; --accent-gold: #b8860b; --accent-gold-light: #e3c472;
+      --bg-screen: #f1f5f9; --text-main: #1e293b; --text-muted: #475569; --emerald-dark: #023b26;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--bg-screen); color: var(--text-main); }
+
+    /* ADMIN PANEL (Disembunyikan saat di-print) */
+    .admin-panel {
+      background: white; padding: 20px 30px; border-bottom: 4px solid var(--accent-gold);
+      box-shadow: 0 5px 25px rgba(0,0,0,0.08); display: flex; flex-wrap: wrap; gap: 15px;
+      align-items: flex-end; position: sticky; top: 0; z-index: 1000;
+    }
+    .admin-panel h2 { font-family: 'Playfair Display', serif; width: 100%; color: var(--primary-dark); font-size: 1.5rem; margin-bottom: 5px; font-weight: 800; }
+    
+    .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
+    .filter-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+    .filter-group select { padding: 10px 15px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 0.9rem; font-weight: 600; outline: none; background: #f8fafc; transition: 0.3s; }
+    .filter-group select:focus { border-color: var(--accent-gold); background: white; }
+
+    .btn-action { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; font-family: inherit; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+    .btn-generate { background: var(--primary-dark); color: white; }
+    .btn-generate:hover { background: #1e293b; transform: translateY(-2px); }
+    .btn-print { background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light)); color: #fff; }
+    .btn-print:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+    /* PAPER DESIGN (Simulasi Kertas A4 di Layar) */
+    .paper-wrapper { padding: 40px 10px; display: flex; flex-direction: column; align-items: center; gap: 30px; }
+    
+    .a4-page {
+      width: 210mm; min-height: 297mm; background-color: #ffffff;
+      background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23b8860b' stroke-width='0.2' stroke-opacity='0.08'%3E%3Ccircle cx='10' cy='10' r='9'/%3E%3C/g%3E%3C/svg%3E");
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1); margin: 0 auto; padding: 15mm; position: relative;
+    }
+
+    /* KOP SURAT */
+    .kop-surat { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-dark); padding-bottom: 12px; margin-bottom: 15px; position: relative; }
+    .kop-surat::after { content: ""; position: absolute; bottom: -5px; left: 0; width: 100%; height: 1px; background: var(--primary-dark); }
+    .kop-logo { height: 75px; object-fit: contain; }
+    .kop-address { font-size: 9pt; color: var(--primary-dark); text-align: right; line-height: 1.5; font-weight: 500; max-width: 50%; }
+
+    .doc-title { text-align: center; font-family: 'Playfair Display', serif; font-size: 16pt; font-weight: 800; color: var(--primary-dark); margin: 20px 0; text-transform: uppercase; letter-spacing: 2px; }
+
+    /* BIODATA */
+    .biodata-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.9); padding: 15px 20px; border: 1px solid rgba(184, 134, 11, 0.3); border-radius: 8px; }
+    .bio-item { display: flex; font-size: 11pt; margin-bottom: 3px; }
+    .bio-label { width: 140px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 10pt; }
+    .bio-value { font-weight: 700; color: var(--primary-dark); }
+    .bio-value::before { content: ": "; margin-right: 8px; font-weight: normal; color: var(--text-muted); }
+
+    /* JUDUL SEKSI */
+    .section-title { font-family: 'Playfair Display', serif; font-size: 13pt; font-weight: 800; color: var(--emerald-dark); border-bottom: 1.5px solid var(--accent-gold); padding-bottom: 4px; margin-bottom: 15px; margin-top: 20px; display: flex; align-items: center; gap: 8px; }
+    .section-title::before { content: "❖"; color: var(--accent-gold); font-size: 12pt; }
+
+    /* TABEL NILAI */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10pt; background: white; }
+    th { background: rgba(2, 59, 38, 0.05); color: var(--emerald-dark); font-weight: 700; text-transform: uppercase; border: 1px solid var(--emerald-dark); padding: 10px; }
+    td { border: 1px solid var(--text-muted); padding: 8px 12px; }
+    .td-center { text-align: center; font-weight: 600; }
+    
+    /* BOX TAHFIZ & DISIPLIN */
+    .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+    .stat-box { border: 1px solid var(--accent-gold); border-radius: 8px; padding: 15px; background: rgba(255, 255, 255, 0.95); }
+    .box-header { font-family: 'Playfair Display', serif; font-size: 12pt; font-weight: 700; color: var(--primary-dark); text-align: center; margin-bottom: 12px; border-bottom: 1px dashed var(--accent-gold); padding-bottom: 5px; }
+    .stat-val { font-family: 'Playfair Display', serif; font-size: 20pt; font-weight: 800; color: var(--emerald-dark); text-align: center; margin-bottom: 5px; }
+    .stat-lbl { font-size: 9pt; color: var(--text-muted); text-transform: uppercase; font-weight: 600; text-align: center; }
+    .disc-circle { width: 75px; height: 75px; border-radius: 50%; background: var(--primary-dark); color: var(--accent-gold-light); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display'; font-size: 16pt; font-weight: 800; border: 2px solid var(--accent-gold); margin: 0 auto 10px auto; }
+
+    /* NARASI CAHAYA */
+    .narasi-box { border-left: 4px solid var(--accent-gold); padding: 10px 15px; background: #fdfdfd; border-radius: 0 8px 8px 0; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .narasi-header { font-family: 'Playfair Display', serif; font-weight: 800; color: var(--emerald-dark); font-size: 11pt; margin-bottom: 6px; }
+    .narasi-text { font-size: 10.5pt; text-align: justify; line-height: 1.6; color: var(--primary-dark); font-weight: 500; }
+
+    /* TANDA TANGAN */
+    .signature-container { display: flex; justify-content: space-between; margin-top: 40px; padding: 0 30px; }
+    .sign-box { text-align: center; width: 220px; }
+    .sign-role { font-weight: 700; font-size: 10pt; text-transform: uppercase; color: var(--primary-dark); }
+    .sign-space { height: 70px; } /* Ruang ttd */
+    .sign-name { font-weight: 800; font-size: 11.5pt; text-decoration: underline; font-family: 'Playfair Display', serif; color: var(--primary-dark); }
+
+    /* SETINGAN KHUSUS PRINTER AKTIF */
+    @media print {
+      body { background: white; }
+      .admin-panel, .no-print { display: none !important; }
+      .paper-wrapper { padding: 0; display: block; }
+      .a4-page { box-shadow: none; margin: 0; padding: 15mm; width: 100%; min-height: 100%; page-break-after: always; }
+      @page { size: A4 portrait; margin: 0; }
+      
+      /* Mencegah Elemen Terpotong di Tengah Halaman */
+      .section-title, .narasi-box, .split-grid, .signature-container, tr { page-break-inside: avoid; }
+      
+      /* Memaksa warna background tercetak */
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-panel no-print">
+  <h2>🖨️ Panel Cetak Raport Terpadu</h2>
+  
+  <div class="filter-group">
+    <label>Tahun Akademik</label>
+    <select id="fTahun"><option value="2025/2026" selected>2025/2026</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Semester</label>
+    <select id="fSemester"><option value="Genap" selected>Genap</option><option value="Ganjil">Ganjil</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Bulan Evaluasi</label>
+    <select id="fBulan">
+      <option value="Januari">Januari</option><option value="Februari">Februari</option><option value="Maret">Maret</option>
+      <option value="April" selected>April</option><option value="Mei">Mei</option><option value="Juni">Juni</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Nama Santri</label>
+    <select id="fSantri"><option value="">-- Memuat Database Santri... --</option></select>
+  </div>
+  
+  <button class="btn-action btn-generate" onclick="generateRaport()">🔄 Integrasikan Data</button>
+  <button class="btn-action btn-print" onclick="window.print()">🖨️ Cetak Raport (A4)</button>
+</div>
+
+<div class="paper-wrapper" id="printArea">
+  <div class="a4-page" style="display:flex; justify-content:center; align-items:center; color:var(--text-muted); font-size:1.2rem; font-weight:600;">
+    <i>Pilih Nama Santri, lalu klik "Integrasikan Data"</i>
+  </div>
+</div>
+
+<!-- TEMPLATE MASTER RAPORT -->
+<template id="raportTemplate">
+  <div class="a4-page">
+      <div class="kop-surat">
+        <img src="assets/logofi.png" alt="Logo" class="kop-logo">
+        <div class="kop-address">
+          Jl. Jend. Sudirman RT/RW 003/001 Dusun Perawas II<br>
+          Desa Buluh Tumbang, Kec. Tanjungpandan,<br>
+          Kab. Belitung Prov. Kep. Bangka Belitung<br>
+          <b>www.fajrulislam.or.id</b>
+        </div>
+      </div>
+
+      <div class="doc-title">RAPORT EVALUASI BULANAN TERPADU</div>
+
+      <div class="biodata-grid">
+        <div>
+          <div class="bio-item"><div class="bio-label">Nama Santri</div><div class="bio-value rNama">NAMA</div></div>
+          <div class="bio-item"><div class="bio-label">Tahun Akademik</div><div class="bio-value rTahun">2025/2026</div></div>
+        </div>
+        <div>
+          <div class="bio-item"><div class="bio-label">Semester</div><div class="bio-value rSmt">Genap</div></div>
+          <div class="bio-item"><div class="bio-label">Bulan Evaluasi</div><div class="bio-value rBulan">April</div></div>
+        </div>
+      </div>
+
+      <div class="section-title">A. Pencapaian Akademik</div>
+      <table>
+        <thead>
+          <tr>
+            <th width="5%">No</th>
+            <th width="45%">Mata Pelajaran Ujian</th>
+            <th width="25%">Total Nilai</th>
+            <th width="25%">Predikat</th>
+          </tr>
+        </thead>
+        <tbody class="tabelNilai"></tbody>
+      </table>
+
+      <div class="split-grid">
+        <div class="stat-box">
+          <div class="box-header">📖 Target Hafalan Qur'an</div>
+          <div class="stat-val tAyat">0</div>
+          <div class="stat-lbl">Total Ayat Disetorkan Bulan Ini</div>
+        </div>
+        
+        <div class="stat-box">
+          <div class="box-header">⚖️ Indeks Kedisiplinan Asrama</div>
+          <div class="disc-circle dPersen">0%</div>
+          <div class="stat-lbl dPredikat" style="font-weight:800; color:var(--emerald-dark);">MAQBUL</div>
+        </div>
+      </div>
+
+      <div class="section-title">B. Pertumbuhan 5 Dimensi CAHAYA</div>
+      <div class="narasi-container">
+        <div class="narasi-box"><div class="narasi-header">🌙 Spiritual (Cinta Allah)</div><div class="narasi-text nSpiritual">-</div></div>
+        <div class="narasi-box"><div class="narasi-header">🤝 Relasional (Akhlak Mulia)</div><div class="narasi-text nRelasional">-</div></div>
+        <div class="narasi-box"><div class="narasi-header">🧠 Intelektual & Emosional</div><div class="narasi-text nIntelektual">-</div></div>
+      </div>
+
+      <div class="section-title">C. Rencana Tindak Lanjut Bulan Depan</div>
+      <div class="narasi-box" style="border-left-color: var(--primary-dark); background: #f0f4f8;">
+        <div class="narasi-text rFokus" style="font-weight: 600;">-</div>
+      </div>
+
+      <div class="signature-container">
+        <div class="sign-box">
+          <div class="sign-role">Orang Tua / Wali Santri</div>
+          <div class="sign-space"></div>
+          <div class="sign-name">( ............................ )</div>
+        </div>
+        <div class="sign-box">
+          <div class="sign-role">Direktur Pesantren</div>
+          <div class="sign-space"><img src="assets/ttd_direktur.png" alt="ttd" style="height:100%; display:none;"></div>
+          <div class="sign-name">Dr. Multazam, M.Pd.</div>
+        </div>
+      </div>
+  </div>
+</template>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const snap = await get(ref(db, 'cahaya_app/master_akademik/halqah'));
+      const sel = document.getElementById('fSantri');
+      
+      if(snap.exists()){
+        sel.innerHTML = '<option value="">-- Pilih Santri --</option>';
+        const all = snap.val();
+        let list = [];
+        
+        // Ekstrak semua nama santri dari berbagai rumpun dan kelas
+        for(let rumpun in all) {
+          for(let kelas in all[rumpun]) {
+            list = list.concat(all[rumpun][kelas]);
+          }
+        }
+        
+        // Hapus duplikat dan urutkan abjad
+        [...new Set(list)].sort().forEach(n => sel.add(new Option(n, n)));
+      }
+    } catch (e) {
+      console.error("Gagal menarik data santri: ", e);
+    }
+  });
+
+  window.generateRaport = async function() {
+    const name = document.getElementById('fSantri').value;
+    const bulan = document.getElementById('fBulan').value;
+    const tahun = document.getElementById('fTahun').value;
+    const smt = document.getElementById('fSemester').value;
+
+    if(!name) {
+      alert("⚠️ Mohon pilih nama santri terlebih dahulu!");
+      return;
+    }
+
+    const btn = document.querySelector('.btn-generate');
+    btn.innerHTML = "⏳ Mengintegrasikan..."; btn.disabled = true;
+
+    try {
+      // Tarik Data Terpadu secara paralel agar cepat
+      const [nilaiS, assesS, tahfizS, absenS] = await Promise.all([
+        get(ref(db, 'cahaya_app/nilai_ujian_bulanan')),
+        get(ref(db, 'cahaya_app/assesment_bulanan_santri')), // <-- Mengarah ke format baru yang kita buat sebelumnya
+        get(ref(db, 'cahaya_app/setoran_tahfiz')),
+        get(ref(db, 'cahaya_app/absensi_pembelajaran'))
+      ]);
+
+      const printArea = document.getElementById('printArea');
+      printArea.innerHTML = '';
+      const temp = document.getElementById('raportTemplate').content;
+      const page = document.importNode(temp, true);
+
+      // 1. Cetak Biodata
+      page.querySelector('.rNama').textContent = name;
+      page.querySelector('.rTahun').textContent = tahun;
+      page.querySelector('.rSmt').textContent = smt;
+      page.querySelector('.rBulan').textContent = bulan;
+
+      // 2. Olah Nilai Akademik
+      const tbody = page.querySelector('.tabelNilai');
+      let no = 1;
+      let mapelDitemukan = false;
+
+      if(nilaiS.exists()){
+        const dataNilai = Object.values(nilaiS.val()).filter(n => n.nama_santri === name && n.bulan === bulan);
+        if(dataNilai.length > 0) {
+          mapelDitemukan = true;
+          dataNilai.forEach(v => {
+            const predikat = v.nilai_total >= 85 ? 'MUMTAZ' : (v.nilai_total >= 70 ? 'JAYYID JIDDAN' : 'MAQBUL');
+            tbody.innerHTML += `<tr>
+              <td class="td-center">${no++}</td>
+              <td style="font-weight:600;">${v.mata_pelajaran}</td>
+              <td class="td-center" style="font-weight:800; color:var(--primary-dark);">${v.nilai_total}</td>
+              <td class="td-center" style="font-weight:700;">${predikat}</td>
+            </tr>`;
+          });
+        }
+      }
+      if(!mapelDitemukan) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444; font-style:italic;">Belum ada nilai ujian yang diinput untuk bulan ini.</td></tr>`;
+
+
+      // 3. Olah Setoran Tahfiz (Menghitung Total Ayat)
+      let totalAyat = 0;
+      if(tahfizS.exists()){
+        Object.values(tahfizS.val()).forEach(sesi => {
+          if (sesi.data) {
+             const cariSantri = sesi.data.find(d => d.nama === name);
+             // Pastikan bulan cocok (asumsi format tanggal YYYY-MM-DD, cek bulan 04 untuk April dll)
+             if(cariSantri && sesi.tanggal) {
+                 totalAyat += parseInt(cariSantri.ayat) || 0;
+             }
+          }
+        });
+      }
+      page.querySelector('.tAyat').textContent = totalAyat;
+
+
+      // 4. Kalkulasi Indeks Kedisiplinan KBM (Asumsi Poin Maksimal / KBM)
+      let persenDisiplin = 100;
+      if(absenS.exists()) {
+         let totalKehadiran = 0;
+         let totalHadirTepat = 0;
+         Object.values(absenS.val()).forEach(sesi => {
+            const cariSantri = sesi.data.find(d => d.nama === name);
+            if(cariSantri) {
+               totalKehadiran++;
+               if(cariSantri.status === 'Hadir') totalHadirTepat++;
+            }
+         });
+         if(totalKehadiran > 0) {
+           persenDisiplin = Math.round((totalHadirTepat / totalKehadiran) * 100);
+         }
+      }
+      page.querySelector('.dPersen').textContent = persenDisiplin + "%";
+      page.querySelector('.dPredikat').textContent = persenDisiplin >= 90 ? 'SANGAT DISIPLIN' : (persenDisiplin >= 75 ? 'CUKUP DISIPLIN' : 'PERLU PERHATIAN');
+      if(persenDisiplin < 75) page.querySelector('.dPersen').style.color = '#ef4444'; // Merah jika buruk
+
+
+      // 5. Integrasi Asesmen Narasi 5 Dimensi CAHAYA
+      if(assesS.exists()){
+        // Ambil data terbaru untuk santri dan bulan tersebut
+        const narasiSantri = Object.values(assesS.val())
+          .filter(a => a.namaSantri === name && (a.periode && a.periode.includes(bulan.substring(0,3))))
+          .pop(); 
+        
+        if(narasiSantri && narasiSantri.narasi){
+          page.querySelector('.nSpiritual').textContent = narasiSantri.narasi.spiritual || "-";
+          page.querySelector('.nRelasional').textContent = narasiSantri.narasi.relasional || "-";
+          page.querySelector('.nIntelektual').textContent = narasiSantri.narasi.emosional_intelektual || "-";
+          page.querySelector('.rFokus').textContent = narasiSantri.narasi.tindak_lanjut || "Terus pertahankan prestasi dan ibadahnya.";
+        }
+      }
+
+      printArea.appendChild(page);
+
+    } catch (error) {
+      alert("Terjadi kesalahan saat memproses data: " + error.message);
+    } finally {
+      btn.innerHTML = "🔄 Integrasikan Data"; btn.disabled = false;
+    }
+  };
+</script>
+</body>
+</html>

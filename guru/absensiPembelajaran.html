@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAHAYA APP - Absensi KBM Guru</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  
+  <style>
+    /* CSS Kustom Ringan Khusus Efek Status Absensi */
+    .table-header-flex { 
+      display: flex; justify-content: space-between; align-items: flex-end; 
+      margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid var(--input-border); padding-bottom: 15px; 
+    }
+    .btn-mark-all { 
+      background: #ecfdf5; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); 
+      padding: 8px 18px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.3s; 
+    }
+    .btn-mark-all:hover { background: #10b981; color: white; }
+
+    /* Custom Radio Button Absen */
+    .radio-label { display: inline-block; cursor: pointer; user-select: none; }
+    .radio-label input { display: none; }
+    .radio-circle { 
+      display: inline-flex; justify-content: center; align-items: center; 
+      width: 32px; height: 32px; border-radius: 50%; background: #f8fafc; 
+      border: 1px solid #cbd5e1; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; transition: 0.2s; 
+    }
+    
+    /* Warna Status saat Dipilih */
+    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; color: white; border-color: #10b981; }
+    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; color: white; border-color: #f59e0b; }
+    .radio-label input[value="Izin"]:checked + .radio-circle { background: #0ea5e9; color: white; border-color: #0ea5e9; }
+    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #eab308; color: white; border-color: #eab308; }
+    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; color: white; border-color: #ef4444; }
+
+    /* Warna Background Baris Tabel (Sangat membantu UX/UI Guru) */
+    tr.status-hadir { background: #ecfdf5 !important; }
+    tr.status-terlambat { background: #fffbeb !important; }
+    tr.status-izin { background: #f0f9ff !important; }
+    tr.status-sakit { background: #fefce8 !important; }
+    tr.status-alfa { background: #fef2f2 !important; }
+
+    /* Loader Custom */
+    #loadingOverlay { 
+      position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); 
+      z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+      color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; 
+    }
+
+    @media (max-width: 768px) {
+      .radio-circle { width: 28px; height: 28px; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1s infinite alternate ease-in-out;">📚</div>
+  <div style="font-weight: 700;">Menarik Data Kelas...</div>
+</div>
+
+<main class="cahaya-container">
+  <div class="cahaya-card">
+    <h2 class="cahaya-title">📝 Absensi Kehadiran Halqah</h2>
+    
+    <!-- MENGGUNAKAN GRID MASTER THEME -->
+    <div class="grid-2">
+      <div class="form-group">
+        <label>📅 Tanggal KBM</label>
+        <input type="date" class="form-control" id="kbmTanggal">
+      </div>
+      <div class="form-group">
+        <label>📚 Rumpun Kelas</label>
+        <select class="form-control" id="kbmJenisKelas" onchange="updatePilihan()">
+          <option value="">-- Pilih Rumpun --</option>
+          <option value="Halqah Ilmiyah">Halqah Ilmiyah</option>
+          <option value="Halqah Lughowiyah">Halqah Lughowiyah</option>
+          <option value="Halqah Quraniyah">Halqah Quraniyah</option>
+        </select>
+      </div>
+      <div class="form-group" id="opsiKhusus" style="display: none;">
+        <label>🏫 Kelas / Kelompok</label>
+        <select class="form-control" id="subPilihan" onchange="tampilkanSantri()">
+          <option value="">-- Pilih Kelas --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>📝 Mata Pelajaran</label>
+        <select class="form-control" id="kbmMapel"><option value="">-- Pilih Mapel --</option></select>
+      </div>
+    </div>
+
+    <div class="table-header-flex">
+      <h3 style="font-family:'Playfair Display'; font-size:1.1rem; color:var(--navy-dark); font-weight:800;">Daftar Santri</h3>
+      <button type="button" class="btn-mark-all" onclick="markAll()">✓ Set Semua Hadir</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="cahaya-table">
+        <thead>
+          <tr>
+            <th width="5%" style="text-align: center;">No</th>
+            <th width="45%">Nama Lengkap</th>
+            <th title="Hadir" width="10%" style="text-align: center;">H</th>
+            <th title="Terlambat" width="10%" style="text-align: center;">T</th>
+            <th title="Izin" width="10%" style="text-align: center;">I</th>
+            <th title="Sakit" width="10%" style="text-align: center;">S</th>
+            <th title="Alfa" width="10%" style="text-align: center;">A</th>
+          </tr>
+        </thead>
+        <tbody id="kbmBody">
+          <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;font-style:italic;">Pilih kelas untuk memuat data.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-group" style="margin-top: 25px;">
+      <label>📌 Ringkasan Materi / Jurnal Mengajar</label>
+      <textarea class="form-control" id="kbmCatatan" rows="3" placeholder="Tuliskan bab atau materi yang diajarkan hari ini..."></textarea>
+    </div>
+
+    <button class="btn-cahaya btn-gold" onclick="simpanKehadiran()">💾 SIMPAN LOG KEHADIRAN</button>
+  </div>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || 'null');
+  
+  let masterDataAkademik = {};
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('kbmTanggal').value = new Date().toISOString().split('T')[0];
+
+    try {
+      // Menarik data Master Akademik yang di dalamnya terdapat Halqah (Kelas) dan Mapel
+      const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
+      if (snapshot.exists()) {
+        masterDataAkademik = snapshot.val();
+      } else {
+        alert("⚠️ Data Kelas kosong. Sinkronkan dari Manajemen Halqah.");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  });
+
+  window.updatePilihan = function() {
+    const rumpun = document.getElementById('kbmJenisKelas').value;
+    const boxSub = document.getElementById('opsiKhusus');
+    const selSub = document.getElementById('subPilihan');
+    const mapelSelect = document.getElementById('kbmMapel');
+    const tbody = document.getElementById('kbmBody');
+
+    // Reset isi dropdown dan tabel
+    if(selSub) selSub.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    mapelSelect.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;font-style:italic;">Menunggu pilihan kelas...</td></tr>';
+
+    if (!rumpun) { 
+      boxSub.style.display = "none"; 
+      return; 
+    }
+
+    // 1. MENGISI MATA PELAJARAN (Dinamis dari Firebase Master Data)
+    let mapelList = [];
+    const dataMapel = masterDataAkademik.mapel;
+
+    if (dataMapel) {
+      // Cek apakah sistem master membaginya berdasarkan rumpun (misal: Halqah Ilmiyah, dll)
+      if (dataMapel[rumpun]) {
+        mapelList = Array.isArray(dataMapel[rumpun]) ? dataMapel[rumpun] : Object.values(dataMapel[rumpun]);
+      } 
+      // Jika master mapel hanyalah list gabungan (flat list) untuk semua
+      else {
+        mapelList = Array.isArray(dataMapel) ? dataMapel : Object.values(dataMapel);
+      }
+      
+      // Sanitasi data jika bentuknya object { id: { nama: "Fiqih" } }
+      mapelList = mapelList.map(m => typeof m === 'object' ? (m.namaMapel || m.nama || m.mapel) : m);
+    } else {
+      // Fallback lama (Jika node 'mapel' belum ada sama sekali di database)
+      mapelList = (rumpun === 'Halqah Ilmiyah' ? ['Fiqih','Akidah','Adab','Nahwu','Sirah','Sharaf','Balaghah','Kewirausahaan','Metode Pengajaran','Matematika','IPA'] : (rumpun === 'Halqah Lughowiyah' ? ['Bahasa Arab','Bahasa Inggris','Muhadatsah'] : ['Tahsin','Tahfiz','Murojaah']));
+    }
+
+    // Bersihkan data null dan urutkan abjad A-Z
+    mapelList = mapelList.filter(m => m && typeof m === 'string').sort((a,b) => a.localeCompare(b));
+
+    mapelList.forEach(m => { 
+      mapelSelect.add(new Option(m, m)); 
+    });
+
+    // 2. MENGISI DAFTAR KELAS (Dinamis dari Firebase Master Data)
+    const dataHalqah = masterDataAkademik.halqah || {};
+    const kategori = dataHalqah[rumpun];
+    
+    if (kategori) {
+      boxSub.style.display = "block";
+      Object.keys(kategori).forEach(k => {
+        selSub.add(new Option(k, k));
+      });
+    } else {
+      boxSub.style.display = "none";
+    }
+  };
+
+  window.tampilkanSantri = function() {
+    const rumpun = document.getElementById('kbmJenisKelas').value;
+    const sub = document.getElementById('subPilihan').value;
+    const tbody = document.getElementById('kbmBody');
+    tbody.innerHTML = '';
+    
+    const list = (masterDataAkademik.halqah?.[rumpun]?.[sub] || []).slice().sort((a, b) => a.localeCompare(b));
+
+    if (list.length === 0) { 
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;font-weight:bold;">Data santri kosong di kelas ini.</td></tr>`; 
+      return; 
+    }
+
+    list.forEach((nama, i) => {
+      const tr = document.createElement('tr');
+      tr.className = 'status-hadir'; // Default color
+      
+      tr.innerHTML = `
+        <td style="text-align: center;">${i + 1}</td>
+        <td style="font-weight: 600; color: var(--navy-dark);">${nama}</td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Hadir" checked><span class="radio-circle">H</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Terlambat"><span class="radio-circle">T</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Izin"><span class="radio-circle">I</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Sakit"><span class="radio-circle">S</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Alfa"><span class="radio-circle">A</span></label></td>`;
+      tbody.appendChild(tr);
+
+      // Event listener ganti warna baris saat radio diklik
+      tr.querySelectorAll('input[type="radio"]').forEach(r => {
+        r.addEventListener('change', () => {
+          tr.className = 'status-' + r.value.toLowerCase();
+        });
+      });
+    });
+  };
+
+  window.markAll = function() {
+    document.querySelectorAll('#kbmBody tr').forEach(tr => {
+      const radio = tr.querySelector('input[value="Hadir"]');
+      if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
+    });
+  };
+
+  window.simpanKehadiran = function() {
+    const tanggal = document.getElementById('kbmTanggal').value;
+    const rumpun = document.getElementById('kbmJenisKelas').value;
+    const mapel = document.getElementById('kbmMapel').value;
+    const sub = document.getElementById('subPilihan')?.value || '';
+    const catatan = document.getElementById('kbmCatatan').value.trim();
+
+    if (!tanggal || !rumpun || !sub || !mapel) { alert('⚠️ Lengkapi filter kelas, mapel, dan tanggal.'); return; }
+    
+    const rows = document.querySelectorAll('#kbmBody tr');
+    if (rows.length === 0 || rows[0].cells.length === 1) return;
+
+    const btn = document.querySelector('.btn-cahaya');
+    btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
+
+    const hasil = [];
+    rows.forEach((tr, i) => {
+      const nama = tr.children[1].textContent;
+      const status = document.querySelector(`input[name="s_${i}"]:checked`)?.value || 'Hadir';
+      
+      // Rumus Poin Cahaya Gamifikasi
+      let poin = 0;
+      if(status === 'Hadir') poin = (rumpun === 'Halqah Quraniyah') ? 40 : 30;
+      else if(status === 'Terlambat') poin = (rumpun === 'Halqah Quraniyah') ? -20 : -15;
+      else if(status === 'Alfa') poin = (rumpun === 'Halqah Quraniyah') ? -40 : -30;
+      
+      hasil.push({ nama, status, poin });
+    });
+
+    const payload = { 
+      tanggal, rumpun, sub, mapel, catatan, 
+      guru: user ? (user.label || user.username) : 'Guru', 
+      data: hasil, 
+      waktuSimpan: new Date().toISOString() 
+    };
+
+    push(ref(db, 'cahaya_app/absensi_pembelajaran'), payload)
+      .then(() => { 
+        alert('✅ LOG KEHADIRAN BERHASIL DISIMPAN!'); 
+        btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false; 
+        document.getElementById('kbmCatatan').value = '';
+      })
+      .catch(err => { 
+        alert('❌ Error: ' + err.message); 
+        btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false; 
+      });
+  };
+</script>
+</body>
+</html>

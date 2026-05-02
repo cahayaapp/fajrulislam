@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAHAYA APP - Ujian Triwulan Premium</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ======== LUXURY THEME ======== */
+    :root {
+      --primary-dark: #020617;
+      --primary-blue: #0f172a;
+      --accent-gold: #d4af37;
+      --accent-gold-light: #fef08a;
+      --glass-bg: rgba(15, 23, 42, 0.65);
+      --glass-border: rgba(212, 175, 55, 0.2);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --shadow-premium: 0 15px 35px rgba(0,0,0,0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      background: 
+        radial-gradient(circle at top right, rgba(212, 175, 55, 0.15), transparent 50%),
+        radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.05), transparent 50%),
+        linear-gradient(135deg, var(--primary-dark), var(--primary-blue), #1e293b);
+      color: var(--text-main);
+      padding-bottom: 80px;
+    }
+
+    /* Texture Background */
+    body::before {
+      content: ""; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%23d4af37' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: -1;
+    }
+
+    /* ======== HEADER ======== */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    header h1 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--accent-gold); letter-spacing: 1px; }
+    .btn-back {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-main); padding: 8px 18px; border-radius: 50px;
+      font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.3s;
+    }
+    .btn-back:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-gold); transform: translateY(-2px); }
+
+    main { padding: 30px 20px; max-width: 1100px; margin: auto; animation: fadeInUp 0.6s ease backwards; }
+    @keyframes fadeInUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* ======== GLASS CARD ======== */
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px; padding: 30px;
+      box-shadow: var(--shadow-premium);
+    }
+    
+    .card-header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; }
+    .card-header h3 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--text-main); margin-bottom: 8px; }
+    .card-header p { color: var(--accent-gold); font-size: 0.95rem; font-weight: 300; letter-spacing: 0.5px; }
+
+    /* ======== FORM GRID ======== */
+    .form-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;
+    }
+    .input-group { display: flex; flex-direction: column; }
+    .input-group label { font-size: 0.8rem; color: var(--accent-gold-light); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .input-group select, .input-group input {
+      background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);
+      color: var(--text-main); padding: 12px 16px; border-radius: 12px;
+      font-size: 0.95rem; font-family: 'Poppins', sans-serif; outline: none; transition: 0.3s;
+    }
+    .input-group select:focus, .input-group input:focus { border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); background: rgba(0,0,0,0.6); }
+    .input-group select option { background: var(--primary-dark); color: white; }
+    
+    /* Styling khusus untuk input yang dikunci (readonly/disabled) */
+    .input-group select:disabled {
+      background: rgba(255,255,255,0.05);
+      color: var(--accent-gold);
+      border-color: rgba(212, 175, 55, 0.3);
+      cursor: not-allowed;
+      font-weight: 600;
+    }
+
+    /* Divider untuk form */
+    .form-divider {
+      grid-column: 1 / -1; height: 1px; background: rgba(255,255,255,0.05); margin: 10px 0;
+    }
+
+    /* ======== TABLE PREMIUM ======== */
+    .table-wrapper {
+      background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; margin-top: 10px;
+    }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 700px; }
+    th { background: rgba(255,255,255,0.03); color: var(--accent-gold-light); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; padding: 16px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); white-space: nowrap; }
+    td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+    
+    .santri-name { font-weight: 600; font-size: 1rem; color: var(--text-main); }
+    
+    /* Input di dalam tabel */
+    td input[type="number"] {
+      width: 100%; max-width: 90px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--accent-gold); font-size: 1.1rem; font-weight: 700; text-align: center;
+      padding: 10px; border-radius: 8px; outline: none; transition: 0.3s; margin: auto; display: block;
+    }
+    td input[type="number"]:focus { border-color: var(--accent-gold); box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    .nilai-total { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--text-main); font-size: 1.4rem; text-align: center; }
+
+    /* ======== BOTTOM ACTION ======== */
+    .action-container { margin-top: 30px; display: flex; justify-content: flex-end; }
+    .btn-save {
+      background: linear-gradient(135deg, var(--accent-gold-light), var(--accent-gold));
+      color: #000; border: none; padding: 14px 35px; border-radius: 50px;
+      font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: 0.3s;
+      box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4); display: flex; align-items: center; gap: 10px;
+    }
+    .btn-save:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 15px 35px rgba(212, 175, 55, 0.5); }
+
+    @media (max-width: 768px) {
+      .card { padding: 20px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .action-container { justify-content: center; }
+      .btn-save { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>✨ CAHAYA APP</h1>
+  <button class="btn-back" onclick="history.back()">Kembali</button>
+</header>
+
+<main>
+  <div class="card">
+    <div class="card-header">
+      <h3>Ujian Triwulan</h3>
+      <p>Syafawi (70%) &bull; Tahriri (30%)</p>
+    </div>
+
+    <div class="form-grid">
+      <div class="input-group">
+        <label>Tahun Akademik</label>
+        <select id="tahunAkademik" disabled>
+          </select>
+      </div>
+
+      <div class="input-group">
+        <label>Semester</label>
+        <select id="semester" disabled>
+          </select>
+      </div>
+
+      <div class="input-group">
+        <label>Triwulan</label>
+        <select id="triwulan" disabled>
+          </select>
+      </div>
+
+      <div class="form-divider"></div>
+
+      <div class="input-group">
+        <label>Kategori Halqah</label>
+        <select id="kategoriHalqah" onchange="updateKelas()">
+          <option value="">-- Pilih Kategori --</option>
+          <option value="Halqah Ilmiyah">Halqah Ilmiyah</option>
+          <option value="Halqah Lughowiyah">Halqah Lughowiyah</option>
+          <option value="Halqah Quraniyah">Halqah Quraniyah</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Kelas / Kelompok</label>
+        <select id="kelasKelompok" onchange="loadSantri()">
+          <option value="">-- Pilih Kelas/Kelompok --</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Mata Pelajaran</label>
+        <select id="mapel">
+          <option value="">-- Pilih Mapel --</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Penguji / Guru</label>
+        <select id="guruPenguji">
+          <option value="">-- Pilih Guru --</option>
+        </select>
+      </div>
+
+      <div class="input-group" style="grid-column: 1 / -1;">
+        <label>Materi yang Diujikan</label>
+        <input type="text" id="materiUjian" placeholder="Contoh: Bab Thaharah / Bab Fa'il / Hafalan Juz 30">
+      </div>
+
+      <div class="input-group">
+        <label>Tanggal Ujian</label>
+        <input type="date" id="tanggalUjian">
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-container">
+        <table id="tabelNilaiSantri">
+          <thead>
+            <tr>
+              <th style="width: 50px; text-align: center;">No</th>
+              <th>Nama Santri</th>
+              <th style="text-align: center; width: 140px;">Syafawi (70%)</th>
+              <th style="text-align: center; width: 140px;">Tahriri (30%)</th>
+              <th style="text-align: center; width: 140px;">Total Akhir</th>
+            </tr>
+          </thead>
+          <tbody id="nilaiSantriBody">
+            <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:40px;font-style:italic;">Silakan lengkapi form di atas untuk memuat daftar santri.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="action-container">
+      <button class="btn-save" onclick="simpanNilaiTriwulan()">
+        <span>💾 Simpan Nilai</span>
+      </button>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam",
+    storageBucket: "absensi-santri-fajrul-islam.appspot.com",
+    messagingSenderId: "739928369926",
+    appId: "1:739928369926:web:7e95375c3ddba0f584cdd07"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // ======================
+  // DATA MASTER
+  // ======================
+  const dataGuru = [
+    "MULTAZAM","ALVIN","RASYIDIN","NAQIEB","FALAH","FAHMI",
+    "KHAIZURAN","RAHIEL","FAIQ","FAVIAN","KAMAL",
+    "MEILISA","FATIMAH","EVITA"
+  ];
+
+  const dataMapel = [
+    "AQIDAH","FIQIH","ADAB","SHIRAH","METODE PENGAJARAN",
+    "KEWIRAUSAHAAN","NAHWU","SHARAF","BALAGHAH","TAHSIN","TAHFIZ", "BAHASA ARAB", "BAHASA INGGRIS"
+  ];
+
+  const dataSantri = {
+    "Halqah Ilmiyah": {
+      "Kelas 1 Putra": ["JUANDA NUR ILHAM","M. ABIL IRWANSYAH","ALIF SAMUDRA","FAHRY AKBAR RAMDHANI","M. USAMAH","MUHAMAD YUSUF ARROSIYD","ROID AFDAL","ANUGRAH PRATAMA","AHMAD FARHAAN","DEDI SETIADI","MOHAMMAD IKHSAN HAIRULI","ALVIN HERFIANTINO","IHZA TRINANDI","ILHAM","RAKA SEPTIAN","CAHYIS ISZAM","DIKKI KURNIAWAN","M. ARYA MAHDI WAFI EL-FAUZANI","EZA FEBRI AL FADZRI","M. DIRGATAMA","VERY SYACH","RADEN AZAA PANCA PUTRA","FAUZAN IBNI JABAR","REZFY FAKHRYAZKA","SYAHRUL RAMADHAN","ADITYA PUTRA IBRAHIM","AIRLANGGA AZKA ABQORI","AQIELA MARSYAH","BRILLY HANDRIAN","DARREN ATHAYA","DZIKRI MUDHOFFAR","ELLENO QUTHBIE HERMAWAN","FADIL NURHALIM","GABRIEL AL FATIH","HADINATA SAPUTRA","MIKO VAJAR","M. ALMISKY PRATAMA","M. AQIL RIDHO","M. IZAM SAPUTRA","M. SYAKIR HUTABARAT","M. YASIR AL FAZAR JHIRA","M. ZIYAD ZHAZHA","RAFA"],
+      "Kelas 2 Putra": ["ABDULLAH MUKTI HAFIDZALLAH","AHMAD RIYADI","AKBAR PRAYOGA","ANDES AFENDRA","BASRI AL HAZIQ ZULFAHMI","CANZA RYANDA HUTASUHUT","DAFFA AL MUSYARI","DANANG PRASDITYA SANTOSO","FAHRIE OKTAVIRANO FITRIS","FAKHRI AL MUZAKKI","FALIZH DAFFA QATRUNNADA","FEBRI GHALIH AL FAROBI","HAFIDZ AL ROZI","HAFIDZ ALRIZKY","ILHAM MUKMIN AL FARABI","LUTHFAN ADZAKI","MAHESA AULIA GIFFARI","M. FADHIL BUANA","M. FAISAL FIKRIANSYAH","M. FIRAAS AL INSYIROH","M. XAVI NF","NABIL NAJMI","NAJMIHADI SYAUQII TAMAAM","NAUFAL AKBAR ALKHATIRI","NIZAM KABISAT","QHEIZAN ALQIZA ARISDA","RENAL MARTIN","REYFAS RAMADHAN","ROHADIN FIRDAUS AL QAUSAR","SATRIO ABIMAYU","TEGAR HIDAYAT","WAHYU REYDINATA","ZAHIR ZIBRAN","ZULFAKIH HAERUNNASIHIN","HABIB RAMADHAN"],
+      "Kelas 3 Putra": ["AHMAD MAULANA","ALIF MUHAMMAD YUSUF","ARYA DIFA ALSYA","FARAZH SAYYID PUTRA KENEGA","GHOZY FATURRAHMAN","M. FAQIH HAFIDZALLAH","M. RIJALUL KAMIL","M. AL FALAH","MUHAMMAD ALLAM NUR HUSHAIN","M. RAID MAHRUS","NAFIS","RAFI RAMADHAN","REYNALDI MALIK IBRAHIM ALFARIDZI","WAFII FADHLURROHMAN"],
+      "Kelas 4 Benih Ulama": ["ANGGA PRATAMA PUTRA","MIKA RAHIEL YUSUF","MELDI NOVRIANSYAH","MARFEL SAPUTRA","PRAWIRO PUJO TUNGGAL JATI"],
+      "Kelas 4 Benih Pengusaha": ["KI AGUS MUHAMMAD ABDULLAH SHIDDIQ AGTSALI"],
+      "Kelas 1 Putri": ["PITRI RAMADANI","ADIBA AILA KHANZA","AISYAH NUR KHALIFAH","AISYAH NURUL AULIA","ANISYA SEPTIANI","DAFIA NAFLA SYAKIRA","DINA RUHAYAH","FITRAH KIRANA","INAYAH NOURAH ANINDYA","SHELENA","WINDY WINDARI","ASHIFA FITRI RAMADHONI"],
+      "Kelas 2 Putri": ["EARLYTA ARSYFA SALSABILA","GHENIS ANDIENTIAZ","GRINNETA NALANI PUTRI","JESSICA PUTRY AYRA","QELZA RAMADHANI ATH THAHIRAH","WILDA","NESSYA RAMADHANY"],
+      "Kelas 3 Putri": ["AMIRAH BALQIS RAHADATUL A'ISYAH","BILQIS NUR ANISAH","NYAYU MARLITSA ARDHANI"]
+    },
+    "Halqah Lughowiyah": {
+      "Kelas Abah": ["AHMAD MAULANA","AHMAD RIYADI","AKBAR PRAYOGA","ALIF MUHAMMAD YUSUF","ANDES AFENDRA","ANGGA PRATAMA PUTRA","KI AGUS MUHAMMAD ABDULLAH SHIDDIQ AGTSALI","BASRI AL HAZIQ ZULFAHMI","DANANG PRASDITYA SANTOSO","M. FAQIH HAFIDZALLAH","FEBRI GHALIH AL FAROBI","FALIZH DAFFA QATRUNNADA","HABIB RAMADHAN","MUHAMMAD ALLAM NUR HUSHAIN","M. AL FALAH","MARFEL SAPUTRA","MELDI NOVRIANSYAH","MIKA RAHIEL YUSUF","NAFIS","RAFI RAMADHAN","M. RAID MAHRUS","REYFAS RAMADHAN","RENAL MARTIN","ROHADIN FIRDAUS AL QAUSAR","M. XAVI NF","PRAWIRO PUJO TUNGGAL JATI"],
+    "Kelas Rahiel": ["NAUFAL AKBAR ALKHATIRI","NIZAM KABISAT","M. RIJALUL KAMIL","DAFFA AL MUSYARI","ALIF SAMUDRA","WAFII FADHLURROHMAN","EZA FEBRI AL FADZRI","M. ABIL IRWANSYAH","SYAHRUL RAMADHAN","HAFIDZ AL ROZI","HAFIDZ ALRIZKY","NAJMIHADI SYAUQII TAMAAM","IHZA TRINANDI","CAHYIS ISZAM","AHMAD FARHAAN","ARYA DIFA ALSYA","M. FADHIL BUANA","WAHYU REYDINATA","FAHRY AKBAR RAMDHANI","ALVIN HERFIANTINO","M. ARYA MAHDI WAFI EL-FAUZANI","RADEN AZAA PANCA PUTRA","FAUZAN IBNI JABAR","REZFY FAKHRYAZKA","M. FAISAL FIKRIANSYAH","QHEIZAN ALQIZA ARISDA"],
+    "Kelas Alvin": ["ADITYA PUTRA IBRAHIM","AIRLANGGA AZKA ABQORI","AQIELA MARSYAH","BRILLY HANDRIAN","DARREN ATHAYA","DZIKRI MUDHOFFAR","ELLENO QUTHBIE HERMAWAN","FADIL NURHALIM","GABRIEL AL FATIH","HADINATA SAPUTRA","MIKO VAJAR","M. ALMISKY PRATAMA","M. AQIL RIDHO","M. IZAM SAPUTRA","M. SYAKIR HUTABARAT","M. YASIR AL FAZAR JHIRA","M. ZIYAD ZHAZHA","RAFA"],
+    "Kelas Falah": ["RENAL MARTIN","FAHRIE OKTAVIRANO FITRIS","FAKHRI AL MUZAKKI","CANZA RYANDA HUTASUHUT","M. DIRGATAMA","LUTHFAN ADZAKI","FARAZH SAYYID PUTRA KENEGA","ZULFAKIH HAERUNNASIHIN","MUHAMAD YUSUF ARROSIYD","ROID AFDAL","MOHAMMAD IKHSAN HAIRULI","ZAHIR ZIBRAN","NABIL NAJMI","DEDI SETIADI","ANUGRAH PRATAMA","SATRIO ABIMAYU","TEGAR HIDAYAT","ABDULLAH MUKTI HAFIDZALLAH","ILHAM","ILHAM MUKMIN AL FARABI","JUANDA NUR ILHAM","RAKA SEPTIAN","M. FIRAAS AL INSYIROH","GHOZY FATURRAHMAN","REYNALDI MALIK IBRAHIM ALFARIDZI","M. USAMAH","MAHESA AULIA GIFFARI","DIKKI KURNIAWAN","VERY SYACH"],
+    "Kelas Meilisa": ["PITRI RAMADANI","ADIBA AILA KHANZA","AISYAH NUR KHALIFAH","AISYAH NURUL AULIA","ANISYA SEPTIANI","DAFIA NAFLA SYAKIRA","DINA RUHAYAH","FITRAH KIRANA","INAYAH NOURAH ANINDYA","SHELENA","WINDY WINDARI"],
+    "Kelas Fatimah": ["ASHIFA FITRI RAMADHONI","EARLYTA ARSYFA SALSABILA","GHENIS ANDIENTIAZ","GRINNETA NALANI PUTRI","JESSICA PUTRY AYRA","QELZA RAMADHANI ATH THAHIRAH","WILDA","NESSYA RAMADHANY","AMIRAH BALQIS RAHADATUL A'ISYAH","BILQIS NUR ANISAH","NYAYU MARLITSA ARDHANI"],
+    "Kelas Evita": ["PITRI RAMADANI","ADIBA AILA KHANZA","AISYAH NUR KHALIFAH","AISYAH NURUL AULIA","ANISYA SEPTIANI","DAFIA NAFLA SYAKIRA","DINA RUHAYAH","FITRAH KIRANA","INAYAH NOURAH ANINDYA","SHELENA","WINDY WINDARI","ASHIFA FITRI RAMADHONI","EARLYTA ARSYFA SALSABILA","GHENIS ANDIENTIAZ","GRINNETA NALANI PUTRI","JESSICA PUTRY AYRA","QELZA RAMADHANI ATH THAHIRAH","WILDA","NESSYA RAMADHANY","AMIRAH BALQIS RAHADATUL A'ISYAH","BILQIS NUR ANISAH","NYAYU MARLITSA ARDHANI"]
+  },
+    "Halqah Quraniyah": {
+      "Tahfiz Abah": ["M. AL FALAH", "MIKA RAHIEL YUSUF", "ANGGA PRATAMA PUTRA", "NIZAM KABISAT", "PRAWIRO PUJO TUNGGAL JATI", "MAHESA AULIA GIFFARI", "NAJMIHADI SYAUQII TAMAAM", "MARFEL SAPUTRA", "MELDI NOVRIANSYAH", "RENAL MARTIN", "AHMAD RIYADI", "ABDULLAH MUKTI HAFIDZALLAH", "AKBAR PRAYOGA", "ANDES AFENDRA", "BASRI AL HAZIQ ZULFAHMI", "CANZA RYANDA HUTASUHUT", "DAFFA AL MUSYARI", "DANANG PRASDITYA SANTOSO", "FAKHRI AL MUZAKKI", "FALIZH DAFFA QATRUNNADA", "FEBRI GHALIH AL FAROBI", "HAFIDZ AL ROZI", "HAFIDZ ALRIZKY", "ILHAM MUKMIN AL FARABI", "LUTHFAN ADZAKI", "DIKKI KURNIAWAN", "ROID AFDAL", "IHZA TRINANDI", "ILHAM", "KI AGUS MUHAMMAD ABDULLAH SHIDDIQ AGTSALI", "FAHRIE OKTAVIRANO FITRIS"],
+      "Tahfiz Alvin": ["AHMAD MAULANA", "ALIF MUHAMMAD YUSUF", "ARYA DIFA ALSYA", "FARAZH SAYYID PUTRA KENEGA", "GHOZY FATURRAHMAN", "M. FAQIH HAFIDZALLAH", "M. RIJALUL KAMIL", "MUHAMMAD ALLAM NUR HUSHAIN", "M. RAID MAHRUS", "NAFIS", "RAFI RAMADHAN", "REYNALDI MALIK IBRAHIM ALFARIDZI", "WAFII FADHLURROHMAN", "M. FADHIL BUANA", "M. FIRAAS AL INSYIROH", "M. XAVI NF", "NABIL NAJMI", "NAUFAL AKBAR ALKHATIRI", "QHEIZAN ALQIZA ARISDA", "REYFAS RAMADHAN", "ROHADIN FIRDAUS AL QAUSAR", "SATRIO ABIMAYU", "WAHYU REYDINATA", "ZAHIR ZIBRAN", "ZULFAKIH HAERUNNASIHIN", "HABIB RAMADHAN", "MUHAMAD YUSUF ARROSIYD", "VERY SYACH", "M. FAISAL FIKRIANSYAH", "TEGAR HIDAYAT"],
+      "Tahsin Faiq": ["DARREN ATHAYA", "M. AQIL RIDHO", "ALIF SAMUDRA", "M. ABIL IRWANSYAH", "FAUZAN IBNI JABAR", "M. IZAM SAPUTRA", "BRILLY HANDRIAN", "M. SYAKIR HUTABARAT", "DZIKRI MUDHOFFAR", "FADIL NURHALIM", "RAFA", "AIRLANGGA AZKA ABQORI", "M. YASIR AL FAZAR JHIRA", "AQIELA MARSYAH", "ADITYA PUTRA IBRAHIM"],
+      "Tahsin Khaizuran": ["REZFY FAKHRYAZKA", "ALVIN HERFIANTINO", "AHMAD FARHAAN", "DEDI SETIADI", "SYAHRUL RAMADHAN", "M. USAMAH", "ANUGRAH PRATAMA", "RAKA SEPTIAN", "CAHYIS ISZAM", "GABRIEL AL FATIH", "M. ZIYAD ZHAZHA", "ELLENO QUTHBIE HERMAWAN", "MOHAMMAD IKHSAN HAIRULI", "FAHRY AKBAR RAMDHANI"],
+      "Tahsin Fahmi": ["EZA FEBRI AL FADZRI", "M. ARYA MAHDI WAFI EL-FAUZANI", "RADEN AZAA PANCA PUTRA", "M. DIRGATAMA", "MIKO VAJAR", "M. ALMISKY PRATAMA", "HADINATA SAPUTRA", "JUANDA NUR ILHAM"],
+      "Tahfiz Fatimah": ["WILDA", "NESSYA RAMADHANY", "GHENIS ANDIENTIAZ", "JESSICA PUTRY AYRA", "NYAYU MARLITSA ARDHANI", "GRINNETA NALANI PUTRI", "AMIRAH BALQIS RAHADATUL A'ISYAH", "BILQIS NUR ANISAH", "QELZA RAMADHANI ATH THAHIRAH"],
+      "Tahsin Meilisa": ["PITRI RAMADANI", "ADIBA AILA KHANZA", "AISYAH NUR KHALIFAH", "AISYAH NURUL AULIA", "ANISYA SEPTIANI", "DAFIA NAFLA SYAKIRA", "DINA RUHAYAH", "FITRAH KIRANA", "INAYAH NOURAH ANINDYA", "SHELENA", "WINDY WINDARI", "ASHIFA FITRI RAMADHONI", "EARLYTA ARSYFA SALSABILA"]
+    }
+  };
+
+  // Set Tanggal Hari Ini secara otomatis
+  const today = new Date();
+  document.getElementById('tanggalUjian').valueAsDate = today;
+
+  // ======================
+  // LOGIKA AUTO SET TAHUN AKADEMIK, SEMESTER & TRIWULAN
+  // ======================
+  function autoSetAkademik() {
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1; // 1-12
+
+    let tahunAkademik = "";
+    let semester = "";
+    let triwulan = "";
+
+    // Mulai Tahun Ajaran baru di Juli
+    if (month >= 7) {
+      tahunAkademik = `${year}/${year + 1}`;
+      semester = "Ganjil";
+      if (month >= 7 && month <= 9) triwulan = "1";
+      else if (month >= 10 && month <= 12) triwulan = "2";
+    } else {
+      tahunAkademik = `${year - 1}/${year}`;
+      semester = "Genap";
+      if (month >= 1 && month <= 3) triwulan = "3";
+      else if (month >= 4 && month <= 6) triwulan = "4";
+    }
+
+    // Mengisi pilihan drop-down secara otomatis & memilih nilainya
+    const selTahun = document.getElementById('tahunAkademik');
+    selTahun.innerHTML = `<option value="${tahunAkademik}" selected>${tahunAkademik}</option>`;
+
+    const selSemester = document.getElementById('semester');
+    selSemester.innerHTML = `<option value="${semester}" selected>${semester}</option>`;
+
+    const selTriwulan = document.getElementById('triwulan');
+    selTriwulan.innerHTML = `<option value="${triwulan}" selected>Triwulan ${triwulan}</option>`;
+  }
+
+  // Load Mapel & Guru & Data Akademik saat halaman dibuka
+  window.onload = function() {
+    autoSetAkademik(); // Memanggil fungsi auto set
+
+    const selMapel = document.getElementById('mapel');
+    dataMapel.forEach(m => {
+      let opt = document.createElement('option');
+      opt.value = m; opt.textContent = m;
+      selMapel.appendChild(opt);
+    });
+
+    const selGuru = document.getElementById('guruPenguji');
+    dataGuru.forEach(g => {
+      let opt = document.createElement('option');
+      opt.value = g; opt.textContent = g;
+      selGuru.appendChild(opt);
+    });
+  };
+
+  /* === Update Pilihan Kelas Berdasarkan Kategori Halqah === */
+  window.updateKelas = function() {
+    const kategori = document.getElementById('kategoriHalqah').value;
+    const kelasSelect = document.getElementById('kelasKelompok');
+    kelasSelect.innerHTML = '<option value="">-- Pilih Kelas/Kelompok --</option>';
+    document.getElementById('nilaiSantriBody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:40px;font-style:italic;">Silakan lengkapi form di atas untuk memuat daftar santri.</td></tr>';
+
+    if(kategori && dataSantri[kategori]) {
+      const kelompokList = Object.keys(dataSantri[kategori]);
+      kelompokList.forEach(k => {
+        let opt = document.createElement('option');
+        opt.value = k; opt.textContent = k;
+        kelasSelect.appendChild(opt);
+      });
+    }
+  };
+
+  /* === Load Daftar Santri ke Tabel === */
+  window.loadSantri = function() {
+    const kategori = document.getElementById('kategoriHalqah').value;
+    const kelas = document.getElementById('kelasKelompok').value;
+    const tbody = document.getElementById('nilaiSantriBody');
+    tbody.innerHTML = '';
+
+    if(!kategori || !kelas) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:40px;font-style:italic;">Silakan lengkapi form di atas untuk memuat daftar santri.</td></tr>';
+      return;
+    }
+
+    const listSantri = dataSantri[kategori][kelas] || [];
+    
+    if(listSantri.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#ef4444;padding:40px;">Tidak ada data santri di kelas ini.</td></tr>';
+      return;
+    }
+
+    listSantri.forEach((nama, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align: center; color: var(--text-muted);">${i+1}</td>
+        <td class="santri-name">${nama}</td>
+        <td><input type="number" min="0" max="100" class="input-syafawi" oninput="hitungSatuBaris(this)" data-nama="${nama}" placeholder="0"></td>
+        <td><input type="number" min="0" max="100" class="input-tahriri" oninput="hitungSatuBaris(this)" placeholder="0"></td>
+        <td class="nilai-total">0.0</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  };
+
+  /* === Fungsi Hitung Total Otomatis per Baris === */
+  window.hitungSatuBaris = function(element) {
+    const tr = element.closest('tr');
+    let syafawi = parseFloat(tr.querySelector('.input-syafawi').value) || 0;
+    let tahriri = parseFloat(tr.querySelector('.input-tahriri').value) || 0;
+
+    // Batasi nilai max 100
+    if(syafawi > 100) { syafawi = 100; tr.querySelector('.input-syafawi').value = 100; }
+    if(tahriri > 100) { tahriri = 100; tr.querySelector('.input-tahriri').value = 100; }
+
+    const total = (syafawi * 0.70) + (tahriri * 0.30);
+    tr.querySelector('.nilai-total').innerText = total.toFixed(1);
+  };
+
+  /* === Simpan Data ke Firebase === */
+  window.simpanNilaiTriwulan = async function() {
+    const btnSave = document.querySelector('.btn-save');
+    
+    // Validasi Kolom Baru
+    const tahunAkademik = document.getElementById('tahunAkademik').value;
+    const semester = document.getElementById('semester').value;
+    const triwulan = document.getElementById('triwulan').value;
+    
+    const kategori = document.getElementById('kategoriHalqah').value;
+    const kelas = document.getElementById('kelasKelompok').value;
+    const mapel = document.getElementById('mapel').value;
+    const guru = document.getElementById('guruPenguji').value;
+    const materi = document.getElementById('materiUjian').value.trim();
+    const tanggal = document.getElementById('tanggalUjian').value;
+
+    if(!tahunAkademik || !semester || !triwulan || !kategori || !kelas || !mapel || !guru || !materi || !tanggal) {
+      alert("⚠️ Harap lengkapi semua data form (Kategori, Kelas, Mapel, Penguji, Materi) sebelum menyimpan.");
+      return;
+    }
+
+    const barisSantri = document.querySelectorAll('#nilaiSantriBody tr');
+    // Cek apakah tabel kosong
+    if(barisSantri.length === 1 && barisSantri[0].cells.length === 1) return;
+
+    btnSave.innerHTML = `<span>⏳ Menyimpan...</span>`;
+    btnSave.disabled = true;
+
+    const nilaiRef = ref(db, 'cahaya_app/nilai_ujian_triwulan');
+    
+    try {
+      // 1. AMBIL SEMUA DATA LAMA DULU
+      const snapshot = await get(nilaiRef);
+      const dataLama = snapshot.exists() ? snapshot.val() : {};
+      
+      let count = 0;
+      let promises = [];
+
+      for(let tr of barisSantri) {
+        const nama = tr.querySelector('.input-syafawi').getAttribute('data-nama');
+        const syafawiStr = tr.querySelector('.input-syafawi').value;
+        const tahririStr = tr.querySelector('.input-tahriri').value;
+        
+        const syafawi = parseFloat(syafawiStr) || 0;
+        const tahriri = parseFloat(tahririStr) || 0;
+        const total = parseFloat(tr.querySelector('.nilai-total').innerText) || 0;
+
+        // Hanya proses jika ada nilai yang diinput di salah satu kotak
+        if(syafawiStr !== "" || tahririStr !== "") {
+          
+          // 2. CEK & HAPUS JIKA ADA DATA DUPLIKAT SEBELUMNYA
+          for (let key in dataLama) {
+            let n = dataLama[key];
+            if (n.nama_santri === nama && 
+                n.tahun_akademik === tahunAkademik && 
+                n.semester === semester && 
+                n.triwulan === triwulan && 
+                n.mata_pelajaran === mapel) {
+                  // Hapus data lama
+                  promises.push(remove(ref(db, `cahaya_app/nilai_ujian_triwulan/${key}`)));
+            }
+          }
+
+          // 3. SIAPKAN DATA BARU UNTUK DISIMPAN
+          const dataUjian = {
+            tahun_akademik: tahunAkademik, 
+            semester: semester,            
+            triwulan: triwulan,            
+            nama_santri: nama,
+            kategori_halqah: kategori,
+            kelas_kelompok: kelas,
+            mata_pelajaran: mapel,
+            materi_ujian: materi,
+            guru_penguji: guru,
+            tanggal_ujian: tanggal,
+            nilai_syafawi: syafawi,
+            nilai_tahriri: tahriri,
+            nilai_total: total,
+            timestamp: new Date().toISOString()
+          };
+          promises.push(push(nilaiRef, dataUjian));
+          count++;
+        }
+      }
+
+      // Tunggu semua proses hapus dan simpan selesai
+      await Promise.all(promises);
+
+      if(count > 0) {
+        alert(`✅ Alhamdulillah, ${count} data nilai santri berhasil disimpan!`);
+        // Reset form agar tabel bersih lagi
+        document.getElementById('materiUjian').value = "";
+        document.getElementById('kategoriHalqah').value = "";
+        updateKelas(); 
+      } else {
+        alert("⚠️ Tidak ada nilai yang diinput. Silakan isi minimal satu nilai santri.");
+      }
+    } catch(error) {
+      alert("Terjadi kesalahan saat menyimpan: " + error.message);
+    } finally {
+      btnSave.innerHTML = `<span>💾 Simpan Nilai</span>`;
+      btnSave.disabled = false;
+    }
+  };
+</script>
+</body>
+</html>

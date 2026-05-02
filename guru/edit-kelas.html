@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Halaqah - Cahaya App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  
+  <style>
+    /* CSS Kustom Ringan Khusus Kotak Transfer Santri */
+    .add-santri-box { 
+      background: #f8fafc; padding: 20px; border-radius: var(--radius-md); 
+      margin-bottom: 30px; border: 1px dashed var(--gold-main); 
+      display: flex; gap: 15px; align-items: flex-end; 
+    }
+    .add-santri-box .form-group { margin-bottom: 0; flex: 1; }
+    
+    .list-container { 
+      border: 2px solid var(--input-border); border-radius: var(--radius-md); 
+      height: 380px; overflow-y: auto; background: #f8fafc; padding: 12px; 
+      margin-top: 10px;
+    }
+    .santri-item { 
+      background: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 8px; 
+      font-size: 0.85rem; font-weight: 600; border: 1px solid var(--input-border); 
+      display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; 
+    }
+    .santri-name { cursor: pointer; flex: 1; color: var(--navy-dark); }
+    .santri-name:hover { color: var(--gold-main); transform: translateX(5px); }
+    
+    .btn-delete { color: #ef4444; cursor: pointer; padding: 5px; opacity: 0.4; transition: 0.3s; font-size: 1.1rem; }
+    .btn-delete:hover { opacity: 1; transform: scale(1.2); }
+
+    .btn-outline { background: white; color: var(--navy-dark); border: 2px solid var(--navy-dark); }
+    .btn-outline:hover { background: #f1f5f9; transform: translateY(-3px); }
+
+    /* LOADING OVERLAY */
+    #loadingOverlay { 
+      position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); 
+      z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+      color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; 
+    }
+
+    @media (max-width: 768px) { 
+      .add-santri-box { flex-direction: column; align-items: stretch; } 
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1s infinite alternate ease-in-out;">⚙️</div>
+  <div style="font-weight: 700;">Menyelaraskan Data Cloud...</div>
+</div>
+
+<main class="cahaya-container">
+  <div class="cahaya-card">
+    <!-- Judul Disesuaikan agar ke tengah -->
+    <h2 class="cahaya-title" style="text-align: center; border-left: none; padding-left: 0; margin-bottom: 5px;">
+      ⚙️ Manajemen Anggota Halaqah
+    </h2>
+    <p style="text-align:center; color:#10b981; font-weight:600; margin-bottom:30px; font-size:0.85rem;">
+      Terkoneksi ke Database Cloud
+    </p>
+
+    <div class="form-group">
+      <label>1. Pilih Rumpun Kelas</label>
+      <select class="form-control" id="selRumpun" onchange="loadDaftarKelas()">
+        <option value="">-- Pilih Rumpun --</option>
+        <option value="Halqah Ilmiyah">Halqah Ilmiyah</option>
+        <option value="Halqah Lughowiyah">Halqah Lughowiyah</option>
+        <option value="Halqah Quraniyah">Halqah Quraniyah</option>
+      </select>
+    </div>
+
+    <div class="add-santri-box">
+      <div class="form-group">
+        <label>Tambah Santri Baru ke Kelas Asal</label>
+        <input type="text" class="form-control" id="namaBaru" placeholder="Masukkan nama lengkap santri..." onkeypress="if(event.key === 'Enter') tambahSantri()">
+      </div>
+      <button class="btn-cahaya btn-gold" style="width: auto; padding: 14px 25px;" onclick="tambahSantri()">➕ Tambah</button>
+    </div>
+
+    <!-- MENGGUNAKAN GRID-2 DARI MASTER THEME -->
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Kelas Asal</label>
+        <select class="form-control" id="selAsal" onchange="renderSantri('Asal')"><option value="">-- Pilih Kelas --</option></select>
+        <div class="list-container" id="boxAsal"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Kelas Tujuan</label>
+        <select class="form-control" id="selTujuan" onchange="renderSantri('Tujuan')"><option value="">-- Pilih Kelas --</option></select>
+        <div class="list-container" id="boxTujuan"></div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top: 30px;">
+      <button id="btnSimpan" class="btn-cahaya" onclick="simpanKeServer()">💾 TERAPKAN KE SERVER</button>
+      <button class="btn-cahaya btn-outline" onclick="exportDataJS()">📥 DOWNLOAD BACKUP DATA</button>
+    </div>
+  </div>
+</main>
+
+<script src="../js/data-pusat.js"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let localDataSantri = {};
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
+      
+      if (snapshot.exists()) {
+        const cloudData = snapshot.val();
+        localDataSantri = cloudData.halqah || {};
+      } else {
+        // AUTO-MIGRASI
+        localDataSantri = window.dataSantri || {};
+        const baseData = {
+          halqah: localDataSantri,
+          guru: window.dataGuru || [],
+          mapel: window.dataMapel || []
+        };
+        await set(ref(db, 'cahaya_app/master_akademik'), baseData);
+        console.log("Migrasi awal data akademik ke Firebase berhasil!");
+      }
+
+    } catch (err) {
+      alert("Gagal terhubung ke database: " + err.message);
+    }
+
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  });
+
+  window.loadDaftarKelas = function() {
+    const rumpun = document.getElementById('selRumpun').value;
+    const asal = document.getElementById('selAsal');
+    const tujuan = document.getElementById('selTujuan');
+    
+    asal.innerHTML = tujuan.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    document.getElementById('boxAsal').innerHTML = '';
+    document.getElementById('boxTujuan').innerHTML = '';
+    
+    if (!rumpun || !localDataSantri[rumpun]) return;
+    
+    const daftarKelas = Object.keys(localDataSantri[rumpun]);
+    daftarKelas.forEach(namaKelas => {
+      asal.innerHTML += `<option value="${namaKelas}">${namaKelas}</option>`;
+      tujuan.innerHTML += `<option value="${namaKelas}">${namaKelas}</option>`;
+    });
+  };
+
+  window.renderSantri = function(posisi) {
+    const rumpun = document.getElementById('selRumpun').value;
+    const namaKelas = document.getElementById('sel' + posisi).value;
+    const wadah = document.getElementById('box' + posisi);
+    
+    wadah.innerHTML = '';
+    if (!rumpun || !namaKelas) return;
+    
+    const list = localDataSantri[rumpun][namaKelas] || [];
+    list.sort().forEach(nama => {
+      const item = document.createElement('div');
+      item.className = 'santri-item';
+      item.innerHTML = `
+        <span class="santri-name" onclick="pindahkan('${nama}', '${posisi}')">${nama}</span>
+        <span class="btn-delete" onclick="hapusSantri('${nama}', '${posisi}')" title="Hapus dari kelas">🗑️</span>
+      `;
+      wadah.appendChild(item);
+    });
+  };
+
+  window.pindahkan = function(nama, dariMana) {
+    const rumpun = document.getElementById('selRumpun').value;
+    const kAsal = document.getElementById('selAsal').value;
+    const kTujuan = document.getElementById('selTujuan').value;
+    
+    if (!kAsal || !kTujuan) return alert("Pilih Kelas Asal dan Tujuan dulu!");
+    if (kAsal === kTujuan) return alert("Klik nama untuk memindahkan ke kotak seberang.");
+    
+    const sumber = dariMana === 'Asal' ? kAsal : kTujuan;
+    const target = dariMana === 'Asal' ? kTujuan : kAsal;
+    
+    localDataSantri[rumpun][sumber] = localDataSantri[rumpun][sumber].filter(n => n !== nama);
+    localDataSantri[rumpun][target].push(nama);
+    
+    renderSantri('Asal'); 
+    renderSantri('Tujuan');
+  };
+
+  window.tambahSantri = function() {
+    const rumpun = document.getElementById('selRumpun').value;
+    const kAsal = document.getElementById('selAsal').value;
+    const nama = document.getElementById('namaBaru').value.trim().toUpperCase();
+    
+    if (!rumpun || !kAsal) return alert("Pilih Rumpun dan Kelas Asal terlebih dahulu!");
+    if (!nama) return alert("Masukkan nama santri!");
+    
+    if (!localDataSantri[rumpun][kAsal]) localDataSantri[rumpun][kAsal] = [];
+    if (localDataSantri[rumpun][kAsal].includes(nama)) return alert("Nama tersebut sudah ada di kelas ini.");
+    
+    localDataSantri[rumpun][kAsal].push(nama);
+    document.getElementById('namaBaru').value = '';
+    
+    renderSantri('Asal');
+  };
+
+  window.hapusSantri = function(nama, posisi) {
+    if (!confirm(`Hapus ${nama} dari kelas ini?`)) return;
+    
+    const rumpun = document.getElementById('selRumpun').value;
+    const namaKelas = document.getElementById('sel' + posisi).value;
+    
+    localDataSantri[rumpun][namaKelas] = localDataSantri[rumpun][namaKelas].filter(n => n !== nama);
+    renderSantri(posisi);
+  };
+
+  window.simpanKeServer = async function() {
+    const btn = document.getElementById('btnSimpan');
+    btn.innerHTML = "⏳ MENGUNGGAH KE CLOUD...";
+    btn.disabled = true;
+
+    try {
+      await set(ref(db, 'cahaya_app/master_akademik/halqah'), localDataSantri);
+      alert("✅ BERHASIL DISIMPAN KE SERVER!\nSeluruh fitur akademik sekarang menggunakan data terbaru ini.");
+    } catch (err) {
+      alert("Gagal menyimpan ke server: " + err.message);
+    } finally {
+      btn.innerHTML = "💾 TERAPKAN KE SERVER";
+      btn.disabled = false;
+    }
+  };
+
+  window.exportDataJS = function() {
+    const dataStr = "window.dataSantri = " + JSON.stringify(localDataSantri, null, 2) + ";";
+    const blob = new Blob([dataStr], { type: "text/javascript" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = "backup-akademik.js"; a.click();
+  };
+</script>
+</body>
+</html>
