@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CAHAYA APP - Buku Induk Rekam Jejak</title>
+  
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  
+  <style>
+    .header-riwayat {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      padding: 30px 40px; border-radius: var(--radius-lg); color: white;
+      margin-bottom: 25px; box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
+      position: relative; overflow: hidden;
+    }
+    .header-riwayat::after {
+      content: '📚'; position: absolute; right: 20px; top: -10px;
+      font-size: 8rem; opacity: 0.1; pointer-events: none;
+    }
+    .header-riwayat h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold-light); margin-bottom: 5px; }
+
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+    
+    /* Warna Status & Kategori */
+    .status-pending { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; animation: pulse 2s infinite; }
+    .status-selesai { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    
+    .kat-bimbingan { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .kat-ringan { background: #fef08a; color: #b45309; border: 1px solid #fde047; }
+    .kat-sedang { background: #fed7aa; color: #c2410c; border: 1px solid #fdba74; }
+    .kat-berat { background: #fecaca; color: #b91c1c; border: 1px solid #fca5a5; }
+    .kat-kritis { background: #7f1d1d; color: #fecaca; border: 1px solid #ef4444; }
+    .kat-bebas { background: #dcfce7; color: #047857; border: 1px solid #6ee7b7; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 5px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    /* Modal Form Dasar */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; padding: 20px; animation: fadeIn 0.3s ease; }
+    .modal-content { background: white; width: 100%; max-width: 900px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; }
+    .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--input-border); background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-family: 'Playfair Display', serif; color: var(--navy-dark); font-size: 1.5rem; margin: 0; }
+    .modal-body { padding: 25px; overflow-y: auto; flex: 1; }
+
+    /* Modal Z-Index Stacking (Agar modal bisa bertumpuk) */
+    #modalBukuSantri { z-index: 2000; }
+    #modalDetailArsip { z-index: 2500; }
+    #modalPenindakan { z-index: 2500; }
+
+    /* Custom Mini Tabs di Dalam Modal Buku Santri */
+    .mini-tab-nav { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+    .mini-tab-btn { padding: 8px 16px; border-radius: 50px; border: 1px solid #e2e8f0; background: white; font-size: 0.7rem; font-weight: 800; cursor: pointer; white-space: nowrap; transition: 0.2s; color: #64748b; text-transform: uppercase; }
+    .mini-tab-btn.active { background: var(--navy-dark); color: white; border-color: var(--navy-dark); }
+    .mini-tab-btn .count { background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 10px; margin-left: 5px; font-size: 0.65rem; }
+    .mini-tab-btn.active .count { background: rgba(255,255,255,0.2); }
+
+    /* Desain Grid Info Rekam Medis */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .info-box { background: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .info-box span { display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+    .info-box strong { font-size: 1rem; color: var(--navy-dark); }
+
+    .section-title { font-size: 0.9rem; font-weight: 800; color: var(--navy-dark); border-bottom: 2px dashed #cbd5e1; padding-bottom: 5px; margin: 20px 0 10px 0; text-transform: uppercase; }
+    .data-text { background: #fff; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; font-size: 0.9rem; line-height: 1.5; color: #334155; margin-bottom: 15px; }
+    .nfdk-tag { display: inline-block; background: #e2e8f0; color: #334155; font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 4px; margin-right: 5px; margin-bottom: 5px; }
+
+    /* Form Penindakan Style */
+    .nfdk-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 20px; transition: 0.3s; }
+    .nfdk-title { font-size: 0.85rem; font-weight: 800; color: var(--navy-dark); border-bottom: 2px dashed #cbd5e1; padding-bottom: 5px; margin-bottom: 10px; }
+    .readonly-box { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 15px; color: var(--navy-dark); border-left: 4px solid var(--navy-light); }
+    .alert-bebas { display: none; background: #ecfdf5; border: 1px solid #34d399; padding: 15px; border-radius: 8px; color: #065f46; margin-bottom: 15px; font-size: 0.85rem; font-weight: 600; }
+    .alert-eskalasi { display: none; color: #b91c1c; font-size: 0.8rem; margin-top: 8px; line-height: 1.4; background: #fef2f2; padding: 10px; border-radius: 6px; border: 1px dashed #fca5a5; }
+
+    #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">📚</div>
+  <div style="font-weight: 700;">Menarik Seluruh Arsip Santri...</div>
+</div>
+
+<main class="cahaya-container">
+  <div class="header-riwayat">
+    <h1>Buku Induk Rekam Jejak</h1>
+    <p>Pilih nama santri untuk melihat seluruh riwayat kasus, dan tindaklanjuti kasus yang masih berstatus pending.</p>
+  </div>
+
+  <div class="cahaya-card">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; flex-wrap: wrap; gap: 15px;">
+      <h3 style="color: var(--navy-dark); margin: 0;">Daftar Santri Cahaya</h3>
+      <input type="text" class="form-control" id="searchSantri" placeholder="🔍 Cari nama santri..." style="margin-bottom: 0; max-width: 300px;" onkeyup="renderDaftarSantri()">
+    </div>
+
+    <div class="table-responsive">
+      <table class="cahaya-table">
+        <thead>
+          <tr>
+            <th width="5%" style="text-align: center;">No</th>
+            <th width="45%">Nama Lengkap Santri</th>
+            <th width="30%" style="text-align: center;">Status Catatan Indisipliner</th>
+            <th width="20%" style="text-align: center;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tabelDaftarSantri"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL 1: BUKU KASUS SPESIFIK SANTRI -->
+<div id="modalBukuSantri" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h3 id="bsNamaSantri">Nama Santri</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 5px 0 0 0;">Riwayat Pelanggaran & Kedisiplinan</p>
+      </div>
+      <button style="background:none; border:none; font-size:1.5rem; cursor:pointer;" onclick="tutupModal('modalBukuSantri')">✕</button>
+    </div>
+    <div class="modal-body" style="background: #f8fafc;">
+      
+      <!-- TAMBAHAN TAB KLASIFIKASI -->
+      <div class="mini-tab-nav" id="miniTabKasus">
+        <button class="mini-tab-btn active" onclick="filterBukuSantri('ALL', this)">SEMUA <span class="count" id="c-all">0</span></button>
+        <button class="mini-tab-btn" onclick="filterBukuSantri('PENDING', this)">BELUM DIPROSES <span class="count" id="c-pending">0</span></button>
+        <button class="mini-tab-btn" onclick="filterBukuSantri('Ringan', this)">RINGAN <span class="count" id="c-ringan">0</span></button>
+        <button class="mini-tab-btn" onclick="filterBukuSantri('Sedang', this)">SEDANG <span class="count" id="c-sedang">0</span></button>
+        <button class="mini-tab-btn" onclick="filterBukuSantri('Berat', this)">BERAT <span class="count" id="c-berat">0</span></button>
+        <button class="mini-tab-btn" onclick="filterBukuSantri('Kritis', this)">KRITIS <span class="count" id="c-kritis">0</span></button>
+        <button class="mini-tab-btn" onclick="filterBukuSantri('TIDAK TERBUKTI', this)">TIDAK TERBUKTI <span class="count" id="c-bebas">0</span></button>
+      </div>
+
+      <div class="table-responsive" style="background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px;">
+        <table class="cahaya-table">
+          <thead>
+            <tr>
+              <th width="15%">Tanggal</th>
+              <th width="55%">Deskripsi Kasus / Pelanggaran</th>
+              <th width="15%" style="text-align: center;">Status / Kategori</th>
+              <th width="15%" style="text-align: center;">Aksi / Detail</th>
+            </tr>
+          </thead>
+          <tbody id="tabelRiwayatSantri">
+            <!-- Diisi dari JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 2: DETAIL ARSIP (Kasus Selesai) -->
+<div id="modalDetailArsip" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h3 id="dNamaSantri">Nama Santri</h3>
+        <span id="dKategoriAkhir" class="badge" style="margin-top: 5px;">Kategori</span>
+      </div>
+      <button style="background:none; border:none; font-size:1.5rem; cursor:pointer;" onclick="tutupModal('modalDetailArsip')">✕</button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="info-grid">
+        <div class="info-box">
+          <span>Tanggal Kejadian / Laporan</span>
+          <strong id="dTanggalKejadian">-</strong>
+        </div>
+        <div class="info-box">
+          <span>Waktu Sidang Konselor</span>
+          <strong id="dWaktuKonseling">-</strong>
+        </div>
+        <div class="info-box">
+          <span>Konselor Penindak</span>
+          <strong id="dKonselor">-</strong>
+        </div>
+        <div class="info-box" id="boxPoin" style="background: #fee2e2; border-color: #fca5a5;">
+          <span style="color: #b91c1c;">Poin Sanksi / Restitusi</span>
+          <strong id="dPoin" style="color: #991b1b; font-size: 1.2rem;">0 Poin</strong>
+        </div>
+      </div>
+
+      <div class="section-title">1. Rincian Laporan Awal (Sumber)</div>
+      <div class="data-text" style="background: #f8fafc;">
+        <div style="font-size: 0.8rem; color: var(--navy-dark); font-weight: bold; margin-bottom: 5px;" id="dSumber">Sumber Laporan</div>
+        <div id="dDeskripsiAwal">Deskripsi Laporan</div>
+      </div>
+
+      <div id="areaTabayyunArsip">
+        <div class="section-title">2. Hasil Tabayyun & Indikator Latar Belakang (N-F-D-K)</div>
+        <div style="margin-bottom: 10px;" id="dNFDK"></div>
+        <div class="data-text">
+          <b>Uraian Konselor:</b><br>
+          <span id="dUraianLanjutan"></span><br><br>
+          <b>Catatan Psikologis & Sikap:</b><br>
+          <span id="dCatatanPsikologis"></span>
+        </div>
+
+        <div class="section-title">3. Proses Pembinaan & Tindak Lanjut</div>
+        <div class="data-text">
+          <b>Pendekatan & Dialog Pembinaan:</b><br>
+          <span id="dPembinaanArsip"></span><br><br>
+          <b>Konsekuensi Edukatif / Komitmen:</b><br>
+          <span id="dTindakLanjutArsip"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 3: FORM PENINDAKAN (Untuk Kasus Pending) -->
+<div id="modalPenindakan" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Form Penindakan & Konseling (Rahasia)</h3>
+      <button style="background:none; border:none; font-size:1.5rem; cursor:pointer;" onclick="tutupModal('modalPenindakan')">✕</button>
+    </div>
+    <div class="modal-body">
+      
+      <!-- DATA OTOMATIS DARI SUMBER (READONLY) -->
+      <div class="readonly-box">
+        <div style="font-size: 0.75rem; color: #64748b; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">Rincian Laporan Awal (Tidak Bisa Diedit):</div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 5px;">
+          <span style="font-weight: bold; font-size: 1.1rem;" id="rSantri">Nama Santri</span>
+          <span style="font-size: 0.85rem;" id="rTanggal">Tanggal</span>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: bold; color: var(--navy-dark);" id="rSumber">Sumber</div>
+        <div style="font-size: 0.95rem; margin-top: 5px; line-height: 1.5;" id="rKasus">Deskripsi pelanggaran/absensi...</div>
+        
+        <input type="hidden" id="rDbPath"> 
+        <input type="hidden" id="rIsStringData">
+        <input type="hidden" id="rOriginalString">
+        <input type="hidden" id="rPoinDipotongAwal">
+        <input type="hidden" id="rSumberTipe"> 
+      </div>
+
+      <div class="grid-2" style="align-items: center;">
+        <div class="form-group">
+          <label>Kategori Evaluasi Akhir</label>
+          <select class="form-control" id="fKategoriAkhir" style="font-weight: bold; color: var(--navy-dark); font-size: 1rem; padding: 10px;" onchange="toggleBebasTuduhan(); sesuaikanPoinBaku();">
+            <option value="Bimbingan Rutin">Bimbingan Rutin</option>
+            <option value="Pelanggaran Ringan">Pelanggaran Ringan</option>
+            <option value="Pelanggaran Sedang">Pelanggaran Sedang</option>
+            <option value="Pelanggaran Berat">Pelanggaran Berat</option>
+            <option value="Pelanggaran Kritis">Pelanggaran Kritis (Lapor Direktur)</option>
+            <option value="TIDAK TERBUKTI" style="background: #dcfce7; color: #166534; font-weight: bold;">TIDAK TERBUKTI (BEBAS DARI TUDUHAN)</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="areaPoinMinus" style="display: none;">
+          <label>Pengurangan Poin Baru (-)</label>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="number" class="form-control" id="fPoinMinus" value="0" style="color: #dc2626; font-weight: bold; font-size: 1rem;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.2;">*Otomatis masuk Gamifikasi</span>
+          </div>
+          <div id="infoEskalasi" class="alert-eskalasi">
+            ⚠️ <b>ESKALASI KASUS:</b> Kasus absensi ini meningkat menjadi pelanggaran. Sistem akan memutihkan poin absen awal dan menggantinya dengan potongan poin di atas.
+          </div>
+        </div>
+      </div>
+
+      <div id="alertBebas" class="alert-bebas">
+        ✨ <b>SANTRI DINYATAKAN BEBAS DARI TUDUHAN!</b><br>Jika ada poin yang telanjur dipotong oleh sistem absensi, sistem akan otomatis menyuntikkan poin pemulihan (restitusi) ke Buku Gamifikasi Naqib.
+      </div>
+
+      <div class="nfdk-box" id="areaNFDK">
+        <div class="nfdk-title">🎯 Indikator Penilaian Latar Belakang (N-F-D-K)</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.7rem;">Niat (N)</label>
+            <select class="form-control" id="nfdk_n" onchange="kalkulasiKategori()" style="font-size: 0.8rem; padding: 5px;">
+              <option value="0">Tidak Sengaja / Lalai</option>
+              <option value="1">Setengah Sadar / Ikut</option>
+              <option value="3">Sengaja & Terencana</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.7rem;">Frekuensi (F)</label>
+            <select class="form-control" id="nfdk_f" onchange="kalkulasiKategori()" style="font-size: 0.8rem; padding: 5px;">
+              <option value="0">Pertama Kali</option>
+              <option value="1">Berulang</option>
+              <option value="3">Berpola (Kebiasaan)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.7rem;">Dampak (D)</label>
+            <select class="form-control" id="nfdk_d" onchange="kalkulasiKategori()" style="font-size: 0.8rem; padding: 5px;">
+              <option value="0">Dampak Pribadi</option>
+              <option value="1">Sosial Terbatas</option>
+              <option value="3">Dampak Luas (Trauma)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.7rem;">Kondisi (K)</label>
+            <select class="form-control" id="nfdk_k" onchange="kalkulasiKategori()" style="font-size: 0.8rem; padding: 5px;">
+              <option value="0">Normal</option>
+              <option value="-1">Kondisi Khusus/Psikologis</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label id="lblUraian">Uraian Lanjutan (Hasil Tabayyun Konselor)</label>
+        <textarea class="form-control" id="fUraian" rows="2" placeholder="Contoh: Setelah ditanya, santri mengaku..."></textarea>
+      </div>
+      <div class="form-group" id="areaPembinaan">
+        <label>Proses Dialog & Pembinaan</label>
+        <textarea class="form-control" id="fPembinaan" rows="3" placeholder="Contoh: Dilakukan pendekatan 5 Tahap..."></textarea>
+      </div>
+      <div class="form-group" id="areaTindakLanjut">
+        <label>Tindak Lanjut & Konsekuensi Edukatif</label>
+        <textarea class="form-control" id="fTindakLanjut" rows="2" placeholder="Contoh: Menulis komitmen..."></textarea>
+      </div>
+      <div class="form-group" id="areaCatatan">
+        <label>Catatan Psikologis / Sikap Santri</label>
+        <input type="text" class="form-control" id="fCatatan" placeholder="Contoh: Santri jujur dan kooperatif.">
+      </div>
+
+      <button class="btn-cahaya btn-gold" id="btnSimpanKonseling" style="margin-top: 10px;" onclick="simpanPenindakan()">💾 Simpan & Tandai "SUDAH KONSELING"</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, push, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let daftarSemuaSantri = [];
+  let seluruhJejakKasus = [];
+  let currentSantriBuku = ""; // Menyimpan state santri yang sedang dibuka bukunya
+  const currentUser = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await tarikDataSuper();
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  });
+
+  // ========================================================
+  // TARIK DATA SUPER (GABUNGAN SEMUA SUMBER)
+  // ========================================================
+  async function tarikDataSuper() {
+    try {
+      seluruhJejakKasus = [];
+      let tempSetSantri = new Set();
+
+      // 1. TARIK MASTER SANTRI
+      const snapHalqah = await get(ref(db, 'cahaya_app/master_akademik/halqah'));
+      const dataHalqah = snapHalqah.val() || {};
+      for(let rumpun in dataHalqah) {
+        for(let kelas in dataHalqah[rumpun]) {
+          let murid = dataHalqah[rumpun][kelas] || [];
+          murid.forEach(m => tempSetSantri.add(m));
+        }
+      }
+
+      // 2. TARIK BUKU KASUS KONSELOR (SELESAI)
+      const snapKasus = await get(ref(db, 'cahaya_app/buku_kasus_konselor'));
+      const dataKasus = snapKasus.val() || {};
+      for(let key in dataKasus) {
+         let d = dataKasus[key];
+         tempSetSantri.add(d.santri);
+         seluruhJejakKasus.push({
+            ...d, 
+            id: key, 
+            tipeData: 'SELESAI',
+            deskripsiLengkap: `<b>${d.kategoriAkhir.toUpperCase()}:</b><br><span style="font-size:0.8rem;color:#475569;">${d.uraianLanjutan || d.deskripsiAwal}</span>`
+         });
+      }
+
+      // 3. TARIK ADUAN ASRAMA (PENDING)
+      const snapPel = await get(ref(db, 'cahaya_app/log_lapor_inisiatif'));
+      const dataPel = snapPel.val() || {};
+      for(let key in dataPel) {
+        let d = dataPel[key];
+        if(d.tipe === 'Lapor Pelanggaran' && d.statusKonseling !== 'SUDAH KONSELING') {
+          tempSetSantri.add(d.dilaporkan);
+          seluruhJejakKasus.push({
+            id: key,
+            dbPath: `cahaya_app/log_lapor_inisiatif/${key}`,
+            isStringData: false,
+            sumberBadge: 'ADUAN ASRAMA',
+            sumberTipe: 'PELANGGARAN',
+            tipeData: 'PENDING',
+            santri: d.dilaporkan,
+            tanggalKejadian: d.waktu ? d.waktu.substring(0,10) : '',
+            deskripsiLengkap: `<b>ADUAN PELANGGARAN:</b><br><span style="font-size:0.8rem;color:#475569;">${d.keterangan || '-'}</span>`,
+            deskripsiOri: d.keterangan || '-',
+            pelapor: d.naqibPendata || 'Naqib Asrama',
+            poinDipotong: 0
+          });
+        }
+      }
+
+      // 4. TARIK ABSENSI ASRAMA (PENDING)
+      const snapAsr = await get(ref(db, 'cahaya_app/absensi_program_harian'));
+      const dataAsr = snapAsr.val() || {};
+      for(let key in dataAsr) {
+        let doc = dataAsr[key];
+        if(doc.data && Array.isArray(doc.data)) {
+           doc.data.forEach((item, index) => {
+              let statusLower = (item.status || '').toLowerCase();
+              if ((statusLower === 'alfa' || statusLower === 'terlambat') && item.statusKonseling !== 'SUDAH KONSELING') {
+                 let tgl = doc.tanggal || new Date().toISOString().substring(0,10);
+                 tempSetSantri.add(item.nama);
+                 seluruhJejakKasus.push({
+                    id: `ASR-${key}-${index}`,
+                    dbPath: `cahaya_app/absensi_program_harian/${key}/data/${index}`,
+                    isStringData: false,
+                    sumberBadge: 'ABSENSI ASRAMA',
+                    sumberTipe: 'ABSENSI',
+                    tipeData: 'PENDING',
+                    santri: item.nama,
+                    tanggalKejadian: tgl,
+                    deskripsiLengkap: `<b>ABSENSI: ${item.status.toUpperCase()}</b> pada kegiatan ${(doc.program || 'Asrama').toUpperCase()}.`,
+                    deskripsiOri: `${item.status.toUpperCase()} pada ${(doc.program || 'Asrama').toUpperCase()}. Catatan: ${item.keterangan||'-'}`,
+                    pelapor: doc.naqibPenginput || 'Naqib',
+                    poinDipotong: Math.abs(parseInt(item.poin) || 0)
+                 });
+              }
+           });
+        }
+      }
+
+      // 5. TARIK ABSENSI KBM GURU (PENDING)
+      const snapKbm = await get(ref(db, 'cahaya_app/absensi_pembelajaran'));
+      const dataKbm = snapKbm.val() || {};
+      for(let key in dataKbm) {
+        let doc = dataKbm[key];
+        if(doc.data && Array.isArray(doc.data)) {
+           doc.data.forEach((item, index) => {
+              let statusLower = (item.status || '').toLowerCase();
+              if ((statusLower === 'alfa' || statusLower === 'terlambat') && item.statusKonseling !== 'SUDAH KONSELING') {
+                 let tgl = doc.tanggal || new Date().toISOString().substring(0,10);
+                 tempSetSantri.add(item.nama);
+                 seluruhJejakKasus.push({
+                    id: `KBM-${key}-${index}`,
+                    dbPath: `cahaya_app/absensi_pembelajaran/${key}/data/${index}`,
+                    isStringData: false,
+                    sumberBadge: 'ABSENSI KBM',
+                    sumberTipe: 'ABSENSI',
+                    tipeData: 'PENDING',
+                    santri: item.nama,
+                    tanggalKejadian: tgl,
+                    deskripsiLengkap: `<b>ABSENSI: ${item.status.toUpperCase()}</b> pada pelajaran ${(doc.mapel || 'KBM').toUpperCase()}.`,
+                    deskripsiOri: `${item.status.toUpperCase()} pada ${(doc.mapel || 'KBM').toUpperCase()}. Catatan: ${item.keterangan||'-'}`,
+                    pelapor: doc.guru || 'Guru Pengajar',
+                    poinDipotong: Math.abs(parseInt(item.poin) || 0)
+                 });
+              }
+           });
+        }
+      }
+
+      daftarSemuaSantri = Array.from(tempSetSantri).sort();
+      renderDaftarSantri();
+
+    } catch(e) { alert("Gagal sinkronisasi data: " + e.message); }
+  }
+
+  // ========================================================
+  // RENDER DAFTAR SANTRI
+  // ========================================================
+  window.renderDaftarSantri = function() {
+    const query = document.getElementById('searchSantri').value.toLowerCase();
+    const tbody = document.getElementById('tabelDaftarSantri');
+    let filtered = daftarSemuaSantri.filter(s => s.toLowerCase().includes(query));
+
+    if(filtered.length === 0) {
+      return tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">Santri tidak ditemukan.</td></tr>`;
+    }
+
+    tbody.innerHTML = filtered.map((nama, index) => {
+      let kasusSantri = seluruhJejakKasus.filter(k => k.santri === nama);
+      let jmlSelesai = kasusSantri.filter(k => k.tipeData === 'SELESAI').length;
+      let jmlPending = kasusSantri.filter(k => k.tipeData === 'PENDING').length;
+      
+      let statusHtml = '';
+      if(jmlPending > 0) statusHtml += `<span class="badge status-pending" style="margin-right:5px;">${jmlPending} BELUM DIPROSES</span>`;
+      if(jmlSelesai > 0) statusHtml += `<span class="badge status-selesai">${jmlSelesai} ARSIP SELESAI</span>`;
+      if(jmlPending === 0 && jmlSelesai === 0) statusHtml = `<span style="font-size:0.8rem; color:#94a3b8; font-style:italic;">Bersih dari Catatan</span>`;
+
+      return `<tr>
+        <td style="text-align:center; color:var(--navy-light);">${index + 1}</td>
+        <td><b style="color:var(--navy-dark); font-size:1.05rem;">${nama}</b></td>
+        <td style="text-align:center;">${statusHtml}</td>
+        <td style="text-align:center;">
+          <button class="btn-cahaya btn-gold" style="padding: 8px 15px; font-size:0.8rem; width:100%;" onclick="bukaBukuSantri('${nama}')">📖 Buka Buku Kasus</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ========================================================
+  // BUKA BUKU KASUS (MODAL 1) DENGAN TAB FILTER
+  // ========================================================
+  window.bukaBukuSantri = function(namaSantri) {
+      currentSantriBuku = namaSantri;
+      document.getElementById('bsNamaSantri').textContent = namaSantri;
+      
+      let histori = seluruhJejakKasus.filter(k => k.santri === namaSantri);
+      
+      // Update Counter di Setiap Tab
+      const updateCounter = (id, filterFn) => {
+          const el = document.getElementById(id);
+          if(el) el.textContent = histori.filter(filterFn).length;
+      };
+      
+      updateCounter('c-all', () => true);
+      updateCounter('c-pending', k => k.tipeData === 'PENDING');
+      updateCounter('c-ringan', k => k.kategoriAkhir === 'Pelanggaran Ringan');
+      updateCounter('c-sedang', k => k.kategoriAkhir === 'Pelanggaran Sedang');
+      updateCounter('c-berat', k => k.kategoriAkhir === 'Pelanggaran Berat');
+      updateCounter('c-kritis', k => k.kategoriAkhir === 'Pelanggaran Kritis');
+      updateCounter('c-bebas', k => k.kategoriAkhir === 'TIDAK TERBUKTI');
+
+      // Tampilkan Modal & Default Filter ke ALL
+      document.getElementById('modalBukuSantri').style.display = 'flex';
+      filterBukuSantri('ALL', document.querySelector('.mini-tab-btn'));
+  }
+
+  window.filterBukuSantri = function(kat, btnElement) {
+      // Styling Tab Aktif
+      if(btnElement) {
+          document.querySelectorAll('.mini-tab-btn').forEach(b => b.classList.remove('active'));
+          btnElement.classList.add('active');
+      }
+
+      let histori = seluruhJejakKasus.filter(k => k.santri === currentSantriBuku);
+      let filtered = histori;
+
+      // Logika Filtering Berdasarkan String Kategori
+      if (kat === 'PENDING') {
+          filtered = histori.filter(k => k.tipeData === 'PENDING');
+      } else if (kat === 'TIDAK TERBUKTI') {
+          filtered = histori.filter(k => k.kategoriAkhir === 'TIDAK TERBUKTI');
+      } else if (kat !== 'ALL') {
+          filtered = histori.filter(k => k.kategoriAkhir === `Pelanggaran ${kat}`);
+      }
+
+      // Urutkan Terbaru
+      filtered.sort((a,b) => new Date(b.tanggalKejadian || b.waktuKonseling) - new Date(a.tanggalKejadian || a.waktuKonseling));
+
+      const tbody = document.getElementById('tabelRiwayatSantri');
+      
+      if(filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">✨ Tidak ada rekam jejak di klasifikasi ini.</td></tr>`;
+      } else {
+          tbody.innerHTML = filtered.map(k => {
+              let tgl = k.tanggalKejadian || (k.waktuKonseling ? k.waktuKonseling.substring(0,10) : '-');
+              
+              if (k.tipeData === 'PENDING') {
+                  return `<tr>
+                    <td style="font-size:0.8rem; color:var(--navy-light);">${tgl}</td>
+                    <td>${k.deskripsiLengkap}</td>
+                    <td style="text-align:center;"><span class="badge status-pending">BELUM DIPROSES</span></td>
+                    <td style="text-align:center;">
+                       <button class="btn-cahaya btn-gold" style="padding: 6px 12px; font-size:0.7rem; width:100%;" onclick="bukaPenindakan('${k.id}')">Tindak 🔨</button>
+                    </td>
+                  </tr>`;
+              } else {
+                  // Dinamis Warna Kategori
+                  let katClass = 'kat-bimbingan';
+                  if(k.kategoriAkhir.includes('Ringan')) katClass = 'kat-ringan';
+                  else if(k.kategoriAkhir.includes('Sedang')) katClass = 'kat-sedang';
+                  else if(k.kategoriAkhir.includes('Berat')) katClass = 'kat-berat';
+                  else if(k.kategoriAkhir.includes('Kritis')) katClass = 'kat-kritis';
+                  else if(k.kategoriAkhir === 'TIDAK TERBUKTI') katClass = 'kat-bebas';
+
+                  return `<tr>
+                    <td style="font-size:0.8rem; color:var(--navy-light);">${tgl}</td>
+                    <td>${k.deskripsiLengkap}</td>
+                    <td style="text-align:center;"><span class="badge ${katClass}">${k.kategoriAkhir}</span></td>
+                    <td style="text-align:center;">
+                      <button class="btn-cahaya" style="background:var(--navy-light); color:white; padding: 6px 12px; font-size:0.7rem; width:100%;" onclick="bukaDetailArsip('${k.id}')">Detail 📂</button>
+                    </td>
+                  </tr>`;
+              }
+          }).join('');
+      }
+  }
+
+  // ========================================================
+  // BUKA DETAIL ARSIP (MODAL 2 - KASUS SELESAI)
+  // ========================================================
+  function parseNFDK(kodeNFDK) {
+      if(!kodeNFDK) return '';
+      const p = kodeNFDK.split('-');
+      if(p.length !== 4) return '';
+      let h = '';
+      if(p[0]==='0') h += `<span class="nfdk-tag">Niat: Lalai</span>`;
+      else if(p[0]==='1') h += `<span class="nfdk-tag">Niat: Setengah Sadar</span>`;
+      else if(p[0]==='3') h += `<span class="nfdk-tag" style="background:#fee2e2; color:#b91c1c;">Niat: Sengaja Terencana</span>`;
+      if(p[1]==='0') h += `<span class="nfdk-tag">Frekuensi: Pertama Kali</span>`;
+      else if(p[1]==='1') h += `<span class="nfdk-tag" style="background:#ffedd5; color:#c2410c;">Frekuensi: Berulang</span>`;
+      else if(p[1]==='3') h += `<span class="nfdk-tag" style="background:#fee2e2; color:#b91c1c;">Frekuensi: Berpola</span>`;
+      if(p[2]==='0') h += `<span class="nfdk-tag">Dampak: Pribadi</span>`;
+      else if(p[2]==='1') h += `<span class="nfdk-tag" style="background:#ffedd5; color:#c2410c;">Dampak: Sosial Terbatas</span>`;
+      else if(p[2]==='3') h += `<span class="nfdk-tag" style="background:#fee2e2; color:#b91c1c;">Dampak: Luas/Trauma</span>`;
+      if(p[3]==='0') h += `<span class="nfdk-tag">Kondisi: Normal</span>`;
+      else if(p[3]==='-1') h += `<span class="nfdk-tag" style="background:#e0e7ff; color:#3730a3;">Kondisi: Khusus</span>`;
+      return h;
+  }
+
+  window.bukaDetailArsip = (id) => {
+    const k = seluruhJejakKasus.find(x => x.id === id && x.tipeData === 'SELESAI');
+    if(!k) return;
+
+    document.getElementById('dNamaSantri').textContent = k.santri;
+    let katClass = 'kat-bimbingan';
+    if(k.kategoriAkhir.includes('Ringan')) katClass = 'kat-ringan';
+    else if(k.kategoriAkhir.includes('Sedang')) katClass = 'kat-sedang';
+    else if(k.kategoriAkhir.includes('Berat')) katClass = 'kat-berat';
+    else if(k.kategoriAkhir.includes('Kritis')) katClass = 'kat-kritis';
+    else if(k.kategoriAkhir === 'TIDAK TERBUKTI') katClass = 'kat-bebas';
+    
+    document.getElementById('dKategoriAkhir').textContent = k.kategoriAkhir;
+    document.getElementById('dKategoriAkhir').className = `badge ${katClass}`;
+    document.getElementById('dTanggalKejadian').textContent = k.tanggalKejadian || '-';
+    
+    if(k.waktuKonseling) {
+       const d = new Date(k.waktuKonseling);
+       document.getElementById('dWaktuKonseling').textContent = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    } else { document.getElementById('dWaktuKonseling').textContent = '-'; }
+
+    document.getElementById('dKonselor').textContent = k.konselorPenindak || '-';
+
+    const boxPoin = document.getElementById('boxPoin');
+    const txtPoin = document.getElementById('dPoin');
+    if (k.kategoriAkhir === 'TIDAK TERBUKTI') {
+        boxPoin.style.background = '#ecfdf5'; boxPoin.style.borderColor = '#6ee7b7';
+        txtPoin.style.color = '#047857'; txtPoin.textContent = "Dipulihkan (Restitusi)";
+    } else if (k.poinDipotongKonselor && k.poinDipotongKonselor > 0) {
+        boxPoin.style.background = '#fee2e2'; boxPoin.style.borderColor = '#fca5a5';
+        txtPoin.style.color = '#991b1b'; txtPoin.textContent = `-${k.poinDipotongKonselor} Poin`;
+    } else {
+        boxPoin.style.background = '#f1f5f9'; boxPoin.style.borderColor = '#e2e8f0';
+        txtPoin.style.color = '#475569'; txtPoin.textContent = "Tdk Ada Tambahan";
+    }
+
+    document.getElementById('dSumber').textContent = `Sumber: ${k.sumberLaporan || '-'}`;
+    document.getElementById('dDeskripsiAwal').innerHTML = k.deskripsiAwal || '-'; 
+
+    if(k.kategoriAkhir === 'TIDAK TERBUKTI') {
+        document.getElementById('areaTabayyunArsip').innerHTML = `
+          <div class="section-title">2. Keterangan Pembebasan Tuduhan</div>
+          <div class="data-text"><b>Alasan Konselor:</b><br><span>${k.uraianLanjutan || '-'}</span><br><br>
+          <i style="color:#047857;">"Santri dinyatakan tidak bersalah dan poin telah dikembalikan."</i></div>`;
+    } else {
+        document.getElementById('areaTabayyunArsip').innerHTML = `
+          <div class="section-title">2. Hasil Tabayyun & Indikator Latar Belakang (N-F-D-K)</div>
+          <div style="margin-bottom: 10px;" id="dNFDK">${parseNFDK(k.nfdk)}</div>
+          <div class="data-text">
+            <b>Uraian Konselor:</b><br>
+            <span id="dUraianLanjutan">${k.uraianLanjutan || '-'}</span><br><br>
+            <b>Catatan Psikologis & Sikap:</b><br>
+            <span id="dCatatanPsikologis">${k.catatanPsikologis || '-'}</span>
+          </div>
+          <div class="section-title">3. Proses Pembinaan & Tindak Lanjut</div>
+          <div class="data-text">
+            <b>Pendekatan & Dialog Pembinaan:</b><br>
+            <span id="dPembinaanArsip">${k.pembinaan || '-'}</span><br><br>
+            <b>Konsekuensi Edukatif / Komitmen:</b><br>
+            <span id="dTindakLanjutArsip">${k.tindakLanjut || '-'}</span>
+          </div>
+        `;
+    }
+    document.getElementById('modalDetailArsip').style.display = 'flex';
+  }
+
+  // ========================================================
+  // BUKA FORM PENINDAKAN (MODAL 3 - KASUS PENDING)
+  // ========================================================
+  window.bukaPenindakan = (id) => {
+    const k = seluruhJejakKasus.find(x => x.id === id && x.tipeData === 'PENDING');
+    if(!k) return;
+
+    document.getElementById('rSantri').textContent = k.santri;
+    document.getElementById('rTanggal').textContent = k.tanggalKejadian;
+    document.getElementById('rSumber').innerHTML = `<span class="badge" style="background:#e2e8f0; color:#334155;">${k.sumberBadge}</span> Oleh: ${k.pelapor}`;
+    document.getElementById('rKasus').innerHTML = k.deskripsiOri || k.deskripsiLengkap;
+    
+    // Metadata untuk Update DB
+    document.getElementById('rDbPath').value = k.dbPath;
+    document.getElementById('rIsStringData').value = k.isStringData || false;
+    document.getElementById('rOriginalString').value = k.originalString || '';
+    document.getElementById('rPoinDipotongAwal').value = k.poinDipotong || 0;
+    document.getElementById('rSumberTipe').value = k.sumberTipe; 
+
+    // Reset Form
+    ['fUraian','fPembinaan','fTindakLanjut','fCatatan'].forEach(idx => document.getElementById(idx).value = '');
+    ['nfdk_n','nfdk_f','nfdk_d','nfdk_k'].forEach(idx => document.getElementById(idx).value = '0');
+    document.getElementById('fPoinMinus').value = '0';
+    
+    document.getElementById('fKategoriAkhir').value = 'Bimbingan Rutin';
+    toggleBebasTuduhan();
+    kalkulasiKategori();
+    
+    document.getElementById('modalPenindakan').style.display = 'flex';
+  }
+
+  // --- LOGIKA UI PENINDAKAN ---
+  window.toggleBebasTuduhan = () => {
+    const kat = document.getElementById('fKategoriAkhir').value;
+    const sumberTipe = document.getElementById('rSumberTipe').value;
+    const isBebas = (kat === 'TIDAK TERBUKTI');
+    const isEskalasiAbsen = (sumberTipe === 'ABSENSI' && (kat.includes('Sedang') || kat.includes('Berat') || kat.includes('Kritis')));
+
+    document.getElementById('alertBebas').style.display = isBebas ? 'block' : 'none';
+    document.getElementById('areaNFDK').style.display = isBebas ? 'none' : 'block';
+    document.getElementById('areaPembinaan').style.display = isBebas ? 'none' : 'block';
+    document.getElementById('areaTindakLanjut').style.display = isBebas ? 'none' : 'block';
+    document.getElementById('areaCatatan').style.display = isBebas ? 'none' : 'block';
+    
+    if (!isBebas && (sumberTipe === 'PELANGGARAN' || isEskalasiAbsen)) {
+        document.getElementById('areaPoinMinus').style.display = 'block';
+        document.getElementById('infoEskalasi').style.display = isEskalasiAbsen ? 'block' : 'none';
+    } else {
+        document.getElementById('areaPoinMinus').style.display = 'none';
+        document.getElementById('infoEskalasi').style.display = 'none';
+    }
+    document.getElementById('lblUraian').textContent = isBebas ? "Keterangan / Alasan Bebas Tuduhan (Wajib)" : "Uraian Lanjutan (Hasil Tabayyun Konselor)";
+  }
+
+  window.sesuaikanPoinBaku = () => {
+    const kat = document.getElementById('fKategoriAkhir').value;
+    let poin = 0;
+    if(kat.includes('Ringan')) poin = 25;
+    else if(kat.includes('Sedang')) poin = 50;
+    else if(kat.includes('Berat')) poin = 100;
+    else if(kat.includes('Kritis')) poin = 200; 
+    document.getElementById('fPoinMinus').value = poin;
+  }
+
+  window.kalkulasiKategori = () => {
+    if(document.getElementById('fKategoriAkhir').value === 'TIDAK TERBUKTI') return;
+    let total = parseInt(document.getElementById('nfdk_n').value) + parseInt(document.getElementById('nfdk_f').value) + parseInt(document.getElementById('nfdk_d').value) + parseInt(document.getElementById('nfdk_k').value);
+    let kat = 'Bimbingan Rutin';
+    if(total >= 7) kat = 'Pelanggaran Kritis'; else if(total >= 5) kat = 'Pelanggaran Berat'; else if(total >= 2) kat = 'Pelanggaran Sedang'; else if(total >= 0) kat = 'Pelanggaran Ringan';
+    document.getElementById('fKategoriAkhir').value = kat;
+    toggleBebasTuduhan(); sesuaikanPoinBaku(); 
+  }
+
+  window.tutupModal = (idModal) => { document.getElementById(idModal).style.display = 'none'; }
+
+  // --- SIMPAN PENINDAKAN ---
+  window.simpanPenindakan = async () => {
+    const dbPathAsli = document.getElementById('rDbPath').value;
+    const isStringData = document.getElementById('rIsStringData').value === 'true';
+    const originalString = document.getElementById('rOriginalString').value;
+    const sumberTipe = document.getElementById('rSumberTipe').value;
+    const kategoriAkhir = document.getElementById('fKategoriAkhir').value;
+    const uraian = document.getElementById('fUraian').value.trim();
+    const pembinaan = document.getElementById('fPembinaan').value.trim();
+    const minusPoinManual = parseInt(document.getElementById('fPoinMinus').value) || 0;
+    const namaSantri = document.getElementById('rSantri').textContent;
+
+    if(!uraian) return alert("Uraian / Keterangan wajib diisi!");
+    if(kategoriAkhir !== 'TIDAK TERBUKTI' && !pembinaan) return alert("Kolom 'Proses Dialog & Pembinaan' wajib diisi!");
+    
+    const btn = document.getElementById('btnSimpanKonseling'); 
+    btn.disabled = true; btn.innerHTML = "⏳ MENYIMPAN...";
+
+    try {
+      // 1. TANDAI KASUS SELESAI DI SUMBER ASLINYA
+      if(isStringData) await set(ref(db, dbPathAsli), { status: originalString, statusKonseling: 'SUDAH KONSELING' });
+      else await update(ref(db, dbPathAsli), { statusKonseling: 'SUDAH KONSELING' });
+
+      const namaKonselor = currentUser.label || currentUser.username || "Konselor";
+
+      // 2. EKSEKUSI PENGURANGAN / RESTITUSI POIN
+      if (kategoriAkhir === 'TIDAK TERBUKTI') {
+         const poinKembali = parseInt(document.getElementById('rPoinDipotongAwal').value) || 0;
+         if (poinKembali > 0) {
+             await push(ref(db, 'cahaya_app/log_lapor_inisiatif'), {
+                waktu: new Date().toISOString(), pelapor: namaSantri, keterangan: `[PEMUTIHAN] Restitusi poin atas kasus tgl ${document.getElementById('rTanggal').textContent}. Ket: ${uraian}`, poinDiberikan: poinKembali, tipe: "Inisiatif Kebaikan", naqib: "Sistem BK" 
+             });
+         }
+      } else if (minusPoinManual > 0) {
+         if (sumberTipe === 'ABSENSI') {
+             const poinKembali = parseInt(document.getElementById('rPoinDipotongAwal').value) || 0;
+             if (poinKembali > 0) {
+                 await push(ref(db, 'cahaya_app/log_lapor_inisiatif'), {
+                    waktu: new Date().toISOString(), pelapor: namaSantri, keterangan: `[PENYESUAIAN] Pengembalian poin absen awal karena dieskalasi menjadi ${kategoriAkhir}.`, poinDiberikan: poinKembali, tipe: "Inisiatif Kebaikan", naqib: "Sistem BK" 
+                 });
+             }
+         }
+         await push(ref(db, 'cahaya_app/poin_manual'), {
+             waktu: new Date().toISOString(), namaSantri: namaSantri, keterangan: `[SANKSI BK] Konsekuensi ${kategoriAkhir} tgl ${document.getElementById('rTanggal').textContent}. Uraian: ${uraian}`, poin: -Math.abs(minusPoinManual)
+         });
+      }
+
+      // 3. ARSIPKAN KE BUKU KASUS
+      let dataBukuKasus = {
+        santri: namaSantri, tanggalKejadian: document.getElementById('rTanggal').textContent,
+        sumberLaporan: document.getElementById('rSumber').innerText, deskripsiAwal: document.getElementById('rKasus').innerText,  
+        kategoriAkhir: kategoriAkhir, uraianLanjutan: uraian, konselorPenindak: namaKonselor, waktuKonseling: new Date().toISOString()
+      };
+
+      if(kategoriAkhir !== 'TIDAK TERBUKTI') {
+         dataBukuKasus.pembinaan = pembinaan; dataBukuKasus.tindakLanjut = document.getElementById('fTindakLanjut').value.trim();
+         dataBukuKasus.catatanPsikologis = document.getElementById('fCatatan').value.trim();
+         dataBukuKasus.nfdk = `${document.getElementById('nfdk_n').value}-${document.getElementById('nfdk_f').value}-${document.getElementById('nfdk_d').value}-${document.getElementById('nfdk_k').value}`;
+         if(document.getElementById('areaPoinMinus').style.display === 'block') dataBukuKasus.poinDipotongKonselor = minusPoinManual;
+      } else {
+         dataBukuKasus.pembinaan = "[ Santri Dibebaskan dari Tuduhan ]"; dataBukuKasus.tindakLanjut = "Pemutihan Poin";
+      }
+
+      await push(ref(db, 'cahaya_app/buku_kasus_konselor'), dataBukuKasus);
+      
+      alert("✅ Penanganan Selesai! Data terekam di Buku Kasus.");
+      tutupModal('modalPenindakan'); 
+      
+      // REFRESH DATA LALU BUKA KEMBALI BUKU SANTRI TERSEBUT
+      await tarikDataSuper(); 
+      bukaBukuSantri(namaSantri);
+
+    } catch(e) { 
+      alert("Gagal menyimpan: " + e.message); 
+    } finally { 
+      btn.disabled = false; btn.innerHTML = "💾 Simpan & Tandai 'SUDAH KONSELING'"; 
+    }
+  }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CAHAYA APP - Evaluasi Pasca Konseling</title>
+  
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  
+  <style>
+    .header-evaluasi {
+      background: linear-gradient(135deg, #065f46, #064e3b);
+      padding: 30px 40px; border-radius: var(--radius-lg); color: white;
+      margin-bottom: 25px; box-shadow: 0 15px 30px rgba(6, 95, 70, 0.2);
+      position: relative; overflow: hidden;
+    }
+    .header-evaluasi::after {
+      content: '📈'; position: absolute; right: 20px; top: -10px;
+      font-size: 8rem; opacity: 0.1; pointer-events: none;
+    }
+    .header-evaluasi h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold-light); margin-bottom: 5px; }
+
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+    
+    /* Perkembangan Status */
+    .status-aman { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .status-waspada { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+    .status-bahaya { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* Modal Form Evaluasi */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.8); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; padding: 20px; animation: fadeIn 0.3s ease; }
+    .modal-content { background: white; width: 100%; max-width: 700px; border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
+    .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--input-border); background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 25px; overflow-y: auto; flex: 1; }
+
+    .card-summary { background: #f1f5f9; padding: 15px; border-radius: 8px; border-left: 4px solid var(--navy-light); margin-bottom: 20px; font-size: 0.9rem; }
+    
+    .rating-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+
+    #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">📈</div>
+  <div style="font-weight: 700;">Memuat Data Perkembangan...</div>
+</div>
+
+<main class="cahaya-container">
+  <div class="header-evaluasi">
+    <h1>Monitoring & Evaluasi Kasus</h1>
+    <p>Pantau efektivitas pembinaan dan perubahan perilaku santri pasca konseling.</p>
+  </div>
+
+  <div class="cahaya-card">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; flex-wrap: wrap; gap: 15px;">
+      <h3 style="color: var(--navy-dark); margin: 0;">Riwayat Kasus Siap Evaluasi</h3>
+      <input type="text" class="form-control" id="searchEval" placeholder="🔍 Cari nama santri..." style="margin-bottom: 0; max-width: 300px;" onkeyup="renderTabel()">
+    </div>
+
+    <div class="table-responsive">
+      <table class="cahaya-table">
+        <thead>
+          <tr>
+            <th width="15%">Tgl Konseling</th>
+            <th width="20%">Nama Santri</th>
+            <th width="35%">Kasus & Pembinaan Sebelumnya</th>
+            <th width="15%" style="text-align: center;">Perkembangan</th>
+            <th width="15%" style="text-align: center;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tabelEvaluasi"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL FORM EVALUASI -->
+<div id="modalEval" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📈 Evaluasi Perkembangan Santri</h3>
+      <button style="background:none; border:none; font-size:1.5rem; cursor:pointer;" onclick="tutupModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="card-summary" id="sumKasus">
+        <!-- Info Kasus Lama -->
+      </div>
+
+      <div class="form-group">
+        <label>📊 Status Perkembangan Perilaku</label>
+        <select class="form-control" id="evStatus" style="font-weight: 800; color: var(--navy-dark);">
+          <option value="Sangat Baik (Konsisten Berubah)">✅ Sangat Baik (Konsisten Berubah)</option>
+          <option value="Baik (Tidak Ada Pengulangan)">✅ Baik (Tidak Ada Pengulangan)</option>
+          <option value="Waspada (Ada Gejala Pengulangan)">⚠️ Waspada (Ada Gejala Pengulangan)</option>
+          <option value="Buruk (Terjadi Pengulangan)">❌ Buruk (Terjadi Pengulangan)</option>
+          <option value="Kritis (Semakin Parah)">🚨 Kritis (Semakin Parah)</option>
+        </select>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>💡 Faktor Keberhasilan (Apa yang membantu dia berubah?)</label>
+          <textarea class="form-control" id="evFaktor" rows="3" placeholder="Contoh: Pendampingan intens usrah, motivasi orang tua, dll..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>🚧 Kendala / Hambatan (Apa yang membuatnya sulit berubah?)</label>
+          <textarea class="form-control" id="evKendala" rows="3" placeholder="Contoh: Lingkungan teman se-kamar, kurang pengawasan malam, dll..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📝 Catatan Rekomendasi Selanjutnya</label>
+        <textarea class="form-control" id="evRekomendasi" rows="2" placeholder="Contoh: Lanjutkan mentoring pekanan atau perlu mediasi ortu..."></textarea>
+      </div>
+
+      <input type="hidden" id="evIdBukuKasus">
+
+      <button class="btn-cahaya btn-gold" id="btnSimpanEval" onclick="simpanEvaluasi()">💾 Simpan Hasil Evaluasi</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, push, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let dataBukuKasus = [];
+  const currentUser = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await muatData();
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  });
+
+  async function muatData() {
+    try {
+      const snap = await get(ref(db, 'cahaya_app/buku_kasus_konselor'));
+      const data = snap.val() || {};
+      dataBukuKasus = [];
+      for(let key in data) {
+        // Hanya tampilkan yang bukan "TIDAK TERBUKTI" untuk dievaluasi
+        if(data[key].kategoriAkhir !== 'TIDAK TERBUKTI') {
+          dataBukuKasus.push({ ...data[key], id: key });
+        }
+      }
+      dataBukuKasus.sort((a,b) => new Date(b.waktuKonseling) - new Date(a.waktuKonseling));
+      renderTabel();
+    } catch(e) { console.error(e); }
+  }
+
+  window.renderTabel = () => {
+    const q = document.getElementById('searchEval').value.toLowerCase();
+    const tb = document.getElementById('tabelEvaluasi');
+    const filtered = dataBukuKasus.filter(d => d.santri.toLowerCase().includes(q));
+
+    tb.innerHTML = filtered.map(d => {
+      const tgl = (d.waktuKonseling || '').substring(0,10);
+      
+      // Deteksi Warna Badge Perkembangan
+      let devStatus = d.evaluasi?.status || "Belum Dievaluasi";
+      let devClass = "status-waspada";
+      if(devStatus.includes("Baik")) devClass = "status-aman";
+      if(devStatus.includes("Buruk") || devStatus.includes("Kritis")) devClass = "status-bahaya";
+
+      return `<tr>
+        <td style="font-size:0.8rem;">${tgl}</td>
+        <td><b style="color:var(--navy-dark);">${d.santri}</b></td>
+        <td style="font-size:0.85rem;">
+           <span class="badge" style="background:#f1f5f9; color:#475569; margin-bottom:5px;">${d.kategoriAkhir}</span><br>
+           <b>Kasus:</b> ${d.deskripsiAwal}
+        </td>
+        <td style="text-align:center;"><span class="badge ${devClass}">${devStatus}</span></td>
+        <td style="text-align:center;">
+          <button class="btn-cahaya" style="background:var(--navy-dark); color:white; padding:8px 15px; font-size:0.75rem;" onclick="bukaModalEval('${d.id}')">📊 Evaluasi</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  window.bukaModalEval = (id) => {
+    const d = dataBukuKasus.find(x => x.id === id);
+    document.getElementById('evIdBukuKasus').value = id;
+    document.getElementById('sumKasus').innerHTML = `<b>Santri:</b> ${d.santri} <br> <b>Vonis Terakhir:</b> ${d.kategoriAkhir} <br> <b>Tindak Lanjut Lalu:</b> ${d.tindakLanjut}`;
+    
+    // Reset / Isi Form jika sudah pernah dievaluasi sebelumnya
+    document.getElementById('evStatus').value = d.evaluasi?.status || "Baik (Tidak Ada Pengulangan)";
+    document.getElementById('evFaktor').value = d.evaluasi?.faktor || "";
+    document.getElementById('evKendala').value = d.evaluasi?.kendala || "";
+    document.getElementById('evRekomendasi').value = d.evaluasi?.rekomendasi || "";
+
+    document.getElementById('modalEval').style.display = 'flex';
+  }
+
+  window.tutupModal = () => document.getElementById('modalEval').style.display = 'none';
+
+  window.simpanEvaluasi = async () => {
+    const id = document.getElementById('evIdBukuKasus').value;
+    const btn = document.getElementById('btnSimpanEval');
+    btn.disabled = true; btn.innerHTML = "⏳ MENYIMPAN...";
+
+    const evalData = {
+      status: document.getElementById('evStatus').value,
+      faktor: document.getElementById('evFaktor').value,
+      kendala: document.getElementById('evKendala').value,
+      rekomendasi: document.getElementById('evRekomendasi').value,
+      evaluator: currentUser.label,
+      waktuUpdate: new Date().toISOString()
+    };
+
+    try {
+      // Update di dalam node buku_kasus_konselor spesifik
+      await update(ref(db, `cahaya_app/buku_kasus_konselor/${id}/evaluasi`), evalData);
+      alert("✅ Evaluasi berhasil disimpan dan diupdate ke Buku Kasus.");
+      tutupModal();
+      await muatData();
+    } catch(e) { alert(e.message); } finally { btn.disabled = false; btn.innerHTML = "💾 Simpan Hasil Evaluasi"; }
+  }
+</script>
+</body>
+</html>
