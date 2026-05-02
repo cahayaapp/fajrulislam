@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CAHAYA APP - Pusat Kontrol Eksekutif</title>
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  
+  <style>
+    /* =========================================
+       1. HEADER & GLOBAL LAYOUT
+       ========================================= */
+    .header-kontrol {
+      background: linear-gradient(135deg, var(--navy-dark), #1e293b, #0f172a);
+      padding: 30px 40px; border-radius: var(--radius-lg); color: white;
+      margin-bottom: 25px; box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
+      position: relative; overflow: hidden;
+    }
+    .header-kontrol::after {
+      content: '📊'; position: absolute; right: 20px; top: -15px;
+      font-size: 8rem; opacity: 0.05; pointer-events: none;
+    }
+    .header-kontrol h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold-light); margin-bottom: 5px; letter-spacing: 0.5px;}
+
+    .filter-box {
+      background: #ffffff; border: 1px solid #e2e8f0;
+      padding: 20px; border-radius: 12px; margin-bottom: 25px;
+      display: flex; gap: 15px; align-items: center; flex-wrap: wrap;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-left: 4px solid var(--gold-main);
+    }
+
+    /* =========================================
+       2. M-BANKING STYLE TAB NAVIGATION
+       ========================================= */
+    .m-banking-nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    .tab-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: white; border: 1px solid #e2e8f0; border-radius: 16px;
+      padding: 15px 10px; color: var(--navy-light); font-weight: 700;
+      font-size: 0.75rem; text-align: center; gap: 8px; transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; line-height: 1.3;
+    }
+    .tab-btn .icon { font-size: 1.6rem; margin-bottom: 2px; transition: transform 0.3s; }
+    
+    .tab-btn:hover { border-color: var(--gold-main); transform: translateY(-2px); }
+    .tab-btn.active {
+      background: var(--navy-dark); color: white; border-color: var(--navy-dark);
+      box-shadow: 0 10px 20px rgba(15,23,42,0.2); transform: translateY(-4px);
+    }
+    .tab-btn.active .icon { transform: scale(1.1); }
+
+    /* =========================================
+       3. STATUS BADGES & COLORS
+       ========================================= */
+    .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+    .st-tepat { background: #ecfdf5; color: #059669; border: 1px solid #34d399; }
+    .st-telat { background: #fffbeb; color: #d97706; border: 1px solid #fcd34d; }
+    .st-bolos { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+
+    /* Dimensi Colors (Mentoring) */
+    .dim-Spiritual { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+    .dim-Relasional { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .dim-Emosional { background: #fef9c3; color: #b45309; border: 1px solid #fde047; }
+    .dim-Intelektual { background: #ccfbf1; color: #0f766e; border: 1px solid #5eead4; }
+    .dim-Fisik { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+
+    /* Kategori Kasus Colors */
+    .kasus-Ringan { background: #fef08a; color: #b45309; border: 1px solid #fde047; }
+    .kasus-Sedang { background: #fed7aa; color: #c2410c; border: 1px solid #fdba74; }
+    .kasus-Berat { background: #fecaca; color: #b91c1c; border: 1px solid #fca5a5; }
+
+    .predikat { font-size: 0.7rem; padding: 4px 10px; border-radius: 6px; font-weight: 800; text-transform: uppercase; margin-top: 6px; display: inline-block; letter-spacing: 0.5px; }
+    .p-mumtaz { background: #ecfdf5; color: #059669; border: 1px solid #059669; }
+    .p-rasib { background: #fef2f2; color: #dc2626; border: 1px solid #dc2626; }
+    .p-jayyid { background: #eff6ff; color: #2563eb; border: 1px solid #2563eb; }
+
+    /* =========================================
+       4. CARD-BASED LISTS (Data Segar)
+       ========================================= */
+    .data-card { 
+      background: white; border: 1px solid #e2e8f0; border-radius: 12px; 
+      padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      transition: 0.3s ease; position: relative; overflow: hidden;
+    }
+    .data-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-color: #cbd5e1; }
+    .dc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 12px; }
+    .dc-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--navy-dark); font-weight: 800; margin:0 0 4px 0;}
+    .dc-subtitle { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 5px; }
+    .dc-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+    .dc-box { background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #f1f5f9; }
+    .dc-label { font-size: 0.75rem; font-weight: 800; color: var(--gold-dark); text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 0.5px; }
+    .dc-text { font-size: 0.9rem; color: var(--navy-light); line-height: 1.6; }
+
+    .log-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: var(--navy-dark); }
+    .log-item .time { font-family: monospace; font-weight: bold; color: var(--navy-light); background: white; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; }
+    .log-item.telat { border-color: #fcd34d; background: #fffbeb; }
+    .log-item.telat .time { color: #d97706; border-color: #fde047; }
+
+    #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
+
+    /* =========================================
+       5. PRINT CSS (DIPERBAIKI UNTUK TABEL PANJANG)
+       ========================================= */
+    @media print {
+      body { background: #ffffff !important; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .header-kontrol, .filter-box, .m-banking-nav, .btn-cahaya, #loadingOverlay { display: none !important; }
+      
+      .tab-content { display: none !important; }
+      .tab-content.active { display: block !important; margin-top: 0; }
+      
+      /* Reset overflow dan hapus shadow agar tabel bisa berlembar-lembar */
+      .cahaya-card, .table-responsive { 
+        overflow: visible !important; 
+        box-shadow: none !important; 
+        border: none !important; 
+        padding: 0 !important;
+      }
+      
+      /* Penyesuaian Tabel untuk Print */
+      .cahaya-table { width: 100% !important; border-collapse: collapse !important; }
+      .cahaya-table th { background: var(--navy-dark) !important; color: white !important; padding: 10px !important; }
+      .cahaya-table td { border-bottom: 1px solid #e2e8f0 !important; padding: 10px !important; color: black !important; }
+      
+      /* Mencegah baris tabel atau kartu terpotong di tengah halaman */
+      tr, .data-card { page-break-inside: avoid !important; }
+      .data-card { border: 1px solid #cbd5e1 !important; margin-bottom: 15px !important; }
+
+      main::before {
+        content: attr(data-print-title) " - " attr(data-print-date);
+        display: block; font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: bold; text-align: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--navy-dark); color: black;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">⏱️</div>
+  <div style="font-weight: 700;">Mensinkronkan Data Global...</div>
+</div>
+
+<main class="cahaya-container" id="mainContainer" data-print-title="Laporan Absensi KBM">
+  <div class="header-kontrol">
+    <h1>Pusat Kontrol Eksekutif</h1>
+    <p style="margin: 0; font-size: 0.95rem; opacity: 0.9;">Dashboard terpusat untuk memantau Absensi, Mentoring, Pelanggaran, dan Gamifikasi CAHAYA secara real-time.</p>
+  </div>
+
+  <div class="filter-box">
+    <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+      <label style="color:var(--navy-dark); font-weight:800;">📅 Tanggal Pantauan</label>
+      <input type="date" class="form-control" id="filterTanggal" onchange="muatDataHarian()">
+    </div>
+    <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+      <label style="color:var(--navy-dark); font-weight:800;">👥 Filter Usrah (Klasemen)</label>
+      <select class="form-control" id="filterUsrah" onchange="renderKlasemen()">
+        <option value="Semua">-- Semua Usrah (Global) --</option>
+      </select>
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 18px; align-items: stretch; flex-grow: 1; justify-content: flex-end;">
+      <button class="btn-cahaya" style="background: #f8fafc; color: var(--navy-dark); border: 1px solid #cbd5e1; padding: 10px 20px; width: auto;" onclick="muatDataHarian()">🔄 Refresh</button>
+      <button class="btn-cahaya btn-gold" style="padding: 10px 20px; width: auto;" onclick="window.print()">🖨️ Export PDF</button>
+    </div>
+  </div>
+
+  <!-- MENU NAVIGASI ALA M-BANKING -->
+  <div class="m-banking-nav">
+    <div class="tab-btn active" onclick="switchTab('tab-guru', this, 'Laporan Absensi KBM Guru')">
+      <div class="icon">👨‍🏫</div><span>KBM Guru</span>
+    </div>
+    <div class="tab-btn" onclick="switchTab('tab-naqib', this, 'Laporan Absensi Program Asrama')">
+      <div class="icon">👳‍♂️</div><span>Absen Asrama</span>
+    </div>
+    <div class="tab-btn" onclick="switchTab('tab-jurnal', this, 'Laporan Jurnal Piket Naqib')">
+      <div class="icon">📝</div><span>Jurnal Piket</span>
+    </div>
+    <div class="tab-btn" onclick="switchTab('tab-tahfiz', this, 'Laporan Setoran Tahfiz Santri')">
+      <div class="icon">📖</div><span>Setoran Tahfiz</span>
+    </div>
+    <div class="tab-btn" onclick="switchTab('tab-mentoring', this, 'Laporan Mentoring Individu')">
+      <div class="icon">🤝</div><span>Mentoring</span>
+    </div>
+    <div class="tab-btn" onclick="switchTab('tab-kasus', this, 'Laporan Pelanggaran & Kasus')">
+      <div class="icon">⚖️</div><span>Buku Kasus</span>
+    </div>
+    <div class="tab-btn" onclick="switchTab('tab-inisiatif', this, 'Laporan Inisiatif Kebaikan Harian')">
+      <div class="icon">🌟</div><span>Inisiatif</span>
+    </div>
+    <div class="tab-btn" onclick="switchTab('tab-klasemen', this, 'Klasemen Gamifikasi Santri')">
+      <div class="icon">🏆</div><span>Klasemen</span>
+    </div>
+  </div>
+
+  <!-- TAB 1: GURU -->
+  <div id="tab-guru" class="tab-content active">
+    <div class="cahaya-card table-responsive">
+      <table class="cahaya-table">
+        <thead>
+          <tr><th width="25%">Nama Guru</th><th width="50%">Rincian Kelas yang Diabsen & Waktu Input</th><th width="25%" style="text-align: center;">Status</th></tr>
+        </thead>
+        <tbody id="tabelGuru"><tr><td colspan="3" style="text-align:center;">Memuat data...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 2: NAQIB -->
+  <div id="tab-naqib" class="tab-content">
+    <div class="cahaya-card table-responsive">
+      <table class="cahaya-table">
+        <thead>
+          <tr><th width="25%">Nama Naqib</th><th width="50%">Rincian Program & Waktu Input</th><th width="25%" style="text-align: center;">Status</th></tr>
+        </thead>
+        <tbody id="tabelNaqib"><tr><td colspan="3" style="text-align:center;">Memuat data...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 3: JURNAL PIKET -->
+  <div id="tab-jurnal" class="tab-content">
+    <div style="margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted);">
+      ℹ️ Laporan pelaksanaan tugas piket Blok 1, 2, dan 3 beserta catatan kendala fasilitas asrama dari Naqib bertugas.
+    </div>
+    <div id="wadahJurnalPiket">
+      <div style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">Memuat data jurnal piket...</div>
+    </div>
+  </div>
+
+  <!-- TAB 4: TAHFIZ -->
+  <div id="tab-tahfiz" class="tab-content">
+    <div class="cahaya-card table-responsive">
+      <table class="cahaya-table">
+        <thead>
+          <tr>
+            <th width="5%" style="text-align: center;">No</th>
+            <th width="30%">Nama Santri</th>
+            <th width="30%">Surat & Ayat</th>
+            <th width="15%" style="text-align: center;">Predikat</th>
+            <th width="20%">Halaqah & Guru</th>
+          </tr>
+        </thead>
+        <tbody id="tabelTahfiz"><tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 5: MENTORING -->
+  <div id="tab-mentoring" class="tab-content">
+    <div style="margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted);">
+      ℹ️ Hasil evaluasi dan kesepakatan mentoring individu santri yang dilakukan oleh Naqib pada tanggal ini.
+    </div>
+    <div id="wadahMentoring">
+      <div style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">Memuat data mentoring...</div>
+    </div>
+  </div>
+
+  <!-- TAB 6: KASUS & PELANGGARAN -->
+  <div id="tab-kasus" class="tab-content">
+    <div style="margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted);">
+      ℹ️ Laporan Masuk (dari Asatidz) dan Tindak Lanjut Evaluasi Kasus (dari Konselor) pada tanggal ini.
+    </div>
+    <div id="wadahKasus">
+      <div style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">Memuat data kasus...</div>
+    </div>
+  </div>
+
+  <!-- TAB 7: INISIATIF HARIAN -->
+  <div id="tab-inisiatif" class="tab-content">
+    <div class="cahaya-card table-responsive">
+      <table class="cahaya-table">
+        <thead>
+          <tr>
+            <th width="25%">Nama Santri (Usrah)</th>
+            <th width="55%">Detail Amal Saleh / Inisiatif</th>
+            <th width="20%" style="text-align:right;">Poin (+)</th>
+          </tr>
+        </thead>
+        <tbody id="tabelInisiatif"><tr><td colspan="3" style="text-align:center;">Memuat data...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 8: KLASEMEN SANTRI -->
+  <div id="tab-klasemen" class="tab-content">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+      <div style="background: #fffbeb; padding: 20px; border-radius: 12px; border: 1px solid #fde68a; text-align: center;">
+        <div style="font-size:0.75rem; font-weight:800; color:#b45309; text-transform:uppercase;">Skor Tertinggi</div>
+        <div style="font-size:2.5rem; font-weight:800; color:#78350f; font-family:'Playfair Display';" id="benchMaxGlobal">0</div>
+      </div>
+      <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; border: 1px solid #bbf7d0; text-align: center;">
+        <div style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">Rata-Rata Bulan Ini</div>
+        <div style="font-size:2.5rem; font-weight:800; color:#14532d; font-family:'Playfair Display';" id="benchAvgGlobal">0</div>
+      </div>
+    </div>
+
+    <div class="cahaya-card table-responsive">
+      <div style="margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted);">
+        ℹ️ Klasemen dihitung otomatis dari: <b>Absensi KBM + Absensi Asrama + Inisiatif Kebaikan - Pelanggaran</b> (Akumulasi Bulan Berjalan).
+      </div>
+      <table class="cahaya-table">
+        <thead>
+          <tr>
+            <th width="10%" style="text-align: center;">Rank</th>
+            <th width="35%">Nama Santri</th>
+            <th width="35%">Usrah Pendamping</th>
+            <th width="20%" style="text-align:right;">Total Poin</th>
+          </tr>
+        </thead>
+        <tbody id="tabelKlasemen"><tr><td colspan="4" style="text-align:center;">Memuat klasemen...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let globalData = {};
+  let santriUsrahMap = {};
+
+  window.switchTab = (tabId, btn, printTitle) => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+    
+    // Setel judul untuk export PDF agar dinamis sesuai tab
+    document.getElementById('mainContainer').setAttribute('data-print-title', printTitle);
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('filterTanggal').value = new Date().toISOString().split('T')[0];
+    muatDataHarian();
+  });
+
+  function formatJam(isoString) {
+    const d = new Date(isoString);
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  function formatTglIndo(isoString) {
+    const d = new Date(isoString);
+    return `${d.getDate()} ${['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  window.muatDataHarian = async function() {
+    const tglPilihan = document.getElementById('filterTanggal').value;
+    
+    document.getElementById('mainContainer').setAttribute('data-print-date', formatTglIndo(tglPilihan));
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('loadingOverlay').style.opacity = '1';
+
+    try {
+      const snaps = await Promise.all([
+        get(ref(db, 'cahaya_app/master_usrah')),
+        get(ref(db, 'cahaya_app/absensi_pembelajaran')),
+        get(ref(db, 'cahaya_app/absensi_program_harian')),
+        get(ref(db, 'cahaya_app/setoran_tahfiz')),
+        get(ref(db, 'cahaya_app/log_lapor_inisiatif')),
+        get(ref(db, 'cahaya_app/poin_manual')),
+        get(ref(db, 'cahaya_app/log_mentoring_naqib')),
+        get(ref(db, 'cahaya_app/pelanggaran_santri')),
+        get(ref(db, 'cahaya_app/jurnal_piket_naqib')) 
+      ]);
+
+      globalData = {
+        usrah: snaps[0].val() || {},
+        absenGuru: snaps[1].val() || {},
+        absenNaqib: snaps[2].val() || {},
+        tahfiz: snaps[3].val() || {},
+        inisiatif: snaps[4].val() || {},
+        poinManual: snaps[5].val() || {},
+        mentoring: snaps[6].val() || {},
+        kasus: snaps[7].val() || {},
+        jurnalPiket: snaps[8].val() || {}
+      };
+
+      santriUsrahMap = {};
+      const filterUsrah = document.getElementById('filterUsrah');
+      filterUsrah.innerHTML = '<option value="Semua">-- Semua Usrah (Global) --</option>';
+
+      Object.keys(globalData.usrah).sort().forEach(naqib => {
+        filterUsrah.add(new Option(`Usrah ${naqib}`, naqib));
+        let listSantri = globalData.usrah[naqib] || [];
+        listSantri.forEach(s => santriUsrahMap[s] = naqib);
+      });
+
+      // Panggil semua fungsi render
+      renderTabAbsensiGuru(tglPilihan);
+      renderTabAbsensiNaqib(tglPilihan);
+      renderTabJurnalPiket(tglPilihan);
+      renderTabTahfiz(tglPilihan);
+      renderTabInisiatif(tglPilihan);
+      renderKlasemen(); 
+      renderTabMentoring(tglPilihan);
+      renderTabKasus(tglPilihan);
+
+    } catch (error) {
+      console.error(error);
+      alert("Gagal menarik data dari server: " + error.message);
+    }
+
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  }
+
+  /* =======================================================
+     FUNGSI RENDER KOMPONEN DATA
+     ======================================================= */
+  
+  function renderTabJurnalPiket(tglPilihan) {
+    let html = '';
+    let count = 0;
+    
+    Object.values(globalData.jurnalPiket).forEach(j => {
+      if(j.tanggal === tglPilihan) {
+        count++;
+        let timeInput = j.waktuSubmit ? formatJam(j.waktuSubmit) : '-';
+        let pct = j.persentase || 0;
+        let badgeColor = pct >= 90 ? 'st-tepat' : (pct >= 50 ? 'st-telat' : 'st-bolos');
+        
+        let detailsHtml = (j.detailPelaksanaan || []).map(d => {
+          let mark = d.status === "Selesai" ? "✅" : "❌";
+          return `<div style="font-size:0.8rem; margin-bottom:3px; color:var(--navy-light); border-bottom:1px dashed #e2e8f0; padding-bottom:3px;">${mark} ${d.tugas}</div>`;
+        }).join('');
+
+        html += `
+          <div class="data-card" style="border-left: 5px solid var(--navy-light);">
+            <div class="dc-header">
+              <div>
+                <h3 class="dc-title">Ust. ${j.naqib}</h3>
+                <span class="dc-subtitle">🕒 Piket: ${j.blokPiket} | Jam Kirim: ${timeInput} WIB</span>
+              </div>
+              <div class="status-badge ${badgeColor}">Tuntas: ${pct}%</div>
+            </div>
+            <div class="dc-content">
+              <div class="dc-box">
+                <span class="dc-label">📋 Ceklis Tugas yang Dikerjakan</span>
+                <div class="dc-text">${detailsHtml || '-'}</div>
+              </div>
+              <div class="dc-box" style="background:#fffbeb; border-color:#fde68a;">
+                <span class="dc-label" style="color:#b45309;">⚠️ Catatan / Kendala Shift</span>
+                <div class="dc-text" style="color:#78350f; font-weight:600;">${j.catatanKejadian || 'Nihil (Aman Terkendali)'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    if(count === 0) html = `<div style="text-align:center; padding:40px; background:white; border-radius:12px; border:1px dashed #cbd5e1; color:var(--text-muted);">Belum ada laporan jurnal piket yang disubmit pada tanggal ini.</div>`;
+    document.getElementById('wadahJurnalPiket').innerHTML = html;
+  }
+
+  function renderTabMentoring(tglPilihan) {
+    let html = '';
+    let found = false;
+
+    Object.values(globalData.mentoring).forEach(m => {
+      if(m.tanggalMentoring === tglPilihan) {
+        found = true;
+        let dimClass = m.dimensiFokus ? `dim-${m.dimensiFokus.split(' ')[0]}` : 'dim-Spiritual';
+        
+        html += `
+          <div class="data-card" style="border-left: 5px solid var(--gold-main);">
+            <div class="dc-header">
+              <div>
+                <h3 class="dc-title">${m.namaSantri}</h3>
+                <span class="dc-subtitle">👨‍🏫 Didampingi oleh: Ust. ${m.namaNaqib}</span>
+              </div>
+              <div class="status-badge ${dimClass}">🎯 Fokus: ${m.dimensiFokus || '-'}</div>
+            </div>
+            <div class="dc-content">
+              <div class="dc-box">
+                <span class="dc-label">🔍 Akar Masalah & Eksplorasi</span>
+                <div class="dc-text">${m.catatanAkarMasalah || m.catatanApresiasi || '-'}</div>
+              </div>
+              <div class="dc-box">
+                <span class="dc-label">📝 Rencana Aksi (3 Bagaimana)</span>
+                <div class="dc-text">${m.rencanaAksi || m.kesepakatanKonsekuensi || '-'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    document.getElementById('wadahMentoring').innerHTML = html || `<div style="text-align:center; padding:40px; background:white; border-radius:12px; border:1px dashed #cbd5e1; color:var(--text-muted);">Tidak ada jadwal mentoring yang dilaporkan pada tanggal ini.</div>`;
+  }
+
+  function renderTabKasus(tglPilihan) {
+    let html = '';
+    let countLaporan = 0; let countTindakLanjut = 0;
+
+    Object.values(globalData.inisiatif).forEach(log => {
+      if(log.waktu && log.waktu.startsWith(tglPilihan) && log.tipe === "Lapor Pelanggaran") {
+        countLaporan++;
+        html += `
+          <div class="data-card" style="border-left: 5px solid #ef4444; background:#fef2f2;">
+            <div class="dc-header" style="border-color:#fca5a5;">
+              <div>
+                <h3 class="dc-title" style="color:#b91c1c;">${log.dilaporkan}</h3>
+                <span class="dc-subtitle" style="color:#dc2626;">🚨 LAPORAN MASUK | Pelapor: ${log.pelapor}</span>
+              </div>
+              <div class="status-badge" style="background:#b91c1c; color:white;">Menunggu Diproses</div>
+            </div>
+            <div class="dc-box" style="background:white; border-color:#fca5a5;">
+              <span class="dc-label" style="color:#b91c1c;">Kronologi Kejadian</span>
+              <div class="dc-text">${log.keterangan}</div>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    Object.values(globalData.kasus).forEach(k => {
+      if(k.tanggal === tglPilihan) {
+        countTindakLanjut++;
+        let catClass = `kasus-${k.kategori}`;
+        html += `
+          <div class="data-card" style="border-left: 5px solid #0ea5e9; background:#f0f9ff;">
+            <div class="dc-header" style="border-color:#7dd3fc;">
+              <div>
+                <h3 class="dc-title" style="color:#0369a1;">${k.santri}</h3>
+                <span class="dc-subtitle" style="color:#0ea5e9;">✅ TINDAK LANJUT KONSELOR | Kasus: ${k.namaPelanggaran}</span>
+              </div>
+              <div class="status-badge ${catClass}">Kategori: ${k.kategori}</div>
+            </div>
+            <div class="dc-content">
+              <div class="dc-box" style="background:white; border-color:#bae6fd;">
+                <span class="dc-label" style="color:#0369a1;">Keterangan / BAP Konselor</span>
+                <div class="dc-text">${k.keterangan || '-'}</div>
+              </div>
+              <div class="dc-box" style="background:white; border-color:#bae6fd;">
+                <span class="dc-label" style="color:#0369a1;">Hukuman / Tindak Lanjut</span>
+                <div class="dc-text">${k.tindakLanjut || '-'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    if(countLaporan === 0 && countTindakLanjut === 0) {
+      html = `<div style="text-align:center; padding:40px; background:white; border-radius:12px; border:1px dashed #cbd5e1; color:var(--text-muted);">Alhamdulillah, asrama tertib. Tidak ada laporan pelanggaran maupun penindakan kasus hari ini.</div>`;
+    }
+    document.getElementById('wadahKasus').innerHTML = html;
+  }
+
+  function renderTabInisiatif(tglPilihan) {
+    let htmlInisiatif = '';
+    Object.values(globalData.inisiatif).forEach(log => {
+      if(log.waktu && log.waktu.startsWith(tglPilihan) && log.tipe === "Inisiatif Kebaikan") {
+        let usrahPendamping = santriUsrahMap[log.pelapor] || "Tidak Diketahui";
+        htmlInisiatif += `
+          <tr>
+            <td><b style="color:var(--navy-dark); font-size:0.95rem;">${log.pelapor}</b><br><span style="font-size:0.75rem; color:var(--text-muted);">Usrah ${usrahPendamping}</span></td>
+            <td>${log.keterangan} <br><span style="font-size:0.7rem; color:var(--gold-main); font-weight:bold;">Dilaporkan oleh: ${log.naqib || 'Sistem'}</span></td>
+            <td style="text-align:right; font-weight:800; color:#059669; font-size:1.1rem;">+${log.poinDiberikan}</td>
+          </tr>
+        `;
+      }
+    });
+    document.getElementById('tabelInisiatif').innerHTML = htmlInisiatif || `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); font-style:italic;">Nihil inisiatif kebaikan yang tercatat pada hari ini.</td></tr>`;
+  }
+
+  window.renderKlasemen = function() {
+    const tglPilihan = document.getElementById('filterTanggal').value;
+    const bulanPilihan = tglPilihan.substring(0, 7); 
+    const filterU = document.getElementById('filterUsrah').value;
+
+    let poinSantri = {};
+    Object.keys(santriUsrahMap).forEach(s => {
+      if(filterU === "Semua" || santriUsrahMap[s] === filterU) poinSantri[s] = 0;
+    });
+
+    Object.values(globalData.inisiatif || {}).forEach(l => {
+      if (l.tipe === "Inisiatif Kebaikan" && l.waktu && l.waktu.startsWith(bulanPilihan)) {
+        if(poinSantri[l.pelapor] !== undefined) poinSantri[l.pelapor] += (parseInt(l.poinDiberikan) || 0);
+      }
+    });
+
+    Object.values(globalData.poinManual || {}).forEach(l => {
+      if (l.waktu && l.waktu.startsWith(bulanPilihan)) {
+        if(poinSantri[l.namaSantri] !== undefined) poinSantri[l.namaSantri] += (parseInt(l.poin) || 0);
+      }
+    });
+
+    [globalData.absenNaqib, globalData.absenGuru].forEach(db_log => {
+      Object.values(db_log || {}).forEach(l => {
+        let tglLog = l.tanggal || (l.waktuSimpan ? l.waktuSimpan.substring(0,10) : "");
+        if(tglLog.startsWith(bulanPilihan) && l.data) {
+          l.data.forEach(s => { if(poinSantri[s.nama] !== undefined) poinSantri[s.nama] += (parseInt(s.poin) || 0); });
+        }
+      });
+    });
+
+    let sortedLeaderboard = Object.entries(poinSantri).map(([nama, total]) => ({ nama, total, usrah: santriUsrahMap[nama] })).sort((a, b) => b.total - a.total);
+    let scores = sortedLeaderboard.map(s => s.total);
+    let max = scores.length ? Math.max(...scores) : 0;
+    document.getElementById('benchMaxGlobal').textContent = max;
+    document.getElementById('benchAvgGlobal').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(0) : 0;
+
+    let htmlKlasemen = '';
+    sortedLeaderboard.forEach((s, i) => {
+      let prs = (s.total / (max||1)) * 100;
+      let prd = prs >= 90 ? {l:'Mumtaz', c:'p-mumtaz'} : prs < 50 ? {l:'Rasib', c:'p-rasib'} : {l:'Jayyid', c:'p-jayyid'};
+      let rankClass = i===0 ? 'rank-1' : (i===1 ? 'rank-2' : (i===2 ? 'rank-3' : ''));
+      htmlKlasemen += `<tr><td style="text-align:center;"><div class="rank-badge ${rankClass}">${i+1}</div></td><td><b style="font-size:0.95rem; color:var(--navy-dark);">${s.nama}</b><br><span class="predikat ${prd.c}">${prd.l}</span></td><td><span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Usrah ${s.usrah}</span></td><td style="text-align:right"><span class="total-poin-badge ${s.total>=0?'poin-plus':'poin-minus'}">${s.total}</span></td></tr>`;
+    });
+    document.getElementById('tabelKlasemen').innerHTML = htmlKlasemen || `<tr><td colspan="4" style="text-align:center;">Data santri kosong untuk filter ini.</td></tr>`;
+  }
+
+  function renderTabAbsensiGuru(tglPilihan) {
+    const masterGuruSet = new Set();
+    for(let k in globalData.absenGuru) if(globalData.absenGuru[k].guru) masterGuruSet.add(globalData.absenGuru[k].guru);
+    let html = '';
+    Array.from(masterGuruSet).sort().forEach(guru => {
+      let logHariIni = []; let isAdaYangTelat = false;
+      for(let k in globalData.absenGuru) {
+        let log = globalData.absenGuru[k];
+        if(log.guru === guru && log.tanggal === tglPilihan) {
+          let jamInput = new Date(log.waktuSimpan).getHours();
+          let telat = (new Date(log.waktuSimpan).toISOString().split('T')[0] > tglPilihan || jamInput >= 17);
+          if(telat) isAdaYangTelat = true;
+          logHariIni.push({ kelas: `${log.mapel} (${log.sub || log.rumpun})`, jamString: formatJam(log.waktuSimpan), telat: telat });
+        }
+      }
+      logHariIni.sort((a,b) => a.jamString.localeCompare(b.jamString));
+      let rincian = logHariIni.length ? logHariIni.map(l => `<div class="log-item ${l.telat?'telat':''}"><span>${l.kelas}</span><span class="time">${l.jamString} WIB</span></div>`).join('') : '<span style="color:#ef4444; font-style:italic; font-size:0.8rem;">Tidak ada laporan kelas.</span>';
+      let status = logHariIni.length ? (isAdaYangTelat ? '<span class="status-badge st-telat">⚠️ Di Luar Waktu</span>' : '<span class="status-badge st-tepat">✔ Tepat Waktu</span>') : '<span class="status-badge st-bolos">✖ Bolos Absensi</span>';
+      html += `<tr><td style="vertical-align:top;"><b style="color:var(--navy-dark);">${guru}</b></td><td>${rincian}</td><td style="text-align: center; vertical-align:top; padding-top:15px;">${status}</td></tr>`;
+    });
+    document.getElementById('tabelGuru').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">Belum ada rekam jejak guru.</td></tr>';
+  }
+
+  function renderTabAbsensiNaqib(tglPilihan) {
+    let html = '';
+    Object.keys(globalData.usrah).sort().forEach(naqib => {
+      let logHariIni = []; let isAdaYangTelat = false;
+      for(let k in globalData.absenNaqib) {
+        let log = globalData.absenNaqib[k];
+        if(log.usrah === naqib && log.tanggal === tglPilihan) {
+          let jamInput = new Date(log.waktu).getHours();
+          let telat = (new Date(log.waktu).toISOString().split('T')[0] > tglPilihan || jamInput >= 22);
+          if(telat) isAdaYangTelat = true;
+          logHariIni.push({ program: log.program, jamString: formatJam(log.waktu), telat: telat });
+        }
+      }
+      logHariIni.sort((a,b) => a.jamString.localeCompare(b.jamString));
+      let rincian = logHariIni.length ? logHariIni.map(l => `<div class="log-item ${l.telat?'telat':''}"><span>${l.program}</span><span class="time">${l.jamString} WIB</span></div>`).join('') : '<span style="color:#ef4444; font-style:italic; font-size:0.8rem;">Tidak ada laporan asrama.</span>';
+      let status = logHariIni.length ? (isAdaYangTelat ? '<span class="status-badge st-telat">⚠️ Di Luar Waktu</span>' : '<span class="status-badge st-tepat">✔ Tepat Waktu</span>') : '<span class="status-badge st-bolos">✖ Bolos Absensi</span>';
+      html += `<tr><td style="vertical-align:top;"><b style="color:var(--navy-dark);">${naqib}</b></td><td>${rincian}</td><td style="text-align: center; vertical-align:top; padding-top:15px;">${status}</td></tr>`;
+    });
+    document.getElementById('tabelNaqib').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">Data Master Usrah kosong.</td></tr>';
+  }
+
+  function renderTabTahfiz(tglPilihan) {
+    let setoranHariIni = [];
+    for(let k in globalData.tahfiz) {
+      let log = globalData.tahfiz[k];
+      if(log.tanggal === tglPilihan) {
+        let dt = log.data && log.data[0] ? log.data[0] : null;
+        if(dt) {
+          let jamInput = new Date(log.waktuSimpan).getHours();
+          let telat = (new Date(log.waktuSimpan).toISOString().split('T')[0] > tglPilihan || jamInput >= 17);
+          setoranHariIni.push({ santri: dt.nama, setoran: dt.setoran, nilai: dt.nilai, guru: log.guru || 'Guru', kelompok: log.kelompok || '-', jamString: formatJam(log.waktuSimpan), telat: telat });
+        }
+      }
+    }
+    setoranHariIni.sort((a,b) => b.jamString.localeCompare(a.jamString));
+    let html = '';
+    if(setoranHariIni.length === 0) { html = '<tr><td colspan="5" style="text-align:center; padding: 30px; font-style:italic; color:var(--text-muted);">Belum ada setoran hafalan hari ini.</td></tr>'; }
+    else {
+      setoranHariIni.forEach((l, i) => {
+        let badge = 'p-mumtaz';
+        if(l.nilai.includes("JAYYID")) badge = 'p-jayyid';
+        if(l.nilai.includes("MAQBUL") || l.nilai.includes("BIMBINGAN")) badge = 'p-rasib';
+        html += `<tr><td style="text-align: center; color:var(--text-muted); font-weight:bold;">${i + 1}</td><td><b style="color:var(--navy-dark); font-size:0.95rem;">${l.santri}</b></td><td><span style="font-weight:700; color:var(--navy-light);">${l.setoran}</span></td><td style="text-align: center;"><span class="predikat ${badge}">${l.nilai}</span></td><td><span style="font-size:0.8rem; font-weight:600;">Ust. ${l.guru} (Halqah ${l.kelompok})</span><br><span style="font-size:0.7rem; color:var(--text-muted); font-family:monospace;">${l.jamString} WIB ${l.telat ? '<span style="color:#ef4444; font-weight:bold;">(Telat)</span>':''}</span></td></tr>`;
+      });
+    }
+    document.getElementById('tabelTahfiz').innerHTML = html;
+  }
+</script>
+</body>
+</html>
