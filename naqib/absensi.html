@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAHAYA APP – Absensi Naqib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="../../css/cahaya-theme.css" />
+  
+  <style>
+    /* CSS Ringan Khusus Efek Status Absensi Asrama */
+    .table-header-flex { 
+      display: flex; justify-content: space-between; align-items: flex-end; 
+      margin-top: 15px; margin-bottom: 15px; border-bottom: 2px dashed var(--input-border); padding-bottom: 15px; 
+    }
+    .btn-mark-all { 
+      background: #ecfdf5; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); 
+      padding: 8px 18px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.3s; 
+    }
+    .btn-mark-all:hover { background: #10b981; color: white; }
+
+    /* Custom Radio Button Absen */
+    .radio-label { display: inline-block; cursor: pointer; user-select: none; }
+    .radio-label input { display: none; }
+    .radio-circle { 
+      display: inline-flex; justify-content: center; align-items: center; 
+      width: 32px; height: 32px; border-radius: 50%; background: #f8fafc; 
+      border: 1px solid #cbd5e1; color: var(--text-muted); font-weight: 800; font-size: 0.85rem; transition: 0.2s; 
+    }
+    
+    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; color: white; border-color: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.3); }
+    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; color: white; border-color: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,0.3); }
+    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.3); }
+    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; color: white; border-color: #8b5cf6; box-shadow: 0 0 10px rgba(139,92,246,0.3); }
+    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.3); }
+
+    /* Warna Background Baris Tabel (Sangat membantu UX/UI Naqib) */
+    tr.status-hadir { background: #ecfdf5 !important; border-left: 4px solid #10b981; }
+    tr.status-terlambat { background: #fffbeb !important; border-left: 4px solid #f59e0b; }
+    tr.status-izin { background: #eff6ff !important; border-left: 4px solid #3b82f6; }
+    tr.status-sakit { background: #f5f3ff !important; border-left: 4px solid #8b5cf6; }
+    tr.status-alfa { background: #fef2f2 !important; border-left: 4px solid #ef4444; }
+
+    /* Loader Custom */
+    #loadingOverlay { 
+      position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); 
+      z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+      color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; 
+    }
+
+    @media (max-width: 768px) {
+      .radio-circle { width: 28px; height: 28px; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1s infinite alternate ease-in-out;">📋</div>
+  <div style="font-weight: 700;">Menarik Data Asrama & Program...</div>
+</div>
+
+<main class="cahaya-container">
+  <div class="cahaya-card">
+    <h2 class="cahaya-title" style="margin-bottom: 25px;">📋 Absensi Program Naqib</h2>
+
+    <div id="adminPanel" style="display: none; background: #fffbeb; border: 1px solid #fef08a; padding: 20px; border-radius: var(--radius-md); margin-bottom: 25px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label style="color: #d97706;">👑 Super User: Pilih Usrah / Asrama</label>
+        <select class="form-control" id="selectUsrahGlobal" onchange="gantiUsrah()" style="background: white; border-color: #fde68a;"></select>
+      </div>
+    </div>
+
+    <!-- MENGGUNAKAN GRID MASTER THEME -->
+    <div class="grid-2">
+      <div class="form-group">
+        <label>📅 Tanggal Pelaksanaan</label>
+        <input type="date" class="form-control" id="tanggal">
+      </div>
+
+      <div class="form-group">
+        <label>🕋 Program / Kegiatan</label>
+        <select class="form-control" id="program" onchange="updateInfoPoin()">
+          <option value="">-- Pilih Program --</option>
+          <!-- Diisi via JavaScript dari Master Database -->
+        </select>
+        <small id="infoPoin" style="color: var(--gold-main); font-weight: bold; display: block; margin-top: 5px;"></small>
+      </div>
+    </div>
+
+    <div class="table-header-flex">
+      <h3 style="font-family:'Playfair Display'; font-size:1.2rem; color:var(--navy-dark); font-weight:800; margin:0;">
+        Daftar Santri <span id="labelUsrah" style="color: var(--gold-main); font-weight: 700; font-family: 'Poppins';"></span>
+      </h3>
+      <button class="btn-mark-all" onclick="markAll()">✓ Set Semua Hadir</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="cahaya-table" id="tabelSantri">
+        <thead>
+          <tr>
+            <th width="45%">Nama Lengkap</th>
+            <th title="Hadir" width="11%" style="text-align: center;">H</th>
+            <th title="Terlambat" width="11%" style="text-align: center;">T</th>
+            <th title="Izin" width="11%" style="text-align: center;">I</th>
+            <th title="Sakit" width="11%" style="text-align: center;">S</th>
+            <th title="Alfa" width="11%" style="text-align: center;">A</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Diisi otomatis oleh JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn-cahaya btn-gold" style="margin-top: 30px;" onclick="simpan()">💾 SIMPAN LOG ABSENSI</button>
+  </div>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+  const hakAkses = user.akses || []; 
+  const isSuperUser = hakAkses.includes('admin') || hakAkses.includes('direktur') || hakAkses.includes('supervisor');
+
+  let namaNaqibLokal = localStorage.getItem('namaNaqib');
+  if(!namaNaqibLokal) {
+     namaNaqibLokal = user.username || user.label || "Naqib";
+     namaNaqibLokal = namaNaqibLokal.replace(/^Mu'?allim(ah)?\s+|^Naqib(ah)?\s+|^Mrs\s+/i, "").trim();
+     namaNaqibLokal = namaNaqibLokal.charAt(0).toUpperCase() + namaNaqibLokal.slice(1).toLowerCase();
+  }
+
+  let usrahAktif = namaNaqibLokal;
+  let daftarSantriAktif = [];
+  let dataUsrahCloud = {}; 
+  
+  // Objek untuk menyimpan bobot poin dari Master DB
+  let masterPoinProgram = {};
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+    
+    try {
+      // Menarik Data Usrah DAN Master Program Harian secara paralel
+      const [snapUsrah, snapProgram] = await Promise.all([
+         get(ref(db, 'cahaya_app/master_usrah')),
+         get(ref(db, 'cahaya_app/master_program_harian'))
+      ]);
+
+      // 1. Setup Data Usrah
+      if (snapUsrah.exists()) {
+        dataUsrahCloud = snapUsrah.val();
+      } else {
+        alert("⚠️ Data Master Usrah di server masih kosong.");
+      }
+
+      // 2. Setup Data Program
+      const selectProgram = document.getElementById('program');
+      if (snapProgram.exists()) {
+         const programData = snapProgram.val();
+         // Struktur yg diharapkan: { "Kategori A": { "Shalat Subuh": 50, "Makan": 15 }, "Kategori B": {...} }
+         // Atau list biasa: { "Shalat Subuh": 50, "Makan": 15 }
+         
+         for(let key in programData) {
+            let val = programData[key];
+            if(typeof val === 'object') {
+                // Jika program dikelompokkan pakai Optgroup
+                const group = document.createElement('optgroup');
+                group.label = key;
+                for(let namaProg in val) {
+                    const poin = val[namaProg];
+                    masterPoinProgram[namaProg] = poin;
+                    group.appendChild(new Option(`${namaProg} (+${poin})`, namaProg));
+                }
+                selectProgram.appendChild(group);
+            } else {
+                // Jika list biasa tanpa grup
+                masterPoinProgram[key] = val;
+                selectProgram.appendChild(new Option(`${key} (+${val})`, key));
+            }
+         }
+      } else {
+         // Fallback jika Master Program belum dibuat di DB
+         selectProgram.innerHTML = '<option value="">⚠️ Master Program Kosong</option>';
+      }
+
+    } catch (error) {
+      alert("Gagal menarik data: " + error.message);
+    }
+
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+    
+    if (isSuperUser) {
+      document.getElementById('adminPanel').style.display = 'block';
+      const selectUsrah = document.getElementById('selectUsrahGlobal');
+      
+      Object.keys(dataUsrahCloud).sort().forEach(namaUsrah => {
+        selectUsrah.add(new Option(`Usrah ${namaUsrah}`, namaUsrah));
+      });
+
+      if(dataUsrahCloud[usrahAktif]) {
+         selectUsrah.value = usrahAktif;
+      } else {
+         usrahAktif = selectUsrah.options[0]?.value || "";
+      }
+    }
+
+    renderTabelSantri();
+
+    // Event Delegation untuk merubah warna background baris saat diklik
+    document.querySelector('#tabelSantri tbody').addEventListener('change', (e) => {
+      if (e.target.type === 'radio') {
+        const tr = e.target.closest('tr');
+        tr.className = 'status-' + e.target.value.toLowerCase();
+      }
+    });
+  });
+
+  window.gantiUsrah = function() {
+    usrahAktif = document.getElementById('selectUsrahGlobal').value;
+    renderTabelSantri();
+  };
+
+  window.updateInfoPoin = function() {
+      const prog = document.getElementById('program').value;
+      const info = document.getElementById('infoPoin');
+      if(prog && masterPoinProgram[prog]) {
+          info.textContent = `Berdasarkan Master: +${masterPoinProgram[prog]} Poin / Hadir`;
+      } else {
+          info.textContent = "";
+      }
+  };
+
+  function renderTabelSantri() {
+    document.getElementById('labelUsrah').textContent = `(${usrahAktif})`;
+    
+    daftarSantriAktif = dataUsrahCloud[usrahAktif] || [];
+    const tbody = document.querySelector('#tabelSantri tbody');
+    
+    if(daftarSantriAktif.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:30px;">Data santri kosong untuk Usrah ${usrahAktif}.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = daftarSantriAktif.map((nama, i) => `
+      <tr class="status-hadir">
+        <td style="font-weight: 600; color: var(--navy-dark); padding-left: 20px;">${nama}</td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Hadir" checked><span class="radio-circle">H</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Terlambat"><span class="radio-circle">T</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Izin"><span class="radio-circle">I</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Sakit"><span class="radio-circle">S</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Alfa"><span class="radio-circle">A</span></label></td>
+      </tr>
+    `).join('');
+  }
+
+  window.markAll = function() {
+    document.querySelectorAll('input[value="Hadir"]').forEach(r => {
+        r.checked = true;
+        r.dispatchEvent(new Event('change', { bubbles: true })); 
+    });
+  };
+
+  window.simpan = function() {
+    const tanggal = document.getElementById('tanggal').value;
+    const program = document.getElementById('program').value;
+    
+    if(!tanggal || !program) {
+        alert("⚠️ Mohon lengkapi Tanggal dan Program Kegiatan terlebih dahulu.");
+        return;
+    }
+
+    if(daftarSantriAktif.length === 0) return alert("⚠️ Tidak ada data santri untuk disimpan.");
+
+    // Tarik poin dari Master Database, default 20 jika tidak ada
+    let poinDasar = masterPoinProgram[program] || 20;
+    const dataAbsen = [];
+
+    daftarSantriAktif.forEach((nama, i) => {
+      const status = document.querySelector(`input[name="s_${i}"]:checked`)?.value || 'Hadir';
+      let poinFinal = 0;
+      
+      if (status === 'Hadir') poinFinal = poinDasar;
+      else if (status === 'Terlambat') poinFinal = -(poinDasar * 0.5);
+      else if (status === 'Alfa') poinFinal = -poinDasar;
+      
+      dataAbsen.push({ nama, status, poin: poinFinal });
+    });
+
+    const penginput = isSuperUser ? `${user.label || user.username || 'Admin'} (Mewakili ${usrahAktif})` : (user.label || user.username || 'Naqib');
+
+    const log = {
+      tanggal, program, 
+      usrah: usrahAktif, 
+      naqibPenginput: penginput,
+      data: dataAbsen, 
+      waktu: new Date().toISOString()
+    };
+
+    const btn = document.querySelector('.btn-cahaya');
+    btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
+
+    push(ref(db, 'cahaya_app/absensi_program_harian'), log)
+      .then(() => {
+          alert(`✅ BERHASIL!\nAbsensi program "${program}" untuk Usrah ${usrahAktif} telah tersimpan.`);
+          btn.innerHTML = "💾 SIMPAN LOG ABSENSI"; btn.disabled = false;
+      })
+      .catch(e => {
+          alert("Gagal menyimpan: " + e.message);
+          btn.innerHTML = "💾 SIMPAN LOG ABSENSI"; btn.disabled = false;
+      });
+  };
+</script>
+
+</body>
+</html>

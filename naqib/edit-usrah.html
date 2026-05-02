@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Manajemen Usrah - Cloud Sync</title>
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  
+  <style>
+    /* CSS Kustom Ringan untuk Tombol Aksi & List Santri */
+    .usrah-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .action-group { display: flex; gap: 8px; }
+    
+    .btn-action {
+      width: 45px; height: 45px; border-radius: 12px; border: none;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.1rem; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .btn-action.add { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .btn-action.add:hover { background: #16a34a; color: white; transform: translateY(-2px); }
+    .btn-action.edit { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .btn-action.edit:hover { background: #d97706; color: white; transform: translateY(-2px); }
+    .btn-action.del { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+    .btn-action.del:hover { background: #ef4444; color: white; transform: translateY(-2px); }
+
+    .add-box { 
+      display: flex; gap: 10px; background: #f8fafc; padding: 20px; 
+      border-radius: var(--radius-md); border: 1px dashed var(--gold-main); 
+      margin-bottom: 25px; align-items: center;
+    }
+    
+    .santri-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .santri-item { 
+      display: flex; justify-content: space-between; align-items: center; 
+      background: white; border: 1px solid var(--input-border); 
+      padding: 12px 20px; border-radius: 12px; transition: 0.2s;
+    }
+    .santri-item:hover { border-color: var(--gold-main); transform: translateX(5px); }
+    .santri-name { font-weight: 600; color: var(--navy-dark); font-size: 0.95rem; }
+    
+    .btn-delete { 
+      background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; 
+      border-radius: 8px; width: 32px; height: 32px; display: flex; 
+      justify-content: center; align-items: center; cursor: pointer; transition: 0.2s;
+    }
+    .btn-delete:hover { background: #ef4444; color: white; }
+
+    @media (max-width: 600px) {
+      .usrah-controls { flex-direction: column; align-items: stretch; }
+      .action-group { justify-content: space-between; }
+      .btn-action { flex: 1; height: 48px; }
+      .add-box { flex-direction: column; align-items: stretch; padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+<main class="cahaya-container">
+  <div class="cahaya-card">
+    <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px dashed #f1f5f9; padding-bottom: 20px;">
+      <h2 class="cahaya-title" style="border: none; padding: 0; margin-bottom: 5px; font-size: 1.8rem;">⚙️ Manajemen Usrah</h2>
+      <p style="color: #10b981; font-weight: 600; font-size: 0.85rem;">Terhubung ke Database Cloud (Sinkronisasi Real-Time)</p>
+    </div>
+
+    <!-- AREA KENDALI USRAH -->
+    <div class="form-group">
+      <label>Pilih Grup Usrah (Nama Naqib/ah)</label>
+      <div class="usrah-controls">
+        <select class="form-control" id="pilihNaqib" onchange="muatDaftarSantri()"></select>
+        
+        <div class="action-group">
+          <button class="btn-action add" onclick="tambahUsrah()" title="Buat Usrah Baru">➕</button>
+          <button class="btn-action edit" onclick="editNamaUsrah()" title="Ubah Nama Usrah">✏️</button>
+          <button class="btn-action del" onclick="hapusUsrah()" title="Hapus Usrah Ini">🗑️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOX TAMBAH SANTRI -->
+    <div class="add-box">
+      <input type="text" class="form-control" id="inputNamaBaru" style="text-transform: uppercase; margin-bottom: 0;" placeholder="Masukkan Nama Lengkap Santri Baru..." onkeypress="if(event.key === 'Enter') tambahSantri()">
+      <button class="btn-cahaya btn-gold" style="width: auto; padding: 12px 25px;" onclick="tambahSantri()">Tambah ➕</button>
+    </div>
+
+    <!-- DAFTAR ANGGOTA -->
+    <div class="form-group">
+      <label>Daftar Anggota Saat Ini (<span id="totalAnggota" style="color:var(--gold-dark);">0</span> Santri)</label>
+      <div class="santri-list" id="wadahListSantri">
+        <!-- List santri dimuat disini -->
+      </div>
+    </div>
+
+    <button class="btn-cahaya" onclick="simpanPerubahan()" id="btnSimpan" style="margin-top: 10px;">💾 SIMPAN PERUBAHAN KE SERVER</button>
+  </div>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  
+  // Impor file JS hanya untuk cadangan jika database Firebase benar-benar kosong (pertama kali run)
+  import { dataAwalUsrah } from '../js/data-usrah.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let dataUsrah = {};
+  let usrahAktif = [];
+  
+  // Ambil nama Naqib yang sedang login
+  let namaLogin = localStorage.getItem('namaNaqib');
+  if(!namaLogin) {
+     const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+     namaLogin = user.username || user.label || "";
+     namaLogin = namaLogin.replace(/^Mu'?allim(ah)?\s+|^Naqib(ah)?\s+|^Mrs\s+/i, "").trim();
+  }
+
+  // --- INISIALISASI & TARIK DATA DARI FIREBASE ---
+  document.addEventListener('DOMContentLoaded', async () => {
+    const btnSave = document.getElementById('btnSimpan');
+    btnSave.innerHTML = "⏳ MENGUNDUH DATA SERVER...";
+    btnSave.disabled = true;
+
+    try {
+      const snapshot = await get(ref(db, 'cahaya_app/master_usrah'));
+      
+      if (snapshot.exists()) {
+        dataUsrah = snapshot.val();
+      } else {
+        // MIGRASI AWAL
+        dataUsrah = JSON.parse(JSON.stringify(dataAwalUsrah));
+        await set(ref(db, 'cahaya_app/master_usrah'), dataUsrah);
+        console.log("Migrasi awal data usrah ke Firebase berhasil!");
+      }
+      
+      initSelectNaqib();
+      
+    } catch (error) {
+      alert("Gagal terhubung ke database: " + error.message);
+    } finally {
+      btnSave.innerHTML = "💾 SIMPAN PERUBAHAN KE SERVER";
+      btnSave.disabled = false;
+    }
+  });
+
+  window.initSelectNaqib = function(targetSelect = null) {
+    const select = document.getElementById('pilihNaqib');
+    select.innerHTML = '';
+    
+    if (!dataUsrah) dataUsrah = {};
+
+    const keys = Object.keys(dataUsrah).sort();
+    
+    if (keys.length === 0) {
+      select.innerHTML = '<option value="">-- Tidak ada Usrah --</option>';
+      usrahAktif = [];
+      renderList();
+      return;
+    }
+
+    keys.forEach(naqib => {
+      const opt = document.createElement('option');
+      opt.value = naqib;
+      opt.textContent = `Usrah ${naqib}`;
+      select.appendChild(opt);
+    });
+
+    if (targetSelect && dataUsrah[targetSelect]) {
+      select.value = targetSelect;
+    } else if (namaLogin && keys.some(k => k.toLowerCase() === namaLogin.toLowerCase())) {
+      const matchedKey = keys.find(k => k.toLowerCase() === namaLogin.toLowerCase());
+      select.value = matchedKey;
+    } else {
+      select.selectedIndex = 0;
+    }
+
+    window.muatDaftarSantri();
+  }
+
+  window.muatDaftarSantri = function() {
+    const naqibPilihan = document.getElementById('pilihNaqib').value;
+    if (!naqibPilihan) {
+      usrahAktif = [];
+    } else {
+      usrahAktif = dataUsrah[naqibPilihan] ? [...dataUsrah[naqibPilihan]] : [];
+    }
+    renderList();
+  }
+
+  function renderList() {
+    usrahAktif.sort();
+    const wadah = document.getElementById('wadahListSantri');
+    document.getElementById('totalAnggota').textContent = usrahAktif.length;
+    
+    if (usrahAktif.length === 0) {
+      wadah.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-style:italic; background:white; border-radius:12px; border:1px solid var(--input-border);">Belum ada anggota di usrah ini.</div>`;
+      return;
+    }
+
+    wadah.innerHTML = usrahAktif.map((nama, index) => `
+      <div class="santri-item">
+        <span class="santri-name">${index + 1}. ${nama}</span>
+        <button class="btn-delete" onclick="hapusSantri(${index})" title="Keluarkan ${nama}">✕</button>
+      </div>
+    `).join('');
+  }
+
+  /* --- FUNGSI MANAJEMEN --- */
+
+  window.tambahUsrah = function() {
+    let namaBaru = prompt("Masukkan nama Usrah / Naqib baru:\n(Contoh: Kamal, Favian, Fatimah)");
+    if (!namaBaru) return;
+    
+    namaBaru = namaBaru.trim();
+    namaBaru = namaBaru.charAt(0).toUpperCase() + namaBaru.slice(1).toLowerCase();
+
+    if (dataUsrah[namaBaru]) {
+      alert(`⚠️ Usrah dengan nama "${namaBaru}" sudah ada!`);
+      return;
+    }
+
+    dataUsrah[namaBaru] = []; 
+    initSelectNaqib(namaBaru); 
+  }
+
+  window.editNamaUsrah = function() {
+    const naqibLama = document.getElementById('pilihNaqib').value;
+    if (!naqibLama) return alert("Pilih Usrah terlebih dahulu!");
+
+    let namaBaru = prompt(`Ubah nama Usrah "${naqibLama}" menjadi:`, naqibLama);
+    if (!namaBaru) return;
+
+    namaBaru = namaBaru.trim();
+    namaBaru = namaBaru.charAt(0).toUpperCase() + namaBaru.slice(1).toLowerCase();
+
+    if (namaBaru === naqibLama) return; 
+    if (dataUsrah[namaBaru]) {
+      alert(`⚠️ Nama Usrah "${namaBaru}" sudah dipakai kelompok lain!`);
+      return;
+    }
+
+    dataUsrah[namaBaru] = dataUsrah[naqibLama] || [];
+    delete dataUsrah[naqibLama];
+    initSelectNaqib(namaBaru);
+  }
+
+  window.hapusUsrah = function() {
+    const naqibLama = document.getElementById('pilihNaqib').value;
+    if (!naqibLama) return alert("Pilih Usrah terlebih dahulu!");
+
+    const jumSantri = dataUsrah[naqibLama] ? dataUsrah[naqibLama].length : 0;
+    const konfirmasi = confirm(`🚨 PERINGATAN KERAS!\n\nApakah Anda yakin ingin MENGHAPUS SELURUH Usrah "${naqibLama}" beserta ${jumSantri} santri di dalamnya?`);
+    
+    if (konfirmasi) {
+      delete dataUsrah[naqibLama];
+      initSelectNaqib(); 
+    }
+  }
+
+  window.tambahSantri = function() {
+    const naqibPilihan = document.getElementById('pilihNaqib').value;
+    if (!naqibPilihan) return alert("Silakan buat atau pilih Usrah terlebih dahulu!");
+
+    const input = document.getElementById('inputNamaBaru');
+    let namaBaru = input.value.trim().toUpperCase();
+    
+    if (!namaBaru) return alert("Nama santri tidak boleh kosong!");
+    if (usrahAktif.includes(namaBaru)) return alert("Santri ini sudah ada di dalam Usrah!");
+
+    usrahAktif.push(namaBaru);
+    dataUsrah[naqibPilihan] = usrahAktif; 
+    
+    input.value = '';
+    renderList();
+  }
+
+  window.hapusSantri = function(index) {
+    const naqibPilihan = document.getElementById('pilihNaqib').value;
+    const nama = usrahAktif[index];
+    
+    if(confirm(`Keluarkan "${nama}" dari Usrah ini?`)) {
+      usrahAktif.splice(index, 1);
+      dataUsrah[naqibPilihan] = usrahAktif; 
+      renderList();
+    }
+  }
+
+  /* --- PUSH KE FIREBASE --- */
+  window.simpanPerubahan = async function() {
+    const btn = document.getElementById('btnSimpan');
+    btn.innerHTML = "⏳ MENGUNGGAH KE CLOUD...";
+    btn.disabled = true;
+
+    try {
+      await set(ref(db, 'cahaya_app/master_usrah'), dataUsrah);
+      
+      const namaLoginCocok = Object.keys(dataUsrah).find(k => k.toLowerCase() === namaLogin.toLowerCase());
+      if (namaLoginCocok) {
+          localStorage.setItem("kelompokNaqib", JSON.stringify(dataUsrah[namaLoginCocok] || []));
+      }
+
+      alert("✅ Tersimpan! Data Usrah dan Santri telah tersinkronisasi ke server pusat.");
+    } catch (error) {
+      alert("Gagal menyimpan ke server: " + error.message);
+    } finally {
+      btn.innerHTML = "💾 SIMPAN PERUBAHAN KE SERVER";
+      btn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>

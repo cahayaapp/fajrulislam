@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Pusat Kedisiplinan</title>
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  
+  <style>
+    /* CSS Ringan Khusus Efek Info Box */
+    .info-box {
+      background: #f0f9ff; border: 1px solid #bae6fd; padding: 18px 20px; 
+      border-radius: var(--radius-md); color: #0369a1; margin-bottom: 25px; 
+      font-size: 0.85rem; line-height: 1.6;
+    }
+    .info-box.warning { background: #fffbeb; border-color: #fde68a; color: #d97706; }
+
+    #loadingOverlay { 
+      position: fixed; inset: 0; background: rgba(255,255,255,0.9); 
+      backdrop-filter: blur(5px); z-index: 1000; display: flex; 
+      flex-direction: column; justify-content: center; align-items: center; 
+      color: var(--navy-dark); font-family: 'Playfair Display', serif; 
+      font-size: 1.2rem; transition: 0.5s; 
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">⚖️</div>
+  <div style="font-weight: 700;">Mensinkronkan Data Cloud...</div>
+</div>
+
+<main class="cahaya-container">
+  <!-- TAB NAVIGATION DARI MASTER THEME -->
+  <div class="tab-nav" style="margin-bottom: 25px;">
+    <button class="tab-btn active" onclick="switchTab('tab-lapor', this)">📢 Lapor Pelanggaran</button>
+    <button class="tab-btn" onclick="switchTab('tab-buku', this)">📖 Buku Kasus</button>
+  </div>
+
+  <!-- TAB LAPOR PELANGGARAN -->
+  <div id="tab-lapor" class="tab-content active">
+    <div class="cahaya-card">
+      <div class="info-box">
+        ℹ️ <b>Pusat Pengaduan Asrama:</b> Catat pelanggaran yang Anda temukan atau laporkan aduan dari santri lain. Data ini akan diteruskan ke Konselor untuk ditindaklanjuti.
+      </div>
+      
+      <div class="form-group">
+        <label>Santri yang Melanggar (Terlapor)</label>
+        <select class="form-control" id="lp_namaPelanggar"><option value="">-- Pilih Santri --</option></select>
+      </div>
+
+      <div class="form-group">
+        <label>Sumber Laporan (Nama Santri Pelapor)</label>
+        <select class="form-control" id="lp_namaPelapor">
+          <option value="">-- Pilih Santri Pelapor --</option>
+          <option value="Laporan Langsung (CCTV / Naqib)">[ Laporan Langsung oleh Asatidz / CCTV ]</option>
+        </select>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; font-weight: 500;">
+          *Jika dilaporkan oleh santri, pilih namanya agar tercatat sebagai poin inisiatif kebaikan bagi pelapor.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Detail Kejadian & Kronologi</label>
+        <textarea class="form-control" id="lp_keterangan" rows="4" placeholder="Sebutkan pelanggaran secara detail (lokasi, jam kejadian, dan kronologi singkat)..."></textarea>
+      </div>
+
+      <button id="btnLapor" class="btn-cahaya btn-gold" onclick="kirimLaporan()" style="margin-top: 20px;">📢 KIRIM LAPORAN KE KONSELOR</button>
+    </div>
+  </div>
+
+  <!-- TAB BUKU KASUS -->
+  <div id="tab-buku" class="tab-content">
+    <div class="cahaya-card">
+      <div class="info-box warning">
+        ⚠️ <b>Akses Buku Kasus Terbatas:</b> Anda hanya dapat memantau rekam jejak pelanggaran dari santri yang berada di bawah Usrah Anda saja.
+      </div>
+
+      <div class="form-group">
+        <label>Pilih Santri (Khusus Usrah Anda)</label>
+        <select class="form-control" id="bk_pilihSantri" onchange="renderBukuKasus()">
+          <option value="">-- Pilih Santri --</option>
+        </select>
+      </div>
+
+      <div class="table-responsive" style="margin-top: 20px;">
+        <table class="cahaya-table">
+          <thead>
+            <tr>
+              <th width="15%">Tanggal</th>
+              <th width="15%">Kategori</th>
+              <th width="40%">Kasus & Keterangan</th>
+              <th width="30%">Tindak Lanjut Konselor</th>
+            </tr>
+          </thead>
+          <tbody id="tabelBukuKasus">
+            <tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">Pilih santri untuk melihat riwayat buku kasus.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let namaLogin = localStorage.getItem('namaNaqib');
+  if(!namaLogin) {
+     const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+     namaLogin = user.username || user.label || "Naqib";
+     namaLogin = namaLogin.replace(/^Mu'?allim(ah)?\s+|^Naqib(ah)?\s+|^Mrs\s+/i, "").trim();
+     namaLogin = namaLogin.charAt(0).toUpperCase() + namaLogin.slice(1).toLowerCase();
+  }
+
+  let kelompok = [];
+  let semuaSantri = [];
+  let allDataPelanggaran = {};
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const snaps = await Promise.all([
+        get(ref(db, 'cahaya_app/master_usrah')),
+        get(ref(db, 'cahaya_app/pelanggaran_santri'))
+      ]);
+
+      const dataUsrahCloud = snaps[0].val() || {};
+      allDataPelanggaran = snaps[1].val() || {};
+      
+      kelompok = dataUsrahCloud[namaLogin] || [];
+      
+      for (const [usrah, list] of Object.entries(dataUsrahCloud)) {
+        semuaSantri.push(...list);
+      }
+      semuaSantri.sort();
+      
+      setupDropdowns();
+
+      document.getElementById('loadingOverlay').style.opacity = '0';
+      setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+      
+    } catch(err) { 
+      alert("Gagal sinkronisasi data dari Cloud: " + err.message); 
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+  });
+
+  function setupDropdowns() {
+    const selPelanggar = document.getElementById('lp_namaPelanggar');
+    const selPelapor = document.getElementById('lp_namaPelapor');
+    semuaSantri.forEach(nama => {
+      selPelanggar.appendChild(new Option(nama, nama));
+      selPelapor.appendChild(new Option(nama, nama));
+    });
+
+    const selBK = document.getElementById('bk_pilihSantri');
+    if(kelompok.length === 0) {
+      selBK.innerHTML = '<option value="">(Kosong) Anda belum memiliki anggota usrah</option>';
+    } else {
+      kelompok.forEach(nama => selBK.appendChild(new Option(nama, nama)));
+    }
+  }
+
+  window.switchTab = function(tabId, btnElement) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    btnElement.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  };
+
+  window.kirimLaporan = function() {
+    const pelanggar = document.getElementById('lp_namaPelanggar').value;
+    const pelapor = document.getElementById('lp_namaPelapor').value;
+    const ket = document.getElementById('lp_keterangan').value;
+    
+    if(!pelanggar || !pelapor || !ket) return alert("⚠️ Harap lengkapi semua kolom (Pelanggar, Pelapor, dan Kronologi)!");
+
+    const btn = document.getElementById('btnLapor');
+    btn.innerHTML = "⏳ MENGIRIM..."; btn.disabled = true;
+
+    const dataLog = {
+      waktu: new Date().toISOString(),
+      dilaporkan: pelanggar,
+      pelapor: pelapor,
+      keterangan: ket,
+      tipe: "Lapor Pelanggaran",
+      naqibPendata: namaLogin
+    };
+
+    push(ref(db, 'cahaya_app/log_lapor_inisiatif'), dataLog).then(() => {
+      alert("✅ Laporan berhasil dikirim!\nData telah masuk ke antrean Konselor untuk ditindaklanjuti.");
+      document.getElementById('lp_namaPelanggar').value = '';
+      document.getElementById('lp_namaPelapor').value = '';
+      document.getElementById('lp_keterangan').value = '';
+      btn.innerHTML = "📢 KIRIM LAPORAN KE KONSELOR"; btn.disabled = false;
+    }).catch(e => { alert("Error: " + e.message); btn.disabled = false; });
+  }
+
+  window.renderBukuKasus = function() {
+    const nama = document.getElementById('bk_pilihSantri').value;
+    const tbody = document.getElementById('tabelBukuKasus');
+    
+    if(!nama) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">Pilih santri untuk melihat riwayat buku kasus.</td></tr>';
+      return;
+    }
+
+    let history = [];
+    Object.values(allDataPelanggaran).forEach(log => {
+      if(log.santri === nama) history.push(log);
+    });
+
+    history.sort((a,b) => new Date(b.waktuSimpan) - new Date(a.waktuSimpan));
+
+    if(history.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--gold-dark); font-weight:600;">✨ Alhamdulillah, bersih dari catatan pelanggaran.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = history.map(h => {
+      const [y,m,d] = h.tanggal.split('-');
+      let badge = 'rgba(15, 23, 42, 0.1)'; let tColor = 'var(--text-muted)';
+      if(h.kategori==='Ringan') { badge = '#fef08a'; tColor = '#b45309'; }
+      if(h.kategori==='Sedang') { badge = '#fed7aa'; tColor = '#c2410c'; }
+      if(h.kategori==='Berat') { badge = '#fecaca'; tColor = '#b91c1c'; }
+
+      return `<tr>
+        <td style="color:var(--navy-light); font-weight:600; font-size:0.8rem;">${d}/${m}/${y}</td>
+        <td><span style="background:${badge}; color:${tColor}; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:700;">${h.kategori}</span></td>
+        <td>
+          <b style="color:var(--navy-dark); font-size:0.9rem;">${h.namaPelanggaran}</b><br>
+          <span style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; display:block; margin-top:4px;">${h.keterangan||'-'}</span>
+        </td>
+        <td style="font-size:0.85rem; color:var(--navy-dark); font-weight:500;">
+          ${h.tindakLanjut||'<span style="color:#ef4444; font-style:italic; font-size:0.8rem;">Belum ditindaklanjuti</span>'}
+        </td>
+      </tr>`;
+    }).join('');
+  };
+
+</script>
+</body>
+</html>

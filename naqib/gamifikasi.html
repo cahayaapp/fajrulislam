@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Gamifikasi Usrah</title>
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <!-- Sesuaikan path (../) jika file ini berada di dalam folder /naqib/ -->
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  
+  <style>
+    /* CSS Khusus Efek Gamifikasi (Poin, Badge, Benchmark) */
+    .benchmark-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+    .bench-box { padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--input-border); background: white; text-align: center; box-shadow: var(--shadow-card); }
+    .bench-title { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); letter-spacing: 1px; }
+    .b-value { font-size: 2rem; font-weight: 800; font-family: 'Playfair Display', serif; color: var(--navy-dark); line-height: 1; }
+
+    .total-poin-badge { padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; }
+    .poin-plus { background: #ecfdf5; color: #059669; }
+    .poin-minus { background: #fef2f2; color: #dc2626; }
+    
+    .rank-badge { width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 800; color: white; background: #cbd5e1; font-size: 0.85rem; margin: auto; }
+    .rank-1 { background: linear-gradient(135deg, var(--gold-main), var(--gold-dark)); box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4); }
+
+    .predikat { font-size: 0.65rem; padding: 4px 10px; border-radius: 6px; font-weight: 800; text-transform: uppercase; margin-top: 6px; display: inline-block; letter-spacing: 0.5px; }
+    .p-mumtaz { background: #ecfdf5; color: #059669; border: 1px solid #059669; }
+    .p-rasib { background: #fef2f2; color: #dc2626; border: 1px solid #dc2626; }
+    .p-jayyid { background: #eff6ff; color: #2563eb; border: 1px solid #2563eb; }
+
+    /* MODAL DETAIL KLASEMEN */
+    .modal { display: none; position: fixed; z-index: 2000; inset: 0; background: rgba(15,23,42,0.7); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
+    .modal-content { background: white; width: 100%; max-width: 500px; max-height: 85vh; border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+    .modal-header { padding: 25px; border-bottom: 1px solid var(--input-border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+    .modal-body { flex: 1; overflow-y: auto; padding: 15px 25px; }
+
+    #loadingOverlay { 
+      position: fixed; inset: 0; background: rgba(255,255,255,0.9); 
+      backdrop-filter: blur(5px); z-index: 1000; display: flex; 
+      flex-direction: column; justify-content: center; align-items: center; 
+      color: var(--navy-dark); font-family: 'Playfair Display', serif; 
+      font-size: 1.2rem; transition: 0.5s; 
+    }
+
+    @media(max-width: 600px) { .benchmark-container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">⏳</div>
+  <div style="font-weight: 700;">Mengkalkulasi Klasemen...</div>
+</div>
+
+<main class="cahaya-container">
+  
+  <!-- TAB NAVIGATION DARI MASTER THEME -->
+  <div class="tab-nav" style="margin-bottom: 30px;">
+    <button class="tab-btn active" onclick="switchTab('tab-pantauan', this)">👀 Pantauan Inisiatif</button>
+    <button class="tab-btn" onclick="switchTab('tab-catat', this)">📝 Catat Inisiatif</button>
+    <button class="tab-btn" onclick="switchTab('tab-klasemen', this)">🏆 Klasemen</button>
+  </div>
+
+  <!-- TAB PANTAUAN INISIATIF -->
+  <div id="tab-pantauan" class="tab-content active">
+    <div class="cahaya-card">
+      <div class="form-group" style="display: flex; align-items: center; gap: 15px; background: #f8fafc; padding: 15px 20px; border-radius: var(--radius-md); border: 1px solid var(--input-border); margin-bottom: 25px;">
+        <label style="margin:0; flex-shrink:0; font-size: 0.9rem;">📅 Tanggal:</label>
+        <input type="date" class="form-control" id="filterTanggal" onchange="renderPantauan()" style="background: white; border-color: #cbd5e1; padding: 10px;">
+      </div>
+      
+      <div class="table-responsive">
+        <table class="cahaya-table" id="tablePantauan">
+          <thead>
+            <tr>
+              <th>Nama Santri & Aksi Kebaikan</th>
+              <th style="text-align:right;">Poin (+)</th>
+            </tr>
+          </thead>
+          <tbody id="containerInisiatif"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB CATAT INISIATIF -->
+  <div id="tab-catat" class="tab-content">
+    <div class="cahaya-card">
+      <h2 class="cahaya-title">Catat Inisiatif Kebaikan</h2>
+      <div class="form-group">
+        <label>Nama Santri Inisiator</label>
+        <select class="form-control" id="in_namaSantri"><option value="">-- Sedang memuat --</option></select>
+      </div>
+      <div class="form-group">
+        <label>Detail Amal Saleh</label>
+        <textarea class="form-control" id="in_keterangan" rows="3" placeholder="Contoh: Mengumandangkan Adzan, menyapu asrama tanpa disuruh, dll..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Apresiasi Poin (+)</label>
+        <input type="number" class="form-control" id="in_poin" placeholder="Contoh: 10" min="1">
+      </div>
+      <!-- Override warna tombol dari navy ke hijau khusus form poin kebaikan -->
+      <button class="btn-cahaya" style="background: linear-gradient(135deg, #10b981, #059669); margin-top: 20px;" onclick="simpanInisiatif()">BERIKAN POIN KEPADA SANTRI ✨</button>
+    </div>
+  </div>
+
+  <!-- TAB KLASEMEN (LEADERBOARD) -->
+  <div id="tab-klasemen" class="tab-content">
+    <div class="benchmark-container">
+      <div class="bench-box">
+        <div class="bench-title">Skor Tertinggi Asrama</div>
+        <div class="b-value" id="benchMaxUsrah">0</div>
+      </div>
+      <div class="bench-box">
+        <div class="bench-title">Rata-Rata Usrah</div>
+        <div class="b-value" id="benchAvgUsrah">0</div>
+      </div>
+    </div>
+
+    <div class="cahaya-card">
+      <div class="form-group" style="background: #f8fafc; padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--input-border); margin-bottom: 25px;">
+        <label>Filter Waktu Klasemen</label>
+        <div class="grid-2" style="margin-bottom: 0;">
+          <select class="form-control" id="kl_filterWaktu" onchange="toggleModeWaktu()">
+            <option value="bulan_ini">📅 Bulan Ini (Berjalan)</option>
+            <option value="semua">⏳ Semua Waktu (Akumulasi)</option>
+            <option value="custom_rentang">🗓️ Rentang Tanggal Spesifik</option>
+          </select>
+          <div id="wrap_rentang" style="display:none; grid-template-columns: 1fr 1fr; gap:10px;">
+             <input type="date" class="form-control" id="kl_start" onchange="renderKlasemen()" style="padding:10px;">
+             <input type="date" class="form-control" id="kl_end" onchange="renderKlasemen()" style="padding:10px;">
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="cahaya-table">
+          <thead>
+            <tr>
+              <th width="15%" style="text-align: center;">Rank</th>
+              <th width="60%">Nama Santri & Predikat</th>
+              <th width="25%" style="text-align:right;">Total Poin</th>
+            </tr>
+          </thead>
+          <tbody id="tabelKlasemen"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL DETAIL KLASEMEN -->
+<div id="detailModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h4 id="mNamaSantri" style="color: var(--navy-dark); font-size: 1.1rem; margin-bottom: 5px;">-</h4>
+        <span id="mPredikat" class="predikat">PREDIKAT</span>
+      </div>
+      <div style="text-align:right;">
+        <h2 id="mTotalPoin" style="font-family:'Playfair Display'; color:var(--gold-dark); font-size: 2.5rem; margin: 0; line-height: 1;">0</h2>
+      </div>
+    </div>
+    <div class="modal-body" id="mHistoryList"></div>
+    <div style="padding:20px; text-align:center; border-top: 1px solid #f1f5f9;">
+      <button class="btn-cahaya" onclick="closeModal()">Tutup Detail</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // SANITASI NAMA LOGIN
+  let namaLogin = localStorage.getItem('namaNaqib');
+  if(!namaLogin) {
+     const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+     namaLogin = user.username || user.label || "Naqib";
+     namaLogin = namaLogin.replace(/^Mu'?allim(ah)?\s+|^Naqib(ah)?\s+|^Mrs\s+/i, "").trim();
+     namaLogin = namaLogin.charAt(0).toUpperCase() + namaLogin.slice(1).toLowerCase();
+  }
+  const namaNaqib = namaLogin;
+
+  let kelompokNaqib = [];
+  let allData = { inisiatif: {}, poinManual: {}, absenHarian: {}, absenKBM: {} };
+  window.studentDetails = {};
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('filterTanggal').value = new Date().toISOString().split('T')[0];
+
+    try {
+      // Menarik 5 SUMBER DATA SEKALIGUS dari Cloud Firebase
+      const snaps = await Promise.all([
+        get(ref(db, 'cahaya_app/master_usrah')), 
+        get(ref(db, 'cahaya_app/log_lapor_inisiatif')), 
+        get(ref(db, 'cahaya_app/poin_manual')), 
+        get(ref(db, 'cahaya_app/absensi_program_harian')), 
+        get(ref(db, 'cahaya_app/absensi_pembelajaran')) 
+      ]);
+
+      const dataUsrahCloud = snaps[0].val() || {};
+      kelompokNaqib = dataUsrahCloud[namaNaqib] || [];
+
+      allData.inisiatif = snaps[1].val() || {};
+      allData.poinManual = snaps[2].val() || {};
+      allData.absenHarian = snaps[3].val() || {};
+      allData.absenKBM = snaps[4].val() || {};
+
+      // Mengisi dropdown santri di tab Catat
+      const selS = document.getElementById('in_namaSantri');
+      selS.innerHTML = '';
+      
+      if(kelompokNaqib.length === 0) {
+        selS.innerHTML = '<option value="">(Kosong) Anda belum memiliki anggota usrah</option>';
+      } else {
+        kelompokNaqib.sort().forEach(n => selS.appendChild(new Option(n, n)));
+      }
+
+      document.getElementById('loadingOverlay').style.opacity = '0';
+      setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+
+      renderPantauan(); 
+      renderKlasemen();
+
+    } catch(e) { 
+      console.error("Gagal menarik data dari Firebase:", e);
+      alert("Terjadi kesalahan sinkronisasi data: " + e.message);
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+  });
+
+  window.switchTab = (id, btn) => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(id).classList.add('active');
+  };
+
+  window.toggleModeWaktu = () => {
+    const mode = document.getElementById('kl_filterWaktu').value;
+    document.getElementById('wrap_rentang').style.display = (mode === 'custom_rentang') ? 'grid' : 'none';
+    renderKlasemen();
+  };
+
+  window.renderPantauan = () => {
+    const tgl = document.getElementById('filterTanggal').value;
+    let items = [];
+    Object.values(allData.inisiatif).forEach(l => {
+      if (l.waktu?.startsWith(tgl) && l.tipe === "Inisiatif Kebaikan" && kelompokNaqib.includes(l.pelapor)) {
+        items.push({ nama: l.pelapor, desc: l.keterangan, poin: l.poinDiberikan });
+      }
+    });
+    
+    let html = items.length ? '' : '<tr><td colspan="2" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">Nihil kebaikan yang tercatat pada hari ini.</td></tr>';
+    
+    items.forEach(i => { 
+        html += `<tr>
+            <td><b style="color:var(--navy-dark); font-size:0.95rem;">${i.nama}</b><br><span style="font-size:0.8rem; color:var(--text-muted);">${i.desc}</span></td>
+            <td style="text-align:right; font-weight:800; color:#059669; font-size:1.1rem;">+${i.poin}</td>
+        </tr>`; 
+    });
+    document.getElementById('containerInisiatif').innerHTML = html;
+  };
+
+  window.renderKlasemen = () => {
+    const mode = document.getElementById('kl_filterWaktu').value;
+    window.studentDetails = {};
+    kelompokNaqib.forEach(n => window.studentDetails[n] = { total: 0, history: [] });
+
+    const filterFn = (w) => {
+      if (!w) return false;
+      const datePart = w.substring(0, 10);
+      if (mode === 'semua') return true;
+      if (mode === 'bulan_ini') return w.substring(0,7) === new Date().toISOString().substring(0,7);
+      if (mode === 'custom_rentang') {
+        const start = document.getElementById('kl_start').value;
+        const end = document.getElementById('kl_end').value;
+        return (start && end) ? (datePart >= start && datePart <= end) : true;
+      }
+      return true;
+    };
+
+    Object.values(allData.inisiatif).forEach(l => {
+      if (l.tipe === "Inisiatif Kebaikan" && window.studentDetails[l.pelapor] && filterFn(l.waktu)) {
+        let p = parseInt(l.poinDiberikan) || 0;
+        window.studentDetails[l.pelapor].total += p;
+        window.studentDetails[l.pelapor].history.push({ date: l.waktu.substring(0,10), title: 'Inisiatif Kebaikan', desc: l.keterangan, poin: p });
+      }
+    });
+
+    Object.values(allData.poinManual).forEach(l => {
+      if (window.studentDetails[l.namaSantri] && filterFn(l.waktu)) {
+        let p = parseInt(l.poin) || 0;
+        window.studentDetails[l.namaSantri].total += p;
+        window.studentDetails[l.namaSantri].history.push({ date: l.waktu.substring(0,10), title: 'Pelanggaran/Aturan', desc: l.keterangan, poin: p });
+      }
+    });
+
+    [allData.absenHarian, allData.absenKBM].forEach(db_log => {
+      Object.values(db_log).forEach(l => {
+        if(filterFn(l.tanggal) && l.data) {
+          l.data.forEach(s => {
+            if(window.studentDetails[s.nama]) {
+              let p = parseInt(s.poin) || 0;
+              window.studentDetails[s.nama].total += p;
+              if(p!==0) window.studentDetails[s.nama].history.push({ date: l.tanggal, title: 'Absensi', desc: (l.program || l.mapel), poin: p });
+            }
+          });
+        }
+      });
+    });
+
+    let ld = Object.entries(window.studentDetails).map(([n, d]) => ({ nama: n, poin: d.total }));
+    ld.sort((a,b) => b.poin - a.poin);
+    
+    let scores = ld.map(s => s.poin);
+    let max = scores.length ? Math.max(...scores) : 0;
+    document.getElementById('benchMaxUsrah').textContent = max;
+    document.getElementById('benchAvgUsrah').textContent = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(0) : 0;
+
+    document.getElementById('tabelKlasemen').innerHTML = ld.map((s, i) => {
+      let prs = (s.poin / (max||1)) * 100;
+      let prd = prs >= 90 ? {l:'Mumtaz', c:'p-mumtaz'} : prs < 50 ? {l:'Rasib', c:'p-rasib'} : {l:'Jayyid', c:'p-jayyid'};
+      return `<tr>
+        <td style="text-align:center;"><div class="rank-badge ${i==0?'rank-1':''}">${i+1}</div></td>
+        <td><b style="font-size:0.95rem; color:var(--navy-dark);">${s.nama}</b><br><span class="predikat ${prd.c}">${prd.l}</span></td>
+        <td style="text-align:right">
+          <span class="total-poin-badge ${s.poin>=0?'poin-plus':'poin-minus'}">${s.poin}</span>
+          <button style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:8px; opacity:0.7; transition:0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" onclick="showDetail('${s.nama}')">👁️</button>
+        </td>
+      </tr>`;
+    }).join('');
+  };
+
+  window.showDetail = (n) => {
+    const d = window.studentDetails[n];
+    document.getElementById('mNamaSantri').textContent = n;
+    document.getElementById('mTotalPoin').textContent = d.total;
+    
+    let prs = (d.total / (parseInt(document.getElementById('benchMaxUsrah').textContent)||1)) * 100;
+    let prd = prs >= 90 ? {l:'Mumtaz', c:'p-mumtaz'} : prs < 50 ? {l:'Rasib', c:'p-rasib'} : {l:'Jayyid', c:'p-jayyid'};
+    
+    const mPred = document.getElementById('mPredikat');
+    mPred.textContent = prd.l;
+    mPred.className = `predikat ${prd.c}`;
+
+    document.getElementById('mHistoryList').innerHTML = d.history.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(h => `
+      <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid var(--input-border);">
+        <div style="font-size:0.8rem;"><span style="color:var(--text-muted); font-weight:600;">${h.date}</span><br><b style="color:var(--navy-dark); font-size:0.9rem;">${h.title}</b><br><span style="color:var(--text-muted);">${h.desc}</span></div>
+        <div style="font-weight:800; font-size:1.1rem; color:${h.poin>=0?'#059669':'#dc2626'}">${h.poin>=0?'+':''}${h.poin}</div>
+      </div>
+    `).join('');
+    
+    if(d.history.length === 0) {
+        document.getElementById('mHistoryList').innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted); font-style:italic;">Belum ada riwayat poin yang terekam.</div>';
+    }
+    
+    document.getElementById('detailModal').style.display = 'flex';
+  };
+
+  window.closeModal = () => document.getElementById('detailModal').style.display = 'none';
+  
+  window.simpanInisiatif = () => {
+    const s = document.getElementById('in_namaSantri').value;
+    const k = document.getElementById('in_keterangan').value;
+    const p = document.getElementById('in_poin').value;
+    if(!s || !k || !p) return alert("⚠️ Mohon lengkapi semua data!");
+    
+    const btn = document.querySelector('.btn-cahaya');
+    btn.innerHTML = "⏳ MENYIMPAN POIN..."; btn.disabled = true;
+
+    push(ref(db, 'cahaya_app/log_lapor_inisiatif'), { 
+      waktu: new Date().toISOString(), pelapor: s, keterangan: k, poinDiberikan: p, tipe: "Inisiatif Kebaikan", naqib: namaNaqib 
+    }).then(() => { 
+      alert("✅ Alhamdulillah, poin kebaikan berhasil diberikan kepada santri!"); 
+      location.reload(); 
+    }).catch(e => {
+      alert("Error: " + e.message);
+      btn.innerHTML = "BERIKAN POIN KEPADA SANTRI ✨"; btn.disabled = false;
+    });
+  };
+</script>
+</body>
+</html>
