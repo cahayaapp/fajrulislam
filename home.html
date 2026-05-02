@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Beranda - CAHAYA APP</title>
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+
+  <style>
+    /* CSS Khusus Beranda (Hero Card & Widget Grid) */
+    .welcome-card {
+      background: linear-gradient(135deg, var(--navy-dark), var(--navy-light));
+      border-radius: var(--radius-lg); padding: 40px 45px; color: white;
+      position: relative; overflow: hidden; 
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+      margin-bottom: 25px;
+      animation: fadeIn 0.6s ease;
+    }
+    .welcome-card::after {
+      content: '☀'; position: absolute; right: -20px; bottom: -60px;
+      font-size: 18rem; opacity: 0.05; pointer-events: none; line-height: 1;
+    }
+    .welcome-card h1 { 
+      font-family: 'Playfair Display', serif; color: var(--gold-light); 
+      font-size: 2.2rem; margin-bottom: 10px; font-weight: 800; letter-spacing: 1px;
+    }
+    .welcome-card p { opacity: 0.85; max-width: 600px; font-size: 0.95rem; line-height: 1.6; font-weight: 300; }
+    
+    .role-badge {
+      display: inline-block; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 15px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 20px; color: var(--gold-main);
+    }
+
+    /* Grid Khusus Widget Dashboard */
+    .widget-grid { 
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; 
+      animation: fadeIn 0.8s ease; margin-bottom: 25px;
+    }
+    
+    .widget { 
+      background: white; padding: 25px; border-radius: var(--radius-md); 
+      border: 1px solid var(--input-border); box-shadow: var(--shadow-card); 
+      display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden; transition: 0.3s;
+    }
+    .widget:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
+    
+    .widget::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--gold-main); border-radius: 4px 0 0 4px;
+    }
+    .widget.blue::before { background: #3b82f6; }
+    .widget.green::before { background: #10b981; }
+
+    .widget h3 { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 1.5px; font-weight: 700; }
+    .widget .value { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 800; color: var(--navy-dark); line-height: 1.2; }
+    .widget .sub-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; font-weight: 500; }
+
+    /* CSS Jadwal Harian */
+    .jam-badge { background: #fef08a; color: #b45309; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; border: 1px solid #fde047; }
+    
+    /* Layout Group Rumpun */
+    .rumpun-card {
+      margin-bottom: 25px; border-radius: 12px; overflow: hidden; 
+      border: 1px solid var(--input-border); box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      background: white;
+    }
+    .rumpun-header {
+      color: white; padding: 15px 25px; font-weight: 800; font-size: 1.15rem; 
+      display: flex; align-items: center; gap: 12px; font-family: 'Playfair Display', serif;
+    }
+
+    @media (max-width: 768px) {
+      .welcome-card { padding: 30px 20px; }
+      .welcome-card h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="cahaya-container">
+    <!-- KARTU SAMBUTAN -->
+    <div class="welcome-card">
+      <div class="role-badge" id="roleDisplay">Memuat Peran...</div>
+      <h1 id="greetingName">Ahlan, User</h1>
+      <p>Selamat datang di Ruang Kerja CAHAYA. Khidmat Anda hari ini adalah fondasi peradaban esok hari. Mari niatkan semuanya semata-mata untuk meraih ridha Allah SWT.</p>
+    </div>
+
+    <!-- WIDGET INFO -->
+    <div class="widget-grid">
+      
+      <!-- Widget Jam & Tanggal -->
+      <div class="widget">
+        <h3>Waktu Sistem Aktif</h3>
+        <div class="value" id="clock">00:00:00</div>
+        <div class="sub-text" id="date">Senin, 1 Januari 2026</div>
+      </div>
+
+      <!-- Widget Status Sinkronisasi -->
+      <div class="widget green">
+        <h3>Koneksi Server</h3>
+        <div class="value" style="color: #10b981;">Tersinkronisasi</div>
+        <div class="sub-text">✅ Database Firebase Online & Stabil</div>
+      </div>
+
+      <!-- Widget Jadwal Hari Ini -->
+      <div class="widget blue">
+        <h3>Fokus Tarbiyah KBM</h3>
+        <div class="value" id="countJadwal">Memuat...</div>
+        <div class="sub-text">Sesi KBM yang Terjadwal Hari Ini</div>
+      </div>
+
+    </div>
+
+    <!-- HEADER JADWAL & FILTER -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; border-bottom: 2px solid var(--input-border); padding-bottom: 15px;">
+      <div>
+        <h3 style="color: var(--navy-dark); margin: 0; font-family: 'Playfair Display', serif; font-size: 1.6rem;">📅 Jadwal Pelajaran Hari Ini</h3>
+        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-muted); font-weight: 600;" id="labelHariIni">Menyesuaikan hari...</p>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <label style="margin:0; font-size:0.85rem; font-weight:700;">Filter Cepat:</label>
+        <select class="form-control" id="filterJadwal" style="margin-bottom: 0; min-width: 220px;" onchange="renderTabelJadwal()">
+          <option value="ALL">Tampilkan Semua Jadwal</option>
+          <option value="SAYA">Tampilkan Hanya Jadwal Saya</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- WADAH JADWAL YANG DIKELOMPOKKAN -->
+    <div id="wadahJadwalHarian" style="animation: fadeIn 1s ease;">
+      <div style="text-align: center; padding: 40px; color: var(--text-muted); font-style: italic;">⏳ Memuat jadwal harian...</div>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // Konfigurasi Database CAHAYA
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+      projectId: "absensi-santri-fajrul-islam"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Ambil data user login
+    const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+    const namaUserLogin = user.label || user.username || "";
+    let semuaJadwalHariIni = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // 1. SET NAMA & PERAN
+      if (user && user.label) {
+        document.getElementById('greetingName').textContent = `Ahlan, ${user.label}`;
+        if(user.akses && user.akses.length > 0) {
+          document.getElementById('roleDisplay').textContent = `Akses: ${user.akses.map(a => a.toUpperCase()).join(" & ")}`;
+        } else {
+          document.getElementById('roleDisplay').textContent = "Akses Standar";
+        }
+      }
+
+      // 2. SCRIPT JAM REAL-TIME
+      const objHariIni = new Date();
+      function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        document.getElementById('date').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      }
+      updateClock(); setInterval(updateClock, 1000);
+
+      // 3. TARIK JADWAL HARI INI DARI FIREBASE
+      const namaHari = objHariIni.toLocaleDateString('id-ID', { weekday: 'long' });
+      document.getElementById('labelHariIni').textContent = `Hari ini: ${namaHari}`;
+
+      try {
+        const snap = await get(ref(db, 'cahaya_app/jadwal_pelajaran'));
+        const data = snap.val() || {};
+        semuaJadwalHariIni = [];
+        
+        for(let key in data) {
+           let j = data[key];
+           // Ambil jadwal khusus hari ini
+           if(j.hari && j.hari.toLowerCase() === namaHari.toLowerCase()) {
+               semuaJadwalHariIni.push(j);
+           }
+        }
+        
+        renderTabelJadwal();
+
+      } catch (e) {
+        console.error("Gagal memuat jadwal:", e);
+        document.getElementById('wadahJadwalHarian').innerHTML = `<div class="cahaya-card" style="text-align:center; padding: 40px; color:#ef4444;">❌ Gagal terhubung ke server database.</div>`;
+      }
+    });
+
+    // 4. RENDER JADWAL (GROUPING BERDASARKAN RUMPUN)
+    window.renderTabelJadwal = function() {
+        const filter = document.getElementById('filterJadwal').value;
+        const wadah = document.getElementById('wadahJadwalHarian');
+        const counterWidget = document.getElementById('countJadwal');
+
+        let filtered = semuaJadwalHariIni;
+
+        // Filter: Hanya Jadwal Saya
+        if(filter === 'SAYA') {
+            filtered = filtered.filter(j => j.guru && j.guru.toLowerCase() === namaUserLogin.toLowerCase());
+        }
+
+        // Update Widget Counter
+        counterWidget.textContent = `${filtered.length} Sesi`;
+
+        // Jika Kosong
+        if(filtered.length === 0) {
+            if(filter === 'SAYA') {
+                wadah.innerHTML = `<div class="cahaya-card" style="text-align:center; padding: 50px; background: #f8fafc;">✨ Alhamdulillah, Anda tidak memiliki jadwal KBM pada hari ini.</div>`;
+            } else {
+                wadah.innerHTML = `<div class="cahaya-card" style="text-align:center; padding: 50px; background: #f8fafc;">Belum ada KBM yang dijadwalkan pada hari ini.</div>`;
+            }
+            return;
+        }
+
+        // PROSES PENGELOMPOKAN (GROUPING) BERDASARKAN RUMPUN
+        const grouped = {
+            "Halqah Ilmiyah": [],
+            "Halqah Lughowiyah": [],
+            "Halqah Quraniyah": [],
+            "Lainnya": []
+        };
+
+        filtered.forEach(j => {
+            const r = j.rumpun || "Lainnya";
+            if(!grouped[r]) grouped[r] = [];
+            grouped[r].push(j);
+        });
+
+        // Konfigurasi Tema per Rumpun
+        const temaRumpun = {
+            "Halqah Ilmiyah": { icon: "📚", color: "#312e81" }, // Navy Dark
+            "Halqah Lughowiyah": { icon: "🗣️", color: "#047857" }, // Emerald
+            "Halqah Quraniyah": { icon: "📖", color: "#b45309" }, // Amber
+            "Lainnya": { icon: "📌", color: "#475569" } // Slate
+        };
+
+        let htmlOutput = "";
+
+        // Buat HTML Card untuk setiap Rumpun yang ada datanya
+        for(let rumpun in grouped) {
+            if(grouped[rumpun].length > 0) {
+                
+                // Urutkan jadwal berdasarkan jam mulai
+                grouped[rumpun].sort((a, b) => a.jamMulai.localeCompare(b.jamMulai));
+
+                // Generate baris tabel
+                let tableRows = grouped[rumpun].map(j => {
+                    const isMilikSaya = (j.guru.toLowerCase() === namaUserLogin.toLowerCase());
+                    const bgRow = isMilikSaya ? 'background: #f0fdf4;' : ''; // Hijau tipis jika ini KBM saya
+
+                    return `<tr style="${bgRow}">
+                      <td width="15%" style="text-align:center;"><span class="jam-badge">${j.jamMulai} - ${j.jamSelesai}</span></td>
+                      <td width="30%"><b style="color:var(--navy-dark);">${j.kelas}</b></td>
+                      <td width="30%" style="font-weight:700;">${j.mapel}</td>
+                      <td width="25%" style="font-size:0.85rem; color:#0f172a; font-weight:600;">👨‍🏫 ${j.guru} ${isMilikSaya ? '<span style="color:#10b981; font-weight:800;">(Anda)</span>' : ''}</td>
+                    </tr>`;
+                }).join('');
+
+                const config = temaRumpun[rumpun] || temaRumpun["Lainnya"];
+
+                htmlOutput += `
+                <div class="rumpun-card">
+                  <div class="rumpun-header" style="background: ${config.color};">
+                    <span>${config.icon}</span> ${rumpun.toUpperCase()}
+                  </div>
+                  <div class="table-responsive">
+                    <table class="cahaya-table" style="margin: 0; border: none;">
+                      <thead style="background: #f8fafc;">
+                        <tr>
+                          <th style="text-align: center;">Jam KBM</th>
+                          <th>Kelas / Kelompok</th>
+                          <th>Mata Pelajaran</th>
+                          <th>Guru Pengajar</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${tableRows}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                `;
+            }
+        }
+
+        wadah.innerHTML = htmlOutput;
+    };
+
+  </script>
+</body>
+</html>

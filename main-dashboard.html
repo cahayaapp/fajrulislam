@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CAHAYA APP – Portal Utama</title>
+  <link rel="icon" type="image/png" href="assets/logofi.png" />
+  
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="css/cahaya-theme.css" />
+  
+  <style>
+    /* CSS Khusus Layout Dashboard (Sidebar & Topbar) */
+    body { padding: 0; display: flex; height: 100vh; overflow: hidden; background-color: var(--bg-pearl); }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar { 
+      width: 280px; background: white; border-right: 1px solid var(--input-border);
+      display: flex; flex-direction: column; padding: 25px 20px; z-index: 100;
+      overflow-y: auto; transition: 0.3s;
+    }
+    .sidebar::-webkit-scrollbar { width: 5px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    .brand-header { display: flex; align-items: center; gap: 15px; margin-bottom: 35px; }
+    .brand-logo { width: 45px; height: 45px; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(212,175,55,0.3)); }
+    .brand-text h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--navy-dark); font-weight: 900; letter-spacing: 1px; line-height: 1.1; }
+    .brand-text p { font-size: 0.65rem; color: var(--gold-main); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+
+    /* Menu Navigasi */
+    .menu-group { display: none; margin-bottom: 25px; animation: fadeIn 0.5s ease; }
+    .group-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; padding-left: 15px; }
+    
+    .nav-item { 
+      display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 12px; 
+      color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.85rem; 
+      cursor: pointer; transition: all 0.3s; margin-bottom: 4px;
+    }
+    .nav-item:hover { background: #f8fafc; color: var(--navy-dark); transform: translateX(5px); }
+    .nav-item.active { 
+      background: linear-gradient(90deg, rgba(212,175,55,0.1) 0%, transparent 100%); 
+      color: var(--navy-dark); font-weight: 700; border-left: 3px solid var(--gold-main); 
+      border-radius: 4px 12px 12px 4px;
+    }
+
+    .btn-logout {
+      margin-top: auto; padding: 12px; border: 1px solid #fecdd3; background: #fff1f2; 
+      color: #e11d48; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%;
+    }
+    .btn-logout:hover { background: #e11d48; color: white; border-color: #e11d48; }
+
+    /* ===== MAIN CONTENT & TOP BAR ===== */
+    .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
+    
+    .top-bar { 
+      padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; 
+      background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--input-border); z-index: 10;
+    }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 800; color: var(--navy-dark); }
+    
+    .user-profile-btn { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 50px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; background: white; box-shadow: var(--shadow-card); }
+    .user-profile-btn:hover { border-color: var(--gold-main); transform: translateY(-2px); }
+    
+    .user-info { text-align: right; display: flex; flex-direction: column; }
+    .user-name { font-weight: 700; font-size: 0.85rem; color: var(--navy-dark); line-height: 1.2; }
+    .user-role { font-size: 0.65rem; color: var(--gold-main); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;}
+
+    .avatar-circle { 
+      width: 38px; height: 38px; border-radius: 50%; background: var(--navy-dark); color: white;
+      display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1rem;
+      border: 2px solid var(--gold-main); overflow: hidden;
+    }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    
+    #contentFrame { width: 100%; flex: 1; border: none; background: transparent; }
+
+    /* ===== MOBILE RESPONSIVE ===== */
+    .mobile-header { display: none; }
+    .mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 99; backdrop-filter: blur(3px); opacity: 0; transition: 0.3s; pointer-events: none;}
+
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .sidebar { position: fixed; top: 0; left: -300px; height: 100vh; width: 280px; box-shadow: 5px 0 20px rgba(0,0,0,0.1); }
+      .sidebar.open { left: 0; }
+      .mobile-menu-overlay.open { opacity: 1; pointer-events: all; }
+      
+      .top-bar { display: none; }
+      .main-content { height: 100vh; }
+      
+      .mobile-header { 
+        display: flex; padding: 15px 20px; background: white; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--input-border); z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      }
+      .mobile-brand { display: flex; align-items: center; gap: 10px; font-family: 'Playfair Display', serif; font-weight: 900; color: var(--navy-dark); font-size: 1.1rem; }
+      .mobile-brand img { width: 30px; }
+      .menu-toggle-btn { background: none; border: none; font-size: 1.5rem; color: var(--navy-dark); cursor: pointer; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-menu-overlay" onclick="toggleSidebar()"></div>
+
+  <aside class="sidebar" id="mainSidebar">
+    <div class="brand-header">
+      <img src="assets/logofi.png" alt="Logo" class="brand-logo" />
+      <div class="brand-text">
+        <h1>CAHAYA APP</h1>
+        <p id="roleBadge">PC Fajrul Islam</p>
+      </div>
+    </div>
+
+    <!-- DYNAMIC MENU NAVIGATION -->
+    <nav class="nav-menu" id="dynamicMenu">
+      
+      <div class="menu-group" id="group-utama" style="display: block;">
+        <div class="group-label">Utama</div>
+        <a class="nav-item active" onclick="loadPage('home.html', this)">🏠 Beranda</a>
+      </div>
+
+      <!-- AREA SUPERVISOR BARU (DITAMBAH MENU PEKANAN, BULANAN, SEMESTER) -->
+      <div class="menu-group">
+        <div class="group-label">Modul Supervisor</div>
+        <a class="nav-item menu-akses" id="menu-kontrol-harian" style="display: none;" onclick="loadPage('supervisor/kontrol-harian.html', this)">📊 Pusat Kontrol Harian</a>
+        <a class="nav-item menu-akses" id="menu-kontrol-pekanan" style="display: none;" onclick="loadPage('supervisor/kontrol-pekanan.html', this)">📅 Pusat Kontrol Pekanan</a>
+        <a class="nav-item menu-akses" id="menu-raport-bulanan" style="display: none;" onclick="loadPage('supervisor/raport-bulanan.html', this)">📈 Laporan Bulanan & KPI</a>
+        <a class="nav-item menu-akses" id="menu-raport-semester" style="display: none;" onclick="loadPage('supervisor/raport-semester.html', this)">🎓 Raport Semester</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Akademik (Guru)</div>
+        <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html', this)">📋 Absensi Halqah</a>
+        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html', this)">📖 Setoran Tahfiz</a>
+        <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html', this)">📝 Input Nilai Bulanan</a>
+        <a class="nav-item menu-akses" id="menu-raport" style="display: none;" onclick="loadPage('guru/inputRaportBulanan.html', this)">📊 Raport Bulanan</a>
+        <a class="nav-item menu-akses" id="menu-halqah" style="display: none;" onclick="loadPage('guru/edit-kelas.html', this)">⚙️ Manajemen Halqah</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Asrama (Naqib)</div>
+        <a class="nav-item menu-akses" id="menu-absen-asrama" style="display: none;" onclick="loadPage('naqib/absensi.html', this)">📋 Absensi Program</a>
+        <a class="nav-item menu-akses" id="menu-disiplin" style="display: none;" onclick="loadPage('naqib/kedisiplinan.html', this)">⚖️ Kedisiplinan & Mentoring</a>
+        <a class="nav-item menu-akses" id="menu-gamifikasi" style="display: none;" onclick="loadPage('naqib/gamifikasi.html', this)">🌟 Gamifikasi</a>
+        <a class="nav-item menu-akses" id="menu-jurnal-piket" style="display: none;" onclick="loadPage('naqib/jurnal-piket.html', this)">📝 Jurnal Piket</a>
+        <a class="nav-item menu-akses" id="menu-usrah" style="display: none;" onclick="loadPage('naqib/edit-usrah.html', this)">⚙️ Manajemen Usrah</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Pusat Asesmen</div>
+        <a class="nav-item menu-akses" id="menu-asesmen-naqib" style="display: none;" onclick="loadPage('pusat-asesmen/naqib.html', this)">🧘 Asesmen Mandiri Naqib</a>
+        <a class="nav-item menu-akses" id="menu-asesmen-guru" style="display: none;" onclick="loadPage('pusat-asesmen/guru.html', this)">🧘 Asesmen Mandiri Guru</a>
+        <a class="nav-item menu-akses" id="menu-asesmen-santri" style="display: none;" onclick="loadPage('pusat-asesmen/santri.html', this)">📊 Asesmen CAHAYA Santri</a>
+        <!-- Asesmen SDM hanya untuk Supervisor/Admin -->
+        <a class="nav-item menu-akses" id="menu-asesmen-sdm" style="display: none;" onclick="loadPage('pusat-asesmen/sdm-supervisor.html', this)">👁️ Asesmen Kinerja SDM</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Bimbingan Konseling</div>
+        <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="loadPage('konselor/daftar-kasus-baru.html', this)">⏳ Antrean Kasus Baru</a>
+        <a class="nav-item menu-akses" id="menu-buku-kasus" style="display: none;" onclick="loadPage('konselor/buku-kasus-riwayat.html', this)">📚 Buku Rekam Jejak Kasus</a>
+        <a class="nav-item menu-akses" id="menu-evaluasi-kasus" style="display: none;" onclick="loadPage('konselor/evaluasi-kasus.html', this)">📈 Evaluasi Pembinaan</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">SETTING</div>
+        <a class="nav-item menu-akses" id="menu-db-master" style="display: none;" onclick="loadPage('admin/database.html', this)">🗄️ Database Master</a>
+        <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html', this)">🔐 Manajemen User</a>
+        <a class="nav-item menu-akses" id="menu-koreksi" style="display: none;" onclick="loadPage('admin/settings.html', this)">🛠️ Pusat Koreksi Data</a>
+        <a class="nav-item menu-akses" id="menu-profil" style="display: none;" onclick="loadPage('profil.html', this)">👤 Pengaturan Profil</a>
+      </div>
+    </nav>
+
+    <button class="btn-logout" onclick="logout()">KELUAR SISTEM</button>
+  </aside>
+
+  <main class="main-content">
+    <div class="mobile-header">
+      <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
+      <div class="mobile-brand"><img src="assets/logofi.png" alt="Logo"> CAHAYA</div>
+      <div class="avatar-circle" onclick="loadPage('profil.html', this)" style="width: 32px; height: 32px; font-size: 0.8rem;" id="mobileAvatar">U</div>
+    </div>
+
+    <div class="top-bar">
+      <div class="page-title" id="currentPageTitle">Beranda</div>
+      <div class="user-profile-btn" onclick="loadPage('profil.html', document.querySelector('[onclick*=\'profil.html\']'))">
+        <div class="user-info">
+          <span class="user-name" id="userNameLabel">MEMUAT...</span>
+          <span class="user-role" id="userRoleLabel">AKSES TERBATAS</span>
+        </div>
+        <div class="avatar-circle" id="userAvatar">U</div>
+      </div>
+    </div>
+
+    <iframe id="contentFrame" src="home.html"></iframe>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      projectId: "absensi-santri-fajrul-islam"
+    };
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    const db = firebase.firestore();
+  </script>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('mainSidebar').classList.toggle('open');
+      document.querySelector('.mobile-menu-overlay').classList.toggle('open');
+    }
+
+    async function refreshUserProfileUI() {
+      const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+      if (!user.akses) { window.location.href = 'index.html'; return; }
+
+      const displayNama = user.label || user.username || "PENGGUNA";
+      document.getElementById('userNameLabel').textContent = displayNama.toUpperCase();
+      document.getElementById('userRoleLabel').textContent = user.akses.join(' & ');
+
+      const avatarEl = document.getElementById('userAvatar');
+      const mobileAvatarEl = document.getElementById('mobileAvatar');
+      if (user.fotoProfil) {
+        const imgHtml = `<img src="${user.fotoProfil}" alt="Profile">`;
+        avatarEl.innerHTML = imgHtml; mobileAvatarEl.innerHTML = imgHtml;
+      } else {
+        const inisial = displayNama.charAt(0).toUpperCase();
+        avatarEl.innerHTML = inisial; mobileAvatarEl.innerHTML = inisial;
+      }
+
+      document.querySelectorAll('.menu-group').forEach(g => {
+        if(g.id !== 'group-utama') g.style.display = 'none';
+      });
+
+      try {
+        const doc = await db.collection("settings").doc("role_menus").get();
+        let ruleMenus = {};
+        if(doc.exists) { ruleMenus = doc.data(); }
+
+        let menusToOpen = [];
+        
+        user.akses.forEach(role => {
+          if(ruleMenus[role]) { 
+            menusToOpen = [...new Set([...menusToOpen, ...ruleMenus[role]])]; 
+          }
+        });
+
+        menusToOpen.push('menu-profil');
+
+        document.querySelectorAll('.menu-akses').forEach(menuHtml => {
+          if(menusToOpen.includes(menuHtml.id)) {
+            menuHtml.style.display = 'flex';
+            menuHtml.closest('.menu-group').style.display = 'block';
+          } else {
+            menuHtml.style.display = 'none';
+          }
+        });
+
+      } catch (e) {
+        console.error("Gagal menarik konfigurasi menu otorisasi:", e);
+      }
+    }
+
+    function loadPage(url, el) {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      if(el && el.classList.contains('nav-item')) el.classList.add('active');
+      
+      document.getElementById('contentFrame').src = url;
+      
+      if(el) {
+        const title = el.textContent.replace(/[^\w\s]/gi, '').trim();
+        document.getElementById('currentPageTitle').textContent = title;
+      }
+
+      if(window.innerWidth <= 900) toggleSidebar();
+    }
+
+    function logout() {
+      if(confirm("Apakah Anda yakin ingin keluar?")) {
+        localStorage.removeItem('cahayaCurrentUser');
+        window.location.href = 'index.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', refreshUserProfileUI);
+    window.addEventListener('storage', (e) => { if (e.key === 'cahayaCurrentUser') refreshUserProfileUI(); });
+    window.refreshUserProfileUI = refreshUserProfileUI;
+  </script>
+</body>
+</html>
