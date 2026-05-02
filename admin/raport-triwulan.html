@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAHAYA APP - Raport Triwulan Terpadu</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===================== ROOT & SCREEN VARIABLES ===================== */
+    :root {
+      --primary-dark: #0f172a;
+      --accent-gold: #b8860b;
+      --accent-gold-light: #e3c472;
+      --bg-screen: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #475569;
+      --emerald-dark: #023b26;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-screen);
+      color: var(--text-main);
+    }
+
+    /* ===================== ADMIN CONTROLS (NO PRINT) ===================== */
+    .admin-panel {
+      background: white; padding: 15px 25px; border-bottom: 3px solid var(--accent-gold);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: flex; flex-wrap: wrap; gap: 15px;
+      align-items: flex-end; position: sticky; top: 0; z-index: 1000;
+    }
+    .admin-panel h2 { font-family: 'Playfair Display', serif; width: 100%; color: var(--primary-dark); font-size: 1.4rem; margin-bottom: 5px; font-weight: 700; }
+    
+    .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 140px; }
+    .filter-group label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
+    .filter-group select { 
+      padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 0.85rem; outline: none; background: #f8fafc; transition: 0.3s;
+    }
+    .filter-group select:focus { border-color: var(--accent-gold); box-shadow: 0 0 0 2px rgba(184, 134, 11, 0.1); }
+
+    .btn-action {
+      padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.3s;
+      display: flex; align-items: center; gap: 8px; font-family: inherit; font-size: 0.85rem;
+    }
+    .btn-generate { background: var(--primary-dark); color: white; }
+    .btn-generate:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3); }
+    .btn-print { background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light)); color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);}
+    .btn-print:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(184, 134, 11, 0.4); }
+
+    /* ===================== A4 PAPER DESIGN (SCREEN VIEW) ===================== */
+    .paper-wrapper { padding: 30px 10px; display: flex; flex-direction: column; align-items: center; gap: 30px;}
+    
+    .a4-page {
+      width: 210mm; 
+      background-color: #ffffff;
+      background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23b8860b' stroke-width='0.2' stroke-opacity='0.06'%3E%3Ccircle cx='10' cy='10' r='9'/%3E%3Ccircle cx='0' cy='10' r='9'/%3E%3Ccircle cx='20' cy='10' r='9'/%3E%3Ccircle cx='10' cy='0' r='9'/%3E%3Ccircle cx='10' cy='20' r='9'/%3E%3C/g%3E%3C/svg%3E");
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15); margin: 0 auto;
+      padding: 15mm; position: relative; overflow: hidden;
+      min-height: 297mm;
+    }
+
+    /* KOP SURAT / HEADER BARU */
+    .kop-surat { 
+      display: flex; justify-content: space-between; align-items: center; 
+      border-bottom: 2px solid var(--primary-dark); 
+      padding-bottom: 12px; margin-bottom: 15px; position: relative; 
+    }
+    /* Garis bawah dobel */
+    .kop-surat::after { 
+      content: ""; position: absolute; bottom: -4px; left: 0; 
+      width: 100%; height: 1px; background: var(--primary-dark); 
+    }
+    .kop-logo { height: 75px; object-fit: contain; }
+    .kop-address { 
+      font-size: 9pt; 
+      color: var(--primary-dark); text-align: right; 
+      line-height: 1.5; font-weight: 500; max-width: 50%;
+    }
+
+    .doc-title { text-align: center; font-family: 'Playfair Display', serif; font-size: 15pt; font-weight: 800; color: var(--primary-dark); margin: 15px 0; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* BIODATA SANTRI */
+    .biodata-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.85); padding: 10px 15px; border: 1px solid rgba(184, 134, 11, 0.4); border-radius: 6px; position: relative;}
+    .bio-item { display: flex; font-size: 10.5pt; margin-bottom: 3px; }
+    .bio-label { width: 140px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 10pt; align-self: center;}
+    .bio-value { font-weight: 700; color: var(--primary-dark); font-size: 11pt; }
+    .bio-value::before { content: ": "; margin-right: 5px; font-weight: normal; color: var(--text-muted); }
+
+    /* SECTION TITLES */
+    .section-title {
+      font-family: 'Playfair Display', serif; font-size: 13pt; font-weight: 800; color: var(--emerald-dark);
+      border-bottom: 1.5px solid var(--accent-gold); padding-bottom: 4px; margin-bottom: 10px; margin-top: 15px;
+      display: flex; align-items: center; gap: 8px; position: relative; z-index: 1;
+    }
+    .section-title::before { content: "❖"; color: var(--accent-gold); font-size: 12pt; }
+
+    /* TABEL AKADEMIK */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10pt; background: rgba(255,255,255,0.7); position: relative; z-index: 1;}
+    th { background: rgba(2, 59, 38, 0.08); color: var(--emerald-dark); font-weight: 700; text-transform: uppercase; border: 1px solid var(--emerald-dark); padding: 8px; text-align: center; }
+    td { border: 1px solid var(--text-muted); padding: 6px 10px; }
+    .td-center { text-align: center; font-weight: 600; }
+    .td-mapel { font-weight: 700; color: var(--primary-dark); }
+    .table-footer { background: rgba(184, 134, 11, 0.15); font-weight: 700; }
+    .materi-sub { font-size: 8.5pt; color: var(--text-muted); font-weight: normal; display: block; margin-top: 2px;}
+
+    /* TAHFIZ & KEDISIPLINAN GRID */
+    .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; position: relative; z-index: 1;}
+    
+    .tahfiz-box, .discipline-box { 
+      border: 1px solid var(--accent-gold); border-radius: 8px; padding: 12px 15px; 
+      background: rgba(255, 255, 255, 0.9); position: relative; overflow: hidden;
+    }
+    .box-header { font-family: 'Playfair Display', serif; font-size: 12pt; font-weight: 700; color: var(--primary-dark); text-align: center; margin-bottom: 10px; border-bottom: 1px dashed var(--accent-gold); padding-bottom: 5px;}
+    
+    .stats-row { display: flex; justify-content: space-around; text-align: center; margin-bottom: 5px; }
+    .stat-item { display: flex; flex-direction: column; }
+    .stat-lbl { font-size: 9pt; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 2px; }
+    .stat-val { font-family: 'Playfair Display', serif; font-size: 16pt; font-weight: 800; color: var(--emerald-dark); }
+    
+    .disc-score-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; }
+    .disc-circle { 
+      width: 65px; height: 65px; border-radius: 50%; background: var(--primary-dark); color: var(--accent-gold-light);
+      display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display'; font-size: 16pt; font-weight: 800;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2); border: 2px solid var(--accent-gold);
+    }
+    .disc-info { display: flex; flex-direction: column; }
+    .disc-pred { font-size: 13pt; font-weight: 800; letter-spacing: 0.5px; }
+    .disc-poin { font-size: 9.5pt; color: var(--text-muted); font-weight: 600;}
+    .disc-msg { font-size: 9.5pt; text-align: center; margin-top: 10px; font-weight: 700; color: var(--accent-gold); background: rgba(184, 134, 11, 0.05); padding: 8px; border-radius: 4px; border: 1px dashed var(--accent-gold); display: none;}
+
+    /* NARASI ASESMEN */
+    .narasi-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; position: relative; z-index: 1;}
+    .narasi-box { border-left: 3px solid var(--accent-gold); padding: 8px 12px; background: rgba(255, 255, 255, 0.85); }
+    .narasi-header { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--emerald-dark); font-size: 11.5pt; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;}
+    .narasi-text { font-size: 10.5pt; text-align: justify; line-height: 1.6; color: #1e293b;}
+
+    /* KELAS KESATUAN CETAK (AGAR JUDUL DAN BOX TIDAK PISAH HALAMAN) */
+    .satu-kesatuan-cetak {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      display: block;
+    }
+
+    /* RENCANA TINDAK LANJUT */
+    .rtl-box { border: 1px solid var(--primary-dark); padding: 12px 15px; border-radius: 6px; margin-bottom: 25px; background: rgba(255,255,255,0.9); position: relative; z-index: 1;}
+    .rtl-item { margin-bottom: 10px; }
+    .rtl-item:last-child { margin-bottom: 0; }
+    .rtl-label { font-weight: 700; color: var(--primary-dark); font-size: 10.5pt; display: flex; align-items: center; gap: 5px;}
+    .rtl-value { font-size: 10.5pt; line-height: 1.6; margin-top: 4px; padding-left: 12px; border-left: 2px solid #e2e8f0; color: #1e293b;}
+
+    /* SIGNATURES */
+    .signature-container { display: flex; justify-content: space-between; margin-top: 25px; padding: 0 20px; position: relative; z-index: 1;}
+    .sign-box { text-align: center; width: 220px; }
+    .sign-date { font-size: 10.5pt; margin-bottom: 5px; color: var(--text-main); font-family: 'Playfair Display', serif; font-style: italic;}
+    .sign-role { font-weight: 700; font-size: 10.5pt; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.5px;}
+    .sign-space { height: 60px; }
+    .sign-name { font-weight: 800; font-size: 12pt; text-decoration: underline; color: var(--primary-dark); font-family: 'Playfair Display', serif; white-space: nowrap;}
+
+    /* ===================== PRINT RULES ===================== */
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .admin-panel, .no-print { display: none !important; }
+      .paper-wrapper { padding: 0; display: block; gap: 0; }
+      
+      .a4-page { 
+        box-shadow: none; margin: 0; padding: 0; width: 100%; height: auto; min-height: auto; 
+        page-break-after: always;
+      }
+      .a4-page:last-child {
+        page-break-after: auto;
+      }
+
+      @page { 
+        size: A4 portrait; 
+        margin: 15mm; 
+        @bottom-right {
+          content: "Halaman " counter(page) " dari " counter(pages);
+          font-family: 'Poppins', sans-serif;
+          font-size: 10pt; 
+          color: #64748b;
+        }
+      }
+      
+      /* Ditambahkan .satu-kesatuan-cetak ke dalam rules prevent break */
+      .section-title, .narasi-box, .split-grid, .rtl-box, .signature-container, tr, .biodata-grid, .satu-kesatuan-cetak {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      
+      .section-title { margin-top: 20px; }
+      .satu-kesatuan-cetak .section-title { margin-top: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-panel no-print">
+  <h2>🖨️ Panel Cetak Raport Terpadu</h2>
+  
+  <div class="filter-group">
+    <label>Tahun Akademik</label>
+    <select id="fTahun">
+      <option value="2025/2026" selected>2025/2026</option>
+      <option value="2026/2027">2026/2027</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Semester</label>
+    <select id="fSemester">
+      <option value="Ganjil">Ganjil</option>
+      <option value="Genap" selected>Genap</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Triwulan</label>
+    <select id="fTriwulan">
+      <option value="1">Triwulan 1</option>
+      <option value="2">Triwulan 2</option>
+      <option value="3" selected>Triwulan 3</option>
+      <option value="4">Triwulan 4</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Kategori Kelas</label>
+    <select id="fKategori" onchange="loadSantriList()">
+      <option value="">-- Pilih Kelas --</option>
+      <optgroup label="Halqah Ilmiyah">
+        <option value="Halqah Ilmiyah|Kelas 1 Putra">Kelas 1 Putra</option>
+        <option value="Halqah Ilmiyah|Kelas 2 Putra">Kelas 2 Putra</option>
+        <option value="Halqah Ilmiyah|Kelas 3 Putra">Kelas 3 Putra</option>
+        <option value="Halqah Ilmiyah|Kelas 4 Benih Ulama">Kelas 4 Benih Ulama</option>
+        <option value="Halqah Ilmiyah|Kelas 4 Benih Pengusaha">Kelas 4 Benih Pengusaha</option>
+        <option value="Halqah Ilmiyah|Kelas 1 Putri">Kelas 1 Putri</option>
+        <option value="Halqah Ilmiyah|Kelas 2 Putri">Kelas 2 Putri</option>
+        <option value="Halqah Ilmiyah|Kelas 3 Putri">Kelas 3 Putri</option>
+      </optgroup>
+      <optgroup label="Halqah Lughowiyah">
+        <option value="Halqah Lughowiyah|Kelas Abah">Kelas Lughowiyah Abah</option>
+        <option value="Halqah Lughowiyah|Kelas Rahiel">Kelas Lughowiyah Rahiel</option>
+        <option value="Halqah Lughowiyah|Kelas Alvin">Kelas Lughowiyah Alvin</option>
+        <option value="Halqah Lughowiyah|Kelas Falah">Kelas Lughowiyah Falah</option>
+        <option value="Halqah Lughowiyah|Kelas Meilisa">Kelas Lughowiyah Meilisa</option>
+        <option value="Halqah Lughowiyah|Kelas Fatimah">Kelas Lughowiyah Fatimah</option>
+        <option value="Halqah Lughowiyah|Kelas Evita">Kelas Lughowiyah Evita</option>
+      </optgroup>
+      <optgroup label="Halqah Quraniyah">
+        <option value="Halqah Quraniyah|Tahfiz Abah">Tahfiz Abah</option>
+        <option value="Halqah Quraniyah|Tahfiz Alvin">Tahfiz Alvin</option>
+        <option value="Halqah Quraniyah|Tahsin Faiq">Tahsin Faiq</option>
+        <option value="Halqah Quraniyah|Tahsin Khaizuran">Tahsin Khaizuran</option>
+        <option value="Halqah Quraniyah|Tahsin Fahmi">Tahsin Fahmi</option>
+        <option value="Halqah Quraniyah|Tahfiz Fatimah">Tahfiz Fatimah</option>
+        <option value="Halqah Quraniyah|Tahsin Meilisa">Tahsin Meilisa</option>
+      </optgroup>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Nama Santri</label>
+    <select id="fSantri">
+      <option value="">-- Pilih Santri --</option>
+    </select>
+  </div>
+  
+  <button class="btn-action btn-generate" onclick="generateRaport()">🔄 Integrasikan Data</button>
+  <button class="btn-action btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+</div>
+
+<div class="paper-wrapper" id="printArea">
+  <div class="a4-page" style="display:flex; justify-content:center; align-items:center; color:var(--text-muted);">
+    <i>Silakan pilih kelas dan klik 'Integrasikan Data'</i>
+  </div>
+</div>
+
+<template id="raportTemplate">
+  <div class="a4-page">
+    <div class="content-wrapper">
+      
+      <div class="kop-surat">
+        <img src="logopondok.png" alt="Logo Pondok" class="kop-logo">
+        <div class="kop-address">
+          Jl. Jend. Sudirman RT/RW 003/001 Dusun Perawas II<br>
+          Desa Buluh Tumbang, Kec. Tanjungpandan,<br>
+          Kab. Belitung Prov. Kep. Bangka Belitung<br>
+          +62 818-1818-9322 | www.fajrulislam.or.id
+        </div>
+      </div>
+
+      <div class="doc-title">RAPORT EVALUASI TRIWULAN TERPADU</div>
+
+      <div class="biodata-grid">
+        <div>
+          <div class="bio-item"><div class="bio-label">Nama Santri</div><div class="bio-value rNama">NAMA SANTRI</div></div>
+          <div class="bio-item"><div class="bio-label">Kelas</div><div class="bio-value rRumpun">Nama Kelas</div></div>
+          <div class="bio-item"><div class="bio-label">Usrah</div><div class="bio-value rUsrah">Nama Usrah</div></div>
+        </div>
+        <div>
+          <div class="bio-item"><div class="bio-label">Tahun Akademik</div><div class="bio-value rTahun">202X/202X</div></div>
+          <div class="bio-item"><div class="bio-label">Semester</div><div class="bio-value rSmt">Ganjil</div></div>
+          <div class="bio-item"><div class="bio-label">Triwulan Ke</div><div class="bio-value rTrw">1</div></div>
+        </div>
+      </div>
+
+      <div class="section-title">A. Pencapaian Akademik</div>
+      <table>
+        <thead>
+          <tr>
+            <th width="5%">No</th>
+            <th width="35%">Mata Pelajaran</th>
+            <th width="15%">Syafawi (70%)</th>
+            <th width="15%">Tahriri (30%)</th>
+            <th width="15%">Total Nilai</th>
+            <th width="15%">Predikat</th>
+          </tr>
+        </thead>
+        <tbody class="tabelNilai">
+          </tbody>
+      </table>
+
+      <div class="split-grid">
+        <div class="tahfiz-box">
+          <div class="box-header">📖 Hafalan Qur'an</div>
+          
+          <div class="tahfiz-reguler-container" style="display: none;">
+            <div style="font-size: 10pt; color: var(--emerald-dark); font-weight: 700; text-align: center; margin-bottom: 5px;">Tahfiz Reguler</div>
+            <div class="stats-row" style="align-items: center;">
+              <div class="stat-item" style="flex:1"><span class="stat-val tJuz">0</span><span class="stat-lbl">Juz</span></div>
+              <div style="font-size: 10.5pt; font-weight: 800; color: var(--accent-gold); letter-spacing: 1px;">ATAU</div>
+              <div class="stat-item" style="flex:1"><span class="stat-val tHal">0</span><span class="stat-lbl">Halaman</span></div>
+            </div>
+          </div>
+
+          <div class="tahfiz-cahaya-container" style="display: none; margin-top: 10px; border-top: 1px dashed var(--accent-gold); padding-top: 10px;">
+            <div style="font-size: 10.5pt; color: var(--accent-gold); font-weight: 700; text-align: center; margin-bottom: 5px;">✨ Tahfiz Cahaya</div>
+            <div class="stats-row">
+              <div class="stat-item"><span class="stat-val tAyat">0</span><span class="stat-lbl">Ayat</span></div>
+            </div>
+            <div style="font-size: 9.5pt; text-align: center; color: var(--text-muted); margin-top: 8px; font-weight: 500; line-height: 1.3;">
+              Beserta Terjemah, Tafsir, Tadabbur, Letak Ayat, dan Langkah Aksi Pengamalan.
+            </div>
+          </div>
+        </div>
+        
+        <div class="discipline-box">
+          <div class="box-header">⚖️ Indeks Kedisiplinan</div>
+          <div class="disc-score-wrapper">
+            <div class="disc-circle dPersen">0%</div>
+            <div class="disc-info">
+              <div class="disc-pred dPredikat">MENUNGGU</div>
+              <div class="disc-poin dPoin">Total Poin: 0 / 0</div>
+            </div>
+          </div>
+          <div class="disc-msg"></div>
+        </div>
+      </div>
+
+      <div class="satu-kesatuan-cetak">
+        <div class="section-title">B. Evaluasi Karakter (5 Dimensi CAHAYA)</div>
+        <div class="narasi-container">
+          <div class="narasi-box">
+            <div class="narasi-header">🌙 Dimensi Spiritual (Cinta Allah)</div>
+            <div class="narasi-text nSpiritual">Data asesmen belum tersedia.</div>
+          </div>
+          <div class="narasi-box">
+            <div class="narasi-header">🤝 Dimensi Relasional (Akhlak Mulia)</div>
+            <div class="narasi-text nRelasional">Data asesmen belum tersedia.</div>
+          </div>
+          <div class="narasi-box">
+            <div class="narasi-header">💛 Dimensi Emosional (Hati Bersih)</div>
+            <div class="narasi-text nEmosional">Data asesmen belum tersedia.</div>
+          </div>
+          <div class="narasi-box">
+            <div class="narasi-header">🧠 Dimensi Intelektual (Akal Cerdas)</div>
+            <div class="narasi-text nIntelektual">Data asesmen belum tersedia.</div>
+          </div>
+          <div class="narasi-box">
+            <div class="narasi-header">💪 Dimensi Fisik (Fisik Berdaya)</div>
+            <div class="narasi-text nFisik">Data asesmen belum tersedia.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="satu-kesatuan-cetak">
+        <div class="section-title">C. Rencana Tindak Lanjut</div>
+        <div class="rtl-box">
+          <div class="rtl-item">
+            <div class="rtl-label">🎯 Fokus Perbaikan Triwulan Ini:</div>
+            <div class="rtl-value rFokusIni">Menunggu data...</div>
+          </div>
+          <div class="rtl-item">
+            <div class="rtl-label">📊 Hasil Perbaikan Triwulan Ini:</div>
+            <div class="rtl-value rHasil">Menunggu data...</div>
+          </div>
+          <div class="rtl-item">
+            <div class="rtl-label">🎯 Fokus Perbaikan Triwulan Depan:</div>
+            <div class="rtl-value rFokus">Menunggu data...</div>
+          </div>
+          <div class="rtl-item">
+            <div class="rtl-label">💡 Saran Khusus <span class="lbl-naqib-saran">Naqib</span>:</div>
+            <div class="rtl-value rSaran" style="font-style: italic;">Menunggu data...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="signature-container">
+        <div class="sign-box">
+          <div class="sign-date">Mengetahui,</div>
+          <div class="sign-role">Orang Tua / Wali Santri</div>
+          <div class="sign-space"></div>
+          <div class="sign-name">( ........................................ )</div>
+        </div>
+        
+        <div class="sign-box">
+          <div class="sign-date tglTtd">Tanjung Pandan, ...</div>
+          <div class="sign-role lbl-naqib-ttd">Naqib</div>
+          <div class="sign-space"></div>
+          <div class="sign-name namaGuru">Nama Naqib</div>
+        </div>
+      </div>
+      
+      <div class="signature-container" style="justify-content: center; margin-top: 10px;">
+        <div class="sign-box">
+          <div class="sign-role">Direktur Pesantren</div>
+          <div class="sign-space"></div>
+          <div class="sign-name">Dr. Multazam, SE., M.Pd.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam",
+    storageBucket: "absensi-santri-fajrul-islam.appspot.com",
+    messagingSenderId: "739928369926",
+    appId: "1:739928369926:web:7e95375c3ddba0f584cdd07"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const dataSantri = {
+    "Halqah Ilmiyah": {
+      "Kelas 1 Putra": ["JUANDA NUR ILHAM","M. ABIL IRWANSYAH","ALIF SAMUDRA","FAHRY AKBAR RAMDHANI","M. USAMAH","MUHAMAD YUSUF ARROSIYD","ROID AFDAL","ANUGRAH PRATAMA","AHMAD FARHAAN","DEDI SETIADI","MOHAMMAD IKHSAN HAIRULI","ALVIN HERFIANTINO","IHZA TRINANDI","ILHAM","RAKA SEPTIAN","CAHYIS ISZAM","DIKKI KURNIAWAN","M. ARYA MAHDI WAFI EL-FAUZANI","EZA FEBRI AL FADZRI","M. DIRGATAMA","VERY SYACH","RADEN AZAA PANCA PUTRA","FAUZAN IBNI JABAR","REZFY FAKHRYAZKA","SYAHRUL RAMADHAN","ADITYA PUTRA IBRAHIM","AIRLANGGA AZKA ABQORI","AQIELA MARSYAH","BRILLY HANDRIAN","DARREN ATHAYA","DZIKRI MUDHOFFAR","ELLENO QUTHBIE HERMAWAN","FADIL NURHALIM","GABRIEL AL FATIH","HADINATA SAPUTRA","MIKO VAJAR","M. ALMISKY PRATAMA","M. AQIL RIDHO","M. IZAM SAPUTRA","M. SYAKIR HUTABARAT","M. YASIR AL FAZAR JHIRA","M. ZIYAD ZHAZHA","RAFA"],
+      "Kelas 2 Putra": ["ABDULLAH MUKTI HAFIDZALLAH","AHMAD RIYADI","AKBAR PRAYOGA","ANDES AFENDRA","BASRI AL HAZIQ ZULFAHMI","CANZA RYANDA HUTASUHUT","DAFFA AL MUSYARI","DANANG PRASDITYA SANTOSO","FAHRIE OKTAVIRANO FITRIS","FAKHRI AL MUZAKKI","FALIZH DAFFA QATRUNNADA","FEBRI GHALIH AL FAROBI","HAFIDZ AL ROZI","HAFIDZ ALRIZKY","ILHAM MUKMIN AL FARABI","LUTHFAN ADZAKI","MAHESA AULIA GIFFARI","M. FADHIL BUANA","M. FAISAL FIKRIANSYAH","M. FIRAAS AL INSYIROH","M. XAVI NF","NABIL NAJMI","NAJMIHADI SYAUQII TAMAAM","NAUFAL AKBAR ALKHATIRI","NIZAM KABISAT","QHEIZAN ALQIZA ARISDA","RENAL MARTIN","REYFAS RAMADHAN","ROHADIN FIRDAUS AL QAUSAR","SATRIO ABIMAYU","TEGAR HIDAYAT","WAHYU REYDINATA","ZAHIR ZIBRAN","ZULFAKIH HAERUNNASIHIN","HABIB RAMADHAN"],
+      "Kelas 3 Putra": ["AHMAD MAULANA","ALIF MUHAMMAD YUSUF","ARYA DIFA ALSYA","FARAZH SAYYID PUTRA KENEGA","GHOZY FATURRAHMAN","M. FAQIH HAFIDZALLAH","M. RIJALUL KAMIL","M. AL FALAH","MUHAMMAD ALLAM NUR HUSHAIN","M. RAID MAHRUS","NAFIS","RAFI RAMADHAN","REYNALDI MALIK IBRAHIM ALFARIDZI","WAFII FADHLURROHMAN"],
+      "Kelas 4 Benih Ulama": ["ANGGA PRATAMA PUTRA","MIKA RAHIEL YUSUF","MELDI NOVRIANSYAH","MARFEL SAPUTRA","PRAWIRO PUJO TUNGGAL JATI"],
+      "Kelas 4 Benih Pengusaha": ["KI AGUS MUHAMMAD ABDULLAH SHIDDIQ AGTSALI"],
+      "Kelas 1 Putri": ["PITRI RAMADANI","ADIBA AILA KHANZA","AISYAH NUR KHALIFAH","AISYAH NURUL AULIA","ANISYA SEPTIANI","DAFIA NAFLA SYAKIRA","DINA RUHAYAH","FITRAH KIRANA","INAYAH NOURAH ANINDYA","SHELENA","WINDY WINDARI","ASHIFA FITRI RAMADHONI"],
+      "Kelas 2 Putri": ["EARLYTA ARSYFA SALSABILA","GHENIS ANDIENTIAZ","GRINNETA NALANI PUTRI","JESSICA PUTRY AYRA","QELZA RAMADHANI ATH THAHIRAH","WILDA","NESSYA RAMADHANY"],
+      "Kelas 3 Putri": ["AMIRAH BALQIS RAHADATUL A'ISYAH","BILQIS NUR ANISAH","NYAYU MARLITSA ARDHANI"]
+    },
+    "Halqah Lughowiyah": {
+      "Kelas Abah": ["AHMAD MAULANA","AHMAD RIYADI","AKBAR PRAYOGA","ALIF MUHAMMAD YUSUF","ANDES AFENDRA","ANGGA PRATAMA PUTRA","KI AGUS MUHAMMAD ABDULLAH SHIDDIQ AGTSALI","BASRI AL HAZIQ ZULFAHMI","DANANG PRASDITYA SANTOSO","M. FAQIH HAFIDZALLAH","FEBRI GHALIH AL FAROBI","FALIZH DAFFA QATRUNNADA","HABIB RAMADHAN","MUHAMMAD ALLAM NUR HUSHAIN","M. AL FALAH","MARFEL SAPUTRA","MELDI NOVRIANSYAH","MIKA RAHIEL YUSUF","NAFIS","RAFI RAMADHAN","M. RAID MAHRUS","REYFAS RAMADHAN","RENAL MARTIN","ROHADIN FIRDAUS AL QAUSAR","M. XAVI NF","PRAWIRO PUJO TUNGGAL JATI"],
+      "Kelas Rahiel": ["NAUFAL AKBAR ALKHATIRI","NIZAM KABISAT","M. RIJALUL KAMIL","DAFFA AL MUSYARI","ALIF SAMUDRA","WAFII FADHLURROHMAN","EZA FEBRI AL FADZRI","M. ABIL IRWANSYAH","SYAHRUL RAMADHAN","HAFIDZ AL ROZI","HAFIDZ ALRIZKY","NAJMIHADI SYAUQII TAMAAM","IHZA TRINANDI","CAHYIS ISZAM","AHMAD FARHAAN","ARYA DIFA ALSYA","M. FADHIL BUANA","WAHYU REYDINATA","FAHRY AKBAR RAMDHANI","ALVIN HERFIANTINO","M. ARYA MAHDI WAFI EL-FAUZANI","RADEN AZAA PANCA PUTRA","FAUZAN IBNI JABAR","REZFY FAKHRYAZKA","M. FAISAL FIKRIANSYAH","QHEIZAN ALQIZA ARISDA"],
+      "Kelas Alvin": ["ADITYA PUTRA IBRAHIM","AIRLANGGA AZKA ABQORI","AQIELA MARSYAH","BRILLY HANDRIAN","DARREN ATHAYA","DZIKRI MUDHOFFAR","ELLENO QUTHBIE HERMAWAN","FADIL NURHALIM","GABRIEL AL FATIH","HADINATA SAPUTRA","MIKO VAJAR","M. ALMISKY PRATAMA","M. AQIL RIDHO","M. IZAM SAPUTRA","M. SYAKIR HUTABARAT","M. YASIR AL FAZAR JHIRA","M. ZIYAD ZHAZHA","RAFA"],
+      "Kelas Falah": ["FAHRIE OKTAVIRANO FITRIS","FAKHRI AL MUZAKKI","CANZA RYANDA HUTASUHUT","M. DIRGATAMA","LUTHFAN ADZAKI","FARAZH SAYYID PUTRA KENEGA","ZULFAKIH HAERUNNASIHIN","MUHAMAD YUSUF ARROSIYD","ROID AFDAL","MOHAMMAD IKHSAN HAIRULI","ZAHIR ZIBRAN","NABIL NAJMI","DEDI SETIADI","ANUGRAH PRATAMA","SATRIO ABIMAYU","TEGAR HIDAYAT","ABDULLAH MUKTI HAFIDZALLAH","ILHAM","ILHAM MUKMIN AL FARABI","JUANDA NUR ILHAM","RAKA SEPTIAN","M. FIRAAS AL INSYIROH","GHOZY FATURRAHMAN","REYNALDI MALIK IBRAHIM ALFARIDZI","M. USAMAH","MAHESA AULIA GIFFARI","DIKKI KURNIAWAN","VERY SYACH"],
+      "Kelas Meilisa": ["PITRI RAMADANI","ADIBA AILA KHANZA","AISYAH NUR KHALIFAH","AISYAH NURUL AULIA","ANISYA SEPTIANI","DAFIA NAFLA SYAKIRA","DINA RUHAYAH","FITRAH KIRANA","INAYAH NOURAH ANINDYA","SHELENA","WINDY WINDARI"],
+      "Kelas Fatimah": ["ASHIFA FITRI RAMADHONI","EARLYTA ARSYFA SALSABILA","GHENIS ANDIENTIAZ","GRINNETA NALANI PUTRI","JESSICA PUTRY AYRA","QELZA RAMADHANI ATH THAHIRAH","WILDA","NESSYA RAMADHANY","AMIRAH BALQIS RAHADATUL A'ISYAH","BILQIS NUR ANISAH","NYAYU MARLITSA ARDHANI"],
+      "Kelas Evita": ["PITRI RAMADANI","ADIBA AILA KHANZA","AISYAH NUR KHALIFAH","AISYAH NURUL AULIA","ANISYA SEPTIANI","DAFIA NAFLA SYAKIRA","DINA RUHAYAH","FITRAH KIRANA","INAYAH NOURAH ANINDYA","SHELENA","WINDY WINDARI","ASHIFA FITRI RAMADHONI","EARLYTA ARSYFA SALSABILA","GHENIS ANDIENTIAZ","GRINNETA NALANI PUTRI","JESSICA PUTRY AYRA","QELZA RAMADHANI ATH THAHIRAH","WILDA","NESSYA RAMADHANY","AMIRAH BALQIS RAHADATUL A'ISYAH","BILQIS NUR ANISAH","NYAYU MARLITSA ARDHANI"]
+    },
+    "Halqah Quraniyah": {
+      "Tahfiz Abah": ["M. AL FALAH", "MIKA RAHIEL YUSUF", "ANGGA PRATAMA PUTRA", "NIZAM KABISAT", "PRAWIRO PUJO TUNGGAL JATI", "MAHESA AULIA GIFFARI", "NAJMIHADI SYAUQII TAMAAM", "MARFEL SAPUTRA", "MELDI NOVRIANSYAH", "RENAL MARTIN", "AHMAD RIYADI", "ABDULLAH MUKTI HAFIDZALLAH", "AKBAR PRAYOGA", "ANDES AFENDRA", "BASRI AL HAZIQ ZULFAHMI", "CANZA RYANDA HUTASUHUT", "DAFFA AL MUSYARI", "DANANG PRASDITYA SANTOSO", "FAKHRI AL MUZAKKI", "FALIZH DAFFA QATRUNNADA", "FEBRI GHALIH AL FAROBI", "HAFIDZ AL ROZI", "HAFIDZ ALRIZKY", "ILHAM MUKMIN AL FARABI", "LUTHFAN ADZAKI", "DIKKI KURNIAWAN", "ROID AFDAL", "IHZA TRINANDI", "ILHAM", "KI AGUS MUHAMMAD ABDULLAH SHIDDIQ AGTSALI", "FAHRIE OKTAVIRANO FITRIS"],
+      "Tahfiz Alvin": ["AHMAD MAULANA", "ALIF MUHAMMAD YUSUF", "ARYA DIFA ALSYA", "FARAZH SAYYID PUTRA KENEGA", "GHOZY FATURRAHMAN", "M. FAQIH HAFIDZALLAH", "M. RIJALUL KAMIL", "MUHAMMAD ALLAM NUR HUSHAIN", "M. RAID MAHRUS", "NAFIS", "RAFI RAMADHAN", "REYNALDI MALIK IBRAHIM ALFARIDZI", "WAFII FADHLURROHMAN", "M. FADHIL BUANA", "M. FIRAAS AL INSYIROH", "M. XAVI NF", "NABIL NAJMI", "NAUFAL AKBAR ALKHATIRI", "QHEIZAN ALQIZA ARISDA", "REYFAS RAMADHAN", "ROHADIN FIRDAUS AL QAUSAR", "SATRIO ABIMAYU", "WAHYU REYDINATA", "ZAHIR ZIBRAN", "ZULFAKIH HAERUNNASIHIN", "HABIB RAMADHAN", "MUHAMAD YUSUF ARROSIYD", "VERY SYACH", "M. FAISAL FIKRIANSYAH", "TEGAR HIDAYAT"],
+      "Tahsin Faiq": ["DARREN ATHAYA", "M. AQIL RIDHO", "ALIF SAMUDRA", "M. ABIL IRWANSYAH", "FAUZAN IBNI JABAR", "M. IZAM SAPUTRA", "BRILLY HANDRIAN", "M. SYAKIR HUTABARAT", "DZIKRI MUDHOFFAR", "FADIL NURHALIM", "RAFA", "AIRLANGGA AZKA ABQORI", "M. YASIR AL FAZAR JHIRA", "AQIELA MARSYAH", "ADITYA PUTRA IBRAHIM"],
+      "Tahsin Khaizuran": ["REZFY FAKHRYAZKA", "ALVIN HERFIANTINO", "AHMAD FARHAAN", "DEDI SETIADI", "SYAHRUL RAMADHAN", "M. USAMAH", "ANUGRAH PRATAMA", "RAKA SEPTIAN", "CAHYIS ISZAM", "GABRIEL AL FATIH", "M. ZIYAD ZHAZHA", "ELLENO QUTHBIE HERMAWAN", "MOHAMMAD IKHSAN HAIRULI", "FAHRY AKBAR RAMDHANI"],
+      "Tahsin Fahmi": ["EZA FEBRI AL FADZRI", "M. ARYA MAHDI WAFI EL-FAUZANI", "RADEN AZAA PANCA PUTRA", "M. DIRGATAMA", "MIKO VAJAR", "M. ALMISKY PRATAMA", "HADINATA SAPUTRA", "JUANDA NUR ILHAM"],
+      "Tahfiz Fatimah": ["WILDA", "NESSYA RAMADHANY", "GHENIS ANDIENTIAZ", "JESSICA PUTRY AYRA", "NYAYU MARLITSA ARDHANI", "GRINNETA NALANI PUTRI", "AMIRAH BALQIS RAHADATUL A'ISYAH", "BILQIS NUR ANISAH", "QELZA RAMADHANI ATH THAHIRAH"],
+      "Tahsin Meilisa": ["PITRI RAMADANI", "ADIBA AILA KHANZA", "AISYAH NUR KHALIFAH", "AISYAH NURUL AULIA", "ANISYA SEPTIANI", "DAFIA NAFLA SYAKIRA", "DINA RUHAYAH", "FITRAH KIRANA", "INAYAH NOURAH ANINDYA", "SHELENA", "WINDY WINDARI", "ASHIFA FITRI RAMADHONI", "EARLYTA ARSYFA SALSABILA"]
+    }
+  };
+
+  const dataUsrah = {
+    "Kamal": ["ADITYA PUTRA IBRAHIM","AIRLANGGA AZKA ABQORI","AQIELA MARSYAH","BRILLY HANDRIAN","DARREN ATHAYA","DZIKRI MUDHOFFAR","ELLENO QUTHBIE HERMAWAN","FADIL NURHALIM","GABRIEL AL FATIH","HADINATA SAPUTRA","MIKO VAJAR","M. ALMISKY PRATAMA","M. AQIL RIDHO","M. IZAM SAPUTRA","M. SYAKIR HUTABARAT","M. YASIR AL FAZAR JHIRA","M. ZIYAD ZHAZHA","RAFA","WAHYU REYDINATA","NIZAM KABISAT","JUANDA NUR ILHAM","M. DIRGATAMA","DAFFA AL MUSYARI","MOHAMMAD IKHSAN HAIRULI","REYFAS RAMADHAN","FALIZH DAFFA QATRUNNADA","HAFIDZ AL ROZI","CANZA RYANDA HUTASUHUT","NAJMIHADI SYAUQII TAMAAM","EZA FEBRI AL FADZRI"],
+    "Favian": ["ABDULLAH MUKTI HAFIDZALLAH","AHMAD RIYADI","AKBAR PRAYOGA","ALIF MUHAMMAD YUSUF","ALVIN HERFIANTINO","ANDES AFENDRA","BASRI AL HAZIQ ZULFAHMI","AHMAD MAULANA","DANANG PRASDITYA SANTOSO","DEDI SETIADI","DIKKI KURNIAWAN","FAKHRI AL MUZAKKI","FEBRI GHALIH AL FAROBI","GHOZY FATURRAHMAN","ILHAM MUKMIN AL FARABI","M. AL FALAH","M. FAQIH HAFIDZALLAH","M. FIRAAS AL INSYIROH","MUHAMMAD ALLAM NUR HUSHAIN","M. RAID MAHRUS","M. RIJALUL KAMIL","NABIL NAJMI","RADEN AZAA PANCA PUTRA","RAFI RAMADHAN","SATRIO ABIMAYU","TEGAR HIDAYAT","VERY SYACH","WAFII FADHLURROHMAN","ZAHIR ZIBRAN","ZULFAKIH HAERUNNASIHIN"],
+    "Regen": ["ANGGA PRATAMA PUTRA","KI AGUS MUHAMMAD ABDULLAH SHIDDIQ AGTSALI","MIKA RAHIEL YUSUF","PRAWIRO PUJO TUNGGAL JATI","M. XAVI NF","REYNALDI MALIK IBRAHIM ALFARIDZI","FAHRIE OKTAVIRANO FITRIS","FARAZH SAYYID PUTRA KENEGA","LUTHFAN ADZAKI","MARFEL SAPUTRA","MELDI NOVRIANSYAH","ALIF SAMUDRA","ARYA DIFA ALSYA","FAUZAN IBNI JABAR","HAFIDZ ALRIZKY","M. ABIL IRWANSYAH","M. FADHIL BUANA","M. FAISAL FIKRIANSYAH","NAUFAL AKBAR ALKHATIRI","QHEIZAN ALQIZA ARISDA","REZFY FAKHRYAZKA","SYAHRUL RAMADHAN","ROID AFDAL","ROHADIN FIRDAUS AL QAUSAR","RENAL MARTIN","RAKA SEPTIAN","NAFIS","M. USAMAH","MUHAMAD YUSUF ARROSIYD","MAHESA AULIA GIFFARI","M. ARYA MAHDI WAFI EL-FAUZANI","ILHAM","IHZA TRINANDI","HABIB RAMADHAN","FAHRY AKBAR RAMDHANI","CAHYIS ISZAM","ANUGRAH PRATAMA","AHMAD FARHAAN"],
+    "Fatimah": ["QELZA RAMADHANI ATH THAHIRAH","ASHIFA FITRI RAMADHONI","ADIBA AILA KHANZA","AISYAH NUR KHALIFAH","NYAYU MARLITSA ARDHANI","WILDA","WINDY WINDARI","AISYAH NURUL AULIA","NESSYA RAMADHANY","AMIRAH BALQIS RAHADATUL A'ISYAH","EARLYTA ARSYFA SALSABILA","DAFIA NAFLA SYAKIRA","ANISYA SEPTIANI"],
+    "Evita": ["BILQIS NUR ANISAH","JESSICA PUTRY AYRA","GHENIS ANDIENTIAZ","DINA RUHAYAH","PITRI RAMADANI","GRINNETA NALANI PUTRI","INAYAH NOURAH ANINDYA","SHELENA","FITRAH KIRANA"]
+  };
+
+  window.loadSantriList = function() {
+    const filterCat = document.getElementById("fKategori").value;
+    const selectSantri = document.getElementById("fSantri");
+    
+    selectSantri.innerHTML = '<option value="">-- Pilih Santri --</option>';
+
+    if(filterCat) {
+      selectSantri.innerHTML += '<option value="SEMUA">-- Cetak Semua Santri (Sekelas) --</option>';
+      
+      const parts = filterCat.split("|"); 
+      const rumpun = parts[0]; const kelas = parts[1];
+      if(dataSantri[rumpun] && dataSantri[rumpun][kelas]) {
+        let sorted = [...dataSantri[rumpun][kelas]].sort((a,b) => a.localeCompare(b));
+        sorted.forEach(nama => {
+          let opt = document.createElement("option");
+          opt.value = nama; opt.textContent = nama;
+          selectSantri.appendChild(opt);
+        });
+      }
+    }
+  };
+
+  function getPredikat(nilai) {
+    if(nilai >= 90) return { huruf: "A", ket: "Mumtaz", color: "#16a34a" };
+    if(nilai >= 80) return { huruf: "B", ket: "Jayyid Jiddan", color: "#2563eb" };
+    if(nilai >= 70) return { huruf: "C", ket: "Jayyid", color: "#d97706" };
+    if(nilai >= 60) return { huruf: "D", ket: "Maqbul", color: "#ea580c" };
+    return { huruf: "E", ket: "Rasib", color: "#dc2626" };
+  }
+
+  function getPredikatDisiplin(persen) {
+    if (persen >= 90) return { label: "MUMTAZ", color: "#16a34a" };
+    if (persen >= 75) return { label: "JAYYID JIDDAN", color: "#2563eb" };
+    if (persen >= 60) return { label: "JAYYID", color: "#d97706" };
+    if (persen >= 50) return { label: "MAQBUL", color: "#ea580c" };
+    return { label: "RASIB", color: "#dc2626" };
+  }
+
+  function getNaqibBySantri(namaSantri) {
+    for (let naqib in dataUsrah) {
+      if (dataUsrah[naqib].includes(namaSantri)) {
+        return naqib;
+      }
+    }
+    return "-";
+  }
+
+  function isSantriTahfiz(namaSantri) {
+    const quraniyah = dataSantri["Halqah Quraniyah"];
+    for (let kelas in quraniyah) {
+      if (kelas.toLowerCase().includes("tahfiz") && quraniyah[kelas].includes(namaSantri)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  window.generateRaport = async function() {
+    const btn = document.querySelector('.btn-generate');
+    const tAkademik = document.getElementById("fTahun").value;
+    const tSemester = document.getElementById("fSemester").value;
+    const tTriwulan = document.getElementById("fTriwulan").value;
+    const tKategori = document.getElementById("fKategori").value;
+    const tNama = document.getElementById("fSantri").value;
+
+    if(!tKategori || !tNama) { alert("Pilih Kategori Kelas dan Nama Santri terlebih dahulu."); return; }
+
+    btn.innerHTML = "⏳ Menyatukan Data..."; btn.disabled = true;
+
+    const parts = tKategori.split("|");
+    const rumpun = parts[0];
+    const labelKelas = parts[1]; 
+    
+    let listSantri = [];
+    if (tNama === "SEMUA") {
+        listSantri = [...dataSantri[rumpun][labelKelas]].sort((a,b) => a.localeCompare(b));
+        document.title = `Raport Evaluasi - ${labelKelas}`;
+    } else {
+        listSantri = [tNama];
+        document.title = `Raport Evaluasi - ${tNama}`;
+    }
+
+    try {
+      const [nilaiSnap, assesSnap, tahfizSnap, ibadahSnap, kbmSnap, manualSnap] = await Promise.all([
+        get(ref(db, 'cahaya_app/nilai_ujian_triwulan')),
+        get(ref(db, 'cahaya_app/assesment_triwulan_naqib')),
+        get(ref(db, 'cahaya_app/syahadah_tahfiz')),
+        get(ref(db, 'cahaya_app/absensi_program_harian')),
+        get(ref(db, 'cahaya_app/absensi_pembelajaran')),
+        get(ref(db, 'cahaya_app/poin_manual'))
+      ]);
+
+      const dataN = nilaiSnap.exists() ? Object.values(nilaiSnap.val()) : [];
+      const dataA = assesSnap.exists() ? Object.values(assesSnap.val()) : [];
+      const dataT = tahfizSnap.exists() ? Object.values(tahfizSnap.val()) : [];
+      
+      const allStudents = {};
+      const addPoint = (nama, poin, isManual=false) => {
+        if(!allStudents[nama]) allStudents[nama] = { totalMurni: 0, totalAkhir: 0 };
+        if(!isManual) allStudents[nama].totalMurni += poin;
+        allStudents[nama].totalAkhir += poin;
+      };
+
+      const TANGGAL_MULAI = "2024-05-01"; 
+      
+      if(ibadahSnap.exists()) {
+        Object.values(ibadahSnap.val()).forEach(sess => {
+          if(sess.tanggal >= TANGGAL_MULAI && sess.data) { sess.data.forEach(s => addPoint(s.nama, parseInt(s.poin)||0)); }
+        });
+      }
+      if(kbmSnap.exists()) {
+        Object.values(kbmSnap.val()).forEach(sess => {
+          if(sess.tanggal >= TANGGAL_MULAI && sess.data) { sess.data.forEach(s => addPoint(s.nama, parseInt(s.poin)||0)); }
+        });
+      }
+      
+      let targetDinamis = 0;
+      Object.values(allStudents).forEach(s => { if(s.totalMurni > targetDinamis) targetDinamis = s.totalMurni; });
+      if(targetDinamis === 0) targetDinamis = 1; 
+
+      if(manualSnap.exists()) {
+        Object.values(manualSnap.val()).forEach(log => { addPoint(log.namaSantri, parseInt(log.poin)||0, true); });
+      }
+
+      const wrapper = document.getElementById("printArea");
+      wrapper.innerHTML = ''; 
+      const template = document.getElementById('raportTemplate').content;
+      const tglBawah = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric'});
+
+      for (let santriName of listSantri) {
+          const page = document.importNode(template, true);
+
+          // LOGIKA PENENTUAN NAQIB/NAQIBAH & USRAH BARU
+          let namaNaqib = getNaqibBySantri(santriName);
+          let labelUsrah = "Reguler";
+          let titleNaqib = "Naqib"; 
+          
+          if (namaNaqib === "Kamal") labelUsrah = "Al-Fajr";
+          else if (namaNaqib === "Favian") labelUsrah = "An-Najah";
+          else if (namaNaqib === "Regen") labelUsrah = "An-Nurain";
+          else if (namaNaqib === "Fatimah") {
+              labelUsrah = "Aisyah";
+              titleNaqib = "Naqibah";
+          }
+          else if (namaNaqib === "Evita") {
+              labelUsrah = "Khadijah";
+              titleNaqib = "Naqibah";
+          }
+          else if (namaNaqib !== "-") labelUsrah = namaNaqib; 
+
+          let targetGuru = namaNaqib !== "-" ? `${titleNaqib} ${namaNaqib}` : titleNaqib;
+
+          const isTahfiz = isSantriTahfiz(santriName);
+          if (!isTahfiz) {
+             page.querySelector(".tahfiz-box").style.display = "none";
+             page.querySelector(".split-grid").style.gridTemplateColumns = "1fr"; 
+          }
+
+          // SET NAMA, KELAS, USRAH, GURU
+          page.querySelector(".rNama").textContent = santriName;
+          page.querySelector(".rRumpun").textContent = labelKelas;
+          page.querySelector(".rUsrah").textContent = labelUsrah;
+          page.querySelector(".rTahun").textContent = tAkademik;
+          page.querySelector(".rSmt").textContent = tSemester;
+          page.querySelector(".rTrw").textContent = tTriwulan;
+          page.querySelector(".tglTtd").textContent = `Tanjung Pandan, ${tglBawah}`;
+          page.querySelector(".namaGuru").textContent = targetGuru;
+
+          // UBAH LABEL "NAQIB" MENJADI "NAQIBAH" JIKA BERLAKU
+          page.querySelector(".lbl-naqib-saran").textContent = titleNaqib;
+          page.querySelector(".lbl-naqib-ttd").textContent = titleNaqib;
+
+          const tbody = page.querySelector(".tabelNilai");
+          let sumTotal = 0; let countMapel = 0; let no = 1;
+          
+          let myNilai = dataN.filter(n => n.nama_santri === santriName && n.tahun_akademik === tAkademik && n.semester === tSemester && n.triwulan === tTriwulan);
+          
+          if(myNilai.length > 0) {
+              myNilai.forEach(n => {
+                 const pred = getPredikat(n.nilai_total);
+                 tbody.innerHTML += `<tr>
+                    <td class="td-center">${no++}</td>
+                    <td class="td-mapel">${n.mata_pelajaran} <br><span class="materi-sub">${n.materi_ujian || '-'}</span></td>
+                    <td class="td-center">${n.nilai_syafawi}</td>
+                    <td class="td-center">${n.nilai_tahriri}</td>
+                    <td class="td-center" style="font-size:11.5pt; color:var(--primary-dark)">${n.nilai_total}</td>
+                    <td class="td-center" style="color:${pred.color}">${pred.huruf} (${pred.ket})</td>
+                 </tr>`;
+                 sumTotal += n.nilai_total; countMapel++;
+              });
+              
+              let avg = (sumTotal / countMapel).toFixed(1);
+              let predAvg = getPredikat(avg);
+              tbody.innerHTML += `
+                <tr class="table-footer">
+                  <td colspan="4" style="text-align:right; padding-right:15px;">NILAI RATA-RATA</td>
+                  <td class="td-center" style="font-size:11.5pt; color:var(--primary-dark)">${avg}</td>
+                  <td class="td-center" style="color:${predAvg.color}">${predAvg.huruf}</td>
+                </tr>`;
+          } else {
+              tbody.innerHTML = '<tr><td colspan="6" class="td-center" style="color:#ef4444; font-weight:normal; padding:15px;">Data Nilai Akademik tidak ditemukan untuk periode ini.</td></tr>';
+          }
+
+          if (isTahfiz) {
+              let sumJuz = 0, sumHal = 0, sumAyat = 0;
+              let hasReguler = false;
+              let hasCahaya = false;
+
+              let myTahfiz = dataT.filter(t => t.nama_santri === santriName);
+              
+              myTahfiz.forEach(t => {
+                 let rJuz = parseFloat(t.reguler_juz) || 0;
+                 let rHal = parseFloat(t.reguler_halaman) || 0;
+                 let cAyat = parseFloat(t.cahaya_ayat) || 0;
+
+                 sumJuz += rJuz;
+                 sumHal += rHal;
+                 sumAyat += cAyat;
+
+                 if (rJuz > 0 || rHal > 0) hasReguler = true;
+                 if (cAyat > 0) hasCahaya = true;
+              });
+
+              if (!hasReguler && !hasCahaya) {
+                  hasReguler = true; 
+              }
+
+              const regContainer = page.querySelector(".tahfiz-reguler-container");
+              const cahContainer = page.querySelector(".tahfiz-cahaya-container");
+
+              if (hasReguler) {
+                  regContainer.style.display = "block";
+                  page.querySelector(".tJuz").textContent = sumJuz.toFixed(2);
+                  page.querySelector(".tHal").textContent = sumHal;
+              }
+
+              if (hasCahaya) {
+                  cahContainer.style.display = "block";
+                  page.querySelector(".tAyat").textContent = sumAyat;
+                  
+                  if (!hasReguler) {
+                      cahContainer.style.marginTop = "0";
+                      cahContainer.style.borderTop = "none";
+                      cahContainer.style.paddingTop = "0";
+                  }
+              }
+          }
+
+          const mhs = allStudents[santriName] || { totalMurni:0, totalAkhir:0 };
+          let persentase = Math.round((mhs.totalAkhir / targetDinamis) * 100);
+          let predDisiplin = getPredikatDisiplin(persentase);
+          
+          let circleEl = page.querySelector(".dPersen");
+          let predEl = page.querySelector(".dPredikat");
+          circleEl.textContent = persentase + "%";
+          predEl.textContent = predDisiplin.label;
+          predEl.style.color = predDisiplin.color;
+          page.querySelector(".dPoin").textContent = `Total Poin: ${mhs.totalAkhir} / ${targetDinamis}`;
+          circleEl.style.borderColor = predDisiplin.color;
+          circleEl.style.color = predDisiplin.color;
+
+          const msgEl = page.querySelector('.disc-msg');
+          msgEl.style.display = "block";
+          
+          if (persentase >= 90) {
+              msgEl.textContent = "Masya Allah, adab dan kedisiplinan ananda patut menjadi teladan. Pertahankan keistiqomahan ini! Sebagai penghargaan dari Pesantren, Ananda berhak mendapatkan bonus libur 2 hari. (Opsional)";
+              msgEl.style.color = "#16a34a"; 
+              msgEl.style.borderColor = "#16a34a";
+              msgEl.style.background = "rgba(22, 163, 74, 0.05)";
+          } else if (persentase >= 75) {
+              msgEl.textContent = "Alhamdulillah, kedisiplinan sangat baik. Tingkatkan sedikit lagi fokus ananda menuju Mumtaz.";
+              msgEl.style.color = "#2563eb"; 
+              msgEl.style.borderColor = "#2563eb";
+              msgEl.style.background = "rgba(37, 99, 235, 0.05)";
+          } else if (persentase >= 60) {
+              msgEl.textContent = "Sudah baik. Mari tingkatkan lagi komitmen dan ketaatan terhadap aturan asrama.";
+              msgEl.style.color = "#d97706"; 
+              msgEl.style.borderColor = "#d97706";
+              msgEl.style.background = "rgba(217, 119, 6, 0.05)";
+          } else if (persentase >= 50) {
+              msgEl.textContent = "Perlu perhatian lebih. Mari perbaiki niat dan lebih disiplin lagi di triwulan depan.";
+              msgEl.style.color = "#ea580c"; 
+              msgEl.style.borderColor = "#ea580c";
+              msgEl.style.background = "rgba(234, 88, 12, 0.05)";
+          } else {
+              msgEl.textContent = "Membutuhkan evaluasi menyeluruh. Mari bermuhasabah dan bertekad kuat untuk berubah!";
+              msgEl.style.color = "#dc2626"; 
+              msgEl.style.borderColor = "#dc2626";
+              msgEl.style.background = "rgba(220, 38, 38, 0.05)";
+          }
+
+          let myAsses = dataA.filter(a => a.namaSantri === santriName);
+          if(myAsses.length > 0) {
+             myAsses.sort((a,b) => new Date(b.waktuSimpan) - new Date(a.waktuSimpan));
+             let assesData = myAsses[0];
+
+             page.querySelector(".nSpiritual").textContent = assesData.narasiSpiritual || "-";
+             page.querySelector(".nRelasional").textContent = assesData.narasiRelasional || "-";
+             page.querySelector(".nEmosional").textContent = assesData.narasiEmosional || "-";
+             page.querySelector(".nIntelektual").textContent = assesData.narasiIntelektual || "-";
+             page.querySelector(".nFisik").textContent = assesData.narasiFisik || "-";
+            
+             let hP = assesData.hasilPerbaikan ? `[${assesData.hasilPerbaikan}] ` : "";
+             page.querySelector(".rHasil").textContent = hP + (assesData.evaluasiTriwulanIni || "-");
+             
+             let fokusIniData = assesData.fokusTriwulanIni;
+             if (fokusIniData) {
+                 page.querySelector(".rFokusIni").textContent = Array.isArray(fokusIniData) ? fokusIniData.join(", ") : fokusIniData;
+             } else {
+                 page.querySelector(".rFokusIni").textContent = "-";
+             }
+
+             let fokusDepanData = assesData.fokusTriwulanDepan;
+             if (fokusDepanData) {
+                 page.querySelector(".rFokus").textContent = Array.isArray(fokusDepanData) ? fokusDepanData.join(", ") : fokusDepanData;
+             } else {
+                 page.querySelector(".rFokus").textContent = "-";
+             }
+
+             page.querySelector(".rSaran").textContent = assesData.saranTriwulanDepan || assesData.spesifikTriwulanDepan || "-";
+          }
+
+          wrapper.appendChild(page);
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Terjadi kesalahan saat memproses integrasi data.");
+    } finally {
+      btn.innerHTML = "🔄 Integrasikan Data"; btn.disabled = false;
+    }
+  };
+</script>
+</body>
+</html>
