@@ -33,7 +33,7 @@
     }
     .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
 
-    /* Header Tabel */
+    /* Header Tabel & Tombol Set Semua Hadir (Gaya Naqib) */
     .table-header-flex { 
       display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px;
       margin-top: 25px; margin-bottom: 15px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; 
@@ -45,46 +45,48 @@
     }
     .btn-mark-all:hover { background: #10b981; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.2); }
 
-    /* --- PERBAIKAN TABEL RESPONSIF (KUNCI LEBAR KOLOM) --- */
+    /* --- PERBAIKAN TABEL RESPONSIF (KUNCI DI LAYAR DENGAN table-layout: fixed) --- */
     .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
     
-    /* Gunakan table-layout: fixed agar tabel TIDAK MELAR melewati batas layar */
+    /* Gunakan fixed agar lebar tabel dipaksa muat, tidak melebar ke kanan */
     .cahaya-table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
     
+    /* Styling Header Tabel Gray seperti target */
     .cahaya-table th { 
-      background: #f1f5f9; padding: 12px 2px; font-size: 0.85rem; color: #475569; 
-      text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e2e8f0; text-align: center;
+      background: #f1f5f9; padding: 15px 5px; font-size: 0.85rem; color: #475569; 
+      text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #e2e8f0; text-align: center;
     }
     
-    .cahaya-table td { padding: 10px 2px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
+    .cahaya-table td { padding: 12px 2px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
 
-    /* Pengaturan Persentase Lebar Kolom (Desktop) */
-    .col-no { width: 5%; text-align: center; }
+    /* Pengaturan Persentase Lebar Kolom agar pas 100% di HP */
+    .col-no { width: 5%; text-align: center; } /* Kita beri porsi kecil di desktop, nanti disembunyikan di HP */
     .col-nama { 
-      width: 35%; text-align: left !important; padding-left: 15px !important; 
-      font-weight: 600; color: #0f172a; font-size: 0.85rem; text-transform: capitalize; 
-      line-height: 1.3; word-wrap: break-word; /* Wajib agar teks panjang turun ke bawah */
+      width: 40%; text-align: left !important; padding-left: 15px !important; 
+      font-weight: 600; color: #0f172a; font-size: 0.9rem; text-transform: capitalize; 
+      line-height: 1.3; 
+      /* Kunci agar long-name turun ke bawah */
+      word-wrap: break-word; overflow-wrap: break-word; 
     }
-    .col-aksi { width: 12%; }
+    .col-aksi { width: 11%; } /* Sisakan 11% x 5 = 55% untuk tombol, total pas 100% */
 
-    /* Custom Radio Button Absen */
+    /* Custom Radio Button Absen (Identik dengan Naqib) */
     .radio-label { display: inline-block; cursor: pointer; user-select: none; margin: 0; }
     .radio-label input { display: none; }
     .radio-circle { 
       display: inline-flex; justify-content: center; align-items: center; 
-      width: 30px; height: 30px; border-radius: 50%; background: #f8fafc; 
-      border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.8rem; transition: 0.2s; 
-      margin: 0 auto;
+      width: 32px; height: 32px; border-radius: 50%; background: #f8fafc; 
+      border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.85rem; transition: 0.2s; 
     }
     
     .radio-label input:checked + .radio-circle { color: white; transform: scale(1.1); }
-    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; border-color: #10b981; box-shadow: 0 0 6px rgba(16,185,129,0.3); }
-    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.3); }
-    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.3); }
-    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; border-color: #8b5cf6; box-shadow: 0 0 6px rgba(139,92,246,0.3); }
-    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; border-color: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.3); }
+    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; border-color: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.3); }
+    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.3); }
+    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.3); }
+    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; border-color: #8b5cf6; box-shadow: 0 0 8px rgba(139,92,246,0.3); }
+    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; border-color: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.3); }
 
-    /* Warna Background Baris Tabel */
+    /* Warna Background Baris Tabel saat status aktif */
     tr.status-hadir { background: #ecfdf5 !important; border-left: 4px solid #10b981; }
     tr.status-terlambat { background: #fffbeb !important; border-left: 4px solid #f59e0b; }
     tr.status-izin { background: #eff6ff !important; border-left: 4px solid #3b82f6; }
@@ -101,6 +103,7 @@
     .btn-simpan:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.4); }
     .btn-simpan:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
+    /* Loader Custom */
     #loadingOverlay { 
       position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); 
       z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
@@ -108,7 +111,7 @@
     }
 
     /* =========================================================
-       RESPONSIF KHUSUS HP (KUNCI DI LAYAR)
+       RESPONSIF KHUSUS HP (MUAT 1 LAYAR TANPA GESER, NAMA WRAP)
        ========================================================= */
     @media (max-width: 768px) {
       .cahaya-card { padding: 15px; border-radius: 12px;}
@@ -117,20 +120,22 @@
       .table-header-flex { flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 15px; }
       .btn-mark-all { width: 100%; justify-content: center; padding: 12px; }
 
-      .table-responsive { border: none; overflow: hidden; } /* Kunci overflow */
-      
-      /* Hilangkan Kolom No, Sesuaikan porsi Nama vs Aksi (H,T,I,S,A) */
-      .col-no { display: none; }
-      .col-nama { width: 40%; padding-left: 8px !important; font-size: 0.75rem !important; }
-      .col-aksi { width: 12%; } /* 12% x 5 = 60%, sisanya 40% buat nama. Pas 100%. */
+      /* Modifikasi Tabel agar pas di HP */
+      .table-responsive { border: none; overflow: hidden; } /* Kunci agar tidak muncul scrollbar */
+      .cahaya-table th { padding: 10px 2px; font-size: 0.7rem; letter-spacing: 0; }
+      .cahaya-table td { padding: 8px 2px; }
 
-      .cahaya-table th { padding: 10px 0; font-size: 0.7rem; letter-spacing: 0; }
-      .cahaya-table td { padding: 8px 0; }
+      /* Sembunyikan Kolom No di HP agar lega seperti target */
+      .col-no { display: none; }
       
-      /* Perkecil sedikit ukuran bola agar ada jarak aman antar tombol */
-      .radio-circle { width: 25px; height: 25px; font-size: 0.7rem; border-width: 1px; }
+      /* Sesuaikan porsi Nama vs Aksi agar muat 1 layar */
+      .col-nama { width: 35%; padding-left: 8px !important; font-size: 0.75rem !important; }
+      .col-aksi { width: 13%; } /* 13% x 5 = 65% untuk tombol. Total pas 100%. */
       
-      /* Kurangi efek membesar saat diklik di HP agar tidak tumpang tindih */
+      /* Perkecil radio button H,T,I,S,A di HP agar tidak padat */
+      .radio-circle { width: 26px; height: 26px; font-size: 0.75rem; border-width: 1px; }
+      
+      /* Kurangi efek membesar saat diklik di HP agar tidak bertabrakan */
       .radio-label input:checked + .radio-circle {
         transform: scale(1.05); 
       }
@@ -146,7 +151,7 @@
 
 <main class="cahaya-container" style="padding: 15px;">
   <div class="cahaya-card">
-    <h2 class="cahaya-title">📝 Absensi Kehadiran Halqah</h2>
+    <h2 class="cahaya-title">📝 Absensi Halqah</h2>
     
     <div class="grid-2">
       <div class="form-group">
@@ -215,6 +220,295 @@
     apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
     authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
     databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || 'null');
+  
+  let masterDataAkademik = {};
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('kbmTanggal').value = new Date().toISOString().split('T')[0];
+    try {
+      const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
+      if (snapshot.exists()) masterDataAkademik = snapshot.val();
+    } catch (error) { console.error(error); }
+    
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  });
+
+  window.updatePilihan = function() {
+    const rumpun = document.getElementById('kbmJenisKelas').value;
+    const boxSub = document.getElementById('opsiKhusus');
+    const selSub = document.getElementById('subPilihan');
+    const mapelSelect = document.getElementById('kbmMapel');
+    const tbody = document.getElementById('kbmBody');
+
+    selSub.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    mapelSelect.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:30px;font-style:italic;">Menunggu pilihan kelas...</td></tr>';
+
+    if (!rumpun) { boxSub.style.display = "none"; return; }
+
+    let mapelList = (rumpun === 'Halqah Ilmiyah' ? ['Fiqih','Akidah','Adab','Nahwu','Sirah','Sharaf','Balaghah','Kewirausahaan','Metode Pengajaran','Matematika','IPA'] : (rumpun === 'Halqah Lughowiyah' ? ['Bahasa Arab','Bahasa Inggris','Muhadatsah'] : ['Tahsin','Tahfiz','Murojaah']));
+    mapelList.sort().forEach(m => mapelSelect.add(new Option(m, m)));
+
+    const kategori = masterDataAkademik.halqah?.[rumpun];
+    if (kategori) {
+      boxSub.style.display = "block";
+      Object.keys(kategori).forEach(k => selSub.add(new Option(k, k)));
+    } else { boxSub.style.display = "none"; }
+  };
+
+  window.tampilkanSantri = function() {
+    const rumpun = document.getElementById('kbmJenisKelas').value;
+    const sub = document.getElementById('subPilihan').value;
+    const tbody = document.getElementById('kbmBody');
+    tbody.innerHTML = '';
+    
+    const list = (masterDataAkademik.halqah?.[rumpun]?.[sub] || []).slice().sort();
+    if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#ef4444;">Data kosong.</td></tr>`; return; }
+
+    list.forEach((nama, i) => {
+      const tr = document.createElement('tr');
+      tr.className = 'status-hadir';
+      tr.innerHTML = `
+        <td class="col-no">${i + 1}</td>
+        <td class="col-nama">${nama.toLowerCase()}Tentu, saya mengerti sepenuhnya. Anda ingin visual Kolom Nama dan Kolom Tombol Absensi (H,T,I,S,A) di Absensi Guru **identik secara visual dan responsif** dengan tampilan Absensi Naqib yang Anda tunjukkan di *screenshot* target (`image_1.png`).
+
+Masalah pada kode Absensi Guru sebelumnya adalah penggunaan lebar tetap (fixed pixels seperti `30px`) untuk kolom, yang menyebabkan nama panjang "mendorong" kolom tombol keluar layar.
+
+Kunci solusinya adalah **menggunakan persentase lebar (`%`)** pada tabel dengan gaya **`table-layout: auto`**, sehingga kolom Tombol Absensi diprioritaskan lebarnya, dan Kolom Nama dipaksa untuk *wrap* (turun ke bawah) jika namanya panjang.
+
+Berikut adalah kode lengkap Absensi Guru yang sudah direvisi total CSS-nya agar **pas 100% di layar HP** tanpa perlu geser-geser, persis seperti tampilan Naqib. Silakan ganti total kode lama Anda dengan ini:
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAHAYA APP - Absensi KBM Guru</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  <link href="[https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap)" rel="stylesheet">
+  
+  <style>
+    /* =========================================================
+       CSS ISOLASI KHUSUS HALAMAN ABSENSI (ANTI BERANTAKAN)
+       ========================================================= */
+    body { font-family: 'Poppins', sans-serif; background: #f8fafc; margin: 0; padding: 0;}
+    
+    .cahaya-card {
+      background: #ffffff; border-radius: 16px; padding: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+      margin-bottom: 30px;
+    }
+    
+    .cahaya-title { font-family: 'Playfair Display', serif; color: #0f172a; margin-top: 0; font-size: 1.8rem; }
+
+    /* Layout Form Grid */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 8px; }
+    .form-control { 
+      width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; 
+      font-family: 'Poppins', sans-serif; font-size: 0.95rem; outline: none; background: #f8fafc; transition: 0.3s;
+      box-sizing: border-box;
+    }
+    .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
+
+    /* Header Tabel & Tombol Set Semua Hadir (Identik dengan Naqib) */
+    .table-header-flex { 
+      display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px;
+      margin-top: 25px; margin-bottom: 15px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; 
+    }
+    .btn-mark-all { 
+      background: #ecfdf5; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); 
+      padding: 10px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; 
+      cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 5px; font-family: 'Poppins';
+    }
+    .btn-mark-all:hover { background: #10b981; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.2); }
+
+    /* --- PERBAIKAN TABEL RESPONSIF (GAYA IDENTIK DENGAN NAQIB TARGET) --- */
+    .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+    
+    /* Gunakan table-layout: auto agar tabel menyesuaikan lebar kolom secara dinamis */
+    .cahaya-table { width: 100%; border-collapse: collapse; background: white; table-layout: auto; }
+    
+    /* Styling Header Tabel Gray seperti target */
+    .cahaya-table th { 
+      background: #f1f5f9; padding: 15px 5px; font-size: 0.85rem; color: #475569; 
+      text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #e2e8f0; text-align: center;
+    }
+    
+    .cahaya-table td { padding: 12px 2px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
+
+    /* Pengaturan Persentase Lebar Kolom (Prioritaskan Kolom Aksi agar muat bola) */
+    .col-no { width: 5%; text-align: center; } /* Kita beri No porsi kecil */
+    .col-nama { 
+      width: 40%; text-align: left !important; padding-left: 15px !important; 
+      font-weight: 600; color: #0f172a; font-size: 0.9rem; text-transform: capitalize; 
+      line-height: 1.3; 
+      /* Kunci agar long-name turun ke bawah */
+      word-break: break-word; overflow-wrap: break-word; 
+    }
+    /* Sisanya 11% x 5 = 55% untuk tombol, total pas 100% di desktop */
+    .col-aksi { width: 11%; } 
+
+    /* Custom Radio Button Absen (Ukuran Bola Identik dengan Naqib) */
+    .radio-label { display: inline-block; cursor: pointer; user-select: none; margin: 0; }
+    .radio-label input { display: none; }
+    .radio-circle { 
+      display: inline-flex; justify-content: center; align-items: center; 
+      width: 32px; height: 32px; border-radius: 50%; background: #f8fafc; 
+      border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.85rem; transition: 0.2s; 
+    }
+    
+    .radio-label input:checked + .radio-circle { color: white; transform: scale(1.1); }
+    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; border-color: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.3); }
+    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.3); }
+    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.3); }
+    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; border-color: #8b5cf6; box-shadow: 0 0 8px rgba(139,92,246,0.3); }
+    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; border-color: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.3); }
+
+    /* Warna Background Baris Tabel saat status aktif */
+    tr.status-hadir { background: #ecfdf5 !important; border-left: 4px solid #10b981; }
+    tr.status-terlambat { background: #fffbeb !important; border-left: 4px solid #f59e0b; }
+    tr.status-izin { background: #eff6ff !important; border-left: 4px solid #3b82f6; }
+    tr.status-sakit { background: #f5f3ff !important; border-left: 4px solid #8b5cf6; }
+    tr.status-alfa { background: #fef2f2 !important; border-left: 4px solid #ef4444; }
+
+    /* Tombol Simpan */
+    .btn-simpan {
+      background: linear-gradient(135deg, #d4af37, #fde047); color: #0f172a;
+      border: none; padding: 15px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; width: 100%; transition: 0.3s; margin-top: 25px; box-shadow: 0 10px 20px rgba(212,175,55,0.2);
+      font-family: 'Poppins'; letter-spacing: 1px;
+    }
+    .btn-simpan:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.4); }
+    .btn-simpan:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    /* Loader Custom */
+    #loadingOverlay { 
+      position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); 
+      z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+      color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s;
+    }
+
+    /* =========================================================
+       RESPONSIF KHUSUS HP (MUAT 1 LAYAR TANPA GESER, NAMA WRAP)
+       ========================================================= */
+    @media (max-width: 768px) {
+      .cahaya-card { padding: 15px; border-radius: 12px;}
+      .cahaya-title { font-size: 1.4rem; margin-bottom: 15px;}
+      
+      .table-header-flex { flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 15px; }
+      .btn-mark-all { width: 100%; justify-content: center; padding: 12px; }
+
+      /* Modifikasi Tabel agar pas di HP */
+      .table-responsive { border: none; overflow: visible; } /* Izinkan overflow agar fixed percentages bekerja */
+      .cahaya-table th { padding: 10px 2px; font-size: 0.7rem; letter-spacing: 0; }
+      .cahaya-table td { padding: 8px 2px; }
+
+      /* Sembunyikan Kolom No di HP agar lega seperti target */
+      .col-no { display: none; }
+      
+      /* Sesuaikan porsi Nama vs Aksi (Prioritaskan bola agar muat) */
+      .col-nama { width: 35%; padding-left: 8px !important; font-size: 0.75rem !important; }
+      .col-aksi { width: 13%; } /* 13% x 5 = 65% untuk tombol. Total pas 100%. */
+      
+      /* Perkecil sedikit ukuran bola di HP agar tidak padat */
+      .radio-circle { width: 26px; height: 26px; font-size: 0.75rem; border-width: 1px; }
+      
+      /* Kurangi efek membesar saat diklik di HP agar tidak bertabrakan */
+      .radio-label input:checked + .radio-circle {
+        transform: scale(1.05); 
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: pulse 1.5s infinite alternate ease-in-out;">📚</div>
+  <div style="font-weight: 700;">Menarik Data Kelas...</div>
+</div>
+
+<main class="cahaya-container" style="padding: 15px;">
+  <div class="cahaya-card">
+    <h2 class="cahaya-title">📝 Absensi Halqah</h2>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label>📅 Tanggal KBM</label>
+        <input type="date" class="form-control" id="kbmTanggal">
+      </div>
+      <div class="form-group">
+        <label>📚 Rumpun Kelas</label>
+        <select class="form-control" id="kbmJenisKelas" onchange="updatePilihan()">
+          <option value="">-- Pilih Rumpun --</option>
+          <option value="Halqah Ilmiyah">Halqah Ilmiyah</option>
+          <option value="Halqah Lughowiyah">Halqah Lughowiyah</option>
+          <option value="Halqah Quraniyah">Halqah Quraniyah</option>
+        </select>
+      </div>
+      <div class="form-group" id="opsiKhusus" style="display: none;">
+        <label>🏫 Kelas / Kelompok</label>
+        <select class="form-control" id="subPilihan" onchange="tampilkanSantri()">
+          <option value="">-- Pilih Kelas --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>📝 Mata Pelajaran</label>
+        <select class="form-control" id="kbmMapel"><option value="">-- Pilih Mapel --</option></select>
+      </div>
+    </div>
+
+    <div class="table-header-flex">
+      <h3 style="font-family:'Playfair Display'; font-size:1.2rem; color:#0f172a; font-weight:800; margin:0;">Daftar Santri</h3>
+      <button type="button" class="btn-mark-all" onclick="markAll()">✓ Set Semua Hadir</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="cahaya-table">
+        <thead>
+          <tr>
+            <th class="col-no">No</th>
+            <th class="col-nama">Nama</th>
+            <th class="col-aksi" title="Hadir">H</th>
+            <th class="col-aksi" title="Terlambat">T</th>
+            <th class="col-aksi" title="Izin">I</th>
+            <th class="col-aksi" title="Sakit">S</th>
+            <th class="col-aksi" title="Alfa">A</th>
+          </tr>
+        </thead>
+        <tbody id="kbmBody">
+          <tr><td colspan="7" style="text-align:center;color:#64748b;padding:30px;font-style:italic;">Pilih kelas untuk memuat data.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-group" style="margin-top: 25px;">
+      <label>📌 Ringkasan Materi / Jurnal Mengajar</label>
+      <textarea class="form-control" id="kbmCatatan" rows="3" placeholder="Tuliskan bab atau materi yang diajarkan hari ini..."></textarea>
+    </div>
+
+    <button class="btn-simpan" onclick="simpanKehadiran()">💾 SIMPAN LOG KEHADIRAN</button>
+  </div>
+</main>
+
+<script type="module">
+  import { initializeApp } from "[https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js](https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js)";
+  import { getDatabase, ref, get, push } from "[https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js](https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js)";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "[https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com](https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com)",
     projectId: "absensi-santri-fajrul-islam"
   };
 
