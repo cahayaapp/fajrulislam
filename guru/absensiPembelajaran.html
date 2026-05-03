@@ -11,76 +11,46 @@
   <style>
     body { font-family: 'Poppins', sans-serif; background: #f8fafc; margin: 0; padding: 0;}
     
-    .cahaya-card {
-      background: #ffffff; border-radius: 16px; padding: 25px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
-      margin-bottom: 30px;
-    }
-    
+    .cahaya-card { background: #ffffff; border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; margin-bottom: 30px; }
     .cahaya-title { font-family: 'Playfair Display', serif; color: #0f172a; margin-top: 0; font-size: 1.6rem; }
-
     .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
     
     .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 8px; }
-    .form-control { 
-      width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; 
-      font-family: 'Poppins', sans-serif; font-size: 0.9rem; outline: none; background: #f8fafc; transition: 0.3s;
-      box-sizing: border-box;
-    }
+    .form-control { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; outline: none; background: #f8fafc; transition: 0.3s; box-sizing: border-box; }
     .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
 
-    .table-header-flex { 
-      display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px;
-      margin-top: 25px; margin-bottom: 10px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 10px; 
-    }
-    .btn-mark-all { 
-      background: #ecfdf5; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); 
-      padding: 8px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; 
-      cursor: pointer; transition: 0.3s;
-    }
+    .table-header-flex { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 25px; margin-bottom: 10px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 10px; }
+    .btn-mark-all { background: #ecfdf5; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
 
-    /* --- TABEL ANTI-TERPOTONG --- */
-    .table-responsive { 
-      width: 100%; border-radius: 10px; border: 1px solid #e2e8f0; 
-      overflow: hidden; /* Kunci rapat agar tidak ada scroll */
-      box-sizing: border-box;
-    }
+    /* =========================================
+       STRATEGI TABEL KUNCI (ANTI-TERPOTONG)
+       ========================================= */
+    .table-responsive { width: 100%; border-radius: 10px; border: 1px solid #e2e8f0; overflow: hidden; }
     
     .cahaya-table { 
       width: 100%; 
       border-collapse: collapse; 
-      background: white; 
-      table-layout: fixed; /* Paksa nurut ukuran yang kita buat */
+      table-layout: fixed; /* Memaksa browser mengikuti lebar yang kita buat */
     }
     
-    .cahaya-table th { 
-      background: #f1f5f9; padding: 10px 0; font-size: 0.7rem; color: #475569; 
-      text-transform: uppercase; border-bottom: 2px solid #e2e8f0; text-align: center;
-    }
-    
-    .cahaya-table td { 
-      padding: 8px 0; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; 
-    }
+    .cahaya-table th { background: #f1f5f9; padding: 10px 0; font-size: 0.7rem; color: #475569; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; text-align: center; }
+    .cahaya-table td { padding: 8px 2px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
 
-    /* Ukuran Kolom Desktop (Default) */
-    .col-no { width: 35px; }
-    .col-nama { width: auto; text-align: left !important; padding-left: 10px !important; }
-    .col-aksi { width: 40px; } 
+    /* UKURAN KOLOM DESKTOP (Default) */
+    .col-no { width: 5%; }
+    .col-nama { width: 55%; text-align: left !important; padding-left: 10px !important; }
+    .col-aksi { width: 8%; } 
 
     .cahaya-table td.col-nama { 
-      font-weight: 600; color: #0f172a; font-size: 0.8rem; 
-      text-transform: capitalize; line-height: 1.3;
-      white-space: normal; word-wrap: break-word; overflow-wrap: break-word;
+      font-weight: 600; color: #0f172a; font-size: 0.8rem; text-transform: capitalize; line-height: 1.4;
+      white-space: normal !important; /* WAJIB: Memaksa teks yang panjang turun ke bawah */
+      word-wrap: break-word;
     }
 
-    /* Radio Button Custom */
-    .radio-label { display: inline-block; cursor: pointer; user-select: none; margin: 0; }
+    /* RADIO BUTTON */
+    .radio-label { display: inline-block; cursor: pointer; user-select: none; margin: 0; width: 100%; height: 100%; }
     .radio-label input { display: none; }
-    .radio-circle { 
-      display: inline-flex; justify-content: center; align-items: center; 
-      width: 28px; height: 28px; border-radius: 50%; background: #f8fafc; 
-      border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.7rem; transition: 0.2s; 
-    }
+    .radio-circle { display: inline-flex; justify-content: center; align-items: center; width: 28px; height: 28px; border-radius: 50%; background: #f8fafc; border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.7rem; transition: 0.2s; margin: 0 auto; }
     
     .radio-label input:checked + .radio-circle { color: white; transform: scale(1.1); }
     .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; border-color: #10b981; }
@@ -95,33 +65,30 @@
     tr.status-sakit { background: #f5f3ff !important; }
     tr.status-alfa { background: #fef2f2 !important; }
 
-    .btn-simpan {
-      background: linear-gradient(135deg, #d4af37, #fde047); color: #0f172a;
-      border: none; padding: 15px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700;
-      cursor: pointer; width: 100%; transition: 0.3s; margin-top: 20px; box-shadow: 0 10px 20px rgba(212,175,55,0.2);
-    }
+    .btn-simpan { background: linear-gradient(135deg, #d4af37, #fde047); color: #0f172a; border: none; padding: 15px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 20px; box-shadow: 0 10px 20px rgba(212,175,55,0.2); }
 
-    #loadingOverlay { 
-      position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); 
-      z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-      color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem;
-    }
+    #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem; }
 
     /* =========================================
-       EKSEKUSI KHUSUS HP (KUNCI PERBAIKAN) 
+       EKSEKUSI KHUSUS LAYAR HP
        ========================================= */
     @media (max-width: 600px) {
       .cahaya-container { padding: 5px !important; }
-      .cahaya-card { padding: 15px; }
-      .col-no { display: none; } /* Hilangkan No Urut */
+      .cahaya-card { padding: 12px; }
       
-      /* KUNCI: 5 tombol x 30px = 150px. Sisa layar (100% - 150px) mutlak milik kolom Nama */
-      .col-nama { width: calc(100% - 150px) !important; padding-left: 5px !important; font-size: 0.75rem !important; }
-      .col-aksi { width: 30px !important; padding: 0 !important; } 
+      /* Hilangkan sama sekali kolom No di HP agar hemat layar */
+      .col-no { display: none !important; } 
+      
+      /* PENGATURAN PERSENTASE MUTLAK (TOTAL HARUS 100%) */
+      .col-nama { width: 45% !important; font-size: 0.75rem !important; padding-left: 5px !important; }
+      .col-aksi { width: 11% !important; padding: 0 !important; } 
+      /* Matematikanya: 45% (Nama) + (5 x 11% Tombol Aksi) = 100%. Pas sejajar! */
 
-      /* Lingkaran diperkecil sedikit agar pas 30px */
-      .radio-circle { width: 24px !important; height: 24px !important; font-size: 0.65rem !important; }
-      .cahaya-table th { font-size: 0.65rem !important; }
+      .cahaya-table th { font-size: 0.6rem !important; padding: 8px 0; }
+      .cahaya-table td { padding: 8px 0; }
+
+      /* Lingkaran tombol sedikit diperkecil agar tidak saling nabrak */
+      .radio-circle { width: 22px; height: 22px; font-size: 0.6rem; }
     }
   </style>
 </head>
@@ -134,7 +101,7 @@
 
 <main class="cahaya-container" style="padding: 10px;">
   <div class="cahaya-card">
-    <h2 class="cahaya-title">📝 Absensi HALQAH</h2>
+    <h2 class="cahaya-title">📝 Absensi Halqah</h2>
     
     <div class="grid-2">
       <div class="form-group">
