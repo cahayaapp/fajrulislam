@@ -5,11 +5,11 @@
   <title>CAHAYA APP - Absensi KBM Guru</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   
-  <!-- PANGGIL MASTER THEME CAHAYA -->
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
+    /* CSS UNTUK TAMPILAN PROFESIONAL & RESPONSIF */
     body { font-family: 'Poppins', sans-serif; background: #f8fafc; margin: 0; padding: 0;}
     
     .cahaya-card {
@@ -40,33 +40,44 @@
       cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 5px; font-family: 'Poppins';
     }
 
-    /* --- TABEL DENGAN SCROLL HORIZONTAL (LEBIH AMAN) --- */
-    .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow-x: auto; }
-    .cahaya-table { width: 100%; border-collapse: collapse; background: white; table-layout: auto; min-width: 500px; }
+    /* --- TABEL STRATEGI "NO-SCROLL" --- */
+    .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+    
+    .cahaya-table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      background: white; 
+      table-layout: fixed; /* Memaksa kolom mengikuti lebar yang ditentukan */
+    }
     
     .cahaya-table th { 
-      background: #f1f5f9; padding: 12px 2px; font-size: 0.8rem; color: #475569; 
+      background: #f1f5f9; padding: 12px 2px; font-size: 0.75rem; color: #475569; 
       text-transform: uppercase; border-bottom: 2px solid #e2e8f0; text-align: center;
     }
     
     .cahaya-table td { padding: 10px 2px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
 
-    .col-no { width: 30px; }
+    /* Pengaturan Lebar Kolom yang Sangat Presisi untuk HP */
+    .col-no { width: 35px; }
     .col-nama { width: auto; text-align: left !important; padding-left: 10px !important; }
-    .col-aksi { width: 40px; }
+    .col-aksi { width: 38px; } /* Lebar tombol absen dipersempit */
 
     .cahaya-table td.col-nama { 
-      font-weight: 600; color: #0f172a; font-size: 0.85rem; 
-      text-transform: capitalize; line-height: 1.2; word-break: break-word;
+      font-weight: 600; color: #0f172a; font-size: 0.8rem; 
+      text-transform: capitalize; 
+      line-height: 1.2;
+      white-space: normal; /* Membuat nama panjang melipat ke bawah */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
-    /* Custom Radio Button Absen */
+    /* Radio Button Custom */
     .radio-label { display: inline-block; cursor: pointer; user-select: none; margin: 0; }
     .radio-label input { display: none; }
     .radio-circle { 
       display: inline-flex; justify-content: center; align-items: center; 
-      width: 28px; height: 28px; border-radius: 50%; background: #f8fafc; 
-      border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.75rem; transition: 0.2s; 
+      width: 30px; height: 30px; border-radius: 50%; background: #f8fafc; 
+      border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.7rem; transition: 0.2s; 
     }
     
     .radio-label input:checked + .radio-circle { color: white; transform: scale(1.1); }
@@ -94,13 +105,14 @@
       color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem;
     }
 
-    /* RESPONSIF KHUSUS HP */
+    /* MEDIA QUERY KHUSUS HP */
     @media (max-width: 600px) {
       .cahaya-card { padding: 15px; }
       .cahaya-title { font-size: 1.4rem; }
-      .col-no { display: none; } 
-      .col-nama { padding-left: 5px !important; font-size: 0.75rem !important; min-width: 150px; }
-      .radio-circle { width: 32px; height: 32px; font-size: 0.8rem; } /* Dibesarkan sedikit agar mudah di-tap saat scroll */
+      .col-no { display: none; } /* Sembunyikan No di HP untuk hemat tempat */
+      .col-nama { width: 40%; } /* Nama dapat jatah 40%, sisanya tombol */
+      .col-aksi { width: 12%; }
+      .radio-circle { width: 28px; height: 28px; font-size: 0.65rem; }
     }
   </style>
 </head>
@@ -108,12 +120,12 @@
 
 <div id="loadingOverlay">
   <div style="font-size: 2.5rem; margin-bottom: 15px; animation: pulse 1.5s infinite alternate ease-in-out;">📚</div>
-  <div style="font-weight: 700;">Menarik Data Kelas...</div>
+  <div style="font-weight: 700;">Menarik Data Akademik...</div>
 </div>
 
-<main class="cahaya-container" style="padding: 15px;">
+<main class="cahaya-container" style="padding: 10px;">
   <div class="cahaya-card">
-    <h2 class="cahaya-title">📝 Absensi HALQAH</h2>
+    <h2 class="cahaya-title">📝 Absensi Halqah</h2>
     
     <div class="grid-2">
       <div class="form-group">
@@ -142,8 +154,8 @@
     </div>
 
     <div class="table-header-flex">
-      <h3 style="font-family:'Playfair Display'; font-size:1.2rem; color:#0f172a; font-weight:800; margin:0;">Daftar Santri</h3>
-      <button type="button" class="btn-mark-all" onclick="markAll()">✓ Set Semua Hadir</button>
+      <h3 style="font-family:'Playfair Display'; font-size:1.1rem; color:#0f172a; font-weight:800; margin:0;">Daftar Santri</h3>
+      <button type="button" class="btn-mark-all" onclick="markAll()">✓ Hadir Semua</button>
     </div>
 
     <div class="table-responsive">
@@ -151,7 +163,7 @@
         <thead>
           <tr>
             <th class="col-no">No</th>
-            <th class="col-nama">Nama</th>
+            <th class="col-nama">Nama Santri</th>
             <th class="col-aksi">H</th>
             <th class="col-aksi">T</th>
             <th class="col-aksi">I</th>
@@ -165,9 +177,9 @@
       </table>
     </div>
 
-    <div class="form-group" style="margin-top: 25px;">
-      <label>📌 Ringkasan Materi / Jurnal Mengajar</label>
-      <textarea class="form-control" id="kbmCatatan" rows="3" placeholder="Tuliskan bab atau materi yang diajarkan hari ini..."></textarea>
+    <div class="form-group" style="margin-top: 20px;">
+      <label>📌 Ringkasan Materi (Jurnal)</label>
+      <textarea class="form-control" id="kbmCatatan" rows="3" placeholder="Tuliskan bab atau materi hari ini..."></textarea>
     </div>
 
     <button class="btn-simpan" onclick="simpanKehadiran()">💾 SIMPAN LOG KEHADIRAN</button>
@@ -179,7 +191,7 @@
   import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVnM3o8NMxZoLI",
     authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
     databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
     projectId: "absensi-santri-fajrul-islam"
@@ -191,6 +203,7 @@
   
   let masterDataAkademik = {};
 
+  // Muat Master Data saat halaman dibuka
   document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('kbmTanggal').value = new Date().toISOString().split('T')[0];
     try {
@@ -200,6 +213,7 @@
     document.getElementById('loadingOverlay').style.display = 'none';
   });
 
+  // Logika Filter Rumpun
   window.updatePilihan = function() {
     const rumpun = document.getElementById('kbmJenisKelas').value;
     const boxSub = document.getElementById('opsiKhusus');
@@ -223,6 +237,7 @@
     } else { boxSub.style.display = "none"; }
   };
 
+  // Logika Tampilkan Nama Santri
   window.tampilkanSantri = function() {
     const rumpun = document.getElementById('kbmJenisKelas').value;
     const sub = document.getElementById('subPilihan').value;
@@ -248,6 +263,7 @@
     });
   };
 
+  // Tombol Cepat Hadir Semua
   window.markAll = function() {
     document.querySelectorAll('#kbmBody tr').forEach(tr => {
       const radio = tr.querySelector('input[value="Hadir"]');
@@ -255,11 +271,14 @@
     });
   };
 
+  // Simpan Data
   window.simpanKehadiran = function() {
     const tanggal = document.getElementById('kbmTanggal').value;
     const rumpun = document.getElementById('kbmJenisKelas').value;
     const mapel = document.getElementById('kbmMapel').value;
     const sub = document.getElementById('subPilihan').value;
+    const catatan = document.getElementById('kbmCatatan').value;
+
     if (!tanggal || !rumpun || !sub || !mapel) { alert('⚠️ Lengkapi data.'); return; }
     
     const btn = document.querySelector('.btn-simpan');
@@ -269,13 +288,23 @@
     document.querySelectorAll('#kbmBody tr').forEach((tr, i) => {
       const nama = tr.querySelector('.col-nama').textContent;
       const status = document.querySelector(`input[name="s_${i}"]:checked`).value;
+      // Perhitungan Poin Gamifikasi
       let poin = (status === 'Hadir') ? (rumpun === 'Halqah Quraniyah' ? 40 : 30) : (status === 'Terlambat' ? -20 : (status === 'Alfa' ? -40 : 0));
       hasil.push({ nama, status, poin });
     });
 
-    const payload = { tanggal, rumpun, sub, mapel, guru: user?.label || 'Guru', data: hasil, waktuSimpan: new Date().toISOString() };
+    const payload = { 
+      tanggal, rumpun, sub, mapel, catatan,
+      guru: user?.label || 'Guru', 
+      data: hasil, 
+      waktuSimpan: new Date().toISOString() 
+    };
+
     push(ref(db, 'cahaya_app/absensi_pembelajaran'), payload).then(() => {
       alert('✅ BERHASIL DISIMPAN!');
+      location.reload();
+    }).catch(err => {
+      alert('❌ Gagal simpan: ' + err.message);
       btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false;
     });
   };
