@@ -10,9 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
-    /* =========================================================
-       CSS ISOLASI KHUSUS HALAMAN ABSENSI (ANTI BERANTAKAN)
-       ========================================================= */
     body { font-family: 'Poppins', sans-serif; background: #f8fafc; margin: 0; padding: 0;}
     
     .cahaya-card {
@@ -23,7 +20,6 @@
     
     .cahaya-title { font-family: 'Playfair Display', serif; color: #0f172a; margin-top: 0; font-size: 1.8rem; }
 
-    /* Layout Form Grid */
     .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
     
     .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 8px; }
@@ -34,7 +30,6 @@
     }
     .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
 
-    /* Header Tabel */
     .table-header-flex { 
       display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px;
       margin-top: 25px; margin-bottom: 15px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; 
@@ -44,101 +39,76 @@
       padding: 10px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; 
       cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 5px; font-family: 'Poppins';
     }
-    .btn-mark-all:hover { background: #10b981; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.2); }
 
-    /* Desain Tabel Premium (Dibuat Fleksibel) */
-    .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
-    .cahaya-table { width: 100%; border-collapse: collapse; background: white; table-layout: auto; }
+    /* --- PERBAIKAN TABEL RESPONSIF --- */
+    .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow-x: hidden; }
+    .cahaya-table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
     
     .cahaya-table th { 
-      background: #f1f5f9; padding: 15px 10px; font-size: 0.85rem; color: #475569; 
-      text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #e2e8f0; text-align: center;
+      background: #f1f5f9; padding: 12px 2px; font-size: 0.8rem; color: #475569; 
+      text-transform: uppercase; border-bottom: 2px solid #e2e8f0; text-align: center;
     }
-    .cahaya-table th:nth-child(2) { text-align: left; padding-left: 10px; }
     
-    .cahaya-table td { padding: 12px 5px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
-    .cahaya-table td:nth-child(2) { text-align: left; padding-left: 10px; font-weight: 600; color: #0f172a; font-size: 0.9rem; text-transform: capitalize; line-height: 1.3;}
-    .cahaya-table tr:last-child td { border-bottom: none; }
+    .cahaya-table td { padding: 10px 2px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
+
+    /* Pengaturan Lebar Kolom agar tidak tumpuk */
+    .col-no { width: 30px; }
+    .col-nama { width: auto; text-align: left !important; padding-left: 10px !important; }
+    .col-aksi { width: 35px; }
+
+    .cahaya-table td.col-nama { 
+      font-weight: 600; color: #0f172a; font-size: 0.85rem; 
+      text-transform: capitalize; line-height: 1.2; word-break: break-word;
+    }
 
     /* Custom Radio Button Absen */
     .radio-label { display: inline-block; cursor: pointer; user-select: none; margin: 0; }
     .radio-label input { display: none; }
     .radio-circle { 
       display: inline-flex; justify-content: center; align-items: center; 
-      width: 32px; height: 32px; border-radius: 50%; background: #f8fafc; 
-      border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.85rem; transition: 0.2s; 
+      width: 28px; height: 28px; border-radius: 50%; background: #f8fafc; 
+      border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.75rem; transition: 0.2s; 
     }
     
-    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; color: white; border-color: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.3); transform: scale(1.1); }
-    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; color: white; border-color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.3); transform: scale(1.1); }
-    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.3); transform: scale(1.1); }
-    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; color: white; border-color: #8b5cf6; box-shadow: 0 0 8px rgba(139,92,246,0.3); transform: scale(1.1); }
-    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.3); transform: scale(1.1); }
+    .radio-label input:checked + .radio-circle { color: white; transform: scale(1.1); }
+    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; border-color: #10b981; }
+    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; border-color: #f59e0b; }
+    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; border-color: #3b82f6; }
+    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; border-color: #8b5cf6; }
+    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; border-color: #ef4444; }
 
-    /* Warna Background Baris Tabel */
-    tr.status-hadir { background: #ecfdf5 !important; border-left: 4px solid #10b981; }
-    tr.status-terlambat { background: #fffbeb !important; border-left: 4px solid #f59e0b; }
-    tr.status-izin { background: #eff6ff !important; border-left: 4px solid #3b82f6; }
-    tr.status-sakit { background: #f5f3ff !important; border-left: 4px solid #8b5cf6; }
-    tr.status-alfa { background: #fef2f2 !important; border-left: 4px solid #ef4444; }
+    tr.status-hadir { background: #ecfdf5 !important; }
+    tr.status-terlambat { background: #fffbeb !important; }
+    tr.status-izin { background: #eff6ff !important; }
+    tr.status-sakit { background: #f5f3ff !important; }
+    tr.status-alfa { background: #fef2f2 !important; }
 
-    /* Tombol Simpan */
     .btn-simpan {
       background: linear-gradient(135deg, #d4af37, #fde047); color: #0f172a;
       border: none; padding: 15px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700;
       cursor: pointer; width: 100%; transition: 0.3s; margin-top: 25px; box-shadow: 0 10px 20px rgba(212,175,55,0.2);
-      font-family: 'Poppins'; letter-spacing: 1px;
     }
-    .btn-simpan:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.4); }
-    .btn-simpan:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-    /* Loader Custom */
     #loadingOverlay { 
       position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); 
       z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-      color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; 
+      color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem;
     }
 
-    /* =========================================================
-       RESPONSIF KHUSUS HP (MUAT 1 LAYAR TANPA GESER)
-       ========================================================= */
-    @media (max-width: 768px) {
-      .cahaya-card { padding: 15px; border-radius: 12px;}
-      .cahaya-title { font-size: 1.4rem; margin-bottom: 15px;}
-      
-      .table-header-flex { flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 15px; }
-      .btn-mark-all { width: 100%; justify-content: center; padding: 12px; }
-
-      /* Modifikasi Tabel agar pas di HP */
-      .table-responsive { border: none; overflow: visible; }
-      
-      /* Sembunyikan kolom "No" di HP untuk hemat tempat */
-      .cahaya-table th:first-child, .cahaya-table td:first-child { display: none; }
-      
-      .cahaya-table th { padding: 10px 2px; font-size: 0.7rem; letter-spacing: 0; }
-      .cahaya-table td { padding: 8px 2px; }
-      
-      /* Kolom Nama di HP */
-      .cahaya-table th:nth-child(2), .cahaya-table td:nth-child(2) { padding-left: 8px; font-size: 0.75rem; word-break: break-word; }
-      
-      /* Perkecil radio button H,T,I,S,A */
-      .radio-circle { width: 26px; height: 26px; font-size: 0.75rem; border-width: 1px; }
-      
-      /* Kurangi efek membesar saat diklik di HP agar tidak bertabrakan */
-      .radio-label input[value="Hadir"]:checked + .radio-circle,
-      .radio-label input[value="Terlambat"]:checked + .radio-circle,
-      .radio-label input[value="Izin"]:checked + .radio-circle,
-      .radio-label input[value="Sakit"]:checked + .radio-circle,
-      .radio-label input[value="Alfa"]:checked + .radio-circle {
-        transform: scale(1.05); 
-      }
+    /* RESPONSIF KHUSUS HP */
+    @media (max-width: 600px) {
+      .cahaya-card { padding: 15px; }
+      .cahaya-title { font-size: 1.4rem; }
+      .col-no { display: none; } /* Sembunyikan No di HP agar lega */
+      .col-nama { padding-left: 5px !important; font-size: 0.75rem !important; }
+      .radio-circle { width: 26px; height: 26px; font-size: 0.7rem; }
     }
   </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
-  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: pulse 1s infinite alternate ease-in-out;">📚</div>
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: pulse 1.5s infinite alternate ease-in-out;">📚</div>
   <div style="font-weight: 700;">Menarik Data Kelas...</div>
 </div>
 
@@ -181,13 +151,13 @@
       <table class="cahaya-table">
         <thead>
           <tr>
-            <th width="5%" style="text-align: center;">No</th>
-            <th width="35%">Nama</th>
-            <th title="Hadir" width="12%">H</th>
-            <th title="Terlambat" width="12%">T</th>
-            <th title="Izin" width="12%">I</th>
-            <th title="Sakit" width="12%">S</th>
-            <th title="Alfa" width="12%">A</th>
+            <th class="col-no">No</th>
+            <th class="col-nama">Nama</th>
+            <th class="col-aksi">H</th>
+            <th class="col-aksi">T</th>
+            <th class="col-aksi">I</th>
+            <th class="col-aksi">S</th>
+            <th class="col-aksi">A</th>
           </tr>
         </thead>
         <tbody id="kbmBody">
@@ -224,20 +194,11 @@
 
   document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('kbmTanggal').value = new Date().toISOString().split('T')[0];
-
     try {
       const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
-      if (snapshot.exists()) {
-        masterDataAkademik = snapshot.val();
-      } else {
-        alert("⚠️ Data Kelas kosong. Sinkronkan dari Manajemen Halqah.");
-      }
-    } catch (error) {
-      console.error(error);
-    }
-
-    document.getElementById('loadingOverlay').style.opacity = '0';
-    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+      if (snapshot.exists()) masterDataAkademik = snapshot.val();
+    } catch (error) { console.error(error); }
+    document.getElementById('loadingOverlay').style.display = 'none';
   });
 
   window.updatePilihan = function() {
@@ -247,47 +208,20 @@
     const mapelSelect = document.getElementById('kbmMapel');
     const tbody = document.getElementById('kbmBody');
 
-    if(selSub) selSub.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    selSub.innerHTML = '<option value="">-- Pilih Kelas --</option>';
     mapelSelect.innerHTML = '<option value="">-- Pilih Mapel --</option>';
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:30px;font-style:italic;">Menunggu pilihan kelas...</td></tr>';
 
-    if (!rumpun) { 
-      boxSub.style.display = "none"; 
-      return; 
-    }
+    if (!rumpun) { boxSub.style.display = "none"; return; }
 
-    let mapelList = [];
-    const dataMapel = masterDataAkademik.mapel;
+    let mapelList = (rumpun === 'Halqah Ilmiyah' ? ['Fiqih','Akidah','Adab','Nahwu','Sirah','Sharaf','Balaghah','Kewirausahaan','Metode Pengajaran','Matematika','IPA'] : (rumpun === 'Halqah Lughowiyah' ? ['Bahasa Arab','Bahasa Inggris','Muhadatsah'] : ['Tahsin','Tahfiz','Murojaah']));
+    mapelList.sort().forEach(m => mapelSelect.add(new Option(m, m)));
 
-    if (dataMapel) {
-      if (dataMapel[rumpun]) {
-        mapelList = Array.isArray(dataMapel[rumpun]) ? dataMapel[rumpun] : Object.values(dataMapel[rumpun]);
-      } 
-      else {
-        mapelList = Array.isArray(dataMapel) ? dataMapel : Object.values(dataMapel);
-      }
-      mapelList = mapelList.map(m => typeof m === 'object' ? (m.namaMapel || m.nama || m.mapel) : m);
-    } else {
-      mapelList = (rumpun === 'Halqah Ilmiyah' ? ['Fiqih','Akidah','Adab','Nahwu','Sirah','Sharaf','Balaghah','Kewirausahaan','Metode Pengajaran','Matematika','IPA'] : (rumpun === 'Halqah Lughowiyah' ? ['Bahasa Arab','Bahasa Inggris','Muhadatsah'] : ['Tahsin','Tahfiz','Murojaah']));
-    }
-
-    mapelList = mapelList.filter(m => m && typeof m === 'string').sort((a,b) => a.localeCompare(b));
-
-    mapelList.forEach(m => { 
-      mapelSelect.add(new Option(m, m)); 
-    });
-
-    const dataHalqah = masterDataAkademik.halqah || {};
-    const kategori = dataHalqah[rumpun];
-    
+    const kategori = masterDataAkademik.halqah?.[rumpun];
     if (kategori) {
       boxSub.style.display = "block";
-      Object.keys(kategori).forEach(k => {
-        selSub.add(new Option(k, k));
-      });
-    } else {
-      boxSub.style.display = "none";
-    }
+      Object.keys(kategori).forEach(k => selSub.add(new Option(k, k)));
+    } else { boxSub.style.display = "none"; }
   };
 
   window.tampilkanSantri = function() {
@@ -296,32 +230,22 @@
     const tbody = document.getElementById('kbmBody');
     tbody.innerHTML = '';
     
-    const list = (masterDataAkademik.halqah?.[rumpun]?.[sub] || []).slice().sort((a, b) => a.localeCompare(b));
-
-    if (list.length === 0) { 
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;font-weight:bold;">Data santri kosong di kelas ini.</td></tr>`; 
-      return; 
-    }
+    const list = (masterDataAkademik.halqah?.[rumpun]?.[sub] || []).slice().sort();
+    if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;">Data kosong.</td></tr>`; return; }
 
     list.forEach((nama, i) => {
       const tr = document.createElement('tr');
       tr.className = 'status-hadir';
-      
       tr.innerHTML = `
-        <td style="text-align: center; border-left: none;">${i + 1}</td>
-        <td style="font-weight: 600; color: #0f172a;">${nama.toLowerCase()}</td>
-        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Hadir" checked><span class="radio-circle">H</span></label></td>
-        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Terlambat"><span class="radio-circle">T</span></label></td>
-        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Izin"><span class="radio-circle">I</span></label></td>
-        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Sakit"><span class="radio-circle">S</span></label></td>
-        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Alfa"><span class="radio-circle">A</span></label></td>`;
+        <td class="col-no">${i + 1}</td>
+        <td class="col-nama">${nama.toLowerCase()}</td>
+        <td class="col-aksi"><label class="radio-label"><input type="radio" name="s_${i}" value="Hadir" checked><span class="radio-circle">H</span></label></td>
+        <td class="col-aksi"><label class="radio-label"><input type="radio" name="s_${i}" value="Terlambat"><span class="radio-circle">T</span></label></td>
+        <td class="col-aksi"><label class="radio-label"><input type="radio" name="s_${i}" value="Izin"><span class="radio-circle">I</span></label></td>
+        <td class="col-aksi"><label class="radio-label"><input type="radio" name="s_${i}" value="Sakit"><span class="radio-circle">S</span></label></td>
+        <td class="col-aksi"><label class="radio-label"><input type="radio" name="s_${i}" value="Alfa"><span class="radio-circle">A</span></label></td>`;
       tbody.appendChild(tr);
-
-      tr.querySelectorAll('input[type="radio"]').forEach(r => {
-        r.addEventListener('change', () => {
-          tr.className = 'status-' + r.value.toLowerCase();
-        });
-      });
+      tr.querySelectorAll('input').forEach(r => r.addEventListener('change', () => tr.className = 'status-' + r.value.toLowerCase()));
     });
   };
 
@@ -336,47 +260,25 @@
     const tanggal = document.getElementById('kbmTanggal').value;
     const rumpun = document.getElementById('kbmJenisKelas').value;
     const mapel = document.getElementById('kbmMapel').value;
-    const sub = document.getElementById('subPilihan')?.value || '';
-    const catatan = document.getElementById('kbmCatatan').value.trim();
-
-    if (!tanggal || !rumpun || !sub || !mapel) { alert('⚠️ Lengkapi filter kelas, mapel, dan tanggal.'); return; }
+    const sub = document.getElementById('subPilihan').value;
+    if (!tanggal || !rumpun || !sub || !mapel) { alert('⚠️ Lengkapi data.'); return; }
     
-    const rows = document.querySelectorAll('#kbmBody tr');
-    if (rows.length === 0 || rows[0].cells.length === 1) return;
-
     const btn = document.querySelector('.btn-simpan');
     btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
 
     const hasil = [];
-    rows.forEach((tr, i) => {
-      const nama = tr.children[1].textContent;
-      const status = document.querySelector(`input[name="s_${i}"]:checked`)?.value || 'Hadir';
-      
-      let poin = 0;
-      if(status === 'Hadir') poin = (rumpun === 'Halqah Quraniyah') ? 40 : 30;
-      else if(status === 'Terlambat') poin = (rumpun === 'Halqah Quraniyah') ? -20 : -15;
-      else if(status === 'Alfa') poin = (rumpun === 'Halqah Quraniyah') ? -40 : -30;
-      
+    document.querySelectorAll('#kbmBody tr').forEach((tr, i) => {
+      const nama = tr.querySelector('.col-nama').textContent;
+      const status = document.querySelector(`input[name="s_${i}"]:checked`).value;
+      let poin = (status === 'Hadir') ? (rumpun === 'Halqah Quraniyah' ? 40 : 30) : (status === 'Terlambat' ? -20 : (status === 'Alfa' ? -40 : 0));
       hasil.push({ nama, status, poin });
     });
 
-    const payload = { 
-      tanggal, rumpun, sub, mapel, catatan, 
-      guru: user ? (user.label || user.username) : 'Guru', 
-      data: hasil, 
-      waktuSimpan: new Date().toISOString() 
-    };
-
-    push(ref(db, 'cahaya_app/absensi_pembelajaran'), payload)
-      .then(() => { 
-        alert('✅ LOG KEHADIRAN BERHASIL DISIMPAN!'); 
-        btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false; 
-        document.getElementById('kbmCatatan').value = '';
-      })
-      .catch(err => { 
-        alert('❌ Error: ' + err.message); 
-        btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false; 
-      });
+    const payload = { tanggal, rumpun, sub, mapel, guru: user?.label || 'Guru', data: hasil, waktuSimpan: new Date().toISOString() };
+    push(ref(db, 'cahaya_app/absensi_pembelajaran'), payload).then(() => {
+      alert('✅ BERHASIL DISIMPAN!');
+      btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false;
+    });
   };
 </script>
 </body>
