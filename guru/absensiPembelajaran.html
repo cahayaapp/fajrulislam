@@ -11,7 +11,7 @@
   
   <style>
     /* =========================================================
-       CSS ISOLASI KHUSUS HALAMAN ABSENSI (ANTI BERANTAKAN)
+       CSS ISOLASI KHUSUS HALAMAN ABSENSI
        ========================================================= */
     body { font-family: 'Poppins', sans-serif; background: #f8fafc; margin: 0; padding: 0;}
     
@@ -34,7 +34,7 @@
     }
     .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
 
-    /* Header Tabel & Tombol Set Semua Hadir */
+    /* Header Tabel */
     .table-header-flex { 
       display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px;
       margin-top: 25px; margin-bottom: 15px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; 
@@ -46,10 +46,10 @@
     }
     .btn-mark-all:hover { background: #10b981; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.2); }
 
-    /* --- PENGATURAN TABEL & LEBAR KOLOM (KUNCI ANTI MELAR) --- */
+    /* --- TABEL DEKSTOP --- */
     .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
     
-    /* WAJIB FIXED agar lebar 100% dipaksa tanpa scroll */
+    /* Gunakan table-layout: fixed agar tidak bisa melar */
     .cahaya-table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
     
     .cahaya-table th { 
@@ -58,32 +58,32 @@
     }
     .cahaya-table td { padding: 10px 2px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
 
-    /* Porsi Lebar Kolom Desktop */
+    /* Porsi Lebar Desktop */
     .col-no { width: 5%; }
     .col-nama { 
       width: 40%; text-align: left !important; padding-left: 15px !important; 
       font-weight: 600; color: #0f172a; font-size: 0.9rem; 
       word-wrap: break-word; overflow-wrap: break-word; text-transform: capitalize;
     }
-    .col-aksi { width: 11%; } /* 11% x 5 tombol = 55%. Total: 5 + 40 + 55 = 100% */
+    .col-aksi { width: 11%; } 
 
     /* Custom Radio Button Absen */
     .radio-label { display: inline-block; cursor: pointer; user-select: none; margin: 0; }
     .radio-label input { display: none; }
     .radio-circle { 
       display: inline-flex; justify-content: center; align-items: center; 
-      width: 30px; height: 30px; border-radius: 50%; background: #f8fafc; 
+      width: 32px; height: 32px; border-radius: 50%; background: #f8fafc; 
       border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.85rem; transition: 0.2s; 
     }
     
     .radio-label input:checked + .radio-circle { color: white; transform: scale(1.1); }
-    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; border-color: #10b981; box-shadow: 0 0 6px rgba(16,185,129,0.3); }
-    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.3); }
-    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.3); }
-    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; border-color: #8b5cf6; box-shadow: 0 0 6px rgba(139,92,246,0.3); }
-    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; border-color: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.3); }
+    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; border-color: #10b981; }
+    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; border-color: #f59e0b; }
+    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; border-color: #3b82f6; }
+    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; border-color: #8b5cf6; }
+    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; border-color: #ef4444; }
 
-    /* Warna Background Baris Tabel saat status aktif */
+    /* Warna Background */
     tr.status-hadir { background: #ecfdf5 !important; border-left: 4px solid #10b981; }
     tr.status-terlambat { background: #fffbeb !important; border-left: 4px solid #f59e0b; }
     tr.status-izin { background: #eff6ff !important; border-left: 4px solid #3b82f6; }
@@ -98,34 +98,44 @@
       font-family: 'Poppins'; letter-spacing: 1px;
     }
     .btn-simpan:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.4); }
-    .btn-simpan:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-    /* Loader Custom */
     #loadingOverlay { 
       position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); 
       z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
       color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s;
     }
 
-    /* --- PENGATURAN KHUSUS LAYAR HP (MOBILE) --- */
+    /* =========================================================
+       RESPONSIF KHUSUS HP (THE ULTIMATE FIX)
+       ========================================================= */
     @media (max-width: 768px) {
-      .cahaya-card { padding: 15px; border-radius: 12px;}
-      .cahaya-title { font-size: 1.4rem; margin-bottom: 15px;}
+      .cahaya-card { padding: 12px; border-radius: 12px;}
       
-      .table-header-flex { flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 15px; }
-      .btn-mark-all { width: 100%; justify-content: center; padding: 12px; }
+      .table-responsive { border: none; overflow: hidden !important; }
+      .cahaya-table { table-layout: fixed !important; width: 100% !important; }
+      
+      /* Hilangkan jarak kosong antar cell tabel di HP */
+      .cahaya-table th, .cahaya-table td { padding: 8px 0 !important; }
 
-      .table-responsive { border: none; overflow: hidden; }
-      .cahaya-table th { font-size: 0.7rem; padding: 10px 0; }
-      .cahaya-table td { padding: 8px 0; }
+      /* Sembunyikan No */
+      .col-no { display: none !important; }
+      
+      /* Kolom Nama ambil ruang 45% dan paksa enter bawah */
+      .col-nama { 
+        width: 45% !important; 
+        padding-left: 5px !important; 
+        font-size: 0.75rem !important; 
+        white-space: normal !important; 
+        word-break: break-word !important; 
+        line-height: 1.2;
+      }
+      
+      /* Kolom Aksi masing-masing 11% (Total 55%). 45% + 55% = PAS 100% */
+      .col-aksi { width: 11% !important; }
 
-      .col-no { display: none; } /* Hilangkan kolom No agar lega */
-      .col-nama { width: 40%; padding-left: 5px !important; font-size: 0.75rem !important; line-height: 1.2; }
-      .col-aksi { width: 12%; } /* 12% x 5 tombol = 60%, sisanya 40% buat nama */
-
-      /* Perkecil bola agar muat jejer 5 di HP */
-      .radio-circle { width: 24px; height: 24px; font-size: 0.7rem; border-width: 1px;}
-      .radio-label input:checked + .radio-circle { transform: scale(1.05); } /* Kurangi efek membesar di HP */
+      /* Perkecil bola menjadi 22px agar muat dijajarkan 5 buah di layar kecil */
+      .radio-circle { width: 22px !important; height: 22px !important; font-size: 0.65rem !important; border-width: 1px !important;}
+      .radio-label input:checked + .radio-circle { transform: scale(1.05); } 
     }
   </style>
 </head>
@@ -136,7 +146,7 @@
   <div style="font-weight: 700;">Menarik Data Kelas...</div>
 </div>
 
-<main class="cahaya-container" style="padding: 15px;">
+<main class="cahaya-container" style="padding: 10px;">
   <div class="cahaya-card">
     <h2 class="cahaya-title">📝 Absensi Halqah</h2>
     
@@ -175,9 +185,8 @@
       <table class="cahaya-table">
         <thead>
           <tr>
-            <!-- Class col-no, col-nama, dan col-aksi di pasang di sini -->
             <th class="col-no">No</th>
-            <th class="col-nama">Nama</th>
+            <th class="col-nama">NAMA</th>
             <th class="col-aksi" title="Hadir">H</th>
             <th class="col-aksi" title="Terlambat">T</th>
             <th class="col-aksi" title="Izin">I</th>
@@ -278,7 +287,6 @@
       const tr = document.createElement('tr');
       tr.className = 'status-hadir';
       
-      // Class col-no, col-nama, dan col-aksi di pasang di sini
       tr.innerHTML = `
         <td class="col-no">${i + 1}</td>
         <td class="col-nama">${nama.toLowerCase()}</td>
