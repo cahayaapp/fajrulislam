@@ -161,7 +161,6 @@
 </head>
 <body>
 
-  <!-- Layar Muat (Splash Screen) -->
   <div id="splashScreen">
     <img src="assets/logofi.png" alt="Logo" />
     <div class="loader-text" id="loadingText">CAHAYA APP</div>
@@ -172,7 +171,6 @@
     <h1 class="app-title">CAHAYA APP</h1>
     <div class="app-subtitle">Fajrul Islam</div>
 
-    <!-- VIEW 1: UCAPAN SELAMAT DATANG -->
     <div id="welcomeView">
       <p class="welcome-text">
         Platform eksklusif pemantauan akademik, ibadah, kedisiplinan, dan manajemen operasional Pesantren Cahaya Fajrul Islam.
@@ -180,7 +178,6 @@
       <button class="btn-utama" onclick="tampilkanLogin()">Login Disini</button>
     </div>
 
-    <!-- VIEW 2: KOTAK LOGIN -->
     <div id="loginView">
       <div class="login-title">Autentikasi</div>
       
@@ -205,7 +202,6 @@
 
   <footer>© 2026 HAK CIPTA CAHAYA APP</footer>
 
-  <!-- SCRIPT FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -243,7 +239,7 @@
       setTimeout(() => document.getElementById('splashScreen').style.visibility = 'hidden', 800);
     }, 1800);
 
-    // === DATA WALI SANTRI (LENGKAP 100%) ===
+    // === DATA WALI SANTRI ===
     const waliList = [
       {nama:"Ahmad Maulana",username:"ahmad312",password:"Cahaya@8723"},
       {nama:"Juanda Nur Ilham",username:"juanda491",password:"Cahaya@1049"},
@@ -385,7 +381,13 @@
 
       if (!email.endsWith("@cahayaapp.id")) {
         const wali = waliList.find(w => w.username.toLowerCase() === u && w.password === p);
-        if (!wali) { err.textContent = "Kredensial tidak valid."; err.style.display = "block"; btn.disabled = false; btn.textContent = "Otorisasi Akses"; return; }
+        if (!wali) { 
+          err.textContent = "Kredensial tidak valid."; 
+          err.style.display = "block"; 
+          btn.disabled = false; 
+          btn.textContent = "Login Sekarang"; 
+          return; 
+        }
         
         localStorage.setItem("cahayaCurrentUser", JSON.stringify({ akses: ["wali"], namaAnak: wali.nama, username: wali.username, label: `Wali ${wali.nama}` }));
         tampilkanSistemLoading("Memuat Portal Wali...");
@@ -405,14 +407,13 @@
         localStorage.setItem("cahayaCurrentUser", JSON.stringify(finalUserData));
         tampilkanSistemLoading("Memverifikasi Akses...");
         
+        // PENGALIHAN UTAMA KE main-dashboard.html
         setTimeout(() => { 
-            if(finalUserData.akses && finalUserData.akses.includes("konselor")) window.location.href = "konselor/index.html"; 
-            else if (finalUserData.akses && (finalUserData.akses.includes("admin") || finalUserData.akses.includes("direktur"))) window.location.href = "main-dashboard.html";
-            else window.location.href = "guru/index.html";
+            window.location.href = "main-dashboard.html";
         }, 1000);
 
       } catch (error) {
-        btn.disabled = false; btn.textContent = "Otorisasi Akses";
+        btn.disabled = false; btn.textContent = "Login Sekarang";
         err.textContent = "Autentikasi Gagal: Cek kembali Username & Password Anda.";
         err.style.display = "block";
       }
@@ -428,10 +429,12 @@
       const user = JSON.parse(localStorage.getItem("cahayaCurrentUser"));
       if (user && user.akses) {
         tampilkanSistemLoading("Menghubungkan Sesi...");
-        if(user.akses.includes("wali")) window.location.href = "wali/dashboard/index.html";
-        else if(user.akses.includes("konselor")) window.location.href = "konselor/index.html";
-        else if(user.akses.includes("admin") || user.akses.includes("direktur")) window.location.href = "main-dashboard.html";
-        else window.location.href = "guru/index.html";
+        // Logika pengalihan otomatis jika sesi masih ada
+        if(user.akses.includes("wali")) {
+            window.location.href = "wali/dashboard/index.html";
+        } else {
+            window.location.href = "main-dashboard.html";
+        }
       }
     };
   </script>
