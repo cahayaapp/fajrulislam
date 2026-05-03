@@ -5,7 +5,6 @@
   <title>CAHAYA APP - Absensi KBM Guru</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   
-  <!-- PANGGIL MASTER THEME CAHAYA -->
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   
@@ -13,35 +12,35 @@
     body { font-family: 'Poppins', sans-serif; background: #f8fafc; margin: 0; padding: 0;}
     
     .cahaya-card {
-      background: #ffffff; border-radius: 16px; padding: 30px;
+      background: #ffffff; border-radius: 16px; padding: 25px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
-      margin-bottom: 30px;
+      margin: 15px;
     }
     
-    .cahaya-title { font-family: 'Playfair Display', serif; color: #0f172a; margin-top: 0; font-size: 1.8rem; }
+    .cahaya-title { font-family: 'Playfair Display', serif; color: #0f172a; margin-top: 0; font-size: 1.6rem; }
 
-    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 20px; }
     
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 8px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 6px; }
     .form-control { 
       width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; 
-      font-family: 'Poppins', sans-serif; font-size: 0.95rem; outline: none; background: #f8fafc; transition: 0.3s;
+      font-family: 'Poppins', sans-serif; font-size: 0.9rem; outline: none; background: #f8fafc; transition: 0.3s;
       box-sizing: border-box;
     }
     .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
 
     .table-header-flex { 
-      display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px;
-      margin-top: 25px; margin-bottom: 15px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; 
+      display: flex; justify-content: space-between; align-items: center; 
+      margin-top: 25px; margin-bottom: 10px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 10px; 
     }
     .btn-mark-all { 
       background: #ecfdf5; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); 
-      padding: 10px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; 
-      cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 5px; font-family: 'Poppins';
+      padding: 8px 15px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; 
+      cursor: pointer; transition: 0.3s; font-family: 'Poppins';
     }
 
     /* =========================================================
-       SISTEM LIST FLEXBOX (PENGGANTI TABEL YANG SUDAH TERUJI)
+       SISTEM LIST FLEXBOX (ANTI-TERPOTONG / NO SCROLL)
        ========================================================= */
     .list-container {
       width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;
@@ -49,7 +48,7 @@
 
     .list-header {
       display: flex; background: #f1f5f9; padding: 12px 10px;
-      font-size: 0.75rem; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0;
+      font-size: 0.7rem; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0;
       text-transform: uppercase;
     }
 
@@ -58,13 +57,12 @@
       border-bottom: 1px solid #f1f5f9; min-height: 55px; background: #ffffff; transition: 0.2s;
     }
 
-    /* KUNCI: Pembagian Lebar Mutlak (40% Nama, 60% Tombol) */
+    /* Jatah Lebar: 40% Nama, 60% Tombol (H,T,I,S,A) */
     .santri-name {
       flex: 0 0 40%; 
-      font-size: 0.85rem; font-weight: 600; color: #0f172a; 
-      text-transform: capitalize; line-height: 1.3;
-      word-wrap: break-word; /* PAKSA TURUN JIKA PANJANG */
-      padding-right: 5px;
+      font-size: 0.8rem; font-weight: 600; color: #0f172a; 
+      line-height: 1.2; word-wrap: break-word; padding-right: 5px;
+      text-transform: uppercase; /* Nama Santri Huruf Besar */
     }
 
     .action-group {
@@ -72,24 +70,22 @@
       display: flex; justify-content: space-between; align-items: center;
     }
 
-    /* RADIO BUTTON BULAT */
-    .radio-item { position: relative; width: 30px; height: 30px; margin: 0; display: inline-block; cursor: pointer; }
-    .radio-item input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+    .radio-item { position: relative; width: 30px; height: 30px; margin: 0; cursor: pointer; }
+    .radio-item input { position: absolute; opacity: 0; width: 0; height: 0; }
     
     .checkmark {
       display: flex; justify-content: center; align-items: center;
-      width: 28px; height: 28px; background-color: #f8fafc; border: 1px solid #cbd5e1;
-      border-radius: 50%; font-size: 0.75rem; font-weight: 800; color: #94a3b8; transition: 0.2s; margin: 0 auto;
+      width: 26px; height: 26px; background-color: #f8fafc; border: 1px solid #cbd5e1;
+      border-radius: 50%; font-size: 0.65rem; font-weight: 800; color: #94a3b8; transition: 0.2s;
     }
 
-    .radio-item input:checked ~ .checkmark { transform: scale(1.1); color: white; }
+    .radio-item input:checked ~ .checkmark { color: white; transform: scale(1.1); }
     .radio-item input[value="Hadir"]:checked ~ .checkmark { background: #10b981; border-color: #10b981; }
     .radio-item input[value="Terlambat"]:checked ~ .checkmark { background: #f59e0b; border-color: #f59e0b; }
     .radio-item input[value="Izin"]:checked ~ .checkmark { background: #3b82f6; border-color: #3b82f6; }
     .radio-item input[value="Sakit"]:checked ~ .checkmark { background: #8b5cf6; border-color: #8b5cf6; }
     .radio-item input[value="Alfa"]:checked ~ .checkmark { background: #ef4444; border-color: #ef4444; }
 
-    /* Latar Belakang Baris Berdasarkan Status */
     .row-hadir { background: #ecfdf5; }
     .row-terlambat { background: #fffbeb; }
     .row-izin { background: #eff6ff; }
@@ -107,86 +103,72 @@
       z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
       color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem;
     }
-
-    /* KHUSUS HP PENGATURAN DIPERKECIL */
-    @media (max-width: 600px) {
-      .cahaya-card { padding: 15px; }
-      .santri-name { font-size: 0.75rem; }
-      .checkmark { width: 24px; height: 24px; font-size: 0.65rem; }
-      .radio-item { width: 26px; height: 26px; }
-    }
   </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
-  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: pulse 1.5s infinite alternate ease-in-out;">📚</div>
-  <div style="font-weight: 700;">Menarik Data Kelas...</div>
+  <div style="font-size: 2.5rem; margin-bottom: 15px;">📚</div>
+  <div style="font-weight: 700;">Menarik Data Akademik...</div>
 </div>
 
-<main class="cahaya-container" style="padding: 15px;">
-  <div class="cahaya-card">
-    <h2 class="cahaya-title">📝 Absensi Halqah</h2>
-    
-    <!-- GRID FORM (KEMBALI UTUH) -->
-    <div class="grid-2">
-      <div class="form-group">
-        <label>📅 Tanggal KBM</label>
-        <input type="date" class="form-control" id="kbmTanggal">
-      </div>
-      <div class="form-group">
-        <label>📚 Rumpun Kelas</label>
-        <select class="form-control" id="kbmJenisKelas" onchange="updatePilihan()">
-          <option value="">-- Pilih Rumpun --</option>
-          <option value="Halqah Ilmiyah">Halqah Ilmiyah</option>
-          <option value="Halqah Lughowiyah">Halqah Lughowiyah</option>
-          <option value="Halqah Quraniyah">Halqah Quraniyah</option>
-        </select>
-      </div>
-      <div class="form-group" id="opsiKhusus" style="display: none;">
-        <label>🏫 Kelas / Kelompok</label>
-        <select class="form-control" id="subPilihan" onchange="tampilkanSantri()">
-          <option value="">-- Pilih Kelas --</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>📝 Mata Pelajaran</label>
-        <select class="form-control" id="kbmMapel"><option value="">-- Pilih Mapel --</option></select>
-      </div>
+<main class="cahaya-card">
+  <h2 class="cahaya-title">📝 Absensi HALQAH</h2>
+  
+  <div class="grid-2">
+    <div class="form-group">
+      <label>📅 Tanggal KBM</label>
+      <input type="date" class="form-control" id="kbmTanggal">
     </div>
-
-    <!-- HEADER LIST & TOMBOL MARK ALL -->
-    <div class="table-header-flex">
-      <h3 style="font-family:'Playfair Display'; font-size:1.2rem; color:#0f172a; font-weight:800; margin:0;">Daftar Santri</h3>
-      <button type="button" class="btn-mark-all" onclick="markAll()">✓ Set Semua Hadir</button>
+    <div class="form-group">
+      <label>📚 Rumpun Kelas</label>
+      <select class="form-control" id="kbmJenisKelas" onchange="updatePilihan()">
+        <option value="">-- Pilih Rumpun --</option>
+        <option value="Halqah Ilmiyah">Halqah Ilmiyah</option>
+        <option value="Halqah Lughowiyah">Halqah Lughowiyah</option>
+        <option value="Halqah Quraniyah">Halqah Quraniyah</option>
+      </select>
     </div>
-
-    <!-- WADAH DAFTAR SANTRI BERBASIS FLEXBOX (YANG SUDAH TERUJI) -->
-    <div class="list-container">
-      <div class="list-header">
-        <div style="flex: 0 0 40%; padding-left: 5px;">Nama Santri</div>
-        <div style="flex: 0 0 60%; display: flex; justify-content: space-between; text-align: center;">
-          <div style="width:30px">H</div>
-          <div style="width:30px">T</div>
-          <div style="width:30px">I</div>
-          <div style="width:30px">S</div>
-          <div style="width:30px">A</div>
-        </div>
-      </div>
-      
-      <div id="santriList">
-        <div style="text-align:center;color:#64748b;padding:30px;font-style:italic;font-size:0.85rem;">Pilih kelas untuk memuat data.</div>
-      </div>
+    <div class="form-group">
+      <label>🏫 Kelas / Kelompok</label>
+      <select class="form-control" id="subPilihan" onchange="tampilkanSantri()">
+        <option value="">-- Pilih Kelas --</option>
+      </select>
     </div>
-
-    <!-- JURNAL KBM -->
-    <div class="form-group" style="margin-top: 25px;">
-      <label>📌 Ringkasan Materi / Jurnal Mengajar</label>
-      <textarea class="form-control" id="kbmCatatan" rows="3" placeholder="Tuliskan bab atau materi yang diajarkan hari ini..."></textarea>
+    <div class="form-group">
+      <label>📝 Mata Pelajaran</label>
+      <select class="form-control" id="kbmMapel"><option value="">-- Pilih Mapel --</option></select>
     </div>
-
-    <button class="btn-simpan" onclick="simpanKehadiran()">💾 SIMPAN LOG KEHADIRAN</button>
   </div>
+
+  <div class="table-header-flex">
+    <h3 style="font-family:'Playfair Display'; font-size:1rem; color:#0f172a; font-weight:800; margin:0;">Daftar Santri</h3>
+    <button type="button" class="btn-mark-all" onclick="markAll()">✓ Hadir Semua</button>
+  </div>
+
+  <div class="list-container">
+    <div class="list-header">
+      <div style="flex: 0 0 40%; padding-left: 5px;">Nama Santri</div>
+      <div style="flex: 0 0 60%; display: flex; justify-content: space-between; text-align: center;">
+        <div style="width:30px">H</div>
+        <div style="width:30px">T</div>
+        <div style="width:30px">I</div>
+        <div style="width:30px">S</div>
+        <div style="width:30px">A</div>
+      </div>
+    </div>
+    
+    <div id="santriList">
+      <div style="text-align:center;color:#64748b;padding:30px;font-style:italic;font-size:0.8rem;">Silakan pilih kelas.</div>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 20px;">
+    <label>📌 Jurnal Mengajar / Ringkasan Materi</label>
+    <textarea class="form-control" id="kbmCatatan" rows="3" placeholder="Tuliskan materi yang diajarkan hari ini..."></textarea>
+  </div>
+
+  <button class="btn-simpan" onclick="simpanKehadiran()">💾 SIMPAN LOG KEHADIRAN</button>
 </main>
 
 <script type="module">
@@ -217,25 +199,23 @@
 
   window.updatePilihan = function() {
     const rumpun = document.getElementById('kbmJenisKelas').value;
-    const boxSub = document.getElementById('opsiKhusus');
     const selSub = document.getElementById('subPilihan');
     const mapelSelect = document.getElementById('kbmMapel');
     const listArea = document.getElementById('santriList');
 
     selSub.innerHTML = '<option value="">-- Pilih Kelas --</option>';
     mapelSelect.innerHTML = '<option value="">-- Pilih Mapel --</option>';
-    listArea.innerHTML = '<div style="text-align:center;color:#64748b;padding:30px;font-style:italic;font-size:0.85rem;">Menunggu pilihan kelas...</div>';
+    listArea.innerHTML = '<div style="text-align:center;color:#64748b;padding:30px;font-style:italic;font-size:0.8rem;">Menunggu pilihan kelas...</div>';
 
-    if (!rumpun) { boxSub.style.display = "none"; return; }
+    if (!rumpun) return;
 
     let mapelList = (rumpun === 'Halqah Ilmiyah' ? ['Fiqih','Akidah','Adab','Nahwu','Sirah','Sharaf','Balaghah','Kewirausahaan','Metode Pengajaran','Matematika','IPA'] : (rumpun === 'Halqah Lughowiyah' ? ['Bahasa Arab','Bahasa Inggris','Muhadatsah'] : ['Tahsin','Tahfiz','Murojaah']));
     mapelList.sort().forEach(m => mapelSelect.add(new Option(m, m)));
 
     const kategori = masterDataAkademik.halqah?.[rumpun];
     if (kategori) {
-      boxSub.style.display = "block";
       Object.keys(kategori).forEach(k => selSub.add(new Option(k, k)));
-    } else { boxSub.style.display = "none"; }
+    }
   };
 
   window.tampilkanSantri = function() {
@@ -249,9 +229,9 @@
 
     list.forEach((nama, i) => {
       const row = document.createElement('div');
-      row.className = 'santri-row row-hadir'; // Default class
+      row.className = 'santri-row row-hadir';
       row.innerHTML = `
-        <div class="santri-name">${i + 1}. ${nama.toLowerCase()}</div>
+        <div class="santri-name">${nama}</div>
         <div class="action-group">
           ${['Hadir', 'Terlambat', 'Izin', 'Sakit', 'Alfa'].map(status => `
             <label class="radio-item">
@@ -266,18 +246,13 @@
     });
   };
 
-  // FUNGSI HADIR SEMUA
   window.markAll = function() {
     document.querySelectorAll('.santri-row').forEach(row => {
       const radioHadir = row.querySelector('input[value="Hadir"]');
-      if (radioHadir) { 
-        radioHadir.checked = true; 
-        radioHadir.dispatchEvent(new Event('change')); 
-      }
+      if (radioHadir) { radioHadir.checked = true; radioHadir.dispatchEvent(new Event('change')); }
     });
   };
 
-  // FUNGSI SIMPAN & LOGIKA POIN
   window.simpanKehadiran = function() {
     const tanggal = document.getElementById('kbmTanggal').value;
     const rumpun = document.getElementById('kbmJenisKelas').value;
@@ -285,25 +260,22 @@
     const sub = document.getElementById('subPilihan').value;
     const catatan = document.getElementById('kbmCatatan').value;
 
-    if (!tanggal || !rumpun || !sub || !mapel) { alert('⚠️ Lengkapi data.'); return; }
+    if (!tanggal || !rumpun || !sub || !mapel) { alert('⚠️ Mohon lengkapi pilihan kelas & mapel.'); return; }
     
     const btn = document.querySelector('.btn-simpan');
     btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
 
     const hasil = [];
     document.querySelectorAll('.santri-row').forEach((row, i) => {
-      // Ambil nama tanpa nomor urutnya (karena tadi ditambahkan "1. Nama")
-      const namaRaw = row.querySelector('.santri-name').textContent;
-      const nama = namaRaw.replace(/^\d+\.\s*/, '').trim(); 
-      
+      const nama = row.querySelector('.santri-name').textContent.trim();
       const status = row.querySelector(`input[name="s_${i}"]:checked`).value;
       
-      // LOGIKA POIN GAMIFIKASI TERBARU
+      // LOGIKA POIN SINKRON DENGAN KLASEMEN
       let poin = 0;
       if (status === 'Hadir') poin = 50;
       else if (status === 'Terlambat') poin = -25;
       else if (status === 'Alfa') poin = -50;
-      else poin = 0; // Untuk Sakit dan Izin
+      else poin = 0;
 
       hasil.push({ nama, status, poin });
     });
@@ -319,7 +291,7 @@
       alert('✅ BERHASIL DISIMPAN!');
       location.reload();
     }).catch(err => {
-      alert('❌ Gagal simpan: ' + err.message);
+      alert('❌ Gagal: ' + err.message);
       btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false;
     });
   };
