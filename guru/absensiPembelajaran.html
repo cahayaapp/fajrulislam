@@ -5,6 +5,7 @@
   <title>CAHAYA APP - Absensi KBM Guru</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   
+  <!-- PANGGIL MASTER THEME CAHAYA -->
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   
@@ -45,9 +46,14 @@
     }
     .btn-mark-all:hover { background: #10b981; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.2); }
 
-    /* --- PERBAIKAN TABEL UTAMA --- */
-    .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow-x: auto; }
-    .cahaya-table { width: 100%; border-collapse: collapse; background: white; }
+    /* --- PERBAIKAN TABEL UTAMA (ANTI GESER) --- */
+    .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .cahaya-table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      background: white; 
+      table-layout: fixed; /* INI KUNCI AGAR KOLOM TIDAK MELEBAR SENDIRI */
+    }
     
     .cahaya-table th { 
       background: #f1f5f9; padding: 12px 5px; font-size: 0.85rem; color: #475569; 
@@ -57,12 +63,15 @@
 
     /* Pembagian Proporsi Kolom Default (Desktop) */
     .col-no { width: 5%; }
-    .col-nama { width: 35%; text-align: left !important; padding-left: 15px !important; }
+    .col-nama { 
+      width: 35%; text-align: left !important; padding-left: 15px !important; 
+      white-space: normal; word-break: break-word; /* PAKSA TEKS TURUN JIKA PANJANG */
+    }
     .col-aksi { width: 12%; }
 
     .cahaya-table td.col-nama { 
       font-weight: 600; color: #0f172a; font-size: 0.9rem; 
-      text-transform: capitalize; line-height: 1.3; word-break: break-word;
+      text-transform: capitalize; line-height: 1.3;
     }
 
     /* Custom Radio Button Absen */
@@ -101,25 +110,27 @@
     }
 
     /* =========================================================
-       RESPONSIF KHUSUS HP (MUAT 1 LAYAR TANPA GESER)
+       RESPONSIF KHUSUS HP (SANGAT KETAT)
        ========================================================= */
     @media (max-width: 768px) {
-      .cahaya-card { padding: 15px; border-radius: 12px;}
-      .cahaya-title { font-size: 1.4rem; margin-bottom: 15px;}
+      .cahaya-card { padding: 12px; border-radius: 12px;}
+      .cahaya-title { font-size: 1.3rem; margin-bottom: 15px;}
       
       .table-header-flex { flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 15px; }
       .btn-mark-all { width: 100%; justify-content: center; padding: 12px; }
 
-      .table-responsive { border: none; overflow: visible; }
-      .cahaya-table th { padding: 10px 2px; font-size: 0.7rem; letter-spacing: 0; }
-      .cahaya-table td { padding: 8px 2px; }
+      .table-responsive { border: none; overflow: hidden; width: 100%; }
+      .cahaya-table { table-layout: fixed; width: 100%; }
       
-      /* PAKSA PEMBAGIAN LAYAR AGAR PAS */
-      .col-no { display: none; } /* Sembunyikan No */
-      .col-nama { width: 40%; padding-left: 5px !important; font-size: 0.75rem !important; }
-      .col-aksi { width: 12%; } /* 5 Opsi masing-masing dapat ruang 12% (total 60%) */
+      .cahaya-table th { padding: 8px 1px; font-size: 0.65rem; }
+      .cahaya-table td { padding: 8px 1px; }
       
-      .radio-circle { width: 26px; height: 26px; font-size: 0.75rem; border-width: 1px; }
+      /* MATEMATIKA LEBAR KOLOM (Total 100%) */
+      .col-no { display: none; width: 0; } /* Hilangkan kolom nomor */
+      .col-nama { width: 40%; padding-left: 2px !important; font-size: 0.75rem !important; line-height: 1.2; word-wrap: break-word; }
+      .col-aksi { width: 12%; } /* 12% x 5 Kolom = 60%. (60% + 40% = 100% Pas) */
+      
+      .radio-circle { width: 24px; height: 24px; font-size: 0.7rem; border-width: 1px; }
       .radio-label input:checked + .radio-circle { transform: scale(1.05); }
     }
   </style>
@@ -131,9 +142,9 @@
   <div style="font-weight: 700;">Menarik Data Kelas...</div>
 </div>
 
-<main class="cahaya-container" style="padding: 15px;">
+<main class="cahaya-container" style="padding: 10px;">
   <div class="cahaya-card">
-    <h2 class="cahaya-title">📝 Absensi Halqah</h2>
+    <h2 class="cahaya-title">📝 Absensi HALQAH</h2>
     
     <div class="grid-2">
       <div class="form-group">
