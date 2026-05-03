@@ -2,295 +2,382 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
+  <title>CAHAYA APP - Absensi KBM Guru</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Absensi Pembelajaran (KBM) - CAHAYA APP</title>
   
-  <!-- PANGGIL MASTER THEME -->
+  <!-- PANGGIL MASTER THEME CAHAYA -->
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    /* =========================================
-       PERBAIKAN TABEL AGAR FIT DI LAYAR HP
-       ========================================= */
+    /* =========================================================
+       CSS ISOLASI KHUSUS HALAMAN ABSENSI (ANTI BERANTAKAN)
+       ========================================================= */
+    body { font-family: 'Poppins', sans-serif; background: #f8fafc; margin: 0; padding: 0;}
+    
     .cahaya-card {
-      background: white; border-radius: 16px; padding: 25px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 25px;
-    }
-
-    /* Bungkus agar bisa digeser jika benar-benar sempit */
-    .table-responsive {
-      width: 100%; overflow-x: auto;
-      -webkit-overflow-scrolling: touch; margin-top: 15px;
-      background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;
-    }
-
-    .cahaya-table { width: 100%; border-collapse: collapse; }
-    
-    .cahaya-table th {
-      background: #f1f5f9; color: var(--navy-dark); font-size: 0.8rem;
-      font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
-      padding: 15px 5px; border-bottom: 2px solid #cbd5e1;
-    }
-
-    .cahaya-table td { padding: 12px 5px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-
-    /* Porsi Nama Santri Lebih Lebar & Boleh Turun ke Bawah */
-    .cahaya-table td:first-child, .cahaya-table th:first-child {
-      text-align: left; white-space: normal; width: 45%; 
-      padding-left: 15px; font-weight: 700; color: var(--navy-dark); font-size: 0.9rem; line-height: 1.3;
-    }
-
-    /* Porsi Tombol Absen di Tengah */
-    .cahaya-table td:not(:first-child), .cahaya-table th:not(:first-child) {
-      text-align: center; white-space: nowrap; width: 11%;
-    }
-
-    /* --- DESAIN TOMBOL RADIO (H, T, I, S, A) --- */
-    .radio-label { display: inline-block; cursor: pointer; margin: 0; }
-    .radio-label input[type="radio"] { display: none; }
-    .radio-btn {
-      width: 32px; height: 32px; border-radius: 50%; background: #ffffff;
-      border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem; font-weight: 800; color: #64748b; transition: all 0.2s ease;
-      margin: 0 auto;
+      background: #ffffff; border-radius: 16px; padding: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+      margin-bottom: 30px;
     }
     
-    /* Warna saat dipilih */
-    .radio-label input[type="radio"][value="H"]:checked + .radio-btn { background: #10b981; border-color: #10b981; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
-    .radio-label input[type="radio"][value="T"]:checked + .radio-btn { background: #f59e0b; border-color: #f59e0b; color: white; box-shadow: 0 4px 10px rgba(245,158,11,0.3); }
-    .radio-label input[type="radio"][value="I"]:checked + .radio-btn { background: #3b82f6; border-color: #3b82f6; color: white; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
-    .radio-label input[type="radio"][value="S"]:checked + .radio-btn { background: #8b5cf6; border-color: #8b5cf6; color: white; box-shadow: 0 4px 10px rgba(139,92,246,0.3); }
-    .radio-label input[type="radio"][value="A"]:checked + .radio-btn { background: #ef4444; border-color: #ef4444; color: white; box-shadow: 0 4px 10px rgba(239,68,68,0.3); }
+    .cahaya-title { font-family: 'Playfair Display', serif; color: #0f172a; margin-top: 0; font-size: 1.8rem; }
 
-    /* Responsif Super Ketat untuk Layar HP Kecil */
-    @media (max-width: 480px) {
-      .radio-btn { width: 26px; height: 26px; font-size: 0.75rem; border-width: 1px; }
-      .cahaya-table td:first-child { font-size: 0.8rem; padding-left: 10px; }
-      .cahaya-table th { font-size: 0.7rem; padding: 10px 2px; }
-      .cahaya-table td { padding: 10px 2px; }
+    /* Layout Form Grid */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 8px; }
+    .form-control { 
+      width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; 
+      font-family: 'Poppins', sans-serif; font-size: 0.95rem; outline: none; background: #f8fafc; transition: 0.3s;
+      box-sizing: border-box;
+    }
+    .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
+
+    /* Header Tabel */
+    .table-header-flex { 
+      display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px;
+      margin-top: 25px; margin-bottom: 15px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; 
+    }
+    .btn-mark-all { 
+      background: #ecfdf5; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); 
+      padding: 10px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; 
+      cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 5px; font-family: 'Poppins';
+    }
+    .btn-mark-all:hover { background: #10b981; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.2); }
+
+    /* Desain Tabel Premium (Dibuat Fleksibel) */
+    .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .cahaya-table { width: 100%; border-collapse: collapse; background: white; table-layout: auto; }
+    
+    .cahaya-table th { 
+      background: #f1f5f9; padding: 15px 10px; font-size: 0.85rem; color: #475569; 
+      text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #e2e8f0; text-align: center;
+    }
+    .cahaya-table th:nth-child(2) { text-align: left; padding-left: 10px; }
+    
+    .cahaya-table td { padding: 12px 5px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
+    .cahaya-table td:nth-child(2) { text-align: left; padding-left: 10px; font-weight: 600; color: #0f172a; font-size: 0.9rem; text-transform: capitalize; line-height: 1.3;}
+    .cahaya-table tr:last-child td { border-bottom: none; }
+
+    /* Custom Radio Button Absen */
+    .radio-label { display: inline-block; cursor: pointer; user-select: none; margin: 0; }
+    .radio-label input { display: none; }
+    .radio-circle { 
+      display: inline-flex; justify-content: center; align-items: center; 
+      width: 32px; height: 32px; border-radius: 50%; background: #f8fafc; 
+      border: 1px solid #cbd5e1; color: #94a3b8; font-weight: 800; font-size: 0.85rem; transition: 0.2s; 
+    }
+    
+    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; color: white; border-color: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.3); transform: scale(1.1); }
+    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; color: white; border-color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.3); transform: scale(1.1); }
+    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.3); transform: scale(1.1); }
+    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; color: white; border-color: #8b5cf6; box-shadow: 0 0 8px rgba(139,92,246,0.3); transform: scale(1.1); }
+    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.3); transform: scale(1.1); }
+
+    /* Warna Background Baris Tabel */
+    tr.status-hadir { background: #ecfdf5 !important; border-left: 4px solid #10b981; }
+    tr.status-terlambat { background: #fffbeb !important; border-left: 4px solid #f59e0b; }
+    tr.status-izin { background: #eff6ff !important; border-left: 4px solid #3b82f6; }
+    tr.status-sakit { background: #f5f3ff !important; border-left: 4px solid #8b5cf6; }
+    tr.status-alfa { background: #fef2f2 !important; border-left: 4px solid #ef4444; }
+
+    /* Tombol Simpan */
+    .btn-simpan {
+      background: linear-gradient(135deg, #d4af37, #fde047); color: #0f172a;
+      border: none; padding: 15px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; width: 100%; transition: 0.3s; margin-top: 25px; box-shadow: 0 10px 20px rgba(212,175,55,0.2);
+      font-family: 'Poppins'; letter-spacing: 1px;
+    }
+    .btn-simpan:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.4); }
+    .btn-simpan:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    /* Loader Custom */
+    #loadingOverlay { 
+      position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); 
+      z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+      color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; 
     }
 
-    /* Keterangan Form */
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 5px; text-transform: uppercase; }
-    .form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; }
-    .form-control:focus { border-color: var(--gold-main); box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
-    
-    .header-page { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; }
-    .header-page h2 { color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.8rem; margin: 0; }
+    /* =========================================================
+       RESPONSIF KHUSUS HP (MUAT 1 LAYAR TANPA GESER)
+       ========================================================= */
+    @media (max-width: 768px) {
+      .cahaya-card { padding: 15px; border-radius: 12px;}
+      .cahaya-title { font-size: 1.4rem; margin-bottom: 15px;}
+      
+      .table-header-flex { flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 15px; }
+      .btn-mark-all { width: 100%; justify-content: center; padding: 12px; }
+
+      /* Modifikasi Tabel agar pas di HP */
+      .table-responsive { border: none; overflow: visible; }
+      
+      /* Sembunyikan kolom "No" di HP untuk hemat tempat */
+      .cahaya-table th:first-child, .cahaya-table td:first-child { display: none; }
+      
+      .cahaya-table th { padding: 10px 2px; font-size: 0.7rem; letter-spacing: 0; }
+      .cahaya-table td { padding: 8px 2px; }
+      
+      /* Kolom Nama di HP */
+      .cahaya-table th:nth-child(2), .cahaya-table td:nth-child(2) { padding-left: 8px; font-size: 0.75rem; word-break: break-word; }
+      
+      /* Perkecil radio button H,T,I,S,A */
+      .radio-circle { width: 26px; height: 26px; font-size: 0.75rem; border-width: 1px; }
+      
+      /* Kurangi efek membesar saat diklik di HP agar tidak bertabrakan */
+      .radio-label input[value="Hadir"]:checked + .radio-circle,
+      .radio-label input[value="Terlambat"]:checked + .radio-circle,
+      .radio-label input[value="Izin"]:checked + .radio-circle,
+      .radio-label input[value="Sakit"]:checked + .radio-circle,
+      .radio-label input[value="Alfa"]:checked + .radio-circle {
+        transform: scale(1.05); 
+      }
+    }
   </style>
 </head>
 <body>
 
-<main class="cahaya-container" style="max-width: 800px; margin: 0 auto; padding-top: 20px;">
-  
-  <div class="header-page">
-    <div style="font-size: 2.5rem;">👨‍🏫</div>
-    <div>
-      <h2>Absensi Pembelajaran</h2>
-      <p style="margin:0; font-size:0.85rem; color:var(--text-muted);">Pencatatan Kehadiran KBM oleh Guru</p>
-    </div>
-  </div>
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: pulse 1s infinite alternate ease-in-out;">📚</div>
+  <div style="font-weight: 700;">Menarik Data Kelas...</div>
+</div>
 
+<main class="cahaya-container" style="padding: 15px;">
   <div class="cahaya-card">
-    <div class="form-group">
-      <label>🗓️ Tanggal Pelaksanaan</label>
-      <input type="date" id="tglKBM" class="form-control" />
+    <h2 class="cahaya-title">📝 Absensi Kehadiran Halqah</h2>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label>📅 Tanggal KBM</label>
+        <input type="date" class="form-control" id="kbmTanggal">
+      </div>
+      <div class="form-group">
+        <label>📚 Rumpun Kelas</label>
+        <select class="form-control" id="kbmJenisKelas" onchange="updatePilihan()">
+          <option value="">-- Pilih Rumpun --</option>
+          <option value="Halqah Ilmiyah">Halqah Ilmiyah</option>
+          <option value="Halqah Lughowiyah">Halqah Lughowiyah</option>
+          <option value="Halqah Quraniyah">Halqah Quraniyah</option>
+        </select>
+      </div>
+      <div class="form-group" id="opsiKhusus" style="display: none;">
+        <label>🏫 Kelas / Kelompok</label>
+        <select class="form-control" id="subPilihan" onchange="tampilkanSantri()">
+          <option value="">-- Pilih Kelas --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>📝 Mata Pelajaran</label>
+        <select class="form-control" id="kbmMapel"><option value="">-- Pilih Mapel --</option></select>
+      </div>
     </div>
 
-    <div class="form-group">
-      <label>📚 Mata Pelajaran</label>
-      <input type="text" id="mapelKBM" class="form-control" placeholder="Contoh: Matematika, Fiqih..." />
+    <div class="table-header-flex">
+      <h3 style="font-family:'Playfair Display'; font-size:1.2rem; color:#0f172a; font-weight:800; margin:0;">Daftar Santri</h3>
+      <button type="button" class="btn-mark-all" onclick="markAll()">✓ Set Semua Hadir</button>
     </div>
 
-    <div class="form-group">
-      <label>🏫 Pilih Kelas / Kelompok</label>
-      <select id="pilihKelas" class="form-control" onchange="renderTabelSantri()">
-        <option value="">-- Pilih Kelas --</option>
-        <!-- Daftar kelas akan dimuat dari JS -->
-      </select>
-    </div>
-  </div>
-
-  <!-- AREA TABEL ABSENSI -->
-  <div class="cahaya-card" id="areaTabel" style="display: none;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-      <h3 style="margin:0; font-size:1.1rem; color:var(--navy-dark);">Daftar Santri</h3>
-      <button class="btn-cahaya" style="background: #ecfdf5; color: #059669; border: 1px solid #34d399; padding: 8px 15px; font-size: 0.85rem;" onclick="setSemuaHadir()">
-        ✓ Set Semua Hadir
-      </button>
-    </div>
-
-    <!-- BUNGKUS RESPONSIVE WAJIB -->
     <div class="table-responsive">
       <table class="cahaya-table">
         <thead>
           <tr>
-            <th>NAMA LENGKAP</th>
-            <th>H</th>
-            <th>T</th>
-            <th>I</th>
-            <th>S</th>
-            <th>A</th>
+            <th width="5%" style="text-align: center;">No</th>
+            <th width="35%">Nama</th>
+            <th title="Hadir" width="12%">H</th>
+            <th title="Terlambat" width="12%">T</th>
+            <th title="Izin" width="12%">I</th>
+            <th title="Sakit" width="12%">S</th>
+            <th title="Alfa" width="12%">A</th>
           </tr>
         </thead>
-        <tbody id="tabelSantri">
-          <!-- Diisi via JavaScript -->
+        <tbody id="kbmBody">
+          <tr><td colspan="7" style="text-align:center;color:#64748b;padding:30px;font-style:italic;">Pilih kelas untuk memuat data.</td></tr>
         </tbody>
       </table>
     </div>
 
-    <button class="btn-cahaya btn-gold" id="btnSimpan" style="width: 100%; margin-top: 25px; padding: 15px; font-size: 1.1rem;" onclick="simpanAbsensi()">
-      💾 SIMPAN ABSENSI KBM
-    </button>
-  </div>
+    <div class="form-group" style="margin-top: 25px;">
+      <label>📌 Ringkasan Materi / Jurnal Mengajar</label>
+      <textarea class="form-control" id="kbmCatatan" rows="3" placeholder="Tuliskan bab atau materi yang diajarkan hari ini..."></textarea>
+    </div>
 
+    <button class="btn-simpan" onclick="simpanKehadiran()">💾 SIMPAN LOG KEHADIRAN</button>
+  </div>
 </main>
 
-<!-- SCRIPT FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<script>
-  // Inisialisasi Firebase (Gunakan config asli Anda)
   const firebaseConfig = {
-    apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
     authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
     databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
     projectId: "absensi-santri-fajrul-islam"
   };
-  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-  const db = firebase.database();
 
-  // Set Tanggal Hari Ini
-  document.getElementById('tglKBM').value = new Date().toISOString().split('T')[0];
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || 'null');
+  
+  let masterDataAkademik = {};
 
-  // Identitas Guru dari Sesi Login
-  const currentUser = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
-  const namaGuru = currentUser.label || currentUser.username || "Guru Pengajar";
-
-  // Data Dummy/Sementara Kelas (Ganti logika ini dengan penarikan data dari DB Anda jika perlu)
-  const dataKelasDummy = {
-    "Kelas 7A": ["Abdullah Mukti Hafidzallah", "Anugrah Pratama", "Canza Ryanda Hutasuhut", "Dedi Setiadi", "Dikki Kurniawan", "Fahrie Oktavirano Fitris"],
-    "Kelas 7B": ["Fakhri Al Muzakki", "Farazh Sayyid Putra Kenega", "Ghozy Faturrahman", "Ilham", "Ilham Mukmin Al Farabi", "M. Firaas Al Insyiroh"],
-    "Usrah Evita": ["Bilqis Nur Anisah", "Jessica Putry Ayra", "Ghenis Andientiaz", "Dina Ruhayah", "Pitri Ramadani", "Grinneta Nalani Putri"]
-  };
-
-  // Muat Dropdown Kelas
-  window.onload = () => {
-    const sel = document.getElementById('pilihKelas');
-    for(let kelas in dataKelasDummy) {
-      sel.appendChild(new Option(kelas, kelas));
-    }
-  };
-
-  // Render Tabel
-  window.renderTabelSantri = function() {
-    const kelasTerpilih = document.getElementById('pilihKelas').value;
-    const areaTabel = document.getElementById('areaTabel');
-    const tbody = document.getElementById('tabelSantri');
-    
-    if(!kelasTerpilih) {
-      areaTabel.style.display = 'none';
-      return;
-    }
-
-    const daftarNama = dataKelasDummy[kelasTerpilih] || [];
-    let html = '';
-
-    daftarNama.forEach((nama, i) => {
-      html += `
-        <tr>
-          <td>${nama}</td>
-          <td><label class="radio-label"><input type="radio" name="abs_${i}" value="H"><div class="radio-btn">H</div></label></td>
-          <td><label class="radio-label"><input type="radio" name="abs_${i}" value="T"><div class="radio-btn">T</div></label></td>
-          <td><label class="radio-label"><input type="radio" name="abs_${i}" value="I"><div class="radio-btn">I</div></label></td>
-          <td><label class="radio-label"><input type="radio" name="abs_${i}" value="S"><div class="radio-btn">S</div></label></td>
-          <td><label class="radio-label"><input type="radio" name="abs_${i}" value="A"><div class="radio-btn">A</div></label></td>
-        </tr>
-      `;
-    });
-
-    tbody.innerHTML = html;
-    areaTabel.style.display = 'block';
-  }
-
-  // Tombol Set Semua Hadir
-  window.setSemuaHadir = function() {
-    const radios = document.querySelectorAll('input[type="radio"][value="H"]');
-    radios.forEach(radio => radio.checked = true);
-  }
-
-  // Fungsi Simpan ke Firebase
-  window.simpanAbsensi = async function() {
-    const tgl = document.getElementById('tglKBM').value;
-    const mapel = document.getElementById('mapelKBM').value.trim();
-    const kelas = document.getElementById('pilihKelas').value;
-
-    if(!tgl || !mapel || !kelas) {
-      return alert("⚠️ Mohon lengkapi Tanggal, Mata Pelajaran, dan Kelas!");
-    }
-
-    const daftarNama = dataKelasDummy[kelas];
-    let dataAbsensi = [];
-    let belumDiabsen = false;
-
-    daftarNama.forEach((nama, i) => {
-      const terpilih = document.querySelector(`input[name="abs_${i}"]:checked`);
-      if(!terpilih) { belumDiabsen = true; return; }
-      
-      let val = terpilih.value;
-      let namaStatus = ''; let poin = 0;
-      
-      if(val === 'H') { namaStatus = 'Hadir'; poin = 0; }
-      else if(val === 'T') { namaStatus = 'Terlambat'; poin = -5; }
-      else if(val === 'I') { namaStatus = 'Izin'; poin = 0; }
-      else if(val === 'S') { namaStatus = 'Sakit'; poin = 0; }
-      else if(val === 'A') { namaStatus = 'Alfa'; poin = -10; }
-
-      dataAbsensi.push({
-        nama: nama,
-        status: namaStatus,
-        kode: val,
-        poin: poin,
-        keterangan: "",
-        statusKonseling: "Belum" // Disiapkan untuk masuk Buku Kasus jika Alfa/Terlambat
-      });
-    });
-
-    if(belumDiabsen) {
-      return alert("⚠️ Ada santri yang belum diabsen (H/T/I/S/A belum diklik).");
-    }
-
-    const btn = document.getElementById('btnSimpan');
-    btn.disabled = true; btn.innerHTML = "⏳ MENYIMPAN DATA...";
-
-    const payload = {
-      tanggal: tgl,
-      mapel: mapel,
-      kelas: kelas,
-      guru: namaGuru,
-      waktuSimpan: new Date().toISOString(),
-      data: dataAbsensi
-    };
+  document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('kbmTanggal').value = new Date().toISOString().split('T')[0];
 
     try {
-      // Simpan ke node absensi_pembelajaran
-      await db.ref('cahaya_app/absensi_pembelajaran').push(payload);
-      alert("✅ Absensi KBM berhasil disimpan!");
-      
-      // Reset Form
-      document.getElementById('mapelKBM').value = '';
-      document.getElementById('pilihKelas').value = '';
-      document.getElementById('areaTabel').style.display = 'none';
-
+      const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
+      if (snapshot.exists()) {
+        masterDataAkademik = snapshot.val();
+      } else {
+        alert("⚠️ Data Kelas kosong. Sinkronkan dari Manajemen Halqah.");
+      }
     } catch (error) {
-      alert("❌ Gagal menyimpan absensi: " + error.message);
-    } finally {
-      btn.disabled = false; btn.innerHTML = "💾 SIMPAN ABSENSI KBM";
+      console.error(error);
     }
-  }
-</script>
 
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  });
+
+  window.updatePilihan = function() {
+    const rumpun = document.getElementById('kbmJenisKelas').value;
+    const boxSub = document.getElementById('opsiKhusus');
+    const selSub = document.getElementById('subPilihan');
+    const mapelSelect = document.getElementById('kbmMapel');
+    const tbody = document.getElementById('kbmBody');
+
+    if(selSub) selSub.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    mapelSelect.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:30px;font-style:italic;">Menunggu pilihan kelas...</td></tr>';
+
+    if (!rumpun) { 
+      boxSub.style.display = "none"; 
+      return; 
+    }
+
+    let mapelList = [];
+    const dataMapel = masterDataAkademik.mapel;
+
+    if (dataMapel) {
+      if (dataMapel[rumpun]) {
+        mapelList = Array.isArray(dataMapel[rumpun]) ? dataMapel[rumpun] : Object.values(dataMapel[rumpun]);
+      } 
+      else {
+        mapelList = Array.isArray(dataMapel) ? dataMapel : Object.values(dataMapel);
+      }
+      mapelList = mapelList.map(m => typeof m === 'object' ? (m.namaMapel || m.nama || m.mapel) : m);
+    } else {
+      mapelList = (rumpun === 'Halqah Ilmiyah' ? ['Fiqih','Akidah','Adab','Nahwu','Sirah','Sharaf','Balaghah','Kewirausahaan','Metode Pengajaran','Matematika','IPA'] : (rumpun === 'Halqah Lughowiyah' ? ['Bahasa Arab','Bahasa Inggris','Muhadatsah'] : ['Tahsin','Tahfiz','Murojaah']));
+    }
+
+    mapelList = mapelList.filter(m => m && typeof m === 'string').sort((a,b) => a.localeCompare(b));
+
+    mapelList.forEach(m => { 
+      mapelSelect.add(new Option(m, m)); 
+    });
+
+    const dataHalqah = masterDataAkademik.halqah || {};
+    const kategori = dataHalqah[rumpun];
+    
+    if (kategori) {
+      boxSub.style.display = "block";
+      Object.keys(kategori).forEach(k => {
+        selSub.add(new Option(k, k));
+      });
+    } else {
+      boxSub.style.display = "none";
+    }
+  };
+
+  window.tampilkanSantri = function() {
+    const rumpun = document.getElementById('kbmJenisKelas').value;
+    const sub = document.getElementById('subPilihan').value;
+    const tbody = document.getElementById('kbmBody');
+    tbody.innerHTML = '';
+    
+    const list = (masterDataAkademik.halqah?.[rumpun]?.[sub] || []).slice().sort((a, b) => a.localeCompare(b));
+
+    if (list.length === 0) { 
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;font-weight:bold;">Data santri kosong di kelas ini.</td></tr>`; 
+      return; 
+    }
+
+    list.forEach((nama, i) => {
+      const tr = document.createElement('tr');
+      tr.className = 'status-hadir';
+      
+      tr.innerHTML = `
+        <td style="text-align: center; border-left: none;">${i + 1}</td>
+        <td style="font-weight: 600; color: #0f172a;">${nama.toLowerCase()}</td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Hadir" checked><span class="radio-circle">H</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Terlambat"><span class="radio-circle">T</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Izin"><span class="radio-circle">I</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Sakit"><span class="radio-circle">S</span></label></td>
+        <td style="text-align: center;"><label class="radio-label"><input type="radio" name="s_${i}" value="Alfa"><span class="radio-circle">A</span></label></td>`;
+      tbody.appendChild(tr);
+
+      tr.querySelectorAll('input[type="radio"]').forEach(r => {
+        r.addEventListener('change', () => {
+          tr.className = 'status-' + r.value.toLowerCase();
+        });
+      });
+    });
+  };
+
+  window.markAll = function() {
+    document.querySelectorAll('#kbmBody tr').forEach(tr => {
+      const radio = tr.querySelector('input[value="Hadir"]');
+      if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
+    });
+  };
+
+  window.simpanKehadiran = function() {
+    const tanggal = document.getElementById('kbmTanggal').value;
+    const rumpun = document.getElementById('kbmJenisKelas').value;
+    const mapel = document.getElementById('kbmMapel').value;
+    const sub = document.getElementById('subPilihan')?.value || '';
+    const catatan = document.getElementById('kbmCatatan').value.trim();
+
+    if (!tanggal || !rumpun || !sub || !mapel) { alert('⚠️ Lengkapi filter kelas, mapel, dan tanggal.'); return; }
+    
+    const rows = document.querySelectorAll('#kbmBody tr');
+    if (rows.length === 0 || rows[0].cells.length === 1) return;
+
+    const btn = document.querySelector('.btn-simpan');
+    btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
+
+    const hasil = [];
+    rows.forEach((tr, i) => {
+      const nama = tr.children[1].textContent;
+      const status = document.querySelector(`input[name="s_${i}"]:checked`)?.value || 'Hadir';
+      
+      let poin = 0;
+      if(status === 'Hadir') poin = (rumpun === 'Halqah Quraniyah') ? 40 : 30;
+      else if(status === 'Terlambat') poin = (rumpun === 'Halqah Quraniyah') ? -20 : -15;
+      else if(status === 'Alfa') poin = (rumpun === 'Halqah Quraniyah') ? -40 : -30;
+      
+      hasil.push({ nama, status, poin });
+    });
+
+    const payload = { 
+      tanggal, rumpun, sub, mapel, catatan, 
+      guru: user ? (user.label || user.username) : 'Guru', 
+      data: hasil, 
+      waktuSimpan: new Date().toISOString() 
+    };
+
+    push(ref(db, 'cahaya_app/absensi_pembelajaran'), payload)
+      .then(() => { 
+        alert('✅ LOG KEHADIRAN BERHASIL DISIMPAN!'); 
+        btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false; 
+        document.getElementById('kbmCatatan').value = '';
+      })
+      .catch(err => { 
+        alert('❌ Error: ' + err.message); 
+        btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false; 
+      });
+  };
+</script>
 </body>
 </html>
