@@ -3,85 +3,160 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CAHAYA APP</title>
+  <title>CAHAYA APP - Premium Portal</title>
   <link rel="icon" type="image/png" href="assets/logofi.png" />
   
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* CSS Isolasi (Hanya berlaku di halaman ini) */
+    /* CSS Isolasi - Super Premium UI/UX */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #0f172a, #020617);
+      background-color: #050b14;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       min-height: 100vh; padding: 20px; position: relative; overflow: hidden;
-      color: #334155;
+      color: #e2e8f0;
     }
 
-    /* Pattern Halus */
+    /* Ambient Glow Background (Kesan Canggih & Modern) */
+    body::before, body::after {
+      content: ""; position: absolute; border-radius: 50%; filter: blur(120px); z-index: 0;
+      animation: floatOrbs 10s infinite alternate ease-in-out;
+    }
     body::before {
-      content: ""; position: absolute; inset: 0; opacity: 0.03; pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%23ffffff' fill-rule='evenodd'/%3E%3C/svg%3E");
+      width: 400px; height: 400px; background: rgba(212, 175, 55, 0.15); /* Gold Glow */
+      top: -10%; left: -10%;
+    }
+    body::after {
+      width: 500px; height: 500px; background: rgba(14, 165, 233, 0.1); /* Cyan/Blue Glow */
+      bottom: -10%; right: -10%; animation-delay: -5s;
     }
 
+    /* Glassmorphism Main Card */
     .main-card {
-      background: #ffffff; width: 100%; max-width: 450px;
-      border-radius: 24px; padding: 50px 40px; text-align: center;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative; z-index: 10;
-      animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      width: 100%; max-width: 460px;
+      padding: 50px 40px; text-align: center;
+      position: relative; z-index: 10;
+      background: rgba(17, 25, 40, 0.6);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+      animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .brand-logo { width: 90px; margin-bottom: 20px; filter: drop-shadow(0 10px 15px rgba(212,175,55,0.2)); }
-    .app-title { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 900; color: #0f172a; margin-bottom: 5px; letter-spacing: 1px; line-height: 1.1; }
-    .app-subtitle { font-size: 0.85rem; color: #d4af37; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 25px; }
+    .brand-logo { 
+      width: 95px; margin-bottom: 20px; 
+      filter: drop-shadow(0 15px 25px rgba(212,175,55,0.3)); 
+      transition: transform 0.5s ease;
+    }
+    .brand-logo:hover { transform: scale(1.05); }
+
+    .app-title { 
+      font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 900; 
+      background: linear-gradient(135deg, #f3e7e9 0%, #e3eeff 99%, #e3eeff 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 2px; letter-spacing: 1px; line-height: 1.1; 
+    }
+    
+    .app-subtitle { 
+      font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 4px; 
+      margin-bottom: 30px; 
+      background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
 
     /* VIEW 1: WELCOME */
-    #welcomeView { display: block; animation: fadeIn 0.5s ease forwards; }
-    .welcome-text { font-size: 0.95rem; color: #64748b; line-height: 1.6; margin-bottom: 30px; }
+    #welcomeView { display: block; animation: fadeIn 0.6s ease forwards; }
+    .welcome-text { font-size: 0.95rem; color: #94a3b8; line-height: 1.7; margin-bottom: 35px; font-weight: 300; }
 
+    /* Premium Button */
     .btn-utama {
-      background: linear-gradient(135deg, #0f172a, #1e293b); color: #ffffff;
-      border: none; padding: 16px 20px; width: 100%; border-radius: 12px;
-      font-size: 1.05rem; font-weight: 600; font-family: 'Poppins', sans-serif;
-      cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(15,23,42,0.15); margin-top: 10px;
+      background: linear-gradient(135deg, #d4af37, #aa771c);
+      color: #050b14; border: none; padding: 18px 20px; width: 100%; 
+      border-radius: 16px; font-size: 1.05rem; font-weight: 700; 
+      font-family: 'Poppins', sans-serif; cursor: pointer; 
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+      box-shadow: 0 10px 20px rgba(212,175,55,0.2); 
+      position: relative; overflow: hidden;
     }
-    .btn-utama:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(15,23,42,0.25); }
+    .btn-utama::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-25deg); animation: shine 3s infinite;
+    }
+    .btn-utama:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(212,175,55,0.4); background: linear-gradient(135deg, #eadd84, #c99318); }
+    .btn-utama:active { transform: translateY(1px); }
 
     /* VIEW 2: LOGIN FORM */
-    #loginView { display: none; animation: fadeIn 0.5s ease forwards; }
-    .login-title { font-size: 1.2rem; font-weight: 700; color: #1e293b; margin-bottom: 25px; border-bottom: 2px dashed #cbd5e1; padding-bottom: 15px;}
-    
-    .form-group { margin-bottom: 20px; text-align: left; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
-    .form-control {
-      width: 100%; padding: 14px 15px; font-size: 1rem; font-family: 'Poppins', sans-serif;
-      background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; color: #0f172a; outline: none; transition: 0.3s;
+    #loginView { display: none; animation: fadeIn 0.6s ease forwards; }
+    .login-title { 
+      font-size: 1.1rem; font-weight: 500; color: #cbd5e1; margin-bottom: 30px; 
+      display: flex; align-items: center; justify-content: center; gap: 15px;
     }
-    .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 4px rgba(212,175,55,0.15); }
+    .login-title::before, .login-title::after { content: ""; height: 1px; width: 40px; background: rgba(255,255,255,0.1); }
+    
+    .form-group { margin-bottom: 22px; text-align: left; position: relative; }
+    .form-group label { 
+      display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; 
+      margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
+    }
+    
+    /* Modern Input Fields */
+    .form-control {
+      width: 100%; padding: 16px 20px; font-size: 1rem; font-family: 'Poppins', sans-serif;
+      background: rgba(255, 255, 255, 0.04); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 14px; color: #ffffff; outline: none; 
+      transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .form-control::placeholder { color: #475569; font-weight: 300; }
+    .form-control:focus { 
+      background: rgba(255, 255, 255, 0.08); 
+      border-color: #d4af37; 
+      box-shadow: 0 0 0 4px rgba(212,175,55,0.1), inset 0 2px 4px rgba(0,0,0,0.2); 
+    }
 
     .btn-kembali {
-      background: none; border: none; color: #475569; font-size: 0.9rem; font-weight: 500;
-      cursor: pointer; margin-top: 25px; text-decoration: none; font-family: 'Poppins', sans-serif; transition: 0.2s;
+      background: none; border: none; color: #64748b; font-size: 0.9rem; font-weight: 500;
+      cursor: pointer; margin-top: 30px; font-family: 'Poppins', sans-serif; transition: color 0.3s;
     }
-    .btn-kembali:hover { color: #0f172a; text-decoration: underline; }
+    .btn-kembali:hover { color: #d4af37; }
 
-    #errorMsg { display: none; background: #fef2f2; border-left: 4px solid #ef4444; color: #b91c1c; padding: 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; margin-bottom: 20px; text-align: left; }
+    #errorMsg { 
+      display: none; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; 
+      color: #fca5a5; padding: 14px; border-radius: 8px; font-size: 0.85rem; 
+      font-weight: 400; margin-bottom: 25px; text-align: left; backdrop-filter: blur(10px);
+    }
 
-    footer { position: absolute; bottom: 20px; font-size: 0.75rem; color: rgba(255,255,255,0.4); font-weight: 500; letter-spacing: 1px; z-index: 10;}
+    footer { position: absolute; bottom: 25px; font-size: 0.75rem; color: #475569; font-weight: 400; letter-spacing: 1.5px; z-index: 10;}
 
+    /* Splash Screen Enhancements */
     #splashScreen {
-      position: fixed; inset: 0; background: #0f172a; z-index: 9999;
-      display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.5s ease;
+      position: fixed; inset: 0; background: #050b14; z-index: 9999;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    #splashScreen img { width: 100px; margin-bottom: 20px; animation: pulse 1.5s infinite; filter: drop-shadow(0 0 20px rgba(212,175,55,0.5)); }
-    .loader-text { color: #d4af37; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.2rem; letter-spacing: 1px; }
+    #splashScreen img { width: 110px; margin-bottom: 25px; animation: pulseGlow 2s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+    .loader-text { 
+      background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-family: 'Playfair Display', serif; font-weight: 800; font-size: 1.4rem; letter-spacing: 2px; 
+    }
 
-    @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
-    @media (max-width: 480px) { .main-card { padding: 40px 25px; border-radius: 20px; } .app-title { font-size: 2.4rem; } }
+    /* Animations */
+    @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(50px) scale(0.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulseGlow { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(212,175,55,0.4)); } 50% { transform: scale(1.05); filter: drop-shadow(0 0 35px rgba(212,175,55,0.8)); } }
+    @keyframes floatOrbs { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 30px) scale(1.1); } }
+    @keyframes shine { 100% { left: 200%; } }
+
+    @media (max-width: 480px) { 
+      .main-card { padding: 40px 25px; border-radius: 24px; max-width: 90%; } 
+      .app-title { font-size: 2.3rem; } 
+    }
   </style>
 </head>
 <body>
@@ -95,14 +170,14 @@
   <div class="main-card">
     <img src="assets/logofi.png" alt="Logo Pesantren" class="brand-logo" />
     <h1 class="app-title">CAHAYA APP</h1>
-    <div class="app-subtitle">Pesantren Cahaya Fajrul Islam</div>
+    <div class="app-subtitle">Sistem Informasi Terpadu</div>
 
     <!-- VIEW 1: UCAPAN SELAMAT DATANG -->
     <div id="welcomeView">
       <p class="welcome-text">
-        Selamat datang di Sistem Informasi Terpadu CAHAYA. Platform pemantauan akademik, ibadah, kedisiplinan, dan operasional asrama.
+        Platform eksklusif pemantauan akademik, ibadah, kedisiplinan, dan manajemen operasional Pesantren Cahaya Fajrul Islam.
       </p>
-      <button class="btn-utama" onclick="tampilkanLogin()">Login CAHAYA APP</button>
+      <button class="btn-utama" onclick="tampilkanLogin()">Login Disini</button>
     </div>
 
     <!-- VIEW 2: KOTAK LOGIN -->
@@ -114,21 +189,21 @@
       <form id="loginForm">
         <div class="form-group">
           <label>Identitas Pengguna</label>
-          <input type="text" id="username" class="form-control" placeholder="Username / ID Santri" autocomplete="off" required>
+          <input type="text" id="username" class="form-control" placeholder="ID Santri / Username" autocomplete="off" required>
         </div>
-        <div class="form-group" style="margin-bottom: 25px;">
+        <div class="form-group" style="margin-bottom: 30px;">
           <label>Kata Sandi</label>
           <input type="password" id="password" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
         </div>
         
-        <button type="submit" class="btn-utama" id="btnSubmit" style="background: #d4af37; color: #0f172a;">Masuk Sistem</button>
+        <button type="submit" class="btn-utama" id="btnSubmit">Login Sekarang</button>
       </form>
 
-      <button class="btn-kembali" onclick="tampilkanWelcome()">← Batal / Kembali</button>
+      <button class="btn-kembali" onclick="tampilkanWelcome()">← Kembali ke Beranda</button>
     </div>
   </div>
 
-  <footer>© 2026 Hak Cipta CAHAYA APP</footer>
+  <footer>© 2026 HAK CIPTA CAHAYA APP</footer>
 
   <!-- SCRIPT FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -165,8 +240,8 @@
 
     setTimeout(() => {
       document.getElementById('splashScreen').style.opacity = '0';
-      setTimeout(() => document.getElementById('splashScreen').style.visibility = 'hidden', 500);
-    }, 1500);
+      setTimeout(() => document.getElementById('splashScreen').style.visibility = 'hidden', 800);
+    }, 1800);
 
     // === DATA WALI SANTRI (LENGKAP 100%) ===
     const waliList = [
@@ -303,14 +378,14 @@
       const btn = document.getElementById("btnSubmit");
       const err = document.getElementById("errorMsg");
 
-      btn.disabled = true; btn.innerHTML = "⏳ Autentikasi..."; err.style.display = "none";
+      btn.disabled = true; btn.innerHTML = "⏳ Bismillaah..."; err.style.display = "none";
 
       let email = u;
       if (!u.includes("@") && !waliList.some(w => w.username.toLowerCase() === u)) email = u + "@cahayaapp.id";
 
       if (!email.endsWith("@cahayaapp.id")) {
         const wali = waliList.find(w => w.username.toLowerCase() === u && w.password === p);
-        if (!wali) { err.textContent = "Kredensial tidak valid."; err.style.display = "block"; btn.disabled = false; btn.textContent = "Masuk Sistem"; return; }
+        if (!wali) { err.textContent = "Kredensial tidak valid."; err.style.display = "block"; btn.disabled = false; btn.textContent = "Otorisasi Akses"; return; }
         
         localStorage.setItem("cahayaCurrentUser", JSON.stringify({ akses: ["wali"], namaAnak: wali.nama, username: wali.username, label: `Wali ${wali.nama}` }));
         tampilkanSistemLoading("Memuat Portal Wali...");
@@ -337,7 +412,7 @@
         }, 1000);
 
       } catch (error) {
-        btn.disabled = false; btn.textContent = "Masuk Sistem";
+        btn.disabled = false; btn.textContent = "Otorisasi Akses";
         err.textContent = "Autentikasi Gagal: Cek kembali Username & Password Anda.";
         err.style.display = "block";
       }
