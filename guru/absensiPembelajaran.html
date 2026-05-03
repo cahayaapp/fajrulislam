@@ -46,26 +46,25 @@
     }
     .btn-mark-all:hover { background: #10b981; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.2); }
 
-    /* --- TABEL DEKSTOP --- */
+    /* Desain Tabel Premium */
     .table-responsive { width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
-    
-    /* Gunakan table-layout: fixed agar tidak bisa melar */
     .cahaya-table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
     
     .cahaya-table th { 
-      background: #f1f5f9; padding: 12px 2px; font-size: 0.8rem; color: #475569; 
+      background: #f1f5f9; padding: 12px 2px; font-size: 0.85rem; color: #475569; 
       text-transform: uppercase; border-bottom: 2px solid #e2e8f0; text-align: center;
     }
     .cahaya-table td { padding: 10px 2px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
 
-    /* Porsi Lebar Desktop */
-    .col-no { width: 5%; }
-    .col-nama { 
-      width: 40%; text-align: left !important; padding-left: 15px !important; 
+    /* Pengaturan Lebar Kolom agar tidak tumpuk */
+    .col-no { width: 35px; }
+    .col-nama { width: auto; text-align: left !important; padding-left: 10px !important; }
+    .col-aksi { width: 40px; }
+
+    .cahaya-table td.col-nama { 
       font-weight: 600; color: #0f172a; font-size: 0.9rem; 
-      word-wrap: break-word; overflow-wrap: break-word; text-transform: capitalize;
+      text-transform: capitalize; line-height: 1.2; word-break: break-word;
     }
-    .col-aksi { width: 11%; } 
 
     /* Custom Radio Button Absen */
     .radio-label { display: inline-block; cursor: pointer; user-select: none; margin: 0; }
@@ -77,28 +76,28 @@
     }
     
     .radio-label input:checked + .radio-circle { color: white; transform: scale(1.1); }
-    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; border-color: #10b981; }
-    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; border-color: #f59e0b; }
-    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; border-color: #3b82f6; }
-    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; border-color: #8b5cf6; }
-    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; border-color: #ef4444; }
+    .radio-label input[value="Hadir"]:checked + .radio-circle { background: #10b981; border-color: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.3); }
+    .radio-label input[value="Terlambat"]:checked + .radio-circle { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.3); }
+    .radio-label input[value="Izin"]:checked + .radio-circle { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.3); }
+    .radio-label input[value="Sakit"]:checked + .radio-circle { background: #8b5cf6; border-color: #8b5cf6; box-shadow: 0 0 8px rgba(139,92,246,0.3); }
+    .radio-label input[value="Alfa"]:checked + .radio-circle { background: #ef4444; border-color: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.3); }
 
-    /* Warna Background */
-    tr.status-hadir { background: #ecfdf5 !important; border-left: 4px solid #10b981; }
-    tr.status-terlambat { background: #fffbeb !important; border-left: 4px solid #f59e0b; }
-    tr.status-izin { background: #eff6ff !important; border-left: 4px solid #3b82f6; }
-    tr.status-sakit { background: #f5f3ff !important; border-left: 4px solid #8b5cf6; }
-    tr.status-alfa { background: #fef2f2 !important; border-left: 4px solid #ef4444; }
+    /* Warna Background Baris Tabel */
+    tr.status-hadir { background: #ecfdf5 !important; border-left: 4px solid #10b981;}
+    tr.status-terlambat { background: #fffbeb !important; border-left: 4px solid #f59e0b;}
+    tr.status-izin { background: #eff6ff !important; border-left: 4px solid #3b82f6;}
+    tr.status-sakit { background: #f5f3ff !important; border-left: 4px solid #8b5cf6;}
+    tr.status-alfa { background: #fef2f2 !important; border-left: 4px solid #ef4444;}
 
     /* Tombol Simpan */
     .btn-simpan {
       background: linear-gradient(135deg, #d4af37, #fde047); color: #0f172a;
       border: none; padding: 15px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700;
       cursor: pointer; width: 100%; transition: 0.3s; margin-top: 25px; box-shadow: 0 10px 20px rgba(212,175,55,0.2);
-      font-family: 'Poppins'; letter-spacing: 1px;
     }
     .btn-simpan:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.4); }
 
+    /* Loader Custom */
     #loadingOverlay { 
       position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); 
       z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
@@ -106,47 +105,40 @@
     }
 
     /* =========================================================
-       RESPONSIF KHUSUS HP (THE ULTIMATE FIX)
+       RESPONSIF KHUSUS HP (MUAT 1 LAYAR TANPA GESER)
        ========================================================= */
     @media (max-width: 768px) {
-      .cahaya-card { padding: 12px; border-radius: 12px;}
+      .cahaya-card { padding: 15px; border-radius: 12px;}
+      .cahaya-title { font-size: 1.4rem; margin-bottom: 15px;}
       
-      .table-responsive { border: none; overflow: hidden !important; }
-      .cahaya-table { table-layout: fixed !important; width: 100% !important; }
-      
-      /* Hilangkan jarak kosong antar cell tabel di HP */
-      .cahaya-table th, .cahaya-table td { padding: 8px 0 !important; }
+      .table-header-flex { flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 15px; }
+      .btn-mark-all { width: 100%; justify-content: center; padding: 12px; }
 
-      /* Sembunyikan No */
-      .col-no { display: none !important; }
+      /* Modifikasi Tabel agar pas di HP */
+      .table-responsive { border: none; overflow: visible; }
+      .cahaya-table th { padding: 10px 2px; font-size: 0.7rem; letter-spacing: 0; }
+      .cahaya-table td { padding: 8px 2px; }
       
-      /* Kolom Nama ambil ruang 45% dan paksa enter bawah */
-      .col-nama { 
-        width: 45% !important; 
-        padding-left: 5px !important; 
-        font-size: 0.75rem !important; 
-        white-space: normal !important; 
-        word-break: break-word !important; 
-        line-height: 1.2;
-      }
+      .col-no { display: none; } /* Sembunyikan No di HP agar nama punya ruang ekstra */
+      .col-nama { padding-left: 8px !important; font-size: 0.75rem !important; word-break: break-word; }
+      .col-aksi { width: 32px; } /* Sesuaikan agar radio pas */
       
-      /* Kolom Aksi masing-masing 11% (Total 55%). 45% + 55% = PAS 100% */
-      .col-aksi { width: 11% !important; }
-
-      /* Perkecil bola menjadi 22px agar muat dijajarkan 5 buah di layar kecil */
-      .radio-circle { width: 22px !important; height: 22px !important; font-size: 0.65rem !important; border-width: 1px !important;}
-      .radio-label input:checked + .radio-circle { transform: scale(1.05); } 
+      /* Perkecil radio button H,T,I,S,A */
+      .radio-circle { width: 26px; height: 26px; font-size: 0.75rem; border-width: 1px; }
+      
+      /* Kurangi efek membesar saat diklik di HP agar tidak bertabrakan */
+      .radio-label input:checked + .radio-circle { transform: scale(1.05); }
     }
   </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
-  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: pulse 1s infinite alternate ease-in-out;">📚</div>
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: pulse 1.5s infinite alternate ease-in-out;">📚</div>
   <div style="font-weight: 700;">Menarik Data Kelas...</div>
 </div>
 
-<main class="cahaya-container" style="padding: 10px;">
+<main class="cahaya-container" style="padding: 15px;">
   <div class="cahaya-card">
     <h2 class="cahaya-title">📝 Absensi Halqah</h2>
     
@@ -186,7 +178,7 @@
         <thead>
           <tr>
             <th class="col-no">No</th>
-            <th class="col-nama">NAMA</th>
+            <th class="col-nama">Nama</th>
             <th class="col-aksi" title="Hadir">H</th>
             <th class="col-aksi" title="Terlambat">T</th>
             <th class="col-aksi" title="Izin">I</th>
@@ -222,27 +214,16 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  
-  let user = {};
-  try {
-    user = JSON.parse(localStorage.getItem('cahayaCurrentUser')) || {};
-  } catch(e) {
-    user = {};
-  }
+  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || 'null');
   
   let masterDataAkademik = {};
 
   document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('kbmTanggal').value = new Date().toISOString().split('T')[0];
-    
     try {
       const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
-      if (snapshot.exists()) {
-          masterDataAkademik = snapshot.val();
-      }
-    } catch (error) { 
-        console.error("Gagal menarik data akademik:", error); 
-    }
+      if (snapshot.exists()) masterDataAkademik = snapshot.val();
+    } catch (error) { console.error(error); }
     
     document.getElementById('loadingOverlay').style.opacity = '0';
     setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
@@ -278,15 +259,11 @@
     tbody.innerHTML = '';
     
     const list = (masterDataAkademik.halqah?.[rumpun]?.[sub] || []).slice().sort();
-    if (list.length === 0) { 
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#ef4444;">Data kosong.</td></tr>`; 
-        return; 
-    }
+    if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;">Data kosong.</td></tr>`; return; }
 
     list.forEach((nama, i) => {
       const tr = document.createElement('tr');
       tr.className = 'status-hadir';
-      
       tr.innerHTML = `
         <td class="col-no">${i + 1}</td>
         <td class="col-nama">${nama.toLowerCase()}</td>
@@ -296,20 +273,14 @@
         <td class="col-aksi"><label class="radio-label"><input type="radio" name="s_${i}" value="Sakit"><span class="radio-circle">S</span></label></td>
         <td class="col-aksi"><label class="radio-label"><input type="radio" name="s_${i}" value="Alfa"><span class="radio-circle">A</span></label></td>`;
       tbody.appendChild(tr);
-      
-      tr.querySelectorAll('input').forEach(r => r.addEventListener('change', () => {
-          tr.className = 'status-' + r.value.toLowerCase();
-      }));
+      tr.querySelectorAll('input').forEach(r => r.addEventListener('change', () => tr.className = 'status-' + r.value.toLowerCase()));
     });
   };
 
   window.markAll = function() {
     document.querySelectorAll('#kbmBody tr').forEach(tr => {
       const radio = tr.querySelector('input[value="Hadir"]');
-      if (radio) { 
-          radio.checked = true; 
-          radio.dispatchEvent(new Event('change', { bubbles: true })); 
-      }
+      if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
     });
   };
 
@@ -318,48 +289,34 @@
     const rumpun = document.getElementById('kbmJenisKelas').value;
     const mapel = document.getElementById('kbmMapel').value;
     const sub = document.getElementById('subPilihan').value;
-    
-    if (!tanggal || !rumpun || !sub || !mapel) { 
-        alert('⚠️ Mohon lengkapi semua data formulir.'); 
-        return; 
-    }
+    if (!tanggal || !rumpun || !sub || !mapel) { alert('⚠️ Lengkapi data terlebih dahulu.'); return; }
     
     const btn = document.querySelector('.btn-simpan');
-    btn.innerHTML = "⏳ MENYIMPAN..."; 
-    btn.disabled = true;
+    btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
 
     const hasil = [];
     document.querySelectorAll('#kbmBody tr').forEach((tr, i) => {
-      const namaElem = tr.querySelector('.col-nama');
-      if(namaElem) {
-          const nama = namaElem.textContent;
-          const status = document.querySelector(`input[name="s_${i}"]:checked`).value;
-          let poin = (status === 'Hadir') ? (rumpun === 'Halqah Quraniyah' ? 40 : 30) : (status === 'Terlambat' ? -20 : (status === 'Alfa' ? -40 : 0));
-          hasil.push({ nama, status, poin });
-      }
+      const nama = tr.querySelector('.col-nama').textContent;
+      const status = document.querySelector(`input[name="s_${i}"]:checked`).value;
+      let poin = (status === 'Hadir') ? (rumpun === 'Halqah Quraniyah' ? 40 : 30) : (status === 'Terlambat' ? -20 : (status === 'Alfa' ? -40 : 0));
+      hasil.push({ nama, status, poin });
     });
 
     const payload = { 
-        tanggal, 
-        rumpun, 
-        sub, 
-        mapel, 
-        guru: user.username || user.label || 'Guru', 
-        data: hasil, 
-        waktuSimpan: new Date().toISOString() 
+      tanggal, rumpun, sub, mapel, 
+      guru: user?.label || 'Guru', 
+      catatan: document.getElementById('kbmCatatan').value,
+      data: hasil, 
+      waktuSimpan: new Date().toISOString() 
     };
     
-    push(ref(db, 'cahaya_app/absensi_pembelajaran'), payload)
-      .then(() => {
-        alert('✅ BERHASIL DISIMPAN!');
-        btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; 
-        btn.disabled = false;
-      })
-      .catch(e => {
-        alert("Gagal menyimpan: " + e.message);
-        btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; 
-        btn.disabled = false;
-      });
+    push(ref(db, 'cahaya_app/absensi_pembelajaran'), payload).then(() => {
+      alert('✅ BERHASIL DISIMPAN!');
+      btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false;
+    }).catch(err => {
+      alert("Gagal: " + err.message);
+      btn.innerHTML = "💾 SIMPAN LOG KEHADIRAN"; btn.disabled = false;
+    });
   };
 </script>
 </body>
