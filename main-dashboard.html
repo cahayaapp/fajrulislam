@@ -3,303 +3,335 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CAHAYA APP - Ruang Kerja</title>
+  <title>CAHAYA APP – Portal Utama</title>
+  <link rel="icon" type="image/png" href="assets/logofi.png" />
   
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="css/cahaya-theme.css" />
   
   <style>
-    /* =========================================================
-       RESET & ROOT VARIABLES
-       ========================================================= */
-    :root {
-      --navy-dark: #0f172a;
-      --navy-light: #1e293b;
-      --gold-main: #d4af37;
-      --bg-body: #f8fafc;
-      --bg-white: #ffffff;
-      --border-light: #e2e8f0;
-      --text-main: #334155;
-      --text-muted: #64748b;
+    /* ===== CSS KHUSUS DASHBOARD ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Poppins:wght@400;500;600;700&display=swap');
+
+    body { 
+      padding: 0; margin: 0; display: flex; height: 100vh; overflow: hidden; 
+      background-color: #f8fafc; font-family: 'Poppins', sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Poppins', sans-serif; background-color: var(--bg-body); color: var(--text-main); overflow-x: hidden; }
-
-    /* =========================================================
-       LAYOUT (SIDEBAR & MAIN CONTENT)
-       ========================================================= */
-    .dashboard-layout { display: flex; width: 100%; min-height: 100vh; }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: 280px; background: var(--bg-white); border-right: 1px solid var(--border-light);
-      position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000;
-      display: flex; flex-direction: column; transition: transform 0.3s ease;
-      box-shadow: 5px 0 15px rgba(0,0,0,0.03);
+    /* ===== SIDEBAR (Diperbarui agar tombol Keluar selalu terlihat) ===== */
+    .sidebar { 
+      width: 280px; background: #ffffff; border-right: 1px solid #e2e8f0;
+      display: flex; flex-direction: column; z-index: 100;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 4px 0 15px rgba(0,0,0,0.03);
     }
+
+    /* Bagian Atas Sidebar (Logo) */
+    .sidebar-header-area {
+      padding: 25px 20px 20px 20px;
+      flex-shrink: 0; /* Mencegah logo mengecil */
+    }
+    .brand-header { display: flex; align-items: center; gap: 15px; }
+    .brand-logo { width: 45px; height: 45px; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(212,175,55,0.3)); }
+    .brand-text h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #0f172a; font-weight: 900; letter-spacing: 1px; line-height: 1.1; margin: 0;}
+    .brand-text p { font-size: 0.65rem; color: #d4af37; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;}
+
+    /* Bagian Tengah Sidebar (Menu yang bisa di-scroll) */
+    .sidebar-scroll-area {
+      flex: 1; overflow-y: auto; padding: 0 20px;
+    }
+    .sidebar-scroll-area::-webkit-scrollbar { width: 4px; }
+    .sidebar-scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    /* Menu Navigasi */
+    .menu-group { display: none; margin-bottom: 25px; animation: fadeIn 0.5s ease; }
+    .group-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; padding-left: 15px; }
     
-    .sidebar-header {
-      padding: 20px; display: flex; align-items: center; gap: 15px;
-      border-bottom: 1px solid var(--border-light);
+    .nav-item { 
+      display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 12px; 
+      color: #64748b; text-decoration: none; font-weight: 600; font-size: 0.85rem; 
+      cursor: pointer; transition: all 0.3s; margin-bottom: 4px;
     }
-    .sidebar-header img { width: 45px; }
-    .sidebar-brand-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 900; color: var(--navy-dark); line-height: 1.1; }
-    .sidebar-brand-sub { font-size: 0.65rem; font-weight: 700; color: var(--gold-main); letter-spacing: 1px; text-transform: uppercase; }
+    .nav-item:hover { background: #f1f5f9; color: #0f172a; transform: translateX(5px); }
+    .nav-item.active { 
+      background: linear-gradient(90deg, rgba(212,175,55,0.15) 0%, transparent 100%); 
+      color: #0f172a; font-weight: 700; border-left: 4px solid #d4af37; 
+      border-radius: 4px 12px 12px 4px;
+    }
 
-    .sidebar-menu { padding: 20px; overflow-y: auto; flex: 1; }
-    .menu-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); letter-spacing: 1.5px; margin: 20px 0 10px 10px; text-transform: uppercase; }
-    .menu-label:first-child { margin-top: 0; }
+    /* Bagian Bawah Sidebar (Tombol Keluar Permanen) */
+    .sidebar-footer-area {
+      padding: 20px; flex-shrink: 0;
+      border-top: 1px solid #f1f5f9; background: #ffffff;
+    }
+    .btn-logout {
+      width: 100%; padding: 12px; border: 1px solid #fecdd3; background: #fff1f2; 
+      color: #e11d48; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; 
+      display: flex; justify-content: center; align-items: center; gap: 8px; font-family: 'Poppins', sans-serif;
+    }
+    .btn-logout:hover { background: #e11d48; color: white; border-color: #e11d48; box-shadow: 0 4px 10px rgba(225, 29, 72, 0.2);}
+
+    /* ===== MAIN CONTENT & TOP BAR ===== */
+    .main-content { flex: 1; display: flex; flex-direction: column; position: relative; background: #f8fafc; }
     
-    .menu-item {
-      display: flex; align-items: center; gap: 12px; padding: 12px 15px;
-      color: var(--text-main); text-decoration: none; border-radius: 10px;
-      font-size: 0.9rem; font-weight: 500; transition: 0.2s; margin-bottom: 5px;
+    .top-bar { 
+      padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; 
+      background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; z-index: 10;
     }
-    .menu-item:hover { background: #f1f5f9; color: var(--navy-dark); }
-    .menu-item.active { background: #fffbeb; color: #b45309; font-weight: 600; border: 1px solid #fde68a; }
-
-    .btn-logout-sidebar {
-      background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5;
-      width: 100%; padding: 12px; border-radius: 10px; font-weight: 600;
-      cursor: pointer; margin-top: 20px; transition: 0.2s; font-family: 'Poppins';
-    }
-    .btn-logout-sidebar:hover { background: #ef4444; color: white; }
-
-    /* MAIN WRAPPER */
-    .main-wrapper {
-      flex: 1; margin-left: 280px; display: flex; flex-direction: column; width: calc(100% - 280px);
-    }
-
-    /* TOP HEADER */
-    .top-header {
-      height: 70px; background: var(--bg-white); border-bottom: 1px solid var(--border-light);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
-      position: sticky; top: 0; z-index: 99;
-    }
-    .btn-toggle { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--navy-dark); display: none; }
-    .header-profil { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; }
-    .header-profil img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--gold-main); }
-
-    /* CONTENT AREA */
-    .content-area { padding: 30px; }
-
-    /* =========================================================
-       WIDGETS & KOTAK SAMBUTAN
-       ========================================================= */
-    .welcome-card {
-      background: linear-gradient(135deg, var(--navy-dark), #0f172a);
-      border: 1px solid #475569; border-radius: 20px; padding: 40px;
-      position: relative; overflow: hidden; margin-bottom: 30px;
-      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
-    }
-    .welcome-card::before {
-      content: ""; position: absolute; inset: 0; opacity: 0.05; pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30 30 0zm0 15L15 30l15 15 15-15-15-15z' fill='%23d4af37' fill-rule='evenodd'/%3E%3C/svg%3E");
-    }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 800; color: #0f172a; }
     
-    .role-badge { color: var(--gold-main); font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 8px; text-transform: uppercase; }
-    .welcome-name { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 800; color: #ffffff; margin-bottom: 15px; }
-    .welcome-desc { color: #cbd5e1; font-weight: 300; font-size: 1rem; line-height: 1.7; max-width: 800px; }
-
-    .widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .user-profile-btn { 
+      display: flex; align-items: center; gap: 12px; padding: 6px 15px 6px 20px; border-radius: 50px; 
+      cursor: pointer; transition: 0.3s; border: 1px solid transparent; background: white; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
+    }
+    .user-profile-btn:hover { border-color: #d4af37; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212,175,55,0.15); }
     
-    .widget-box {
-      background: var(--bg-white); border: 1px solid var(--border-light);
-      border-radius: 16px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    .user-info { text-align: right; display: flex; flex-direction: column; }
+    .user-name { font-weight: 700; font-size: 0.85rem; color: #0f172a; line-height: 1.2; }
+    .user-role { font-size: 0.65rem; color: #d4af37; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
+
+    .avatar-circle { 
+      width: 38px; height: 38px; border-radius: 50%; background: #0f172a; color: white;
+      display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1rem;
+      border: 2px solid #d4af37; overflow: hidden;
     }
-    .w-title { font-size: 0.75rem; font-weight: 800; color: var(--text-main); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
-    .w-value { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 800; color: var(--navy-dark); line-height: 1; margin-bottom: 5px; }
-    .w-desc { font-size: 0.85rem; color: var(--text-muted); }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    
+    #contentFrame { width: 100%; flex: 1; border: none; background: transparent; display: block; }
 
-    .w-box-success { border-left: 5px solid #10b981; background: #f0fdf4; border-color: #a7f3d0; }
-    .w-box-success .w-value { color: #047857; }
+    /* ===== MOBILE RESPONSIVE ===== */
+    .mobile-header { display: none; }
+    .mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 99; backdrop-filter: blur(3px); opacity: 0; transition: 0.3s; pointer-events: none;}
 
-    /* LOADING & OVERLAY */
-    .sidebar-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 999; display: none; backdrop-filter: blur(3px); }
-    #loadingOverlay {
-      position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 3000;
-      display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.5s;
-    }
-    .loader-text { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 800; color: var(--navy-dark); margin-top: 15px;}
-
-    /* =========================================================
-       RESPONSIVE (MOBILE)
-       ========================================================= */
     @media (max-width: 900px) {
-      .sidebar { transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-      .main-wrapper { margin-left: 0; width: 100%; }
-      .btn-toggle { display: block; }
-      .sidebar-overlay.active { display: block; }
+      body { flex-direction: column; }
+      .sidebar { position: fixed; top: 0; left: -300px; height: 100vh; width: 280px; box-shadow: 5px 0 25px rgba(0,0,0,0.15); }
+      .sidebar.open { left: 0; }
+      .mobile-menu-overlay.open { opacity: 1; pointer-events: all; }
       
-      .top-header { padding: 0 20px; }
-      .content-area { padding: 20px; }
-      .welcome-card { padding: 30px 20px; }
-      .welcome-name { font-size: 1.8rem; }
-      .welcome-desc { font-size: 0.9rem; }
+      .top-bar { display: none; }
+      .main-content { height: 100vh; }
+      
+      .mobile-header { 
+        display: flex; padding: 15px 20px; background: white; justify-content: space-between; align-items: center; 
+        border-bottom: 1px solid #e2e8f0; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+      }
+      .mobile-brand { display: flex; align-items: center; gap: 10px; font-family: 'Playfair Display', serif; font-weight: 900; color: #0f172a; font-size: 1.2rem; }
+      .mobile-brand img { width: 32px; filter: drop-shadow(0 2px 5px rgba(212,175,55,0.4));}
+      .menu-toggle-btn { background: none; border: none; font-size: 1.6rem; color: #0f172a; cursor: pointer; padding: 5px; }
     }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-<!-- LOADING SCREEN -->
-<div id="loadingOverlay">
-  <img src="assets/logofi.png" alt="Logo" style="width: 80px; animation: pulse 1.5s infinite;">
-  <div class="loader-text">Memuat Ruang Kerja...</div>
-</div>
+  <!-- Overlay Hitam Saat Menu Samping Terbuka di HP -->
+  <div class="mobile-menu-overlay" onclick="toggleSidebar()"></div>
 
-<div class="dashboard-layout">
-  
-  <!-- SIDEBAR OVERLAY UNTUK MOBILE -->
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-  <!-- ================= SIDEBAR MENU ================= -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <img src="assets/logofi.png" alt="Logo">
-      <div>
-        <div class="sidebar-brand-title">CAHAYA APP</div>
-        <div class="sidebar-brand-sub">PC FAJRUL ISLAM</div>
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar" id="mainSidebar">
+    
+    <!-- 1. HEADER SIDEBAR (LOGO) -->
+    <div class="sidebar-header-area">
+      <div class="brand-header">
+        <img src="assets/logofi.png" alt="Logo" class="brand-logo" />
+        <div class="brand-text">
+          <h1>CAHAYA APP</h1>
+          <p id="roleBadge">PC Fajrul Islam</p>
+        </div>
       </div>
     </div>
 
-    <div class="sidebar-menu">
-      <div class="menu-label">Utama</div>
-      <a href="main-dashboard.html" class="menu-item active">🏠 Beranda</a>
+    <!-- 2. SCROLL AREA (DAFTAR MENU) -->
+    <div class="sidebar-scroll-area">
+      <nav class="nav-menu" id="dynamicMenu">
+        
+        <div class="menu-group" id="group-utama" style="display: block;">
+          <div class="group-label">Utama</div>
+          <a class="nav-item active" onclick="loadPage('home.html', this)">🏠 Beranda</a>
+        </div>
 
-      <div class="menu-label">Modul Supervisor</div>
-      <a href="#" class="menu-item">📊 Pusat Kontrol Harian</a>
-      <a href="#" class="menu-item">📅 Pusat Kontrol Pekanan</a>
-      <a href="#" class="menu-item">📈 Laporan Bulanan & KPI</a>
-      <a href="#" class="menu-item">🎓 Raport Semester</a>
+        <div class="menu-group">
+          <div class="group-label">Modul Supervisor</div>
+          <a class="nav-item menu-akses" id="menu-kontrol-harian" style="display: none;" onclick="loadPage('supervisor/kontrol-harian.html', this)">📊 Pusat Kontrol Harian</a>
+          <a class="nav-item menu-akses" id="menu-kontrol-pekanan" style="display: none;" onclick="loadPage('supervisor/kontrol-pekanan.html', this)">📅 Pusat Kontrol Pekanan</a>
+          <a class="nav-item menu-akses" id="menu-raport-bulanan" style="display: none;" onclick="loadPage('supervisor/raport-bulanan.html', this)">📈 Laporan Bulanan & KPI</a>
+          <a class="nav-item menu-akses" id="menu-raport-semester" style="display: none;" onclick="loadPage('supervisor/raport-semester.html', this)">🎓 Raport Semester</a>
+        </div>
 
-      <div class="menu-label">Akademik (Guru)</div>
-      <a href="#" class="menu-item">📋 Absensi Halqah</a>
-      <a href="#" class="menu-item">📖 Setoran Tahfiz</a>
-      <a href="#" class="menu-item">📝 Input Nilai Bulanan</a>
-      <a href="#" class="menu-item">⚙️ Manajemen Halqah</a>
-      
-      <div class="menu-label">Administrator</div>
-      <a href="admin/settings.html" class="menu-item">🛠️ Pusat Koreksi Database</a>
+        <div class="menu-group">
+          <div class="group-label">Akademik (Guru)</div>
+          <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html', this)">📋 Absensi Halqah</a>
+          <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html', this)">📖 Setoran Tahfiz</a>
+          <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html', this)">📝 Input Nilai Bulanan</a>
+          <a class="nav-item menu-akses" id="menu-raport" style="display: none;" onclick="loadPage('guru/inputRaportBulanan.html', this)">📊 Raport Bulanan</a>
+          <a class="nav-item menu-akses" id="menu-halqah" style="display: none;" onclick="loadPage('guru/edit-kelas.html', this)">⚙️ Manajemen Halqah</a>
+        </div>
 
-      <button class="btn-logout-sidebar" onclick="logout()">🚪 KELUAR SISTEM</button>
+        <div class="menu-group">
+          <div class="group-label">Asrama (Naqib)</div>
+          <a class="nav-item menu-akses" id="menu-absen-asrama" style="display: none;" onclick="loadPage('naqib/absensi.html', this)">📋 Absensi Program</a>
+          <a class="nav-item menu-akses" id="menu-disiplin" style="display: none;" onclick="loadPage('naqib/kedisiplinan.html', this)">⚖️ Kedisiplinan & Mentoring</a>
+          <a class="nav-item menu-akses" id="menu-gamifikasi" style="display: none;" onclick="loadPage('naqib/gamifikasi.html', this)">🌟 Gamifikasi</a>
+          <a class="nav-item menu-akses" id="menu-jurnal-piket" style="display: none;" onclick="loadPage('naqib/jurnal-piket.html', this)">📝 Jurnal Piket</a>
+          <a class="nav-item menu-akses" id="menu-usrah" style="display: none;" onclick="loadPage('naqib/edit-usrah.html', this)">⚙️ Manajemen Usrah</a>
+        </div>
+
+        <div class="menu-group">
+          <div class="group-label">Pusat Asesmen</div>
+          <a class="nav-item menu-akses" id="menu-asesmen-naqib" style="display: none;" onclick="loadPage('pusat-asesmen/naqib.html', this)">🧘 Asesmen Mandiri Naqib</a>
+          <a class="nav-item menu-akses" id="menu-asesmen-guru" style="display: none;" onclick="loadPage('pusat-asesmen/guru.html', this)">🧘 Asesmen Mandiri Guru</a>
+          <a class="nav-item menu-akses" id="menu-asesmen-santri" style="display: none;" onclick="loadPage('pusat-asesmen/santri.html', this)">📊 Asesmen CAHAYA Santri</a>
+          <a class="nav-item menu-akses" id="menu-asesmen-sdm" style="display: none;" onclick="loadPage('pusat-asesmen/sdm-supervisor.html', this)">👁️ Asesmen Kinerja SDM</a>
+        </div>
+
+        <div class="menu-group">
+          <div class="group-label">Bimbingan Konseling</div>
+          <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="loadPage('konselor/daftar-kasus-baru.html', this)">⏳ Antrean Kasus Baru</a>
+          <a class="nav-item menu-akses" id="menu-buku-kasus" style="display: none;" onclick="loadPage('konselor/buku-kasus-riwayat.html', this)">📚 Buku Rekam Jejak Kasus</a>
+          <a class="nav-item menu-akses" id="menu-evaluasi-kasus" style="display: none;" onclick="loadPage('konselor/evaluasi-kasus.html', this)">📈 Evaluasi Pembinaan</a>
+        </div>
+
+        <div class="menu-group">
+          <div class="group-label">SETTING</div>
+          <a class="nav-item menu-akses" id="menu-db-master" style="display: none;" onclick="loadPage('admin/database.html', this)">🗄️ Database Master</a>
+          <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html', this)">🔐 Manajemen User</a>
+          <a class="nav-item menu-akses" id="menu-koreksi" style="display: none;" onclick="loadPage('admin/settings.html', this)">🛠️ Pusat Koreksi Data</a>
+          <a class="nav-item menu-akses" id="menu-profil" style="display: none;" onclick="loadPage('profil.html', this)">👤 Pengaturan Profil</a>
+        </div>
+      </nav>
+    </div>
+
+    <!-- 3. FOOTER SIDEBAR (TOMBOL KELUAR PERMANEN) -->
+    <div class="sidebar-footer-area">
+      <button class="btn-logout" onclick="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        KELUAR SISTEM
+      </button>
     </div>
   </aside>
 
-  <!-- ================= MAIN WRAPPER ================= -->
-  <div class="main-wrapper">
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="main-content">
     
-    <!-- HEADER ATAS -->
-    <header class="top-header">
-      <div style="display: flex; align-items: center; gap: 15px;">
-        <button class="btn-toggle" onclick="toggleSidebar()">☰</button>
-        <span style="font-family: 'Playfair Display', serif; font-weight: 800; color: var(--navy-dark); font-size: 1.2rem; letter-spacing: 1px;" class="hide-mobile">CAHAYA APP</span>
-      </div>
-      
-      <div class="header-profil">
-        <span id="headerNamaUser">Pengguna</span>
-        <img src="assets/logofi.png" alt="User" id="headerAvatar">
-      </div>
-    </header>
+    <!-- HEADER HP -->
+    <div class="mobile-header">
+      <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
+      <div class="mobile-brand"><img src="assets/logofi.png" alt="Logo"> CAHAYA</div>
+      <div class="avatar-circle" onclick="loadPage('profil.html', this)" style="width: 32px; height: 32px; font-size: 0.8rem; cursor: pointer;" id="mobileAvatar">U</div>
+    </div>
 
-    <!-- KONTEN UTAMA -->
-    <main class="content-area">
-      
-      <!-- KOTAK SAMBUTAN (GELAP & MEWAH) -->
-      <div class="welcome-card">
-        <div style="position: relative; z-index: 2;">
-          <div class="role-badge" id="txtRole">AKSES: DIREKTUR</div>
-          <h1 class="welcome-name" id="txtNama">Ahlan, Pengguna</h1>
-          <p class="welcome-desc">
-            Selamat datang di Ruang Kerja CAHAYA. Khidmat Anda hari ini adalah fondasi peradaban esok hari. Mari niatkan semuanya semata-mata untuk meraih ridha Allah SWT.
-          </p>
+    <!-- HEADER LAPTOP -->
+    <div class="top-bar">
+      <div class="page-title" id="currentPageTitle">Beranda</div>
+      <div class="user-profile-btn" onclick="loadPage('profil.html', document.querySelector('[onclick*=\'profil.html\']'))">
+        <div class="user-info">
+          <span class="user-name" id="userNameLabel">MEMUAT...</span>
+          <span class="user-role" id="userRoleLabel">AKSES TERBATAS</span>
         </div>
+        <div class="avatar-circle" id="userAvatar">U</div>
       </div>
+    </div>
 
-      <!-- WIDGETS -->
-      <div class="widget-grid">
-        
-        <!-- Widget Jam Realtime -->
-        <div class="widget-box">
-          <div class="w-title">Waktu Sistem Aktif</div>
-          <div class="w-value" id="clockTime">00:00:00</div>
-          <div class="w-desc" id="clockDate">Memuat tanggal...</div>
-        </div>
+    <iframe id="contentFrame" src="home.html"></iframe>
+  </main>
 
-        <!-- Widget Server Status -->
-        <div class="widget-box w-box-success">
-          <div class="w-title">Koneksi Server</div>
-          <div class="w-value" style="font-size: 2rem; margin-top: 10px;">Tersinkronisasi</div>
-          <div class="w-desc">✅ Database Firebase Online & Stabil</div>
-        </div>
+  <!-- SCRIPT FIREBASE & LOGIC (100% SAMA PERSIS DENGAN KODE ASLI ANDA) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      projectId: "absensi-santri-fajrul-islam"
+    };
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    const db = firebase.firestore();
+  </script>
 
-      </div>
-
-    </main>
-  </div>
-</div>
-
-<!-- SCRIPT LOGIC -->
-<script>
-  // 1. Cek Sesi Login
-  const currentUser = JSON.parse(localStorage.getItem('cahayaCurrentUser') || 'null');
-  if (!currentUser || (!currentUser.akses.includes("admin") && !currentUser.akses.includes("direktur"))) {
-    alert("Akses Ditolak! Halaman ini khusus Pimpinan/Administrator.");
-    window.location.href = "index.html";
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    // 2. Set Data Profil di UI
-    const nama = currentUser.label || currentUser.username;
-    document.getElementById('txtNama').textContent = `Ahlan, ${nama}`;
-    document.getElementById('headerNamaUser').textContent = nama;
-    
-    // Tentukan Peran
-    let peran = "ADMINISTRATOR";
-    if(currentUser.akses.includes("direktur")) peran = "DIREKTUR";
-    else if(currentUser.akses.includes("supervisor")) peran = "SUPERVISOR";
-    document.getElementById('txtRole').textContent = `AKSES: ${peran}`;
-
-    // Set Avatar (Inisial Nama)
-    document.getElementById('headerAvatar').src = `https://ui-avatars.com/api/?name=${nama}&background=d4af37&color=fff&bold=true`;
-
-    // 3. Hilangkan Layar Loading
-    setTimeout(() => {
-      document.getElementById('loadingOverlay').style.opacity = '0';
-      setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
-    }, 800);
-
-    // 4. Jalankan Jam
-    startClock();
-  });
-
-  // FUNGSI TOGGLE SIDEBAR MOBILE
-  function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('sidebarOverlay').classList.toggle('active');
-  }
-
-  // FUNGSI JAM REALTIME
-  function startClock() {
-    const timeEl = document.getElementById('clockTime');
-    const dateEl = document.getElementById('clockDate');
-    const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-    const bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-
-    setInterval(() => {
-      const now = new Date();
-      timeEl.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-      dateEl.textContent = `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`;
-    }, 1000);
-  }
-
-  // FUNGSI LOGOUT
-  window.logout = function() {
-    if(confirm("Yakin ingin keluar dari sistem CAHAYA?")) {
-      localStorage.removeItem('cahayaCurrentUser');
-      window.location.href = "index.html";
+  <script>
+    function toggleSidebar() {
+      document.getElementById('mainSidebar').classList.toggle('open');
+      document.querySelector('.mobile-menu-overlay').classList.toggle('open');
     }
-  }
-</script>
+
+    async function refreshUserProfileUI() {
+      const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+      if (!user.akses) { window.location.href = 'index.html'; return; }
+
+      const displayNama = user.label || user.username || "PENGGUNA";
+      document.getElementById('userNameLabel').textContent = displayNama.toUpperCase();
+      document.getElementById('userRoleLabel').textContent = user.akses.join(' & ');
+
+      const avatarEl = document.getElementById('userAvatar');
+      const mobileAvatarEl = document.getElementById('mobileAvatar');
+      if (user.fotoProfil) {
+        const imgHtml = `<img src="${user.fotoProfil}" alt="Profile">`;
+        avatarEl.innerHTML = imgHtml; mobileAvatarEl.innerHTML = imgHtml;
+      } else {
+        const inisial = displayNama.charAt(0).toUpperCase();
+        avatarEl.innerHTML = inisial; mobileAvatarEl.innerHTML = inisial;
+      }
+
+      document.querySelectorAll('.menu-group').forEach(g => {
+        if(g.id !== 'group-utama') g.style.display = 'none';
+      });
+
+      try {
+        const doc = await db.collection("settings").doc("role_menus").get();
+        let ruleMenus = {};
+        if(doc.exists) { ruleMenus = doc.data(); }
+
+        let menusToOpen = [];
+        
+        user.akses.forEach(role => {
+          if(ruleMenus[role]) { 
+            menusToOpen = [...new Set([...menusToOpen, ...ruleMenus[role]])]; 
+          }
+        });
+
+        menusToOpen.push('menu-profil');
+
+        document.querySelectorAll('.menu-akses').forEach(menuHtml => {
+          if(menusToOpen.includes(menuHtml.id)) {
+            menuHtml.style.display = 'flex';
+            menuHtml.closest('.menu-group').style.display = 'block';
+          } else {
+            menuHtml.style.display = 'none';
+          }
+        });
+
+      } catch (e) {
+        console.error("Gagal menarik konfigurasi menu otorisasi:", e);
+      }
+    }
+
+    function loadPage(url, el) {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      if(el && el.classList.contains('nav-item')) el.classList.add('active');
+      
+      document.getElementById('contentFrame').src = url;
+      
+      if(el) {
+        const title = el.textContent.replace(/[^\w\s]/gi, '').trim();
+        document.getElementById('currentPageTitle').textContent = title;
+      }
+
+      if(window.innerWidth <= 900) toggleSidebar();
+    }
+
+    function logout() {
+      if(confirm("Apakah Anda yakin ingin keluar?")) {
+        localStorage.removeItem('cahayaCurrentUser');
+        window.location.href = 'index.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', refreshUserProfileUI);
+    window.addEventListener('storage', (e) => { if (e.key === 'cahayaCurrentUser') refreshUserProfileUI(); });
+    window.refreshUserProfileUI = refreshUserProfileUI;
+  </script>
 </body>
 </html>
