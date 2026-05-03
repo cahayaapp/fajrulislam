@@ -3,210 +3,347 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Jurnal Piket Naqib - CAHAYA APP</title>
+  <title>CAHAYA APP - Jurnal Piket Naqib</title>
   
-  <!-- JURUS KEDUA: TAMBAHKAN ?v=2.0 DI BELAKANG CSS AGAR CACHE LANGSUNG PECAH -->
-  <link rel="stylesheet" href="../css/cahaya-theme.css?v=2.0" />
-
+  <!-- PANGGIL MASTER THEME CAHAYA -->
+  <link rel="stylesheet" href="../../css/cahaya-theme.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    /* =========================================
-       PENYEMPURNAAN RESPONSIVE FORM DI HP
-       ========================================= */
+    /* =========================================================
+       CSS ISOLASI KHUSUS JURNAL PIKET (ANTI BOCOR)
+       ========================================================= */
+    body { font-family: 'Poppins', sans-serif; background: #f8fafc; margin: 0; padding: 0; }
+    .cahaya-container { padding: 20px 30px; max-width: 900px; margin: 0 auto; }
+
+    /* HEADER JURNAL (GELAP MEWAH) */
+    .header-jurnal {
+      background: linear-gradient(135deg, var(--navy-dark, #0f172a), #1e293b);
+      padding: 35px 40px; border-radius: 16px; color: white;
+      margin-bottom: 25px; box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
+      position: relative; overflow: hidden; border-left: 4px solid var(--gold-main, #d4af37);
+    }
+    .header-jurnal::after {
+      content: '📝'; position: absolute; right: 20px; top: -20px;
+      font-size: 10rem; opacity: 0.05; pointer-events: none;
+    }
+    .header-jurnal h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #ffffff; margin-top: 0; margin-bottom: 10px; position: relative; z-index: 2;}
+    .header-jurnal p { color: #cbd5e1; font-weight: 300; line-height: 1.6; font-size: 0.95rem; margin: 0; position: relative; z-index: 2; max-width: 650px;}
+
+    /* KARTU FORM UTAMA */
     .cahaya-card {
-      background: white; border-radius: 16px; padding: 25px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 25px;
+      background: #ffffff; border-radius: 16px; padding: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+      margin-bottom: 30px;
     }
 
-    .header-page { 
-      display: flex; align-items: center; gap: 15px; margin-bottom: 25px; 
-      border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; 
-    }
-    .header-page h2 { color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.8rem; margin: 0; }
+    /* Layout Form Grid */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
     
-    .form-group { margin-bottom: 18px; }
-    .form-group label { 
-      display: block; font-size: 0.8rem; font-weight: 700; color: var(--navy-dark); 
-      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 8px; }
     .form-control { 
-      width: 100%; padding: 14px; border: 1px solid #cbd5e1; border-radius: 10px; 
-      font-family: inherit; font-size: 0.95rem; outline: none; background: #f8fafc; transition: 0.3s;
+      width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; 
+      font-family: 'Poppins', sans-serif; font-size: 0.95rem; outline: none; background: #f8fafc; transition: 0.3s;
+      box-sizing: border-box; color: #0f172a;
     }
-    .form-control:focus { background: #ffffff; border-color: var(--gold-main); box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
-    
-    textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.5; }
+    .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
+    .form-control[readonly] { background: #f1f5f9; cursor: not-allowed; border-color: #e2e8f0; font-weight: 600;}
 
-    /* Custom Radio Box untuk Status Kondisi Asrama */
-    .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
-    .status-box {
-      position: relative; display: flex; align-items: center; justify-content: center;
-      padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: #ffffff;
-      cursor: pointer; font-weight: 600; font-size: 0.9rem; color: #64748b; transition: 0.2s; text-align: center;
+    /* CHECKLIST PIKET STYLING */
+    .checklist-group {
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 12px; padding: 25px; margin-bottom: 20px;
+      display: none; animation: fadeIn 0.5s ease;
     }
-    .status-box input[type="radio"] { position: absolute; opacity: 0; }
+    .checklist-group.active { display: block; }
     
-    /* Warna Status Jika Terpilih */
-    .status-box input[type="radio"]:checked + span { color: white; }
-    .status-box:has(input[value="Aman"]:checked) { background: #10b981; border-color: #10b981; }
-    .status-box:has(input[value="Bersih"]:checked) { background: #10b981; border-color: #10b981; }
-    .status-box:has(input[value="Kurang Kondusif"]:checked) { background: #f59e0b; border-color: #f59e0b; }
-    .status-box:has(input[value="Kotor/Berantakan"]:checked) { background: #ef4444; border-color: #ef4444; }
+    .checklist-title {
+      font-family: 'Playfair Display', serif; color: #0f172a; 
+      font-size: 1.4rem; margin-top: 0; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px dashed #cbd5e1;
+    }
 
-    /* Responsif HP Kecil */
-    @media (max-width: 480px) {
-      .cahaya-card { padding: 20px 15px; }
-      .header-page h2 { font-size: 1.5rem; }
-      .status-box { font-size: 0.8rem; padding: 10px 5px; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px;
+      padding: 15px; background: white; border-radius: 10px; border: 1px solid #e2e8f0;
+      transition: 0.2s; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.01);
     }
-    
-    #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; display: none;}
+    .check-item:hover { border-color: #d4af37; box-shadow: 0 4px 10px rgba(212,175,55,0.1); transform: translateY(-2px);}
+    .check-item input[type="checkbox"] {
+      width: 22px; height: 22px; margin-top: 2px; cursor: pointer; accent-color: #10b981; flex-shrink: 0;
+    }
+    .check-text { flex: 1; font-size: 0.9rem; color: #334155; line-height: 1.6; }
+    .check-time { 
+      display: inline-block; font-size: 0.75rem; color: #b45309; font-weight: 700; margin-bottom: 6px; 
+      background: #fef08a; padding: 2px 8px; border-radius: 4px; border: 1px solid #fde047;
+    }
+
+    /* Area Refleksi / Catatan */
+    .reflection-area { margin-top: 25px; }
+    .reflection-area textarea { 
+      border-left: 4px solid #d4af37; background: #fffbeb; resize: vertical; min-height: 100px; border-color: #fde68a;
+    }
+    .reflection-area textarea:focus { background: white; border-color: #d4af37; }
+
+    /* Tombol Simpan Premium */
+    .btn-simpan {
+      background: linear-gradient(135deg, #d4af37, #fde047); color: #0f172a;
+      border: none; padding: 16px 30px; border-radius: 12px; font-size: 1.05rem; font-weight: 700;
+      cursor: pointer; width: 100%; transition: 0.3s; margin-top: 20px; box-shadow: 0 10px 20px rgba(212,175,55,0.2);
+      font-family: 'Poppins', sans-serif; letter-spacing: 1px;
+    }
+    .btn-simpan:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.4); }
+    .btn-simpan:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    /* Loader Custom */
+    #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
+
+    /* Responsif HP */
+    @media (max-width: 768px) {
+      .cahaya-container { padding: 15px; }
+      .header-jurnal { padding: 25px 20px; border-radius: 12px;}
+      .header-jurnal h1 { font-size: 1.7rem; }
+      .header-jurnal p { font-size: 0.85rem; }
+      .cahaya-card { padding: 20px; border-radius: 12px;}
+      .checklist-group { padding: 15px; }
+      .check-item { padding: 12px; gap: 10px; }
+      .check-item input[type="checkbox"] { width: 18px; height: 18px; }
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
-  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">⏳</div>
-  <div style="font-weight: 700;" id="loadingText">Menyimpan Laporan...</div>
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: pulse 1s infinite alternate ease-in-out;">📝</div>
+  <div style="font-weight: 700;">Menyiapkan Lembar Jurnal...</div>
 </div>
 
-<main class="cahaya-container" style="max-width: 700px; margin: 0 auto; padding-top: 20px;">
+<main class="cahaya-container">
   
-  <div class="header-page">
-    <div style="font-size: 2.5rem;">📝</div>
-    <div>
-      <h2>Jurnal Piket Naqib</h2>
-      <p style="margin:0; font-size:0.85rem; color:var(--text-muted);">Form Laporan Kondisi Asrama Harian</p>
-    </div>
+  <div class="header-jurnal">
+    <h1>Jurnal Piket Naqib</h1>
+    <p>Silakan isi ceklis pelaksanaan tugas sesuai blok piket Anda hari ini dan tuliskan laporan/kendala (jika ada) sebelum Anda beristirahat.</p>
   </div>
 
   <div class="cahaya-card">
-    <form id="formPiket" onsubmit="simpanJurnal(event)">
+    <div class="grid-2">
+      <div class="form-group">
+        <label>📅 Tanggal Piket</label>
+        <input type="date" class="form-control" id="jpTanggal">
+      </div>
+      <div class="form-group">
+        <label>👤 Nama Naqib</label>
+        <input type="text" class="form-control" id="jpNama" readonly>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>⏱️ Pilih Blok Piket & Overlap</label>
+      <select class="form-control" id="jpBlok" onchange="tampilkanChecklist()" style="font-weight: 700; color: #0f172a; border-color: #d4af37; border-width: 2px;">
+        <option value="">-- Pilih Blok Piket Anda --</option>
+        <option value="Blok 1">🌅 Blok 1 (03.30 - 11.30) + Overlap Pagi</option>
+        <option value="Blok 2">☀️ Blok 2 (11.30 - 17.30) + Overlap Sore</option>
+        <option value="Blok 3">🌙 Blok 3 (17.30 - 03.30) + Overlap Malam</option>
+      </select>
+    </div>
+
+    <!-- CEKLIS BLOK 1 -->
+    <div class="checklist-group" id="cekBlok1">
+      <h3 class="checklist-title">🌅 Daftar Tugas Blok 1 & Overlap Pagi</h3>
+      <label class="check-item">
+        <input type="checkbox" value="Pengondisian Bangun & Mandi">
+        <div class="check-text"><span class="check-time">[03.30 - 04.00]</span> Mengondisikan santri bangun pagi dan persiapan mandi.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Tahajud & Subuh">
+        <div class="check-text"><span class="check-time">[04.00 - 04.50]</span> Memastikan santri shalat tahajud dan memimpin shalat Subuh berjamaah.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Wirid & Bahasa Arab">
+        <div class="check-text"><span class="check-time">[04.50 - 06.00]</span> Mengawasi wirid pagi dan pelaksanaan Halqah Lughowiyah (Bahasa Arab).</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Halqah Quran Pagi">
+        <div class="check-text"><span class="check-time">[07.00 - 09.00]</span> Mengawasi jalannya Halqah Quraniyah sesi pagi.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Halqah Ilmiyah">
+        <div class="check-text"><span class="check-time">[09.20 - 11.20]</span> Mengontrol ketertiban santri selama sesi Halqah Ilmiyah.</div>
+      </label>
+    </div>
+
+    <!-- CEKLIS BLOK 2 -->
+    <div class="checklist-group" id="cekBlok2">
+      <h3 class="checklist-title">☀️ Daftar Tugas Blok 2 & Overlap Sore</h3>
+      <label class="check-item">
+        <input type="checkbox" value="Makan Siang & Zuhur">
+        <div class="check-text"><span class="check-time">[11.30 - 12.30]</span> Mengontrol ketertiban makan siang dan shalat Zuhur berjamaah.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Halqah Quran Siang">
+        <div class="check-text"><span class="check-time">[12.30 - 14.00]</span> Mengawasi jalannya Halqah Quraniyah sesi siang.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Qailulah & Ashar">
+        <div class="check-text"><span class="check-time">[14.00 - 15.30]</span> Memastikan santri qailulah (istirahat siang) dan membangunkan shalat Ashar.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Mentoring Usrah (Overlap 2)">
+        <div class="check-text"><span class="check-time">[15.00 - 17.20]</span> <b>[WAJIB SEMUA NAQIB]</b> Fokus melakukan mentoring santri usrah masing-masing.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Pengondisian Mandi Sore">
+        <div class="check-text"><span class="check-time">[16.30 - 17.30]</span> Melimpahkan kontrol teknis mandi dan persiapan kebersihan kepada ketua usrah/kamar.</div>
+      </label>
+    </div>
+
+    <!-- CEKLIS BLOK 3 -->
+    <div class="checklist-group" id="cekBlok3">
+      <h3 class="checklist-title">🌙 Daftar Tugas Blok 3 & Overlap Malam</h3>
+      <label class="check-item">
+        <input type="checkbox" value="Pengondisian Maghrib & Al-Mulk">
+        <div class="check-text"><span class="check-time">[17.30 - 18.30]</span> <b>[WAJIB SEMUA NAQIB]</b> Pengondisian shalat Maghrib dan pembacaan surah Al-Mulk.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Laporan Jurnal & Isya">
+        <div class="check-text"><span class="check-time">[18.30 - 20.00]</span> <b>[WAJIB SEMUA NAQIB]</b> Menerima laporan jurnal harian santri, shalat Isya, dan shalat taubat.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Piket Malam & Persiapan Tidur">
+        <div class="check-text"><span class="check-time">[20.00 - 22.00]</span> <b>[WAJIB SEMUA NAQIB]</b> Mengawasi piket kebersihan malam dan persiapan jam malam santri.</div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" value="Siaga Malam">
+        <div class="check-text"><span class="check-time">[22.00 - 03.30]</span> Bertugas sebagai siaga malam (standby jika ada keadaan darurat medis/keamanan asrama).</div>
+      </label>
+    </div>
+
+    <div class="reflection-area" id="areaLaporan" style="display: none;">
+      <div class="form-group">
+        <label>📌 Laporan & Catatan Kejadian</label>
+        <textarea class="form-control" id="jpCatatan" placeholder="Tuliskan kejadian penting, pelanggaran disiplin santri, atau kendala fasilitas selama blok Anda (kosongkan jika aman)..."></textarea>
+      </div>
       
-      <div class="form-group">
-        <label>🗓️ Tanggal Piket</label>
-        <input type="date" id="tglPiket" class="form-control" required />
-      </div>
+      <button class="btn-simpan" id="btnSimpanJurnal" onclick="simpanJurnalPiket()">💾 SIMPAN JURNAL & ISTIRAHAT</button>
+    </div>
 
-      <div class="form-group">
-        <label>🏢 Area / Asrama yang Dipantau</label>
-        <select id="areaAsrama" class="form-control" required>
-          <option value="">-- Pilih Area Asrama --</option>
-          <option value="Asrama Putra (Bawah)">Asrama Putra (Bawah)</option>
-          <option value="Asrama Putra (Atas)">Asrama Putra (Atas)</option>
-          <option value="Asrama Putri (Utama)">Asrama Putri (Utama)</option>
-          <option value="Area Masjid & Halaman">Area Masjid & Lingkungan</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>🛡️ Status Keamanan & Ketertiban</label>
-        <div class="status-grid">
-          <label class="status-box">
-            <input type="radio" name="statusKeamanan" value="Aman" required>
-            <span>Aman & Terkendali</span>
-          </label>
-          <label class="status-box">
-            <input type="radio" name="statusKeamanan" value="Kurang Kondusif">
-            <span>Ada Kendala/Keributan</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>🧹 Status Kebersihan Ruangan</label>
-        <div class="status-grid">
-          <label class="status-box">
-            <input type="radio" name="statusKebersihan" value="Bersih" required>
-            <span>Bersih & Rapi</span>
-          </label>
-          <label class="status-box">
-            <input type="radio" name="statusKebersihan" value="Kotor/Berantakan">
-            <span>Kotor / Berantakan</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>📋 Uraian Laporan Kejadian / Catatan Khusus</label>
-        <textarea id="catatanPiket" class="form-control" placeholder="Tuliskan catatan kejadian penting, fasilitas rusak, atau kondisi santri hari ini..." required></textarea>
-      </div>
-
-      <button type="submit" class="btn-cahaya btn-gold" id="btnSimpan" style="width: 100%; margin-top: 15px; padding: 15px; font-size: 1.05rem;">
-        💾 KIRIM LAPORAN PIKET
-      </button>
-
-    </form>
   </div>
-
 </main>
 
-<!-- SCRIPT FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<script>
-  // Inisialisasi Firebase
   const firebaseConfig = {
-    apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
     authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
     databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
     projectId: "absensi-santri-fajrul-islam"
   };
-  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-  const db = firebase.database();
 
-  // Set Tanggal Otomatis Hari Ini
-  document.getElementById('tglPiket').value = new Date().toISOString().split('T')[0];
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  
+  // Ambil Data User Login
+  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
 
-  // Identitas Naqib dari Sesi Login
-  const currentUser = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
-  const namaNaqib = currentUser.label || currentUser.username || "Naqib Piket";
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set Tanggal Hari Ini
+    document.getElementById('jpTanggal').value = new Date().toISOString().split('T')[0];
+    
+    // Set Nama Naqib
+    let namaLokal = localStorage.getItem('namaNaqib') || user.label || user.username || "Naqib";
+    document.getElementById('jpNama').value = namaLokal.toUpperCase();
 
-  // Fungsi Simpan ke Firebase
-  async function simpanJurnal(e) {
-    e.preventDefault();
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  });
 
-    const btn = document.getElementById('btnSimpan');
-    const loading = document.getElementById('loadingOverlay');
+  window.tampilkanChecklist = function() {
+      const blok = document.getElementById('jpBlok').value;
+      
+      // Sembunyikan semua dulu
+      document.getElementById('cekBlok1').classList.remove('active');
+      document.getElementById('cekBlok2').classList.remove('active');
+      document.getElementById('cekBlok3').classList.remove('active');
+      document.getElementById('areaLaporan').style.display = 'none';
 
-    const tgl = document.getElementById('tglPiket').value;
-    const asrama = document.getElementById('areaAsrama').value;
-    const keamanan = document.querySelector('input[name="statusKeamanan"]:checked').value;
-    const kebersihan = document.querySelector('input[name="statusKebersihan"]:checked').value;
-    const catatan = document.getElementById('catatanPiket').value.trim();
+      // Tampilkan sesuai pilihan
+      if(blok === 'Blok 1') document.getElementById('cekBlok1').classList.add('active');
+      if(blok === 'Blok 2') document.getElementById('cekBlok2').classList.add('active');
+      if(blok === 'Blok 3') document.getElementById('cekBlok3').classList.add('active');
+      
+      if(blok !== "") document.getElementById('areaLaporan').style.display = 'block';
+      
+      // Uncheck semua checkbox saat ganti blok
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  }
 
-    loading.style.display = 'flex';
-    btn.disabled = true;
+  window.simpanJurnalPiket = async function() {
+    const tanggal = document.getElementById('jpTanggal').value;
+    const nama = document.getElementById('jpNama').value;
+    const blok = document.getElementById('jpBlok').value;
+    const catatan = document.getElementById('jpCatatan').value.trim();
+
+    if(!blok) return alert("Pilih Blok Piket terlebih dahulu!");
+
+    // Tarik data checklist yang dicentang
+    let divId = "";
+    if(blok === 'Blok 1') divId = "cekBlok1";
+    if(blok === 'Blok 2') divId = "cekBlok2";
+    if(blok === 'Blok 3') divId = "cekBlok3";
+
+    const checkboxes = document.querySelectorAll(`#${divId} input[type="checkbox"]`);
+    let totalTugas = checkboxes.length;
+    let tugasSelesai = 0;
+    let detailTugas = [];
+
+    checkboxes.forEach(cb => {
+        if(cb.checked) {
+            tugasSelesai++;
+            detailTugas.push({ tugas: cb.value, status: "Selesai" });
+        } else {
+            detailTugas.push({ tugas: cb.value, status: "Terlewat" });
+        }
+    });
+
+    if(tugasSelesai === 0 && !confirm("⚠️ Anda belum mencentang satu pun tugas pelaksaan. Yakin ingin menyimpan laporan ini?")) {
+        return;
+    }
+
+    const persentasePenyelesaian = Math.round((tugasSelesai / totalTugas) * 100);
+
+    const btn = document.getElementById('btnSimpanJurnal');
+    btn.disabled = true; btn.innerHTML = "⏳ MENGIRIM LAPORAN...";
 
     const payload = {
-      tanggal: tgl,
-      waktuSimpan: new Date().toISOString(),
-      naqib: namaNaqib,
-      areaAsrama: asrama,
-      statusKeamanan: keamanan,
-      statusKebersihan: kebersihan,
-      catatanKejadian: catatan
+        tanggal: tanggal,
+        naqib: nama,
+        blokPiket: blok,
+        waktuSubmit: new Date().toISOString(),
+        tugasSelesai: tugasSelesai,
+        totalTugas: totalTugas,
+        persentase: persentasePenyelesaian,
+        detailPelaksanaan: detailTugas,
+        catatanKejadian: catatan || "Nihil"
     };
 
     try {
-      // Simpan ke node jurnal_piket_naqib
-      await db.ref('cahaya_app/jurnal_piket_naqib').push(payload);
-      
-      alert("✅ Laporan Piket berhasil dikirim dan tersimpan di database!");
-      
-      // Reset Form (kecuali tanggal)
-      document.getElementById('formPiket').reset();
-      document.getElementById('tglPiket').value = new Date().toISOString().split('T')[0];
+        await push(ref(db, 'cahaya_app/jurnal_piket_naqib'), payload);
+        alert(`✅ Jurnal berhasil disimpan! (Tingkat Penyelesaian: ${persentasePenyelesaian}%).\nTerima kasih atas khidmat Anda hari ini. Selamat beristirahat.`);
+        
+        // Reset form
+        document.getElementById('jpBlok').value = "";
+        document.getElementById('jpCatatan').value = "";
+        tampilkanChecklist(); // Akan menyembunyikan semuanya lagi
 
     } catch (error) {
-      alert("❌ Gagal mengirim laporan: " + error.message);
+        alert("❌ Terjadi kesalahan saat menyimpan: " + error.message);
     } finally {
-      loading.style.display = 'none';
-      btn.disabled = false;
+        btn.disabled = false; btn.innerHTML = "💾 SIMPAN JURNAL & ISTIRAHAT";
     }
-  }
+  };
 </script>
-
 </body>
 </html>
