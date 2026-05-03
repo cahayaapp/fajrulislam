@@ -5,17 +5,16 @@
   <title>Edit Halaqah - Cahaya App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   
-  <!-- PANGGIL MASTER THEME CAHAYA -->
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
   
   <style>
     /* CSS Kustom Ringan Khusus Kotak Transfer Santri */
-    .add-santri-box { 
+    .manage-box { 
       background: #f8fafc; padding: 20px; border-radius: var(--radius-md); 
-      margin-bottom: 30px; border: 1px dashed var(--gold-main); 
+      margin-bottom: 20px; border: 1px dashed var(--gold-main); 
       display: flex; gap: 15px; align-items: flex-end; 
     }
-    .add-santri-box .form-group { margin-bottom: 0; flex: 1; }
+    .manage-box .form-group { margin-bottom: 0; flex: 1; }
     
     .list-container { 
       border: 2px solid var(--input-border); border-radius: var(--radius-md); 
@@ -36,7 +35,6 @@
     .btn-outline { background: white; color: var(--navy-dark); border: 2px solid var(--navy-dark); }
     .btn-outline:hover { background: #f1f5f9; transform: translateY(-3px); }
 
-    /* LOADING OVERLAY */
     #loadingOverlay { 
       position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); 
       z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
@@ -44,7 +42,7 @@
     }
 
     @media (max-width: 768px) { 
-      .add-santri-box { flex-direction: column; align-items: stretch; } 
+      .manage-box { flex-direction: column; align-items: stretch; } 
     }
   </style>
 </head>
@@ -57,9 +55,8 @@
 
 <main class="cahaya-container">
   <div class="cahaya-card">
-    <!-- Judul Disesuaikan agar ke tengah -->
     <h2 class="cahaya-title" style="text-align: center; border-left: none; padding-left: 0; margin-bottom: 5px;">
-      ⚙️ Manajemen Anggota Halaqah
+      ⚙️ Manajemen Struktur Halaqah
     </h2>
     <p style="text-align:center; color:#10b981; font-weight:600; margin-bottom:30px; font-size:0.85rem;">
       Terkoneksi ke Database Cloud
@@ -75,15 +72,22 @@
       </select>
     </div>
 
-    <div class="add-santri-box">
+    <div class="manage-box" style="border-color: var(--navy-dark); background: #f1f5f9;">
+      <div class="form-group">
+        <label>Buat Nama Kelas Baru</label>
+        <input type="text" class="form-control" id="namaKelasBaru" placeholder="Cth: Kelas 4 Putri / Kelompok A" onkeypress="if(event.key === 'Enter') tambahKelas()">
+      </div>
+      <button class="btn-cahaya" style="background: var(--navy-dark); width: auto; padding: 14px 25px;" onclick="tambahKelas()">🆕 Buat Kelas</button>
+    </div>
+
+    <div class="manage-box">
       <div class="form-group">
         <label>Tambah Santri Baru ke Kelas Asal</label>
         <input type="text" class="form-control" id="namaBaru" placeholder="Masukkan nama lengkap santri..." onkeypress="if(event.key === 'Enter') tambahSantri()">
       </div>
-      <button class="btn-cahaya btn-gold" style="width: auto; padding: 14px 25px;" onclick="tambahSantri()">➕ Tambah</button>
+      <button class="btn-cahaya btn-gold" style="width: auto; padding: 14px 25px;" onclick="tambahSantri()">➕ Tambah Santri</button>
     </div>
 
-    <!-- MENGGUNAKAN GRID-2 DARI MASTER THEME -->
     <div class="grid-2">
       <div class="form-group">
         <label>Kelas Asal</label>
@@ -105,8 +109,6 @@
   </div>
 </main>
 
-<script src="../js/data-pusat.js"></script>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -126,29 +128,43 @@
   document.addEventListener('DOMContentLoaded', async () => {
     try {
       const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
-      
       if (snapshot.exists()) {
         const cloudData = snapshot.val();
         localDataSantri = cloudData.halqah || {};
-      } else {
-        // AUTO-MIGRASI
-        localDataSantri = window.dataSantri || {};
-        const baseData = {
-          halqah: localDataSantri,
-          guru: window.dataGuru || [],
-          mapel: window.dataMapel || []
-        };
-        await set(ref(db, 'cahaya_app/master_akademik'), baseData);
-        console.log("Migrasi awal data akademik ke Firebase berhasil!");
       }
-
     } catch (err) {
       alert("Gagal terhubung ke database: " + err.message);
     }
-
     document.getElementById('loadingOverlay').style.opacity = '0';
     setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
   });
+
+  // --- FUNGSI TAMBAH KELAS BARU ---
+  window.tambahKelas = function() {
+    const rumpun = document.getElementById('selRumpun').value;
+    const namaKelas = document.getElementById('namaKelasBaru').value.trim();
+
+    if (!rumpun) return alert("Pilih Rumpun Kelas terlebih dahulu!");
+    if (!namaKelas) return alert("Masukkan nama kelas baru!");
+
+    // Cek apakah kelas sudah ada
+    if (localDataSantri[rumpun][namaKelas]) {
+      return alert("Kelas '" + namaKelas + "' sudah ada di rumpun ini.");
+    }
+
+    // Tambah key baru dengan array kosong
+    localDataSantri[rumpun][namaKelas] = [];
+    
+    // Reset input dan refresh dropdown
+    document.getElementById('namaKelasBaru').value = '';
+    loadDaftarKelas();
+    
+    // Otomatis pilih kelas yang baru dibuat di 'Kelas Tujuan' untuk memudahkan
+    document.getElementById('selTujuan').value = namaKelas;
+    renderSantri('Tujuan');
+    
+    alert("Kelas '" + namaKelas + "' berhasil dibuat secara lokal. Jangan lupa klik TERAPKAN KE SERVER.");
+  };
 
   window.loadDaftarKelas = function() {
     const rumpun = document.getElementById('selRumpun').value;
@@ -161,7 +177,7 @@
     
     if (!rumpun || !localDataSantri[rumpun]) return;
     
-    const daftarKelas = Object.keys(localDataSantri[rumpun]);
+    const daftarKelas = Object.keys(localDataSantri[rumpun]).sort();
     daftarKelas.forEach(namaKelas => {
       asal.innerHTML += `<option value="${namaKelas}">${namaKelas}</option>`;
       tujuan.innerHTML += `<option value="${namaKelas}">${namaKelas}</option>`;
@@ -219,16 +235,13 @@
     
     localDataSantri[rumpun][kAsal].push(nama);
     document.getElementById('namaBaru').value = '';
-    
     renderSantri('Asal');
   };
 
   window.hapusSantri = function(nama, posisi) {
     if (!confirm(`Hapus ${nama} dari kelas ini?`)) return;
-    
     const rumpun = document.getElementById('selRumpun').value;
     const namaKelas = document.getElementById('sel' + posisi).value;
-    
     localDataSantri[rumpun][namaKelas] = localDataSantri[rumpun][namaKelas].filter(n => n !== nama);
     renderSantri(posisi);
   };
@@ -237,10 +250,9 @@
     const btn = document.getElementById('btnSimpan');
     btn.innerHTML = "⏳ MENGUNGGAH KE CLOUD...";
     btn.disabled = true;
-
     try {
       await set(ref(db, 'cahaya_app/master_akademik/halqah'), localDataSantri);
-      alert("✅ BERHASIL DISIMPAN KE SERVER!\nSeluruh fitur akademik sekarang menggunakan data terbaru ini.");
+      alert("✅ BERHASIL DISIMPAN KE SERVER!");
     } catch (err) {
       alert("Gagal menyimpan ke server: " + err.message);
     } finally {
