@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Beranda - CAHAYA APP</title>
   
-  <!-- PERBAIKAN PATH CSS DI SINI (Hapus tanda ../) -->
   <link rel="stylesheet" href="css/cahaya-theme.css" />
 
   <style>
@@ -14,11 +13,11 @@
       padding: 20px 30px;
     }
 
-    /* KARTU SAMBUTAN PREMIUM DARK */
+    /* KARTU SAMBUTAN PREMIUM DARK (SUDAH DIPERBAIKI) */
     .welcome-card {
       /* Background Gelap agar teks putih/emas menyala sempurna */
-      background: linear-gradient(135deg, var(--navy-dark), var(--primary-dark), #0f172a);
-      border-radius: var(--radius-lg); 
+      background: linear-gradient(135deg, var(--navy-dark, #0f172a), #1e293b);
+      border-radius: var(--radius-lg, 16px); 
       padding: 40px 45px; 
       color: white;
       position: relative; 
@@ -27,29 +26,32 @@
       margin-bottom: 25px;
       animation: fadeIn 0.6s ease;
       border: 1px solid rgba(212, 175, 55, 0.2); 
+      border-left: 4px solid var(--gold-main, #d4af37);
     }
     
     /* Watermark Elegan */
     .welcome-card::after {
-      content: '☀'; position: absolute; right: -20px; bottom: -60px;
-      font-size: 18rem; opacity: 0.05; pointer-events: none; line-height: 1;
-      color: white;
+      content: '🕌'; position: absolute; right: -20px; top: -40px;
+      font-size: 15rem; opacity: 0.05; pointer-events: none; line-height: 1;
     }
     
     .welcome-card h1 { 
-      font-family: 'Playfair Display', serif; color: var(--gold-light); 
-      font-size: 2.2rem; margin-bottom: 10px; font-weight: 800; letter-spacing: 1px;
+      font-family: 'Playfair Display', serif; color: #ffffff; 
+      font-size: 2.2rem; margin-bottom: 15px; font-weight: 800; letter-spacing: 1px;
+      position: relative; z-index: 2;
     }
     
     .welcome-card p { 
       color: #cbd5e1; 
-      max-width: 700px; font-size: 0.95rem; line-height: 1.6; font-weight: 300; margin: 0;
+      max-width: 800px; font-size: 0.95rem; line-height: 1.7; font-weight: 300; margin: 0;
+      position: relative; z-index: 2;
     }
     
     .role-badge {
-      display: inline-block; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-      padding: 6px 15px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1.5px; margin-bottom: 20px; color: var(--gold-main);
+      display: inline-block; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.3);
+      padding: 6px 15px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 2px; margin-bottom: 15px; color: var(--gold-main, #d4af37);
+      position: relative; z-index: 2;
     }
 
     /* Grid Khusus Widget Dashboard */
@@ -59,8 +61,8 @@
     }
     
     .widget { 
-      background: white; padding: 25px; border-radius: var(--radius-md); 
-      border: 1px solid var(--input-border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
+      background: white; padding: 25px; border-radius: var(--radius-md, 12px); 
+      border: 1px solid var(--input-border, #cbd5e1); box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
       display: flex; flex-direction: column; justify-content: center;
       position: relative; overflow: hidden; transition: 0.3s;
     }
@@ -68,14 +70,14 @@
     
     .widget::before {
       content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
-      background: var(--gold-main); border-radius: 4px 0 0 4px;
+      background: var(--gold-main, #d4af37); border-radius: 4px 0 0 4px;
     }
     .widget.blue::before { background: #3b82f6; }
     .widget.green::before { background: #10b981; }
 
-    .widget h3 { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 1.5px; font-weight: 700; }
-    .widget .value { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 800; color: var(--navy-dark); line-height: 1.2; }
-    .widget .sub-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; font-weight: 500; }
+    .widget h3 { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted, #64748b); margin-bottom: 8px; letter-spacing: 1.5px; font-weight: 700; }
+    .widget .value { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 800; color: var(--navy-dark, #0f172a); line-height: 1.2; }
+    .widget .sub-text { font-size: 0.8rem; color: var(--text-muted, #64748b); margin-top: 5px; font-weight: 500; }
 
     /* CSS Jadwal Harian */
     .jam-badge { background: #fef08a; color: #b45309; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; border: 1px solid #fde047; display: inline-block; white-space: nowrap;}
@@ -83,7 +85,7 @@
     /* Layout Group Rumpun */
     .rumpun-card {
       margin-bottom: 25px; border-radius: 12px; overflow: hidden; 
-      border: 1px solid var(--input-border); box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      border: 1px solid var(--input-border, #cbd5e1); box-shadow: 0 4px 6px rgba(0,0,0,0.02);
       background: white;
     }
     .rumpun-header {
@@ -95,8 +97,8 @@
     @media (max-width: 768px) {
       .cahaya-container { padding: 15px; }
       .welcome-card { padding: 30px 20px; border-radius: 16px; margin-bottom: 15px;}
-      .welcome-card h1 { font-size: 1.6rem; }
-      .welcome-card p { font-size: 0.85rem; line-height: 1.5; }
+      .welcome-card h1 { font-size: 1.8rem; }
+      .welcome-card p { font-size: 0.85rem; line-height: 1.6; }
       
       .widget-grid { grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px;}
       .widget { padding: 20px; }
@@ -110,12 +112,14 @@
       .cahaya-table th, .cahaya-table td { padding: 12px 10px; font-size: 0.8rem; }
       .jam-badge { font-size: 0.7rem; padding: 3px 6px; }
     }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
   <main class="cahaya-container">
-    <!-- KARTU SAMBUTAN -->
+    <!-- KARTU SAMBUTAN (SUDAH DIPERBAIKI MENJADI GELAP & ELEGAN) -->
     <div class="welcome-card">
       <div class="role-badge" id="roleDisplay">Memuat Peran...</div>
       <h1 id="greetingName">Ahlan, User</h1>
@@ -149,10 +153,10 @@
     </div>
 
     <!-- HEADER JADWAL & FILTER -->
-    <div class="header-jadwal-area" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; margin-bottom: 20px; border-bottom: 2px solid var(--input-border); padding-bottom: 15px;">
+    <div class="header-jadwal-area" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; margin-bottom: 20px; border-bottom: 2px solid var(--input-border, #cbd5e1); padding-bottom: 15px;">
       <div>
-        <h3 style="color: var(--navy-dark); margin: 0; font-family: 'Playfair Display', serif; font-size: 1.6rem;">📅 Jadwal Pelajaran Hari Ini</h3>
-        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-muted); font-weight: 600;" id="labelHariIni">Menyesuaikan hari...</p>
+        <h3 style="color: var(--navy-dark, #0f172a); margin: 0; font-family: 'Playfair Display', serif; font-size: 1.6rem;">📅 Jadwal Pelajaran Hari Ini</h3>
+        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-muted, #64748b); font-weight: 600;" id="labelHariIni">Menyesuaikan hari...</p>
       </div>
       <div style="display: flex; gap: 10px; align-items: center; width: auto;">
         <label style="margin:0; font-size:0.85rem; font-weight:700; white-space: nowrap;">Filter Cepat:</label>
@@ -165,11 +169,12 @@
 
     <!-- WADAH JADWAL YANG DIKELOMPOKKAN -->
     <div id="wadahJadwalHarian" style="animation: fadeIn 1s ease;">
-      <div style="text-align: center; padding: 40px; color: var(--text-muted); font-style: italic;">⏳ Memuat jadwal harian...</div>
+      <div style="text-align: center; padding: 40px; color: var(--text-muted, #64748b); font-style: italic;">⏳ Memuat jadwal harian...</div>
     </div>
 
   </main>
 
+  <!-- KODE LOGIKA JAVASCRIPT & FIREBASE ASLI (TIDAK ADA YANG DIUBAH) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -277,7 +282,7 @@
 
         // Konfigurasi Tema per Rumpun
         const temaRumpun = {
-            "Halqah Ilmiyah": { icon: "📚", color: "var(--navy-dark)" },
+            "Halqah Ilmiyah": { icon: "📚", color: "var(--navy-dark, #0f172a)" },
             "Halqah Lughowiyah": { icon: "🗣️", color: "#065f46" }, // Emerald Dark
             "Halqah Quraniyah": { icon: "📖", color: "#92400e" }, // Amber Dark
             "Lainnya": { icon: "📌", color: "#334155" } // Slate Dark
@@ -298,10 +303,10 @@
                     const bgRow = isMilikSaya ? 'background: #f0fdf4;' : ''; // Hijau tipis jika ini KBM saya
 
                     return `<tr style="${bgRow}">
-                      <td width="15%" style="text-align:center;"><span class="jam-badge">${j.jamMulai} - ${j.jamSelesai}</span></td>
-                      <td width="30%"><b style="color:var(--navy-dark);">${j.kelas}</b></td>
-                      <td width="30%" style="font-weight:700;">${j.mapel}</td>
-                      <td width="25%" style="font-size:0.85rem; color:#0f172a; font-weight:600;">👨‍🏫 ${j.guru} ${isMilikSaya ? '<br><span style="color:#10b981; font-weight:800; font-size:0.7rem;">(Jadwal Anda)</span>' : ''}</td>
+                      <td width="15%" style="text-align:center; border-bottom: 1px solid #e2e8f0; padding: 12px;"><span class="jam-badge">${j.jamMulai} - ${j.jamSelesai}</span></td>
+                      <td width="30%" style="border-bottom: 1px solid #e2e8f0; padding: 12px;"><b style="color:var(--navy-dark, #0f172a);">${j.kelas}</b></td>
+                      <td width="30%" style="font-weight:700; border-bottom: 1px solid #e2e8f0; padding: 12px;">${j.mapel}</td>
+                      <td width="25%" style="font-size:0.85rem; color:#0f172a; font-weight:600; border-bottom: 1px solid #e2e8f0; padding: 12px;">👨‍🏫 ${j.guru} ${isMilikSaya ? '<br><span style="color:#10b981; font-weight:800; font-size:0.7rem;">(Jadwal Anda)</span>' : ''}</td>
                     </tr>`;
                 }).join('');
 
@@ -312,14 +317,14 @@
                   <div class="rumpun-header" style="background: ${config.color};">
                     <span>${config.icon}</span> ${rumpun.toUpperCase()}
                   </div>
-                  <div class="table-responsive" style="margin: 0;">
-                    <table class="cahaya-table" style="margin: 0; border: none;">
-                      <thead style="background: #f8fafc;">
+                  <div class="table-responsive" style="margin: 0; overflow-x: auto;">
+                    <table class="cahaya-table" style="margin: 0; width: 100%; border-collapse: collapse;">
+                      <thead style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                         <tr>
-                          <th style="text-align: center;">Jam KBM</th>
-                          <th>Kelas / Kelompok</th>
-                          <th>Mata Pelajaran</th>
-                          <th>Guru Pengajar</th>
+                          <th style="text-align: center; padding: 12px; font-size: 0.85rem; color: #64748b;">Jam KBM</th>
+                          <th style="text-align: left; padding: 12px; font-size: 0.85rem; color: #64748b;">Kelas / Kelompok</th>
+                          <th style="text-align: left; padding: 12px; font-size: 0.85rem; color: #64748b;">Mata Pelajaran</th>
+                          <th style="text-align: left; padding: 12px; font-size: 0.85rem; color: #64748b;">Guru Pengajar</th>
                         </tr>
                       </thead>
                       <tbody>
