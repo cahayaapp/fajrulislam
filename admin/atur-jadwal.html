@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CAHAYA APP - Manajemen Jadwal Pelajaran</title>
+  
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Poppins', sans-serif; background: #f8fafc; margin: 0; padding: 0;}
+    
+    .header-admin {
+      background: linear-gradient(135deg, var(--navy-dark, #0f172a), #1e293b);
+      padding: 30px 40px; border-radius: var(--radius-lg, 16px); color: white;
+      margin-bottom: 25px; box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
+      position: relative; overflow: hidden;
+    }
+    .header-admin::after {
+      content: '📅'; position: absolute; right: 20px; top: -10px;
+      font-size: 8rem; opacity: 0.1; pointer-events: none;
+    }
+    .header-admin h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold-light, #fde047); margin-bottom: 5px; }
+    .header-admin p { font-size: 0.9rem; opacity: 0.9; font-weight: 300; margin: 0;}
+
+    .cahaya-card {
+      background: #ffffff; border-radius: 16px; padding: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+      margin-bottom: 25px;
+    }
+    .cahaya-title { font-family: 'Playfair Display', serif; color: #0f172a; margin-top: 0; font-size: 1.4rem; border-bottom: 2px dashed #e2e8f0; padding-bottom: 10px; margin-bottom: 20px;}
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 6px; text-transform: uppercase;}
+    .form-control { 
+      width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; 
+      font-family: 'Poppins', sans-serif; font-size: 0.9rem; outline: none; background: #f8fafc; transition: 0.3s;
+      box-sizing: border-box;
+    }
+    .form-control:focus { background: #ffffff; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
+
+    .btn-utama {
+      background: linear-gradient(135deg, #d4af37, #fde047); color: #0f172a;
+      border: none; padding: 12px 25px; border-radius: 10px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(212,175,55,0.2);
+    }
+    .btn-utama:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.4); }
+
+    /* Layout Group Rumpun */
+    .rumpun-card {
+      margin-bottom: 25px; border-radius: 12px; overflow: hidden; 
+      border: 1px solid var(--input-border, #cbd5e1); box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      background: white;
+    }
+    .rumpun-header {
+      color: white; padding: 15px 20px; font-weight: 800; font-size: 1.1rem; 
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: 'Playfair Display', serif;
+    }
+
+    .table-responsive { width: 100%; overflow-x: auto; }
+    .cahaya-table { width: 100%; border-collapse: collapse; background: white; table-layout: auto; margin: 0; }
+    .cahaya-table th { background: #f8fafc; padding: 12px; font-size: 0.85rem; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; text-align: left; }
+    .cahaya-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 0.85rem; color: #0f172a;}
+    
+    .btn-aksi { background: none; border: none; font-size: 1.1rem; cursor: pointer; transition: 0.2s; padding: 5px; }
+    .btn-aksi:hover { transform: scale(1.2); }
+
+    .badge-jam { background: #fef08a; color: #b45309; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; border: 1px solid #fde047; display: inline-block; white-space: nowrap;}
+    .badge-hari { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; border: 1px solid #bae6fd; margin-bottom: 5px; display: inline-block;}
+
+    #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #0f172a; font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 10px; }
+      .header-admin { padding: 25px 20px; }
+      .cahaya-table th, .cahaya-table td { font-size: 0.75rem; padding: 10px 5px; white-space: nowrap;}
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: bounce 1s infinite alternate;">📅</div>
+  <div style="font-weight: 700;">Memuat Database Sistem...</div>
+</div>
+
+<main class="cahaya-container" style="padding: 15px;">
+  
+  <div class="header-admin">
+    <h1>Manajemen Jadwal KBM</h1>
+    <p>Atur jadwal pelajaran, guru, dan ruangan kelas untuk sinkronisasi otomatis ke dashboard Asatidz.</p>
+  </div>
+
+  <!-- FORM TAMBAH / EDIT JADWAL -->
+  <div class="cahaya-card" style="background: #f8fafc; border: 1px dashed var(--gold-main);">
+    <h2 class="cahaya-title" id="formTitle">✏️ Form Jadwal Baru</h2>
+    
+    <!-- Input Tersembunyi untuk ID jika sedang mode edit -->
+    <input type="hidden" id="jadwalId">
+
+    <div class="grid-3">
+      <div class="form-group">
+        <label>Hari Pelaksanaan</label>
+        <select class="form-control" id="fHari">
+          <option value="">-- Pilih Hari --</option>
+          <option value="Senin">Senin</option>
+          <option value="Selasa">Selasa</option>
+          <option value="Rabu">Rabu</option>
+          <option value="Kamis">Kamis</option>
+          <option value="Jumat">Jumat</option>
+          <option value="Sabtu">Sabtu</option>
+          <option value="Minggu">Ahad / Minggu</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Jam Mulai</label>
+        <input type="time" class="form-control" id="fJamMulai">
+      </div>
+      <div class="form-group">
+        <label>Jam Selesai</label>
+        <input type="time" class="form-control" id="fJamSelesai">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Rumpun Pendidikan</label>
+        <select class="form-control" id="fRumpun" onchange="updatePilihanKelas()">
+          <option value="">-- Pilih Rumpun --</option>
+          <option value="Halqah Ilmiyah">Halqah Ilmiyah</option>
+          <option value="Halqah Lughowiyah">Halqah Lughowiyah</option>
+          <option value="Halqah Quraniyah">Halqah Quraniyah</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Kelas / Kelompok</label>
+        <select class="form-control" id="fKelas">
+          <option value="">-- Pilih Kelas --</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Mata Pelajaran</label>
+        <select class="form-control" id="fMapel">
+          <option value="">-- Pilih Mapel --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Guru Pengajar</label>
+        <select class="form-control" id="fGuru">
+          <option value="">-- Pilih Guru --</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+      <button class="btn-utama" style="background: white; color: #ef4444; border: 1px solid #ef4444; box-shadow: none; display: none;" id="btnBatal" onclick="batalEdit()">Batal Edit</button>
+      <button class="btn-utama" id="btnSimpan" onclick="simpanJadwal()">💾 Simpan Jadwal</button>
+    </div>
+  </div>
+
+  <!-- TABEL DAFTAR JADWAL (GROUPED) -->
+  <div class="cahaya-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+      <h2 class="cahaya-title" style="border: none; margin: 0; padding: 0;">📚 Database Jadwal</h2>
+      
+      <!-- Filter Hari Cepat -->
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <label style="font-size: 0.85rem; font-weight: 700;">Tampilkan Hari:</label>
+        <select class="form-control" id="filterHari" onchange="renderTabelJadwal()" style="min-width: 150px; padding: 8px 15px;">
+          <option value="Senin">Senin</option>
+          <option value="Selasa">Selasa</option>
+          <option value="Rabu">Rabu</option>
+          <option value="Kamis">Kamis</option>
+          <option value="Jumat">Jumat</option>
+          <option value="Sabtu">Sabtu</option>
+          <option value="Minggu">Ahad / Minggu</option>
+          <option value="ALL">-- Tampilkan Semua Hari --</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="wadahJadwalHarian">
+        <!-- Akan diisi oleh JavaScript -->
+        <div style="text-align: center; padding: 30px; color: #64748b;">⏳ Memuat jadwal...</div>
+    </div>
+
+  </div>
+
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let masterDataAkademik = {};
+  let semuaJadwal = {};
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    
+    // Set default filter ke hari ini
+    const namaHariIni = new Date().toLocaleDateString('id-ID', { weekday: 'long' });
+    const filterHari = document.getElementById('filterHari');
+    for(let i=0; i<filterHari.options.length; i++){
+        if(filterHari.options[i].value.toLowerCase() === namaHariIni.toLowerCase()){
+            filterHari.selectedIndex = i;
+            break;
+        }
+    }
+
+    try {
+      const [snapAkademik, snapJadwal] = await Promise.all([
+        get(ref(db, 'cahaya_app/master_akademik')),
+        get(ref(db, 'cahaya_app/jadwal_pelajaran'))
+      ]);
+
+      if (snapAkademik.exists()) masterDataAkademik = snapAkademik.val();
+      if (snapJadwal.exists()) semuaJadwal = snapJadwal.val();
+
+      suntikDropdownMaster();
+      renderTabelJadwal();
+
+    } catch (error) {
+      alert("Gagal koneksi ke database: " + error.message);
+    }
+    
+    document.getElementById('loadingOverlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
+  });
+
+  function suntikDropdownMaster() {
+    const selGuru = document.getElementById('fGuru');
+    const selMapel = document.getElementById('fMapel');
+    
+    const dataGuru = masterDataAkademik.guru || [];
+    dataGuru.sort().forEach(g => selGuru.add(new Option(g, g)));
+
+    const dataMapel = masterDataAkademik.mapel || [];
+    dataMapel.sort().forEach(m => selMapel.add(new Option(m, m)));
+  }
+
+  window.updatePilihanKelas = function() {
+    const rumpun = document.getElementById('fRumpun').value;
+    const selKelas = document.getElementById('fKelas');
+    
+    selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    if (!rumpun) return;
+
+    const kategori = masterDataAkademik.halqah?.[rumpun];
+    if (kategori) {
+      Object.keys(kategori).sort().forEach(k => selKelas.add(new Option(k, k)));
+    }
+  };
+
+  // FUNGSI RENDER TABEL (GROUPING BERDASARKAN RUMPUN)
+  window.renderTabelJadwal = function() {
+    const filterHariVal = document.getElementById('filterHari').value;
+    const wadah = document.getElementById('wadahJadwalHarian');
+    
+    // Ubah objek ke array
+    let arrJadwal = Object.keys(semuaJadwal).map(key => {
+        return { id: key, ...semuaJadwal[key] };
+    });
+
+    // Filter berdasarkan Hari
+    if (filterHariVal !== "ALL") {
+        arrJadwal = arrJadwal.filter(j => j.hari.toLowerCase() === filterHariVal.toLowerCase());
+    }
+
+    if (arrJadwal.length === 0) {
+        wadah.innerHTML = `<div style="text-align: center; padding: 40px; border: 1px dashed #cbd5e1; border-radius: 12px; color: #64748b; font-style: italic;">Tidak ada jadwal di hari yang dipilih.</div>`;
+        return;
+    }
+
+    // PROSES GROUPING BERDASARKAN RUMPUN
+    const grouped = {
+        "Halqah Ilmiyah": [],
+        "Halqah Lughowiyah": [],
+        "Halqah Quraniyah": [],
+        "Lainnya": []
+    };
+
+    arrJadwal.forEach(j => {
+        const r = j.rumpun || "Lainnya";
+        if(!grouped[r]) grouped[r] = [];
+        grouped[r].push(j);
+    });
+
+    // Tema Warna Rumpun
+    const temaRumpun = {
+        "Halqah Ilmiyah": { icon: "📚", color: "var(--navy-dark, #0f172a)" },
+        "Halqah Lughowiyah": { icon: "🗣️", color: "#065f46" },
+        "Halqah Quraniyah": { icon: "📖", color: "#92400e" },
+        "Lainnya": { icon: "📌", color: "#334155" }
+    };
+
+    let htmlOutput = "";
+
+    for(let rumpun in grouped) {
+        if(grouped[rumpun].length > 0) {
+            
+            // Urutkan berdasarkan jam mulai
+            grouped[rumpun].sort((a, b) => {
+                // Jika "ALL" hari terpilih, urutkan berdasarkan hari dulu, baru jam
+                if(filterHariVal === "ALL") {
+                    const hariOrder = { "senin":1, "selasa":2, "rabu":3, "kamis":4, "jumat":5, "sabtu":6, "minggu":7 };
+                    const hariA = hariOrder[a.hari.toLowerCase()] || 99;
+                    const hariB = hariOrder[b.hari.toLowerCase()] || 99;
+                    if(hariA !== hariB) return hariA - hariB;
+                }
+                return a.jamMulai.localeCompare(b.jamMulai);
+            });
+
+            let tableRows = grouped[rumpun].map(j => {
+                const showHari = filterHariVal === "ALL" ? `<span class="badge-hari">${j.hari}</span><br>` : '';
+                return `<tr>
+                  <td width="15%" style="text-align:center;">
+                      ${showHari}
+                      <span class="badge-jam">🕒 ${j.jamMulai} - ${j.jamSelesai}</span>
+                  </td>
+                  <td width="25%"><b style="color:var(--navy-dark);">${j.kelas}</b></td>
+                  <td width="30%" style="font-weight:700;">${j.mapel}</td>
+                  <td width="20%" style="font-size:0.85rem;">👨‍🏫 ${j.guru}</td>
+                  <td width="10%" style="text-align: center;">
+                      <button class="btn-aksi" onclick="editJadwal('${j.id}')" title="Edit">✏️</button>
+                      <button class="btn-aksi" onclick="hapusJadwal('${j.id}')" title="Hapus">🗑️</button>
+                  </td>
+                </tr>`;
+            }).join('');
+
+            const config = temaRumpun[rumpun] || temaRumpun["Lainnya"];
+
+            htmlOutput += `
+            <div class="rumpun-card">
+              <div class="rumpun-header" style="background: ${config.color};">
+                <div><span>${config.icon}</span> ${rumpun.toUpperCase()}</div>
+                <div style="font-size: 0.8rem; font-weight: 500; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px;">
+                    ${grouped[rumpun].length} Sesi
+                </div>
+              </div>
+              <div class="table-responsive" style="margin: 0; border: none; border-radius: 0;">
+                <table class="cahaya-table">
+                  <thead>
+                    <tr>
+                      <th style="text-align: center;">Jam KBM</th>
+                      <th>Kelas</th>
+                      <th>Mata Pelajaran</th>
+                      <th>Guru Pengajar</th>
+                      <th style="text-align: center;">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${tableRows}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            `;
+        }
+    }
+
+    wadah.innerHTML = htmlOutput;
+  };
+
+  // SIMPAN JADWAL
+  window.simpanJadwal = async function() {
+    const id = document.getElementById('jadwalId').value;
+    
+    const jadwalData = {
+        hari: document.getElementById('fHari').value,
+        jamMulai: document.getElementById('fJamMulai').value,
+        jamSelesai: document.getElementById('fJamSelesai').value,
+        rumpun: document.getElementById('fRumpun').value,
+        kelas: document.getElementById('fKelas').value,
+        mapel: document.getElementById('fMapel').value,
+        guru: document.getElementById('fGuru').value
+    };
+
+    for (let key in jadwalData) {
+        if (!jadwalData[key]) return alert("⚠️ Mohon lengkapi semua isian jadwal!");
+    }
+
+    const btn = document.getElementById('btnSimpan');
+    btn.innerHTML = "⏳ Menyimpan..."; btn.disabled = true;
+
+    try {
+        if (id) {
+            await update(ref(db, `cahaya_app/jadwal_pelajaran/${id}`), jadwalData);
+            semuaJadwal[id] = jadwalData;
+            alert("✅ Jadwal berhasil diperbarui!");
+        } else {
+            const newRef = push(ref(db, 'cahaya_app/jadwal_pelajaran'));
+            await set(newRef, jadwalData);
+            semuaJadwal[newRef.key] = jadwalData;
+            alert("✅ Jadwal baru berhasil ditambahkan!");
+        }
+        
+        batalEdit(); 
+        renderTabelJadwal();
+
+    } catch (e) {
+        alert("Gagal menyimpan: " + e.message);
+    } finally {
+        btn.innerHTML = "💾 Simpan Jadwal"; btn.disabled = false;
+    }
+  };
+
+  // EDIT JADWAL
+  window.editJadwal = function(id) {
+    const j = semuaJadwal[id];
+    if(!j) return;
+
+    document.getElementById('formTitle').innerHTML = "✏️ Edit Jadwal";
+    document.getElementById('jadwalId').value = id;
+    
+    document.getElementById('fHari').value = j.hari;
+    document.getElementById('fJamMulai').value = j.jamMulai;
+    document.getElementById('fJamSelesai').value = j.jamSelesai;
+    document.getElementById('fRumpun').value = j.rumpun;
+    
+    updatePilihanKelas();
+    
+    setTimeout(() => {
+        document.getElementById('fKelas').value = j.kelas;
+        document.getElementById('fMapel').value = j.mapel;
+        document.getElementById('fGuru').value = j.guru;
+    }, 50);
+
+    document.getElementById('btnBatal').style.display = "inline-block";
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+  };
+
+  // BATAL EDIT
+  window.batalEdit = function() {
+    document.getElementById('formTitle').innerHTML = "✨ Form Jadwal Baru";
+    document.getElementById('jadwalId').value = "";
+    
+    document.getElementById('fHari').value = "";
+    document.getElementById('fJamMulai').value = "";
+    document.getElementById('fJamSelesai').value = "";
+    document.getElementById('fRumpun').value = "";
+    document.getElementById('fKelas').innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    document.getElementById('fMapel').value = "";
+    document.getElementById('fGuru').value = "";
+    
+    document.getElementById('btnBatal').style.display = "none";
+  };
+
+  // HAPUS JADWAL
+  window.hapusJadwal = async function(id) {
+    if (!confirm("🚨 Yakin ingin menghapus jadwal ini secara permanen?")) return;
+
+    try {
+        await remove(ref(db, `cahaya_app/jadwal_pelajaran/${id}`));
+        delete semuaJadwal[id];
+        renderTabelJadwal();
+    } catch (e) {
+        alert("Gagal menghapus: " + e.message);
+    }
+  };
+
+</script>
+</body>
+</html>
