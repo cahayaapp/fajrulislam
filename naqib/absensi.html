@@ -56,7 +56,6 @@
     
     .cahaya-table td { padding: 12px 5px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; text-align: center; }
     
-    /* PERBAIKAN: Force Uppercase untuk kolom nama di CSS */
     .cahaya-table td:first-child { 
         text-align: left; 
         padding-left: 20px; 
@@ -138,10 +137,11 @@
   <div class="cahaya-card">
     <h2 class="cahaya-title">📋 Absensi Program Naqib</h2>
 
-    <div id="adminPanel" style="display: none; background: #fffbeb; border: 1px solid #fef08a; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+    <!-- PERBAIKAN: Kotak Pilih Usrah sekarang terbuka untuk SEMUA pengguna -->
+    <div id="adminPanel" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
       <div class="form-group" style="margin-bottom:0;">
-        <label style="color: #d97706;">👑 Super User: Pilih Usrah / Asrama</label>
-        <select class="form-control" id="selectUsrahGlobal" onchange="gantiUsrah()" style="background: white; border-color: #fde68a; font-weight: 600;"></select>
+        <label style="color: #334155;">🏠 Pilih Usrah / Asrama</label>
+        <select class="form-control" id="selectUsrahGlobal" onchange="gantiUsrah()" style="background: white; border-color: #94a3b8; font-weight: 600;"></select>
       </div>
     </div>
 
@@ -203,9 +203,7 @@
   const db = getDatabase(app);
 
   const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
-  const hakAkses = user.akses || []; 
-  const isSuperUser = hakAkses.includes('admin') || hakAkses.includes('direktur') || hakAkses.includes('supervisor');
-
+  
   let namaNaqibLokal = localStorage.getItem('namaNaqib');
   if(!namaNaqibLokal) {
       namaNaqibLokal = user.username || user.label || "Naqib";
@@ -216,7 +214,6 @@
   let usrahAktif = namaNaqibLokal;
   let daftarSantriAktif = [];
   let dataUsrahCloud = {}; 
-  
   let masterPoinProgram = {};
 
   document.addEventListener('DOMContentLoaded', async () => {
@@ -260,17 +257,18 @@
     document.getElementById('loadingOverlay').style.opacity = '0';
     setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
     
-    if (isSuperUser) {
-      document.getElementById('adminPanel').style.display = 'block';
-      const selectUsrah = document.getElementById('selectUsrahGlobal');
-      Object.keys(dataUsrahCloud).sort().forEach(namaUsrah => {
-        selectUsrah.add(new Option(`Usrah ${namaUsrah}`, namaUsrah));
-      });
-      if(dataUsrahCloud[usrahAktif]) {
-          selectUsrah.value = usrahAktif;
-      } else {
-          usrahAktif = selectUsrah.options[0]?.value || "";
-      }
+    // PERBAIKAN: Dropdown Usrah otomatis terisi untuk SEMUA pengguna
+    const selectUsrah = document.getElementById('selectUsrahGlobal');
+    Object.keys(dataUsrahCloud).sort().forEach(namaUsrah => {
+      selectUsrah.add(new Option(`Usrah ${namaUsrah}`, namaUsrah));
+    });
+
+    // Coba arahkan ke Usrah miliknya sendiri jika ada. Jika tidak, pilih urutan pertama.
+    if(dataUsrahCloud[namaNaqibLokal]) {
+        selectUsrah.value = namaNaqibLokal;
+        usrahAktif = namaNaqibLokal;
+    } else {
+        usrahAktif = selectUsrah.options[0]?.value || "";
     }
 
     renderTabelSantri();
@@ -308,7 +306,6 @@
       return;
     }
 
-    // PERBAIKAN: Gunakan .toUpperCase() agar sinkron dengan klasemen
     tbody.innerHTML = daftarSantriAktif.map((nama, i) => `
       <tr class="status-hadir">
         <td>${nama.toUpperCase()}</td>
@@ -348,11 +345,12 @@
       else if (status === 'Terlambat') poinFinal = -(poinDasar * 0.5);
       else if (status === 'Alfa') poinFinal = -poinDasar;
       
-      // PERBAIKAN: Simpan nama dengan format UPPERCASE ke database agar dibaca klasemen
       dataAbsen.push({ nama: nama.toUpperCase().trim(), status, poin: poinFinal });
     });
 
-    const penginput = isSuperUser ? `${user.label || user.username || 'Admin'} (Mewakili ${usrahAktif})` : (user.label || user.username || 'Naqib');
+    // PERBAIKAN: Jika Naqib mengabsen Usrah yang bukan miliknya, maka statusnya adalah "Mewakili"
+    const namaPencatat = user.label || user.username || 'Naqib';
+    const penginput = (usrahAktif !== namaNaqibLokal) ? `${namaPencatat} (Mewakili Usrah ${usrahAktif})` : namaPencatat;
 
     const log = {
       tanggal, program, 
