@@ -9,10 +9,15 @@
   <script src="../js/data-pusat.js"></script>
 
   <style>
+    /* STYLING DASAR UNTUK MENCEGAH OVERFLOW */
+    * { box-sizing: border-box; }
+    body, html { overflow-x: hidden; width: 100%; }
+
     /* STYLING KARTU SANTRI & ACCORDION */
     .santri-card {
       border-radius: 16px; padding: 20px 25px; margin-bottom: 20px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: 0.3s;
+      background: white; border: 1px solid var(--input-border, #e2e8f0);
     }
     .santri-card-header {
       display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;
@@ -29,24 +34,25 @@
     /* RIWAYAT TABLE */
     .riwayat-section { background: white; border-radius: 12px; padding: 15px; margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.05); }
     .riwayat-section h5 { margin: 0 0 15px 0; color: var(--gold-dark); font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; }
+    
     .tabel-riwayat { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     .tabel-riwayat th, .tabel-riwayat td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
     .tabel-riwayat th { background: rgba(0,0,0,0.03); color: var(--navy-dark); font-weight: 700; }
     
     /* FORM INPUT */
     .input-section h5 { margin: 0 0 15px 0; color: var(--navy-dark); font-size: 1.1rem; }
-    .surat-row { display: flex; gap: 10px; background: rgba(255,255,255,0.7); padding: 15px; border-radius: var(--radius-md); border: 1px solid rgba(0,0,0,0.1); margin-bottom: 12px; flex-wrap: wrap; }
+    .surat-row { display: flex; gap: 10px; background: rgba(255,255,255,0.7); padding: 15px; border-radius: var(--radius-md, 12px); border: 1px solid rgba(0,0,0,0.1); margin-bottom: 12px; flex-wrap: wrap; align-items: flex-end;}
     .col-surat { flex: 2; min-width: 140px; }
     .col-ayat { flex: 1; min-width: 70px; }
     
-    .btn-hapus { background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; border-radius: 8px; padding: 0 12px; cursor: pointer; height: 42px; margin-top: 26px; transition: 0.3s; font-weight: bold;}
+    .btn-hapus { background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; border-radius: 8px; padding: 0 12px; cursor: pointer; height: 42px; transition: 0.3s; font-weight: bold;}
     .btn-hapus:hover { background: #ef4444; color: white; }
 
     .btn-tambah-surat { background: rgba(255,255,255,0.8); border: 1px dashed #0ea5e9; color: #0284c7; width: 100%; padding: 12px; border-radius: 12px; margin-bottom: 20px; cursor: pointer; font-weight: 600; transition: 0.3s; }
     .btn-tambah-surat:hover { background: #e0f2fe; }
 
     .mode-switch { display: flex; background: rgba(255,255,255,0.6); padding: 5px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.05); }
-    .mode-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: 0.3s; background: transparent; color: var(--text-muted); }
+    .mode-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: 0.3s; background: transparent; color: var(--text-muted); text-align: center;}
     .mode-btn.active { background: var(--navy-dark); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
     .input-predikat { font-weight: 800 !important; text-align: center; font-size: 1.1rem; }
@@ -56,7 +62,7 @@
     .pred-bimbingan { color: #dc2626 !important; background: #fef2f2 !important; border-color: #dc2626 !important; }
 
     .checkbox-container { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
-    .checkmark { width: 20px; height: 20px; border: 2px solid rgba(0,0,0,0.2); border-radius: 5px; display: flex; justify-content: center; align-items: center; background: white;}
+    .checkmark { min-width: 20px; height: 20px; border: 2px solid rgba(0,0,0,0.2); border-radius: 5px; display: flex; justify-content: center; align-items: center; background: white;}
     input:checked + .checkmark { background: var(--gold-main); border-color: var(--gold-main); }
     input:checked + .checkmark::after { content: '✓'; color: white; font-weight: bold; font-size: 0.8rem;}
 
@@ -64,12 +70,49 @@
     .btn-simpan-card:hover { background: var(--gold-dark); color: white; box-shadow: 0 4px 12px rgba(212,175,55,0.3); }
     .btn-batal-card { background: #9ca3af; color: white; font-weight: 700; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; display: none; width: 100%; margin-top: 8px;}
 
-    .btn-sm { padding: 5px 10px; font-size: 0.7rem; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s;}
+    .btn-sm { padding: 6px 12px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s;}
     .btn-edit { background: #3b82f6; color: white; margin-right: 5px; }
     .btn-hapus-sm { background: #ef4444; color: white; }
-    .badge-riwayat { padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; border: 1px solid; display: inline-block; }
+    .badge-riwayat { padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; border: 1px solid; display: inline-block; white-space: nowrap;}
 
     #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
+
+    /* ==============================================================
+       MOBILE RESPONSIVE (MEDIA QUERIES)
+       Mencegah Horizontal Scroll dan Merapikan Tampilan di Layar HP
+       ============================================================== */
+    @media screen and (max-width: 768px) {
+      .cahaya-container { padding: 10px; }
+      
+      /* Grid Fallback untuk layar kecil */
+      .grid-2 { display: grid; grid-template-columns: 1fr !important; gap: 15px; }
+
+      /* Modifikasi Padding Kartu */
+      .santri-card { padding: 15px 12px; }
+      .santri-card-header h3 { font-size: 1.15rem; }
+      
+      /* Modifikasi Kolom Input Surat (Stack ke bawah) */
+      .surat-row { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; }
+      .col-surat, .col-ayat { min-width: 100%; width: 100%; }
+      .btn-hapus { width: 100%; height: 38px; margin-top: 5px; }
+
+      /* Modifikasi Tabel Riwayat agar Scrollable di HP */
+      .riwayat-section { padding: 12px 10px; }
+      .tabel-riwayat { white-space: nowrap; font-size: 0.75rem; }
+      .tabel-riwayat th, .tabel-riwayat td { padding: 8px; }
+      .btn-sm { padding: 5px 8px; font-size: 0.7rem; }
+
+      /* Modifikasi Tanggal Input agar full width */
+      input[type="date"] { max-width: 100% !important; width: 100%; }
+
+      /* Font Size Adjustment */
+      .input-predikat { font-size: 1rem; }
+      .mode-btn { font-size: 0.7rem; padding: 10px 5px; }
+      
+      /* Header & Title Adjustments */
+      .cahaya-title { font-size: 1.4rem !important; }
+      #badge_info_ { font-size: 0.7rem; }
+    }
   </style>
 </head>
 <body>
@@ -81,7 +124,7 @@
 
 <main class="cahaya-container">
   <div class="cahaya-card">
-    <h2 class="cahaya-title" style="text-align: center; border-left: none; padding-left: 0;">📖 Lembar Setoran Halaqah</h2>
+    <h2 class="cahaya-title" style="text-align: center; border-left: none; padding-left: 0; margin-top:0;">📖 Lembar Setoran Halaqah</h2>
 
     <div class="grid-2">
       <div class="form-group">
@@ -102,7 +145,7 @@
   </div>
 
   <div id="santriCardsContainer" style="margin-top: 20px;">
-    <div style="text-align:center;color:var(--text-muted);padding:40px;font-style:italic;background:white;border-radius:12px;">Pilih Program & Halaqah terlebih dahulu.</div>
+    <div style="text-align:center;color:var(--text-muted);padding:40px;font-style:italic;background:white;border-radius:12px; border:1px solid var(--input-border, #e2e8f0);">Pilih Program & Halaqah terlebih dahulu.</div>
   </div>
 </main>
 
@@ -145,7 +188,7 @@
     const prog = document.getElementById('tfzProgram').value;
     const kmpk = document.getElementById('tfzKelompok');
     kmpk.innerHTML = '<option value="">-- Pilih --</option>';
-    document.getElementById('santriCardsContainer').innerHTML = '<div style="text-align:center;padding:40px;">Pilih Halaqah...</div>';
+    document.getElementById('santriCardsContainer').innerHTML = '<div style="text-align:center;padding:40px;background:white;border-radius:12px;border:1px solid var(--input-border, #e2e8f0);">Pilih Halaqah...</div>';
     
     if (!prog) return;
     const kategori = dataHalqahCloud["Halqah Quraniyah"] || {};
@@ -165,7 +208,7 @@
     
     const listSantri = (dataHalqahCloud["Halqah Quraniyah"][`${prog} ${kmpk}`] || []).slice().sort();
     if (listSantri.length === 0) {
-        container.innerHTML = '<div style="text-align:center;color:red;padding:40px;">Data santri kosong di halaqah ini.</div>';
+        container.innerHTML = '<div style="text-align:center;color:red;padding:40px;background:white;border-radius:12px;">Data santri kosong di halaqah ini.</div>';
         return;
     }
 
@@ -179,22 +222,19 @@
       const cardHtml = `
         <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal">
           
-          <!-- HEADER ACCORDION -->
           <div class="santri-card-header" onclick="toggleCard('${safeId}')">
             <h3>${i+1}. ${nama}</h3>
             <div style="display:flex; align-items:center; gap:10px;">
-              <span id="badge_info_${safeId}" style="font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Buka Card</span>
+              <span id="badge_info_${safeId}" style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">Buka Card</span>
               <span class="icon-toggle">▼</span>
             </div>
           </div>
           
-          <!-- BODY KONTEN -->
           <div class="santri-card-body" id="body_${safeId}">
             
-            <!-- 1. RIWAYAT DI ATAS -->
             <div class="riwayat-section">
               <h5>Riwayat Setoran Bulan Ini</h5>
-              <div style="overflow-x: auto;">
+              <div style="overflow-x: auto; width: 100%;">
                 <table class="tabel-riwayat">
                   <thead><tr><th>Tgl</th><th>Surat & Ayat</th><th>Ayat</th><th>Predikat</th><th>Aksi</th></tr></thead>
                   <tbody id="riwayat_body_${safeId}">
@@ -204,21 +244,19 @@
               </div>
             </div>
 
-            <!-- 2. FORM INPUT DI BAWAHNYA -->
             <div class="input-section">
               <h5>✎ Form Input Setoran</h5>
               <input type="hidden" id="edit_id_${safeId}">
               
               <div class="form-group">
-                <label>Tanggal</label>
+                <label>Tanggal Input</label>
                 <input type="date" class="form-control" id="tgl_${safeId}" value="${todayStr}" style="max-width:200px;">
               </div>
 
-              <!-- Area Mode Input -->
               <div id="area_input_${safeId}">
                 <div class="mode-switch" id="mode_switch_${safeId}">
                   <button class="mode-btn active" id="btn_mode_tunggal_${safeId}" onclick="setModeCard('tunggal', '${safeId}')">SATU SURAT / MANUAL</button>
-                  <button class="mode-btn" id="btn_mode_banyak_${safeId}" onclick="setModeCard('banyak', '${safeId}')">BANYAK SURAT (CEPAT)</button>
+                  <button class="mode-btn" id="btn_mode_banyak_${safeId}" onclick="setModeCard('banyak', '${safeId}')">BANYAK SURAT</button>
                 </div>
 
                 <div id="wadah_surat_${safeId}"></div>
@@ -232,7 +270,7 @@
                 </div>
                 <div class="form-group">
                   <label>❌ Lahn Jali</label>
-                  <input type="number" class="form-control" id="salah_${safeId}" placeholder="Kosong=0" oninput="hitungPredikatCard('${safeId}')">
+                  <input type="number" class="form-control" id="salah_${safeId}" placeholder="Kosong = 0" oninput="hitungPredikatCard('${safeId}')">
                 </div>
               </div>
 
@@ -244,9 +282,10 @@
               <div class="form-group">
                 <label class="checkbox-container">
                   <input type="checkbox" id="chk_cahaya_${safeId}" onchange="toggleTahfizCahayaCard('${safeId}')" style="display:none;">
-                  <span class="checkmark"></span><span style="font-weight:600; font-size:0.85rem;">Status Tahfiz CAHAYA</span>
+                  <span class="checkmark"></span>
+                  <span style="font-weight:600; font-size:0.85rem;">Status Tahfiz CAHAYA</span>
                 </label>
-                <textarea class="form-control" id="catatan_${safeId}" rows="2" placeholder="Catatan tajwid / kelancaran..."></textarea>
+                <textarea class="form-control" id="catatan_${safeId}" rows="2" placeholder="Catatan tajwid / kelancaran (opsional)..."></textarea>
               </div>
 
               <button class="btn-simpan-card" id="btn_simpan_${safeId}" onclick="simpanSetoranCard('${nama}', '${safeId}')">💾 SIMPAN DATA SETORAN</button>
@@ -301,9 +340,9 @@
     const html = `
       <div class="surat-row class-row-${safeId}" id="${rowId}">
         <div class="col-surat"><label>Surat</label><select class="form-control sel-surat" onchange="hitungTotalAyatCard('${safeId}')">${window.opsiSuratHTML}</select></div>
-        <div class="col-ayat"><label>Dari</label><input type="number" class="form-control inp-mulai" oninput="hitungTotalAyatCard('${safeId}')" value="${valMulai}"></div>
-        <div class="col-ayat"><label>Sampai</label><input type="number" class="form-control inp-sampai" oninput="hitungTotalAyatCard('${safeId}')" value="${valSampai}"></div>
-        <button class="btn-hapus" onclick="document.getElementById('${rowId}').remove(); hitungTotalAyatCard('${safeId}');">✕</button>
+        <div class="col-ayat"><label>Dari</label><input type="number" class="form-control inp-mulai" oninput="hitungTotalAyatCard('${safeId}')" value="${valMulai}" placeholder="Ayat"></div>
+        <div class="col-ayat"><label>Sampai</label><input type="number" class="form-control inp-sampai" oninput="hitungTotalAyatCard('${safeId}')" value="${valSampai}" placeholder="Ayat"></div>
+        <button class="btn-hapus" onclick="document.getElementById('${rowId}').remove(); hitungTotalAyatCard('${safeId}');">Hapus Baris</button>
       </div>`;
     
     const wadah = document.getElementById(`wadah_surat_${safeId}`);
@@ -471,8 +510,8 @@
             <td style="text-align:center;">${dat.ayat}</td>
             <td><span class="badge-riwayat" style="color:${bColor}; background:${bBg}; border-color:${bColor};">${dat.nilai}</span></td>
             <td>
-              <button class="btn-sm btn-edit" onclick="siapkanEditCard('${safeId}', '${dataString}')">✎</button>
-              <button class="btn-sm btn-hapus-sm" onclick="hapusSetoranCard('${r.id}', '${nama}', '${safeId}')">✕</button>
+              <button class="btn-sm btn-edit" onclick="siapkanEditCard('${safeId}', '${dataString}')">✎ Edit</button>
+              <button class="btn-sm btn-hapus-sm" onclick="hapusSetoranCard('${r.id}', '${nama}', '${safeId}')">✕ Hapus</button>
             </td>
           </tr>
         `;
@@ -491,7 +530,6 @@
     document.getElementById(`edit_id_${safeId}`).value = dataRow.id;
     document.getElementById(`tgl_${safeId}`).value = dataRow.tanggal;
     
-    // Fungsi bantu cari index surat berdasarkan nama
     const findSuratIdx = (name) => {
       if(!window.daftarSurat) return "";
       return window.daftarSurat.findIndex(s => s.nama.trim() === name.trim());
@@ -522,21 +560,25 @@
           let idxSurat = findSuratIdx(sNama);
           tambahBarisSuratCard(safeId, match[2], match[3], idxSurat);
         } else {
-          tambahBarisSuratCard(safeId); // fallback
+          tambahBarisSuratCard(safeId);
         }
       });
     }
 
     document.getElementById(`ayat_${safeId}`).value = dat.ayat;
     document.getElementById(`salah_${safeId}`).value = dat.kesalahan === "0" ? "" : dat.kesalahan;
-    document.getElementById(`catatan_${safeId}`).value = dat.keterangan || "";
+    
+    // Cek Checkbox Cahaya
+    let ketAsli = dat.keterangan || "";
+    let isCahaya = ketAsli.includes("Disetorkan beserta terjemah");
+    document.getElementById(`chk_cahaya_${safeId}`).checked = isCahaya;
+    document.getElementById(`catatan_${safeId}`).value = isCahaya ? ketAsli : ketAsli.replace("Disetorkan beserta terjemah, tadabbur, tafsir, letak dan nomor ayat, serta rencana aksi pengamalan.", "").trim();
     
     hitungPredikatCard(safeId);
 
-    document.getElementById(`btn_simpan_${safeId}`).innerText = "💾 UPDATE DATA";
+    document.getElementById(`btn_simpan_${safeId}`).innerText = "💾 UPDATE DATA SETORAN";
     document.getElementById(`btn_batal_${safeId}`).style.display = "inline-block";
     
-    // Pastikan card terbuka dan scroll ke form
     document.getElementById(`card_${safeId}`).classList.add('card-open');
     document.getElementById(`btn_simpan_${safeId}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
