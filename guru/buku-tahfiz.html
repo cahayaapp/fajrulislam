@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAHAYA APP - Buku Setoran Tahfiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  <script src="../js/data-pusat.js"></script>
+
+  <style>
+    .filter-box { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--input-border); }
+    .buku-container { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid var(--input-border); display: none; animation: fadeIn 0.5s ease; }
+    
+    .santri-header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed var(--input-border); }
+    .santri-header h2 { font-family: 'Playfair Display', serif; color: var(--navy-dark); margin: 0 0 5px 0; font-size: 1.8rem; }
+    .santri-header p { color: var(--text-muted); margin: 0; font-weight: 600; }
+
+    /* Blok Kategori */
+    .kategori-blok { margin-bottom: 40px; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; background: #f8fafc; }
+    .kategori-blok-cahaya { border: 2px solid var(--gold-main); background: #fffdf5; position: relative; overflow: hidden; }
+    .kategori-blok-cahaya::before { content: '🌟'; position: absolute; top: -15px; right: -15px; font-size: 6rem; opacity: 0.05; }
+    
+    .judul-blok { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .judul-reguler { color: var(--navy-dark); }
+    .judul-cahaya { color: #b45309; } /* Dark Gold */
+
+    /* Resume Setoran Grid */
+    .resume-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+    
+    /* Resume Box - Reguler */
+    .resume-box { background: linear-gradient(135deg, var(--navy-dark, #0f172a), #1e293b); border-radius: 12px; padding: 20px 15px; text-align: center; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    .resume-box::after { content: '📖'; position: absolute; right: -10px; bottom: -15px; font-size: 4rem; opacity: 0.1; }
+    .resume-box h4 { margin: 0; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+    .resume-box p { margin: 10px 0 0; font-size: 2rem; font-weight: 800; font-family: 'Playfair Display', serif; }
+    .resume-box span { font-size: 0.8rem; font-weight: 400; opacity: 0.8; }
+    
+    /* Resume Box - CAHAYA */
+    .box-cahaya { background: linear-gradient(135deg, #b45309, #d97706); }
+    .box-cahaya h4 { color: #fef3c7; }
+    .box-cahaya::after { content: '✨'; }
+
+    @media (max-width: 768px) { .resume-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* Tabel Riwayat */
+    .table-container { max-height: 400px; overflow-y: auto; border-radius: 12px; border: 1px solid var(--input-border); background: white; }
+    .badge { padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; border: 1px solid; display: inline-block; }
+    .badge-mumtaz { background: #ecfdf5; color: #059669; border-color: #059669; }
+    .badge-jayyid { background: #f0f9ff; color: #0284c7; border-color: #0284c7; }
+    .badge-maqbul { background: #fffbeb; color: #d97706; border-color: #d97706; }
+    .badge-bimbingan { background: #fef2f2; color: #dc2626; border-color: #dc2626; }
+
+    /* Tombol Aksi */
+    .btn-aksi { border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: bold; transition: 0.2s; margin: 2px; }
+    .btn-edit { background: #fef9c3; color: #ca8a04; border: 1px solid #fde047; }
+    .btn-edit:hover { background: #fde047; }
+    .btn-hapus-kecil { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .btn-hapus-kecil:hover { background: #fecaca; }
+
+    /* Modal Edit */
+    .modal-buku { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    .modal-buku-content { background: white; border-radius: var(--radius-lg); padding: 30px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--input-border); padding-bottom: 15px;}
+    .modal-header h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--navy-dark); margin: 0; }
+    .btn-close { background: #fef2f2; color: #ef4444; border: none; width: 35px; height: 35px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    
+    #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
+
+    .checkbox-container { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; cursor: pointer; background: #fffdf5; padding: 10px; border-radius: 8px; border: 1px dashed var(--gold-main); }
+    .checkmark { width: 22px; height: 22px; border: 2px solid var(--gold-main); border-radius: 6px; display: flex; justify-content: center; align-items: center; background: white;}
+    input:checked + .checkmark { background: var(--gold-main); border-color: var(--gold-main); }
+    input:checked + .checkmark::after { content: '✓'; color: white; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">📖</div>
+  <div style="font-weight: 700;">Menyiapkan Buku Tahfiz...</div>
+</div>
+
+<main class="cahaya-container" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
+  
+  <div class="cahaya-card filter-box">
+    <h3 style="margin-top:0; color:var(--navy-dark); font-family:'Playfair Display', serif;">🔍 Cari Buku Setoran Santri</h3>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>📚 Program</label>
+        <select class="form-control" id="tfzProgram" onchange="updateKelompok()">
+          <option value="">-- Pilih Program --</option>
+          <option value="Tahsin">Tahsin</option>
+          <option value="Tahfiz">Tahfiz</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>👥 Halaqah</label>
+        <select class="form-control" id="tfzKelompok" onchange="updateSantri()">
+          <option value="">-- Menunggu Program --</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>👤 Nama Santri</label>
+      <select class="form-control" id="tfzNamaSantri">
+        <option value="">-- Pilih Halaqah Dulu --</option>
+      </select>
+    </div>
+    <button class="btn-cahaya btn-gold" onclick="tarikDataBuku()">📑 BUKA BUKU SETORAN</button>
+  </div>
+
+  <div id="wadahBukuSetoran" class="buku-container">
+    <div class="santri-header">
+      <h2 id="displayNamaSantri">Nama Santri</h2>
+      <p id="displayHalaqah">Halaqah - Program</p>
+    </div>
+    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:-20px; margin-bottom:20px; text-align:center;">*Kalkulasi Juz & Baris menyesuaikan bobot fisik setiap Surat pada Mushaf Madinah.</p>
+
+    <!-- ================= BLOK TAHFIZ REGULER ================= -->
+    <div class="kategori-blok" id="blokReguler">
+      <h3 class="judul-blok judul-reguler">📖 TAHFIZ REGULER</h3>
+      
+      <div class="resume-grid">
+        <div class="resume-box"><h4>Total Juz</h4><p id="regJuz">0 <span>Juz</span></p></div>
+        <div class="resume-box"><h4>Total Surat</h4><p id="regSurat">0 <span>Surat</span></p></div>
+        <div class="resume-box"><h4>Total Ayat</h4><p id="regAyat">0 <span>Ayat</span></p></div>
+        <div class="resume-box"><h4>Total Baris</h4><p id="regBaris">0 <span>Baris</span></p></div>
+      </div>
+
+      <div class="table-container">
+        <table class="cahaya-table" style="width: 100%;">
+          <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+            <tr>
+              <th width="15%">Tanggal</th><th width="30%">Surat (Ayat)</th><th width="10%">Ayat</th>
+              <th width="15%">Predikat</th><th width="20%">Keterangan</th><th width="10%">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyReguler"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================= BLOK TAHFIZ CAHAYA ================= -->
+    <div class="kategori-blok kategori-blok-cahaya" id="blokCahaya">
+      <h3 class="judul-blok judul-cahaya">🌟 TAHFIZ CAHAYA (Tadabbur & Aksi)</h3>
+      
+      <div class="resume-grid">
+        <div class="resume-box box-cahaya"><h4>Total Juz</h4><p id="cahJuz">0 <span>Juz</span></p></div>
+        <div class="resume-box box-cahaya"><h4>Total Surat</h4><p id="cahSurat">0 <span>Surat</span></p></div>
+        <div class="resume-box box-cahaya"><h4>Total Ayat</h4><p id="cahAyat">0 <span>Ayat</span></p></div>
+        <div class="resume-box box-cahaya"><h4>Total Baris</h4><p id="cahBaris">0 <span>Baris</span></p></div>
+      </div>
+
+      <div class="table-container">
+        <table class="cahaya-table" style="width: 100%;">
+          <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+            <tr>
+              <th width="15%">Tanggal</th><th width="30%">Surat (Ayat)</th><th width="10%">Ayat</th>
+              <th width="15%">Predikat</th><th width="20%">Keterangan</th><th width="10%">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyCahaya"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- MODAL EDIT DATA -->
+<div id="modalEdit" class="modal-buku">
+  <div class="modal-buku-content">
+    <div class="modal-header">
+      <h3>✏️ Edit Data Setoran</h3>
+      <button class="btn-close" onclick="tutupEdit()">✕</button>
+    </div>
+    <input type="hidden" id="editFirebaseKey">
+    
+    <div class="form-group">
+      <label>Tanggal</label>
+      <input type="date" id="editTanggal" class="form-control">
+    </div>
+    
+    <!-- CHECKBOX TAHFIZ CAHAYA PADA EDIT -->
+    <div class="form-group">
+      <label class="checkbox-container">
+        <input type="checkbox" id="editCheckCahaya" style="display:none;">
+        <span class="checkmark"></span>
+        <span style="font-weight:700; color:#b45309;">Jadikan Status Tahfiz CAHAYA</span>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>Teks Setoran Surat</label>
+      <input type="text" id="editSetoran" class="form-control">
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Jumlah Ayat</label>
+        <input type="number" id="editAyat" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Predikat</label>
+        <select id="editNilai" class="form-control">
+          <option value="MUMTAZ">MUMTAZ</option>
+          <option value="JAYYID JIDDAN">JAYYID JIDDAN</option>
+          <option value="JAYYID">JAYYID</option>
+          <option value="MAQBUL">MAQBUL</option>
+          <option value="BIMBINGAN">BIMBINGAN</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Keterangan Tambahan (Opsional)</label>
+      <textarea id="editKet" class="form-control" rows="2"></textarea>
+    </div>
+    <button class="btn-cahaya btn-gold" id="btnSimpanEdit" onclick="simpanEditData()">💾 SIMPAN PERUBAHAN</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  let dataHalqahCloud = {};
+  let rawDatabaseSetoran = {};
+
+  const TXT_CAHAYA = "Disetorkan beserta terjemah, tadabbur, tafsir, letak dan nomor ayat, serta rencana aksi pengamalan.";
+
+  // DATABASE QURAN BARU (Validasi Bobot Halaman)
+  const quranDb = [
+    { nama: "Al-Fatihah", ayat: 7, pages: 1 }, { nama: "Al-Baqarah", ayat: 286, pages: 48 }, { nama: "Ali 'Imran", ayat: 200, pages: 27 },
+    { nama: "An-Nisa'", ayat: 176, pages: 29 }, { nama: "Al-Ma'idah", ayat: 120, pages: 21 }, { nama: "Al-An'am", ayat: 165, pages: 23 },
+    { nama: "Al-A'raf", ayat: 206, pages: 26 }, { nama: "Al-Anfal", ayat: 75, pages: 10 }, { nama: "At-Taubah", ayat: 129, pages: 21 },
+    { nama: "Yunus", ayat: 109, pages: 13 }, { nama: "Hud", ayat: 123, pages: 13 }, { nama: "Yusuf", ayat: 111, pages: 13 },
+    { nama: "Ar-Ra'd", ayat: 43, pages: 6 }, { nama: "Ibrahim", ayat: 52, pages: 7 }, { nama: "Al-Hijr", ayat: 99, pages: 5 },
+    { nama: "An-Nahl", ayat: 128, pages: 14 }, { nama: "Al-Isra'", ayat: 111, pages: 11 }, { nama: "Al-Kahf", ayat: 110, pages: 11 },
+    { nama: "Maryam", ayat: 98, pages: 7 }, { nama: "Ta Ha", ayat: 135, pages: 10 }, { nama: "Al-Anbiya'", ayat: 112, pages: 10 },
+    { nama: "Al-Hajj", ayat: 78, pages: 10 }, { nama: "Al-Mu'minun", ayat: 118, pages: 8 }, { nama: "An-Nur", ayat: 64, pages: 9 },
+    { nama: "Al-Furqan", ayat: 77, pages: 7 }, { nama: "Asy-Syu'ara'", ayat: 227, pages: 10 }, { nama: "An-Naml", ayat: 93, pages: 9 },
+    { nama: "Al-Qasas", ayat: 88, pages: 11 }, { nama: "Al-'Ankabut", ayat: 69, pages: 8 }, { nama: "Ar-Rum", ayat: 60, pages: 6 },
+    { nama: "Luqman", ayat: 34, pages: 4 }, { nama: "As-Sajdah", ayat: 30, pages: 3 }, { nama: "Al-Ahzab", ayat: 73, pages: 10 },
+    { nama: "Saba'", ayat: 54, pages: 6 }, { nama: "Fatir", ayat: 45, pages: 6 }, { nama: "Ya Sin", ayat: 83, pages: 6 },
+    { nama: "As-Saffat", ayat: 182, pages: 7 }, { nama: "Sad", ayat: 88, pages: 5 }, { nama: "Az-Zumar", ayat: 75, pages: 9 },
+    { nama: "Ghafir", ayat: 85, pages: 9 }, { nama: "Fussilat", ayat: 54, pages: 6 }, { nama: "Asy-Syura", ayat: 53, pages: 6 },
+    { nama: "Az-Zukhruf", ayat: 89, pages: 7 }, { nama: "Ad-Dukhan", ayat: 59, pages: 3 }, { nama: "Al-Jasiyah", ayat: 37, pages: 4 },
+    { nama: "Al-Ahqaf", ayat: 35, pages: 5 }, { nama: "Muhammad", ayat: 38, pages: 4 }, { nama: "Al-Fath", ayat: 29, pages: 5 },
+    { nama: "Al-Hujurat", ayat: 18, pages: 3 }, { nama: "Qaf", ayat: 45, pages: 3 }, { nama: "Az-Zariyat", ayat: 60, pages: 3 },
+    { nama: "At-Tur", ayat: 49, pages: 3 }, { nama: "An-Najm", ayat: 62, pages: 3 }, { nama: "Al-Qamar", ayat: 55, pages: 3 },
+    { nama: "Ar-Rahman", ayat: 78, pages: 3 }, { nama: "Al-Waqi'ah", ayat: 96, pages: 3 }, { nama: "Al-Hadid", ayat: 29, pages: 4 },
+    { nama: "Al-Mujadilah", ayat: 22, pages: 3 }, { nama: "Al-Hasyr", ayat: 24, pages: 3 }, { nama: "Al-Mumtahanah", ayat: 13, pages: 3 },
+    { nama: "As-Saff", ayat: 14, pages: 2 }, { nama: "Al-Jumu'ah", ayat: 11, pages: 2 }, { nama: "Al-Munafiqun", ayat: 11, pages: 2 },
+    { nama: "At-Tagabun", ayat: 18, pages: 2 }, { nama: "At-Talaq", ayat: 12, pages: 2 }, { nama: "At-Tahrim", ayat: 12, pages: 2 },
+    
+    // Juz 29 
+    { nama: "Al-Mulk", ayat: 30, pages: 2.5 }, { nama: "Al-Qalam", ayat: 52, pages: 2 }, { nama: "Al-Haqqah", ayat: 52, pages: 2 },
+    { nama: "Al-Ma'arij", ayat: 44, pages: 2 }, { nama: "Nuh", ayat: 28, pages: 1.5 }, { nama: "Al-Jinn", ayat: 28, pages: 2 },
+    { nama: "Al-Muzzammil", ayat: 20, pages: 1.5 }, { nama: "Al-Muddassir", ayat: 56, pages: 2 }, { nama: "Al-Qiyamah", ayat: 40, pages: 1 },
+    { nama: "Al-Insan", ayat: 31, pages: 2 }, { nama: "Al-Mursalat", ayat: 50, pages: 1.5 },
+    
+    // Juz 30
+    { nama: "An-Naba'", ayat: 40, pages: 1.5 }, { nama: "An-Nazi'at", ayat: 46, pages: 1.5 }, { nama: "'Abasa", ayat: 42, pages: 1 },
+    { nama: "At-Takwir", ayat: 29, pages: 1 }, { nama: "Al-Infitar", ayat: 19, pages: 0.8 }, { nama: "Al-Mutaffifin", ayat: 36, pages: 1.2 },
+    { nama: "Al-Insyiqaq", ayat: 25, pages: 1 }, { nama: "Al-Buruj", ayat: 22, pages: 1 }, { nama: "At-Tariq", ayat: 17, pages: 0.5 },
+    { nama: "Al-A'la", ayat: 19, pages: 0.5 }, { nama: "Al-Gasyiyah", ayat: 26, pages: 1 }, { nama: "Al-Fajr", ayat: 30, pages: 1 },
+    { nama: "Al-Balad", ayat: 20, pages: 0.5 }, { nama: "Asy-Syams", ayat: 15, pages: 0.5 }, { nama: "Al-Lail", ayat: 21, pages: 1 },
+    { nama: "Ad-Duha", ayat: 11, pages: 0.5 }, { nama: "Asy-Syarh", ayat: 8, pages: 0.2 }, { nama: "At-Tin", ayat: 8, pages: 0.3 },
+    { nama: "Al-'Alaq", ayat: 19, pages: 0.5 }, { nama: "Al-Qadr", ayat: 5, pages: 0.2 }, { nama: "Al-Bayyinah", ayat: 8, pages: 0.5 },
+    { nama: "Az-Zalzalah", ayat: 8, pages: 0.3 }, { nama: "Al-'Adiyat", ayat: 11, pages: 0.5 }, { nama: "Al-Qari'ah", ayat: 11, pages: 0.5 },
+    { nama: "At-Takasur", ayat: 8, pages: 0.3 }, { nama: "Al-'Asr", ayat: 3, pages: 0.2 }, { nama: "Al-Humazah", ayat: 9, pages: 0.3 },
+    { nama: "Al-Fil", ayat: 5, pages: 0.2 }, { nama: "Quraisy", ayat: 4, pages: 0.2 }, { nama: "Al-Ma'un", ayat: 7, pages: 0.3 },
+    { nama: "Al-Kausar", ayat: 3, pages: 0.2 }, { nama: "Al-Kafirun", ayat: 6, pages: 0.3 }, { nama: "An-Nasr", ayat: 3, pages: 0.2 },
+    { nama: "Al-Lahab", ayat: 5, pages: 0.2 }, { nama: "Al-Ikhlas", ayat: 4, pages: 0.2 }, { nama: "Al-Falaq", ayat: 5, pages: 0.2 },
+    { nama: "An-Nas", ayat: 6, pages: 0.3 }
+  ];
+
+  const cariIndexSurat = (nama) => {
+      let bersih = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
+      let target = bersih(nama);
+      return quranDb.findIndex(s => bersih(s.nama) === target);
+  };
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
+      if (snapshot.exists()) dataHalqahCloud = snapshot.val().halqah || {};
+    } catch (e) { console.error("Gagal menarik data", e); }
+    document.getElementById('loadingOverlay').style.display = 'none';
+  });
+
+  window.updateKelompok = () => {
+    const prog = document.getElementById('tfzProgram').value;
+    const kmpk = document.getElementById('tfzKelompok');
+    kmpk.innerHTML = '<option value="">-- Pilih --</option>';
+    if (!prog) return;
+    const kategori = dataHalqahCloud["Halqah Quraniyah"] || {};
+    Object.keys(kategori).filter(k => k.startsWith(prog)).forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = opt.textContent = k.replace(prog + ' ', '');
+      kmpk.appendChild(opt);
+    });
+  };
+
+  window.updateSantri = () => {
+    const prog = document.getElementById('tfzProgram').value;
+    const kmpk = document.getElementById('tfzKelompok').value;
+    const nama = document.getElementById('tfzNamaSantri');
+    nama.innerHTML = '<option value="">-- Pilih --</option>';
+    if (!prog || !kmpk) return;
+    const list = (dataHalqahCloud["Halqah Quraniyah"][`${prog} ${kmpk}`] || []).slice().sort();
+    list.forEach(n => { const opt = document.createElement('option'); opt.value = opt.textContent = n; nama.appendChild(opt); });
+  };
+
+  // Fungsi Kalkulasi Matematika
+  const kalkulasiArrayPencapaian = (arrAyat) => {
+      let totAyat = 0, totSurat = 0, totBobot = 0;
+      for (let i = 0; i < 114; i++) {
+          if (arrAyat[i] > 0) { 
+              totSurat++; 
+              totAyat += arrAyat[i]; 
+              totBobot += ((arrAyat[i] / quranDb[i].ayat) * quranDb[i].pages);
+          }
+      }
+      return {
+          ayat: totAyat,
+          surat: totSurat,
+          baris: Math.round(totBobot * 15),
+          juz: (totBobot / 20).toFixed(2)
+      };
+  };
+
+  // Fungsi Parser Regex
+  const jalankanParser = (teksSetoran, arrayTarget) => {
+      let parts = teksSetoran.split(',');
+      parts.forEach(part => {
+         part = part.trim();
+         let matchBanyak = part.match(/(.*?)\s*s\/d\s*(.*?)\s*\(Ayat\s*(\d+)\)/i);
+         if (matchBanyak) {
+             let idxStart = cariIndexSurat(matchBanyak[1]);
+             let idxEnd = cariIndexSurat(matchBanyak[2]);
+             let endAyat = parseInt(matchBanyak[3]);
+             if (idxStart !== -1 && idxEnd !== -1) {
+                 let minIdx = Math.min(idxStart, idxEnd);
+                 let maxIdx = Math.max(idxStart, idxEnd);
+                 for(let i = minIdx; i < maxIdx; i++) arrayTarget[i] = quranDb[i].ayat; 
+                 arrayTarget[maxIdx] = Math.max(arrayTarget[maxIdx], endAyat);
+             }
+             return;
+         }
+         let matchTunggal = part.match(/(.*?)\s*\(\s*\d+\s*-\s*(\d+)\s*\)/i);
+         if (matchTunggal) {
+             let idx = cariIndexSurat(matchTunggal[1]);
+             let endAyat = parseInt(matchTunggal[2]);
+             if (idx !== -1) arrayTarget[idx] = Math.max(arrayTarget[idx], endAyat);
+         }
+      });
+  };
+
+  window.tarikDataBuku = async () => {
+    const nama = document.getElementById('tfzNamaSantri').value;
+    if (!nama) return alert("Pilih nama santri terlebih dahulu!");
+
+    document.getElementById('displayNamaSantri').textContent = nama;
+    document.getElementById('wadahBukuSetoran').style.display = 'block';
+    
+    document.getElementById('tbodyReguler').innerHTML = '<tr><td colspan="6" style="text-align:center;">⏳ Membaca riwayat...</td></tr>';
+    document.getElementById('tbodyCahaya').innerHTML = '<tr><td colspan="6" style="text-align:center;">⏳ Membaca riwayat...</td></tr>';
+
+    try {
+      const snapshot = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
+      if (!snapshot.exists()) { resetSemua(); return; }
+
+      const dataObj = snapshot.val();
+      rawDatabaseSetoran = dataObj; 
+      
+      let riwayatReguler = [], riwayatCahaya = [];
+      let pencapaianReguler = new Array(114).fill(0);
+      let pencapaianCahaya = new Array(114).fill(0);
+
+      for (let key in dataObj) {
+        const record = dataObj[key];
+        if (record.data && record.data[0] && record.data[0].nama === nama) {
+            let teksSetoran = record.data[0].setoran || "";
+            let ketAsli = record.data[0].keterangan || "";
+            let isCahaya = ketAsli.includes("Disetorkan beserta terjemah");
+
+            let dtRender = {
+              firebaseKey: key,
+              tanggal: record.tanggal,
+              setoran: teksSetoran,
+              ayat: parseInt(record.data[0].ayat) || 0,
+              nilai: record.data[0].nilai,
+              keterangan: ketAsli.replace(TXT_CAHAYA, "").trim() || '-', // Bersihkan teks sistem agar rapi di tabel
+              guru: record.guru || 'Tidak Diketahui'
+            };
+
+            if(isCahaya) {
+                riwayatCahaya.push(dtRender);
+                jalankanParser(teksSetoran, pencapaianCahaya);
+            } else {
+                riwayatReguler.push(dtRender);
+                jalankanParser(teksSetoran, pencapaianReguler);
+            }
+        }
+      }
+
+      // Hitung Resume
+      let resReg = kalkulasiArrayPencapaian(pencapaianReguler);
+      document.getElementById('regAyat').innerHTML = `${resReg.ayat} <span>Ayat</span>`;
+      document.getElementById('regBaris').innerHTML = `${resReg.baris} <span>Baris</span>`;
+      document.getElementById('regSurat').innerHTML = `${resReg.surat} <span>Surat</span>`;
+      document.getElementById('regJuz').innerHTML = `${resReg.juz} <span>Juz</span>`;
+
+      let resCah = kalkulasiArrayPencapaian(pencapaianCahaya);
+      document.getElementById('cahAyat').innerHTML = `${resCah.ayat} <span>Ayat</span>`;
+      document.getElementById('cahBaris').innerHTML = `${resCah.baris} <span>Baris</span>`;
+      document.getElementById('cahSurat').innerHTML = `${resCah.surat} <span>Surat</span>`;
+      document.getElementById('cahJuz').innerHTML = `${resCah.juz} <span>Juz</span>`;
+
+      // Render Tabel
+      const renderTabel = (dataRiwayat, elemenTbody) => {
+          dataRiwayat.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+          if (dataRiwayat.length === 0) {
+              elemenTbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Belum ada riwayat setoran di kategori ini.</td></tr>';
+              return;
+          }
+          elemenTbody.innerHTML = dataRiwayat.map((r) => {
+            const [y, m, d] = r.tanggal.split('-');
+            const tglIndo = `${d}/${m}/${y}`;
+            let badgeClass = 'badge-mumtaz';
+            if(r.nilai.includes("JAYYID")) badgeClass = 'badge-jayyid';
+            if(r.nilai.includes("MAQBUL")) badgeClass = 'badge-maqbul';
+            if(r.nilai.includes("BIMBINGAN")) badgeClass = 'badge-bimbingan';
+
+            return `
+              <tr>
+                <td style="font-weight:600; color:var(--text-muted); font-size:0.85rem;">${tglIndo}</td>
+                <td style="font-weight:700; color:var(--navy-dark); font-size:1.05rem;">${r.setoran}</td>
+                <td style="text-align:center; font-weight:700;">${r.ayat}</td>
+                <td><span class="badge ${badgeClass}">${r.nilai}</span></td>
+                <td>
+                  <div style="font-size:0.85rem; font-weight:700; text-transform:capitalize;">Ust. ${r.guru}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.2; margin-top:3px;">${r.keterangan}</div>
+                </td>
+                <td style="text-align:center;">
+                  <button onclick="bukaEditData('${r.firebaseKey}')" class="btn-aksi btn-edit" title="Edit Data">✏️</button>
+                  <button onclick="hapusData('${r.firebaseKey}')" class="btn-aksi btn-hapus-kecil" title="Hapus Data">🗑️</button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+      };
+
+      renderTabel(riwayatReguler, document.getElementById('tbodyReguler'));
+      renderTabel(riwayatCahaya, document.getElementById('tbodyCahaya'));
+
+    } catch (error) {
+      alert("Gagal menarik data: " + error.message);
+    }
+  };
+
+  function resetSemua() {
+      ['reg', 'cah'].forEach(prefix => {
+        document.getElementById(`${prefix}Ayat`).innerHTML = `0 <span>Ayat</span>`;
+        document.getElementById(`${prefix}Baris`).innerHTML = `0 <span>Baris</span>`;
+        document.getElementById(`${prefix}Surat`).innerHTML = `0 <span>Surat</span>`;
+        document.getElementById(`${prefix}Juz`).innerHTML = `0 <span>Juz</span>`;
+      });
+      document.getElementById('tbodyReguler').innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada riwayat.</td></tr>';
+      document.getElementById('tbodyCahaya').innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada riwayat.</td></tr>';
+  }
+
+  // Aksi Hapus
+  window.hapusData = async (key) => {
+      if(!confirm("⚠️ Yakin ingin menghapus data setoran ini?")) return;
+      try {
+          await remove(ref(db, `cahaya_app/setoran_tahfiz/${key}`));
+          tarikDataBuku(); 
+      } catch (error) { alert("❌ Gagal menghapus: " + error.message); }
+  };
+
+  // Aksi Buka Edit
+  window.bukaEditData = (key) => {
+      const recordUtuh = rawDatabaseSetoran[key];
+      if(!recordUtuh) return;
+      document.getElementById('editFirebaseKey').value = key;
+      document.getElementById('editTanggal').value = recordUtuh.tanggal;
+      document.getElementById('editSetoran').value = recordUtuh.data[0].setoran;
+      document.getElementById('editAyat').value = recordUtuh.data[0].ayat;
+      document.getElementById('editNilai').value = recordUtuh.data[0].nilai;
+      
+      let ketAsli = recordUtuh.data[0].keterangan || "";
+      let isCahaya = ketAsli.includes("Disetorkan beserta terjemah");
+      document.getElementById('editCheckCahaya').checked = isCahaya;
+      document.getElementById('editKet').value = ketAsli.replace(TXT_CAHAYA, "").trim();
+
+      document.getElementById('modalEdit').style.display = 'flex';
+  };
+
+  window.tutupEdit = () => document.getElementById('modalEdit').style.display = 'none';
+
+  // Aksi Simpan Edit
+  window.simpanEditData = async () => {
+      const btn = document.getElementById('btnSimpanEdit');
+      btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
+
+      const key = document.getElementById('editFirebaseKey').value;
+      let recordUtuh = rawDatabaseSetoran[key];
+      
+      recordUtuh.tanggal = document.getElementById('editTanggal').value;
+      recordUtuh.data[0].setoran = document.getElementById('editSetoran').value;
+      recordUtuh.data[0].ayat = document.getElementById('editAyat').value;
+      recordUtuh.data[0].nilai = document.getElementById('editNilai').value;
+      
+      let ketBaru = document.getElementById('editKet').value;
+      if(document.getElementById('editCheckCahaya').checked) {
+          ketBaru = (ketBaru ? ketBaru + "\n" : "") + TXT_CAHAYA;
+      }
+      recordUtuh.data[0].keterangan = ketBaru;
+
+      try {
+          await update(ref(db, `cahaya_app/setoran_tahfiz/${key}`), recordUtuh);
+          tutupEdit();
+          tarikDataBuku(); 
+      } catch (error) {
+          alert("❌ Gagal menyimpan: " + error.message);
+      } finally {
+          btn.innerHTML = "💾 SIMPAN PERUBAHAN"; btn.disabled = false;
+      }
+  };
+</script>
+</body>
+</html>
