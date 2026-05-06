@@ -9,30 +9,40 @@
   <script src="../js/data-pusat.js"></script>
 
   <style>
-    .filter-box { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--input-border); }
-    .buku-container { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid var(--input-border); display: none; animation: fadeIn 0.5s ease; }
+    /* STYLING KARTU SANTRI & ACCORDION */
+    .santri-card {
+      background: white; border-radius: 16px; padding: 20px 25px; margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: 0.3s; border: 1px solid var(--input-border);
+    }
+    .santri-card-header {
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;
+    }
+    .santri-card-header h3 { margin: 0; color: var(--navy-dark); font-size: 1.4rem; font-family: 'Playfair Display', serif; }
+    .santri-card-header:hover h3 { color: var(--gold-dark); }
     
-    .santri-header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed var(--input-border); }
-    .santri-header h2 { font-family: 'Playfair Display', serif; color: var(--navy-dark); margin: 0 0 5px 0; font-size: 1.8rem; }
-    .santri-header p { color: var(--text-muted); margin: 0; font-weight: 600; }
+    .icon-toggle { font-size: 1.2rem; transition: transform 0.3s ease; color: var(--gold-dark); }
+    .card-open .icon-toggle { transform: rotate(180deg); }
+    .card-open .santri-card-body { display: block; }
+    
+    .santri-card-body { display: none; margin-top: 20px; border-top: 2px dashed rgba(0,0,0,0.08); padding-top: 25px; animation: fadeIn 0.4s ease; }
 
     /* Blok Kategori */
-    .kategori-blok { margin-bottom: 40px; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; background: #f8fafc; }
+    .kategori-blok { margin-bottom: 30px; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; background: #f8fafc; }
     .kategori-blok-cahaya { border: 2px solid var(--gold-main); background: #fffdf5; position: relative; overflow: hidden; }
     .kategori-blok-cahaya::before { content: '🌟'; position: absolute; top: -15px; right: -15px; font-size: 6rem; opacity: 0.05; }
     
-    .judul-blok { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .judul-blok { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-top: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
     .judul-reguler { color: var(--navy-dark); }
-    .judul-cahaya { color: #b45309; } /* Dark Gold */
+    .judul-cahaya { color: #b45309; }
 
     /* Resume Setoran Grid */
-    .resume-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+    .resume-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
     
     /* Resume Box - Reguler */
-    .resume-box { background: linear-gradient(135deg, var(--navy-dark, #0f172a), #1e293b); border-radius: 12px; padding: 20px 15px; text-align: center; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    .resume-box { background: linear-gradient(135deg, var(--navy-dark, #0f172a), #1e293b); border-radius: 12px; padding: 15px; text-align: center; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     .resume-box::after { content: '📖'; position: absolute; right: -10px; bottom: -15px; font-size: 4rem; opacity: 0.1; }
-    .resume-box h4 { margin: 0; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-    .resume-box p { margin: 10px 0 0; font-size: 2rem; font-weight: 800; font-family: 'Playfair Display', serif; }
+    .resume-box h4 { margin: 0; font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+    .resume-box p { margin: 10px 0 0; font-size: 1.8rem; font-weight: 800; font-family: 'Playfair Display', serif; }
     .resume-box span { font-size: 0.8rem; font-weight: 400; opacity: 0.8; }
     
     /* Resume Box - CAHAYA */
@@ -43,33 +53,18 @@
     @media (max-width: 768px) { .resume-grid { grid-template-columns: repeat(2, 1fr); } }
 
     /* Tabel Riwayat */
-    .table-container { max-height: 400px; overflow-y: auto; border-radius: 12px; border: 1px solid var(--input-border); background: white; }
+    .table-container { max-height: 350px; overflow-y: auto; border-radius: 12px; border: 1px solid var(--input-border); background: white; }
+    .tabel-buku { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .tabel-buku th, .tabel-buku td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+    .tabel-buku th { background: rgba(0,0,0,0.03); color: var(--navy-dark); font-weight: 700; position: sticky; top: 0; z-index: 10; }
+    
     .badge { padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; border: 1px solid; display: inline-block; }
     .badge-mumtaz { background: #ecfdf5; color: #059669; border-color: #059669; }
     .badge-jayyid { background: #f0f9ff; color: #0284c7; border-color: #0284c7; }
     .badge-maqbul { background: #fffbeb; color: #d97706; border-color: #d97706; }
     .badge-bimbingan { background: #fef2f2; color: #dc2626; border-color: #dc2626; }
 
-    /* Tombol Aksi */
-    .btn-aksi { border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: bold; transition: 0.2s; margin: 2px; }
-    .btn-edit { background: #fef9c3; color: #ca8a04; border: 1px solid #fde047; }
-    .btn-edit:hover { background: #fde047; }
-    .btn-hapus-kecil { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-    .btn-hapus-kecil:hover { background: #fecaca; }
-
-    /* Modal Edit */
-    .modal-buku { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-    .modal-buku-content { background: white; border-radius: var(--radius-lg); padding: 30px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--input-border); padding-bottom: 15px;}
-    .modal-header h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--navy-dark); margin: 0; }
-    .btn-close { background: #fef2f2; color: #ef4444; border: none; width: 35px; height: 35px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-    
     #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
-
-    .checkbox-container { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; cursor: pointer; background: #fffdf5; padding: 10px; border-radius: 8px; border: 1px dashed var(--gold-main); }
-    .checkmark { width: 22px; height: 22px; border: 2px solid var(--gold-main); border-radius: 6px; display: flex; justify-content: center; align-items: center; background: white;}
-    input:checked + .checkmark { background: var(--gold-main); border-color: var(--gold-main); }
-    input:checked + .checkmark::after { content: '✓'; color: white; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -79,10 +74,10 @@
   <div style="font-weight: 700;">Menyiapkan Buku Tahfiz...</div>
 </div>
 
-<main class="cahaya-container" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
+<main class="cahaya-container" style="max-width: 1000px; margin: 0 auto;">
   
-  <div class="cahaya-card filter-box">
-    <h3 style="margin-top:0; color:var(--navy-dark); font-family:'Playfair Display', serif;">🔍 Cari Buku Setoran Santri</h3>
+  <div class="cahaya-card" style="margin-bottom: 20px;">
+    <h2 class="cahaya-title" style="text-align: center; border-left: none; padding-left: 0; margin-bottom: 25px;">📖 Buku Setoran Santri</h2>
     <div class="grid-2">
       <div class="form-group">
         <label>📚 Program</label>
@@ -94,132 +89,22 @@
       </div>
       <div class="form-group">
         <label>👥 Halaqah</label>
-        <select class="form-control" id="tfzKelompok" onchange="updateSantri()">
+        <select class="form-control" id="tfzKelompok" onchange="tarikDataBukuDanRender()">
           <option value="">-- Menunggu Program --</option>
         </select>
       </div>
     </div>
-    <div class="form-group">
-      <label>👤 Nama Santri</label>
-      <select class="form-control" id="tfzNamaSantri">
-        <option value="">-- Pilih Halaqah Dulu --</option>
-      </select>
-    </div>
-    <button class="btn-cahaya btn-gold" onclick="tarikDataBuku()">📑 BUKA BUKU SETORAN</button>
   </div>
 
-  <div id="wadahBukuSetoran" class="buku-container">
-    <div class="santri-header">
-      <h2 id="displayNamaSantri">Nama Santri</h2>
-      <p id="displayHalaqah">Halaqah - Program</p>
-    </div>
-    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:-20px; margin-bottom:20px; text-align:center;">*Kalkulasi Juz & Baris menyesuaikan bobot fisik setiap Surat pada Mushaf Madinah.</p>
-
-    <!-- ================= BLOK TAHFIZ REGULER ================= -->
-    <div class="kategori-blok" id="blokReguler">
-      <h3 class="judul-blok judul-reguler">📖 TAHFIZ REGULER</h3>
-      
-      <div class="resume-grid">
-        <div class="resume-box"><h4>Total Juz</h4><p id="regJuz">0 <span>Juz</span></p></div>
-        <div class="resume-box"><h4>Total Surat</h4><p id="regSurat">0 <span>Surat</span></p></div>
-        <div class="resume-box"><h4>Total Ayat</h4><p id="regAyat">0 <span>Ayat</span></p></div>
-        <div class="resume-box"><h4>Total Baris</h4><p id="regBaris">0 <span>Baris</span></p></div>
-      </div>
-
-      <div class="table-container">
-        <table class="cahaya-table" style="width: 100%;">
-          <thead style="position: sticky; top: 0; background: white; z-index: 10;">
-            <tr>
-              <th width="15%">Tanggal</th><th width="30%">Surat (Ayat)</th><th width="10%">Ayat</th>
-              <th width="15%">Predikat</th><th width="20%">Keterangan</th><th width="10%">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyReguler"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ================= BLOK TAHFIZ CAHAYA ================= -->
-    <div class="kategori-blok kategori-blok-cahaya" id="blokCahaya">
-      <h3 class="judul-blok judul-cahaya">🌟 TAHFIZ CAHAYA (Tadabbur & Aksi)</h3>
-      
-      <div class="resume-grid">
-        <div class="resume-box box-cahaya"><h4>Total Juz</h4><p id="cahJuz">0 <span>Juz</span></p></div>
-        <div class="resume-box box-cahaya"><h4>Total Surat</h4><p id="cahSurat">0 <span>Surat</span></p></div>
-        <div class="resume-box box-cahaya"><h4>Total Ayat</h4><p id="cahAyat">0 <span>Ayat</span></p></div>
-        <div class="resume-box box-cahaya"><h4>Total Baris</h4><p id="cahBaris">0 <span>Baris</span></p></div>
-      </div>
-
-      <div class="table-container">
-        <table class="cahaya-table" style="width: 100%;">
-          <thead style="position: sticky; top: 0; background: white; z-index: 10;">
-            <tr>
-              <th width="15%">Tanggal</th><th width="30%">Surat (Ayat)</th><th width="10%">Ayat</th>
-              <th width="15%">Predikat</th><th width="20%">Keterangan</th><th width="10%">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyCahaya"></tbody>
-        </table>
-      </div>
-    </div>
-
+  <div id="santriCardsContainer">
+    <div style="text-align:center;color:var(--text-muted);padding:40px;font-style:italic;background:white;border-radius:12px;border:1px solid var(--input-border);">Pilih Program & Halaqah untuk membuka buku setoran santri.</div>
   </div>
+
 </main>
-
-<!-- MODAL EDIT DATA -->
-<div id="modalEdit" class="modal-buku">
-  <div class="modal-buku-content">
-    <div class="modal-header">
-      <h3>✏️ Edit Data Setoran</h3>
-      <button class="btn-close" onclick="tutupEdit()">✕</button>
-    </div>
-    <input type="hidden" id="editFirebaseKey">
-    
-    <div class="form-group">
-      <label>Tanggal</label>
-      <input type="date" id="editTanggal" class="form-control">
-    </div>
-    
-    <!-- CHECKBOX TAHFIZ CAHAYA PADA EDIT -->
-    <div class="form-group">
-      <label class="checkbox-container">
-        <input type="checkbox" id="editCheckCahaya" style="display:none;">
-        <span class="checkmark"></span>
-        <span style="font-weight:700; color:#b45309;">Jadikan Status Tahfiz CAHAYA</span>
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label>Teks Setoran Surat</label>
-      <input type="text" id="editSetoran" class="form-control">
-    </div>
-    <div class="grid-2">
-      <div class="form-group">
-        <label>Jumlah Ayat</label>
-        <input type="number" id="editAyat" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>Predikat</label>
-        <select id="editNilai" class="form-control">
-          <option value="MUMTAZ">MUMTAZ</option>
-          <option value="JAYYID JIDDAN">JAYYID JIDDAN</option>
-          <option value="JAYYID">JAYYID</option>
-          <option value="MAQBUL">MAQBUL</option>
-          <option value="BIMBINGAN">BIMBINGAN</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Keterangan Tambahan (Opsional)</label>
-      <textarea id="editKet" class="form-control" rows="2"></textarea>
-    </div>
-    <button class="btn-cahaya btn-gold" id="btnSimpanEdit" onclick="simpanEditData()">💾 SIMPAN PERUBAHAN</button>
-  </div>
-</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, get, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
@@ -231,11 +116,11 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   let dataHalqahCloud = {};
-  let rawDatabaseSetoran = {};
+  let allSetoranDb = {};
 
   const TXT_CAHAYA = "Disetorkan beserta terjemah, tadabbur, tafsir, letak dan nomor ayat, serta rencana aksi pengamalan.";
 
-  // DATABASE QURAN BARU (Validasi Bobot Halaman)
+  // DATABASE QURAN BARU
   const quranDb = [
     { nama: "Al-Fatihah", ayat: 7, pages: 1 }, { nama: "Al-Baqarah", ayat: 286, pages: 48 }, { nama: "Ali 'Imran", ayat: 200, pages: 27 },
     { nama: "An-Nisa'", ayat: 176, pages: 29 }, { nama: "Al-Ma'idah", ayat: 120, pages: 21 }, { nama: "Al-An'am", ayat: 165, pages: 23 },
@@ -282,6 +167,9 @@
     { nama: "An-Nas", ayat: 6, pages: 0.3 }
   ];
 
+  // Pewarnaan Pastel untuk Border Kartu
+  const cardColors = [ '#64B5F6', '#81C784', '#FFB74D', '#F06292', '#BA68C8', '#4DD0E1' ];
+
   const cariIndexSurat = (nama) => {
       let bersih = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
       let target = bersih(nama);
@@ -300,6 +188,8 @@
     const prog = document.getElementById('tfzProgram').value;
     const kmpk = document.getElementById('tfzKelompok');
     kmpk.innerHTML = '<option value="">-- Pilih --</option>';
+    document.getElementById('santriCardsContainer').innerHTML = '<div style="text-align:center;padding:40px;background:white;border-radius:12px;border:1px solid var(--input-border);">Pilih Halaqah...</div>';
+    
     if (!prog) return;
     const kategori = dataHalqahCloud["Halqah Quraniyah"] || {};
     Object.keys(kategori).filter(k => k.startsWith(prog)).forEach(k => {
@@ -309,17 +199,7 @@
     });
   };
 
-  window.updateSantri = () => {
-    const prog = document.getElementById('tfzProgram').value;
-    const kmpk = document.getElementById('tfzKelompok').value;
-    const nama = document.getElementById('tfzNamaSantri');
-    nama.innerHTML = '<option value="">-- Pilih --</option>';
-    if (!prog || !kmpk) return;
-    const list = (dataHalqahCloud["Halqah Quraniyah"][`${prog} ${kmpk}`] || []).slice().sort();
-    list.forEach(n => { const opt = document.createElement('option'); opt.value = opt.textContent = n; nama.appendChild(opt); });
-  };
-
-  // Fungsi Kalkulasi Matematika
+  // Kalkulasi Matematika Buku Setoran
   const kalkulasiArrayPencapaian = (arrAyat) => {
       let totAyat = 0, totSurat = 0, totBobot = 0;
       for (let i = 0; i < 114; i++) {
@@ -337,7 +217,6 @@
       };
   };
 
-  // Fungsi Parser Regex
   const jalankanParser = (teksSetoran, arrayTarget) => {
       let parts = teksSetoran.split(',');
       parts.forEach(part => {
@@ -364,178 +243,171 @@
       });
   };
 
-  window.tarikDataBuku = async () => {
-    const nama = document.getElementById('tfzNamaSantri').value;
-    if (!nama) return alert("Pilih nama santri terlebih dahulu!");
-
-    document.getElementById('displayNamaSantri').textContent = nama;
-    document.getElementById('wadahBukuSetoran').style.display = 'block';
+  // Fungsi Utama Penarikan & Render
+  window.tarikDataBukuDanRender = async () => {
+    const prog = document.getElementById('tfzProgram').value;
+    const kmpk = document.getElementById('tfzKelompok').value;
+    const container = document.getElementById('santriCardsContainer');
     
-    document.getElementById('tbodyReguler').innerHTML = '<tr><td colspan="6" style="text-align:center;">⏳ Membaca riwayat...</td></tr>';
-    document.getElementById('tbodyCahaya').innerHTML = '<tr><td colspan="6" style="text-align:center;">⏳ Membaca riwayat...</td></tr>';
+    if (!prog || !kmpk) return;
+
+    const listSantri = (dataHalqahCloud["Halqah Quraniyah"][`${prog} ${kmpk}`] || []).slice().sort();
+    if (listSantri.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:red;padding:40px;background:white;border-radius:12px;border:1px solid var(--input-border);">Data santri kosong di halaqah ini.</div>';
+        return;
+    }
+
+    container.innerHTML = '<div style="text-align:center;padding:40px;background:white;border-radius:12px;border:1px solid var(--input-border);">⏳ Mengambil data buku setoran seluruh santri...</div>';
 
     try {
+      // Tarik database setoran 1 kali saja untuk efisiensi
       const snapshot = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
-      if (!snapshot.exists()) { resetSemua(); return; }
+      allSetoranDb = snapshot.exists() ? snapshot.val() : {};
 
-      const dataObj = snapshot.val();
-      rawDatabaseSetoran = dataObj; 
-      
-      let riwayatReguler = [], riwayatCahaya = [];
-      let pencapaianReguler = new Array(114).fill(0);
-      let pencapaianCahaya = new Array(114).fill(0);
+      container.innerHTML = '';
 
-      for (let key in dataObj) {
-        const record = dataObj[key];
-        if (record.data && record.data[0] && record.data[0].nama === nama) {
-            let teksSetoran = record.data[0].setoran || "";
-            let ketAsli = record.data[0].keterangan || "";
-            let isCahaya = ketAsli.includes("Disetorkan beserta terjemah");
+      listSantri.forEach((nama, i) => {
+        const themeBorder = cardColors[i % cardColors.length];
+        const safeId = nama.replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
 
-            let dtRender = {
-              firebaseKey: key,
-              tanggal: record.tanggal,
-              setoran: teksSetoran,
-              ayat: parseInt(record.data[0].ayat) || 0,
-              nilai: record.data[0].nilai,
-              keterangan: ketAsli.replace(TXT_CAHAYA, "").trim() || '-', // Bersihkan teks sistem agar rapi di tabel
-              guru: record.guru || 'Tidak Diketahui'
-            };
+        // --- FILTER DATA KHUSUS SANTRI INI ---
+        let riwayatReguler = [], riwayatCahaya = [];
+        let pencapaianReguler = new Array(114).fill(0);
+        let pencapaianCahaya = new Array(114).fill(0);
 
-            if(isCahaya) {
-                riwayatCahaya.push(dtRender);
-                jalankanParser(teksSetoran, pencapaianCahaya);
-            } else {
-                riwayatReguler.push(dtRender);
-                jalankanParser(teksSetoran, pencapaianReguler);
-            }
-        }
-      }
+        for (let key in allSetoranDb) {
+          const record = allSetoranDb[key];
+          if (record.data && record.data[0] && record.data[0].nama === nama) {
+              let teksSetoran = record.data[0].setoran || "";
+              let ketAsli = record.data[0].keterangan || "";
+              let isCahaya = ketAsli.includes("Disetorkan beserta terjemah");
 
-      // Hitung Resume
-      let resReg = kalkulasiArrayPencapaian(pencapaianReguler);
-      document.getElementById('regAyat').innerHTML = `${resReg.ayat} <span>Ayat</span>`;
-      document.getElementById('regBaris').innerHTML = `${resReg.baris} <span>Baris</span>`;
-      document.getElementById('regSurat').innerHTML = `${resReg.surat} <span>Surat</span>`;
-      document.getElementById('regJuz').innerHTML = `${resReg.juz} <span>Juz</span>`;
+              let dtRender = {
+                tanggal: record.tanggal,
+                setoran: teksSetoran,
+                ayat: parseInt(record.data[0].ayat) || 0,
+                nilai: record.data[0].nilai,
+                keterangan: ketAsli.replace(TXT_CAHAYA, "").trim() || '-',
+                guru: record.guru || 'Tidak Diketahui'
+              };
 
-      let resCah = kalkulasiArrayPencapaian(pencapaianCahaya);
-      document.getElementById('cahAyat').innerHTML = `${resCah.ayat} <span>Ayat</span>`;
-      document.getElementById('cahBaris').innerHTML = `${resCah.baris} <span>Baris</span>`;
-      document.getElementById('cahSurat').innerHTML = `${resCah.surat} <span>Surat</span>`;
-      document.getElementById('cahJuz').innerHTML = `${resCah.juz} <span>Juz</span>`;
-
-      // Render Tabel
-      const renderTabel = (dataRiwayat, elemenTbody) => {
-          dataRiwayat.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-          if (dataRiwayat.length === 0) {
-              elemenTbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Belum ada riwayat setoran di kategori ini.</td></tr>';
-              return;
+              if(isCahaya) {
+                  riwayatCahaya.push(dtRender);
+                  jalankanParser(teksSetoran, pencapaianCahaya);
+              } else {
+                  riwayatReguler.push(dtRender);
+                  jalankanParser(teksSetoran, pencapaianReguler);
+              }
           }
-          elemenTbody.innerHTML = dataRiwayat.map((r) => {
-            const [y, m, d] = r.tanggal.split('-');
-            const tglIndo = `${d}/${m}/${y}`;
-            let badgeClass = 'badge-mumtaz';
-            if(r.nilai.includes("JAYYID")) badgeClass = 'badge-jayyid';
-            if(r.nilai.includes("MAQBUL")) badgeClass = 'badge-maqbul';
-            if(r.nilai.includes("BIMBINGAN")) badgeClass = 'badge-bimbingan';
+        }
 
-            return `
-              <tr>
-                <td style="font-weight:600; color:var(--text-muted); font-size:0.85rem;">${tglIndo}</td>
-                <td style="font-weight:700; color:var(--navy-dark); font-size:1.05rem;">${r.setoran}</td>
-                <td style="text-align:center; font-weight:700;">${r.ayat}</td>
-                <td><span class="badge ${badgeClass}">${r.nilai}</span></td>
-                <td>
-                  <div style="font-size:0.85rem; font-weight:700; text-transform:capitalize;">Ust. ${r.guru}</div>
-                  <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.2; margin-top:3px;">${r.keterangan}</div>
-                </td>
-                <td style="text-align:center;">
-                  <button onclick="bukaEditData('${r.firebaseKey}')" class="btn-aksi btn-edit" title="Edit Data">✏️</button>
-                  <button onclick="hapusData('${r.firebaseKey}')" class="btn-aksi btn-hapus-kecil" title="Hapus Data">🗑️</button>
-                </td>
-              </tr>
+        // --- KALKULASI RESUME ---
+        let resReg = kalkulasiArrayPencapaian(pencapaianReguler);
+        let resCah = kalkulasiArrayPencapaian(pencapaianCahaya);
+
+        // --- RENDER TABEL ---
+        const buildTabelHTML = (dataRiwayat) => {
+            dataRiwayat.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+            if (dataRiwayat.length === 0) {
+                return '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">Belum ada riwayat setoran di kategori ini.</td></tr>';
+            }
+            return dataRiwayat.map((r) => {
+              const [y, m, d] = r.tanggal.split('-');
+              const tglIndo = `${d}/${m}/${y}`;
+              
+              let badgeClass = 'badge-mumtaz';
+              if(r.nilai.includes("JAYYID")) badgeClass = 'badge-jayyid';
+              if(r.nilai.includes("MAQBUL")) badgeClass = 'badge-maqbul';
+              if(r.nilai.includes("BIMBINGAN")) badgeClass = 'badge-bimbingan';
+
+              return `
+                <tr>
+                  <td style="font-weight:600; color:var(--text-muted); font-size:0.85rem;">${tglIndo}</td>
+                  <td style="font-weight:700; color:var(--navy-dark); font-size:1rem;">${r.setoran}</td>
+                  <td style="text-align:center; font-weight:700;">${r.ayat}</td>
+                  <td><span class="badge ${badgeClass}">${r.nilai}</span></td>
+                  <td>
+                    <div style="font-size:0.85rem; font-weight:700; text-transform:capitalize;">Ust. ${r.guru}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.2; margin-top:3px;">${r.keterangan}</div>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+        };
+
+        // --- PEMBUATAN BLOK CAHAYA (Kondisional) ---
+        let htmlBlokCahaya = "";
+        if (riwayatCahaya.length > 0) {
+            htmlBlokCahaya = `
+              <div class="kategori-blok kategori-blok-cahaya">
+                <h3 class="judul-blok judul-cahaya">🌟 TAHFIZ CAHAYA (Tadabbur & Aksi)</h3>
+                <div class="resume-grid">
+                  <div class="resume-box box-cahaya"><h4>Total Juz</h4><p>${resCah.juz} <span>Juz</span></p></div>
+                  <div class="resume-box box-cahaya"><h4>Total Surat</h4><p>${resCah.surat} <span>Surat</span></p></div>
+                  <div class="resume-box box-cahaya"><h4>Total Ayat</h4><p>${resCah.ayat} <span>Ayat</span></p></div>
+                  <div class="resume-box box-cahaya"><h4>Total Baris</h4><p>${resCah.baris} <span>Baris</span></p></div>
+                </div>
+                <div class="table-container">
+                  <table class="tabel-buku">
+                    <thead><tr><th width="15%">Tanggal</th><th width="35%">Surat (Ayat)</th><th width="10%">Ayat</th><th width="15%">Predikat</th><th width="25%">Keterangan</th></tr></thead>
+                    <tbody>${buildTabelHTML(riwayatCahaya)}</tbody>
+                  </table>
+                </div>
+              </div>
             `;
-          }).join('');
-      };
+        }
 
-      renderTabel(riwayatReguler, document.getElementById('tbodyReguler'));
-      renderTabel(riwayatCahaya, document.getElementById('tbodyCahaya'));
+        // --- BUILD KARTU FINAL ---
+        const cardHtml = `
+          <div class="santri-card" id="card_${safeId}" style="border-left: 6px solid ${themeBorder};">
+            
+            <div class="santri-card-header" onclick="toggleCard('${safeId}')">
+              <h3>${i+1}. ${nama}</h3>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Buka Buku</span>
+                <span class="icon-toggle">▼</span>
+              </div>
+            </div>
+            
+            <div class="santri-card-body" id="body_${safeId}">
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-top:-10px; margin-bottom:20px; text-align:center;">*Kalkulasi Juz & Baris menyesuaikan bobot fisik setiap Surat pada Mushaf Madinah.</p>
+
+              <!-- BLOK TAHFIZ REGULER -->
+              <div class="kategori-blok">
+                <h3 class="judul-blok judul-reguler">📖 TAHFIZ REGULER</h3>
+                <div class="resume-grid">
+                  <div class="resume-box"><h4>Total Juz</h4><p>${resReg.juz} <span>Juz</span></p></div>
+                  <div class="resume-box"><h4>Total Surat</h4><p>${resReg.surat} <span>Surat</span></p></div>
+                  <div class="resume-box"><h4>Total Ayat</h4><p>${resReg.ayat} <span>Ayat</span></p></div>
+                  <div class="resume-box"><h4>Total Baris</h4><p>${resReg.baris} <span>Baris</span></p></div>
+                </div>
+                <div class="table-container">
+                  <table class="tabel-buku">
+                    <thead><tr><th width="15%">Tanggal</th><th width="35%">Surat (Ayat)</th><th width="10%">Ayat</th><th width="15%">Predikat</th><th width="25%">Keterangan</th></tr></thead>
+                    <tbody>${buildTabelHTML(riwayatReguler)}</tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- BLOK TAHFIZ CAHAYA (Muncul jika ada data) -->
+              ${htmlBlokCahaya}
+
+            </div>
+          </div>
+        `;
+        container.innerHTML += cardHtml;
+      });
 
     } catch (error) {
-      alert("Gagal menarik data: " + error.message);
+      container.innerHTML = `<div style="text-align:center;color:red;padding:40px;background:white;border-radius:12px;border:1px solid var(--input-border);">Gagal menarik data server: ${error.message}</div>`;
     }
   };
 
-  function resetSemua() {
-      ['reg', 'cah'].forEach(prefix => {
-        document.getElementById(`${prefix}Ayat`).innerHTML = `0 <span>Ayat</span>`;
-        document.getElementById(`${prefix}Baris`).innerHTML = `0 <span>Baris</span>`;
-        document.getElementById(`${prefix}Surat`).innerHTML = `0 <span>Surat</span>`;
-        document.getElementById(`${prefix}Juz`).innerHTML = `0 <span>Juz</span>`;
-      });
-      document.getElementById('tbodyReguler').innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada riwayat.</td></tr>';
-      document.getElementById('tbodyCahaya').innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada riwayat.</td></tr>';
-  }
-
-  // Aksi Hapus
-  window.hapusData = async (key) => {
-      if(!confirm("⚠️ Yakin ingin menghapus data setoran ini?")) return;
-      try {
-          await remove(ref(db, `cahaya_app/setoran_tahfiz/${key}`));
-          tarikDataBuku(); 
-      } catch (error) { alert("❌ Gagal menghapus: " + error.message); }
+  // Aksi Toggle Accordion
+  window.toggleCard = (safeId) => {
+    document.getElementById(`card_${safeId}`).classList.toggle('card-open');
   };
 
-  // Aksi Buka Edit
-  window.bukaEditData = (key) => {
-      const recordUtuh = rawDatabaseSetoran[key];
-      if(!recordUtuh) return;
-      document.getElementById('editFirebaseKey').value = key;
-      document.getElementById('editTanggal').value = recordUtuh.tanggal;
-      document.getElementById('editSetoran').value = recordUtuh.data[0].setoran;
-      document.getElementById('editAyat').value = recordUtuh.data[0].ayat;
-      document.getElementById('editNilai').value = recordUtuh.data[0].nilai;
-      
-      let ketAsli = recordUtuh.data[0].keterangan || "";
-      let isCahaya = ketAsli.includes("Disetorkan beserta terjemah");
-      document.getElementById('editCheckCahaya').checked = isCahaya;
-      document.getElementById('editKet').value = ketAsli.replace(TXT_CAHAYA, "").trim();
-
-      document.getElementById('modalEdit').style.display = 'flex';
-  };
-
-  window.tutupEdit = () => document.getElementById('modalEdit').style.display = 'none';
-
-  // Aksi Simpan Edit
-  window.simpanEditData = async () => {
-      const btn = document.getElementById('btnSimpanEdit');
-      btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
-
-      const key = document.getElementById('editFirebaseKey').value;
-      let recordUtuh = rawDatabaseSetoran[key];
-      
-      recordUtuh.tanggal = document.getElementById('editTanggal').value;
-      recordUtuh.data[0].setoran = document.getElementById('editSetoran').value;
-      recordUtuh.data[0].ayat = document.getElementById('editAyat').value;
-      recordUtuh.data[0].nilai = document.getElementById('editNilai').value;
-      
-      let ketBaru = document.getElementById('editKet').value;
-      if(document.getElementById('editCheckCahaya').checked) {
-          ketBaru = (ketBaru ? ketBaru + "\n" : "") + TXT_CAHAYA;
-      }
-      recordUtuh.data[0].keterangan = ketBaru;
-
-      try {
-          await update(ref(db, `cahaya_app/setoran_tahfiz/${key}`), recordUtuh);
-          tutupEdit();
-          tarikDataBuku(); 
-      } catch (error) {
-          alert("❌ Gagal menyimpan: " + error.message);
-      } finally {
-          btn.innerHTML = "💾 SIMPAN PERUBAHAN"; btn.disabled = false;
-      }
-  };
 </script>
 </body>
 </html>
