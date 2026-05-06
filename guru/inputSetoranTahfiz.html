@@ -9,7 +9,7 @@
   <script src="../js/data-pusat.js"></script>
 
   <style>
-    /* STYLING DASAR UNTUK MENCEGAH OVERFLOW */
+    /* STYLING DASAR UNTUK MENCEGAH OVERFLOW PADA HP */
     * { box-sizing: border-box; }
     body, html { overflow-x: hidden; width: 100%; }
 
@@ -31,14 +31,32 @@
     
     .santri-card-body { display: none; margin-top: 15px; border-top: 2px dashed rgba(0,0,0,0.08); padding-top: 20px; animation: fadeIn 0.4s ease; }
 
-    /* RIWAYAT TABLE */
+    /* =========================================================
+       RIWAYAT SETORAN (DESAIN BARU: LIST CARD ANTI GESER)
+       ========================================================= */
     .riwayat-section { background: white; border-radius: 12px; padding: 15px; margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.05); }
     .riwayat-section h5 { margin: 0 0 15px 0; color: var(--gold-dark); font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; }
     
-    .tabel-riwayat { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    .tabel-riwayat th, .tabel-riwayat td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-    .tabel-riwayat th { background: rgba(0,0,0,0.03); color: var(--navy-dark); font-weight: 700; }
+    .riwayat-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .riwayat-item { 
+      display: flex; align-items: center; justify-content: space-between; 
+      padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; 
+    }
+    .riwayat-info { flex: 1; min-width: 0; padding-right: 10px; }
+    .riwayat-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .riwayat-tgl { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); background: #e2e8f0; padding: 3px 6px; border-radius: 6px;}
+    .riwayat-surat { font-size: 0.95rem; font-weight: 800; color: var(--navy-dark); margin-bottom: 4px; word-wrap: break-word; line-height: 1.3;}
+    .riwayat-ayat { font-size: 0.8rem; color: var(--gold-dark); font-weight: 700; }
     
+    .riwayat-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-icon { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; border-radius: 8px; border: none; font-size: 1.1rem; cursor: pointer; transition: 0.2s;}
+    .btn-edit-icon { background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
+    .btn-edit-icon:hover { background: #3b82f6; color: white; }
+    .btn-hapus-icon { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+    .btn-hapus-icon:hover { background: #ef4444; color: white; }
+    
+    .badge-riwayat { padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; border: 1px solid; display: inline-block; white-space: nowrap;}
+
     /* FORM INPUT */
     .input-section h5 { margin: 0 0 15px 0; color: var(--navy-dark); font-size: 1.1rem; }
     .surat-row { display: flex; gap: 10px; background: rgba(255,255,255,0.7); padding: 15px; border-radius: var(--radius-md, 12px); border: 1px solid rgba(0,0,0,0.1); margin-bottom: 12px; flex-wrap: wrap; align-items: flex-end;}
@@ -70,46 +88,31 @@
     .btn-simpan-card:hover { background: var(--gold-dark); color: white; box-shadow: 0 4px 12px rgba(212,175,55,0.3); }
     .btn-batal-card { background: #9ca3af; color: white; font-weight: 700; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; display: none; width: 100%; margin-top: 8px;}
 
-    .btn-sm { padding: 6px 12px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s;}
-    .btn-edit { background: #3b82f6; color: white; margin-right: 5px; }
-    .btn-hapus-sm { background: #ef4444; color: white; }
-    .badge-riwayat { padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; border: 1px solid; display: inline-block; white-space: nowrap;}
-
     #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
 
     /* ==============================================================
        MOBILE RESPONSIVE (MEDIA QUERIES)
-       Mencegah Horizontal Scroll dan Merapikan Tampilan di Layar HP
+       Merakit ulang form dan elemen agar menyusun rapi ke bawah
        ============================================================== */
     @media screen and (max-width: 768px) {
       .cahaya-container { padding: 10px; }
       
-      /* Grid Fallback untuk layar kecil */
       .grid-2 { display: grid; grid-template-columns: 1fr !important; gap: 15px; }
 
-      /* Modifikasi Padding Kartu */
       .santri-card { padding: 15px 12px; }
       .santri-card-header h3 { font-size: 1.15rem; }
       
-      /* Modifikasi Kolom Input Surat (Stack ke bawah) */
+      /* Menyusun baris input form ke bawah */
       .surat-row { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; }
       .col-surat, .col-ayat { min-width: 100%; width: 100%; }
       .btn-hapus { width: 100%; height: 38px; margin-top: 5px; }
 
-      /* Modifikasi Tabel Riwayat agar Scrollable di HP */
       .riwayat-section { padding: 12px 10px; }
-      .tabel-riwayat { white-space: nowrap; font-size: 0.75rem; }
-      .tabel-riwayat th, .tabel-riwayat td { padding: 8px; }
-      .btn-sm { padding: 5px 8px; font-size: 0.7rem; }
-
-      /* Modifikasi Tanggal Input agar full width */
       input[type="date"] { max-width: 100% !important; width: 100%; }
 
-      /* Font Size Adjustment */
       .input-predikat { font-size: 1rem; }
       .mode-btn { font-size: 0.7rem; padding: 10px 5px; }
       
-      /* Header & Title Adjustments */
       .cahaya-title { font-size: 1.4rem !important; }
       #badge_info_ { font-size: 0.7rem; }
     }
@@ -222,6 +225,7 @@
       const cardHtml = `
         <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal">
           
+          <!-- HEADER ACCORDION -->
           <div class="santri-card-header" onclick="toggleCard('${safeId}')">
             <h3>${i+1}. ${nama}</h3>
             <div style="display:flex; align-items:center; gap:10px;">
@@ -230,29 +234,28 @@
             </div>
           </div>
           
+          <!-- BODY KONTEN -->
           <div class="santri-card-body" id="body_${safeId}">
             
+            <!-- 1. RIWAYAT DI ATAS (DESAIN LIST CARD) -->
             <div class="riwayat-section">
               <h5>Riwayat Setoran Bulan Ini</h5>
-              <div style="overflow-x: auto; width: 100%;">
-                <table class="tabel-riwayat">
-                  <thead><tr><th>Tgl</th><th>Surat & Ayat</th><th>Ayat</th><th>Predikat</th><th>Aksi</th></tr></thead>
-                  <tbody id="riwayat_body_${safeId}">
-                    <tr><td colspan="5" style="text-align:center;">Memuat riwayat...</td></tr>
-                  </tbody>
-                </table>
+              <div class="riwayat-list" id="riwayat_body_${safeId}">
+                <div style="text-align:center; padding:15px; color:#999; font-size:0.85rem;">Memuat riwayat...</div>
               </div>
             </div>
 
+            <!-- 2. FORM INPUT DI BAWAHNYA -->
             <div class="input-section">
               <h5>✎ Form Input Setoran</h5>
               <input type="hidden" id="edit_id_${safeId}">
               
               <div class="form-group">
                 <label>Tanggal Input</label>
-                <input type="date" class="form-control" id="tgl_${safeId}" value="${todayStr}" style="max-width:200px;">
+                <input type="date" class="form-control" id="tgl_${safeId}" value="${todayStr}">
               </div>
 
+              <!-- Area Mode Input -->
               <div id="area_input_${safeId}">
                 <div class="mode-switch" id="mode_switch_${safeId}">
                   <button class="mode-btn active" id="btn_mode_tunggal_${safeId}" onclick="setModeCard('tunggal', '${safeId}')">SATU SURAT / MANUAL</button>
@@ -456,15 +459,16 @@
     }
   };
 
+  // MENGGUNAKAN DESAIN LIST CARD BARU
   window.fetchRiwayatSantri = async (nama, safeId) => {
-    const tbody = document.getElementById(`riwayat_body_${safeId}`);
+    const listBody = document.getElementById(`riwayat_body_${safeId}`);
     const badgeInfo = document.getElementById(`badge_info_${safeId}`);
     const bulanIni = new Date().toISOString().slice(0, 7); 
 
     try {
       const snapshot = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
       if (!snapshot.exists()) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">Belum ada riwayat.</td></tr>';
+        listBody.innerHTML = '<div style="text-align:center; padding:15px; color:#999; font-size:0.85rem;">Belum ada riwayat.</div>';
         return;
       }
 
@@ -482,16 +486,15 @@
 
       riwayat.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
       
-      // Update badge info di header
       if(riwayat.length > 0) badgeInfo.innerText = `${riwayat.length} Setoran Bulan Ini`;
       else badgeInfo.innerText = "Belum Ada Setoran";
 
       if (riwayat.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">Belum ada riwayat di bulan ini.</td></tr>';
+        listBody.innerHTML = '<div style="text-align:center; padding:15px; color:#999; font-size:0.85rem;">Belum ada riwayat di bulan ini.</div>';
         return;
       }
 
-      tbody.innerHTML = riwayat.map((r) => {
+      listBody.innerHTML = riwayat.map((r) => {
         const dat = r.data[0];
         const tglArr = r.tanggal.split('-');
         const tglIndo = `${tglArr[2]}/${tglArr[1]}`;
@@ -504,20 +507,24 @@
         const dataString = encodeURIComponent(JSON.stringify(r));
 
         return `
-          <tr>
-            <td style="font-weight:bold; color:var(--text-muted);">${tglIndo}</td>
-            <td style="font-weight:700; color:var(--navy-dark);">${dat.setoran}</td>
-            <td style="text-align:center;">${dat.ayat}</td>
-            <td><span class="badge-riwayat" style="color:${bColor}; background:${bBg}; border-color:${bColor};">${dat.nilai}</span></td>
-            <td>
-              <button class="btn-sm btn-edit" onclick="siapkanEditCard('${safeId}', '${dataString}')">✎ Edit</button>
-              <button class="btn-sm btn-hapus-sm" onclick="hapusSetoranCard('${r.id}', '${nama}', '${safeId}')">✕ Hapus</button>
-            </td>
-          </tr>
+          <div class="riwayat-item">
+            <div class="riwayat-info">
+              <div class="riwayat-top">
+                <span class="riwayat-tgl">${tglIndo}</span>
+                <span class="badge-riwayat" style="color:${bColor}; background:${bBg}; border-color:${bColor};">${dat.nilai}</span>
+              </div>
+              <div class="riwayat-surat">${dat.setoran}</div>
+              <div class="riwayat-ayat">${dat.ayat} Ayat</div>
+            </div>
+            <div class="riwayat-actions">
+              <button class="btn-icon btn-edit-icon" onclick="siapkanEditCard('${safeId}', '${dataString}')" title="Edit">✎</button>
+              <button class="btn-icon btn-hapus-icon" onclick="hapusSetoranCard('${r.id}', '${nama}', '${safeId}')" title="Hapus">✕</button>
+            </div>
+          </div>
         `;
       }).join('');
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Gagal memuat: ${e.message}</td></tr>`;
+      listBody.innerHTML = `<div style="text-align:center; color:red; padding:15px; font-size:0.85rem;">Gagal memuat: ${e.message}</div>`;
     }
   };
 
@@ -568,7 +575,6 @@
     document.getElementById(`ayat_${safeId}`).value = dat.ayat;
     document.getElementById(`salah_${safeId}`).value = dat.kesalahan === "0" ? "" : dat.kesalahan;
     
-    // Cek Checkbox Cahaya
     let ketAsli = dat.keterangan || "";
     let isCahaya = ketAsli.includes("Disetorkan beserta terjemah");
     document.getElementById(`chk_cahaya_${safeId}`).checked = isCahaya;
