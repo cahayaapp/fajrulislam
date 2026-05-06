@@ -9,53 +9,66 @@
   <script src="../js/data-pusat.js"></script>
 
   <style>
-    #sectionInputData { display: none; margin-top: 30px; padding-top: 30px; border-top: 2px dashed var(--input-border); animation: fadeIn 0.5s ease; }
+    /* STYLING KARTU SANTRI & ACCORDION */
+    .santri-card {
+      border-radius: 16px; padding: 20px 25px; margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: 0.3s;
+    }
+    .santri-card-header {
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;
+    }
+    .santri-card-header h3 { margin: 0; color: var(--navy-dark); font-size: 1.3rem; font-family: 'Playfair Display', serif; }
+    .santri-card-header:hover h3 { color: var(--gold-dark); }
     
-    .surat-row { display: flex; gap: 15px; background: #f8fafc; padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--input-border); margin-bottom: 15px; flex-wrap: wrap; }
-    .col-surat { flex: 2; min-width: 180px; }
-    .col-ayat { flex: 1; min-width: 80px; }
+    .icon-toggle { font-size: 1.2rem; transition: transform 0.3s ease; color: var(--gold-dark); }
+    .card-open .icon-toggle { transform: rotate(180deg); }
+    .card-open .santri-card-body { display: block; }
     
-    .btn-hapus { background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; border-radius: 12px; padding: 0 15px; cursor: pointer; height: 52px; margin-top: 28px; transition: 0.3s; }
+    .santri-card-body { display: none; margin-top: 15px; border-top: 2px dashed rgba(0,0,0,0.08); padding-top: 20px; animation: fadeIn 0.4s ease; }
+
+    /* RIWAYAT TABLE */
+    .riwayat-section { background: white; border-radius: 12px; padding: 15px; margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.05); }
+    .riwayat-section h5 { margin: 0 0 15px 0; color: var(--gold-dark); font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; }
+    .tabel-riwayat { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .tabel-riwayat th, .tabel-riwayat td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+    .tabel-riwayat th { background: rgba(0,0,0,0.03); color: var(--navy-dark); font-weight: 700; }
+    
+    /* FORM INPUT */
+    .input-section h5 { margin: 0 0 15px 0; color: var(--navy-dark); font-size: 1.1rem; }
+    .surat-row { display: flex; gap: 10px; background: rgba(255,255,255,0.7); padding: 15px; border-radius: var(--radius-md); border: 1px solid rgba(0,0,0,0.1); margin-bottom: 12px; flex-wrap: wrap; }
+    .col-surat { flex: 2; min-width: 140px; }
+    .col-ayat { flex: 1; min-width: 70px; }
+    
+    .btn-hapus { background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; border-radius: 8px; padding: 0 12px; cursor: pointer; height: 42px; margin-top: 26px; transition: 0.3s; font-weight: bold;}
     .btn-hapus:hover { background: #ef4444; color: white; }
 
-    .btn-tambah-surat { background: #f0f9ff; border: 1px dashed #0ea5e9; color: #0284c7; width: 100%; padding: 14px; border-radius: 14px; margin-bottom: 30px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+    .btn-tambah-surat { background: rgba(255,255,255,0.8); border: 1px dashed #0ea5e9; color: #0284c7; width: 100%; padding: 12px; border-radius: 12px; margin-bottom: 20px; cursor: pointer; font-weight: 600; transition: 0.3s; }
     .btn-tambah-surat:hover { background: #e0f2fe; }
-    
-    .btn-lihat-buku { background: #fffbeb; border: 1px solid #fde68a; color: #d97706; padding: 10px 15px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; transition: 0.3s; margin-top: 10px; width: 100%; justify-content: center; }
 
-    /* Mode Cepat Switch */
-    .mode-switch {
-      display: flex; background: #e2e8f0; padding: 5px; border-radius: 12px; margin-bottom: 20px;
-    }
-    .mode-btn {
-      flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: 0.3s;
-    }
+    .mode-switch { display: flex; background: rgba(255,255,255,0.6); padding: 5px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.05); }
+    .mode-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: 0.3s; background: transparent; color: var(--text-muted); }
     .mode-btn.active { background: var(--navy-dark); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-    .input-predikat { font-weight: 800 !important; text-align: center; font-size: 1.2rem; }
+    .input-predikat { font-weight: 800 !important; text-align: center; font-size: 1.1rem; }
     .pred-mumtaz { color: #059669 !important; background: #ecfdf5 !important; border-color: #059669 !important; }
     .pred-jayyid { color: #0284c7 !important; background: #f0f9ff !important; border-color: #0284c7 !important; }
     .pred-maqbul { color: #d97706 !important; background: #fffbeb !important; border-color: #d97706 !important; }
     .pred-bimbingan { color: #dc2626 !important; background: #fef2f2 !important; border-color: #dc2626 !important; }
 
-    /* Custom Checkbox */
-    .checkbox-container { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; cursor: pointer; }
-    .checkmark { width: 22px; height: 22px; border: 2px solid var(--input-border); border-radius: 6px; display: flex; justify-content: center; align-items: center; }
+    .checkbox-container { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+    .checkmark { width: 20px; height: 20px; border: 2px solid rgba(0,0,0,0.2); border-radius: 5px; display: flex; justify-content: center; align-items: center; background: white;}
     input:checked + .checkmark { background: var(--gold-main); border-color: var(--gold-main); }
-    input:checked + .checkmark::after { content: '✓'; color: white; font-weight: bold; }
+    input:checked + .checkmark::after { content: '✓'; color: white; font-weight: bold; font-size: 0.8rem;}
 
-    /* Modal Buku Setoran & Badges */
-    .modal-buku { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-    .modal-buku-content { background: white; border-radius: var(--radius-lg); padding: 30px; width: 100%; max-width: 900px; max-height: 85vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--input-border); padding-bottom: 15px;}
-    .modal-header h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--navy-dark); margin: 0; }
-    .btn-close { background: #fef2f2; color: #ef4444; border: none; width: 35px; height: 35px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .btn-simpan-card { background: var(--gold-main); color: var(--navy-dark); font-weight: 800; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; display: inline-block; width: 100%; margin-top: 10px; transition: 0.3s;}
+    .btn-simpan-card:hover { background: var(--gold-dark); color: white; box-shadow: 0 4px 12px rgba(212,175,55,0.3); }
+    .btn-batal-card { background: #9ca3af; color: white; font-weight: 700; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; display: none; width: 100%; margin-top: 8px;}
 
-    .badge-mumtaz { background: #ecfdf5; color: #059669; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; border: 1px solid #059669; display: inline-block;}
-    .badge-jayyid { background: #f0f9ff; color: #0284c7; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; border: 1px solid #0284c7; display: inline-block;}
-    .badge-maqbul { background: #fffbeb; color: #d97706; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; border: 1px solid #d97706; display: inline-block;}
-    .badge-bimbingan { background: #fef2f2; color: #dc2626; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; border: 1px solid #dc2626; display: inline-block;}
-    
+    .btn-sm { padding: 5px 10px; font-size: 0.7rem; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s;}
+    .btn-edit { background: #3b82f6; color: white; margin-right: 5px; }
+    .btn-hapus-sm { background: #ef4444; color: white; }
+    .badge-riwayat { padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; border: 1px solid; display: inline-block; }
+
     #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
   </style>
 </head>
@@ -63,14 +76,12 @@
 
 <div id="loadingOverlay">
   <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">📖</div>
-  <div style="font-weight: 700;">Menarik Data Halqah Quraniyah...</div>
+  <div style="font-weight: 700;">Menyiapkan Lembar Halaqah...</div>
 </div>
 
 <main class="cahaya-container">
   <div class="cahaya-card">
-    <h2 class="cahaya-title" style="text-align: center; border-left: none; padding-left: 0;">📖 Input Setoran Individu</h2>
-
-    <div class="form-group"><label>📅 Tanggal Setoran</label><input type="date" class="form-control" id="tfzTanggal"></div>
+    <h2 class="cahaya-title" style="text-align: center; border-left: none; padding-left: 0;">📖 Lembar Setoran Halaqah</h2>
 
     <div class="grid-2">
       <div class="form-group">
@@ -83,91 +94,21 @@
       </div>
       <div class="form-group">
         <label>👥 Halaqah</label>
-        <select class="form-control" id="tfzKelompok" onchange="updateSantri()">
+        <select class="form-control" id="tfzKelompok" onchange="renderSantriCards()">
           <option value="">-- Menunggu Program --</option>
         </select>
       </div>
     </div>
+  </div>
 
-    <div class="form-group">
-      <label>👤 Nama Santri</label>
-      <select class="form-control" id="tfzNamaSantri" onchange="siapkanForm()">
-        <option value="">-- Pilih Halaqah Dulu --</option>
-      </select>
-      <button id="btnLihatBuku" class="btn-lihat-buku" style="display:none;" onclick="bukaBukuSetoran()"><span>📖</span> LIHAT BUKU SETORAN BULAN INI</button>
-    </div>
-
-    <div id="sectionInputData">
-      <!-- PILIHAN MODE -->
-      <div class="mode-switch">
-        <button class="mode-btn active" id="btnModeSatu" onclick="setMode('tunggal')">SATU SURAT / MANUAL</button>
-        <button class="mode-btn" id="btnModeBanyak" onclick="setMode('banyak')">BANYAK SURAT (CEPAT)</button>
-      </div>
-
-      <div id="wadahListSurat"></div>
-      
-      <div id="areaTombolTambah">
-        <button class="btn-tambah-surat" onclick="tambahBarisSurat()">➕ Tambah Surat Lain</button>
-      </div>
-
-      <div class="form-group" style="background:#f8fafc; padding:20px; border-radius:16px; border:1px solid #e2e8f0;">
-        <label style="text-align:center;">∑ Total Ayat Disetorkan</label>
-        <input type="number" class="form-control" id="inputJumlahAyat" readonly style="font-size:1.5rem; text-align:center; font-weight:bold; color:var(--navy-dark); background:white;">
-      </div>
-
-      <div class="grid-2">
-        <div class="form-group">
-          <label>❌ Kesalahan Lahn Jali</label>
-          <input type="number" class="form-control" id="inputKesalahan" placeholder="Kosong = Mumtaz" oninput="hitungPredikat()">
-        </div>
-        <div class="form-group">
-          <label>🏆 Predikat</label>
-          <input type="text" id="inputPredikat" class="form-control input-predikat" readonly>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="checkbox-container">
-          <input type="checkbox" id="checkTahfizCahaya" onchange="toggleTahfizCahaya()" style="display:none;">
-          <span class="checkmark"></span>
-          <span style="font-weight:600;">Status Tahfiz CAHAYA</span>
-        </label>
-        <textarea class="form-control" id="inputCatatan" rows="3" placeholder="Catatan tajwid atau kelancaran (Opsional)..."></textarea>
-      </div>
-
-      <button class="btn-cahaya btn-gold" id="btnSimpanSetoran" onclick="simpanSetoranPerAnak()">💾 SIMPAN DATA SETORAN</button>
-    </div>
+  <div id="santriCardsContainer" style="margin-top: 20px;">
+    <div style="text-align:center;color:var(--text-muted);padding:40px;font-style:italic;background:white;border-radius:12px;">Pilih Program & Halaqah terlebih dahulu.</div>
   </div>
 </main>
 
-<!-- MODAL BUKU SETORAN -->
-<div id="modalBuku" class="modal-buku">
-  <div class="modal-buku-content">
-    <div class="modal-header">
-      <h3 id="titleBukuSantri">Buku Setoran Santri</h3>
-      <button class="btn-close" onclick="tutupBukuSetoran()">✕</button>
-    </div>
-    <div class="table-responsive">
-      <table class="cahaya-table">
-        <thead>
-          <tr>
-            <th width="15%">Tanggal</th>
-            <th width="30%">Surat (Ayat)</th>
-            <th width="10%" style="text-align:center;">Ayat</th>
-            <th width="15%">Predikat</th>
-            <th width="15%">Penerima</th>
-            <th width="15%">Ket</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyRiwayat"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, get, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
@@ -180,10 +121,19 @@
   const db = getDatabase(app);
   const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || 'null');
   let dataHalqahCloud = {};
-  let currentInputMode = 'tunggal';
+
+  const cardColors = [
+    { bg: '#E3F2FD', border: '#64B5F6' }, { bg: '#E8F5E9', border: '#81C784' },
+    { bg: '#FFF3E0', border: '#FFB74D' }, { bg: '#FCE4EC', border: '#F06292' },
+    { bg: '#F3E5F5', border: '#BA68C8' }, { bg: '#E0F7FA', border: '#4DD0E1' }
+  ];
+
+  window.opsiSuratHTML = '<option value="">-- Pilih Surat --</option>';
 
   document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('tfzTanggal').value = new Date().toISOString().split('T')[0];
+    if(window.daftarSurat) {
+        window.daftarSurat.forEach((s, i) => { window.opsiSuratHTML += `<option value="${i}">${i+1}. ${s.nama}</option>`; });
+    }
     try {
       const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
       if (snapshot.exists()) dataHalqahCloud = snapshot.val().halqah || {};
@@ -195,6 +145,8 @@
     const prog = document.getElementById('tfzProgram').value;
     const kmpk = document.getElementById('tfzKelompok');
     kmpk.innerHTML = '<option value="">-- Pilih --</option>';
+    document.getElementById('santriCardsContainer').innerHTML = '<div style="text-align:center;padding:40px;">Pilih Halaqah...</div>';
+    
     if (!prog) return;
     const kategori = dataHalqahCloud["Halqah Quraniyah"] || {};
     Object.keys(kategori).filter(k => k.startsWith(prog)).forEach(k => {
@@ -204,91 +156,192 @@
     });
   };
 
-  window.updateSantri = () => {
+  window.renderSantriCards = () => {
     const prog = document.getElementById('tfzProgram').value;
     const kmpk = document.getElementById('tfzKelompok').value;
-    const nama = document.getElementById('tfzNamaSantri');
-    nama.innerHTML = '<option value="">-- Pilih --</option>';
+    const container = document.getElementById('santriCardsContainer');
+    
     if (!prog || !kmpk) return;
-    const list = (dataHalqahCloud["Halqah Quraniyah"][`${prog} ${kmpk}`] || []).slice().sort();
-    list.forEach(n => { const opt = document.createElement('option'); opt.value = opt.textContent = n; nama.appendChild(opt); });
-  };
-
-  window.siapkanForm = () => {
-    const n = document.getElementById('tfzNamaSantri').value;
-    document.getElementById('sectionInputData').style.display = n ? 'block' : 'none';
-    document.getElementById('btnLihatBuku').style.display = n ? 'flex' : 'none';
-    if(n) { setMode('tunggal'); }
-  };
-
-  window.setMode = (mode) => {
-    currentInputMode = mode;
-    document.getElementById('btnModeSatu').classList.toggle('active', mode === 'tunggal');
-    document.getElementById('btnModeBanyak').classList.toggle('active', mode === 'banyak');
-    document.getElementById('areaTombolTambah').style.display = mode === 'tunggal' ? 'block' : 'none';
     
-    document.getElementById('wadahListSurat').innerHTML = '';
-    if(mode === 'tunggal') tambahBarisSurat();
-    else renderModeBanyak();
-    
-    hitungTotalAyat();
-    hitungPredikat();
+    const listSantri = (dataHalqahCloud["Halqah Quraniyah"][`${prog} ${kmpk}`] || []).slice().sort();
+    if (listSantri.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:red;padding:40px;">Data santri kosong di halaqah ini.</div>';
+        return;
+    }
+
+    container.innerHTML = '';
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    listSantri.forEach((nama, i) => {
+      const theme = cardColors[i % cardColors.length];
+      const safeId = nama.replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
+
+      const cardHtml = `
+        <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal">
+          
+          <!-- HEADER ACCORDION -->
+          <div class="santri-card-header" onclick="toggleCard('${safeId}')">
+            <h3>${i+1}. ${nama}</h3>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span id="badge_info_${safeId}" style="font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Buka Card</span>
+              <span class="icon-toggle">▼</span>
+            </div>
+          </div>
+          
+          <!-- BODY KONTEN -->
+          <div class="santri-card-body" id="body_${safeId}">
+            
+            <!-- 1. RIWAYAT DI ATAS -->
+            <div class="riwayat-section">
+              <h5>Riwayat Setoran Bulan Ini</h5>
+              <div style="overflow-x: auto;">
+                <table class="tabel-riwayat">
+                  <thead><tr><th>Tgl</th><th>Surat & Ayat</th><th>Ayat</th><th>Predikat</th><th>Aksi</th></tr></thead>
+                  <tbody id="riwayat_body_${safeId}">
+                    <tr><td colspan="5" style="text-align:center;">Memuat riwayat...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 2. FORM INPUT DI BAWAHNYA -->
+            <div class="input-section">
+              <h5>✎ Form Input Setoran</h5>
+              <input type="hidden" id="edit_id_${safeId}">
+              
+              <div class="form-group">
+                <label>Tanggal</label>
+                <input type="date" class="form-control" id="tgl_${safeId}" value="${todayStr}" style="max-width:200px;">
+              </div>
+
+              <!-- Area Mode Input -->
+              <div id="area_input_${safeId}">
+                <div class="mode-switch" id="mode_switch_${safeId}">
+                  <button class="mode-btn active" id="btn_mode_tunggal_${safeId}" onclick="setModeCard('tunggal', '${safeId}')">SATU SURAT / MANUAL</button>
+                  <button class="mode-btn" id="btn_mode_banyak_${safeId}" onclick="setModeCard('banyak', '${safeId}')">BANYAK SURAT (CEPAT)</button>
+                </div>
+
+                <div id="wadah_surat_${safeId}"></div>
+                <button class="btn-tambah-surat" id="btn_tambah_${safeId}" onclick="tambahBarisSuratCard('${safeId}')">➕ Tambah Baris Surat</button>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label>∑ Total Ayat</label>
+                  <input type="number" class="form-control" id="ayat_${safeId}" readonly style="font-size:1.2rem; text-align:center; font-weight:bold; background:white;">
+                </div>
+                <div class="form-group">
+                  <label>❌ Lahn Jali</label>
+                  <input type="number" class="form-control" id="salah_${safeId}" placeholder="Kosong=0" oninput="hitungPredikatCard('${safeId}')">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>🏆 Predikat</label>
+                <input type="text" id="predikat_${safeId}" class="form-control input-predikat pred-mumtaz" value="MUMTAZ" readonly>
+              </div>
+
+              <div class="form-group">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="chk_cahaya_${safeId}" onchange="toggleTahfizCahayaCard('${safeId}')" style="display:none;">
+                  <span class="checkmark"></span><span style="font-weight:600; font-size:0.85rem;">Status Tahfiz CAHAYA</span>
+                </label>
+                <textarea class="form-control" id="catatan_${safeId}" rows="2" placeholder="Catatan tajwid / kelancaran..."></textarea>
+              </div>
+
+              <button class="btn-simpan-card" id="btn_simpan_${safeId}" onclick="simpanSetoranCard('${nama}', '${safeId}')">💾 SIMPAN DATA SETORAN</button>
+              <button class="btn-batal-card" id="btn_batal_${safeId}" onclick="batalEditCard('${safeId}')">Batal Edit</button>
+            </div>
+
+          </div>
+        </div>
+      `;
+      container.innerHTML += cardHtml;
+    });
+
+    listSantri.forEach((nama, i) => {
+      const safeId = nama.replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
+      setModeCard('tunggal', safeId);
+      fetchRiwayatSantri(nama, safeId);
+    });
   };
 
-  window.renderModeBanyak = () => {
-    let opsi = '<option value="">-- Pilih Surat --</option>';
-    window.daftarSurat.forEach((s, i) => { opsi += `<option value="${i}">${i+1}. ${s.nama}</option>`; });
+  window.toggleCard = (safeId) => {
+    document.getElementById(`card_${safeId}`).classList.toggle('card-open');
+  };
 
+  // --- LOGIKA FORM ---
+  window.setModeCard = (mode, safeId) => {
+    document.getElementById(`btn_mode_tunggal_${safeId}`).classList.toggle('active', mode === 'tunggal');
+    document.getElementById(`btn_mode_banyak_${safeId}`).classList.toggle('active', mode === 'banyak');
+    document.getElementById(`card_${safeId}`).setAttribute('data-mode', mode);
+    
+    const btnTambah = document.getElementById(`btn_tambah_${safeId}`);
+    const wadah = document.getElementById(`wadah_surat_${safeId}`);
+    
+    if(mode === 'tunggal') {
+      btnTambah.style.display = 'block';
+      wadah.innerHTML = '';
+      tambahBarisSuratCard(safeId);
+    } else {
+      btnTambah.style.display = 'none';
+      wadah.innerHTML = `
+        <div class="surat-row" style="border-left: 4px solid var(--gold-main);">
+          <div class="col-surat"><label>Dari Surat</label><select class="form-control sel-awal-${safeId}" onchange="hitungTotalAyatCard('${safeId}')">${window.opsiSuratHTML}</select></div>
+          <div class="col-surat"><label>Sampai Surat</label><select class="form-control sel-akhir-${safeId}" onchange="hitungTotalAyatCard('${safeId}')">${window.opsiSuratHTML}</select></div>
+          <div class="col-ayat"><label>Ayat Terakhir</label><input type="number" class="form-control inp-ayat-akhir-${safeId}" value="1" oninput="hitungTotalAyatCard('${safeId}')"></div>
+        </div>
+      `;
+    }
+    hitungTotalAyatCard(safeId);
+  };
+
+  window.tambahBarisSuratCard = (safeId, valMulai = "", valSampai = "", valSurat = "") => {
+    const rowId = `row_${Date.now()}_${Math.random().toString(36).substr(2,9)}`;
     const html = `
-      <div class="surat-row" style="border-left: 5px solid var(--gold-main);">
-        <div class="col-surat"><label>Dari Surat</label><select class="form-control" id="suratAwal" onchange="hitungTotalAyat()">${opsi}</select></div>
-        <div class="col-surat"><label>Sampai Surat</label><select class="form-control" id="suratAkhir" onchange="hitungTotalAyat()">${opsi}</select></div>
-        <div class="col-ayat"><label>Ayat Terakhir</label><input type="number" class="form-control" id="ayatTerakhir" value="1" oninput="hitungTotalAyat()"></div>
-      </div>
-      <p style="font-size:0.75rem; color:var(--text-muted); margin-top:-10px; padding:0 10px;">*Sistem otomatis menghitung seluruh ayat surat di antaranya.</p>
-    `;
-    document.getElementById('wadahListSurat').innerHTML = html;
+      <div class="surat-row class-row-${safeId}" id="${rowId}">
+        <div class="col-surat"><label>Surat</label><select class="form-control sel-surat" onchange="hitungTotalAyatCard('${safeId}')">${window.opsiSuratHTML}</select></div>
+        <div class="col-ayat"><label>Dari</label><input type="number" class="form-control inp-mulai" oninput="hitungTotalAyatCard('${safeId}')" value="${valMulai}"></div>
+        <div class="col-ayat"><label>Sampai</label><input type="number" class="form-control inp-sampai" oninput="hitungTotalAyatCard('${safeId}')" value="${valSampai}"></div>
+        <button class="btn-hapus" onclick="document.getElementById('${rowId}').remove(); hitungTotalAyatCard('${safeId}');">✕</button>
+      </div>`;
+    
+    const wadah = document.getElementById(`wadah_surat_${safeId}`);
+    wadah.insertAdjacentHTML('beforeend', html);
+    
+    if (valSurat !== "") {
+        wadah.querySelector(`#${rowId} .sel-surat`).value = valSurat;
+    }
   };
 
-  window.tambahBarisSurat = () => {
-    const id = 'row_' + Date.now();
-    let opsi = '<option value="">-- Pilih Surat --</option>';
-    window.daftarSurat.forEach((s, i) => { opsi += `<option value="${i}">${i+1}. ${s.nama}</option>`; });
-    const html = `<div class="surat-row" id="${id}">
-      <div class="col-surat"><label>Surat</label><select class="form-control pilih-surat" onchange="hitungTotalAyat()">${opsi}</select></div>
-      <div class="col-ayat"><label>Dari</label><input type="number" class="form-control input-mulai" oninput="hitungTotalAyat()"></div>
-      <div class="col-ayat"><label>Sampai</label><input type="number" class="form-control input-sampai" oninput="hitungTotalAyat()"></div>
-      <button class="btn-hapus" onclick="document.getElementById('${id}').remove(); hitungTotalAyat();">🗑️</button>
-    </div>`;
-    document.getElementById('wadahListSurat').insertAdjacentHTML('beforeend', html);
-  };
-
-  window.hitungTotalAyat = () => {
+  window.hitungTotalAyatCard = (safeId) => {
+    const mode = document.getElementById(`card_${safeId}`).getAttribute('data-mode');
     let tot = 0;
-    if(currentInputMode === 'tunggal') {
-      document.querySelectorAll('.surat-row').forEach(r => {
-        const m = parseInt(r.querySelector('.input-mulai').value);
-        const s = parseInt(r.querySelector('.input-sampai').value);
+
+    if(mode === 'tunggal') {
+      document.querySelectorAll(`.class-row-${safeId}`).forEach(r => {
+        const m = parseInt(r.querySelector('.inp-mulai').value);
+        const s = parseInt(r.querySelector('.inp-sampai').value);
         if(m && s && s >= m) tot += (s - m) + 1;
       });
     } else {
-      const startIdx = parseInt(document.getElementById('suratAwal').value);
-      const endIdx = parseInt(document.getElementById('suratAkhir').value);
-      const lastAyat = parseInt(document.getElementById('ayatTerakhir').value) || 0;
+      const sIdx = parseInt(document.querySelector(`.sel-awal-${safeId}`).value);
+      const eIdx = parseInt(document.querySelector(`.sel-akhir-${safeId}`).value);
+      const lAyat = parseInt(document.querySelector(`.inp-ayat-akhir-${safeId}`).value) || 0;
 
-      if(!isNaN(startIdx) && !isNaN(endIdx) && endIdx >= startIdx) {
-        for(let i = startIdx; i <= endIdx; i++) {
-          if(i === endIdx) tot += lastAyat; 
+      if(!isNaN(sIdx) && !isNaN(eIdx) && eIdx >= sIdx && window.daftarSurat) {
+        for(let i = sIdx; i <= eIdx; i++) {
+          if(i === eIdx) tot += lAyat; 
           else tot += window.daftarSurat[i].ayat; 
         }
       }
     }
-    document.getElementById('inputJumlahAyat').value = tot || "";
+    document.getElementById(`ayat_${safeId}`).value = tot || "";
   };
 
-  window.hitungPredikat = () => {
-    const s = parseInt(document.getElementById('inputKesalahan').value) || 0;
-    const p = document.getElementById('inputPredikat');
+  window.hitungPredikatCard = (safeId) => {
+    const s = parseInt(document.getElementById(`salah_${safeId}`).value) || 0;
+    const p = document.getElementById(`predikat_${safeId}`);
     p.className = 'form-control input-predikat';
     if(s === 0) { p.value = 'MUMTAZ'; p.classList.add('pred-mumtaz'); }
     else if(s <= 2) { p.value = 'JAYYID JIDDAN'; p.classList.add('pred-jayyid'); }
@@ -297,144 +350,220 @@
     else { p.value = 'BIMBINGAN'; p.classList.add('pred-bimbingan'); }
   };
 
-  // --- KOREKSI TAHFIZ CAHAYA ---
-  window.toggleTahfizCahaya = () => {
-    const cb = document.getElementById('checkTahfizCahaya');
+  window.toggleTahfizCahayaCard = (safeId) => {
+    const cb = document.getElementById(`chk_cahaya_${safeId}`);
+    const cat = document.getElementById(`catatan_${safeId}`);
     const txt = "Disetorkan beserta terjemah, tadabbur, tafsir, letak dan nomor ayat, serta rencana aksi pengamalan.";
-    const cat = document.getElementById('inputCatatan');
-    
-    if(cb.checked) {
-      cat.value = (cat.value ? cat.value + "\n" : "") + txt;
-    } else {
-      cat.value = cat.value.replace(txt, "").trim();
-    }
+    if(cb.checked) cat.value = (cat.value ? cat.value + "\n" : "") + txt;
+    else cat.value = cat.value.replace(txt, "").trim();
   };
 
-  window.simpanSetoranPerAnak = () => {
-    const btn = document.getElementById('btnSimpanSetoran');
+  // --- FIREBASE & PARSER EDIT ---
+  window.simpanSetoranCard = async (nama, safeId) => {
+    const btn = document.getElementById(`btn_simpan_${safeId}`);
+    const mode = document.getElementById(`card_${safeId}`).getAttribute('data-mode');
     let strSetoran = "";
     
-    if(currentInputMode === 'tunggal') {
+    if(mode === 'tunggal') {
       let parts = [];
-      document.querySelectorAll('.surat-row').forEach(r => {
-        const idx = r.querySelector('.pilih-surat').value;
-        const m = r.querySelector('.input-mulai').value;
-        const s = r.querySelector('.input-sampai').value;
+      document.querySelectorAll(`.class-row-${safeId}`).forEach(r => {
+        const idx = r.querySelector('.sel-surat').value;
+        const m = r.querySelector('.inp-mulai').value;
+        const s = r.querySelector('.inp-sampai').value;
         if(idx && m && s) parts.push(`${window.daftarSurat[idx].nama} (${m}-${s})`);
       });
       strSetoran = parts.join(", ");
     } else {
-      const sIdx = document.getElementById('suratAwal').value;
-      const eIdx = document.getElementById('suratAkhir').value;
-      const lAyt = document.getElementById('ayatTerakhir').value;
+      const sIdx = document.querySelector(`.sel-awal-${safeId}`).value;
+      const eIdx = document.querySelector(`.sel-akhir-${safeId}`).value;
+      const lAyt = document.querySelector(`.inp-ayat-akhir-${safeId}`).value;
       if(sIdx && eIdx && lAyt) {
         if(sIdx === eIdx) strSetoran = `${window.daftarSurat[sIdx].nama} (1-${lAyt})`;
         else strSetoran = `${window.daftarSurat[sIdx].nama} s/d ${window.daftarSurat[eIdx].nama} (Ayat ${lAyt})`;
       }
     }
 
-    if(!strSetoran) return alert("Lengkapi data setoran!");
+    if(!strSetoran) return alert(`Lengkapi data surat/ayat untuk ${nama}!`);
+
     btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
 
-    const log = {
-      tanggal: document.getElementById('tfzTanggal').value,
+    const editId = document.getElementById(`edit_id_${safeId}`).value;
+    const payload = {
+      tanggal: document.getElementById(`tgl_${safeId}`).value,
       program: document.getElementById('tfzProgram').value,
       kelompok: document.getElementById('tfzKelompok').value,
       guru: user.label || user.username || 'Guru Tahfiz',
       data: [{
-        nama: document.getElementById('tfzNamaSantri').value,
+        nama: nama,
         setoran: strSetoran,
-        ayat: document.getElementById('inputJumlahAyat').value,
-        kesalahan: document.getElementById('inputKesalahan').value || "0",
-        nilai: document.getElementById('inputPredikat').value,
-        keterangan: document.getElementById('inputCatatan').value
+        ayat: document.getElementById(`ayat_${safeId}`).value,
+        kesalahan: document.getElementById(`salah_${safeId}`).value || "0",
+        nilai: document.getElementById(`predikat_${safeId}`).value,
+        keterangan: document.getElementById(`catatan_${safeId}`).value
       }],
       waktuSimpan: new Date().toISOString()
     };
 
-    push(ref(db, 'cahaya_app/setoran_tahfiz'), log).then(() => {
-      alert("✅ BERHASIL DISIMPAN!"); 
-      location.reload();
-    }).catch(err => {
+    try {
+      if (editId) await update(ref(db, `cahaya_app/setoran_tahfiz/${editId}`), payload);
+      else await push(ref(db, 'cahaya_app/setoran_tahfiz'), payload);
+      
+      batalEditCard(safeId);
+      fetchRiwayatSantri(nama, safeId);
+    } catch(err) {
       alert("Gagal: " + err.message);
-      btn.disabled = false;
-    });
+    } finally {
+      btn.innerHTML = "💾 SIMPAN DATA SETORAN"; btn.disabled = false;
+    }
   };
 
-  // --- KOREKSI BUKU SETORAN ---
-  window.bukaBukuSetoran = async () => {
-    const nama = document.getElementById('tfzNamaSantri').value;
-    if (!nama) return;
-
-    const modal = document.getElementById('modalBuku');
-    const tbody = document.getElementById('tbodyRiwayat');
-    const title = document.getElementById('titleBukuSantri');
-
-    title.textContent = `Buku Setoran: ${nama}`;
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">⏳ Mengambil data dari server...</td></tr>';
-    modal.style.display = 'flex';
+  window.fetchRiwayatSantri = async (nama, safeId) => {
+    const tbody = document.getElementById(`riwayat_body_${safeId}`);
+    const badgeInfo = document.getElementById(`badge_info_${safeId}`);
+    const bulanIni = new Date().toISOString().slice(0, 7); 
 
     try {
       const snapshot = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
       if (!snapshot.exists()) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">Belum ada riwayat setoran di sistem.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">Belum ada riwayat.</td></tr>';
         return;
       }
 
       const dataObj = snapshot.val();
-      const bulanIni = new Date().toISOString().slice(0, 7); 
       let riwayat = [];
 
       for (let key in dataObj) {
         const record = dataObj[key];
         if (record.tanggal && record.tanggal.startsWith(bulanIni)) {
           if (record.data && record.data[0] && record.data[0].nama === nama) {
-            riwayat.push({
-              tanggal: record.tanggal,
-              setoran: record.data[0].setoran,
-              ayat: record.data[0].ayat,
-              nilai: record.data[0].nilai,
-              keterangan: record.data[0].keterangan || '-',
-              guru: record.guru || 'Tidak Diketahui'
-            });
+            riwayat.push({ id: key, ...record });
           }
         }
       }
 
       riwayat.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      
+      // Update badge info di header
+      if(riwayat.length > 0) badgeInfo.innerText = `${riwayat.length} Setoran Bulan Ini`;
+      else badgeInfo.innerText = "Belum Ada Setoran";
 
       if (riwayat.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Belum ada setoran di bulan ini.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">Belum ada riwayat di bulan ini.</td></tr>';
         return;
       }
 
       tbody.innerHTML = riwayat.map((r) => {
-        const [y, m, d] = r.tanggal.split('-');
-        const tglIndo = `${d}/${m}/${y}`;
+        const dat = r.data[0];
+        const tglArr = r.tanggal.split('-');
+        const tglIndo = `${tglArr[2]}/${tglArr[1]}`;
 
-        let badgeClass = 'badge-mumtaz';
-        if(r.nilai.includes("JAYYID")) badgeClass = 'badge-jayyid';
-        if(r.nilai.includes("MAQBUL")) badgeClass = 'badge-maqbul';
-        if(r.nilai.includes("BIMBINGAN")) badgeClass = 'badge-bimbingan';
+        let bColor = '#059669', bBg = '#ecfdf5'; 
+        if(dat.nilai.includes("JAYYID")) { bColor = '#0284c7'; bBg = '#f0f9ff'; }
+        if(dat.nilai.includes("MAQBUL")) { bColor = '#d97706'; bBg = '#fffbeb'; }
+        if(dat.nilai.includes("BIMBINGAN")) { bColor = '#dc2626'; bBg = '#fef2f2'; }
+        
+        const dataString = encodeURIComponent(JSON.stringify(r));
 
         return `
           <tr>
-            <td style="font-weight:600; color:var(--text-muted);">${tglIndo}</td>
-            <td style="font-weight:700; color:var(--navy-dark);">${r.setoran}</td>
-            <td style="text-align:center; font-weight:600;">${r.ayat}</td>
-            <td><span class="${badgeClass}">${r.nilai}</span></td>
-            <td style="text-transform:capitalize;">Ust. ${r.guru}</td>
-            <td style="font-size:0.75rem;">${r.keterangan}</td>
+            <td style="font-weight:bold; color:var(--text-muted);">${tglIndo}</td>
+            <td style="font-weight:700; color:var(--navy-dark);">${dat.setoran}</td>
+            <td style="text-align:center;">${dat.ayat}</td>
+            <td><span class="badge-riwayat" style="color:${bColor}; background:${bBg}; border-color:${bColor};">${dat.nilai}</span></td>
+            <td>
+              <button class="btn-sm btn-edit" onclick="siapkanEditCard('${safeId}', '${dataString}')">✎</button>
+              <button class="btn-sm btn-hapus-sm" onclick="hapusSetoranCard('${r.id}', '${nama}', '${safeId}')">✕</button>
+            </td>
           </tr>
         `;
       }).join('');
-
-    } catch (error) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:red;">❌ Gagal menarik data: ${error.message}</td></tr>`;
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Gagal memuat: ${e.message}</td></tr>`;
     }
   };
 
-  window.tutupBukuSetoran = () => document.getElementById('modalBuku').style.display = 'none';
+  // PARSING KEMBALI TEKS MENJADI FORM
+  window.siapkanEditCard = (safeId, dataEncoded) => {
+    const dataRow = JSON.parse(decodeURIComponent(dataEncoded));
+    const dat = dataRow.data[0];
+    const str = dat.setoran;
+
+    document.getElementById(`edit_id_${safeId}`).value = dataRow.id;
+    document.getElementById(`tgl_${safeId}`).value = dataRow.tanggal;
+    
+    // Fungsi bantu cari index surat berdasarkan nama
+    const findSuratIdx = (name) => {
+      if(!window.daftarSurat) return "";
+      return window.daftarSurat.findIndex(s => s.nama.trim() === name.trim());
+    };
+
+    let isBanyak = str.includes(" s/d ");
+
+    if (isBanyak) {
+      setModeCard('banyak', safeId);
+      let parts = str.split(" s/d ");
+      let sAwal = parts[0].trim();
+      let matchAkhir = parts[1].match(/(.+?)\s*\(Ayat\s*(\d+)\)/);
+      if(matchAkhir) {
+        document.querySelector(`.sel-awal-${safeId}`).value = findSuratIdx(sAwal);
+        document.querySelector(`.sel-akhir-${safeId}`).value = findSuratIdx(matchAkhir[1].trim());
+        document.querySelector(`.inp-ayat-akhir-${safeId}`).value = matchAkhir[2];
+      }
+    } else {
+      setModeCard('tunggal', safeId);
+      let wadah = document.getElementById(`wadah_surat_${safeId}`);
+      wadah.innerHTML = ''; 
+
+      let suratItems = str.split(", ");
+      suratItems.forEach(item => {
+        let match = item.match(/(.+?)\s*\((\d+)-(\d+)\)/);
+        if(match) {
+          let sNama = match[1].trim();
+          let idxSurat = findSuratIdx(sNama);
+          tambahBarisSuratCard(safeId, match[2], match[3], idxSurat);
+        } else {
+          tambahBarisSuratCard(safeId); // fallback
+        }
+      });
+    }
+
+    document.getElementById(`ayat_${safeId}`).value = dat.ayat;
+    document.getElementById(`salah_${safeId}`).value = dat.kesalahan === "0" ? "" : dat.kesalahan;
+    document.getElementById(`catatan_${safeId}`).value = dat.keterangan || "";
+    
+    hitungPredikatCard(safeId);
+
+    document.getElementById(`btn_simpan_${safeId}`).innerText = "💾 UPDATE DATA";
+    document.getElementById(`btn_batal_${safeId}`).style.display = "inline-block";
+    
+    // Pastikan card terbuka dan scroll ke form
+    document.getElementById(`card_${safeId}`).classList.add('card-open');
+    document.getElementById(`btn_simpan_${safeId}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  window.batalEditCard = (safeId) => {
+    document.getElementById(`edit_id_${safeId}`).value = "";
+    document.getElementById(`tgl_${safeId}`).value = new Date().toISOString().split('T')[0];
+    
+    document.getElementById(`salah_${safeId}`).value = "";
+    document.getElementById(`catatan_${safeId}`).value = "";
+    document.getElementById(`chk_cahaya_${safeId}`).checked = false;
+    
+    setModeCard('tunggal', safeId);
+    hitungPredikatCard(safeId);
+
+    document.getElementById(`btn_simpan_${safeId}`).innerText = "💾 SIMPAN DATA SETORAN";
+    document.getElementById(`btn_batal_${safeId}`).style.display = "none";
+  };
+
+  window.hapusSetoranCard = async (idNode, nama, safeId) => {
+    if(confirm(`Hapus data setoran ini dari riwayat ${nama}?`)) {
+      try {
+        await remove(ref(db, `cahaya_app/setoran_tahfiz/${idNode}`));
+        fetchRiwayatSantri(nama, safeId);
+      } catch(e) { alert("Gagal menghapus: " + e.message); }
+    }
+  };
 </script>
 </body>
 </html>
