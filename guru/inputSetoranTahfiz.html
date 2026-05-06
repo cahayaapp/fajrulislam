@@ -13,7 +13,7 @@
     * { box-sizing: border-box; }
     body, html { overflow-x: hidden; width: 100%; }
 
-    /* STYLING KARTU SANTRI & ACCORDION */
+    /* KARTU SANTRI & ACCORDION */
     .santri-card {
       border-radius: 16px; padding: 20px 25px; margin-bottom: 20px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: 0.3s;
@@ -32,16 +32,23 @@
     .santri-card-body { display: none; margin-top: 15px; border-top: 2px dashed rgba(0,0,0,0.08); padding-top: 20px; animation: fadeIn 0.4s ease; }
 
     /* =========================================================
-       RIWAYAT SETORAN (DESAIN BARU: LIST CARD ANTI GESER)
+       RESUME HAFALAN (JUZ, SURAT, AYAT, BARIS)
+       ========================================================= */
+    .resume-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    .resume-box { background: linear-gradient(135deg, var(--navy-dark, #0f172a), #1e293b); border-radius: 12px; padding: 12px; text-align: center; color: white; position: relative; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .resume-box::after { content: '📖'; position: absolute; right: -5px; bottom: -15px; font-size: 3.5rem; opacity: 0.1; }
+    .resume-box h4 { margin: 0; font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .resume-box p { margin: 5px 0 0; font-size: 1.5rem; font-weight: 800; font-family: 'Playfair Display', serif; }
+    .resume-box span { font-size: 0.7rem; font-weight: 400; opacity: 0.8; }
+
+    /* =========================================================
+       RIWAYAT SETORAN (LIST CARD ANTI GESER)
        ========================================================= */
     .riwayat-section { background: white; border-radius: 12px; padding: 15px; margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.05); }
     .riwayat-section h5 { margin: 0 0 15px 0; color: var(--gold-dark); font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; }
     
     .riwayat-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-    .riwayat-item { 
-      display: flex; align-items: center; justify-content: space-between; 
-      padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; 
-    }
+    .riwayat-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
     .riwayat-info { flex: 1; min-width: 0; padding-right: 10px; }
     .riwayat-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
     .riwayat-tgl { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); background: #e2e8f0; padding: 3px 6px; border-radius: 6px;}
@@ -91,18 +98,20 @@
     #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--navy-dark); font-family: 'Playfair Display', serif; font-size: 1.2rem; transition: 0.5s; }
 
     /* ==============================================================
-       MOBILE RESPONSIVE (MEDIA QUERIES)
-       Merakit ulang form dan elemen agar menyusun rapi ke bawah
+       MOBILE RESPONSIVE
        ============================================================== */
     @media screen and (max-width: 768px) {
       .cahaya-container { padding: 10px; }
-      
       .grid-2 { display: grid; grid-template-columns: 1fr !important; gap: 15px; }
 
       .santri-card { padding: 15px 12px; }
       .santri-card-header h3 { font-size: 1.15rem; }
       
-      /* Menyusun baris input form ke bawah */
+      .resume-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .resume-box { padding: 10px; }
+      .resume-box p { font-size: 1.2rem; }
+      .resume-box h4 { font-size: 0.6rem; }
+
       .surat-row { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; }
       .col-surat, .col-ayat { min-width: 100%; width: 100%; }
       .btn-hapus { width: 100%; height: 38px; margin-top: 5px; }
@@ -176,6 +185,91 @@
 
   window.opsiSuratHTML = '<option value="">-- Pilih Surat --</option>';
 
+  // DATABASE QURAN BARU (Validasi Bobot Halaman)
+  const quranDb = [
+    { nama: "Al-Fatihah", ayat: 7, pages: 1 }, { nama: "Al-Baqarah", ayat: 286, pages: 48 }, { nama: "Ali 'Imran", ayat: 200, pages: 27 },
+    { nama: "An-Nisa'", ayat: 176, pages: 29 }, { nama: "Al-Ma'idah", ayat: 120, pages: 21 }, { nama: "Al-An'am", ayat: 165, pages: 23 },
+    { nama: "Al-A'raf", ayat: 206, pages: 26 }, { nama: "Al-Anfal", ayat: 75, pages: 10 }, { nama: "At-Taubah", ayat: 129, pages: 21 },
+    { nama: "Yunus", ayat: 109, pages: 13 }, { nama: "Hud", ayat: 123, pages: 13 }, { nama: "Yusuf", ayat: 111, pages: 13 },
+    { nama: "Ar-Ra'd", ayat: 43, pages: 6 }, { nama: "Ibrahim", ayat: 52, pages: 7 }, { nama: "Al-Hijr", ayat: 99, pages: 5 },
+    { nama: "An-Nahl", ayat: 128, pages: 14 }, { nama: "Al-Isra'", ayat: 111, pages: 11 }, { nama: "Al-Kahf", ayat: 110, pages: 11 },
+    { nama: "Maryam", ayat: 98, pages: 7 }, { nama: "Ta Ha", ayat: 135, pages: 10 }, { nama: "Al-Anbiya'", ayat: 112, pages: 10 },
+    { nama: "Al-Hajj", ayat: 78, pages: 10 }, { nama: "Al-Mu'minun", ayat: 118, pages: 8 }, { nama: "An-Nur", ayat: 64, pages: 9 },
+    { nama: "Al-Furqan", ayat: 77, pages: 7 }, { nama: "Asy-Syu'ara'", ayat: 227, pages: 10 }, { nama: "An-Naml", ayat: 93, pages: 9 },
+    { nama: "Al-Qasas", ayat: 88, pages: 11 }, { nama: "Al-'Ankabut", ayat: 69, pages: 8 }, { nama: "Ar-Rum", ayat: 60, pages: 6 },
+    { nama: "Luqman", ayat: 34, pages: 4 }, { nama: "As-Sajdah", ayat: 30, pages: 3 }, { nama: "Al-Ahzab", ayat: 73, pages: 10 },
+    { nama: "Saba'", ayat: 54, pages: 6 }, { nama: "Fatir", ayat: 45, pages: 6 }, { nama: "Ya Sin", ayat: 83, pages: 6 },
+    { nama: "As-Saffat", ayat: 182, pages: 7 }, { nama: "Sad", ayat: 88, pages: 5 }, { nama: "Az-Zumar", ayat: 75, pages: 9 },
+    { nama: "Ghafir", ayat: 85, pages: 9 }, { nama: "Fussilat", ayat: 54, pages: 6 }, { nama: "Asy-Syura", ayat: 53, pages: 6 },
+    { nama: "Az-Zukhruf", ayat: 89, pages: 7 }, { nama: "Ad-Dukhan", ayat: 59, pages: 3 }, { nama: "Al-Jasiyah", ayat: 37, pages: 4 },
+    { nama: "Al-Ahqaf", ayat: 35, pages: 5 }, { nama: "Muhammad", ayat: 38, pages: 4 }, { nama: "Al-Fath", ayat: 29, pages: 5 },
+    { nama: "Al-Hujurat", ayat: 18, pages: 3 }, { nama: "Qaf", ayat: 45, pages: 3 }, { nama: "Az-Zariyat", ayat: 60, pages: 3 },
+    { nama: "At-Tur", ayat: 49, pages: 3 }, { nama: "An-Najm", ayat: 62, pages: 3 }, { nama: "Al-Qamar", ayat: 55, pages: 3 },
+    { nama: "Ar-Rahman", ayat: 78, pages: 3 }, { nama: "Al-Waqi'ah", ayat: 96, pages: 3 }, { nama: "Al-Hadid", ayat: 29, pages: 4 },
+    { nama: "Al-Mujadilah", ayat: 22, pages: 3 }, { nama: "Al-Hasyr", ayat: 24, pages: 3 }, { nama: "Al-Mumtahanah", ayat: 13, pages: 3 },
+    { nama: "As-Saff", ayat: 14, pages: 2 }, { nama: "Al-Jumu'ah", ayat: 11, pages: 2 }, { nama: "Al-Munafiqun", ayat: 11, pages: 2 },
+    { nama: "At-Tagabun", ayat: 18, pages: 2 }, { nama: "At-Talaq", ayat: 12, pages: 2 }, { nama: "At-Tahrim", ayat: 12, pages: 2 },
+    // Juz 29 
+    { nama: "Al-Mulk", ayat: 30, pages: 2.5 }, { nama: "Al-Qalam", ayat: 52, pages: 2 }, { nama: "Al-Haqqah", ayat: 52, pages: 2 },
+    { nama: "Al-Ma'arij", ayat: 44, pages: 2 }, { nama: "Nuh", ayat: 28, pages: 1.5 }, { nama: "Al-Jinn", ayat: 28, pages: 2 },
+    { nama: "Al-Muzzammil", ayat: 20, pages: 1.5 }, { nama: "Al-Muddassir", ayat: 56, pages: 2 }, { nama: "Al-Qiyamah", ayat: 40, pages: 1 },
+    { nama: "Al-Insan", ayat: 31, pages: 2 }, { nama: "Al-Mursalat", ayat: 50, pages: 1.5 },
+    // Juz 30
+    { nama: "An-Naba'", ayat: 40, pages: 1.5 }, { nama: "An-Nazi'at", ayat: 46, pages: 1.5 }, { nama: "'Abasa", ayat: 42, pages: 1 },
+    { nama: "At-Takwir", ayat: 29, pages: 1 }, { nama: "Al-Infitar", ayat: 19, pages: 0.8 }, { nama: "Al-Mutaffifin", ayat: 36, pages: 1.2 },
+    { nama: "Al-Insyiqaq", ayat: 25, pages: 1 }, { nama: "Al-Buruj", ayat: 22, pages: 1 }, { nama: "At-Tariq", ayat: 17, pages: 0.5 },
+    { nama: "Al-A'la", ayat: 19, pages: 0.5 }, { nama: "Al-Gasyiyah", ayat: 26, pages: 1 }, { nama: "Al-Fajr", ayat: 30, pages: 1 },
+    { nama: "Al-Balad", ayat: 20, pages: 0.5 }, { nama: "Asy-Syams", ayat: 15, pages: 0.5 }, { nama: "Al-Lail", ayat: 21, pages: 1 },
+    { nama: "Ad-Duha", ayat: 11, pages: 0.5 }, { nama: "Asy-Syarh", ayat: 8, pages: 0.2 }, { nama: "At-Tin", ayat: 8, pages: 0.3 },
+    { nama: "Al-'Alaq", ayat: 19, pages: 0.5 }, { nama: "Al-Qadr", ayat: 5, pages: 0.2 }, { nama: "Al-Bayyinah", ayat: 8, pages: 0.5 },
+    { nama: "Az-Zalzalah", ayat: 8, pages: 0.3 }, { nama: "Al-'Adiyat", ayat: 11, pages: 0.5 }, { nama: "Al-Qari'ah", ayat: 11, pages: 0.5 },
+    { nama: "At-Takasur", ayat: 8, pages: 0.3 }, { nama: "Al-'Asr", ayat: 3, pages: 0.2 }, { nama: "Al-Humazah", ayat: 9, pages: 0.3 },
+    { nama: "Al-Fil", ayat: 5, pages: 0.2 }, { nama: "Quraisy", ayat: 4, pages: 0.2 }, { nama: "Al-Ma'un", ayat: 7, pages: 0.3 },
+    { nama: "Al-Kausar", ayat: 3, pages: 0.2 }, { nama: "Al-Kafirun", ayat: 6, pages: 0.3 }, { nama: "An-Nasr", ayat: 3, pages: 0.2 },
+    { nama: "Al-Lahab", ayat: 5, pages: 0.2 }, { nama: "Al-Ikhlas", ayat: 4, pages: 0.2 }, { nama: "Al-Falaq", ayat: 5, pages: 0.2 },
+    { nama: "An-Nas", ayat: 6, pages: 0.3 }
+  ];
+
+  const cariIndexSurat = (nama) => {
+      let bersih = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
+      let target = bersih(nama);
+      return quranDb.findIndex(s => bersih(s.nama) === target);
+  };
+
+  const kalkulasiArrayPencapaian = (arrAyat) => {
+      let totAyat = 0, totSurat = 0, totBobot = 0;
+      for (let i = 0; i < 114; i++) {
+          if (arrAyat[i] > 0) { 
+              totSurat++; totAyat += arrAyat[i]; 
+              totBobot += ((arrAyat[i] / quranDb[i].ayat) * quranDb[i].pages);
+          }
+      }
+      return { ayat: totAyat, surat: totSurat, baris: Math.round(totBobot * 15), juz: (totBobot / 20).toFixed(2) };
+  };
+
+  const jalankanParser = (teksSetoran, arrayTarget) => {
+      let parts = teksSetoran.split(',');
+      parts.forEach(part => {
+         part = part.trim();
+         let matchBanyak = part.match(/(.*?)\s*s\/d\s*(.*?)\s*\(Ayat\s*(\d+)\)/i);
+         if (matchBanyak) {
+             let idxStart = cariIndexSurat(matchBanyak[1]); let idxEnd = cariIndexSurat(matchBanyak[2]);
+             let endAyat = parseInt(matchBanyak[3]);
+             if (idxStart !== -1 && idxEnd !== -1) {
+                 let minIdx = Math.min(idxStart, idxEnd); let maxIdx = Math.max(idxStart, idxEnd);
+                 for(let i = minIdx; i < maxIdx; i++) arrayTarget[i] = quranDb[i].ayat; 
+                 arrayTarget[maxIdx] = Math.max(arrayTarget[maxIdx], endAyat);
+             }
+             return;
+         }
+         let matchTunggal = part.match(/(.*?)\s*\(\s*\d+\s*-\s*(\d+)\s*\)/i);
+         if (matchTunggal) {
+             let idx = cariIndexSurat(matchTunggal[1]); let endAyat = parseInt(matchTunggal[2]);
+             if (idx !== -1) arrayTarget[idx] = Math.max(arrayTarget[idx], endAyat);
+         }
+      });
+  };
+
   document.addEventListener('DOMContentLoaded', async () => {
     if(window.daftarSurat) {
         window.daftarSurat.forEach((s, i) => { window.opsiSuratHTML += `<option value="${i}">${i+1}. ${s.nama}</option>`; });
@@ -202,7 +296,7 @@
     });
   };
 
-  window.renderSantriCards = () => {
+  window.renderSantriCards = async () => {
     const prog = document.getElementById('tfzProgram').value;
     const kmpk = document.getElementById('tfzKelompok').value;
     const container = document.getElementById('santriCardsContainer');
@@ -215,6 +309,14 @@
         return;
     }
 
+    // Tampilkan Loading dan Tarik DB Sekali Saja Di Awal (Optimasi Performa Web & Mobile)
+    container.innerHTML = '<div style="text-align:center;padding:40px;background:white;border-radius:12px;">⏳ Mengambil data halaqah seluruh santri...</div>';
+    let preloadedDb = {};
+    try {
+      const snap = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
+      preloadedDb = snap.exists() ? snap.val() : {};
+    } catch(e) { console.error("DB Fetch Error:", e); }
+
     container.innerHTML = '';
     const todayStr = new Date().toISOString().split('T')[0];
 
@@ -225,7 +327,6 @@
       const cardHtml = `
         <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal">
           
-          <!-- HEADER ACCORDION -->
           <div class="santri-card-header" onclick="toggleCard('${safeId}')">
             <h3>${i+1}. ${nama}</h3>
             <div style="display:flex; align-items:center; gap:10px;">
@@ -234,10 +335,12 @@
             </div>
           </div>
           
-          <!-- BODY KONTEN -->
           <div class="santri-card-body" id="body_${safeId}">
             
-            <!-- 1. RIWAYAT DI ATAS (DESAIN LIST CARD) -->
+            <!-- RESUME HAFALAN KESELURUHAN (Akan diisi lewat JS) -->
+            <div id="resume_container_${safeId}"></div>
+
+            <!-- RIWAYAT SETORAN LIST CARD -->
             <div class="riwayat-section">
               <h5>Riwayat Setoran Bulan Ini</h5>
               <div class="riwayat-list" id="riwayat_body_${safeId}">
@@ -245,7 +348,7 @@
               </div>
             </div>
 
-            <!-- 2. FORM INPUT DI BAWAHNYA -->
+            <!-- FORM INPUT -->
             <div class="input-section">
               <h5>✎ Form Input Setoran</h5>
               <input type="hidden" id="edit_id_${safeId}">
@@ -255,7 +358,6 @@
                 <input type="date" class="form-control" id="tgl_${safeId}" value="${todayStr}">
               </div>
 
-              <!-- Area Mode Input -->
               <div id="area_input_${safeId}">
                 <div class="mode-switch" id="mode_switch_${safeId}">
                   <button class="mode-btn active" id="btn_mode_tunggal_${safeId}" onclick="setModeCard('tunggal', '${safeId}')">SATU SURAT / MANUAL</button>
@@ -304,7 +406,7 @@
     listSantri.forEach((nama, i) => {
       const safeId = nama.replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
       setModeCard('tunggal', safeId);
-      fetchRiwayatSantri(nama, safeId);
+      fetchRiwayatSantri(nama, safeId, preloadedDb);
     });
   };
 
@@ -351,9 +453,7 @@
     const wadah = document.getElementById(`wadah_surat_${safeId}`);
     wadah.insertAdjacentHTML('beforeend', html);
     
-    if (valSurat !== "") {
-        wadah.querySelector(`#${rowId} .sel-surat`).value = valSurat;
-    }
+    if (valSurat !== "") wadah.querySelector(`#${rowId} .sel-surat`).value = valSurat;
   };
 
   window.hitungTotalAyatCard = (safeId) => {
@@ -373,8 +473,7 @@
 
       if(!isNaN(sIdx) && !isNaN(eIdx) && eIdx >= sIdx && window.daftarSurat) {
         for(let i = sIdx; i <= eIdx; i++) {
-          if(i === eIdx) tot += lAyat; 
-          else tot += window.daftarSurat[i].ayat; 
+          if(i === eIdx) tot += lAyat; else tot += window.daftarSurat[i].ayat; 
         }
       }
     }
@@ -451,7 +550,7 @@
       else await push(ref(db, 'cahaya_app/setoran_tahfiz'), payload);
       
       batalEditCard(safeId);
-      fetchRiwayatSantri(nama, safeId);
+      fetchRiwayatSantri(nama, safeId); // Refresh with live DB fetch
     } catch(err) {
       alert("Gagal: " + err.message);
     } finally {
@@ -459,42 +558,62 @@
     }
   };
 
-  // MENGGUNAKAN DESAIN LIST CARD BARU
-  window.fetchRiwayatSantri = async (nama, safeId) => {
+  // MENGGUNAKAN LIST CARD & GENERATE RESUME
+  window.fetchRiwayatSantri = async (nama, safeId, preloadedData = null) => {
     const listBody = document.getElementById(`riwayat_body_${safeId}`);
+    const resumeContainer = document.getElementById(`resume_container_${safeId}`);
     const badgeInfo = document.getElementById(`badge_info_${safeId}`);
     const bulanIni = new Date().toISOString().slice(0, 7); 
 
     try {
-      const snapshot = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
-      if (!snapshot.exists()) {
-        listBody.innerHTML = '<div style="text-align:center; padding:15px; color:#999; font-size:0.85rem;">Belum ada riwayat.</div>';
-        return;
+      let dataObj = preloadedData;
+      if (!dataObj) {
+         const snapshot = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
+         dataObj = snapshot.exists() ? snapshot.val() : {};
       }
 
-      const dataObj = snapshot.val();
-      let riwayat = [];
+      let riwayatBulanIni = [];
+      let pencapaianSemua = new Array(114).fill(0);
 
       for (let key in dataObj) {
         const record = dataObj[key];
-        if (record.tanggal && record.tanggal.startsWith(bulanIni)) {
-          if (record.data && record.data[0] && record.data[0].nama === nama) {
-            riwayat.push({ id: key, ...record });
+        if (record.data && record.data[0] && record.data[0].nama === nama) {
+          
+          // Parsing Semua Data Untuk Kalkulasi Total Hafalan (Seperti di Buku Tahfiz)
+          let teksSetoran = record.data[0].setoran || "";
+          jalankanParser(teksSetoran, pencapaianSemua);
+
+          // Filtering Data Hanya Bulan Ini Untuk List Riwayat
+          if (record.tanggal && record.tanggal.startsWith(bulanIni)) {
+            riwayatBulanIni.push({ id: key, ...record });
           }
         }
       }
 
-      riwayat.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      // BUILD RESUME GRID (Total Hafalan Santri)
+      let resResume = kalkulasiArrayPencapaian(pencapaianSemua);
+      resumeContainer.innerHTML = `
+        <h5 style="margin: 0 0 10px 0; color: var(--navy-dark); font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px;">📊 Total Capaian Hafalan</h5>
+        <div class="resume-grid">
+          <div class="resume-box"><h4>Total Juz</h4><p>${resResume.juz} <span>Juz</span></p></div>
+          <div class="resume-box"><h4>Total Surat</h4><p>${resResume.surat} <span>Surat</span></p></div>
+          <div class="resume-box"><h4>Total Ayat</h4><p>${resResume.ayat} <span>Ayat</span></p></div>
+          <div class="resume-box"><h4>Total Baris</h4><p>${resResume.baris} <span>Baris</span></p></div>
+        </div>
+      `;
+
+      // BUILD RIWAYAT LIST CARD
+      riwayatBulanIni.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
       
-      if(riwayat.length > 0) badgeInfo.innerText = `${riwayat.length} Setoran Bulan Ini`;
+      if(riwayatBulanIni.length > 0) badgeInfo.innerText = `${riwayatBulanIni.length} Setoran Bulan Ini`;
       else badgeInfo.innerText = "Belum Ada Setoran";
 
-      if (riwayat.length === 0) {
+      if (riwayatBulanIni.length === 0) {
         listBody.innerHTML = '<div style="text-align:center; padding:15px; color:#999; font-size:0.85rem;">Belum ada riwayat di bulan ini.</div>';
         return;
       }
 
-      listBody.innerHTML = riwayat.map((r) => {
+      listBody.innerHTML = riwayatBulanIni.map((r) => {
         const dat = r.data[0];
         const tglArr = r.tanggal.split('-');
         const tglIndo = `${tglArr[2]}/${tglArr[1]}`;
@@ -523,6 +642,7 @@
           </div>
         `;
       }).join('');
+
     } catch (e) {
       listBody.innerHTML = `<div style="text-align:center; color:red; padding:15px; font-size:0.85rem;">Gagal memuat: ${e.message}</div>`;
     }
