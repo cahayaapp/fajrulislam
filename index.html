@@ -6,6 +6,10 @@
   <title>CAHAYA APP - Premium Portal</title>
   <link rel="icon" type="image/png" href="assets/logofi.png" />
   
+  <!-- PENTING: Link manifest untuk syarat PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#050b14" />
+  
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -90,6 +94,19 @@
     }
     .btn-utama:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(212,175,55,0.4); background: linear-gradient(135deg, #eadd84, #c99318); }
     .btn-utama:active { transform: translateY(1px); }
+
+    /* Tombol Instal PWA */
+    .btn-instal {
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px 20px; width: 100%; border-radius: 14px;
+      font-size: 0.95rem; font-weight: 500; font-family: 'Poppins', sans-serif;
+      cursor: pointer; transition: all 0.3s ease; margin-top: 15px;
+      display: none; /* Disembunyikan sampai browser siap */
+    }
+    .btn-instal:hover {
+      background: rgba(212, 175, 55, 0.1); border-color: #d4af37; color: #d4af37;
+    }
 
     /* VIEW 2: LOGIN FORM */
     #loginView { display: none; animation: fadeIn 0.6s ease forwards; }
@@ -176,6 +193,9 @@
         Platform eksklusif pemantauan akademik, ibadah, kedisiplinan, dan manajemen operasional Pesantren Cahaya Fajrul Islam.
       </p>
       <button class="btn-utama" onclick="tampilkanLogin()">Login Disini</button>
+      
+      <!-- Tombol PWA Ditambahkan di Sini -->
+      <button id="tombolInstal" class="btn-instal">📥 Instal Aplikasi CAHAYA APP</button>
     </div>
 
     <div id="loginView">
@@ -238,6 +258,29 @@
       document.getElementById('splashScreen').style.opacity = '0';
       setTimeout(() => document.getElementById('splashScreen').style.visibility = 'hidden', 800);
     }, 1800);
+
+    // === LOGIKA INSTALASI PWA ===
+    let tangkapPrompt;
+    const tombolInstal = document.getElementById('tombolInstal');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault(); // Mencegah pop-up default
+      tangkapPrompt = e;
+      tombolInstal.style.display = 'block'; // Memunculkan tombol instal
+    });
+
+    tombolInstal.addEventListener('click', async () => {
+      if (tangkapPrompt !== null) {
+        tangkapPrompt.prompt();
+        const { outcome } = await tangkapPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('Instalasi aplikasi disetujui');
+        }
+        tangkapPrompt = null;
+        tombolInstal.style.display = 'none';
+      }
+    });
+    // ============================
 
     // === DATA WALI SANTRI ===
     const waliList = [
@@ -423,6 +466,15 @@
       const splash = document.getElementById('splashScreen');
       document.getElementById('loadingText').textContent = teks;
       splash.style.visibility = 'visible'; splash.style.opacity = '1';
+    }
+
+    // === REGISTRASI SERVICE WORKER (SYARAT MUTLAK PWA) ===
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker terdaftar dengan sukses!', reg))
+          .catch(err => console.log('Pendaftaran Service Worker gagal:', err));
+      });
     }
 
     window.onload = () => {
