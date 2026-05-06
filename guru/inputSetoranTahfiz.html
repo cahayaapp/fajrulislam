@@ -271,8 +271,11 @@
   };
 
   document.addEventListener('DOMContentLoaded', async () => {
+    // MENAMBAHKAN INFORMASI TOTAL AYAT DI DROPDOWN
     if(window.daftarSurat) {
-        window.daftarSurat.forEach((s, i) => { window.opsiSuratHTML += `<option value="${i}">${i+1}. ${s.nama}</option>`; });
+        window.daftarSurat.forEach((s, i) => { 
+            window.opsiSuratHTML += `<option value="${i}">${i+1}. ${s.nama} (${s.ayat} Ayat)</option>`; 
+        });
     }
     try {
       const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
@@ -309,7 +312,6 @@
         return;
     }
 
-    // Tampilkan Loading dan Tarik DB Sekali Saja Di Awal (Optimasi Performa Web & Mobile)
     container.innerHTML = '<div style="text-align:center;padding:40px;background:white;border-radius:12px;">⏳ Mengambil data halaqah seluruh santri...</div>';
     let preloadedDb = {};
     try {
@@ -337,10 +339,8 @@
           
           <div class="santri-card-body" id="body_${safeId}">
             
-            <!-- RESUME HAFALAN KESELURUHAN (Akan diisi lewat JS) -->
             <div id="resume_container_${safeId}"></div>
 
-            <!-- RIWAYAT SETORAN LIST CARD -->
             <div class="riwayat-section">
               <h5>Riwayat Setoran Bulan Ini</h5>
               <div class="riwayat-list" id="riwayat_body_${safeId}">
@@ -348,7 +348,6 @@
               </div>
             </div>
 
-            <!-- FORM INPUT -->
             <div class="input-section">
               <h5>✎ Form Input Setoran</h5>
               <input type="hidden" id="edit_id_${safeId}">
@@ -414,7 +413,6 @@
     document.getElementById(`card_${safeId}`).classList.toggle('card-open');
   };
 
-  // --- LOGIKA FORM ---
   window.setModeCard = (mode, safeId) => {
     document.getElementById(`btn_mode_tunggal_${safeId}`).classList.toggle('active', mode === 'tunggal');
     document.getElementById(`btn_mode_banyak_${safeId}`).classList.toggle('active', mode === 'banyak');
@@ -550,7 +548,7 @@
       else await push(ref(db, 'cahaya_app/setoran_tahfiz'), payload);
       
       batalEditCard(safeId);
-      fetchRiwayatSantri(nama, safeId); // Refresh with live DB fetch
+      fetchRiwayatSantri(nama, safeId); 
     } catch(err) {
       alert("Gagal: " + err.message);
     } finally {
@@ -558,7 +556,6 @@
     }
   };
 
-  // MENGGUNAKAN LIST CARD & GENERATE RESUME
   window.fetchRiwayatSantri = async (nama, safeId, preloadedData = null) => {
     const listBody = document.getElementById(`riwayat_body_${safeId}`);
     const resumeContainer = document.getElementById(`resume_container_${safeId}`);
@@ -579,18 +576,15 @@
         const record = dataObj[key];
         if (record.data && record.data[0] && record.data[0].nama === nama) {
           
-          // Parsing Semua Data Untuk Kalkulasi Total Hafalan (Seperti di Buku Tahfiz)
           let teksSetoran = record.data[0].setoran || "";
           jalankanParser(teksSetoran, pencapaianSemua);
 
-          // Filtering Data Hanya Bulan Ini Untuk List Riwayat
           if (record.tanggal && record.tanggal.startsWith(bulanIni)) {
             riwayatBulanIni.push({ id: key, ...record });
           }
         }
       }
 
-      // BUILD RESUME GRID (Total Hafalan Santri)
       let resResume = kalkulasiArrayPencapaian(pencapaianSemua);
       resumeContainer.innerHTML = `
         <h5 style="margin: 0 0 10px 0; color: var(--navy-dark); font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 10px;">📊 Total Capaian Hafalan</h5>
@@ -602,7 +596,6 @@
         </div>
       `;
 
-      // BUILD RIWAYAT LIST CARD
       riwayatBulanIni.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
       
       if(riwayatBulanIni.length > 0) badgeInfo.innerText = `${riwayatBulanIni.length} Setoran Bulan Ini`;
@@ -648,7 +641,6 @@
     }
   };
 
-  // PARSING KEMBALI TEKS MENJADI FORM
   window.siapkanEditCard = (safeId, dataEncoded) => {
     const dataRow = JSON.parse(decodeURIComponent(dataEncoded));
     const dat = dataRow.data[0];
