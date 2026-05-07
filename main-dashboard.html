@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP – Portal Utama</title>
   <link rel="icon" type="image/png" href="assets/logofi.png" />
+  
   <link rel="stylesheet" href="css/cahaya-theme.css" />
   
   <style>
@@ -18,39 +19,53 @@
     .brand-logo { width: 45px; height: 45px; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(212,175,55,0.3)); }
     .brand-text h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--navy-dark, #0f172a); font-weight: 900; letter-spacing: 1px; line-height: 1.1; margin: 0;}
     .brand-text p { font-size: 0.65rem; color: var(--gold-main, #d4af37); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;}
+
     .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 20px 20px 20px; }
+    .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+    .sidebar-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
     .menu-group { display: none; margin-bottom: 25px; animation: fadeIn 0.5s ease; }
     .group-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted, #64748b); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; padding-left: 15px; }
+    
     .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 12px; color: var(--text-muted, #64748b); text-decoration: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s; margin-bottom: 4px;}
     .nav-item:hover { background: #f8fafc; color: var(--navy-dark, #0f172a); transform: translateX(5px); }
     .nav-item.active { background: linear-gradient(90deg, rgba(212,175,55,0.1) 0%, transparent 100%); color: var(--navy-dark, #0f172a); font-weight: 700; border-left: 3px solid var(--gold-main, #d4af37); border-radius: 4px 12px 12px 4px;}
+
     .sidebar-bottom { padding: 15px 20px 25px 20px; flex-shrink: 0; background: white; border-top: 1px solid #f1f5f9; box-shadow: 0 -4px 10px rgba(0,0,0,0.02);}
     .btn-logout { width: 100%; padding: 14px; border: 1px solid #fecdd3; background: #fff1f2; color: #e11d48; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 0.9rem;}
     .btn-logout:hover { background: #e11d48; color: white; border-color: #e11d48; box-shadow: 0 4px 12px rgba(225,29,72,0.2);}
 
-    /* MAIN CONTENT */
+    /* MAIN CONTENT & TOP BAR */
     .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
     .top-bar { padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--input-border, #cbd5e1); z-index: 10;}
     .page-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 800; color: var(--navy-dark, #0f172a); }
+    
     .user-profile-btn { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 50px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; background: white; box-shadow: var(--shadow-card, 0 4px 6px rgba(0,0,0,0.05)); }
     .user-profile-btn:hover { border-color: var(--gold-main, #d4af37); transform: translateY(-2px); }
+    
     .user-info { text-align: right; display: flex; flex-direction: column; }
     .user-name { font-weight: 700; font-size: 0.85rem; color: var(--navy-dark, #0f172a); line-height: 1.2; }
     .user-role { font-size: 0.65rem; color: var(--gold-main, #d4af37); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;}
+
     .avatar-circle { width: 38px; height: 38px; border-radius: 50%; background: var(--navy-dark, #0f172a); color: white; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1rem; border: 2px solid var(--gold-main, #d4af37); overflow: hidden;}
     .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    
     #contentFrame { width: 100%; flex: 1; border: none; background: transparent; }
 
-    /* MOBILE RESPONSIVE */
+    /* MOBILE RESPONSIVE (Sudah Fix Layar Kedap-Kedip) */
     .mobile-header { display: none; }
     .mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: 0.3s; pointer-events: none;}
+
     @media (max-width: 900px) {
       body { flex-direction: column; }
       .sidebar { position: fixed; top: 0; bottom: 0; left: -300px; height: 100%; height: 100dvh; width: 280px; box-shadow: 5px 0 20px rgba(0,0,0,0.15); z-index: 1000; }
       .sidebar.open { left: 0; }
       .mobile-menu-overlay.open { opacity: 1; pointer-events: all; }
       .top-bar { display: none; }
-      .main-content { height: 100vh; height: 100dvh; }
+      
+      /* FIX LAYAR KEDAP KEDIP: Gunakan width 100% alih-alih memaksa height 100vh */
+      .main-content { width: 100%; }
+      
       .mobile-header { display: flex; padding: 15px 20px; background: white; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--input-border, #cbd5e1); z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
       .mobile-brand { display: flex; align-items: center; gap: 10px; font-family: 'Playfair Display', serif; font-weight: 900; color: var(--navy-dark, #0f172a); font-size: 1.1rem; }
       .mobile-brand img { width: 30px; }
@@ -58,7 +73,7 @@
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* ===== WIDGET LIVE CHAT (WA STYLE & ANTI CRASH) ===== */
+    /* ===== CSS WIDGET LIVE CHAT (NOTIFIKASI + EDIT + HAPUS + SALIN) ===== */
     .pengurus-fab-chat {
       position: fixed; bottom: 20px; right: 20px; z-index: 9999;
       width: 60px; height: 60px; border-radius: 50%;
@@ -70,17 +85,21 @@
     .pengurus-fab-chat:hover { transform: scale(1.1); }
     
     .chat-badge {
-      position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+      position: absolute; top: -5px; right: -5px;
+      background: #ef4444; color: white;
       font-size: 0.75rem; font-weight: 800; font-family: 'Poppins', sans-serif;
       width: 24px; height: 24px; border-radius: 50%;
-      display: flex; justify-content: center; align-items: center; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: none;
+      display: flex; justify-content: center; align-items: center;
+      border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: none; 
     }
 
     .pengurus-chat-window {
       position: fixed; bottom: 90px; right: 20px; z-index: 9999;
       width: 340px; max-width: calc(100vw - 40px); height: 500px;
       background: white; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-      display: none; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; font-family: 'Poppins', sans-serif;
+      display: none; flex-direction: column; overflow: hidden;
+      border: 1px solid #e2e8f0; font-family: 'Poppins', sans-serif;
     }
     .p-chat-header { background: #0f172a; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #d4af37;}
     .p-chat-header h4 { margin: 0; font-size: 1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;}
@@ -93,7 +112,7 @@
     .p-chat-filter select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; outline: none; font-size: 0.8rem; background: #f8fafc;}
     
     .p-inbox-list { flex: 1; overflow-y: auto; background: white; display: flex; flex-direction: column; }
-    .inbox-item { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 12px; position: relative; user-select: none; transition: 0.2s;}
+    .inbox-item { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; position: relative; user-select: none;}
     .inbox-item:hover { background: #f8fafc; }
     .inbox-avatar { width: 42px; height: 42px; border-radius: 50%; background: #e2e8f0; display: flex; justify-content: center; align-items: center; font-weight: 800; color: #475569; flex-shrink: 0; font-size: 1.1rem; border: 1px solid #cbd5e1;}
     .inbox-info { flex: 1; min-width: 0; pointer-events: none;}
@@ -109,8 +128,8 @@
     .p-msg-self { background: #e0f2fe; color: #0369a1; align-self: flex-end; border-bottom-right-radius: 2px; }
     .p-msg-other { background: white; border: 1px solid #cbd5e1; align-self: flex-start; border-bottom-left-radius: 2px; }
     .p-msg-info { font-size: 0.65rem; color: #94a3b8; margin-bottom: 3px; font-weight: 600;}
-
-    /* MENU MELAYANG (EDIT/HAPUS) */
+    
+    /* MENU MELAYANG (EDIT/HAPUS/SALIN) */
     .msg-options-menu {
       position: absolute; right: 20px; background: white;
       border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
@@ -143,7 +162,8 @@
       </div>
     </div>
     <div class="sidebar-scroll">
-      <nav class="nav-menu" id="dynamicMenu"></nav>
+      <nav class="nav-menu" id="dynamicMenu">
+        </nav>
     </div>
     <div class="sidebar-bottom">
       <button class="btn-logout" onclick="logout()"><span style="margin-right: 8px;">🚪</span> KELUAR</button>
