@@ -5,85 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP – Portal Utama</title>
   <link rel="icon" type="image/png" href="assets/logofi.png" />
-  
-  <!-- PANGGIL MASTER THEME CAHAYA -->
   <link rel="stylesheet" href="css/cahaya-theme.css" />
   
   <style>
-    /* CSS Khusus Layout Dashboard (Sidebar & Topbar) */
-    body { padding: 0; margin: 0; display: flex; height: 100vh; height: 100dvh; overflow: hidden; background-color: var(--bg-pearl, #f8fafc); }
+    /* ===== CSS LAYOUT DASHBOARD ===== */
+    body { padding: 0; margin: 0; display: flex; height: 100vh; height: 100dvh; overflow: hidden; background-color: var(--bg-pearl, #f8fafc); font-family: 'Poppins', sans-serif;}
 
-    /* ===== SIDEBAR ===== */
-    .sidebar { 
-      width: 280px; flex-shrink: 0; background: white; border-right: 1px solid var(--input-border, #cbd5e1);
-      display: flex; flex-direction: column; z-index: 1000; transition: 0.3s; height: 100%;
-    }
-
+    /* SIDEBAR */
+    .sidebar { width: 280px; flex-shrink: 0; background: white; border-right: 1px solid var(--input-border, #cbd5e1); display: flex; flex-direction: column; z-index: 1000; transition: 0.3s; height: 100%; }
     .sidebar-top { padding: 25px 20px 10px 20px; flex-shrink: 0; }
     .brand-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
     .brand-logo { width: 45px; height: 45px; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(212,175,55,0.3)); }
     .brand-text h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--navy-dark, #0f172a); font-weight: 900; letter-spacing: 1px; line-height: 1.1; margin: 0;}
     .brand-text p { font-size: 0.65rem; color: var(--gold-main, #d4af37); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;}
-
     .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 20px 20px 20px; }
-    .sidebar-scroll::-webkit-scrollbar { width: 4px; }
-    .sidebar-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-
     .menu-group { display: none; margin-bottom: 25px; animation: fadeIn 0.5s ease; }
     .group-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted, #64748b); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; padding-left: 15px; }
-    
-    .nav-item { 
-      display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 12px; 
-      color: var(--text-muted, #64748b); text-decoration: none; font-weight: 600; font-size: 0.85rem; 
-      cursor: pointer; transition: all 0.3s; margin-bottom: 4px;
-    }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 12px; color: var(--text-muted, #64748b); text-decoration: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s; margin-bottom: 4px;}
     .nav-item:hover { background: #f8fafc; color: var(--navy-dark, #0f172a); transform: translateX(5px); }
-    .nav-item.active { 
-      background: linear-gradient(90deg, rgba(212,175,55,0.1) 0%, transparent 100%); 
-      color: var(--navy-dark, #0f172a); font-weight: 700; border-left: 3px solid var(--gold-main, #d4af37); 
-      border-radius: 4px 12px 12px 4px;
-    }
-
-    .sidebar-bottom { 
-      padding: 15px 20px 25px 20px; flex-shrink: 0; background: white; 
-      border-top: 1px solid #f1f5f9; box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
-    }
-    .btn-logout {
-      width: 100%; padding: 14px; border: 1px solid #fecdd3; background: #fff1f2; 
-      color: #e11d48; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
-      display: flex; justify-content: center; align-items: center; font-size: 0.9rem;
-    }
+    .nav-item.active { background: linear-gradient(90deg, rgba(212,175,55,0.1) 0%, transparent 100%); color: var(--navy-dark, #0f172a); font-weight: 700; border-left: 3px solid var(--gold-main, #d4af37); border-radius: 4px 12px 12px 4px;}
+    .sidebar-bottom { padding: 15px 20px 25px 20px; flex-shrink: 0; background: white; border-top: 1px solid #f1f5f9; box-shadow: 0 -4px 10px rgba(0,0,0,0.02);}
+    .btn-logout { width: 100%; padding: 14px; border: 1px solid #fecdd3; background: #fff1f2; color: #e11d48; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 0.9rem;}
     .btn-logout:hover { background: #e11d48; color: white; border-color: #e11d48; box-shadow: 0 4px 12px rgba(225,29,72,0.2);}
 
-    /* ===== MAIN CONTENT & TOP BAR ===== */
+    /* MAIN CONTENT */
     .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
-    
-    .top-bar { 
-      padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; 
-      background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--input-border, #cbd5e1); z-index: 10;
-    }
+    .top-bar { padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--input-border, #cbd5e1); z-index: 10;}
     .page-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 800; color: var(--navy-dark, #0f172a); }
-    
     .user-profile-btn { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 50px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; background: white; box-shadow: var(--shadow-card, 0 4px 6px rgba(0,0,0,0.05)); }
     .user-profile-btn:hover { border-color: var(--gold-main, #d4af37); transform: translateY(-2px); }
-    
     .user-info { text-align: right; display: flex; flex-direction: column; }
     .user-name { font-weight: 700; font-size: 0.85rem; color: var(--navy-dark, #0f172a); line-height: 1.2; }
     .user-role { font-size: 0.65rem; color: var(--gold-main, #d4af37); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;}
-
-    .avatar-circle { 
-      width: 38px; height: 38px; border-radius: 50%; background: var(--navy-dark, #0f172a); color: white;
-      display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1rem;
-      border: 2px solid var(--gold-main, #d4af37); overflow: hidden;
-    }
+    .avatar-circle { width: 38px; height: 38px; border-radius: 50%; background: var(--navy-dark, #0f172a); color: white; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1rem; border: 2px solid var(--gold-main, #d4af37); overflow: hidden;}
     .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-    
     #contentFrame { width: 100%; flex: 1; border: none; background: transparent; }
 
-    /* ===== MOBILE RESPONSIVE ===== */
+    /* MOBILE RESPONSIVE */
     .mobile-header { display: none; }
     .mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: 0.3s; pointer-events: none;}
-
     @media (max-width: 900px) {
       body { flex-direction: column; }
       .sidebar { position: fixed; top: 0; bottom: 0; left: -300px; height: 100%; height: 100dvh; width: 280px; box-shadow: 5px 0 20px rgba(0,0,0,0.15); z-index: 1000; }
@@ -91,14 +51,81 @@
       .mobile-menu-overlay.open { opacity: 1; pointer-events: all; }
       .top-bar { display: none; }
       .main-content { height: 100vh; height: 100dvh; }
-      .mobile-header { 
-        display: flex; padding: 15px 20px; background: white; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--input-border, #cbd5e1); z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-      }
+      .mobile-header { display: flex; padding: 15px 20px; background: white; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--input-border, #cbd5e1); z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
       .mobile-brand { display: flex; align-items: center; gap: 10px; font-family: 'Playfair Display', serif; font-weight: 900; color: var(--navy-dark, #0f172a); font-size: 1.1rem; }
       .mobile-brand img { width: 30px; }
       .menu-toggle-btn { background: none; border: none; font-size: 1.5rem; color: var(--navy-dark, #0f172a); cursor: pointer; }
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ===== WIDGET LIVE CHAT (WA STYLE & ANTI CRASH) ===== */
+    .pengurus-fab-chat {
+      position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, #0f172a, #1e293b); color: white;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.8rem; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.4);
+      cursor: pointer; transition: 0.3s; border: 2px solid #d4af37;
+    }
+    .pengurus-fab-chat:hover { transform: scale(1.1); }
+    
+    .chat-badge {
+      position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+      font-size: 0.75rem; font-weight: 800; font-family: 'Poppins', sans-serif;
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; justify-content: center; align-items: center; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: none;
+    }
+
+    .pengurus-chat-window {
+      position: fixed; bottom: 90px; right: 20px; z-index: 9999;
+      width: 340px; max-width: calc(100vw - 40px); height: 500px;
+      background: white; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+      display: none; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; font-family: 'Poppins', sans-serif;
+    }
+    .p-chat-header { background: #0f172a; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #d4af37;}
+    .p-chat-header h4 { margin: 0; font-size: 1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;}
+    
+    .p-chat-tabs { display: flex; background: #f1f5f9; padding: 5px; gap: 5px; }
+    .p-tab { flex: 1; text-align: center; padding: 10px; font-size: 0.8rem; font-weight: 700; border-radius: 10px; cursor: pointer; transition: 0.2s; color: #64748b; }
+    .p-tab.active { background: white; color: #0f172a; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+    .p-chat-filter { padding: 12px; background: white; border-bottom: 1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;}
+    .p-chat-filter select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; outline: none; font-size: 0.8rem; background: #f8fafc;}
+    
+    .p-inbox-list { flex: 1; overflow-y: auto; background: white; display: flex; flex-direction: column; }
+    .inbox-item { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 12px; position: relative; user-select: none; transition: 0.2s;}
+    .inbox-item:hover { background: #f8fafc; }
+    .inbox-avatar { width: 42px; height: 42px; border-radius: 50%; background: #e2e8f0; display: flex; justify-content: center; align-items: center; font-weight: 800; color: #475569; flex-shrink: 0; font-size: 1.1rem; border: 1px solid #cbd5e1;}
+    .inbox-info { flex: 1; min-width: 0; pointer-events: none;}
+    .inbox-name { font-size: 0.9rem; font-weight: 700; color: #0f172a; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;}
+    .inbox-preview { font-size: 0.8rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+    .unread-indicator { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; display: none; }
+    
+    .inbox-item.broadcast-room { background: #fffbeb; border-left: 4px solid #d97706; }
+    .inbox-item.broadcast-room .inbox-avatar { background: #fde68a; color: #b45309; border-color: #d97706;}
+
+    .p-chat-body { flex: 1; overflow-y: auto; padding: 15px; background: #fafafa; display: none; flex-direction: column; gap: 10px; scroll-behavior: smooth;}
+    .p-chat-msg { padding: 10px 15px; border-radius: 12px; font-size: 0.85rem; max-width: 85%; line-height: 1.4; position: relative; word-wrap: break-word; cursor: pointer; user-select: none;}
+    .p-msg-self { background: #e0f2fe; color: #0369a1; align-self: flex-end; border-bottom-right-radius: 2px; }
+    .p-msg-other { background: white; border: 1px solid #cbd5e1; align-self: flex-start; border-bottom-left-radius: 2px; }
+    .p-msg-info { font-size: 0.65rem; color: #94a3b8; margin-bottom: 3px; font-weight: 600;}
+
+    /* MENU MELAYANG (EDIT/HAPUS) */
+    .msg-options-menu {
+      position: absolute; right: 20px; background: white;
+      border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      display: none; flex-direction: column; z-index: 1100; overflow: hidden;
+      border: 1px solid #e2e8f0; min-width: 120px;
+    }
+    .msg-options-menu button { padding: 10px 15px; border: none; background: white; font-size: 0.8rem; font-weight: 600; text-align: left; cursor: pointer; width: 100%; transition: 0.2s;}
+    .msg-options-menu button:hover { background: #f1f5f9; }
+    .msg-options-menu .btn-del { color: #ef4444; border-top: 1px solid #f1f5f9; }
+
+    .p-chat-footer { padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: none; gap: 8px; }
+    .p-chat-footer input { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid #cbd5e1; outline: none; font-size: 0.85rem; }
+    .p-chat-footer button { background: #0f172a; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s;}
+
+    @media (max-width: 480px) { .pengurus-chat-window { right: 10px; bottom: 85px; width: calc(100vw - 20px); } }
   </style>
 </head>
 <body>
@@ -106,7 +133,6 @@
   <div class="mobile-menu-overlay" onclick="toggleSidebar()"></div>
 
   <aside class="sidebar" id="mainSidebar">
-    
     <div class="sidebar-top">
       <div class="brand-header">
         <img src="assets/logofi.png" alt="Logo" class="brand-logo" />
@@ -116,78 +142,12 @@
         </div>
       </div>
     </div>
-
     <div class="sidebar-scroll">
-      <nav class="nav-menu" id="dynamicMenu">
-        
-        <div class="menu-group" id="group-utama" style="display: block;">
-          <div class="group-label">Utama</div>
-          <a class="nav-item active" onclick="loadPage('home.html', this)">🏠 Beranda</a>
-        </div>
-
-        <div class="menu-group">
-          <div class="group-label">Modul Supervisor</div>
-          <a class="nav-item menu-akses" id="menu-kontrol-harian" style="display: none;" onclick="loadPage('supervisor/kontrol-harian.html', this)">📊 Pusat Kontrol Harian</a>
-          <a class="nav-item menu-akses" id="menu-kontrol-pekanan" style="display: none;" onclick="loadPage('supervisor/kontrol-pekanan.html', this)">📅 Pusat Kontrol Pekanan</a>
-          <a class="nav-item menu-akses" id="menu-raport-bulanan" style="display: none;" onclick="loadPage('supervisor/raport-bulanan.html', this)">📈 Laporan Bulanan & KPI</a>
-          <a class="nav-item menu-akses" id="menu-raport-semester" style="display: none;" onclick="loadPage('supervisor/raport-semester.html', this)">🎓 Raport Semester</a>
-        </div>
-
-        <div class="menu-group">
-          <div class="group-label">Akademik (Guru)</div>
-          <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html', this)">📋 Absensi Halqah</a>
-          <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html', this)">📖 Input Setoran Tahfiz</a>
-          
-          <!-- MENU BARU: BUKU TAHFIZ -->
-          <a class="nav-item menu-akses" id="menu-buku-tahfiz" style="display: none;" onclick="loadPage('guru/buku-tahfiz.html', this)">📚 Buku Setoran Santri</a>
-
-          <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html', this)">📝 Input Nilai Bulanan</a>
-          <a class="nav-item menu-akses" id="menu-raport" style="display: none;" onclick="loadPage('guru/inputRaportBulanan.html', this)">📊 Raport Bulanan</a>
-          <a class="nav-item menu-akses" id="menu-halqah" style="display: none;" onclick="loadPage('guru/edit-kelas.html', this)">⚙️ Manajemen Halqah</a>
-        </div>
-
-        <div class="menu-group">
-          <div class="group-label">Asrama (Naqib)</div>
-          <a class="nav-item menu-akses" id="menu-absen-asrama" style="display: none;" onclick="loadPage('naqib/absensi.html', this)">📋 Absensi Program</a>
-          <a class="nav-item menu-akses" id="menu-disiplin" style="display: none;" onclick="loadPage('naqib/kedisiplinan.html', this)">⚖️ Kedisiplinan</a>
-          <a class="nav-item menu-akses" id="menu-mentoring" style="display: none;" onclick="loadPage('naqib/mentoring.html', this)">🤝 Mentoring</a>
-          <a class="nav-item menu-akses" id="menu-gamifikasi" style="display: none;" onclick="loadPage('naqib/gamifikasi.html', this)">🌟 Gamifikasi</a>
-          <a class="nav-item menu-akses" id="menu-jurnal-piket" style="display: none;" onclick="loadPage('naqib/jurnal-piket.html', this)">📝 Jurnal Piket</a>
-          <a class="nav-item menu-akses" id="menu-usrah" style="display: none;" onclick="loadPage('naqib/edit-usrah.html', this)">⚙️ Manajemen Usrah</a>
-        </div>
-
-        <div class="menu-group">
-          <div class="group-label">Pusat Asesmen</div>
-          <a class="nav-item menu-akses" id="menu-asesmen-naqib" style="display: none;" onclick="loadPage('pusat-asesmen/naqib.html', this)">🧘 Asesmen Mandiri Naqib</a>
-          <a class="nav-item menu-akses" id="menu-asesmen-guru" style="display: none;" onclick="loadPage('pusat-asesmen/guru.html', this)">🧘 Asesmen Mandiri Guru</a>
-          <a class="nav-item menu-akses" id="menu-asesmen-santri" style="display: none;" onclick="loadPage('pusat-asesmen/santri.html', this)">📊 Asesmen CAHAYA Santri</a>
-          <a class="nav-item menu-akses" id="menu-asesmen-sdm" style="display: none;" onclick="loadPage('pusat-asesmen/sdm-supervisor.html', this)">👁️ Asesmen Kinerja SDM</a>
-        </div>
-
-        <div class="menu-group">
-          <div class="group-label">Bimbingan Konseling</div>
-          <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="loadPage('konselor/daftar-kasus-baru.html', this)">⏳ Antrean Kasus Baru</a>
-          <a class="nav-item menu-akses" id="menu-buku-kasus" style="display: none;" onclick="loadPage('konselor/buku-kasus-riwayat.html', this)">📚 Buku Rekam Jejak Kasus</a>
-          <a class="nav-item menu-akses" id="menu-evaluasi-kasus" style="display: none;" onclick="loadPage('konselor/evaluasi-kasus.html', this)">📈 Evaluasi Pembinaan</a>
-        </div>
-
-        <div class="menu-group">
-          <div class="group-label">SETTING</div>
-          <a class="nav-item menu-akses" id="menu-db-master" style="display: none;" onclick="loadPage('admin/database.html', this)">🗄️ Database Master</a>
-          <a class="nav-item menu-akses" id="menu-jadwal" style="display: none;" onclick="loadPage('admin/atur-jadwal.html', this)">📅 Atur Jadwal KBM</a>
-          <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html', this)">🔐 Manajemen User</a>
-          <a class="nav-item menu-akses" id="menu-koreksi" style="display: none;" onclick="loadPage('admin/settings.html', this)">🛠️ Pusat Koreksi Data</a>
-          <a class="nav-item menu-akses" id="menu-profil" style="display: none;" onclick="loadPage('profil.html', this)">👤 Pengaturan Profil</a>
-        </div>
-      </nav>
+      <nav class="nav-menu" id="dynamicMenu"></nav>
     </div>
-
     <div class="sidebar-bottom">
-      <button class="btn-logout" onclick="logout()">
-        <span style="margin-right: 8px;">🚪</span> KELUAR
-      </button>
+      <button class="btn-logout" onclick="logout()"><span style="margin-right: 8px;">🚪</span> KELUAR</button>
     </div>
-
   </aside>
 
   <main class="main-content">
@@ -199,7 +159,7 @@
 
     <div class="top-bar">
       <div class="page-title" id="currentPageTitle">Beranda</div>
-      <div class="user-profile-btn" onclick="loadPage('profil.html', document.querySelector('[onclick*=\'profil.html\']'))">
+      <div class="user-profile-btn" onclick="loadPage('profil.html', null)">
         <div class="user-info">
           <span class="user-name" id="userNameLabel">MEMUAT...</span>
           <span class="user-role" id="userRoleLabel">AKSES TERBATAS</span>
@@ -211,19 +171,112 @@
     <iframe id="contentFrame" src="home.html"></iframe>
   </main>
 
+  <div class="pengurus-fab-chat" onclick="togglePengurusChat()">
+    💬
+    <div id="chatUnreadBadge" class="chat-badge">0</div>
+  </div>
+
+  <div class="pengurus-chat-window" id="pengurusChatWindow">
+    <div class="p-chat-header">
+      <h4 id="chatHeaderTitle">Pusat Komunikasi</h4>
+      <span onclick="togglePengurusChat()" style="cursor:pointer; font-size:1.2rem;">✖</span>
+    </div>
+
+    <div class="p-chat-tabs">
+      <div class="p-tab active" id="tabInbox" onclick="switchChatTab('inbox')">Pesan Masuk</div>
+      <div class="p-tab" id="tabNew" onclick="switchChatTab('new')">Cari Orang</div>
+    </div>
+
+    <div id="viewInbox" class="p-inbox-list"></div>
+
+    <div id="viewNew" class="p-chat-filter" style="display: none;">
+      <select id="pChatRole" onchange="loadPengurusTujuan()">
+         <option value="">-- Memuat Akses... --</option>
+      </select>
+      <select id="pChatRecipient" onchange="openChatFromDropdown()" style="display: none;">
+        <option value="">-- Pilih Nama --</option>
+      </select>
+    </div>
+
+    <div class="p-chat-body" id="pChatBody"></div>
+    
+    <div class="p-chat-footer" id="pChatFooter">
+      <input type="text" id="pChatInput" placeholder="Ketik pesan..." onkeypress="handlePengurusChatEnter(event)">
+      <button onclick="sendPengurusMessage()">➤</button>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
       authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
       projectId: "absensi-santri-fajrul-islam"
     };
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-    const db = firebase.firestore();
-  </script>
+    const dbFS = firebase.firestore();
+    const dbRT = firebase.database();
 
-  <script>
+    // ==========================================
+    // LOGIKA SIDEBAR & ROUTING MASTER
+    // ==========================================
+    const allMenuHTML = `
+        <div class="menu-group" id="group-utama" style="display: block;">
+          <div class="group-label">Utama</div>
+          <a class="nav-item active" onclick="loadPage('home.html', this)">🏠 Beranda</a>
+        </div>
+        <div class="menu-group">
+          <div class="group-label">Modul Supervisor</div>
+          <a class="nav-item menu-akses" id="menu-kontrol-harian" style="display: none;" onclick="loadPage('supervisor/kontrol-harian.html', this)">📊 Pusat Kontrol Harian</a>
+          <a class="nav-item menu-akses" id="menu-kontrol-pekanan" style="display: none;" onclick="loadPage('supervisor/kontrol-pekanan.html', this)">📅 Pusat Kontrol Pekanan</a>
+          <a class="nav-item menu-akses" id="menu-raport-bulanan" style="display: none;" onclick="loadPage('supervisor/raport-bulanan.html', this)">📈 Laporan Bulanan & KPI</a>
+          <a class="nav-item menu-akses" id="menu-raport-semester" style="display: none;" onclick="loadPage('supervisor/raport-semester.html', this)">🎓 Raport Semester</a>
+        </div>
+        <div class="menu-group">
+          <div class="group-label">Akademik (Guru)</div>
+          <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html', this)">📋 Absensi Halqah</a>
+          <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html', this)">📖 Input Setoran Tahfiz</a>
+          <a class="nav-item menu-akses" id="menu-buku-tahfiz" style="display: none;" onclick="loadPage('guru/buku-tahfiz.html', this)">📚 Buku Setoran Santri</a>
+          <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html', this)">📝 Input Nilai Bulanan</a>
+          <a class="nav-item menu-akses" id="menu-raport" style="display: none;" onclick="loadPage('guru/inputRaportBulanan.html', this)">📊 Raport Bulanan</a>
+          <a class="nav-item menu-akses" id="menu-halqah" style="display: none;" onclick="loadPage('guru/edit-kelas.html', this)">⚙️ Manajemen Halqah</a>
+        </div>
+        <div class="menu-group">
+          <div class="group-label">Asrama (Naqib)</div>
+          <a class="nav-item menu-akses" id="menu-absen-asrama" style="display: none;" onclick="loadPage('naqib/absensi.html', this)">📋 Absensi Program</a>
+          <a class="nav-item menu-akses" id="menu-disiplin" style="display: none;" onclick="loadPage('naqib/kedisiplinan.html', this)">⚖️ Kedisiplinan</a>
+          <a class="nav-item menu-akses" id="menu-mentoring" style="display: none;" onclick="loadPage('naqib/mentoring.html', this)">🤝 Mentoring</a>
+          <a class="nav-item menu-akses" id="menu-gamifikasi" style="display: none;" onclick="loadPage('naqib/gamifikasi.html', this)">🌟 Gamifikasi</a>
+          <a class="nav-item menu-akses" id="menu-jurnal-piket" style="display: none;" onclick="loadPage('naqib/jurnal-piket.html', this)">📝 Jurnal Piket</a>
+          <a class="nav-item menu-akses" id="menu-usrah" style="display: none;" onclick="loadPage('naqib/edit-usrah.html', this)">⚙️ Manajemen Usrah</a>
+        </div>
+        <div class="menu-group">
+          <div class="group-label">Pusat Asesmen</div>
+          <a class="nav-item menu-akses" id="menu-asesmen-naqib" style="display: none;" onclick="loadPage('pusat-asesmen/naqib.html', this)">🧘 Asesmen Mandiri Naqib</a>
+          <a class="nav-item menu-akses" id="menu-asesmen-guru" style="display: none;" onclick="loadPage('pusat-asesmen/guru.html', this)">🧘 Asesmen Mandiri Guru</a>
+          <a class="nav-item menu-akses" id="menu-asesmen-santri" style="display: none;" onclick="loadPage('pusat-asesmen/santri.html', this)">📊 Asesmen CAHAYA Santri</a>
+          <a class="nav-item menu-akses" id="menu-asesmen-sdm" style="display: none;" onclick="loadPage('pusat-asesmen/sdm-supervisor.html', this)">👁️ Asesmen Kinerja SDM</a>
+        </div>
+        <div class="menu-group">
+          <div class="group-label">Bimbingan Konseling</div>
+          <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="loadPage('konselor/daftar-kasus-baru.html', this)">⏳ Antrean Kasus Baru</a>
+          <a class="nav-item menu-akses" id="menu-buku-kasus" style="display: none;" onclick="loadPage('konselor/buku-kasus-riwayat.html', this)">📚 Buku Rekam Jejak Kasus</a>
+          <a class="nav-item menu-akses" id="menu-evaluasi-kasus" style="display: none;" onclick="loadPage('konselor/evaluasi-kasus.html', this)">📈 Evaluasi Pembinaan</a>
+        </div>
+        <div class="menu-group">
+          <div class="group-label">SETTING</div>
+          <a class="nav-item menu-akses" id="menu-db-master" style="display: none;" onclick="loadPage('admin/database.html', this)">🗄️ Database Master</a>
+          <a class="nav-item menu-akses" id="menu-jadwal" style="display: none;" onclick="loadPage('admin/atur-jadwal.html', this)">📅 Atur Jadwal KBM</a>
+          <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html', this)">🔐 Manajemen User</a>
+          <a class="nav-item menu-akses" id="menu-koreksi" style="display: none;" onclick="loadPage('admin/settings.html', this)">🛠️ Pusat Koreksi Data</a>
+          <a class="nav-item menu-akses" id="menu-profil" style="display: none;" onclick="loadPage('profil.html', this)">👤 Pengaturan Profil</a>
+        </div>
+    `;
+
     function toggleSidebar() {
       document.getElementById('mainSidebar').classList.toggle('open');
       document.querySelector('.mobile-menu-overlay').classList.toggle('open');
@@ -247,23 +300,22 @@
         avatarEl.innerHTML = inisial; mobileAvatarEl.innerHTML = inisial;
       }
 
+      const menuContainer = document.getElementById('dynamicMenu');
+      menuContainer.innerHTML = allMenuHTML;
+
       document.querySelectorAll('.menu-group').forEach(g => {
         if(g.id !== 'group-utama') g.style.display = 'none';
       });
 
       try {
-        const doc = await db.collection("settings").doc("role_menus").get();
+        const doc = await dbFS.collection("settings").doc("role_menus").get();
         let ruleMenus = {};
         if(doc.exists) { ruleMenus = doc.data(); }
 
         let menusToOpen = [];
-        
         user.akses.forEach(role => {
-          if(ruleMenus[role]) { 
-            menusToOpen = [...new Set([...menusToOpen, ...ruleMenus[role]])]; 
-          }
+          if(ruleMenus[role]) { menusToOpen = [...new Set([...menusToOpen, ...ruleMenus[role]])]; }
         });
-
         menusToOpen.push('menu-profil');
 
         document.querySelectorAll('.menu-akses').forEach(menuHtml => {
@@ -274,23 +326,14 @@
             menuHtml.style.display = 'none';
           }
         });
-
-      } catch (e) {
-        console.error("Gagal menarik konfigurasi menu otorisasi:", e);
-      }
+      } catch (e) { console.error("Gagal menarik menu:", e); }
     }
 
     function loadPage(url, el) {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       if(el && el.classList.contains('nav-item')) el.classList.add('active');
-      
       document.getElementById('contentFrame').src = url;
-      
-      if(el) {
-        const title = el.textContent.replace(/[^\w\s]/gi, '').trim();
-        document.getElementById('currentPageTitle').textContent = title;
-      }
-
+      if(el) document.getElementById('currentPageTitle').textContent = el.textContent.replace(/[^\w\s]/gi, '').trim();
       if(window.innerWidth <= 900) toggleSidebar();
     }
 
@@ -301,9 +344,383 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', refreshUserProfileUI);
-    window.addEventListener('storage', (e) => { if (e.key === 'cahayaCurrentUser') refreshUserProfileUI(); });
-    window.refreshUserProfileUI = refreshUserProfileUI;
+    // ==========================================
+    // LOGIKA LIVE CHAT PENGURUS (ANTI CRASH)
+    // ==========================================
+    const pUser = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+    const namaSaya = pUser.label || pUser.username || "Pengurus";
+    
+    const myRoles = pUser.akses || [];
+    const isTopLevel = myRoles.some(r => ['admin', 'direktur', 'wakil'].includes(r.toLowerCase()));
+    const isKonselor = myRoles.some(r => r.toLowerCase() === 'konselor');
+
+    let pListUsers = []; 
+    let targetAktifLabel = ""; 
+    let targetAktifDisplay = "";
+    let pChatListener = null;
+    let editModeId = null; 
+    let lastUnreadCount = 0; 
+    
+    const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+       refreshUserProfileUI();
+       initChatFilter(); 
+       
+       if (Notification.permission !== "granted") { Notification.requestPermission(); }
+       
+       try {
+           const snap = await dbFS.collection('users').get();
+           snap.forEach(doc => { pListUsers.push(doc.data()); });
+       } catch (err) { console.error("Gagal load users:", err); }
+
+       listenToGlobalMessages();
+    });
+
+    function initChatFilter() {
+       let optionsHtml = `<option value="">-- Pilih Tujuan --</option>`;
+       optionsHtml += `<option value="direktur">Direktur</option>`;
+       optionsHtml += `<option value="wakil">Wakil Direktur</option>`;
+       optionsHtml += `<option value="admin">Admin / TU</option>`;
+       optionsHtml += `<option value="konselor">Konselor</option>`;
+       optionsHtml += `<option value="naqib">Naqib / Guru</option>`;
+
+       if (isTopLevel) {
+           optionsHtml = `<option value="">-- Pilih Tujuan --</option>`;
+           optionsHtml += `<option value="broadcast" style="font-weight:bold; color:#d97706;">📢 Broadcast Pengumuman</option>`;
+           optionsHtml += `<option value="wali">👤 Wali Santri</option>`;
+           optionsHtml += `<option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="konselor">Konselor</option><option value="naqib">Naqib / Guru</option>`;
+       } else if (isKonselor) {
+           optionsHtml += `<option value="wali">👤 Wali Santri</option>`;
+       }
+       
+       document.getElementById('pChatRole').innerHTML = optionsHtml;
+    }
+
+    // LISTENER INBOX (ANTI CRASH LOOP)
+    function listenToGlobalMessages() {
+       dbRT.ref('cahaya_app/pesan_global').on('value', snap => {
+          const allRooms = snap.val();
+          if(!allRooms) return;
+
+          let unreadTotal = 0;
+          let myInboxData = [];
+          let meClean = namaSaya.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+          let latestMessageText = "";
+          let latestMessageSender = "";
+
+          // Cek Akses Broadcast
+          if(isTopLevel && allRooms['room_broadcast_wali']) {
+              try {
+                  let bMsgs = Object.values(allRooms['room_broadcast_wali']);
+                  if(bMsgs.length > 0) {
+                     let lastMsg = bMsgs[bMsgs.length - 1];
+                     if (lastMsg && lastMsg.waktu) {
+                         myInboxData.push({ 
+                             roomId: 'room_broadcast_wali', 
+                             opponentDisplay: '📢 PENGUMUMAN WALI', 
+                             opponentActualLabel: 'BROADCAST',
+                             lastMsg: lastMsg, 
+                             isUnread: false 
+                         });
+                     }
+                  }
+              } catch(e) {}
+          }
+
+          // Cek Private Rooms
+          Object.keys(allRooms).forEach(roomId => {
+             try {
+                 if(roomId.includes(meClean) && roomId !== 'room_broadcast_wali') {
+                    let msgs = allRooms[roomId];
+                    if(!msgs || typeof msgs !== 'object') return; // Anti Crash
+                    
+                    let msgValues = Object.values(msgs);
+                    if(msgValues.length === 0) return;
+
+                    let lastMsg = msgValues[msgValues.length - 1];
+                    if(!lastMsg || !lastMsg.waktu) return; // Anti Crash
+
+                    let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim || "Percakapan Pribadi";
+                    
+                    // Samarkan Staf (Jadi @username), Wali tetap Wali
+                    let oppUser = pListUsers.find(u => (u.label||u.username) === opponentLabel);
+                    let displayOpponent = (oppUser && !opponentLabel.toLowerCase().includes('wali')) ? "@" + oppUser.username : opponentLabel;
+
+                    let isUnread = false;
+                    if (lastMsg.pengirim !== namaSaya) {
+                        let lastReadTime = localStorage.getItem('chat_read_' + roomId) || "0";
+                        if (new Date(lastMsg.waktu) > new Date(lastReadTime)) {
+                            unreadTotal++;
+                            isUnread = true;
+                            latestMessageText = lastMsg.teks;
+                            latestMessageSender = displayOpponent;
+                        }
+                    }
+                    myInboxData.push({ roomId, opponentDisplay: displayOpponent, opponentActualLabel: opponentLabel, lastMsg, isUnread });
+                 }
+             } catch(e) { console.error("Error baca room", e); }
+          });
+
+          // Eksekusi Notifikasi
+          if(unreadTotal > lastUnreadCount) {
+             notifSound.play().catch(e=>console.log("Audio play diblokir browser."));
+             if (Notification.permission === "granted") {
+                new Notification("Pesan Baru: " + latestMessageSender, { body: latestMessageText, icon: "assets/logofi.png" });
+             }
+          }
+          lastUnreadCount = unreadTotal;
+
+          const badge = document.getElementById('chatUnreadBadge');
+          if(unreadTotal > 0) { badge.textContent = unreadTotal; badge.style.display = 'flex'; } 
+          else { badge.style.display = 'none'; }
+
+          if(document.getElementById('viewInbox').style.display !== 'none') {
+             renderInboxUI(myInboxData);
+          }
+       });
+    }
+
+    function renderInboxUI(inboxData) {
+       const container = document.getElementById('viewInbox');
+       container.innerHTML = '';
+       if(inboxData.length === 0) { container.innerHTML = '<div style="text-align:center; padding:30px; font-size:0.85rem; color:#94a3b8;">Belum ada pesan masuk.</div>'; return; }
+
+       inboxData.sort((a,b) => new Date(b.lastMsg.waktu) - new Date(a.lastMsg.waktu));
+       
+       inboxData.forEach(item => {
+          let dotHtml = item.isUnread ? `<div class="unread-indicator" style="display:block;"></div>` : '';
+          let boldClass = item.isUnread ? `font-weight:800; color:#0f172a;` : `font-weight:400; color:#64748b;`;
+          let boxClass = item.roomId === 'room_broadcast_wali' ? 'inbox-item broadcast-room' : 'inbox-item';
+          let inisial = item.opponentDisplay === '📢 PENGUMUMAN WALI' ? '📢' : item.opponentDisplay.replace('@','').charAt(0).toUpperCase();
+
+          container.insertAdjacentHTML('beforeend', `
+             <div class="${boxClass}" 
+                  onclick="startChat('${item.opponentActualLabel}', '${item.opponentDisplay}', '${item.roomId}')"
+                  oncontextmenu="event.preventDefault(); showInboxOptions(event, '${item.roomId}')">
+                
+                <div class="inbox-avatar">${inisial}</div>
+                <div class="inbox-info">
+                   <span class="inbox-name">${item.opponentDisplay}</span>
+                   <span class="inbox-preview" style="${boldClass}">${item.lastMsg.teks}</span>
+                </div>
+                ${dotHtml}
+
+                <div id="inbox_menu_${item.roomId}" class="msg-options-menu" style="top:50%; bottom:auto; transform:translateY(-50%); right:20px;" onclick="event.stopPropagation();">
+                   <button class="btn-del" onclick="hapusObrolan(event, '${item.roomId}')">🗑️ Hapus Obrolan</button>
+                </div>
+             </div>
+          `);
+       });
+    }
+
+    function showInboxOptions(e, roomId) {
+       e.stopPropagation();
+       document.querySelectorAll('.msg-options-menu').forEach(m => m.style.display = 'none');
+       const menu = document.getElementById('inbox_menu_' + roomId);
+       if(menu) {
+           menu.style.display = 'flex';
+           setTimeout(() => {
+              window.onclick = () => { menu.style.display = 'none'; window.onclick = null; };
+           }, 100);
+       }
+    }
+
+    function hapusObrolan(e, roomId) {
+       e.stopPropagation();
+       if(roomId === 'room_broadcast_wali') { alert("Pengumuman Pusat tidak dapat dihapus."); return; }
+       if(confirm("Hapus seluruh riwayat obrolan ini?")) { dbRT.ref(`cahaya_app/pesan_global/${roomId}`).remove(); }
+    }
+
+    function togglePengurusChat() {
+      const cw = document.getElementById('pengurusChatWindow');
+      if (cw.style.display === 'flex') {
+         cw.style.display = 'none';
+         if(pChatListener) dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off(); 
+      } else {
+         cw.style.display = 'flex';
+         switchChatTab('inbox'); 
+      }
+    }
+
+    function switchChatTab(type) {
+       document.getElementById('tabInbox').classList.toggle('active', type === 'inbox');
+       document.getElementById('tabNew').classList.toggle('active', type === 'new');
+       document.getElementById('viewInbox').style.display = (type === 'inbox') ? 'flex' : 'none';
+       document.getElementById('viewNew').style.display = (type === 'new') ? 'flex' : 'none';
+       document.getElementById('pChatBody').style.display = 'none';
+       document.getElementById('pChatFooter').style.display = 'none';
+       
+       document.getElementById('chatHeaderTitle').textContent = "Pusat Komunikasi";
+       if(pChatListener) dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off(); 
+       if(type === 'inbox') dbRT.ref('cahaya_app/pesan_global').once('value'); 
+    }
+
+    function loadPengurusTujuan() {
+      const role = document.getElementById('pChatRole').value.toLowerCase();
+      const sel = document.getElementById('pChatRecipient');
+      const chatInput = document.getElementById('pChatInput');
+
+      sel.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      sel.style.display = 'none';
+      chatInput.disabled = true;
+
+      if(!role) return;
+
+      if(role === 'broadcast') {
+         sel.innerHTML = `<option value="BROADCAST_WALI|📢 PENGUMUMAN WALI">Kirim ke Seluruh Wali Santri</option>`;
+         sel.style.display = 'block';
+         openChatFromDropdown(); 
+      } else {
+         let filteredStaf = pListUsers.filter(u => {
+             let aksesArray = Array.isArray(u.akses) ? u.akses.map(r => r.toLowerCase()) : [];
+             return aksesArray.includes(role);
+         });
+
+         if(filteredStaf.length > 0) {
+             filteredStaf.forEach(u => {
+                let actualLabel = u.label || u.username;
+                let displayLabel = role === 'wali' ? actualLabel : `@${u.username}`;
+                sel.innerHTML += `<option value="${actualLabel}|${displayLabel}">${displayLabel}</option>`;
+             });
+             sel.style.display = 'block';
+         } else {
+             document.getElementById('pChatBody').innerHTML = `<div style="text-align:center; color:#ef4444; font-size:0.8rem; margin-top:20px;">Belum ada akun di divisi ini.</div>`;
+         }
+      }
+    }
+
+    function openChatFromDropdown() {
+       const val = document.getElementById('pChatRecipient').value;
+       if(val) {
+          let parts = val.split('|');
+          startChat(parts[0], parts[1]);
+       }
+    }
+
+    function pGetRoomId(a, b) {
+       let clean = (s) => s.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+       return "chat_" + [clean(a), clean(b)].sort().join('_');
+    }
+
+    // START CHAT, BUKA INPUT BOX
+    function startChat(opponentActualLabel, opponentDisplay, existingRoomId = null) {
+       targetAktifLabel = opponentActualLabel; 
+       targetAktifDisplay = opponentDisplay;
+       let roomId;
+
+       if (opponentActualLabel === "BROADCAST_WALI" || opponentActualLabel === "BROADCAST") {
+           roomId = "room_broadcast_wali";
+           document.getElementById('chatHeaderTitle').textContent = "📢 Broadcast Pimpinan";
+           document.getElementById('pChatInput').disabled = false;
+           document.getElementById('pChatInput').placeholder = "Ketik Pengumuman...";
+       } else {
+           roomId = existingRoomId || pGetRoomId(namaSaya, opponentActualLabel);
+           document.getElementById('chatHeaderTitle').textContent = "Chat: " + opponentDisplay;
+           document.getElementById('pChatInput').disabled = false;
+           document.getElementById('pChatInput').placeholder = "Ketik pesan...";
+       }
+       
+       document.getElementById('viewInbox').style.display = 'none';
+       document.getElementById('viewNew').style.display = 'none';
+       document.getElementById('pChatBody').style.display = 'flex';
+       document.getElementById('pChatFooter').style.display = 'flex';
+       document.getElementById('pChatInput').focus();
+
+       localStorage.setItem('chat_read_' + roomId, new Date().toISOString());
+       dbRT.ref('cahaya_app/pesan_global').once('value'); 
+
+       if(pChatListener) dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
+       pChatListener = roomId;
+
+       dbRT.ref(`cahaya_app/pesan_global/${roomId}`).on('value', snap => {
+          const body = document.getElementById('pChatBody');
+          body.innerHTML = '';
+          const data = snap.val();
+          
+          if(!data) { body.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:0.8rem; margin-top:20px;">Mulai percakapan.</div>'; return; }
+          
+          Object.keys(data).forEach(msgId => {
+             const m = data[msgId];
+             const isMe = m.pengirim === namaSaya;
+             const timeStr = new Date(m.waktu).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+             let senderDisplay = isMe ? "Anda" : opponentDisplay;
+
+             let menuHtml = `
+                <div id="menu_${msgId}" class="msg-options-menu">
+                   ${isMe ? `
+                     <button onclick="editPesan('${roomId}', '${msgId}', '${m.teks.replace(/'/g, "\\'")}')">✏️ Edit</button>
+                     <button class="btn-del" onclick="hapusPesan('${roomId}', '${msgId}')">🗑️ Hapus</button>
+                   ` : `<button onclick="salinTeks('${m.teks.replace(/'/g, "\\'")}')">📋 Salin</button>`}
+                </div>
+             `;
+
+             body.insertAdjacentHTML('beforeend', `
+               <div class="p-chat-msg ${isMe ? 'p-msg-self' : 'p-msg-other'}" 
+                    oncontextmenu="event.preventDefault(); showMsgOptions(event, '${msgId}')" 
+                    onclick="showMsgOptions(event, '${msgId}')">
+                 <div class="p-msg-info">${senderDisplay} • ${timeStr} ${m.diedit ? '(diedit)' : ''}</div>
+                 <div id="txt_${msgId}">${m.teks}</div>
+                 ${menuHtml}
+               </div>
+             `);
+          });
+          body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' });
+       });
+    }
+
+    function showMsgOptions(e, mid) {
+       e.stopPropagation(); 
+       document.querySelectorAll('.msg-options-menu').forEach(m => m.style.display = 'none');
+       const menu = document.getElementById('menu_' + mid);
+       if(menu) {
+           menu.style.display = 'flex';
+           setTimeout(() => {
+              window.onclick = () => { menu.style.display = 'none'; window.onclick = null; };
+           }, 100);
+       }
+    }
+
+    function sendPengurusMessage() {
+       const inp = document.getElementById('pChatInput');
+       const txt = inp.value.trim();
+       if(!txt || !targetAktifLabel) return;
+       
+       let rid = (targetAktifLabel === "BROADCAST_WALI" || targetAktifLabel === "BROADCAST") 
+                 ? "room_broadcast_wali" 
+                 : pGetRoomId(namaSaya, targetAktifLabel);
+
+       if (editModeId) {
+           dbRT.ref(`cahaya_app/pesan_global/${rid}/${editModeId}`).update({ teks: txt, diedit: true });
+           editModeId = null;
+       } else {
+           dbRT.ref(`cahaya_app/pesan_global/${rid}`).push({ teks: txt, pengirim: namaSaya, waktu: new Date().toISOString() });
+       }
+       
+       localStorage.setItem('chat_read_' + rid, new Date().toISOString());
+       inp.value = '';
+       inp.focus();
+    }
+
+    function editPesan(roomId, msgId, oldText) {
+       const inp = document.getElementById('pChatInput');
+       inp.value = oldText; inp.focus();
+       editModeId = msgId; 
+    }
+
+    function hapusPesan(roomId, msgId) {
+       if(confirm("Hapus pesan ini dari ruang obrolan?")) { 
+           dbRT.ref(`cahaya_app/pesan_global/${roomId}/${msgId}`).remove(); 
+       }
+    }
+
+    function salinTeks(txt) {
+       navigator.clipboard.writeText(txt);
+       alert("Pesan berhasil disalin.");
+    }
+
+    function handlePengurusChatEnter(e) { if(e.key === 'Enter') sendPengurusMessage(); }
+
   </script>
 </body>
 </html>
