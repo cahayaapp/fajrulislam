@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP – Portal Utama</title>
   <link rel="icon" type="image/png" href="assets/logofi.png" />
-  
   <link rel="stylesheet" href="css/cahaya-theme.css" />
   
   <style>
     /* ===== CSS LAYOUT DASHBOARD ===== */
-    body { padding: 0; margin: 0; display: flex; height: 100vh; height: 100dvh; overflow: hidden; background-color: var(--bg-pearl, #f8fafc); font-family: 'Poppins', sans-serif;}
+    /* Menggunakan position: fixed agar layar HP tidak kedap-kedip (bouncing) */
+    body { 
+      padding: 0; margin: 0; display: flex; 
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%;
+      overflow: hidden; background-color: var(--bg-pearl, #f8fafc); font-family: 'Poppins', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     /* SIDEBAR */
     .sidebar { width: 280px; flex-shrink: 0; background: white; border-right: 1px solid var(--input-border, #cbd5e1); display: flex; flex-direction: column; z-index: 1000; transition: 0.3s; height: 100%; }
@@ -52,20 +57,17 @@
     
     #contentFrame { width: 100%; flex: 1; border: none; background: transparent; }
 
-    /* MOBILE RESPONSIVE (Sudah Fix Layar Kedap-Kedip) */
+    /* MOBILE RESPONSIVE */
     .mobile-header { display: none; }
     .mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: 0.3s; pointer-events: none;}
 
     @media (max-width: 900px) {
       body { flex-direction: column; }
-      .sidebar { position: fixed; top: 0; bottom: 0; left: -300px; height: 100%; height: 100dvh; width: 280px; box-shadow: 5px 0 20px rgba(0,0,0,0.15); z-index: 1000; }
+      .sidebar { position: fixed; top: 0; bottom: 0; left: -300px; height: 100%; width: 280px; box-shadow: 5px 0 20px rgba(0,0,0,0.15); z-index: 1000; }
       .sidebar.open { left: 0; }
       .mobile-menu-overlay.open { opacity: 1; pointer-events: all; }
       .top-bar { display: none; }
-      
-      /* FIX LAYAR KEDAP KEDIP: Gunakan width 100% alih-alih memaksa height 100vh */
-      .main-content { width: 100%; }
-      
+      .main-content { flex: 1; width: 100%; height: auto; }
       .mobile-header { display: flex; padding: 15px 20px; background: white; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--input-border, #cbd5e1); z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
       .mobile-brand { display: flex; align-items: center; gap: 10px; font-family: 'Playfair Display', serif; font-weight: 900; color: var(--navy-dark, #0f172a); font-size: 1.1rem; }
       .mobile-brand img { width: 30px; }
@@ -73,7 +75,7 @@
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* ===== CSS WIDGET LIVE CHAT (NOTIFIKASI + EDIT + HAPUS + SALIN) ===== */
+    /* ===== CSS WIDGET LIVE CHAT PENGURUS (PREMIUM) ===== */
     .pengurus-fab-chat {
       position: fixed; bottom: 20px; right: 20px; z-index: 9999;
       width: 60px; height: 60px; border-radius: 50%;
@@ -85,21 +87,17 @@
     .pengurus-fab-chat:hover { transform: scale(1.1); }
     
     .chat-badge {
-      position: absolute; top: -5px; right: -5px;
-      background: #ef4444; color: white;
+      position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
       font-size: 0.75rem; font-weight: 800; font-family: 'Poppins', sans-serif;
       width: 24px; height: 24px; border-radius: 50%;
-      display: flex; justify-content: center; align-items: center;
-      border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      display: none; 
+      display: flex; justify-content: center; align-items: center; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: none;
     }
 
     .pengurus-chat-window {
       position: fixed; bottom: 90px; right: 20px; z-index: 9999;
       width: 340px; max-width: calc(100vw - 40px); height: 500px;
       background: white; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-      display: none; flex-direction: column; overflow: hidden;
-      border: 1px solid #e2e8f0; font-family: 'Poppins', sans-serif;
+      display: none; flex-direction: column; overflow: hidden; border: 1px solid var(--border-soft); font-family: 'Poppins', sans-serif;
     }
     .p-chat-header { background: #0f172a; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #d4af37;}
     .p-chat-header h4 { margin: 0; font-size: 1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;}
@@ -111,8 +109,8 @@
     .p-chat-filter { padding: 12px; background: white; border-bottom: 1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;}
     .p-chat-filter select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; outline: none; font-size: 0.8rem; background: #f8fafc;}
     
-    .p-inbox-list { flex: 1; overflow-y: auto; background: white; display: flex; flex-direction: column; }
-    .inbox-item { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; position: relative; user-select: none;}
+    .p-inbox-list { flex: 1; overflow-y: auto; background: white; display: flex; flex-direction: column; padding-bottom: 10px;}
+    .inbox-item { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 12px; position: relative; transition: 0.2s; user-select: none;}
     .inbox-item:hover { background: #f8fafc; }
     .inbox-avatar { width: 42px; height: 42px; border-radius: 50%; background: #e2e8f0; display: flex; justify-content: center; align-items: center; font-weight: 800; color: #475569; flex-shrink: 0; font-size: 1.1rem; border: 1px solid #cbd5e1;}
     .inbox-info { flex: 1; min-width: 0; pointer-events: none;}
@@ -128,8 +126,8 @@
     .p-msg-self { background: #e0f2fe; color: #0369a1; align-self: flex-end; border-bottom-right-radius: 2px; }
     .p-msg-other { background: white; border: 1px solid #cbd5e1; align-self: flex-start; border-bottom-left-radius: 2px; }
     .p-msg-info { font-size: 0.65rem; color: #94a3b8; margin-bottom: 3px; font-weight: 600;}
-    
-    /* MENU MELAYANG (EDIT/HAPUS/SALIN) */
+
+    /* MENU MELAYANG (EDIT/HAPUS) */
     .msg-options-menu {
       position: absolute; right: 20px; background: white;
       border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
@@ -139,7 +137,7 @@
     .msg-options-menu button { padding: 10px 15px; border: none; background: white; font-size: 0.8rem; font-weight: 600; text-align: left; cursor: pointer; width: 100%; transition: 0.2s;}
     .msg-options-menu button:hover { background: #f1f5f9; }
     .msg-options-menu .btn-del { color: #ef4444; border-top: 1px solid #f1f5f9; }
-
+    
     .p-chat-footer { padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: none; gap: 8px; }
     .p-chat-footer input { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid #cbd5e1; outline: none; font-size: 0.85rem; }
     .p-chat-footer button { background: #0f172a; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s;}
@@ -365,11 +363,12 @@
     }
 
     // ==========================================
-    // LOGIKA LIVE CHAT PENGURUS (ANTI CRASH)
+    // LOGIKA LIVE CHAT PENGURUS
     // ==========================================
     const pUser = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
     const namaSaya = pUser.label || pUser.username || "Pengurus";
     
+    // VARIABEL CEK JABATAN (ROLE-BASED CHAT PRIVILEGE)
     const myRoles = pUser.akses || [];
     const isTopLevel = myRoles.some(r => ['admin', 'direktur', 'wakil'].includes(r.toLowerCase()));
     const isKonselor = myRoles.some(r => r.toLowerCase() === 'konselor');
@@ -397,6 +396,7 @@
        listenToGlobalMessages();
     });
 
+    // 1. MEMBANGUN DROPDOWN PENCARIAN
     function initChatFilter() {
        let optionsHtml = `<option value="">-- Pilih Tujuan --</option>`;
        optionsHtml += `<option value="direktur">Direktur</option>`;
@@ -408,16 +408,16 @@
        if (isTopLevel) {
            optionsHtml = `<option value="">-- Pilih Tujuan --</option>`;
            optionsHtml += `<option value="broadcast" style="font-weight:bold; color:#d97706;">📢 Broadcast Pengumuman</option>`;
-           optionsHtml += `<option value="wali">👤 Wali Santri</option>`;
+           optionsHtml += `<option value="wali">👤 Wali Santri (Personal)</option>`;
            optionsHtml += `<option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="konselor">Konselor</option><option value="naqib">Naqib / Guru</option>`;
        } else if (isKonselor) {
-           optionsHtml += `<option value="wali">👤 Wali Santri</option>`;
+           optionsHtml += `<option value="wali">👤 Wali Santri (Personal)</option>`;
        }
        
        document.getElementById('pChatRole').innerHTML = optionsHtml;
     }
 
-    // LISTENER INBOX (ANTI CRASH LOOP)
+    // 2. LISTENER NOTIFIKASI BACKGROUND (ANTI CRASH)
     function listenToGlobalMessages() {
        dbRT.ref('cahaya_app/pesan_global').on('value', snap => {
           const allRooms = snap.val();
@@ -435,7 +435,7 @@
                   let bMsgs = Object.values(allRooms['room_broadcast_wali']);
                   if(bMsgs.length > 0) {
                      let lastMsg = bMsgs[bMsgs.length - 1];
-                     if (lastMsg && lastMsg.waktu) {
+                     if(lastMsg && lastMsg.waktu) {
                          myInboxData.push({ 
                              roomId: 'room_broadcast_wali', 
                              opponentDisplay: '📢 PENGUMUMAN WALI', 
@@ -453,17 +453,16 @@
              try {
                  if(roomId.includes(meClean) && roomId !== 'room_broadcast_wali') {
                     let msgs = allRooms[roomId];
-                    if(!msgs || typeof msgs !== 'object') return; // Anti Crash
-                    
+                    if(!msgs || typeof msgs !== 'object') return; 
+
                     let msgValues = Object.values(msgs);
                     if(msgValues.length === 0) return;
 
                     let lastMsg = msgValues[msgValues.length - 1];
-                    if(!lastMsg || !lastMsg.waktu) return; // Anti Crash
+                    if(!lastMsg || !lastMsg.waktu) return; 
 
                     let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim || "Percakapan Pribadi";
                     
-                    // Samarkan Staf (Jadi @username), Wali tetap Wali
                     let oppUser = pListUsers.find(u => (u.label||u.username) === opponentLabel);
                     let displayOpponent = (oppUser && !opponentLabel.toLowerCase().includes('wali')) ? "@" + oppUser.username : opponentLabel;
 
@@ -479,10 +478,10 @@
                     }
                     myInboxData.push({ roomId, opponentDisplay: displayOpponent, opponentActualLabel: opponentLabel, lastMsg, isUnread });
                  }
-             } catch(e) { console.error("Error baca room", e); }
+             } catch(e) { console.error("Error reading room", e); }
           });
 
-          // Eksekusi Notifikasi
+          // Notifikasi Bunyi & Popup
           if(unreadTotal > lastUnreadCount) {
              notifSound.play().catch(e=>console.log("Audio play diblokir browser."));
              if (Notification.permission === "granted") {
@@ -501,6 +500,7 @@
        });
     }
 
+    // Render Tab Inbox
     function renderInboxUI(inboxData) {
        const container = document.getElementById('viewInbox');
        container.innerHTML = '';
@@ -548,7 +548,7 @@
 
     function hapusObrolan(e, roomId) {
        e.stopPropagation();
-       if(roomId === 'room_broadcast_wali') { alert("Pengumuman Pusat tidak dapat dihapus."); return; }
+       if(roomId === 'room_broadcast_wali') { alert("Pengumuman Pusat tidak dapat dihapus dari sini."); return; }
        if(confirm("Hapus seluruh riwayat obrolan ini?")) { dbRT.ref(`cahaya_app/pesan_global/${roomId}`).remove(); }
     }
 
@@ -645,7 +645,9 @@
        document.getElementById('viewNew').style.display = 'none';
        document.getElementById('pChatBody').style.display = 'flex';
        document.getElementById('pChatFooter').style.display = 'flex';
-       document.getElementById('pChatInput').focus();
+       
+       // Otomatis arahkan cursor ke input teks
+       setTimeout(() => { document.getElementById('pChatInput').focus(); }, 100);
 
        localStorage.setItem('chat_read_' + roomId, new Date().toISOString());
        dbRT.ref('cahaya_app/pesan_global').once('value'); 
