@@ -76,7 +76,14 @@
     .student-badge { 
       display: flex; align-items: center; gap: 15px; padding: 8px 20px; border-radius: 50px; 
       background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      cursor: pointer; transition: all 0.3s ease;
     }
+    .student-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(212,175,55,0.15);
+      border-color: rgba(212,175,55,0.5);
+    }
+    
     .student-info { text-align: right; display: flex; flex-direction: column; }
     .student-info .label { font-size: 0.65rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
     .student-info .name { font-weight: 700; font-size: 0.9rem; color: var(--wali-navy); }
@@ -92,6 +99,9 @@
     /* ===== MOBILE RESPONSIVE ===== */
     .mobile-header { display: none; }
     .mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: 0.3s; pointer-events: none;}
+
+    #mobileAvatar { cursor: pointer; transition: all 0.3s ease; }
+    #mobileAvatar:hover { transform: scale(1.05); }
 
     @media (max-width: 900px) {
       body { flex-direction: column; }
@@ -136,7 +146,7 @@
 
         <div class="menu-group">
           <div class="group-label">Pengaturan</div>
-          <a class="nav-item" onclick="loadPage('profil-wali.html', this)">⚙️ Keamanan Akun</a>
+          <a class="nav-item" id="navProfil" onclick="loadPage('profil.html', this)">⚙️ Profil & Privasi</a>
         </div>
       </nav>
     </div>
@@ -152,12 +162,14 @@
     <div class="mobile-header">
       <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
       <div class="mobile-brand"><img src="../../assets/logofi.png" alt="Logo"> CAHAYA APP</div>
-      <div class="avatar-circle" id="mobileAvatar" style="width: 32px; height: 32px; font-size: 0.9rem;">S</div>
+      <!-- Avatar Mobile memicu klik menu Profil -->
+      <div class="avatar-circle" id="mobileAvatar" style="width: 32px; height: 32px; font-size: 0.9rem;" onclick="document.getElementById('navProfil').click()">S</div>
     </div>
 
     <div class="top-bar">
       <div class="page-title" id="currentPageTitle">Beranda Ringkasan</div>
-      <div class="student-badge">
+      <!-- Badge Desktop memicu klik menu Profil -->
+      <div class="student-badge" onclick="document.getElementById('navProfil').click()">
         <div class="student-info">
           <span class="label" id="waliLabel">WALI DARI SANTRI:</span>
           <span class="name" id="studentNameLabel">MEMUAT...</span>
@@ -166,7 +178,6 @@
       </div>
     </div>
 
-    <!-- Iframe untuk memuat halaman-halaman laporan -->
     <iframe id="contentFrame" src="beranda.html"></iframe>
   </main>
 
@@ -192,14 +203,12 @@
       
       const user = JSON.parse(userStr);
       
-      // Validasi Keamanan Ekstra: Pastikan yang masuk sini BENAR-BENAR role Wali
       if (!user.akses || !user.akses.includes('wali')) {
         alert("Akses Ditolak: Halaman ini khusus untuk Wali Santri.");
         window.location.href = '../../main-dashboard.html';
         return;
       }
 
-      // Tampilkan Nama Anak
       const namaAnak = user.namaAnak || user.label || "SANTRI";
       const inisial = namaAnak.charAt(0).toUpperCase();
 
@@ -215,11 +224,17 @@
       document.getElementById('contentFrame').src = url;
       
       if(el) {
-        const title = el.textContent.replace(/[^\w\s]/gi, '').trim();
+        const title = el.textContent.replace(/[^\w\s&]/gi, '').trim(); 
         document.getElementById('currentPageTitle').textContent = title;
       }
 
-      if(window.innerWidth <= 900) toggleSidebar();
+      // PERBAIKAN: Hanya tutup sidebar jika dalam keadaan terbuka
+      if(window.innerWidth <= 900) {
+        const sidebar = document.getElementById('mainSidebar');
+        if(sidebar.classList.contains('open')) {
+          toggleSidebar();
+        }
+      }
     }
 
     async function logout() {
