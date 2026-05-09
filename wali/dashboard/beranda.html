@@ -91,10 +91,12 @@
     .comment-item b { color: var(--navy-main); display: block; font-size: 0.8rem; margin-bottom: 3px;}
     .reply-box { background: #fffbeb; padding: 10px 15px; border-radius: 8px; border-left: 3px solid var(--gold-main); margin-top: 10px; font-size: 0.8rem; }
     .reply-box b { color: #b45309; }
-    .comment-input-area { display: flex; gap: 8px; }
-    .comment-input-area input { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid var(--border-soft); font-family: 'Poppins'; font-size: 0.85rem; outline: none; transition: 0.2s;}
+    
+    /* PERBAIKAN MOBILE: TOMBOL KOMENTAR TERPOTONG */
+    .comment-input-area { display: flex; gap: 8px; align-items: stretch; }
+    .comment-input-area input { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid var(--border-soft); font-family: 'Poppins'; font-size: 0.85rem; outline: none; transition: 0.2s; min-width: 0; }
     .comment-input-area input:focus { border-color: var(--gold-main); }
-    .comment-input-area button { background: var(--navy-main); color: white; border: none; padding: 0 18px; border-radius: 20px; cursor: pointer; font-family: 'Poppins'; font-weight: 600;}
+    .comment-input-area button { background: var(--navy-main); color: white; border: none; padding: 0 18px; border-radius: 20px; cursor: pointer; font-family: 'Poppins'; font-weight: 600; flex-shrink: 0; white-space: nowrap;}
 
     /* Gaya Khusus Media Card (IG/YT) */
     .media-card { padding: 0; }
@@ -128,12 +130,14 @@
     }
     .fab-chat:hover { transform: scale(1.1); }
     @keyframes pulse-red { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); } 70% { transform: scale(1.15); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); } }
+    
     .chat-badge {
       position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
       font-size: 0.75rem; font-weight: 800; font-family: 'Poppins', sans-serif;
       width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-      display: none; animation: pulse-red 1.5s infinite; 
+      display: none; animation: pulse-red 1.5s infinite; z-index: 2;
     }
+
     .chat-window {
       position: fixed; bottom: 100px; right: 20px; z-index: 10000;
       width: 340px; max-width: calc(100vw - 40px); height: 500px;
@@ -162,13 +166,17 @@
     .msg-self { background: #fef08a; color: #713f12; align-self: flex-end; border-bottom-right-radius: 2px; }
     .msg-other { background: white; border: 1px solid #cbd5e1; align-self: flex-start; border-bottom-left-radius: 2px; }
     .msg-info { font-size: 0.65rem; color: #94a3b8; margin-bottom: 3px; font-weight: 600;}
-    .msg-options-menu { position: absolute; right: 20px; background: white; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: none; flex-direction: column; z-index: 1100; overflow: hidden; border: 1px solid #e2e8f0; min-width: 120px; }
-    .msg-options-menu button { padding: 10px 15px; border: none; background: white; font-size: 0.8rem; font-weight: 600; text-align: left; cursor: pointer; width: 100%; transition: 0.2s;}
-    .msg-options-menu button:hover { background: #f1f5f9; }
-    .msg-options-menu .btn-del { color: #ef4444; border-top: 1px solid #f1f5f9; }
     .chat-footer { padding: 12px; background: white; border-top: 1px solid var(--border-soft); display: none; gap: 8px; }
     .chat-footer input { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid #cbd5e1; outline: none; font-family: 'Poppins'; font-size: 0.85rem; }
-    .chat-footer button { background: var(--navy-main); color: white; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;}
+    
+    /* PERBAIKAN MOBILE: TOMBOL KIRIM LONJONG */
+    .chat-footer button { 
+      background: var(--navy-main); color: white; border: none; 
+      width: 42px; height: 42px; min-width: 42px; border-radius: 50%; 
+      cursor: pointer; display: flex; justify-content: center; align-items: center;
+      flex-shrink: 0; 
+    }
+    
     @media (max-width: 480px) { .fab-chat { bottom: 120px; right: 20px; } .chat-window { right: 10px; bottom: 190px; width: calc(100vw - 20px); height: 60vh; max-height: 500px;} }
     
     .in-app-notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-left: 4px solid var(--gold-main); z-index: 100000; display: flex; align-items: center; gap: 12px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; width: 85%; max-width: 350px; }
@@ -355,14 +363,20 @@
   let selectedMsgId = null;
   let selectedMsgText = "";
   
+  // PERBAIKAN AUDIO UNTUK MOBILE
   const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+  const notifAudioChat = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
   let audioUnlocked = false;
-  document.body.addEventListener('touchstart', function() {
-      if (!audioUnlocked) { notifSound.play().then(()=>{notifSound.pause(); notifSound.currentTime=0;}).catch(()=>{}); audioUnlocked = true; }
-  }, { once: true });
-  document.body.addEventListener('click', function() {
-      if (!audioUnlocked) { notifSound.play().then(()=>{notifSound.pause(); notifSound.currentTime=0;}).catch(()=>{}); audioUnlocked = true; }
-  }, { once: true });
+
+  function unlockAudio() {
+      if (!audioUnlocked) { 
+          notifSound.play().then(()=>{notifSound.pause(); notifSound.currentTime=0;}).catch(()=>{}); 
+          notifAudioChat.play().then(()=>{notifAudioChat.pause(); notifAudioChat.currentTime=0;}).catch(()=>{}); 
+          audioUnlocked = true; 
+      }
+  }
+  document.body.addEventListener('touchstart', unlockAudio, { once: true });
+  document.body.addEventListener('click', unlockAudio, { once: true });
 
   function formatDB(dateObj) { 
     const yyyy = dateObj.getFullYear(); 
@@ -848,7 +862,6 @@
   // ==========================================
   // FITUR LIVE CHAT PUSAT BANTUAN
   // ==========================================
-  const notifAudioChat = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
   function showInAppNotif(title, desc) {
       document.getElementById('notifTitle').textContent = title;
       document.getElementById('notifDesc').textContent = desc;
@@ -999,9 +1012,6 @@
 
            const timeStr = new Date(m.waktu).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
            
-           let ticks = "";
-           if (isMe) { ticks = m.isRead ? '<span style="color:#3b82f6; font-weight:800; margin-left:6px; letter-spacing:-2px;">✓✓</span>' : '<span style="color:#94a3b8; font-weight:800; margin-left:6px;">✓</span>'; }
-           
            let editedMark = m.isEdited ? '<span style="font-size:0.6rem; color:#94a3b8; font-style:italic; margin-right:5px;">(diedit)</span>' : '';
            let clickEvent = isMe ? `onclick="openMsgAction('${msgId}', '${m.teks.replace(/'/g, "\\'")}')"` : '';
            let cursorStyle = isMe ? 'cursor:pointer;' : '';
@@ -1009,7 +1019,7 @@
            body.insertAdjacentHTML('beforeend', `
              <div class="chat-msg ${isMe ? 'msg-self' : 'msg-other'}" ${clickEvent} style="${cursorStyle}">
                <div class="msg-info">${isMe ? "Anda" : opponentDisplay} • ${timeStr}</div>
-               <div>${m.teks} ${editedMark} ${ticks}</div>
+               <div>${m.teks} ${editedMark}</div>
              </div>
            `);
         });
