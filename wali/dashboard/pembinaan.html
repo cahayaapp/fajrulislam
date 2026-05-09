@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Akademik Wali - Laporan Pembinaan</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* =========================================
+       TATA LETAK GLOBAL & TEMA FULL COLORFUL NEON-DASHBOARD
+       ========================================= */
+    *, *::before, *::after { box-sizing: border-box; }
+    
+    :root {
+      --bg-app: #f4f7f6; 
+      --navy-deep: #0f172a;
+      --navy-card: #1e293b;
+      --text-main: #334155;
+      --text-muted: #64748b;
+      
+      --rg-blue: #2563eb;
+      --neon-cyan: #06b6d4;
+      --neon-pink: #ec4899;
+      --neon-green: #10b981;
+      --neon-amber: #f59e0b;
+      --neon-purple: #8b5cf6;
+      
+      --shadow-float: 0 10px 30px rgba(0,0,0,0.06);
+      --shadow-glow: 0 0 15px rgba(6, 182, 212, 0.3);
+      --shadow-glow-gold: 0 0 15px rgba(245, 158, 11, 0.3);
+      --shadow-sm: 0 2px 10px rgba(0,0,0,0.03);
+      --radius-lg: 20px;
+    }
+
+    body { 
+      font-family: 'Poppins', sans-serif; background: var(--bg-app); 
+      margin: 0; padding: 0; color: var(--text-main); 
+      -webkit-tap-highlight-color: transparent; overflow-x: hidden; 
+      background-image: radial-gradient(circle at top left, rgba(236, 72, 153, 0.05) 0%, transparent 30%),
+                        radial-gradient(circle at bottom right, rgba(6, 182, 212, 0.05) 0%, transparent 30%);
+      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    .app-container { max-width: 800px; margin: 0 auto; padding: 25px 15px 50px 15px; width: 100%; flex: 1; } 
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    /* =========================================
+       RUANGGURU PROFILE HEADER CARD
+       ========================================= */
+    .rg-header-card {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 28px;
+      padding: 30px 25px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 15px 35px rgba(37, 99, 235, 0.2);
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .rg-header-card::after {
+      content: ''; position: absolute; right: -30px; bottom: -30px; width: 150px; height: 150px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+      border-radius: 50%; pointer-events: none;
+    }
+
+    .rg-avatar-wrapper {
+      width: 80px; height: 80px; border-radius: 50%; background: white; padding: 4px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex-shrink: 0; position: relative;
+      display: flex; justify-content: center; align-items: center; font-size: 2.2rem;
+      font-weight: bold; color: var(--navy-deep); z-index: 2;
+    }
+    .rg-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none; }
+    
+    .rg-level-badge {
+      position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+      background: #ffc107; color: var(--navy-deep); font-size: 0.65rem; font-weight: 800;
+      padding: 2px 10px; border-radius: 10px; border: 2px solid white; white-space: nowrap;
+    }
+
+    .rg-header-info { flex: 1; min-width: 0; z-index: 2; }
+    .rg-student-name { font-family: 'Poppins', sans-serif; font-size: 1.4rem; font-weight: 800; margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .rg-student-class { font-size: 0.85rem; font-weight: 600; opacity: 0.95; margin-top: 6px; display: block; line-height: 1.4;}
+    .rg-student-term { font-size: 0.75rem; font-weight: 700; color: #fef08a; margin-top: 4px; display: inline-block; background: rgba(0,0,0,0.2); padding: 2px 10px; border-radius: 6px; letter-spacing: 0.5px;}
+
+    /* =========================================
+       BLOK FILTER BULAN
+       ========================================= */
+    .filter-container {
+      display: flex; justify-content: space-between; align-items: center;
+      background: white; border-radius: 20px; padding: 12px 20px;
+      margin-bottom: 35px; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.05);
+    }
+    .fc-label { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 700; color: var(--navy-deep); }
+    .header-filter-box { background: var(--bg-app); padding: 8px 16px; border-radius: 50px; border: 1px solid #cbd5e1; }
+    .header-filter-box select { font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--rg-blue); background: transparent; border: none; outline: none; cursor: pointer; }
+
+    /* =========================================
+       BLOK KATEGORI UTAMA
+       ========================================= */
+    .kategori-blok { margin-bottom: 35px; padding: 28px 24px; border-radius: 28px; box-shadow: var(--shadow-float); border: none; overflow: hidden; position: relative;}
+    
+    .kb-header { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; margin-bottom: 20px; border-bottom: 1.5px solid rgba(0,0,0,0.05); }
+    .kb-icon { width: 48px; height: 48px; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; flex-shrink: 0; color: white; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+    .kb-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 800; margin: 0; color: var(--navy-deep); letter-spacing: -0.3px;}
+    
+    /* 1. INDEKS KEDISIPLINAN SANTRI */
+    .blok-poin { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #bae6fd; box-shadow: var(--shadow-float), var(--shadow-glow); }
+    .blok-poin .kb-header { background: linear-gradient(135deg, #0284c7, #3b82f6); margin: -28px -24px 20px -24px; padding: 20px 24px; border-radius: 28px 28px 0 0; border-bottom: none; }
+    .blok-poin .kb-icon { background: rgba(255,255,255,0.2); color: white; box-shadow: none; }
+    .blok-poin .kb-title { color: #ffffff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+    /* Penjelasan Indeks */
+    .indeks-desc-box { 
+      background: white; border-radius: 20px; padding: 18px 20px; margin-bottom: 25px; 
+      border: 1px solid #e0f2fe; box-shadow: var(--shadow-sm);
+      font-size: 0.85rem; color: var(--text-main); line-height: 1.6;
+    }
+    .indeks-desc-box strong { color: var(--navy-deep); font-size: 0.9rem; display: block; margin-bottom: 4px; }
+
+    /* Benchmark Kotak Tunggal */
+    .benchmark-single { background: white; border-radius: 20px; padding: 20px; text-align: center; box-shadow: var(--shadow-sm); margin-bottom: 25px; }
+    .bench-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; }
+    .bench-sub { font-size: 0.65rem; color: var(--rg-blue); font-weight: 600; display: block; margin-top: 2px; }
+    .b-value { font-size: 2.5rem; font-weight: 800; font-family: 'Poppins', sans-serif; color: var(--navy-deep); line-height: 1; margin-top: 5px; }
+
+    /* Area Utama Gauge Chart & Persentase */
+    .gauge-container {
+      background: white; border-radius: 24px; padding: 30px 20px; text-align: center;
+      box-shadow: var(--shadow-sm); margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.03);
+    }
+    
+    .persentase-wrapper { margin-bottom: 20px; }
+    .persentase-label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .persentase-skor { font-size: 3.5rem; font-weight: 800; color: var(--rg-blue); line-height: 1; margin: 5px 0; }
+
+    .svg-gauge-box { max-width: 280px; margin: 0 auto 15px auto; }
+    
+    .poin-badge-inline { display: inline-block; font-size: 1.2rem; font-weight: 800; padding: 6px 18px; border-radius: 12px; margin-top: 5px; }
+    .poin-plus { background: #dcfce7; color: #059669; }
+    .poin-minus { background: #fee2e2; color: #dc2626; }
+
+    .predikat { font-size: 0.75rem; padding: 6px 14px; border-radius: 8px; font-weight: 800; text-transform: uppercase; display: inline-block; letter-spacing: 0.5px; margin-top: 10px; }
+    .p-mumtaz { background: #dcfce7; color: #059669; }
+    .p-rasib { background: #fef2f2; color: #dc2626; }
+    .p-jayyid { background: #dbeafe; color: #2563eb; }
+
+    /* 2. REKAM JEJAK TINDAKAN / KONSELING */
+    .blok-kasus { background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 2px solid #fde68a; box-shadow: var(--shadow-float), var(--shadow-glow-gold); overflow: hidden; }
+    .blok-kasus .kb-header { background: linear-gradient(135deg, #ea580c, #f59e0b); margin: -28px -24px 20px -24px; padding: 20px 24px; border-radius: 28px 28px 0 0; border-bottom: none; position: relative; }
+    .blok-kasus .kb-icon { background: rgba(255,255,255,0.2); color: white; }
+    .blok-kasus .kb-title { color: #ffffff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+    /* Keterangan Status Laporan Kasus */
+    .info-banner-kasus {
+      background: #fffdf5; border-left: 4px solid #f59e0b; padding: 14px 18px; 
+      border-radius: 12px; margin-bottom: 20px; font-size: 0.8rem; color: var(--text-main); 
+      line-height: 1.5; border: 1px solid #fde68a;
+    }
+
+    /* Desain List Kasus */
+    .kasus-list { display: flex; flex-direction: column; gap: 16px; }
+    .kasus-card { background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 20px; padding: 20px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; }
+    .kc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+    .kc-tanggal { font-size: 0.8rem; font-weight: 700; color: var(--rg-blue); background: #eff6ff; padding: 4px 10px; border-radius: 6px; }
+    .blok-kasus .kc-tanggal { color: #d97706; background: #fffbeb; }
+    
+    .kc-kategori { font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 50px; text-transform: uppercase; }
+    .kat-ringan { background: #fef08a; color: #b45309; }
+    .kat-sedang { background: #fed7aa; color: #c2410c; }
+    .kat-berat { background: #fecaca; color: #b91c1c; }
+    .kat-kritis { background: #7f1d1d; color: #fecaca; }
+    .kat-bebas { background: #dcfce7; color: #047857; }
+
+    .kc-desc { font-size: 0.9rem; color: var(--text-main); line-height: 1.5; }
+    .kc-desc b { color: var(--navy-deep); display: block; margin-bottom: 2px; font-size: 0.95rem; }
+
+    .kc-bottom { background: #f8fafc; padding: 12px 16px; border-radius: 14px; border: none; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+    .blok-kasus .kc-bottom { background: #fffdf5; }
+    .kc-bottom strong { color: var(--navy-deep); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px; }
+
+    .empty-state { text-align: center; padding: 35px 20px; color: var(--text-muted); font-style: italic; font-size: 0.9rem; background: white; border-radius: 20px; border: 1px dashed #cbd5e1;}
+    #loadingData { text-align: center; padding: 40px 20px; color: var(--text-muted); font-weight: 600; font-style: italic; }
+
+    /* Modal Rincian Riwayat Poin */
+    .modal { display: none; position: fixed; z-index: 2000; inset: 0; background: rgba(15,23,42,0.7); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
+    .modal-content { background: white; width: 100%; max-width: 500px; max-height: 85vh; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.05); }
+    .modal-header { padding: 25px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+    .modal-body { flex: 1; overflow-y: auto; padding: 15px 25px; }
+    
+    .btn-tutup { background: var(--navy-deep); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: 'Poppins', sans-serif;}
+    .btn-tutup:hover { opacity: 0.9; }
+
+    /* Responsif Mobile */
+    @media (max-width: 768px) { 
+      .rg-header-card { padding: 24px 18px; border-radius: 24px; gap: 12px; flex-direction: row; align-items: center; justify-content: flex-start; }
+      .rg-avatar-wrapper { width: 60px; height: 60px; font-size: 1.6rem; }
+      .rg-student-name { font-size: 1.15rem; }
+      .rg-student-class { font-size: 0.75rem; }
+      .rg-student-term { font-size: 0.7rem; }
+      .filter-container { padding: 10px 16px; margin-bottom: 25px;}
+      .header-filter-box select { font-size: 0.8rem; }
+      .kategori-blok { padding: 24px 18px; border-radius: 24px; }
+      .blok-poin .kb-header, .blok-kasus .kb-header { margin: -24px -18px 20px -18px; padding: 18px 18px; border-radius: 24px 24px 0 0;}
+      .persentase-skor { font-size: 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <div class="rg-header-card fade-in">
+    <div class="rg-avatar-wrapper">
+      <span id="avatarInit">S</span>
+      <img id="avatarImg" src="" alt="Profil">
+      <div class="rg-level-badge">Santri</div>
+    </div>
+    <div class="rg-header-info">
+      <div class="rg-student-name" id="studentNameHeader">Memuat...</div>
+      <span class="rg-student-class" id="studentClassHeader">Memuat Kelas & Asrama...</span>
+      <span class="rg-student-term">Tahun Ajaran 2025/2026</span>
+    </div>
+  </div>
+
+  <div class="filter-container fade-in">
+    <div class="fc-label">
+      <span style="font-size:1.2rem;">📅</span> Pilih Laporan:
+    </div>
+    <div class="header-filter-box">
+      <select id="filterBulan" onchange="renderSemuaData()">
+        <option value="Semua">Semua Waktu</option>
+        <option value="Januari">Januari</option>
+        <option value="Februari">Februari</option>
+        <option value="Maret">Maret</option>
+        <option value="April">April 2026</option>
+        <option value="Mei">Mei</option>
+        <option value="Juni">Juni</option>
+        <option value="Juli">Juli</option>
+        <option value="Agustus">Agustus</option>
+        <option value="September">September</option>
+        <option value="Oktober">Oktober</option>
+        <option value="November">November</option>
+        <option value="Desember">Desember</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="loadingData">🔄 Sinkronisasi rekam jejak & gamifikasi...</div>
+
+  <div id="secPoin" class="kategori-blok blok-poin fade-in" style="display: none;">
+    <div class="kb-header">
+      <div class="kb-icon">📊</div>
+      <h3 class="kb-title">Indeks Kedisiplinan Santri</h3>
+    </div>
+    
+    <div class="indeks-desc-box">
+      <strong>Apa itu Indeks Kedisiplinan Santri?</strong>
+      Indeks ini merupakan akumulasi poin kebaikan (amal saleh) dikurangi poin sanksi/pelanggaran. Nilai ini menjadi cerminan langsung dari keaktifan, ketaatan aturan, serta parameter kedisiplinan santri selama berada di pesantren.
+    </div>
+
+    <div class="benchmark-single">
+      <div class="bench-title">Benchmark Score</div>
+      <span class="bench-sub" id="labelRumpunAsrama">Memuat Patokan...</span>
+      <div class="b-value" id="benchMax">0</div>
+    </div>
+
+    <div class="gauge-container">
+      
+      <div class="persentase-wrapper">
+        <div class="persentase-label">Pencapaian Kedisiplinan</div>
+        <div class="persentase-skor" id="teksPersentase">0%</div>
+      </div>
+
+      <div class="svg-gauge-box">
+        <svg viewBox="0 0 200 110" style="width: 100%; height: auto; display: block;">
+          <path d="M 20 100 A 80 80 0 0 1 60 30.7" fill="none" stroke="#ef4444" stroke-width="24" stroke-linecap="round" />
+          <path d="M 60 30.7 A 80 80 0 0 1 140 30.7" fill="none" stroke="#facc15" stroke-width="24" />
+          <path d="M 140 30.7 A 80 80 0 0 1 180 100" fill="none" stroke="#10b981" stroke-width="24" stroke-linecap="round" />
+
+          <line x1="100" y1="100" x2="40" y2="13.4" stroke="white" stroke-width="4" />
+          <line x1="100" y1="100" x2="160" y2="13.4" stroke="white" stroke-width="4" />
+
+          <polygon points="97,100 103,100 100,30" fill="#0f172a" id="gaugeNeedle" style="transform-origin: 100px 100px; transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);" />
+          <circle cx="100" cy="100" r="8" fill="#0f172a" />
+        </svg>
+      </div>
+
+      <div style="border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: 10px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">AKUMULASI POIN SAAT INI</span>
+        <span class="poin-badge-inline poin-plus" id="totalPoinDisplay">0</span><br>
+        <span id="predikatDisplay" class="predikat p-jayyid">JAYYID</span>
+      </div>
+
+      <button style="background: #eff6ff; color: var(--rg-blue); border: 1px solid #bfdbfe; padding: 8px 20px; border-radius: 10px; font-weight: 700; font-size: 0.8rem; margin-top: 15px; cursor: pointer; transition: 0.2s; font-family: 'Poppins', sans-serif;" onclick="showDetailModal()">👁️ Lihat Rincian Riwayat Poin</button>
+    </div>
+  </div>
+
+  <div id="secKasus" class="kategori-blok blok-kasus fade-in" style="display: none;">
+    <div class="kb-header">
+      <div class="kb-icon">📋</div>
+      <h3 class="kb-title">Daftar Penanganan Konselor</h3>
+    </div>
+    
+    <div class="info-banner-kasus">
+      💡 <b>Catatan Transparansi:</b><br>
+      Arsip di bawah ini khusus menampilkan rekam jejak indisipliner yang <b>sudah selesai ditangani</b> melalui proses tabayyun dan pembinaan oleh konselor. Tidak menutup kemungkinan terdapat laporan atau insiden lain yang belum tampil pada daftar ini dikarenakan masih dalam tahap penelusuran atau antrean penanganan.
+    </div>
+
+    <div class="kasus-list" id="kasusListContainer"></div>
+  </div>
+
+</div> <div id="detailModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h4 id="mNamaSantri" style="color: var(--navy-deep); font-size: 1.1rem; font-weight: 800; margin: 0 0 5px 0;">-</h4>
+        <span id="mPredikat" class="predikat">PREDIKAT</span>
+      </div>
+      <div style="text-align:right;">
+        <h2 id="mTotalPoin" style="font-family:'Poppins', sans-serif; font-weight: 800; color: #d97706; font-size: 2.2rem; margin: 0; line-height: 1;">0</h2>
+      </div>
+    </div>
+    <div class="modal-body" id="mHistoryList"></div>
+    <div style="padding:15px 20px; text-align:center; border-top: 1px solid #f1f5f9; background: #f8fafc;">
+      <button class="btn-tutup" onclick="closeModal()">Tutup Rincian</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+  // KONFIGURASI FIREBASE KONEKSI GANDA
+  const firebaseConfig = { apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI", authDomain: "absensi-santri-fajrul-islam.firebaseapp.com", databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com", projectId: "absensi-santri-fajrul-islam" };
+  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+  const dbRT = firebase.database(); const dbFS = firebase.firestore();
+
+  const monthMapRev = { "01":"Januari", "02":"Februari", "03":"Maret", "04":"April", "05":"Mei", "06":"Juni", "07":"Juli", "08":"Agustus", "09":"September", "10":"Oktober", "11":"November", "12":"Desember" };
+
+  const isAprilOrEarlyMay = (dateStr) => {
+    if (!dateStr) return false;
+    let d = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr.split(' ')[0];
+    return (d >= "2026-04-01" && d <= "2026-05-10");
+  };
+
+  let activeStudentName = "";
+  let currentMonthFilter = "Semua";
+
+  // Variabel Penampung Arsip Pembinaan & Gamifikasi
+  let globalKasusSelesai = [];
+  let globalPoinHistory = [];
+  
+  // Variabel Pemetaan Asrama & Identitas
+  let asramaTargetMaxScore = 0;
+  let rumpunAsramaSantri = "UMUM";
+  let namaUsrahBaku = "";
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const userStr = localStorage.getItem('cahayaCurrentUser');
+    if (!userStr) { document.getElementById('loadingData').innerText = "Sesi berakhir. Silakan login kembali."; return; }
+    const user = JSON.parse(userStr);
+    activeStudentName = (user.namaAnak || user.label || "SANTRI").toUpperCase();
+    
+    document.getElementById('studentNameHeader').textContent = activeStudentName;
+    document.getElementById('avatarInit').textContent = activeStudentName.charAt(0);
+
+    // Muat Foto Profil
+    let urlFoto = user.fotoProfil || user.fotoAnak || user.foto || "";
+    if (!urlFoto) {
+      try {
+        const snapUsers = await dbFS.collection('users').get();
+        snapUsers.forEach(doc => {
+          let u = doc.data();
+          let namaDb = (u.nama || u.label || u.username || "").toUpperCase().trim();
+          if (namaDb && activeStudentName.includes(namaDb)) { urlFoto = u.fotoProfil || u.foto; }
+        });
+      } catch(e) {}
+    }
+    if (urlFoto) {
+        document.getElementById('avatarImg').src = urlFoto;
+        document.getElementById('avatarImg').style.display = 'block';
+        document.getElementById('avatarInit').style.display = 'none';
+    }
+
+    // TARIK PEMETAAN ANGGOTA USRAH & IDENTITAS ASRAMA
+    let daftarSantriPutri = new Set();
+    let daftarSantriPutra = new Set();
+    
+    try {
+      const snapUsrah = await dbRT.ref('cahaya_app/master_usrah').once('value');
+      if (snapUsrah.exists()) {
+        const mu = snapUsrah.val();
+        Object.keys(mu).forEach(namaNaqib => {
+          let anggota = Array.isArray(mu[namaNaqib]) ? mu[namaNaqib] : Object.values(mu[namaNaqib]);
+          let naqibClean = namaNaqib.toLowerCase().trim();
+          
+          anggota.forEach(namaMurid => {
+            if (!namaMurid) return;
+            let nAtas = namaMurid.toUpperCase();
+            
+            // Lacak nama usrah spesifik untuk identitas header santri aktif
+            if (nAtas === activeStudentName) {
+                // Perbaikan format agar terlihat rapi dan baku
+                let namaMentah = namaNaqib.replace(/^mu'?allim(ah)?\s+|^naqib(ah)?\s+/i, "").trim();
+                let isPerempuan = (naqibClean.includes('fatimah') || naqibClean.includes('evita'));
+                let sapaan = isPerempuan ? "Naqibah" : "Naqib";
+                namaUsrahBaku = `Usrah ${namaMentah.charAt(0).toUpperCase() + namaMentah.slice(1).toLowerCase()} (${sapaan})`;
+            }
+
+            // Usrah Fatimah dan Evita dikelompokkan ke Putri
+            if (naqibClean.includes('fatimah') || naqibClean.includes('evita')) {
+              daftarSantriPutri.add(nAtas);
+              if (nAtas === activeStudentName) rumpunAsramaSantri = "PUTRI";
+            } 
+            // Usrah Favian, Khaizuran, dan Kamal dikelompokkan ke Putra
+            else if (naqibClean.includes('favian') || naqibClean.includes('khaizuran') || naqibClean.includes('kamal')) {
+              daftarSantriPutra.add(nAtas);
+              if (nAtas === activeStudentName) rumpunAsramaSantri = "PUTRA";
+            }
+          });
+        });
+      }
+    } catch(e) {}
+
+    // Muat Kelas Santri & Terapkan Identitas Gabungan
+    try {
+      const snapMaster = await dbRT.ref('cahaya_app/master_akademik/halqah').once('value');
+      let teksKelas = [];
+      
+      if (snapMaster.exists()) {
+        const mh = snapMaster.val();
+        let kTahfiz = ""; let kIlmiyah = "";
+        Object.keys(mh).forEach(kategori => {
+          Object.keys(mh[kategori]).forEach(namaKelas => {
+            if (mh[kategori][namaKelas].some(s => s.toUpperCase() === activeStudentName)) {
+               let katLow = kategori.toLowerCase();
+               if (katLow.includes('quran') || katLow.includes('tahfiz')) kTahfiz = namaKelas;
+               else if (katLow.includes('ilm') || katLow.includes('umum')) kIlmiyah = namaKelas;
+               else { if (!kIlmiyah) kIlmiyah = namaKelas; }
+            }
+          });
+        });
+        
+        if (kTahfiz) teksKelas.push("Tahfiz " + kTahfiz.replace(/^Tahfiz\s+/i, "").trim());
+        if (kIlmiyah) teksKelas.push(kIlmiyah.replace(/^Halqah\s+/i, "").trim());
+      }
+      
+      // Tambahkan identitas usrah jika ditemukan
+      if (namaUsrahBaku) teksKelas.push(namaUsrahBaku);
+      
+      document.getElementById('studentClassHeader').textContent = teksKelas.length > 0 ? teksKelas.join(" • ") : "Kelas Reguler Pesantren";
+    } catch(e) {}
+
+    // Tetapkan Bulan Aktif Default
+    const today = new Date();
+    currentMonthFilter = isAprilOrEarlyMay(today.toISOString().split('T')[0]) ? "April" : monthMapRev[String(today.getMonth()+1).padStart(2,'0')];
+    document.getElementById('filterBulan').value = currentMonthFilter;
+
+    // TARIK DATA PEMBINAAN & GAMIFIKASI DARI FIREBASE
+    try {
+      // 1. Tarik Buku Kasus Konselor (Tindakan Selesai)
+      const snapKasus = await dbRT.ref('cahaya_app/buku_kasus_konselor').once('value');
+      if (snapKasus.exists()) {
+        const dataKasus = snapKasus.val();
+        Object.keys(dataKasus).forEach(key => {
+          let rec = dataKasus[key];
+          if (rec.santri && rec.santri.toUpperCase() === activeStudentName) {
+            let tgl = rec.tanggalKejadian || (rec.waktuKonseling ? rec.waktuKonseling.substring(0,10) : "");
+            let mm = tgl.split('-')[1];
+            let filterBulan = monthMapRev[mm];
+            if (isAprilOrEarlyMay(tgl)) filterBulan = "April";
+            
+            rec.filterBulan = filterBulan;
+            globalKasusSelesai.push(rec);
+          }
+        });
+      }
+
+      // 2. Tarik Akumulasi Riwayat Poin (Gamifikasi)
+      let mapSkorAsrama = {};
+      
+      const snapsPoin = await Promise.all([
+        dbRT.ref('cahaya_app/log_lapor_inisiatif').once('value'),
+        dbRT.ref('cahaya_app/poin_manual').once('value'),
+        dbRT.ref('cahaya_app/absensi_program_harian').once('value'),
+        dbRT.ref('cahaya_app/absensi_pembelajaran').once('value')
+      ]);
+
+      const [snapInisiatif, snapManual, snapHarian, snapKBM] = snapsPoin;
+
+      // Parsing Inisiatif Kebaikan (+)
+      if (snapInisiatif.exists()) {
+        Object.values(snapInisiatif.val()).forEach(l => {
+          if (l.tipe === "Inisiatif Kebaikan" && l.pelapor && l.waktu) {
+            let nama = l.pelapor.toUpperCase();
+            let p = parseInt(l.poinDiberikan) || 0;
+            mapSkorAsrama[nama] = (mapSkorAsrama[nama] || 0) + p;
+            
+            if (nama === activeStudentName) {
+              let mm = l.waktu.substring(5,7);
+              let fb = isAprilOrEarlyMay(l.waktu) ? "April" : monthMapRev[mm];
+              globalPoinHistory.push({ tgl: l.waktu.substring(0,10), filterBulan: fb, judul: "Inisiatif Kebaikan", desc: l.keterangan, poin: p });
+            }
+          }
+        });
+      }
+
+      // Parsing Potongan Manual/Pelanggaran (-)
+      if (snapManual.exists()) {
+        Object.values(snapManual.val()).forEach(l => {
+          if (l.namaSantri && l.waktu) {
+            let nama = l.namaSantri.toUpperCase();
+            let p = parseInt(l.poin) || 0;
+            mapSkorAsrama[nama] = (mapSkorAsrama[nama] || 0) + p;
+            
+            if (nama === activeStudentName) {
+              let mm = l.waktu.substring(5,7);
+              let fb = isAprilOrEarlyMay(l.waktu) ? "April" : monthMapRev[mm];
+              globalPoinHistory.push({ tgl: l.waktu.substring(0,10), filterBulan: fb, judul: "Sanksi Aturan", desc: l.keterangan, poin: p });
+            }
+          }
+        });
+      }
+
+      // Parsing Poin Absensi Harian & KBM
+      [snapHarian, snapKBM].forEach((snapAbsen) => {
+        if (snapAbsen.exists()) {
+          Object.values(snapAbsen.val()).forEach(l => {
+            if (l.tanggal && l.data) {
+              l.data.forEach(s => {
+                if (s.nama) {
+                  let nama = s.nama.toUpperCase();
+                  let p = parseInt(s.poin) || 0;
+                  mapSkorAsrama[nama] = (mapSkorAsrama[nama] || 0) + p;
+                  
+                  if (nama === activeStudentName && p !== 0) {
+                    let mm = l.tanggal.substring(5,7);
+                    let fb = isAprilOrEarlyMay(l.tanggal) ? "April" : monthMapRev[mm];
+                    let ket = s.keterangan ? `(${s.keterangan})` : "";
+                    globalPoinHistory.push({ tgl: l.tanggal, filterBulan: fb, judul: `Absensi: ${s.status.toUpperCase()}`, desc: `${l.program || l.mapel || "Asrama"} ${ket}`, poin: p });
+                  }
+                }
+              });
+            }
+          });
+        }
+      });
+
+      // FILTER BENCHMARK SCORE BERDASARKAN RUMPUN ASRAMA SANTRI
+      let listSkorTerkait = [];
+      
+      if (rumpunAsramaSantri === "PUTRI") {
+         document.getElementById('labelRumpunAsrama').textContent = "PONDOK PUTRI (FATIMAH & EVITA)";
+         Object.keys(mapSkorAsrama).forEach(n => {
+            if (daftarSantriPutri.has(n)) listSkorTerkait.push(mapSkorAsrama[n]);
+         });
+      } else if (rumpunAsramaSantri === "PUTRA") {
+         document.getElementById('labelRumpunAsrama').textContent = "PONDOK PUTRA (FAVIAN, KHAIZURAN, KAMAL)";
+         Object.keys(mapSkorAsrama).forEach(n => {
+            if (daftarSantriPutra.has(n)) listSkorTerkait.push(mapSkorAsrama[n]);
+         });
+      } else {
+         document.getElementById('labelRumpunAsrama').textContent = "PONDOK PESANTREN";
+         listSkorTerkait = Object.values(mapSkorAsrama);
+      }
+
+      asramaTargetMaxScore = listSkorTerkait.length ? Math.max(...listSkorTerkait, 0) : 0;
+
+      document.getElementById('loadingData').style.display = 'none';
+      renderSemuaData();
+
+    } catch (e) {
+      document.getElementById('loadingData').innerHTML = "Gagal memuat rekam jejak: " + e.message;
+    }
+  });
+
+  function renderSemuaData() {
+    let selectEl = document.getElementById('filterBulan');
+    currentMonthFilter = selectEl.value;
+
+    renderIndeksPoin();
+    renderKasusPenanganan();
+  }
+
+  function renderIndeksPoin() {
+    const sec = document.getElementById('secPoin');
+    sec.style.display = 'block';
+
+    document.getElementById('benchMax').textContent = asramaTargetMaxScore;
+
+    let poinTerfilter = currentMonthFilter === "Semua" ? globalPoinHistory : globalPoinHistory.filter(p => p.filterBulan === currentMonthFilter);
+    let akumulasiPoin = poinTerfilter.reduce((sum, item) => sum + item.poin, 0);
+
+    const badgeEl = document.getElementById('totalPoinDisplay');
+    badgeEl.textContent = (akumulasiPoin >= 0 ? "+" : "") + akumulasiPoin;
+    badgeEl.className = akumulasiPoin >= 0 ? "poin-badge-inline poin-plus" : "poin-badge-inline poin-minus";
+
+    let rasioPersentase = 0;
+    if (asramaTargetMaxScore > 0) {
+      rasioPersentase = Math.round((akumulasiPoin / asramaTargetMaxScore) * 100);
+    } else {
+      rasioPersentase = akumulasiPoin > 0 ? 100 : 0;
+    }
+
+    document.getElementById('teksPersentase').textContent = rasioPersentase + "%";
+    document.getElementById('teksPersentase').style.color = rasioPersentase >= 50 ? "var(--rg-blue)" : "#ef4444";
+
+    let rasioAman = Math.max(0, Math.min(100, rasioPersentase));
+    let sudutRotasi = (rasioAman / 100 * 180) - 90;
+    document.getElementById('gaugeNeedle').style.transform = `rotate(${sudutRotasi}deg)`;
+
+    let predikatTxt = "JAYYID"; let predikatCls = "p-jayyid";
+    if (rasioPersentase >= 85 && akumulasiPoin > 0) {
+      predikatTxt = "MUMTAZ"; predikatCls = "p-mumtaz";
+    } else if (akumulasiPoin < 0) {
+      predikatTxt = "RASIB (PERHATIAN)"; predikatCls = "p-rasib";
+    }
+
+    const prdEl = document.getElementById('predikatDisplay');
+    prdEl.textContent = predikatTxt;
+    prdEl.className = `predikat ${predikatCls}`;
+  }
+
+  function renderKasusPenanganan() {
+    const sec = document.getElementById('secKasus');
+    const container = document.getElementById('kasusListContainer');
+    sec.style.display = 'block';
+
+    let kasusTerfilter = currentMonthFilter === "Semua" ? globalKasusSelesai : globalKasusSelesai.filter(k => k.filterBulan === currentMonthFilter);
+    
+    if (kasusTerfilter.length === 0) {
+      container.innerHTML = `<div class='empty-state'>Alhamdulillah, bersih dari catatan pembinaan indisipliner.</div>`;
+      return;
+    }
+
+    kasusTerfilter.sort((a,b) => new Date(b.tanggalKejadian || b.waktuKonseling) - new Date(a.tanggalKejadian || a.waktuKonseling));
+
+    container.innerHTML = kasusTerfilter.map(k => {
+      let tgl = k.tanggalKejadian || (k.waktuKonseling ? k.waktuKonseling.substring(0,10) : "-");
+      
+      let katClass = 'kat-ringan';
+      let katStr = k.kategoriAkhir || "Bimbingan";
+      if (katStr.includes('Sedang')) katClass = 'kat-sedang';
+      else if (katStr.includes('Berat')) katClass = 'kat-berat';
+      else if (katStr.includes('Kritis')) katClass = 'kat-kritis';
+      else if (katStr === 'TIDAK TERBUKTI') katClass = 'kat-bebas';
+
+      let rincianTabayyun = "";
+      if (katStr === 'TIDAK TERBUKTI') {
+        rincianTabayyun = `<b>Hasil Penelusuran Konselor:</b><br><span style="color:#059669; font-weight:600;">${k.uraianLanjutan || "Santri terbukti tidak bersalah dan poin dikembalikan."}</span>`;
+      } else {
+        rincianTabayyun = `<b>Hasil Tabayyun & Uraian:</b><br>${k.uraianLanjutan || "-"}<br><br>
+                           <b>Proses Pembinaan & Komitmen:</b><br>${k.pembinaan || "-"}<br>
+                           <i>Tindak Lanjut: ${k.tindakLanjut || "-"}</i>`;
+      }
+
+      return `
+        <div class="kasus-card">
+          <div class="kc-top">
+            <span class="kc-tanggal">${tgl}</span>
+            <span class="kc-kategori ${katClass}">${katStr.replace(/^Pelanggaran\s+/i, "")}</span>
+          </div>
+          <div class="kc-desc">
+            <b>Laporan Awal (${k.sumberLaporan || "Asrama"}):</b>
+            ${k.deskripsiAwal || "-"}
+          </div>
+          <div class="kc-bottom">
+            <strong>Tindak Lanjut Konselor (Oleh: ${k.konselorPenindak || "BK"}):</strong>
+            ${rincianTabayyun}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function showDetailModal() {
+    document.getElementById('mNamaSantri').textContent = activeStudentName;
+    document.getElementById('mTotalPoin').textContent = document.getElementById('totalPoinDisplay').textContent;
+    document.getElementById('mTotalPoin').style.color = document.getElementById('totalPoinDisplay').classList.contains('poin-plus') ? '#059669' : '#dc2626';
+
+    const prdAsli = document.getElementById('predikatDisplay');
+    const mPrd = document.getElementById('mPredikat');
+    mPrd.textContent = prdAsli.textContent;
+    mPrd.className = prdAsli.className;
+
+    let poinTerfilter = currentMonthFilter === "Semua" ? globalPoinHistory : globalPoinHistory.filter(p => p.filterBulan === currentMonthFilter);
+
+    const listContainer = document.getElementById('mHistoryList');
+    
+    if (poinTerfilter.length === 0) {
+      listContainer.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted); font-style:italic;">Belum ada riwayat penambahan atau pengurangan poin yang terekam.</div>';
+    } else {
+      poinTerfilter.sort((a,b) => new Date(b.tgl) - new Date(a.tgl));
+      
+      listContainer.innerHTML = poinTerfilter.map(h => `
+        <div style="display:flex; justify-content:space-between; align-items: center; padding:15px 0; border-bottom:1px solid #e2e8f0;">
+          <div style="font-size:0.85rem; flex: 1; padding-right: 10px;">
+            <span style="color:var(--text-muted); font-weight:600; font-size:0.75rem;">${h.tgl}</span><br>
+            <b style="color:var(--navy-deep); font-size:0.95rem; display:block; margin: 2px 0;">${h.judul}</b>
+            <span style="color:var(--text-main);">${h.desc}</span>
+          </div>
+          <div style="font-weight:800; font-size:1.2rem; color:${h.poin >= 0 ? '#059669' : '#dc2626'}; flex-shrink: 0;">
+            ${h.poin >= 0 ? '+' : ''}${h.poin}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('detailModal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('detailModal').style.display = 'none';
+  }
+</script>
+</body>
+</html>

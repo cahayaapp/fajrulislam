@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Karakter Wali - Laporan CAHAYA</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* =========================================
+       TATA LETAK GLOBAL & TEMA FULL COLORFUL
+       ========================================= */
+    *, *::before, *::after { box-sizing: border-box; }
+    
+    :root {
+      --bg-app: #f4f7f6; 
+      --navy-deep: #0f172a;
+      --navy-card: #1e293b;
+      --text-main: #334155;
+      --text-muted: #64748b;
+      
+      --rg-blue: #2563eb;
+      --shadow-float: 0 10px 30px rgba(0,0,0,0.06);
+      --shadow-sm: 0 2px 10px rgba(0,0,0,0.03);
+    }
+
+    body { 
+      font-family: 'Poppins', sans-serif; background: var(--bg-app); 
+      margin: 0; padding: 0; color: var(--text-main); 
+      -webkit-tap-highlight-color: transparent; overflow-x: hidden; 
+      background-image: radial-gradient(circle at top left, rgba(236, 72, 153, 0.05) 0%, transparent 30%),
+                        radial-gradient(circle at bottom right, rgba(6, 182, 212, 0.05) 0%, transparent 30%);
+      background-attachment: fixed;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    
+    .app-container { max-width: 800px; margin: 0 auto; padding: 25px 15px 50px 15px; width: 100%; flex: 1; } 
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* =========================================
+       HEADER PROFILE
+       ========================================= */
+    .rg-header-card {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 28px; padding: 30px 25px; color: white; display: flex; align-items: center; gap: 18px;
+      box-shadow: 0 15px 35px rgba(37, 99, 235, 0.2); margin-bottom: 20px; position: relative; overflow: hidden;
+    }
+    .rg-header-card::after {
+      content: ''; position: absolute; right: -30px; bottom: -30px; width: 150px; height: 150px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%); border-radius: 50%; pointer-events: none;
+    }
+    .rg-avatar-wrapper {
+      width: 80px; height: 80px; border-radius: 50%; background: white; padding: 4px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex-shrink: 0; position: relative;
+      display: flex; justify-content: center; align-items: center; font-size: 2.2rem; font-weight: bold; color: var(--navy-deep); z-index: 2;
+    }
+    .rg-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none; }
+    .rg-level-badge { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); background: #ffc107; color: var(--navy-deep); font-size: 0.65rem; font-weight: 800; padding: 2px 10px; border-radius: 10px; border: 2px solid white; white-space: nowrap; }
+    
+    .rg-student-name { font-family: 'Poppins', sans-serif; font-size: 1.4rem; font-weight: 800; margin: 0; line-height: 1.2; }
+    .rg-student-class, .rg-student-usrah, .rg-student-naqib { font-size: 0.85rem; font-weight: 600; display: block; margin-top: 3px; }
+    .rg-student-class { opacity: 0.95; }
+    .rg-student-usrah { color: #fef08a; }
+    .rg-student-naqib { color: #e0e7ff; }
+    .rg-student-term { font-size: 0.75rem; font-weight: 700; color: #ffffff; margin-top: 8px; display: inline-block; background: rgba(0,0,0,0.2); padding: 2px 10px; border-radius: 6px; }
+
+    /* =========================================
+       FILTER BULAN
+       ========================================= */
+    .filter-container {
+      display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 20px; padding: 12px 20px;
+      margin-bottom: 25px; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.05);
+    }
+    .fc-label { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 700; color: var(--navy-deep); }
+    .header-filter-box { background: var(--bg-app); padding: 8px 16px; border-radius: 50px; border: 1px solid #cbd5e1; }
+    .header-filter-box select { font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--rg-blue); background: transparent; border: none; outline: none; cursor: pointer; }
+
+    /* Kotak Keterangan Observasi */
+    .keterangan-box {
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; padding: 16px 20px;
+      margin-bottom: 25px; box-shadow: var(--shadow-sm); display: flex; gap: 14px; align-items: flex-start;
+    }
+    .keterangan-icon { font-size: 1.5rem; flex-shrink: 0; line-height: 1; }
+    .keterangan-text { font-size: 0.85rem; color: #1e3a8a; line-height: 1.6; font-weight: 500; margin: 0; text-align: justify; }
+
+    /* =========================================
+       BLOK DIMENSI KARAKTER
+       ========================================= */
+    .kategori-blok { margin-bottom: 35px; padding: 28px 24px; border-radius: 28px; box-shadow: var(--shadow-float); border: none; overflow: visible; position: relative;}
+    .kb-header { display: flex; align-items: center; gap: 14px; padding: 0 0 18px 0; }
+    .kb-icon { width: 48px; height: 48px; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+    .kb-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 800; margin: 0; letter-spacing: -0.3px;}
+
+    /* Warna per Dimensi */
+    .blok-spiritual { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 1px solid #a7f3d0; }
+    .blok-spiritual .kb-icon { background: linear-gradient(135deg, #34d399, #10b981); color: white; }
+    .blok-spiritual .kb-title { color: #047857; }
+
+    .blok-relasional { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; }
+    .blok-relasional .kb-icon { background: linear-gradient(135deg, #60a5fa, #3b82f6); color: white; }
+    .blok-relasional .kb-title { color: #1d4ed8; }
+
+    .blok-emosional { background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1px solid #fde68a; }
+    .blok-emosional .kb-icon { background: linear-gradient(135deg, #facc15, #f59e0b); color: var(--navy-deep); }
+    .blok-emosional .kb-title { color: #d97706; }
+
+    .blok-intelektual { background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 1px solid #cbd5e1; }
+    .blok-intelektual .kb-icon { background: linear-gradient(135deg, #94a3b8, #64748b); color: white; }
+    .blok-intelektual .kb-title { color: #334155; }
+
+    .blok-fisik { background: linear-gradient(135deg, #fff1f2, #ffe4e6); border: 1px solid #fecaca; }
+    .blok-fisik .kb-icon { background: linear-gradient(135deg, #fb7185, #e11d48); color: white; }
+    .blok-fisik .kb-title { color: #be123c; }
+
+    /* Quote Narrative Style */
+    .intel-narrative-box { 
+      background: white; border-radius: 24px; padding: 24px; position: relative; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-top: 15px; border: 1px solid rgba(0,0,0,0.05);
+    }
+    .intel-narrative-box::before { 
+      content: '“'; position: absolute; top: -15px; left: 24px; font-size: 4.5rem; 
+      font-family: 'Playfair Display', serif; line-height: 1; opacity: 1; color: #cbd5e1;
+    }
+    .intel-narrative-text { font-size: 0.95rem; color: #334155; line-height: 1.7; font-weight: 500; position: relative; z-index: 1; text-align: justify;}
+
+    /* Observer Bar */
+    .observer-info-bar { 
+      display: flex; align-items: center; gap: 12px; background: white; padding: 10px 16px; 
+      border-radius: 50px; border: 1px solid #e2e8f0; width: fit-content; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 15px;
+    }
+    .obs-avatar { 
+      width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #facc15, #f59e0b); 
+      color: var(--navy-deep); display: flex; justify-content: center; align-items: center; font-size: 0.85rem; font-weight: 800; flex-shrink: 0; 
+    }
+    .obs-name { font-size: 0.85rem; font-weight: 800; color: var(--navy-deep); }
+
+    /* Tindak Lanjut Section */
+    .blok-tindaklanjut { overflow: hidden; background: linear-gradient(135deg, #faf5ff, #f3e8ff); border: 1px solid #e9d5ff; padding: 0; border-radius: 28px; margin-top: 40px;}
+    .blok-tindaklanjut .kb-header { background: linear-gradient(135deg, #7e22ce, #a855f7); padding: 20px 24px; border-bottom: none; }
+    .blok-tindaklanjut .kb-title { color: #ffffff !important; }
+    .tl-body { padding: 24px; }
+    .tl-item { margin-bottom: 20px; }
+    .tl-label { font-size: 0.85rem; font-weight: 800; color: var(--navy-deep); text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;}
+    .tl-text { font-size: 0.95rem; color: var(--text-main); line-height: 1.6; background: rgba(255,255,255,0.6); padding: 15px; border-radius: 16px; border: 1px solid #e9d5ff; }
+    .fokus-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;}
+    .fokus-pill { background: white; border: 1px solid #d8b4fe; color: #7e22ce; padding: 6px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+
+    .empty-state { text-align: center; padding: 35px 20px; color: var(--text-muted); font-style: italic; background: white; border-radius: 20px; border: 1px dashed #cbd5e1;}
+
+    /* =========================================
+       FOOTER INFO
+       ========================================= */
+    .colorful-footer {
+        background: linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4); background-size: 300% 300%; animation: gradientBG 8s ease infinite;
+        padding: 50px 25px; text-align: center; color: white; width: 100%; margin-top: auto; display: flex; flex-direction: column; align-items: center;
+    }
+    .colorful-footer h3 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 800; margin: 0 0 8px 0; }
+    .colorful-footer p { font-size: 0.95rem; opacity: 0.95; margin: 0 0 25px 0; }
+    
+    .btn-notif { padding: 16px 36px; background: rgba(255, 255, 255, 0.95); color: #1e293b; font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 800; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; }
+
+    @media (max-width: 768px) { 
+      .rg-header-card { padding: 24px 18px; border-radius: 24px; }
+      .rg-student-name { font-size: 1.15rem; }
+      .kategori-blok { padding: 24px 18px; border-radius: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <div class="rg-header-card fade-in">
+    <div class="rg-avatar-wrapper">
+      <span id="avatarInit">S</span>
+      <img id="avatarImg" src="" alt="Profil">
+      <div class="rg-level-badge">Santri</div>
+    </div>
+    <div class="rg-header-info">
+      <div class="rg-student-name" id="studentNameHeader">Memuat...</div>
+      <span class="rg-student-class" id="studentClassHeader">Kelas: Memuat...</span>
+      <span class="rg-student-usrah" id="studentUsrahHeader">Usrah: Memuat...</span>
+      <span class="rg-student-naqib" id="studentNaqibHeader">Naqib/ah: Memuat...</span>
+      <span class="rg-student-term">Tahun Ajaran 2025/2026</span>
+    </div>
+  </div>
+
+  <div class="filter-container fade-in">
+    <div class="fc-label"><span>📅</span> Pilih Laporan:</div>
+    <div class="header-filter-box">
+      <select id="filterBulan" onchange="renderSemuaData()">
+        <option value="Semua">Semua Bulan</option>
+        <option value="Januari">Januari</option>
+        <option value="Februari">Februari</option>
+        <option value="Maret">Maret</option>
+        <option value="April">April 2026</option>
+        <option value="Mei">Mei</option>
+        <option value="Juni">Juni</option>
+        <option value="Juli">Juli</option>
+        <option value="Agustus">Agustus</option>
+        <option value="September">September</option>
+        <option value="Oktober">Oktober</option>
+        <option value="November">November</option>
+        <option value="Desember">Desember</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="loadingData">🔄 Memuat data observasi karakter...</div>
+  <div id="emptyData" class="empty-state" style="display: none;">Data Asesmen Karakter CAHAYA belum tersedia untuk bulan ini.</div>
+
+  <div id="contentKarakter" style="display: none;">
+      
+      <div class="observer-info-bar fade-in">
+         <div class="obs-avatar" id="obsInisial">N</div>
+         <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: #b45309; text-transform: uppercase;">NAQIB / NAQIBAH</div>
+            <div class="obs-name" id="obsNamaLengkap">Memuat...</div>
+         </div>
+      </div>
+
+      <div class="keterangan-box fade-in">
+        <div class="keterangan-icon">💡</div>
+        <p class="keterangan-text">
+          <strong>Keterangan Analisis:</strong> Narasi di bawah ini merupakan hasil observasi lapangan oleh Naqib/ah yang dipadukan secara komprehensif dengan data perkembangan mentoring individu pekanan santri.
+        </p>
+      </div>
+
+      <div class="kategori-blok blok-spiritual fade-in">
+        <div class="kb-header"><div class="kb-icon">🌙</div><h3 class="kb-title">1. Cinta Allah (Spiritual)</h3></div>
+        <div class="intel-narrative-box"><div class="intel-narrative-text" id="narasiSpiritual">-</div></div>
+      </div>
+
+      <div class="kategori-blok blok-relasional fade-in">
+        <div class="kb-header"><div class="kb-icon">🤝</div><h3 class="kb-title">2. Akhlak Mulia (Relasional)</h3></div>
+        <div class="intel-narrative-box"><div class="intel-narrative-text" id="narasiRelasional">-</div></div>
+      </div>
+
+      <div class="kategori-blok blok-emosional fade-in">
+        <div class="kb-header"><div class="kb-icon">💛</div><h3 class="kb-title">3. Hati Bersih (Emosional)</h3></div>
+        <div class="intel-narrative-box"><div class="intel-narrative-text" id="narasiEmosional">-</div></div>
+      </div>
+
+      <div class="kategori-blok blok-intelektual fade-in">
+        <div class="kb-header"><div class="kb-icon">🧠</div><h3 class="kb-title">4. Akal Cerdas (Intelektual)</h3></div>
+        <div class="intel-narrative-box"><div class="intel-narrative-text" id="narasiIntelektual">-</div></div>
+      </div>
+
+      <div class="kategori-blok blok-fisik fade-in">
+        <div class="kb-header"><div class="kb-icon">💪</div><h3 class="kb-title">5. Fisik Berdaya (Physical)</h3></div>
+        <div class="intel-narrative-box"><div class="intel-narrative-text" id="narasiFisik">-</div></div>
+      </div>
+
+      <div class="kategori-blok blok-tindaklanjut fade-in">
+        <div class="kb-header"><h3 class="kb-title">📈 Rencana Tindak Lanjut</h3></div>
+        <div class="tl-body">
+            <div class="tl-item">
+                <div class="tl-label">📝 Evaluasi Perkembangan</div>
+                <div class="tl-text" id="tlEvaluasi">-</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-label">🎯 Fokus Perbaikan Bulan Depan</div>
+                <div class="fokus-grid" id="tlFokus"></div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-label">💬 Pesan Naqib Untuk Orang Tua</div>
+                <div class="tl-text" id="tlPesan" style="border-color: #fde68a; background: #fffdf5;">-</div>
+            </div>
+        </div>
+      </div>
+  </div>
+
+</div>
+
+<div class="colorful-footer fade-in">
+    <h3>Laporan Karakter CAHAYA</h3>
+    <p>Fitur Download PDF sedang dikembangkan.</p>
+    <button class="btn-notif" onclick="alert('Fitur segera hadir!')">Cetak Laporan</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+  const firebaseConfig = { apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI", authDomain: "absensi-santri-fajrul-islam.firebaseapp.com", databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com", projectId: "absensi-santri-fajrul-islam" };
+  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+  const dbRT = firebase.database(); const dbFS = firebase.firestore();
+
+  let globalAsesmen = [];
+  let currentMonthFilter = "Semua"; 
+  let activeStudentName = "";
+  
+  // Variabel Global Identitas Utama (Fallback Terkuat)
+  let identitasGlobal = { kelas: "Belum diatur", usrah: "Belum diatur", naqib: "Belum diatur" };
+
+  // Pemindai Kunci Otomatis (Mengatasi variasi nama atribut di database)
+  const getProp = (obj, keys) => {
+      if (!obj) return "";
+      // Cari case-sensitive
+      for (let k of keys) {
+          if (obj[k] !== undefined && obj[k] !== null && obj[k] !== "") return obj[k];
+      }
+      // Cari case-insensitive sebagai backup
+      const lowerObj = {};
+      Object.keys(obj).forEach(key => lowerObj[key.toLowerCase()] = obj[key]);
+      for (let k of keys) {
+          if (lowerObj[k.toLowerCase()] !== undefined && lowerObj[k.toLowerCase()] !== null && lowerObj[k.toLowerCase()] !== "") {
+              return lowerObj[k.toLowerCase()];
+          }
+      }
+      return "";
+  };
+
+  const formatGelarAkademik = (nama) => {
+      if (!nama || nama.trim() === "") return "Belum diatur";
+      let bersih = nama.replace(/^(kak|mu'?allim(ah)?|naqib(ah)?|ustadz(ah)?|ust\.?)\s+/i, "").trim();
+      let nLow = bersih.toLowerCase();
+      let isPerempuan = (nLow.includes('evita') || nLow.includes('meilisa') || nLow.includes('fatimah') || nLow.includes('siti') || nLow.includes('nisa') || nLow.includes('putri') || nLow.includes('ah'));
+      return `${isPerempuan ? "Naqibah" : "Naqib"} ${bersih}`;
+  };
+
+  const parseDateSafe = (val) => {
+      if (!val) return 0;
+      if (typeof val === 'number') return val;
+      let d = new Date(val);
+      return isNaN(d.getTime()) ? 0 : d.getTime();
+  };
+
+  const isApril2026 = (dateStr) => {
+    if (!dateStr) return false;
+    return (dateStr >= "2026-04-01" && dateStr <= "2026-05-10");
+  };
+
+  const monthMap = { "01":"Januari", "02":"Februari", "03":"Maret", "04":"April", "05":"Mei", "06":"Juni", "07":"Juli", "08":"Agustus", "09":"September", "10":"Oktober", "11":"November", "12":"Desember" };
+
+  // Daftar variasi key yang mungkin Anda gunakan
+  const keyKelas = ['kelas', 'kelasSantri', 'class', 'kelassantri'];
+  const keyUsrah = ['namaUsrah', 'usrah', 'kelompok', 'nama_usrah', 'usro', 'halaqah'];
+  const keyNaqib = ['namaNaqib', 'naqib', 'observer', 'namaObserver', 'pembimbing', 'guru'];
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const userStr = localStorage.getItem('cahayaCurrentUser');
+    if (!userStr) { document.getElementById('loadingData').innerText = "Sesi berakhir."; return; }
+    const user = JSON.parse(userStr);
+    activeStudentName = (user.namaAnak || user.label || user.nama || "SANTRI").toUpperCase();
+    
+    document.getElementById('studentNameHeader').textContent = activeStudentName;
+    document.getElementById('avatarInit').textContent = activeStudentName.charAt(0);
+
+    // 1. Tarik Data Identitas Awal dari LocalStorage / Firestore
+    if (user.kelas) identitasGlobal.kelas = user.kelas;
+    if (user.usrah) identitasGlobal.usrah = user.usrah;
+    if (user.naqib) identitasGlobal.naqib = formatGelarAkademik(user.naqib);
+
+    try {
+        if(user.username) {
+            const userDoc = await dbFS.collection('users').doc(user.username).get();
+            if (userDoc.exists) {
+                let data = userDoc.data();
+                if(data.fotoProfil) {
+                    document.getElementById('avatarImg').src = data.fotoProfil;
+                    document.getElementById('avatarImg').style.display = 'block';
+                    document.getElementById('avatarInit').style.display = 'none';
+                }
+                let kFs = getProp(data, keyKelas);
+                let uFs = getProp(data, keyUsrah);
+                let nFs = getProp(data, keyNaqib);
+                if (kFs) identitasGlobal.kelas = kFs;
+                if (uFs) identitasGlobal.usrah = uFs;
+                if (nFs) identitasGlobal.naqib = formatGelarAkademik(nFs);
+            }
+        }
+    } catch(e) {}
+
+    // 2. Tarik Rekor Asesmen dari Realtime Database
+    try {
+      const snapAsesmen = await dbRT.ref('cahaya_app/asesmen_cahaya_santri').once('value');
+      if(snapAsesmen.exists()) {
+        const ad = snapAsesmen.val();
+        Object.keys(ad).forEach(k => {
+          let namaS = getProp(ad[k], ['namaSantri', 'namasantri', 'santri']);
+          if(namaS && namaS.toUpperCase() === activeStudentName) {
+              let tgl = ad[k].tanggalAsesmen || ad[k].tanggal || "";
+              let mm = tgl.includes('-') ? tgl.split('-')[1] : "01";
+              let filter = isApril2026(tgl) ? "April" : (monthMap[mm] || "Semua");
+              ad[k].filterBulan = filter; 
+              globalAsesmen.push(ad[k]);
+          }
+        });
+      }
+
+      // 3. PENGAMANAN UTAMA: Ekstrak Identitas dari Asesmen Terbaru (Menimpa jika data sebelumnya kosong)
+      if (globalAsesmen.length > 0) {
+          globalAsesmen.sort((a, b) => parseDateSafe(b.timestamp || b.tanggalAsesmen) - parseDateSafe(a.timestamp || a.tanggalAsesmen));
+          const absLatest = globalAsesmen[0];
+          
+          let kRt = getProp(absLatest, keyKelas);
+          let uRt = getProp(absLatest, keyUsrah);
+          let nRt = getProp(absLatest, keyNaqib);
+
+          if (kRt) identitasGlobal.kelas = kRt;
+          if (uRt) identitasGlobal.usrah = uRt;
+          if (nRt) identitasGlobal.naqib = formatGelarAkademik(nRt);
+      }
+
+      // Kunci tampilan di DOM Header agar permanen
+      document.getElementById('studentClassHeader').textContent = "Kelas: " + identitasGlobal.kelas;
+      document.getElementById('studentUsrahHeader').textContent = "Usrah: " + identitasGlobal.usrah;
+      document.getElementById('studentNaqibHeader').textContent = "Naqib/ah: " + identitasGlobal.naqib;
+
+      document.getElementById('loadingData').style.display = 'none';
+      renderSemuaData(); 
+    } catch(e) { document.getElementById('loadingData').innerText = "Gagal memuat data."; }
+  });
+
+  function renderSemuaData() {
+    currentMonthFilter = document.getElementById('filterBulan').value;
+    let filtered = currentMonthFilter === "Semua" ? globalAsesmen : globalAsesmen.filter(a => a.filterBulan === currentMonthFilter);
+    
+    // Header tidak akan berubah/hilang meskipun bulan ini kosong
+    if(filtered.length === 0) {
+        document.getElementById('contentKarakter').style.display = 'none';
+        document.getElementById('emptyData').style.display = 'block';
+        return;
+    }
+
+    document.getElementById('contentKarakter').style.display = 'block';
+    document.getElementById('emptyData').style.display = 'none';
+
+    // Urutkan data spesifik bulan ini
+    filtered.sort((a, b) => parseDateSafe(b.timestamp || b.tanggalAsesmen) - parseDateSafe(a.timestamp || a.tanggalAsesmen));
+    const latest = filtered[0]; 
+    
+    // Tampilkan observer di bar konten (Gunakan data spesifik bulan ini, jika kosong gunakan global fallback)
+    let nBulanIni = getProp(latest, keyNaqib);
+    let obs = nBulanIni ? formatGelarAkademik(nBulanIni) : identitasGlobal.naqib;
+    
+    let namaTanpaGelar = obs.replace(/^(Naqibah|Naqib)\s+/i, "").trim();
+    document.getElementById('obsInisial').textContent = namaTanpaGelar ? namaTanpaGelar.charAt(0).toUpperCase() : "N";
+    document.getElementById('obsNamaLengkap').textContent = obs.toUpperCase();
+
+    // Render Narasi
+    document.getElementById('narasiSpiritual').innerHTML = latest.narasi?.spiritual || "-";
+    document.getElementById('narasiRelasional').innerHTML = latest.narasi?.relasional || "-";
+    document.getElementById('narasiEmosional').innerHTML = latest.narasi?.emosional || "-";
+    document.getElementById('narasiIntelektual').innerHTML = latest.narasi?.intelektual || "-";
+    document.getElementById('narasiFisik').innerHTML = latest.narasi?.fisik || "-";
+
+    // Render Tindak Lanjut
+    document.getElementById('tlEvaluasi').innerHTML = latest.tindakLanjut?.evaluasiBulanIni || "Tidak ada catatan.";
+    document.getElementById('tlPesan').innerHTML = latest.tindakLanjut?.pesanWaliSantri || "Tidak ada pesan khusus.";
+
+    // Render Fokus
+    const fCont = document.getElementById('tlFokus');
+    fCont.innerHTML = '';
+    (latest.tindakLanjut?.fokusBulanDepan || []).forEach(f => {
+        fCont.insertAdjacentHTML('beforeend', `<span class="fokus-pill">${f}</span>`);
+    });
+  }
+</script>
+</body>
+</html>
