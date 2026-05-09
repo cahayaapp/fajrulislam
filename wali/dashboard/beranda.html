@@ -316,6 +316,9 @@
   let globalCommentNotifs = [];
   let isShowingAllNotifs = false;
 
+  // Variabel untuk Poto Profil
+  let fotoUrlSantri = "";
+
   // 2. FUNGSI SMART NICKNAME
   function getPanggilanCerdas(fullName) {
       let parts = fullName.trim().split(/\s+/);
@@ -392,7 +395,6 @@
     return raw.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, ''); 
   }
 
-  // FUNGSI UTAMA: MEMBUAT ROOM ID UNIK UNTUK CHAT
   function getChatRoomId(userA, userB) {
       let cleanA = userA.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
       let cleanB = userB.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
@@ -407,6 +409,21 @@
       const snapUsers = await dbFS.collection('users').get(); 
       snapUsers.forEach(doc => { pListUsers.push(doc.data()); });
       
+      // Ambil Foto Profil Terbaru Santri (Jika ada)
+      let objSantri = pListUsers.find(u => (u.nama || u.label || "").toUpperCase() === namaAnakUtuh);
+      if (objSantri && objSantri.fotoProfil) fotoUrlSantri = objSantri.fotoProfil;
+      else if (objSantri && objSantri.foto) fotoUrlSantri = objSantri.foto;
+      else if (user.fotoAnak) fotoUrlSantri = user.fotoAnak;
+
+      // TRIK KHUSUS: Mengubah Avatar Header di File Induk (Main Dashboard)
+      try {
+          if (fotoUrlSantri) {
+              let imgHtml = `<img src="${fotoUrlSantri}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+              if (window.parent.document.getElementById('studentAvatar')) window.parent.document.getElementById('studentAvatar').innerHTML = imgHtml;
+              if (window.parent.document.getElementById('mobileAvatar')) window.parent.document.getElementById('mobileAvatar').innerHTML = imgHtml;
+          }
+      } catch(e) {}
+
       const [snapHalqah, snapTahfiz, snapProgramHarian, snapPembelajaran, snapMedia] = await Promise.all([ 
         dbRT.ref('cahaya_app/absensi_halqah').once('value'), 
         dbRT.ref('cahaya_app/setoran_tahfiz').once('value'), 
@@ -448,17 +465,15 @@
   function handleNotifClick(type, key, btnEl) {
       let actionStr = btnEl.getAttribute('data-action');
       
-      // Jika notif komentar, tandai telah dibaca di LocalStorage agar hilang
       if (type !== 'chat') {
           let readNotifs = JSON.parse(localStorage.getItem('cahaya_read_notifs') || '[]');
           if (!readNotifs.includes(key)) {
               readNotifs.push(key);
               localStorage.setItem('cahaya_read_notifs', JSON.stringify(readNotifs));
           }
-          terapkanInteraksiKeUI(); // Memicu re-render notif list
+          terapkanInteraksiKeUI(); 
       }
       
-      // Eksekusi fungsi scroll atau buka chat
       if(actionStr) eval(actionStr);
   }
 
@@ -470,7 +485,6 @@
       const dash = document.getElementById('notificationDashboard');
       if (!container || !dash) return;
 
-      // Jika tidak ada notifikasi, sembunyikan kotak notifikasi sepenuhnya
       if (combined.length === 0) {
           dash.style.display = 'none';
           return;
@@ -508,7 +522,6 @@
           `);
       });
 
-      // Menambahkan tombol "Lihat Lainnya" jika lebih dari 2
       if (combined.length > 2 && !isShowingAllNotifs) {
           container.insertAdjacentHTML('beforeend', `
               <div class="notif-more" onclick="showAllDashboardNotifs()">Lihat ${combined.length - 2} notifikasi lainnya...</div>
@@ -523,7 +536,6 @@
           const sec = document.getElementById('comment_sec_' + eventId);
           if (sec && sec.style.display !== 'block') { sec.style.display = 'block'; }
           
-          // Efek highlight saat discroll
           card.style.transition = 'box-shadow 0.3s';
           card.style.boxShadow = '0 0 0 3px var(--gold-main)';
           setTimeout(() => { card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.04)'; }, 2000);
@@ -628,11 +640,24 @@
     let k = (ev.kegiatan || "").toLowerCase(); 
     let namaTampil = `<b>${ev.kegiatan}</b>`;
     let pbbUsername = ev.pembimbing ? getMentionUsername(ev.pembimbing) : "";
-    let pTeks = pbbUsername ? ` yang dibimbing <b>Mu'allim ${pbbUsername}</b>` : "";
-    let pNaqib = pbbUsername ? ` bersama <b>Naqib ${pbbUsername}</b>` : "";
+    
+    // DETEKSI GENDER PENGURUS SECARA SPESIFIK (MU'ALLIMAH / NAQIBAH)
+    let isPerempuan = false;
+    if (ev.pembimbing) {
+        let pbLow = ev.pembimbing.toLowerCase();
+        if (pbLow.includes('meilisa') || pbLow.includes('evita') || pbLow.includes('fatimah') || pbLow.includes('alamanda')) {
+            isPerempuan = true;
+        }
+    }
+    
+    let glrGuru = isPerempuan ? "Mu'allimah" : "Mu'allim";
+    let glrNaqib = isPerempuan ? "Naqibah" : "Naqib";
+
+    let pTeks = pbbUsername ? ` yang dibimbing <b>${glrGuru} ${pbbUsername}</b>` : "";
+    let pNaqib = pbbUsername ? ` bersama <b>${glrNaqib} ${pbbUsername}</b>` : "";
     
     if (ev.tipe === 'Tahfiz') { 
-        let namaGuru = pbbUsername ? ` dibimbing <b>Mu'allim ${pbbUsername}</b>` : "";
+        let namaGuru = pbbUsername ? ` dibimbing <b>${glrGuru} ${pbbUsername}</b>` : "";
         return `Alhamdulillah, aku baru aja selesai kelas tahfiz dan nyetor hafalan <b>${ev.detail.setoran || "hafalanku"}</b>${namaGuru}. Doain aku terus ya Abi Ummi, biar gampang ingat dan jaga hafalan Al-Qur'an. 🤲🏻`; 
     }
     
@@ -684,6 +709,8 @@
 
       let teksCounter = 0;
       let mediaCounter = 0;
+      
+      let avatarContent = fotoUrlSantri ? `<img src="${fotoUrlSantri}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : namaPanggilan.charAt(0);
 
       events.forEach((ev) => {
         let redaksi = susunRedaksi(ev);
@@ -703,7 +730,7 @@
             <div class="kabar-badge ${badgeClass}">${badgeText}</div>
             <div class="kabar-content">
               <div class="kabar-header">
-                <div class="kabar-avatar">${namaPanggilan.charAt(0)}</div>
+                <div class="kabar-avatar">${avatarContent}</div>
                 <div class="kabar-info">
                   <span class="kabar-name">${namaPanggilan}</span>
                   <span class="kabar-time">${infoWaktu}</span>
@@ -803,16 +830,24 @@
   function terapkanInteraksiKeUI() {
       globalCommentNotifs = [];
       let readNotifs = JSON.parse(localStorage.getItem('cahaya_read_notifs') || '[]');
+      
+      // KUNCI FILTER: Identifikasi nama anak untuk memastikan postingannya milik kita
+      let idAnak = namaPanggilan.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+      let suffix = '_' + idAnak;
 
       // Mengekstrak notifikasi komentar dari seluruh data
       Object.keys(globalInteraksiData).forEach(eventId => {
+          
+          // Gembok Keamanan: Lewati jika eventId (postingan) tidak berakhiran dengan nama anak kita
+          if (!eventId.endsWith(suffix)) return;
+
           const dataInt = globalInteraksiData[eventId] || {};
           const komentar = dataInt.komentar || {};
           
           Object.keys(komentar).forEach(kId => {
               const k = komentar[kId];
-              // Jika orang lain yang berkomentar
-              if (k.username !== userNameAsli) {
+              
+              if (k.username !== userNameAsli && !k.balasan) {
                   let notifKey = 'comment_' + eventId + '_' + kId;
                   if (!readNotifs.includes(notifKey)) {
                       globalCommentNotifs.push({
@@ -826,8 +861,8 @@
                       });
                   }
               }
-              // Jika ada yang membalas komentar kita
-              if (k.balasan && k.balasan.username !== userNameAsli) {
+              
+              if (k.balasan && k.username === userNameAsli && k.balasan.username !== userNameAsli) {
                   let notifKey = 'reply_' + eventId + '_' + kId;
                   if (!readNotifs.includes(notifKey)) {
                       globalCommentNotifs.push({
