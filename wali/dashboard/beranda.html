@@ -9,6 +9,11 @@
   
   <style>
     /* =========================================
+       PERBAIKAN TATA LETAK GLOBAL (MOBILE FIX)
+       ========================================= */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    /* =========================================
        WARNA & TIPOGRAFI PREMIUM
        ========================================= */
     :root {
@@ -24,8 +29,8 @@
     }
 
     body { font-family: 'Poppins', sans-serif; background: var(--bg-body); margin: 0; padding: 0; color: var(--text-main); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
-    /* Padding atas disesuaikan agar tidak terlalu menempel ke iframe induk */
-    .app-container { max-width: 600px; margin: 0 auto; padding: 25px 15px 15px 15px; } 
+    
+    .app-container { max-width: 600px; margin: 0 auto; padding: 25px 15px 15px 15px; width: 100%; } 
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn 0.4s ease forwards; }
@@ -57,7 +62,7 @@
     .predikat-netral { background: rgba(255,255,255,0.9); color: #475569; }
 
     /* =========================================
-       TIMELINE CERITA (FEED SOSMED Teks & Media)
+       TIMELINE CERITA
        ========================================= */
     .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px;}
     .section-header h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--navy-main); margin: 0; }
@@ -79,7 +84,6 @@
     .kabar-body { font-size: 0.95rem; color: #334155; line-height: 1.6; }
     .kabar-body b { color: var(--navy-main); font-weight: 700; }
 
-    /* FITUR INTERAKSI SOSMED (LIKE, LOVE, KOMEN) */
     .interaction-bar { display: flex; border-top: 1px solid var(--border-soft); padding-top: 12px; margin-top: 15px; gap: 15px; }
     .btn-interact { background: none; border: none; font-family: 'Poppins'; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 8px; transition: 0.2s;}
     .btn-interact:hover { background: #f1f5f9; }
@@ -92,13 +96,12 @@
     .reply-box { background: #fffbeb; padding: 10px 15px; border-radius: 8px; border-left: 3px solid var(--gold-main); margin-top: 10px; font-size: 0.8rem; }
     .reply-box b { color: #b45309; }
     
-    /* PERBAIKAN MOBILE: TOMBOL KOMENTAR TERPOTONG */
-    .comment-input-area { display: flex; gap: 8px; align-items: stretch; }
-    .comment-input-area input { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid var(--border-soft); font-family: 'Poppins'; font-size: 0.85rem; outline: none; transition: 0.2s; min-width: 0; }
+    /* PERBAIKAN TOMBOL KOMENTAR SUPAYA TIDAK TERPOTONG */
+    .comment-input-area { display: flex; gap: 8px; align-items: center; width: 100%; }
+    .comment-input-area input { flex: 1; min-width: 0; padding: 12px 15px; border-radius: 20px; border: 1px solid var(--border-soft); font-family: 'Poppins'; font-size: 0.85rem; outline: none; transition: 0.2s; }
     .comment-input-area input:focus { border-color: var(--gold-main); }
-    .comment-input-area button { background: var(--navy-main); color: white; border: none; padding: 0 18px; border-radius: 20px; cursor: pointer; font-family: 'Poppins'; font-weight: 600; flex-shrink: 0; white-space: nowrap;}
+    .comment-input-area button { background: var(--navy-main); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-family: 'Poppins'; font-weight: 600; flex-shrink: 0; white-space: nowrap; height: auto; }
 
-    /* Gaya Khusus Media Card (IG/YT) */
     .media-card { padding: 0; }
     .media-header { padding: 15px 20px 10px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(0,0,0,0.03); }
     .icon-brand { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; flex-shrink: 0; color: white;}
@@ -120,6 +123,7 @@
         box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4); font-style: italic; line-height: 1.6;
         border: 2px solid white;
     }
+    
     .fab-chat {
       position: fixed; bottom: 30px; right: 20px; z-index: 9999;
       width: 60px; height: 60px; border-radius: 50%;
@@ -129,13 +133,15 @@
       cursor: pointer; transition: 0.3s; border: 2px solid white;
     }
     .fab-chat:hover { transform: scale(1.1); }
+    
     @keyframes pulse-red { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); } 70% { transform: scale(1.15); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); } }
     
+    /* PERBAIKAN BADGE ANGKA MOBILE */
     .chat-badge {
-      position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
+      position: absolute; top: -5px; right: 0; background: #ef4444 !important; color: white !important;
       font-size: 0.75rem; font-weight: 800; font-family: 'Poppins', sans-serif;
-      width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-      display: none; animation: pulse-red 1.5s infinite; z-index: 2;
+      width: 24px; height: 24px; min-width: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+      display: none; animation: pulse-red 1.5s infinite; z-index: 2; pointer-events: none;
     }
 
     .chat-window {
@@ -167,14 +173,14 @@
     .msg-other { background: white; border: 1px solid #cbd5e1; align-self: flex-start; border-bottom-left-radius: 2px; }
     .msg-info { font-size: 0.65rem; color: #94a3b8; margin-bottom: 3px; font-weight: 600;}
     .chat-footer { padding: 12px; background: white; border-top: 1px solid var(--border-soft); display: none; gap: 8px; }
-    .chat-footer input { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid #cbd5e1; outline: none; font-family: 'Poppins'; font-size: 0.85rem; }
+    .chat-footer input { flex: 1; min-width: 0; padding: 12px 15px; border-radius: 20px; border: 1px solid #cbd5e1; outline: none; font-family: 'Poppins'; font-size: 0.85rem; }
     
-    /* PERBAIKAN MOBILE: TOMBOL KIRIM LONJONG */
+    /* PERBAIKAN TOMBOL KIRIM AGAR BULAT SEMPURNA */
     .chat-footer button { 
       background: var(--navy-main); color: white; border: none; 
-      width: 42px; height: 42px; min-width: 42px; border-radius: 50%; 
+      width: 42px; height: 42px; min-width: 42px; min-height: 42px; border-radius: 50%; 
       cursor: pointer; display: flex; justify-content: center; align-items: center;
-      flex-shrink: 0; 
+      flex-shrink: 0; padding: 0;
     }
     
     @media (max-width: 480px) { .fab-chat { bottom: 120px; right: 20px; } .chat-window { right: 10px; bottom: 190px; width: calc(100vw - 20px); height: 60vh; max-height: 500px;} }
@@ -187,7 +193,7 @@
     .in-app-notif .notif-desc { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* MENU EDIT/HAPUS PESAN CHAT */
-    .action-sheet-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.3); z-index: 10100; justify-content: center; align-items: flex-end; }
+    .action-sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 10100; justify-content: center; align-items: flex-end; }
     .action-sheet { background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; animation: slideUp 0.3s forwards;}
     @keyframes slideUp { from {transform: translateY(100%);} to {transform: translateY(0);} }
     .action-sheet button { background: #f1f5f9; border: none; padding: 15px; border-radius: 12px; font-family: 'Poppins'; font-weight: 600; font-size: 0.9rem; color: var(--navy-main); cursor: pointer; }
@@ -206,7 +212,6 @@
 
 <div class="app-container">
   
-  <!-- SAPAAN WALI SANTRI -->
   <div class="greeting-section fade-in">
     <h2>Assalamu'alaikum, <span id="namaWaliBanner">Abi Ummi</span></h2>
     <p>Mari sejenak rileks, melihat perkembangan positif dan jejak langkah <b id="namaAnakBanner">Santri</b>.</p>
@@ -214,7 +219,6 @@
 
   <div id="loadingData">🔄 Menyelaraskan data aplikasi...</div>
 
-  <!-- BAGIAN 1: SISTEM EVALUASI PENDIDIKAN -->
   <div id="mainDashboard" class="fade-in" style="display: none;">
     <div class="widget-section-title">Sistem Evaluasi Pendidikan</div>
     <div class="widget-grid">
@@ -239,7 +243,6 @@
     </div>
   </div>
 
-  <!-- BAGIAN 2: CERITA SANTRI (TEKS & MEDIA SELANG-SELING) -->
   <div id="ceritaSantriWrapper" class="fade-in" style="display: none; margin-top: 15px;">
     <div class="section-header">
       <div class="icon">✨</div>
@@ -258,10 +261,9 @@
 </div>
 
 <div class="fab-chat" onclick="toggleChat()">
-  💬<div id="chatUnreadBadge" class="chat-badge">0</div>
+  💬<div id="chatUnreadBadge" class="chat-badge" style="display: none;">0</div>
 </div>
 
-<!-- LIVE CHAT WINDOW -->
 <div class="chat-window" id="chatWindow">
   <div class="chat-header">
     <h4 id="chatHeaderTitle">Pusat Bantuan</h4>
@@ -290,7 +292,6 @@
     <button id="btnSendChat" onclick="sendChatMessage()">➤</button>
   </div>
 
-  <!-- OVERLAY EDIT/HAPUS PESAN -->
   <div id="actionSheetOverlay" class="action-sheet-overlay" onclick="closeActionSheet(event)">
     <div class="action-sheet" id="actionSheet" onclick="event.stopPropagation()">
       <div style="text-align:center; color:#94a3b8; font-size:0.75rem; margin-bottom:5px;">Opsi Pesan</div>
@@ -363,7 +364,7 @@
   let selectedMsgId = null;
   let selectedMsgText = "";
   
-  // PERBAIKAN AUDIO UNTUK MOBILE
+  // PERBAIKAN AUDIO UNTUK MOBILE (DIPAKSA BANGUN SAAT LAYAR DISENTUH KALI PERTAMA)
   const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
   const notifAudioChat = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
   let audioUnlocked = false;
@@ -926,7 +927,12 @@
         }
         lastUnreadCount = unreadTotal;
         const badge = document.getElementById('chatUnreadBadge');
-        if(unreadTotal > 0) { badge.textContent = unreadTotal; badge.style.display = 'flex'; } else { badge.style.display = 'none'; }
+        if(unreadTotal > 0) { 
+            badge.textContent = unreadTotal; 
+            badge.style.setProperty('display', 'flex', 'important'); 
+        } else { 
+            badge.style.setProperty('display', 'none', 'important'); 
+        }
         if(document.getElementById('viewInbox').style.display !== 'none') { renderInboxUI(myInboxData); }
        });
   }
@@ -1004,12 +1010,8 @@
         const body = document.getElementById('chatBody'); body.innerHTML = ''; const data = snap.val();
         if(!data) { body.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:0.8rem; margin-top:20px;">Mulai percakapan.</div>'; return; }
         
-        let updates = {};
         Object.keys(data).forEach(msgId => {
            const m = data[msgId]; const isMe = m.pengirim === sapaanPenuh; 
-           
-           if (!isMe && !m.isRead) { updates[msgId + '/isRead'] = true; }
-
            const timeStr = new Date(m.waktu).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
            
            let editedMark = m.isEdited ? '<span style="font-size:0.6rem; color:#94a3b8; font-style:italic; margin-right:5px;">(diedit)</span>' : '';
@@ -1024,7 +1026,6 @@
            `);
         });
         
-        if (Object.keys(updates).length > 0) { dbRT.ref(`cahaya_app/pesan_global/${roomId}`).update(updates); }
         body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' });
       });
   }
@@ -1038,7 +1039,7 @@
           editModeId = null;
           document.getElementById('btnSendChat').textContent = "➤";
       } else {
-          dbRT.ref(`cahaya_app/pesan_global/${rid}`).push({ teks: txt, pengirim: sapaanPenuh, waktu: new Date().toISOString(), isRead: false });
+          dbRT.ref(`cahaya_app/pesan_global/${rid}`).push({ teks: txt, pengirim: sapaanPenuh, waktu: new Date().toISOString() });
       }
       localStorage.setItem('chat_read_' + rid, new Date().toISOString()); inp.value = ''; inp.focus();
   }
