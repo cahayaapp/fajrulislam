@@ -207,7 +207,6 @@
       @page { 
           size: A4 portrait; 
           margin: 15mm; 
-          /* Page Counter Natively Chrome / Safari */
           @bottom-right {
               content: "Halaman " counter(page) " dari " counter(pages);
               font-family: 'Poppins', sans-serif; font-size: 9pt; color: #64748b;
@@ -215,7 +214,7 @@
       }
       body { background: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; padding-bottom: 40px; }
       
-      /* MENGHILANGKAN PEMBUNGKUS UTAMA AGAR MENTOK DAN LEGA */
+      /* PENTING: Meleburkan pembungkus utama agar PDF menggunakan ukuran kertas full (tidak terbatasi div) */
       .app-container { display: contents !important; }
       
       /* Sembunyikan elemen UI Aplikasi */
@@ -530,14 +529,25 @@
     const tglSekarang = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric'});
     document.querySelector('.tglTtd').textContent = `Tanjung Pandan, ${tglSekarang}`;
 
+    // FITUR PENGAMBILAN FOTO TERBARU DARI DATABASE FIRESTORE AGAR SINKRON SEMUA PERANGKAT
     let urlFoto = user.fotoProfil || user.fotoAnak || user.foto || "";
-    if (!urlFoto) {
-      try {
-        const snapUsers = await dbFS.collection('users').get();
-        snapUsers.forEach(doc => { let u = doc.data(); let namaDb = (u.nama || u.label || u.username || "").toUpperCase().trim(); if (namaDb && activeStudentName.includes(namaDb)) { urlFoto = u.fotoProfil || u.foto; } });
-      } catch(e) {}
+    try {
+        if(user.username) {
+            const userDoc = await dbFS.collection('users').doc(user.username).get();
+            if (userDoc.exists && userDoc.data().fotoProfil) {
+                urlFoto = userDoc.data().fotoProfil;
+                // Simpan ulang ke cache lokal agar tidak lemot saat refresh
+                user.fotoProfil = urlFoto;
+                localStorage.setItem('cahayaCurrentUser', JSON.stringify(user));
+            }
+        }
+    } catch(e) { console.log("Gagal tarik foto dari server:", e); }
+
+    if (urlFoto) { 
+        document.getElementById('avatarImg').src = urlFoto; 
+        document.getElementById('avatarImg').style.display = 'block'; 
+        document.getElementById('avatarInit').style.display = 'none'; 
     }
-    if (urlFoto) { document.getElementById('avatarImg').src = urlFoto; document.getElementById('avatarImg').style.display = 'block'; document.getElementById('avatarInit').style.display = 'none'; }
 
     try {
       const snapMaster = await dbRT.ref('cahaya_app/master_akademik/halqah').once('value');
@@ -756,19 +766,21 @@
       `);
     });
   }
-function prosesDownloadPDF() {
-    // Deteksi sederhana jika user membuka lewat WebView/Aplikasi In-App
-    let isWebview = (navigator.userAgent.includes('wv') || navigator.userAgent.includes('WebView') || navigator.userAgent.includes('FBAV') || navigator.userAgent.includes('Instagram'));
-    
-    if(isWebview) {
-        alert("⚠️ Perhatian: Fitur PDF diblokir oleh aplikasi ini. Silakan klik ikon titik tiga di pojok kanan atas, lalu pilih 'Buka di Chrome' atau 'Buka di Safari' agar bisa mengunduh laporan.");
-    } else {
-        // Beri delay 500ms agar animasi selesai dan browser siap merender PDF
-        setTimeout(() => {
-            window.print();
-        }, 500);
-    }
-}
+
+  // ==========================================
+  // LOGIKA DOWNLOAD PDF
+  // ==========================================
+  function prosesDownloadPDF() {
+      // 1. Deteksi apakah dibuka di In-App Browser (WA, IG, FB)
+      let isWebview = (navigator.userAgent.includes('wv') || navigator.userAgent.includes('WebView') || navigator.userAgent.includes('FBAV') || navigator.userAgent.includes('Instagram'));
+      
+      if(isWebview) {
+          alert("⚠️ Perhatian: Fitur Cetak PDF sering kali diblokir oleh aplikasi chat (seperti WhatsApp/Instagram). \n\n👉 Silakan klik ikon Tiga Titik di pojok kanan atas, lalu pilih 'Buka di Chrome / Buka di Safari' agar PDF dapat diunduh.");
+      } else {
+          // Beri jeda 500ms agar halaman fokus dan siap dirender
+          setTimeout(() => { window.print(); }, 500);
+      }
+  }
 </script>
 </body>
 </html>
