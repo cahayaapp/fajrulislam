@@ -9,14 +9,10 @@
   
   <style>
     /* ===== CSS LAYOUT STABIL ===== */
-    html, body { 
-      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; 
-      background-color: var(--bg-pearl, #f8fafc); font-family: 'Poppins', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: var(--bg-pearl, #f8fafc); font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent;}
     body { display: flex; flex-direction: row; }
 
-    /* SIDEBAR */
+    /* SIDEBAR KIRI */
     .sidebar { width: 280px; flex-shrink: 0; background: white; border-right: 1px solid var(--input-border, #cbd5e1); display: flex; flex-direction: column; z-index: 1000; transition: left 0.3s ease; height: 100%; }
     .sidebar-top { padding: 25px 20px 10px 20px; flex-shrink: 0; }
     .brand-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
@@ -24,15 +20,15 @@
     .brand-text h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--navy-dark, #0f172a); font-weight: 900; letter-spacing: 1px; line-height: 1.1; margin: 0;}
     .brand-text p { font-size: 0.65rem; color: var(--gold-main, #d4af37); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;}
 
-    .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 20px 20px 20px; -webkit-overflow-scrolling: touch; }
+    .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 0 20px 0; -webkit-overflow-scrolling: touch; }
     .sidebar-scroll::-webkit-scrollbar { width: 4px; }
     .sidebar-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-    .menu-group { display: none; margin-bottom: 25px; animation: fadeIn 0.5s ease; }
-    .group-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted, #64748b); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; padding-left: 15px; }
-    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 12px; color: var(--text-muted, #64748b); text-decoration: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s; margin-bottom: 4px;}
-    .nav-item:hover { background: #f8fafc; color: var(--navy-dark, #0f172a); transform: translateX(5px); }
-    .nav-item.active { background: linear-gradient(90deg, rgba(212,175,55,0.1) 0%, transparent 100%); color: var(--navy-dark, #0f172a); font-weight: 700; border-left: 3px solid var(--gold-main, #d4af37); border-radius: 4px 12px 12px 4px;}
+    .menu-group { display: none; margin-bottom: 15px; animation: fadeIn 0.5s ease; }
+    .group-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; padding: 0 25px; margin-bottom: 8px; }
+    .nav-item { padding: 12px 25px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.95rem; transition: 0.2s; display: flex; align-items: center; gap: 12px; cursor: pointer; border-left: 4px solid transparent;}
+    .nav-item:hover { background: #f8fafc; color: var(--gold-main); padding-left: 30px;}
+    .nav-item.active { background: #f8fafc; color: var(--navy-main); border-left-color: var(--gold-main); }
 
     .sidebar-bottom { padding: 15px 20px 25px 20px; flex-shrink: 0; background: white; border-top: 1px solid #f1f5f9; box-shadow: 0 -4px 10px rgba(0,0,0,0.02);}
     .btn-logout { width: 100%; padding: 14px; border: 1px solid #fecdd3; background: #fff1f2; color: #e11d48; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 0.9rem;}
@@ -40,35 +36,37 @@
 
     /* MAIN CONTENT */
     .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
-    .top-bar { padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--input-border, #cbd5e1); z-index: 10; flex-shrink: 0;}
-    .page-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 800; color: var(--navy-dark, #0f172a); }
-    .user-profile-btn { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 50px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; background: white; box-shadow: var(--shadow-card, 0 4px 6px rgba(0,0,0,0.05)); }
-    .user-profile-btn:hover { border-color: var(--gold-main, #d4af37); transform: translateY(-2px); }
-    .user-info { text-align: right; display: flex; flex-direction: column; }
-    .user-name { font-weight: 700; font-size: 0.85rem; color: var(--navy-dark, #0f172a); line-height: 1.2; }
-    .user-role { font-size: 0.65rem; color: var(--gold-main, #d4af37); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;}
-    .avatar-circle { width: 38px; height: 38px; border-radius: 50%; background: var(--navy-dark, #0f172a); color: white; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1rem; border: 2px solid var(--gold-main, #d4af37); overflow: hidden;}
-    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    
+    /* GAYA TOP NAV MENGIKUTI "HEADER KEDUA" BERANDA WALI */
+    .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-bottom: 1px solid var(--border-soft); z-index: 10; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+    .menu-btn { font-size: 1.6rem; color: var(--navy-main); cursor: pointer; transition: 0.2s;}
+    .menu-btn:hover { color: var(--gold-main); }
+    .app-title-header { display: flex; align-items: center; gap: 8px; font-family: 'Playfair Display', serif; font-weight: 800; font-size: 1.1rem; color: var(--navy-main); letter-spacing: 1px;}
+    .app-title-header img { height: 28px; width: auto; object-fit: contain; }
+    
+    .user-profile-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-main), #facc15);
+      color: var(--navy-main); display: flex; justify-content: center; align-items: center;
+      font-weight: 800; font-size: 1.1rem; font-family: 'Playfair Display', serif;
+      box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); border: 2px solid white; cursor: pointer;
+      overflow: hidden; flex-shrink: 0;
+    }
+    
     #contentFrame { flex: 1; width: 100%; border: none; background: transparent; }
 
     /* MOBILE RESPONSIVE */
-    .mobile-header { display: none; }
     .mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: 0.3s; pointer-events: none;}
     @media (max-width: 900px) {
       body { flex-direction: column; }
       .sidebar { position: fixed; top: 0; bottom: 0; left: -300px; height: 100%; width: 280px; box-shadow: 5px 0 20px rgba(0,0,0,0.15); z-index: 1000; }
       .sidebar.open { left: 0; }
       .mobile-menu-overlay.open { opacity: 1; pointer-events: all; }
-      .top-bar { display: none; }
       .main-content { flex: 1; width: 100%; height: auto; }
-      .mobile-header { display: flex; padding: 15px 20px; background: white; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--input-border, #cbd5e1); z-index: 10; flex-shrink: 0;}
-      .mobile-brand { display: flex; align-items: center; gap: 10px; font-family: 'Playfair Display', serif; font-weight: 900; color: var(--navy-dark, #0f172a); font-size: 1.1rem; }
-      .mobile-brand img { width: 30px; }
-      .menu-toggle-btn { background: none; border: none; font-size: 1.5rem; color: var(--navy-dark, #0f172a); cursor: pointer; }
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* ===== WIDGET LIVE CHAT ===== */
+    /* ===== WIDGET LIVE CHAT GLOBAL ===== */
     .pengurus-fab-chat {
       position: fixed; bottom: 20px; right: 20px; z-index: 9999;
       width: 60px; height: 60px; border-radius: 50%;
@@ -116,11 +114,7 @@
     .p-msg-other { background: white; border: 1px solid #cbd5e1; align-self: flex-start; border-bottom-left-radius: 2px; }
     .p-msg-info { font-size: 0.65rem; color: #94a3b8; margin-bottom: 3px; font-weight: 600;}
 
-    .msg-options-menu {
-      position: absolute; right: 20px; background: white;
-      border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      display: none; flex-direction: column; z-index: 1100; overflow: hidden; border: 1px solid #e2e8f0; min-width: 120px;
-    }
+    .msg-options-menu { position: absolute; right: 20px; background: white; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: none; flex-direction: column; z-index: 1100; overflow: hidden; border: 1px solid #e2e8f0; min-width: 120px; }
     .msg-options-menu button { padding: 10px 15px; border: none; background: white; font-size: 0.8rem; font-weight: 600; text-align: left; cursor: pointer; width: 100%; transition: 0.2s;}
     .p-chat-footer { padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: none; gap: 8px; }
     .p-chat-footer input { flex: 1; padding: 12px 15px; border-radius: 20px; border: 1px solid #cbd5e1; outline: none; font-size: 0.85rem; }
@@ -131,34 +125,42 @@
         .pengurus-chat-window { right: 10px; bottom: 85px; width: calc(100vw - 20px); height: 65vh; max-height: 500px; z-index: 10000;} 
     }
 
-    /* ===== IN-APP NOTIFICATION KHUSUS MOBILE ===== */
-    .in-app-notif {
-      position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-      background: white; padding: 12px 20px; border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-left: 4px solid #d4af37;
-      z-index: 100000; display: flex; align-items: center; gap: 12px;
-      transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer;
-      width: 85%; max-width: 350px;
-    }
+    /* ===== SIDEBAR PANEL NOTIFIKASI KANAN ===== */
+    .notif-panel { position: fixed; top: 0; right: -350px; width: 320px; max-width: 90vw; height: 100vh; background: white; z-index: 10005; box-shadow: -5px 0 25px rgba(0,0,0,0.1); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1); display: flex; flex-direction: column; }
+    .notif-panel.open { right: 0; }
+    .notif-header { padding: 20px; background: var(--navy-dark); color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold-main); }
+    .notif-header h3 { margin: 0; font-family: 'Playfair Display', serif; font-size: 1.2rem; }
+    .notif-body { flex: 1; overflow-y: auto; padding: 15px; background: #f8fafc; display: flex; flex-direction: column; gap: 10px; }
+    .notif-card { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .notif-card:hover { border-color: var(--gold-main); transform: translateY(-2px); }
+    .notif-card.unread { background: #fffbeb; border-left: 4px solid var(--gold-main); }
+    .notif-title { font-size: 0.85rem; font-weight: 700; color: var(--navy-main); margin-bottom: 3px; }
+    .notif-desc { font-size: 0.8rem; color: #475569; line-height: 1.4; }
+    .notif-time { font-size: 0.65rem; color: #94a3b8; display: block; margin-top: 8px; font-weight: 600; text-transform: uppercase; }
+
+    /* IN-APP NOTIFICATION TOAST */
+    .in-app-notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-left: 4px solid #d4af37; z-index: 100000; display: flex; align-items: center; gap: 12px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; width: 85%; max-width: 350px; }
     .in-app-notif.show { top: 20px; }
     .in-app-notif .notif-icon { background: #fef08a; width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; flex-shrink: 0;}
     .in-app-notif .notif-text { display: flex; flex-direction: column; min-width: 0; }
-    .in-app-notif .notif-title { font-size: 0.8rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-    .in-app-notif .notif-desc { font-size: 0.75rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .in-app-notif .notif-title-toast { font-size: 0.8rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .in-app-notif .notif-desc-toast { font-size: 0.75rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   </style>
 </head>
 <body>
 
-  <div id="inAppNotif" class="in-app-notif" onclick="bukaChatDariNotif()">
-    <div class="notif-icon">💬</div>
+  <!-- TOAST NOTIFIKASI MUNCUL DARI ATAS -->
+  <div id="inAppNotif" class="in-app-notif" onclick="bukaPanelNotif()">
+    <div class="notif-icon">🔔</div>
     <div class="notif-text">
-      <span class="notif-title" id="notifTitle">Pesan Baru</span>
-      <span class="notif-desc" id="notifDesc">Memuat pesan...</span>
+      <span class="notif-title-toast" id="notifTitle">Pemberitahuan Baru</span>
+      <span class="notif-desc-toast" id="notifDesc">Cek sekarang...</span>
     </div>
   </div>
 
   <div class="mobile-menu-overlay" onclick="toggleSidebar()"></div>
 
+  <!-- SIDEBAR KIRI -->
   <aside class="sidebar" id="mainSidebar">
     <div class="sidebar-top">
       <div class="brand-header">
@@ -173,26 +175,35 @@
     <div class="sidebar-bottom"><button class="btn-logout" onclick="logout()"><span style="margin-right: 8px;">🚪</span> KELUAR</button></div>
   </aside>
 
+  <!-- PANEL KANAN NOTIFIKASI -->
+  <div class="notif-panel" id="sideNotifPanel">
+    <div class="notif-header">
+      <h3>🔔 Notifikasi</h3>
+      <span onclick="toggleNotifPanel()" style="cursor:pointer; font-size:1.5rem;">✕</span>
+    </div>
+    <div class="notif-body" id="listNotifikasi">
+      <div style="text-align:center; color:#94a3b8; margin-top:20px; font-size:0.85rem;">Memuat pemberitahuan...</div>
+    </div>
+  </div>
+
+  <!-- MAIN AREA DENGAN HEADER KEDUA -->
   <main class="main-content">
-    <div class="mobile-header">
-      <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
-      <div class="mobile-brand"><img src="assets/logofi.png" alt="Logo"> CAHAYA APP</div>
-      <div class="avatar-circle" onclick="loadPage('profil.html', this)" style="width: 32px; height: 32px; font-size: 0.8rem;" id="mobileAvatar">U</div>
+    
+    <!-- TOP NAV (HEADER BERANDA) -->
+    <div class="top-nav">
+      <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+      <div class="app-title-header">
+        <img src="assets/logofi.png" alt="Logo">
+        <span id="currentPageTitle">CAHAYA APP</span>
+      </div>
+      <div class="user-profile-icon" id="topNavProfile" onclick="loadPage('profil.html', null)"></div>
     </div>
 
-    <div class="top-bar">
-      <div class="page-title" id="currentPageTitle">Beranda</div>
-      <div class="user-profile-btn" onclick="loadPage('profil.html', null)">
-        <div class="user-info">
-          <span class="user-name" id="userNameLabel">MEMUAT...</span>
-          <span class="user-role" id="userRoleLabel">AKSES TERBATAS</span>
-        </div>
-        <div class="avatar-circle" id="userAvatar">U</div>
-      </div>
-    </div>
+    <!-- IFRAME KONTEN -->
     <iframe id="contentFrame" src="home.html"></iframe>
   </main>
 
+  <!-- CHAT PENGURUS/WALI GLOBAL -->
   <div class="pengurus-fab-chat" onclick="togglePengurusChat()">
     💬
     <div id="chatUnreadBadge" class="chat-badge">0</div>
@@ -234,10 +245,19 @@
     const dbFS = firebase.firestore();
     const dbRT = firebase.database();
 
+    // MENU SIDEBAR (Sesuai Konfigurasi Manajemen User)
     const allMenuHTML = `
         <div class="menu-group" id="group-utama" style="display: block;">
           <div class="group-label">Utama</div>
-          <a class="nav-item active" onclick="loadPage('home.html', this)">🏠 Beranda</a>
+          <a class="nav-item active" onclick="loadPage('home.html', this)">🏠 Beranda Dashboard</a>
+          <a class="nav-item" onclick="toggleNotifPanel()">🔔 Notifikasi <span id="sidebarNotifBadge" style="background:#ef4444; color:white; padding:2px 8px; border-radius:10px; font-size:0.7rem; margin-left:auto; display:none; font-weight:800;">0</span></a>
+        </div>
+        <div class="menu-group">
+          <div class="group-label">Akses Wali Santri</div>
+          <a class="nav-item menu-akses" id="menu-beranda-wali" style="display: none;" onclick="loadPage('wali/beranda.html', this)">✨ Beranda Linimasa</a>
+          <a class="nav-item menu-akses" id="menu-laporan-wali" style="display: none;" onclick="loadPage('wali/laporan.html', this)">📊 Laporan Akademik</a>
+          <a class="nav-item menu-akses" id="menu-admin-wali" style="display: none;" onclick="loadPage('wali/administrasi.html', this)">💳 Info Administrasi</a>
+          <a class="nav-item menu-akses" id="menu-modul-wali" style="display: none;" onclick="loadPage('wali/modul.html', this)">📚 Modul & Materi</a>
         </div>
         <div class="menu-group">
           <div class="group-label">Modul Supervisor</div>
@@ -279,6 +299,8 @@
         </div>
         <div class="menu-group">
           <div class="group-label">SETTING</div>
+          <a class="nav-item menu-akses" id="menu-komentar" style="display: none;" onclick="loadPage('admin/admin_komentar.html', this)">💬 Manajemen Komentar</a>
+          <a class="nav-item menu-akses" id="menu-media" style="display: none;" onclick="loadPage('admin/admin_media.html', this)">📸 Pengaturan Media IG/YT</a>
           <a class="nav-item menu-akses" id="menu-db-master" style="display: none;" onclick="loadPage('admin/database.html', this)">🗄️ Database Master</a>
           <a class="nav-item menu-akses" id="menu-jadwal" style="display: none;" onclick="loadPage('admin/atur-jadwal.html', this)">📅 Atur Jadwal KBM</a>
           <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html', this)">🔐 Manajemen User</a>
@@ -288,26 +310,46 @@
     `;
 
     function toggleSidebar() { document.getElementById('mainSidebar').classList.toggle('open'); document.querySelector('.mobile-menu-overlay').classList.toggle('open'); }
+    function toggleNotifPanel() { document.getElementById('sideNotifPanel').classList.toggle('open'); }
     function logout() { if(confirm("Keluar aplikasi?")) { localStorage.removeItem('cahayaCurrentUser'); window.location.href = 'index.html'; } }
+
+    function getPanggilanCerdas(fullName) {
+        let parts = fullName.trim().split(/\s+/);
+        const regexM = /^(m\.|m|muhammad|mohammad|mochammad|moch\.|moch|mohd\.|mohd|mhd\.|mhd)$/i;
+        if (regexM.test(parts[0]) && parts.length > 1) {
+            parts.shift(); let sisa = parts.join(" ").replace(/^(al\-|al\s|el\-|el\s)/i, '').trim();
+            let sisaParts = sisa.split(/\s|\-/); return sisaParts[sisaParts.length - 1].charAt(0).toUpperCase() + sisaParts[sisaParts.length - 1].slice(1).toLowerCase();
+        } else {
+            let namaDepan = parts[0] || "Santri"; return namaDepan.charAt(0).toUpperCase() + namaDepan.slice(1).toLowerCase();
+        }
+    }
+
+    // Variabel User
+    const pUserSafe = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+    let rawRoles = pUserSafe.akses || []; if(typeof rawRoles === 'string') rawRoles = [rawRoles];
+    const myRoles = rawRoles.map(r => r.toLowerCase());
+    const isTopLevel = myRoles.some(r => ['admin', 'direktur', 'wakil'].includes(r));
+    const isKonselor = myRoles.includes('konselor');
+    const isWali = myRoles.includes('wali');
+    const realUsername = pUserSafe.username || "guest";
+
+    let namaSaya = pUserSafe.label || pUserSafe.username || "Pengurus";
+    if (isWali) {
+        let anakAman = (pUserSafe.namaAnak || "Santri").toUpperCase();
+        namaSaya = "Abi Ummi " + getPanggilanCerdas(anakAman);
+    }
 
     async function refreshUserProfileUI() {
       try {
-        const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
-        if (!user || !user.akses) { window.location.href = 'index.html'; return; }
-
-        let userAkses = user.akses;
-        if (typeof userAkses === 'string') userAkses = [userAkses];
+        if (!pUserSafe || !pUserSafe.akses) { window.location.href = 'index.html'; return; }
         
-        const displayNama = user.label || user.username || "PENGGUNA";
-        document.getElementById('userNameLabel').textContent = displayNama.toUpperCase();
-        document.getElementById('userRoleLabel').textContent = userAkses.join(' & ');
+        const displayNama = pUserSafe.label || pUserSafe.username || "PENGGUNA";
 
-        const avatarEl = document.getElementById('userAvatar');
-        const mobileAvatarEl = document.getElementById('mobileAvatar');
-        if (user.fotoProfil) {
-          avatarEl.innerHTML = `<img src="${user.fotoProfil}">`; mobileAvatarEl.innerHTML = `<img src="${user.fotoProfil}">`;
+        const avatarEl = document.getElementById('topNavProfile');
+        if (pUserSafe.fotoProfil) {
+          avatarEl.innerHTML = `<img src="${pUserSafe.fotoProfil}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid white;">`;
         } else {
-          avatarEl.innerHTML = displayNama.charAt(0).toUpperCase(); mobileAvatarEl.innerHTML = displayNama.charAt(0).toUpperCase();
+          avatarEl.textContent = displayNama.charAt(0).toUpperCase();
         }
 
         document.getElementById('dynamicMenu').innerHTML = allMenuHTML;
@@ -316,8 +358,14 @@
         const doc = await dbFS.collection("settings").doc("role_menus").get();
         let ruleMenus = doc.exists ? doc.data() : {};
         let menusToOpen = [];
-        userAkses.forEach(role => { if(ruleMenus[role]) { menusToOpen = [...new Set([...menusToOpen, ...ruleMenus[role]])]; } });
-        menusToOpen.push('menu-profil');
+        myRoles.forEach(role => { if(ruleMenus[role]) { menusToOpen = [...new Set([...menusToOpen, ...ruleMenus[role]])]; } });
+        menusToOpen.push('menu-profil'); // Paksa menu profil tampil
+
+        // Default Load & Title Penyesuaian
+        if(isWali) {
+            loadPage('wali/beranda.html', document.getElementById('menu-beranda-wali'));
+            document.getElementById('currentPageTitle').textContent = "CAHAYA APP";
+        }
 
         document.querySelectorAll('.menu-akses').forEach(menuHtml => {
           if(menusToOpen.includes(menuHtml.id)) {
@@ -331,44 +379,35 @@
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       if(el && el.classList.contains('nav-item')) el.classList.add('active');
       document.getElementById('contentFrame').src = url;
-      if(el) document.getElementById('currentPageTitle').textContent = el.textContent.replace(/[^\w\s]/gi, '').trim();
-      if(window.innerWidth <= 900) toggleSidebar();
+      
+      // Update Title Khusus Wali agar tetap "CAHAYA APP" atau teks menu
+      if(el && el.textContent) {
+          let title = el.textContent.replace(/[^\w\s]/gi, '').trim();
+          if (title === "Beranda Linimasa" && isWali) title = "CAHAYA APP";
+          document.getElementById('currentPageTitle').textContent = title;
+      }
+      
+      if(window.innerWidth <= 900) document.getElementById('mainSidebar').classList.remove('open');
+      document.querySelector('.mobile-menu-overlay').classList.remove('open');
     }
 
     // ==========================================
-    // LOGIKA LIVE CHAT PENGURUS
+    // LOGIKA GLOBAL: CHAT & NOTIFIKASI
     // ==========================================
-    let pUserSafe = {};
-    try { pUserSafe = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}'); } catch(e){}
-    
-    const namaSaya = pUserSafe.label || pUserSafe.username || "Pengurus";
-    let rawRoles = pUserSafe.akses || [];
-    if(typeof rawRoles === 'string') rawRoles = [rawRoles];
-    const myRoles = rawRoles.map(r => r.toLowerCase());
-    
-    const isTopLevel = myRoles.some(r => ['admin', 'direktur', 'wakil'].includes(r));
-    const isKonselor = myRoles.includes('konselor');
-
     let pListUsers = []; let targetAktifLabel = ""; let targetAktifDisplay = "";
     let pChatListener = null; let editModeId = null; let lastUnreadCount = 0; 
-    
+    let allGlobalNotifs = []; 
     const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    
-    // Trik Membuka Kunci Audio Browser di HP
     let audioUnlocked = false;
-    document.body.addEventListener('touchstart', function() {
-        if (!audioUnlocked) { notifSound.play().then(()=>{notifSound.pause(); notifSound.currentTime=0;}).catch(()=>{}); audioUnlocked = true; }
-    }, { once: true });
-    document.body.addEventListener('click', function() {
-        if (!audioUnlocked) { notifSound.play().then(()=>{notifSound.pause(); notifSound.currentTime=0;}).catch(()=>{}); audioUnlocked = true; }
-    }, { once: true });
+    document.body.addEventListener('touchstart', function() { if (!audioUnlocked) { notifSound.play().then(()=>{notifSound.pause(); notifSound.currentTime=0;}).catch(()=>{}); audioUnlocked = true; } }, { once: true });
+    document.body.addEventListener('click', function() { if (!audioUnlocked) { notifSound.play().then(()=>{notifSound.pause(); notifSound.currentTime=0;}).catch(()=>{}); audioUnlocked = true; } }, { once: true });
 
     document.addEventListener('DOMContentLoaded', async () => {
        await refreshUserProfileUI();
        initChatFilter(); 
        if (Notification.permission !== "granted") Notification.requestPermission();
        try { const snap = await dbFS.collection('users').get(); snap.forEach(doc => pListUsers.push(doc.data())); } catch (err) {}
-       listenToGlobalMessages();
+       listenToGlobalMessagesAndNotifs(); 
     });
 
     function initChatFilter() {
@@ -393,17 +432,19 @@
         setTimeout(() => { notifEl.classList.remove('show'); }, 4000);
     }
 
-    function bukaChatDariNotif() {
+    function bukaPanelNotif() {
         document.getElementById('inAppNotif').classList.remove('show');
-        togglePengurusChat();
+        toggleNotifPanel();
     }
 
-    // PERBAIKAN: Deduction Engine agar pesan keluar tetap muncul
-    function listenToGlobalMessages() {
-       dbRT.ref('cahaya_app/pesan_global').on('value', snap => {
-          const allRooms = snap.val();
-          if(!allRooms) return;
+    function listenToGlobalMessagesAndNotifs() {
+       let chatUnreadData = [];
+       let dbNotifData = [];
 
+       // 1. Pantau Chat
+       dbRT.ref('cahaya_app/pesan_global').on('value', snap => {
+          chatUnreadData = [];
+          const allRooms = snap.val(); if(!allRooms) return;
           let unreadTotal = 0; let myInboxData = []; let meClean = namaSaya.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
           let latestMessageText = ""; let latestMessageSender = "";
 
@@ -422,36 +463,20 @@
           Object.keys(allRooms).forEach(roomId => {
              try {
                  if(roomId.includes(meClean) && roomId !== 'room_broadcast_wali') {
-                    let msgs = allRooms[roomId];
-                    if(!msgs || typeof msgs !== 'object') return; 
-                    
-                    // Filter pesan sampah (null)
-                    let msgValues = Object.values(msgs).filter(m => m && m.waktu);
-                    if(msgValues.length === 0) return;
+                    let msgs = allRooms[roomId]; if(!msgs || typeof msgs !== 'object') return; 
+                    let msgValues = Object.values(msgs).filter(m => m && m.waktu); if(msgValues.length === 0) return;
 
                     let lastMsg = msgValues[msgValues.length - 1];
-
-                    // Trik Deduction: Coba cari pengirim selain saya
                     let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim;
                     
-                    // JIKA SAYA YANG KIRIM PESAN TAPI BELUM DIBALAS, TEBAK DARI ROOM ID
                     if (!opponentLabel) {
                        let roomParts = roomId.replace('chat_', '').split('_');
                        let oppClean = roomParts[0] === meClean ? roomParts[1] : roomParts[0];
-                       
-                       let oppUser = pListUsers.find(u => {
-                          let cl = (u.label||u.username||'').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-                          return cl === oppClean;
-                       });
-                       
-                       if (oppUser) {
-                          opponentLabel = oppUser.label || oppUser.username;
-                       } else if (oppClean && oppClean.startsWith('abiummi')) {
-                          let childName = oppClean.replace('abiummi', '');
-                          opponentLabel = "Abi Ummi " + childName.charAt(0).toUpperCase() + childName.slice(1);
-                       } else {
-                          opponentLabel = oppClean || "Tidak Diketahui";
-                       }
+                       let oppUser = pListUsers.find(u => { return (u.label||u.username||'').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === oppClean; });
+                       if (oppUser) { opponentLabel = oppUser.label || oppUser.username; } 
+                       else if (oppClean && oppClean.startsWith('abiummi')) {
+                          let childName = oppClean.replace('abiummi', ''); opponentLabel = "Abi Ummi " + childName.charAt(0).toUpperCase() + childName.slice(1);
+                       } else { opponentLabel = oppClean || "Tidak Diketahui"; }
                     }
 
                     let oppUser = pListUsers.find(u => (u.label||u.username) === opponentLabel);
@@ -462,6 +487,7 @@
                         let lastReadTime = localStorage.getItem('chat_read_' + roomId) || "0";
                         if (new Date(lastMsg.waktu) > new Date(lastReadTime)) {
                             unreadTotal++; isUnread = true; latestMessageText = lastMsg.teks; latestMessageSender = displayOpponent;
+                            chatUnreadData.push({ tipe: 'chat', title: 'Pesan Baru: ' + displayOpponent, desc: lastMsg.teks, waktu: lastMsg.waktu, roomId: roomId, opponentActualLabel: opponentLabel, opponentDisplay: displayOpponent, isUnread: true });
                         }
                     }
                     myInboxData.push({ roomId, opponentDisplay: displayOpponent, opponentActualLabel: opponentLabel, lastMsg, isUnread });
@@ -470,23 +496,104 @@
           });
 
           if(unreadTotal > lastUnreadCount) {
-             notifSound.play().catch(e=>{});
-             showInAppNotif(latestMessageSender, latestMessageText); 
-             if (Notification.permission === "granted" && window.innerWidth > 900) {
-                new Notification("Pesan Baru: " + latestMessageSender, { body: latestMessageText, icon: "assets/logofi.png" });
-             }
+             notifSound.play().catch(e=>{}); showInAppNotif(latestMessageSender, latestMessageText); 
+             if (Notification.permission === "granted" && window.innerWidth > 900) { new Notification("Pesan Baru: " + latestMessageSender, { body: latestMessageText, icon: "assets/logofi.png" }); }
           }
           lastUnreadCount = unreadTotal;
 
           const badge = document.getElementById('chatUnreadBadge');
           if(unreadTotal > 0) { badge.textContent = unreadTotal; badge.style.display = 'flex'; } else { badge.style.display = 'none'; }
           if(document.getElementById('viewInbox').style.display !== 'none') { renderInboxUI(myInboxData); }
+          
+          updateNotificationPanel(chatUnreadData, dbNotifData);
        });
+
+       // 2. Pantau Notifikasi Database (Komentar dll)
+       dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}`).on('value', snap => {
+           dbNotifData = [];
+           const val = snap.val();
+           if (val) {
+               Object.keys(val).forEach(key => {
+                   let n = val[key]; n.notifId = key; n.tipe = n.tipe || 'database';
+                   dbNotifData.push(n);
+               });
+           }
+           
+           const unreadDB = dbNotifData.filter(x => x.dibaca === false);
+           if (unreadDB.length > 0) {
+               notifSound.play().catch(e=>{});
+               let latest = unreadDB[unreadDB.length - 1];
+               showInAppNotif(latest.title, latest.desc);
+               dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}/${latest.notifId}`).update({dibaca: true});
+           }
+           
+           updateNotificationPanel(chatUnreadData, dbNotifData);
+       });
+    }
+
+    function updateNotificationPanel(arrChat, arrDb) {
+        allGlobalNotifs = [...arrChat, ...arrDb].sort((a,b) => new Date(b.waktu) - new Date(a.waktu));
+        
+        const badgeSidebar = document.getElementById('sidebarNotifBadge');
+        const countUnread = allGlobalNotifs.filter(x => x.isUnread || x.dibaca === false).length;
+        if(countUnread > 0) { badgeSidebar.style.display = 'inline-block'; badgeSidebar.textContent = countUnread; } 
+        else { badgeSidebar.style.display = 'none'; }
+
+        const listCont = document.getElementById('listNotifikasi');
+        listCont.innerHTML = '';
+        if(allGlobalNotifs.length === 0) {
+            listCont.innerHTML = '<div style="text-align:center; color:#94a3b8; margin-top:20px; font-size:0.85rem;">Belum ada pemberitahuan.</div>';
+            return;
+        }
+
+        allGlobalNotifs.forEach(n => {
+            const isU = (n.tipe === 'chat') ? n.isUnread : !n.dibaca;
+            const timeStr = new Date(n.waktu).toLocaleString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+            
+            let clickAction = '';
+            if (n.tipe === 'chat') {
+                clickAction = `onclick="bukaChatDariPanel('${n.opponentActualLabel}', '${n.opponentDisplay}', '${n.roomId}')"`;
+            } else if (n.tipe === 'komentar' && n.eventId) {
+                clickAction = `onclick="bukaKomentarDariPanel('${n.eventId}', '${n.notifId}')"`;
+            }
+
+            listCont.insertAdjacentHTML('beforeend', `
+               <div class="notif-card ${isU ? 'unread' : ''}" ${clickAction}>
+                  <div class="notif-title">${n.title}</div>
+                  <div class="notif-desc">${n.desc}</div>
+                  <span class="notif-time">${timeStr}</span>
+               </div>
+            `);
+        });
+    }
+
+    window.bukaChatDariPanel = function(label, display, roomId) {
+        toggleNotifPanel();
+        document.getElementById('pengurusChatWindow').style.display = 'flex';
+        startChat(label, display, roomId);
+    }
+    
+    window.bukaKomentarDariPanel = function(eventId, notifId) {
+        toggleNotifPanel();
+        dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}/${notifId}`).update({dibaca: true});
+        
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        const menuWali = document.getElementById('menu-beranda-wali');
+        if (menuWali) menuWali.classList.add('active');
+        document.getElementById('currentPageTitle').textContent = "CAHAYA APP";
+        
+        const iframe = document.getElementById('contentFrame');
+        if (!iframe.src.includes('beranda.html')) {
+            iframe.src = 'wali/beranda.html';
+        }
+        
+        setTimeout(() => {
+            iframe.contentWindow.postMessage({ type: 'SCROLL_TO_POST', eventId: eventId }, '*');
+        }, 1200); 
     }
 
     function renderInboxUI(inboxData) {
        const container = document.getElementById('viewInbox'); container.innerHTML = '';
-       // PERUBAHAN: Teks Pesan Masuk -> Obrolan
        if(inboxData.length === 0) { container.innerHTML = '<div style="text-align:center; padding:30px; font-size:0.85rem; color:#94a3b8;">Belum ada riwayat obrolan.</div>'; return; }
        inboxData.sort((a,b) => new Date(b.lastMsg.waktu) - new Date(a.lastMsg.waktu));
        
@@ -612,7 +719,7 @@
     }
 
     function editPesan(roomId, msgId, oldText) { const inp = document.getElementById('pChatInput'); inp.value = oldText; inp.focus(); editModeId = msgId; }
-    function hapusPesan(roomId, msgId) { if(confirm("Hapus pesan ini dari ruang obrolan?")) { dbRT.ref(`cahaya_app/pesan_global/${roomId}/${msgId}`).remove(); } }
+    function hapusPesan(roomId, msgId) { if(confirm("Hapus pesan ini dari ruang obrolan?")) { dbRT.ref(`cahaya_app/pesan_global/${roomId}`).remove(); } }
     function salinTeks(txt) { navigator.clipboard.writeText(txt); alert("Pesan berhasil disalin."); }
     function handlePengurusChatEnter(e) { if(e.key === 'Enter') sendPengurusMessage(); }
   </script>
