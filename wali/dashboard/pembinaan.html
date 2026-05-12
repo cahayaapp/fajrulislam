@@ -265,7 +265,7 @@
     
     <div class="indeks-desc-box">
       <strong>Apa itu Indeks Kedisiplinan Santri?</strong>
-      Indeks ini merupakan akumulasi poin kebaikan (amal saleh) dikurangi poin sanksi/pelanggaran. Nilai ini menjadi cerminan langsung dari keaktifan, ketaatan aturan, serta parameter kedisiplinan santri selama berada di pesantren.
+      Indeks ini merupakan akumulasi poin kebaikan (amal saleh) dikurangi poin sanksi/pelanggaran pada periode terpilih. Nilai ini menjadi cerminan langsung dari keaktifan, ketaatan aturan, serta parameter kedisiplinan santri selama berada di pesantren.
     </div>
 
     <div class="benchmark-single">
@@ -296,7 +296,7 @@
       </div>
 
       <div style="border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: 10px;">
-        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">AKUMULASI POIN SAAT INI</span>
+        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">AKUMULASI POIN PERIODE INI</span>
         <span class="poin-badge-inline poin-plus" id="totalPoinDisplay">0</span><br>
         <span id="predikatDisplay" class="predikat p-jayyid">JAYYID</span>
       </div>
@@ -313,13 +313,15 @@
     
     <div class="info-banner-kasus">
       💡 <b>Catatan Transparansi:</b><br>
-      Arsip di bawah ini khusus menampilkan rekam jejak indisipliner yang <b>sudah selesai ditangani</b> melalui proses tabayyun dan pembinaan oleh konselor. Tidak menutup kemungkinan terdapat laporan atau insiden lain yang belum tampil pada daftar ini dikarenakan masih dalam tahap penelusuran atau antrean penanganan.
+      Arsip di bawah ini khusus menampilkan rekam jejak indisipliner yang <b>sudah selesai ditangani</b> melalui proses tabayyun dan pembinaan oleh konselor pada periode terpilih.
     </div>
 
     <div class="kasus-list" id="kasusListContainer"></div>
   </div>
 
-</div> <div id="detailModal" class="modal">
+</div> 
+
+<div id="detailModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
       <div>
@@ -349,23 +351,31 @@
 
   const monthMapRev = { "01":"Januari", "02":"Februari", "03":"Maret", "04":"April", "05":"Mei", "06":"Juni", "07":"Juli", "08":"Agustus", "09":"September", "10":"Oktober", "11":"November", "12":"Desember" };
 
-  const isAprilOrEarlyMay = (dateStr) => {
-    if (!dateStr) return false;
+  // Pemetaan Khusus: 1 April s.d. 10 Mei masuk ke "April". Mulai 11 Mei masuk ke "Mei".
+  const getFilterBulan = (dateStr) => {
+    if (!dateStr) return "Semua";
     let d = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr.split(' ')[0];
-    return (d >= "2026-04-01" && d <= "2026-05-10");
+    if (d >= "2026-04-01" && d <= "2026-05-10") {
+      return "April";
+    }
+    let mm = d.split('-')[1];
+    return monthMapRev[mm] || "Semua";
   };
 
   let activeStudentName = "";
   let currentMonthFilter = "Semua";
 
-  // Variabel Penampung Arsip Pembinaan & Gamifikasi
+  // Penampung Arsip Pembinaan & Gamifikasi
   let globalKasusSelesai = [];
   let globalPoinHistory = [];
+  let globalSemuaPoinSantri = []; // Menyimpan semua rekam poin mentah untuk kalkulasi benchmark dinamis per bulan
   
   // Variabel Pemetaan Asrama & Identitas
   let asramaTargetMaxScore = 0;
   let rumpunAsramaSantri = "UMUM";
   let namaUsrahBaku = "";
+  let daftarSantriPutri = new Set();
+  let daftarSantriPutra = new Set();
 
   document.addEventListener('DOMContentLoaded', async () => {
     const userStr = localStorage.getItem('cahayaCurrentUser');
@@ -395,9 +405,6 @@
     }
 
     // TARIK PEMETAAN ANGGOTA USRAH & IDENTITAS ASRAMA
-    let daftarSantriPutri = new Set();
-    let daftarSantriPutra = new Set();
-    
     try {
       const snapUsrah = await dbRT.ref('cahaya_app/master_usrah').once('value');
       if (snapUsrah.exists()) {
@@ -410,21 +417,17 @@
             if (!namaMurid) return;
             let nAtas = namaMurid.toUpperCase();
             
-            // Lacak nama usrah spesifik untuk identitas header santri aktif
             if (nAtas === activeStudentName) {
-                // Perbaikan format agar terlihat rapi dan baku
                 let namaMentah = namaNaqib.replace(/^mu'?allim(ah)?\s+|^naqib(ah)?\s+/i, "").trim();
                 let isPerempuan = (naqibClean.includes('fatimah') || naqibClean.includes('evita'));
                 let sapaan = isPerempuan ? "Naqibah" : "Naqib";
                 namaUsrahBaku = `Usrah ${namaMentah.charAt(0).toUpperCase() + namaMentah.slice(1).toLowerCase()} (${sapaan})`;
             }
 
-            // Usrah Fatimah dan Evita dikelompokkan ke Putri
             if (naqibClean.includes('fatimah') || naqibClean.includes('evita')) {
               daftarSantriPutri.add(nAtas);
               if (nAtas === activeStudentName) rumpunAsramaSantri = "PUTRI";
             } 
-            // Usrah Favian, Khaizuran, dan Kamal dikelompokkan ke Putra
             else if (naqibClean.includes('favian') || naqibClean.includes('khaizuran') || naqibClean.includes('kamal')) {
               daftarSantriPutra.add(nAtas);
               if (nAtas === activeStudentName) rumpunAsramaSantri = "PUTRA";
@@ -434,7 +437,7 @@
       }
     } catch(e) {}
 
-    // Muat Kelas Santri & Terapkan Identitas Gabungan
+    // Muat Kelas Santri
     try {
       const snapMaster = await dbRT.ref('cahaya_app/master_akademik/halqah').once('value');
       let teksKelas = [];
@@ -457,20 +460,18 @@
         if (kIlmiyah) teksKelas.push(kIlmiyah.replace(/^Halqah\s+/i, "").trim());
       }
       
-      // Tambahkan identitas usrah jika ditemukan
       if (namaUsrahBaku) teksKelas.push(namaUsrahBaku);
-      
       document.getElementById('studentClassHeader').textContent = teksKelas.length > 0 ? teksKelas.join(" • ") : "Kelas Reguler Pesantren";
     } catch(e) {}
 
-    // Tetapkan Bulan Aktif Default
-    const today = new Date();
-    currentMonthFilter = isAprilOrEarlyMay(today.toISOString().split('T')[0]) ? "April" : monthMapRev[String(today.getMonth()+1).padStart(2,'0')];
+    // Set Bulan Aktif Berdasarkan Aturan Kustom
+    const todayStr = new Date().toISOString().split('T')[0];
+    currentMonthFilter = getFilterBulan(todayStr);
     document.getElementById('filterBulan').value = currentMonthFilter;
 
     // TARIK DATA PEMBINAAN & GAMIFIKASI DARI FIREBASE
     try {
-      // 1. Tarik Buku Kasus Konselor (Tindakan Selesai)
+      // 1. Tarik Buku Kasus Konselor
       const snapKasus = await dbRT.ref('cahaya_app/buku_kasus_konselor').once('value');
       if (snapKasus.exists()) {
         const dataKasus = snapKasus.val();
@@ -478,19 +479,13 @@
           let rec = dataKasus[key];
           if (rec.santri && rec.santri.toUpperCase() === activeStudentName) {
             let tgl = rec.tanggalKejadian || (rec.waktuKonseling ? rec.waktuKonseling.substring(0,10) : "");
-            let mm = tgl.split('-')[1];
-            let filterBulan = monthMapRev[mm];
-            if (isAprilOrEarlyMay(tgl)) filterBulan = "April";
-            
-            rec.filterBulan = filterBulan;
+            rec.filterBulan = getFilterBulan(tgl);
             globalKasusSelesai.push(rec);
           }
         });
       }
 
       // 2. Tarik Akumulasi Riwayat Poin (Gamifikasi)
-      let mapSkorAsrama = {};
-      
       const snapsPoin = await Promise.all([
         dbRT.ref('cahaya_app/log_lapor_inisiatif').once('value'),
         dbRT.ref('cahaya_app/poin_manual').once('value'),
@@ -506,11 +501,11 @@
           if (l.tipe === "Inisiatif Kebaikan" && l.pelapor && l.waktu) {
             let nama = l.pelapor.toUpperCase();
             let p = parseInt(l.poinDiberikan) || 0;
-            mapSkorAsrama[nama] = (mapSkorAsrama[nama] || 0) + p;
+            let fb = getFilterBulan(l.waktu);
+            
+            globalSemuaPoinSantri.push({ nama, poin: p, filterBulan: fb });
             
             if (nama === activeStudentName) {
-              let mm = l.waktu.substring(5,7);
-              let fb = isAprilOrEarlyMay(l.waktu) ? "April" : monthMapRev[mm];
               globalPoinHistory.push({ tgl: l.waktu.substring(0,10), filterBulan: fb, judul: "Inisiatif Kebaikan", desc: l.keterangan, poin: p });
             }
           }
@@ -523,11 +518,11 @@
           if (l.namaSantri && l.waktu) {
             let nama = l.namaSantri.toUpperCase();
             let p = parseInt(l.poin) || 0;
-            mapSkorAsrama[nama] = (mapSkorAsrama[nama] || 0) + p;
+            let fb = getFilterBulan(l.waktu);
+            
+            globalSemuaPoinSantri.push({ nama, poin: p, filterBulan: fb });
             
             if (nama === activeStudentName) {
-              let mm = l.waktu.substring(5,7);
-              let fb = isAprilOrEarlyMay(l.waktu) ? "April" : monthMapRev[mm];
               globalPoinHistory.push({ tgl: l.waktu.substring(0,10), filterBulan: fb, judul: "Sanksi Aturan", desc: l.keterangan, poin: p });
             }
           }
@@ -539,17 +534,18 @@
         if (snapAbsen.exists()) {
           Object.values(snapAbsen.val()).forEach(l => {
             if (l.tanggal && l.data) {
+              let fb = getFilterBulan(l.tanggal);
               l.data.forEach(s => {
                 if (s.nama) {
                   let nama = s.nama.toUpperCase();
                   let p = parseInt(s.poin) || 0;
-                  mapSkorAsrama[nama] = (mapSkorAsrama[nama] || 0) + p;
-                  
-                  if (nama === activeStudentName && p !== 0) {
-                    let mm = l.tanggal.substring(5,7);
-                    let fb = isAprilOrEarlyMay(l.tanggal) ? "April" : monthMapRev[mm];
-                    let ket = s.keterangan ? `(${s.keterangan})` : "";
-                    globalPoinHistory.push({ tgl: l.tanggal, filterBulan: fb, judul: `Absensi: ${s.status.toUpperCase()}`, desc: `${l.program || l.mapel || "Asrama"} ${ket}`, poin: p });
+                  if (p !== 0) {
+                    globalSemuaPoinSantri.push({ nama, poin: p, filterBulan: fb });
+                    
+                    if (nama === activeStudentName) {
+                      let ket = s.keterangan ? `(${s.keterangan})` : "";
+                      globalPoinHistory.push({ tgl: l.tanggal, filterBulan: fb, judul: `Absensi: ${s.status.toUpperCase()}`, desc: `${l.program || l.mapel || "Asrama"} ${ket}`, poin: p });
+                    }
                   }
                 }
               });
@@ -557,26 +553,6 @@
           });
         }
       });
-
-      // FILTER BENCHMARK SCORE BERDASARKAN RUMPUN ASRAMA SANTRI
-      let listSkorTerkait = [];
-      
-      if (rumpunAsramaSantri === "PUTRI") {
-         document.getElementById('labelRumpunAsrama').textContent = "PONDOK PUTRI (FATIMAH & EVITA)";
-         Object.keys(mapSkorAsrama).forEach(n => {
-            if (daftarSantriPutri.has(n)) listSkorTerkait.push(mapSkorAsrama[n]);
-         });
-      } else if (rumpunAsramaSantri === "PUTRA") {
-         document.getElementById('labelRumpunAsrama').textContent = "PONDOK PUTRA (FAVIAN, KHAIZURAN, KAMAL)";
-         Object.keys(mapSkorAsrama).forEach(n => {
-            if (daftarSantriPutra.has(n)) listSkorTerkait.push(mapSkorAsrama[n]);
-         });
-      } else {
-         document.getElementById('labelRumpunAsrama').textContent = "PONDOK PESANTREN";
-         listSkorTerkait = Object.values(mapSkorAsrama);
-      }
-
-      asramaTargetMaxScore = listSkorTerkait.length ? Math.max(...listSkorTerkait, 0) : 0;
 
       document.getElementById('loadingData').style.display = 'none';
       renderSemuaData();
@@ -598,8 +574,35 @@
     const sec = document.getElementById('secPoin');
     sec.style.display = 'block';
 
+    // 1. Kalkulasi Akumulasi Poin Asrama (Peers) Berdasarkan Filter Bulan
+    let mapSkorAktif = {};
+    globalSemuaPoinSantri.forEach(item => {
+      if (currentMonthFilter === "Semua" || item.filterBulan === currentMonthFilter) {
+        mapSkorAktif[item.nama] = (mapSkorAktif[item.nama] || 0) + item.poin;
+      }
+    });
+
+    // 2. Ekstrak Benchmark Score Dinamis Sesuai Kelompok Asrama
+    let listSkorTerkait = [];
+    if (rumpunAsramaSantri === "PUTRI") {
+       document.getElementById('labelRumpunAsrama').textContent = "PONDOK PUTRI (FATIMAH & EVITA)";
+       Object.keys(mapSkorAktif).forEach(n => {
+          if (daftarSantriPutri.has(n)) listSkorTerkait.push(mapSkorAktif[n]);
+       });
+    } else if (rumpunAsramaSantri === "PUTRA") {
+       document.getElementById('labelRumpunAsrama').textContent = "PONDOK PUTRA (FAVIAN, KHAIZURAN, KAMAL)";
+       Object.keys(mapSkorAktif).forEach(n => {
+          if (daftarSantriPutra.has(n)) listSkorTerkait.push(mapSkorAktif[n]);
+       });
+    } else {
+       document.getElementById('labelRumpunAsrama').textContent = "PONDOK PESANTREN";
+       listSkorTerkait = Object.values(mapSkorAktif);
+    }
+
+    asramaTargetMaxScore = listSkorTerkait.length ? Math.max(...listSkorTerkait, 0) : 0;
     document.getElementById('benchMax').textContent = asramaTargetMaxScore;
 
+    // 3. Kalkulasi Poin Murni Santri Aktif Pada Bulan Tersebut (Mulai dari 0)
     let poinTerfilter = currentMonthFilter === "Semua" ? globalPoinHistory : globalPoinHistory.filter(p => p.filterBulan === currentMonthFilter);
     let akumulasiPoin = poinTerfilter.reduce((sum, item) => sum + item.poin, 0);
 
@@ -641,7 +644,7 @@
     let kasusTerfilter = currentMonthFilter === "Semua" ? globalKasusSelesai : globalKasusSelesai.filter(k => k.filterBulan === currentMonthFilter);
     
     if (kasusTerfilter.length === 0) {
-      container.innerHTML = `<div class='empty-state'>Alhamdulillah, bersih dari catatan pembinaan indisipliner.</div>`;
+      container.innerHTML = `<div class='empty-state'>Alhamdulillah, bersih dari catatan pembinaan indisipliner pada periode ini.</div>`;
       return;
     }
 
