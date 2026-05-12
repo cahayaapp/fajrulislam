@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Manajemen Media CAHAYA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; background: #f0f2f5; color: #0f172a; padding: 20px; margin: 0; }
+    .admin-container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+    h2 { margin-top: 0; color: #d4af37; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+    
+    .input-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+    input[type="text"] { padding: 15px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: 'Poppins'; outline: none; }
+    button { background: #0f172a; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: 600; font-family: 'Poppins'; transition: 0.2s; }
+    button:hover { background: #d4af37; color: #0f172a; }
+
+    .media-list { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
+    .media-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
+    .media-info { display: flex; flex-direction: column; overflow: hidden; }
+    .media-badge { font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 5px; width: fit-content; color: white; margin-bottom: 5px; }
+    .badge-ig { background: #e1306c; }
+    .badge-yt { background: #ff0000; }
+    .media-url { font-size: 0.8rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .btn-delete { background: #ef4444; padding: 8px 15px; border-radius: 8px; font-size: 0.8rem; }
+    .btn-delete:hover { background: #dc2626; color: white; }
+  </style>
+</head>
+<body>
+
+<div class="admin-container">
+  <h2>Manajemen Media (Beranda)</h2>
+  <p style="font-size: 0.9rem; color: #64748b;">Masukkan link postingan dari <b>Instagram</b> atau <b>YouTube</b>. Sistem akan otomatis memotong kodenya dan menampilkannya selang-seling di aplikasi Wali Santri.</p>
+  
+  <div class="input-group">
+    <input type="text" id="inputLink" placeholder="Contoh: https://www.instagram.com/p/DXQlgBPka_r/ atau https://youtu.be/dB5HBdoCdmU">
+    <button onclick="tambahMedia()">Tambahkan Media 🚀</button>
+  </div>
+
+  <div class="media-list" id="mediaList">
+    <div style="text-align:center; color:#94a3b8; font-style:italic;">Memuat data media dari server...</div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  // Konfigurasi Firebase CAHAYA
+  const firebaseConfig = { 
+    apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI", 
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com", 
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com", 
+    projectId: "absensi-santri-fajrul-islam" 
+  };
+  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+  const dbRT = firebase.database();
+
+  // FUNGSI 1: MENGAMBIL ID DARI LINK YANG DIMASUKKAN ADMIN
+  function tambahMedia() {
+    const urlInput = document.getElementById('inputLink').value.trim();
+    if (!urlInput) return alert('Silakan masukkan link terlebih dahulu!');
+
+    // Pengecekan otomatis (Regular Expression) untuk mengenali link
+    const igMatch = urlInput.match(/(?:instagram\.com\/(?:p|reel|tv)\/)([a-zA-Z0-9_-]+)/i);
+    const ytMatch = urlInput.match(/(?:youtu\.be\/|youtube\.com\/(?:live\/|embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/i);
+
+    if (igMatch) {
+        dbRT.ref('cahaya_app/pengaturan_media/instagram').push({
+            id: igMatch[1], url_asli: urlInput, waktu_input: new Date().toISOString()
+        });
+        alert('✅ Postingan Instagram berhasil ditambahkan ke beranda!');
+    } else if (ytMatch) {
+        dbRT.ref('cahaya_app/pengaturan_media/youtube').push({
+            id: ytMatch[1], url_asli: urlInput, waktu_input: new Date().toISOString()
+        });
+        alert('✅ Video YouTube berhasil ditambahkan ke beranda!');
+    } else {
+        alert('❌ Link tidak dikenali! Pastikan Anda memasukkan link postingan Instagram atau video YouTube yang benar.');
+    }
+    document.getElementById('inputLink').value = '';
+  }
+
+  // FUNGSI 2: MENAMPILKAN DAFTAR MEDIA YANG SUDAH ADA DI DATABASE
+  dbRT.ref('cahaya_app/pengaturan_media').on('value', snap => {
+    const listContainer = document.getElementById('mediaList');
+    listContainer.innerHTML = '';
+    const data = snap.val() || {};
+    
+    let isKosong = true;
+
+    // Tampilkan Instagram
+    if (data.instagram) {
+        isKosong = false;
+        Object.keys(data.instagram).reverse().forEach(key => {
+            const item = data.instagram[key];
+            listContainer.innerHTML += `
+              <div class="media-item">
+                <div class="media-info">
+                  <span class="media-badge badge-ig">Instagram</span>
+                  <span class="media-url">${item.url_asli}</span>
+                </div>
+                <button class="btn-delete" onclick="hapusMedia('instagram', '${key}')">Hapus</button>
+              </div>
+            `;
+        });
+    }
+
+    // Tampilkan YouTube
+    if (data.youtube) {
+        isKosong = false;
+        Object.keys(data.youtube).reverse().forEach(key => {
+            const item = data.youtube[key];
+            listContainer.innerHTML += `
+              <div class="media-item">
+                <div class="media-info">
+                  <span class="media-badge badge-yt">YouTube</span>
+                  <span class="media-url">${item.url_asli}</span>
+                </div>
+                <button class="btn-delete" onclick="hapusMedia('youtube', '${key}')">Hapus</button>
+              </div>
+            `;
+        });
+    }
+
+    if (isKosong) {
+        listContainer.innerHTML = '<div style="text-align:center; color:#94a3b8; font-style:italic;">Belum ada media yang ditambahkan.</div>';
+    }
+  });
+
+  // FUNGSI 3: MENGHAPUS MEDIA
+  function hapusMedia(platform, key) {
+      if (confirm(`Yakin ingin menghapus ${platform} ini dari Beranda Wali Santri?`)) {
+          dbRT.ref(`cahaya_app/pengaturan_media/${platform}/${key}`).remove();
+      }
+  }
+</script>
+</body>
+</html>
