@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Pusat Kontrol Eksekutif</title>
   
-  <!-- PANGGIL MASTER THEME CAHAYA -->
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
   
   <style>
@@ -98,7 +97,8 @@
     .dc-label { font-size: 0.75rem; font-weight: 800; color: var(--gold-dark); text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 0.5px; }
     .dc-text { font-size: 0.9rem; color: var(--navy-light); line-height: 1.6; }
 
-    .log-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: var(--navy-dark); }
+    /* Log item dioptimasi dengan gap & flex-wrap agar aman di layar HP kecil */
+    .log-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: var(--navy-dark); gap: 10px; flex-wrap: wrap; }
     .log-item .time { font-family: monospace; font-weight: bold; color: var(--navy-light); background: white; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; }
     .log-item.telat { border-color: #fcd34d; background: #fffbeb; }
     .log-item.telat .time { color: #d97706; border-color: #fde047; }
@@ -169,7 +169,6 @@
     </div>
   </div>
 
-  <!-- MENU NAVIGASI ALA M-BANKING -->
   <div class="m-banking-nav">
     <div class="tab-btn active" onclick="switchTab('tab-guru', this, 'Laporan Absensi KBM Guru')">
       <div class="icon">👨‍🏫</div><span>KBM Guru</span>
@@ -197,19 +196,17 @@
     </div>
   </div>
 
-  <!-- TAB 1: GURU -->
   <div id="tab-guru" class="tab-content active">
     <div class="cahaya-card table-responsive">
       <table class="cahaya-table">
         <thead>
-          <tr><th width="25%">Nama Guru</th><th width="50%">Rincian Kelas yang Diabsen & Waktu Input</th><th width="25%" style="text-align: center;">Status</th></tr>
+          <tr><th width="25%">Nama Guru</th><th width="50%">Rincian Kelas Terjadwal / Diabsen</th><th width="25%" style="text-align: center;">Status</th></tr>
         </thead>
         <tbody id="tabelGuru"><tr><td colspan="3" style="text-align:center;">Memuat data...</td></tr></tbody>
       </table>
     </div>
   </div>
 
-  <!-- TAB 2: NAQIB -->
   <div id="tab-naqib" class="tab-content">
     <div class="cahaya-card table-responsive">
       <table class="cahaya-table">
@@ -221,7 +218,6 @@
     </div>
   </div>
 
-  <!-- TAB 3: JURNAL PIKET -->
   <div id="tab-jurnal" class="tab-content">
     <div style="margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted);">
       ℹ️ Laporan pelaksanaan tugas piket Blok 1, 2, dan 3 beserta catatan kendala fasilitas asrama dari Naqib bertugas.
@@ -231,7 +227,6 @@
     </div>
   </div>
 
-  <!-- TAB 4: TAHFIZ -->
   <div id="tab-tahfiz" class="tab-content">
     <div class="cahaya-card table-responsive">
       <table class="cahaya-table">
@@ -249,7 +244,6 @@
     </div>
   </div>
 
-  <!-- TAB 5: MENTORING -->
   <div id="tab-mentoring" class="tab-content">
     <div style="margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted);">
       ℹ️ Hasil evaluasi dan kesepakatan mentoring individu santri yang dilakukan oleh Naqib pada tanggal ini.
@@ -259,7 +253,6 @@
     </div>
   </div>
 
-  <!-- TAB 6: KASUS & PELANGGARAN -->
   <div id="tab-kasus" class="tab-content">
     <div style="margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted);">
       ℹ️ Laporan Masuk (dari Asatidz) dan Tindak Lanjut Evaluasi Kasus (dari Konselor) pada tanggal ini.
@@ -269,7 +262,6 @@
     </div>
   </div>
 
-  <!-- TAB 7: INISIATIF HARIAN -->
   <div id="tab-inisiatif" class="tab-content">
     <div class="cahaya-card table-responsive">
       <table class="cahaya-table">
@@ -285,7 +277,6 @@
     </div>
   </div>
 
-  <!-- TAB 8: KLASEMEN SANTRI -->
   <div id="tab-klasemen" class="tab-content">
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
       <div style="background: #fffbeb; padding: 20px; border-radius: 12px; border: 1px solid #fde68a; text-align: center;">
@@ -360,6 +351,14 @@
     return `${d.getDate()} ${['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][d.getMonth()]} ${d.getFullYear()}`;
   }
 
+  // Fungsi penentu hari berbasis tanggal pantauan (Mendukung zona waktu lokal secara presisi)
+  function getNamaHari(tglString) {
+    const parts = tglString.split('-');
+    const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+    const namaHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    return namaHari[dateObj.getDay()];
+  }
+
   window.muatDataHarian = async function() {
     const tglPilihan = document.getElementById('filterTanggal').value;
     
@@ -368,6 +367,7 @@
     document.getElementById('loadingOverlay').style.opacity = '1';
 
     try {
+      // Penambahan pemanggilan database jadwal_pelajaran ke dalam Global Data
       const snaps = await Promise.all([
         get(ref(db, 'cahaya_app/master_usrah')),
         get(ref(db, 'cahaya_app/absensi_pembelajaran')),
@@ -377,7 +377,8 @@
         get(ref(db, 'cahaya_app/poin_manual')),
         get(ref(db, 'cahaya_app/log_mentoring_naqib')),
         get(ref(db, 'cahaya_app/pelanggaran_santri')),
-        get(ref(db, 'cahaya_app/jurnal_piket_naqib')) 
+        get(ref(db, 'cahaya_app/jurnal_piket_naqib')),
+        get(ref(db, 'cahaya_app/jadwal_pelajaran')) 
       ]);
 
       globalData = {
@@ -389,7 +390,8 @@
         poinManual: snaps[5].val() || {},
         mentoring: snaps[6].val() || {},
         kasus: snaps[7].val() || {},
-        jurnalPiket: snaps[8].val() || {}
+        jurnalPiket: snaps[8].val() || {},
+        jadwal: snaps[9].val() || {} 
       };
 
       santriUsrahMap = {};
@@ -425,6 +427,127 @@
      FUNGSI RENDER KOMPONEN DATA
      ======================================================= */
   
+  // RENDER TAB GURU (DIPERBAIKI SECARA PENUH BERDASARKAN DATABASE JADWAL KBM)
+  function renderTabAbsensiGuru(tglPilihan) {
+    const namaHariPilihan = getNamaHari(tglPilihan);
+
+    // Kumpulkan jadwal KBM khusus untuk hari yang dipilih, dikelompokkan per guru
+    const jadwalGuruMap = {};
+    let totalSesiHariIni = 0;
+
+    for (let id in globalData.jadwal) {
+      let j = globalData.jadwal[id];
+      if (j.hari && j.hari.toLowerCase() === namaHariPilihan.toLowerCase()) {
+        if (j.guru) {
+          if (!jadwalGuruMap[j.guru]) jadwalGuruMap[j.guru] = [];
+          jadwalGuruMap[j.guru].push(j);
+          totalSesiHariIni++;
+        }
+      }
+    }
+
+    let html = '';
+    const daftarGuruWajib = Object.keys(jadwalGuruMap).sort();
+
+    // Jika pada hari tersebut memang tidak ada jadwal pelajaran sama sekali
+    if (daftarGuruWajib.length === 0) {
+      html = `<tr><td colspan="3" style="text-align:center; padding: 40px; color:var(--text-muted); font-style:italic;">
+        ☕ Tidak ada jadwal KBM Asatidz yang terdaftar pada hari <b>${namaHariPilihan}</b>.
+      </td></tr>`;
+      document.getElementById('tabelGuru').innerHTML = html;
+      return;
+    }
+
+    daftarGuruWajib.forEach(guru => {
+      const jadwalGuru = jadwalGuruMap[guru];
+      let logHariIni = []; 
+      let isAdaYangTelat = false;
+
+      // Cari riwayat absensi aktual yang dikirimkan si guru pada tanggal pantauan
+      for (let k in globalData.absenGuru) {
+        let log = globalData.absenGuru[k];
+        if (log.guru === guru && log.tanggal === tglPilihan) {
+          let jamInput = new Date(log.waktuSimpan).getHours();
+          let telat = (new Date(log.waktuSimpan).toISOString().split('T')[0] > tglPilihan || jamInput >= 17);
+          if (telat) isAdaYangTelat = true;
+          
+          let namaKelas = log.kelas || log.sub || log.rumpun || '-';
+          logHariIni.push({ 
+            kelas: `${log.mapel} (${namaKelas})`, 
+            jamString: formatJam(log.waktuSimpan), 
+            telat: telat 
+          });
+        }
+      }
+
+      logHariIni.sort((a,b) => a.jamString.localeCompare(b.jamString));
+
+      let rincian = '';
+      let status = '';
+
+      if (logHariIni.length > 0) {
+        // Guru mengisi absensi (terlapor minimal 1 sesi)
+        rincian = logHariIni.map(l => `
+          <div class="log-item ${l.telat ? 'telat' : ''}">
+            <span>${l.kelas}</span>
+            <span class="time">${l.jamString} WIB</span>
+          </div>
+        `).join('');
+
+        status = isAdaYangTelat ? 
+          '<span class="status-badge st-telat">⚠️ Di Luar Waktu</span>' : 
+          '<span class="status-badge st-tepat">✔ Tepat Waktu</span>';
+      } else {
+        // Guru BOLOS TOTAL (0 laporan absensi)
+        // Tampilkan rincian pasti dari mata pelajaran dan kelas yang seharusnya dia ajar
+        jadwalGuru.sort((a, b) => (a.jamMulai || '').localeCompare(b.jamMulai || ''));
+        
+        rincian = jadwalGuru.map(j => `
+          <div class="log-item" style="background: #fef2f2; border-color: #fca5a5; color: #b91c1c;">
+            <span>❌ <b>${j.mapel || '-'}</b> <span style="font-size:0.8rem; color:#dc2626;">(${j.kelas || '-'})</span></span>
+            <span class="time" style="color: #dc2626; border-color: #fca5a5; background: #ffffff;">Jadwal: ${j.jamMulai || '-'} WIB</span>
+          </div>
+        `).join('');
+
+        status = '<span class="status-badge st-bolos">✖ Bolos Absensi</span>';
+      }
+
+      html += `
+        <tr>
+          <td style="vertical-align:top;">
+            <b style="color:var(--navy-dark); font-size:0.95rem;">${guru}</b>
+            <br><span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Kewajiban: ${jadwalGuru.length} Sesi</span>
+          </td>
+          <td style="vertical-align:top;">${rincian}</td>
+          <td style="text-align: center; vertical-align:top; padding-top:12px;">${status}</td>
+        </tr>
+      `;
+    });
+
+    document.getElementById('tabelGuru').innerHTML = html;
+  }
+
+  function renderTabAbsensiNaqib(tglPilihan) {
+    let html = '';
+    Object.keys(globalData.usrah).sort().forEach(naqib => {
+      let logHariIni = []; let isAdaYangTelat = false;
+      for(let k in globalData.absenNaqib) {
+        let log = globalData.absenNaqib[k];
+        if(log.usrah === naqib && log.tanggal === tglPilihan) {
+          let jamInput = new Date(log.waktu).getHours();
+          let telat = (new Date(log.waktu).toISOString().split('T')[0] > tglPilihan || jamInput >= 22);
+          if(telat) isAdaYangTelat = true;
+          logHariIni.push({ program: log.program, jamString: formatJam(log.waktu), telat: telat });
+        }
+      }
+      logHariIni.sort((a,b) => a.jamString.localeCompare(b.jamString));
+      let rincian = logHariIni.length ? logHariIni.map(l => `<div class="log-item ${l.telat?'telat':''}"><span>${l.program}</span><span class="time">${l.jamString} WIB</span></div>`).join('') : '<span style="color:#ef4444; font-style:italic; font-size:0.8rem;">Tidak ada laporan asrama.</span>';
+      let status = logHariIni.length ? (isAdaYangTelat ? '<span class="status-badge st-telat">⚠️ Di Luar Waktu</span>' : '<span class="status-badge st-tepat">✔ Tepat Waktu</span>') : '<span class="status-badge st-bolos">✖ Bolos Absensi</span>';
+      html += `<tr><td style="vertical-align:top;"><b style="color:var(--navy-dark);">${naqib}</b></td><td>${rincian}</td><td style="text-align: center; vertical-align:top; padding-top:15px;">${status}</td></tr>`;
+    });
+    document.getElementById('tabelNaqib').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">Data Master Usrah kosong.</td></tr>';
+  }
+
   function renderTabJurnalPiket(tglPilihan) {
     let html = '';
     let count = 0;
@@ -467,6 +590,33 @@
 
     if(count === 0) html = `<div style="text-align:center; padding:40px; background:white; border-radius:12px; border:1px dashed #cbd5e1; color:var(--text-muted);">Belum ada laporan jurnal piket yang disubmit pada tanggal ini.</div>`;
     document.getElementById('wadahJurnalPiket').innerHTML = html;
+  }
+
+  function renderTabTahfiz(tglPilihan) {
+    let setoranHariIni = [];
+    for(let k in globalData.tahfiz) {
+      let log = globalData.tahfiz[k];
+      if(log.tanggal === tglPilihan) {
+        let dt = log.data && log.data[0] ? log.data[0] : null;
+        if(dt) {
+          let jamInput = new Date(log.waktuSimpan).getHours();
+          let telat = (new Date(log.waktuSimpan).toISOString().split('T')[0] > tglPilihan || jamInput >= 17);
+          setoranHariIni.push({ santri: dt.nama, setoran: dt.setoran, nilai: dt.nilai, guru: log.guru || 'Guru', kelompok: log.kelompok || '-', jamString: formatJam(log.waktuSimpan), telat: telat });
+        }
+      }
+    }
+    setoranHariIni.sort((a,b) => b.jamString.localeCompare(a.jamString));
+    let html = '';
+    if(setoranHariIni.length === 0) { html = '<tr><td colspan="5" style="text-align:center; padding: 30px; font-style:italic; color:var(--text-muted);">Belum ada setoran hafalan hari ini.</td></tr>'; }
+    else {
+      setoranHariIni.forEach((l, i) => {
+        let badge = 'p-mumtaz';
+        if(l.nilai.includes("JAYYID")) badge = 'p-jayyid';
+        if(l.nilai.includes("MAQBUL") || l.nilai.includes("BIMBINGAN")) badge = 'p-rasib';
+        html += `<tr><td style="text-align: center; color:var(--text-muted); font-weight:bold;">${i + 1}</td><td><b style="color:var(--navy-dark); font-size:0.95rem;">${l.santri}</b></td><td><span style="font-weight:700; color:var(--navy-light);">${l.setoran}</span></td><td style="text-align: center;"><span class="predikat ${badge}">${l.nilai}</span></td><td><span style="font-size:0.8rem; font-weight:600;">Ust. ${l.guru} (Halqah ${l.kelompok})</span><br><span style="font-size:0.7rem; color:var(--text-muted); font-family:monospace;">${l.jamString} WIB ${l.telat ? '<span style="color:#ef4444; font-weight:bold;">(Telat)</span>':''}</span></td></tr>`;
+      });
+    }
+    document.getElementById('tabelTahfiz').innerHTML = html;
   }
 
   function renderTabMentoring(tglPilihan) {
@@ -626,77 +776,6 @@
       htmlKlasemen += `<tr><td style="text-align:center;"><div class="rank-badge ${rankClass}">${i+1}</div></td><td><b style="font-size:0.95rem; color:var(--navy-dark);">${s.nama}</b><br><span class="predikat ${prd.c}">${prd.l}</span></td><td><span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Usrah ${s.usrah}</span></td><td style="text-align:right"><span class="total-poin-badge ${s.total>=0?'poin-plus':'poin-minus'}">${s.total}</span></td></tr>`;
     });
     document.getElementById('tabelKlasemen').innerHTML = htmlKlasemen || `<tr><td colspan="4" style="text-align:center;">Data santri kosong untuk filter ini.</td></tr>`;
-  }
-
-  function renderTabAbsensiGuru(tglPilihan) {
-    const masterGuruSet = new Set();
-    for(let k in globalData.absenGuru) if(globalData.absenGuru[k].guru) masterGuruSet.add(globalData.absenGuru[k].guru);
-    let html = '';
-    Array.from(masterGuruSet).sort().forEach(guru => {
-      let logHariIni = []; let isAdaYangTelat = false;
-      for(let k in globalData.absenGuru) {
-        let log = globalData.absenGuru[k];
-        if(log.guru === guru && log.tanggal === tglPilihan) {
-          let jamInput = new Date(log.waktuSimpan).getHours();
-          let telat = (new Date(log.waktuSimpan).toISOString().split('T')[0] > tglPilihan || jamInput >= 17);
-          if(telat) isAdaYangTelat = true;
-          logHariIni.push({ kelas: `${log.mapel} (${log.sub || log.rumpun})`, jamString: formatJam(log.waktuSimpan), telat: telat });
-        }
-      }
-      logHariIni.sort((a,b) => a.jamString.localeCompare(b.jamString));
-      let rincian = logHariIni.length ? logHariIni.map(l => `<div class="log-item ${l.telat?'telat':''}"><span>${l.kelas}</span><span class="time">${l.jamString} WIB</span></div>`).join('') : '<span style="color:#ef4444; font-style:italic; font-size:0.8rem;">Tidak ada laporan kelas.</span>';
-      let status = logHariIni.length ? (isAdaYangTelat ? '<span class="status-badge st-telat">⚠️ Di Luar Waktu</span>' : '<span class="status-badge st-tepat">✔ Tepat Waktu</span>') : '<span class="status-badge st-bolos">✖ Bolos Absensi</span>';
-      html += `<tr><td style="vertical-align:top;"><b style="color:var(--navy-dark);">${guru}</b></td><td>${rincian}</td><td style="text-align: center; vertical-align:top; padding-top:15px;">${status}</td></tr>`;
-    });
-    document.getElementById('tabelGuru').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">Belum ada rekam jejak guru.</td></tr>';
-  }
-
-  function renderTabAbsensiNaqib(tglPilihan) {
-    let html = '';
-    Object.keys(globalData.usrah).sort().forEach(naqib => {
-      let logHariIni = []; let isAdaYangTelat = false;
-      for(let k in globalData.absenNaqib) {
-        let log = globalData.absenNaqib[k];
-        if(log.usrah === naqib && log.tanggal === tglPilihan) {
-          let jamInput = new Date(log.waktu).getHours();
-          let telat = (new Date(log.waktu).toISOString().split('T')[0] > tglPilihan || jamInput >= 22);
-          if(telat) isAdaYangTelat = true;
-          logHariIni.push({ program: log.program, jamString: formatJam(log.waktu), telat: telat });
-        }
-      }
-      logHariIni.sort((a,b) => a.jamString.localeCompare(b.jamString));
-      let rincian = logHariIni.length ? logHariIni.map(l => `<div class="log-item ${l.telat?'telat':''}"><span>${l.program}</span><span class="time">${l.jamString} WIB</span></div>`).join('') : '<span style="color:#ef4444; font-style:italic; font-size:0.8rem;">Tidak ada laporan asrama.</span>';
-      let status = logHariIni.length ? (isAdaYangTelat ? '<span class="status-badge st-telat">⚠️ Di Luar Waktu</span>' : '<span class="status-badge st-tepat">✔ Tepat Waktu</span>') : '<span class="status-badge st-bolos">✖ Bolos Absensi</span>';
-      html += `<tr><td style="vertical-align:top;"><b style="color:var(--navy-dark);">${naqib}</b></td><td>${rincian}</td><td style="text-align: center; vertical-align:top; padding-top:15px;">${status}</td></tr>`;
-    });
-    document.getElementById('tabelNaqib').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">Data Master Usrah kosong.</td></tr>';
-  }
-
-  function renderTabTahfiz(tglPilihan) {
-    let setoranHariIni = [];
-    for(let k in globalData.tahfiz) {
-      let log = globalData.tahfiz[k];
-      if(log.tanggal === tglPilihan) {
-        let dt = log.data && log.data[0] ? log.data[0] : null;
-        if(dt) {
-          let jamInput = new Date(log.waktuSimpan).getHours();
-          let telat = (new Date(log.waktuSimpan).toISOString().split('T')[0] > tglPilihan || jamInput >= 17);
-          setoranHariIni.push({ santri: dt.nama, setoran: dt.setoran, nilai: dt.nilai, guru: log.guru || 'Guru', kelompok: log.kelompok || '-', jamString: formatJam(log.waktuSimpan), telat: telat });
-        }
-      }
-    }
-    setoranHariIni.sort((a,b) => b.jamString.localeCompare(a.jamString));
-    let html = '';
-    if(setoranHariIni.length === 0) { html = '<tr><td colspan="5" style="text-align:center; padding: 30px; font-style:italic; color:var(--text-muted);">Belum ada setoran hafalan hari ini.</td></tr>'; }
-    else {
-      setoranHariIni.forEach((l, i) => {
-        let badge = 'p-mumtaz';
-        if(l.nilai.includes("JAYYID")) badge = 'p-jayyid';
-        if(l.nilai.includes("MAQBUL") || l.nilai.includes("BIMBINGAN")) badge = 'p-rasib';
-        html += `<tr><td style="text-align: center; color:var(--text-muted); font-weight:bold;">${i + 1}</td><td><b style="color:var(--navy-dark); font-size:0.95rem;">${l.santri}</b></td><td><span style="font-weight:700; color:var(--navy-light);">${l.setoran}</span></td><td style="text-align: center;"><span class="predikat ${badge}">${l.nilai}</span></td><td><span style="font-size:0.8rem; font-weight:600;">Ust. ${l.guru} (Halqah ${l.kelompok})</span><br><span style="font-size:0.7rem; color:var(--text-muted); font-family:monospace;">${l.jamString} WIB ${l.telat ? '<span style="color:#ef4444; font-weight:bold;">(Telat)</span>':''}</span></td></tr>`;
-      });
-    }
-    document.getElementById('tabelTahfiz').innerHTML = html;
   }
 </script>
 </body>
