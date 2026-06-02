@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Input Soal UAS Guru Mapel</title>
+
+  <!-- Firebase Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #7a4b20;
+      --primary-dark: #4b2b12;
+      --gold: #c99a45;
+      --soft-gold: #fff6e5;
+      --bg: #f7f3ec;
+      --text: #1f2933;
+      --muted: #64748b;
+      --danger: #b91c1c;
+      --success: #15803d;
+      --border: #e5d8c5;
+      --shadow: 0 20px 50px rgba(75, 43, 18, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(201, 154, 69, 0.18), transparent 30%),
+        linear-gradient(135deg, #f7f3ec 0%, #fffaf2 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 30px 16px;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      border-radius: 28px;
+      padding: 34px 34px 30px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .header::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      top: -90px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header h1,
+    .header p {
+      position: relative;
+      z-index: 1;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.25;
+      letter-spacing: 0.3px;
+    }
+
+    .header p {
+      margin: 12px 0 0;
+      color: #f8ead2;
+      line-height: 1.7;
+      max-width: 760px;
+    }
+
+    .deadline {
+      background: var(--soft-gold);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .deadline-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: white;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      font-size: 20px;
+    }
+
+    .deadline strong {
+      color: var(--primary-dark);
+    }
+
+    .deadline p {
+      margin: 4px 0 0;
+      color: #5f4b35;
+      line-height: 1.6;
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-marker {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--gold), var(--primary));
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 23px;
+    }
+
+    .section-title span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #2f2418;
+    }
+
+    .hint {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-top: -2px;
+      margin-bottom: 8px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #d9c9b3;
+      background: #fffdf9;
+      border-radius: 15px;
+      padding: 13px 15px;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: 0.2s ease;
+      font-family: inherit;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 4px rgba(201, 154, 69, 0.16);
+      background: white;
+    }
+
+    textarea {
+      min-height: 170px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .required {
+      color: var(--danger);
+    }
+
+    .soal-card {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #ffffff, #fffaf2);
+      border-radius: 22px;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .soal-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .soal-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .soal-title h3 {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 18px;
+    }
+
+    .note {
+      padding: 16px 18px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 18px;
+      color: #475569;
+      line-height: 1.7;
+      margin: 20px 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 26px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-family: inherit;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: 0 10px 22px rgba(75, 43, 18, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(75, 43, 18, 0.26);
+    }
+
+    .btn-secondary {
+      background: #f1e6d8;
+      color: var(--primary-dark);
+    }
+
+    .btn-secondary:hover {
+      background: #ead8c2;
+    }
+
+    .btn-outline {
+      background: white;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover {
+      background: var(--soft-gold);
+    }
+
+    .success-message,
+    .error-message {
+      display: none;
+      margin-top: 18px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .success-message {
+      background: #ecfdf5;
+      color: var(--success);
+      border: 1px solid #bbf7d0;
+    }
+
+    .error-message {
+      background: #fef2f2;
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+
+    .preview {
+      display: none;
+      margin-top: 24px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .preview h3 {
+      margin-top: 0;
+      color: var(--primary-dark);
+    }
+
+    .preview-box {
+      border-left: 5px solid var(--gold);
+      background: #fffaf2;
+      padding: 16px 18px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        padding: 26px 22px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      form {
+        padding: 20px;
+      }
+
+      .actions {
+        justify-content: stretch;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .header,
+      .deadline,
+      form,
+      .actions,
+      .success-message,
+      .error-message {
+        display: none !important;
+      }
+
+      .preview {
+        display: block !important;
+        box-shadow: none;
+        border: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="badge">PESANTREN CAHAYA FAJRUL ISLAM</div>
+      <h1>Input Soal Ujian Akhir Semester</h1>
+      <p>
+        Tahun Ajaran 2025/2026 — Form ini digunakan oleh guru mapel untuk mengirim soal
+        ujian lisan, tulis, praktek, atau karya tulis.
+      </p>
+    </div>
+
+    <div class="deadline">
+      <div class="deadline-icon">📝</div>
+      <div>
+        <strong>Batas Pengisian: 19 Juni 2026</strong>
+        <p>
+          Silakan isi jenis soal yang diselenggarakan. Bagian yang tidak digunakan boleh dikosongkan.
+        </p>
+      </div>
+    </div>
+
+    <form id="soalForm">
+      <div class="section-title">
+        <div class="section-marker">B</div>
+        <div>
+          <h2>Input Soal UAS</h2>
+          <span>Isi soal sesuai jenis ujian yang diselenggarakan</span>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="namaGuru">Nama Guru Mapel <span class="required">*</span></label>
+          <input type="text" id="namaGuru" placeholder="Contoh: Ust. Ahmad Fulan" required />
+        </div>
+
+        <div class="field">
+          <label for="mapel">Mata Pelajaran <span class="required">*</span></label>
+          <input type="text" id="mapel" placeholder="Contoh: Fiqih, Nahwu, Tauhid" required />
+        </div>
+
+        <div class="field">
+          <label for="kelas">Kelas/Jenjang <span class="required">*</span></label>
+          <select id="kelas" required>
+            <option value="">Pilih kelas/jenjang</option>
+            <option>Kelas 1 Wustho</option>
+            <option>Kelas 2 Wustho</option>
+            <option>Kelas 3 Wustho</option>
+            <option>Kelas 4 Ulya</option>
+            <option>Kelas 5 Ulya</option>
+            <option>Kelas 6 Ulya</option>
+            <option>Gabungan Beberapa Kelas</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="tanggalIsi">Tanggal Pengisian <span class="required">*</span></label>
+          <input type="date" id="tanggalIsi" required />
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>Petunjuk:</strong>
+        Isilah soal sesuai jenis ujian yang dilaksanakan. Jika tidak menyelenggarakan salah satu jenis ujian,
+        bagian tersebut boleh dikosongkan.
+      </div>
+
+      <div class="soal-card">
+        <div class="soal-title">
+          <div class="soal-icon">1</div>
+          <h3>Soal Ujian Lisan</h3>
+        </div>
+        <span class="hint">
+          Boleh dikosongkan jika tidak menyelenggarakan ujian lisan.
+          Untuk ujian lisan, guru dianjurkan membuat bank soal yang cukup banyak.
+        </span>
+        <textarea
+          id="soalLisan"
+          placeholder="Contoh:
+1. Bacakan matan tentang ...
+2. Jelaskan makna dari ...
+3. Sebutkan dalil tentang ...
+4. Terjemahkan kalimat berikut ...
+5. Apa perbedaan antara ... dan ...?"
+        ></textarea>
+      </div>
+
+      <div class="soal-card">
+        <div class="soal-title">
+          <div class="soal-icon">2</div>
+          <h3>Soal Ujian Tulis</h3>
+        </div>
+        <span class="hint">
+          Boleh dikosongkan jika tidak menyelenggarakan ujian tulis.
+        </span>
+        <textarea
+          id="soalTulis"
+          placeholder="Contoh:
+A. Jawablah pertanyaan berikut dengan benar!
+1. Jelaskan pengertian ...
+2. Sebutkan macam-macam ...
+3. Apa hikmah dari ...
+
+B. Isilah titik-titik berikut!
+1. ...
+2. ...
+
+C. Uraian:
+1. Analisislah kasus berikut ..."
+        ></textarea>
+      </div>
+
+      <div class="soal-card">
+        <div class="soal-title">
+          <div class="soal-icon">3</div>
+          <h3>Soal Ujian Praktek</h3>
+        </div>
+        <span class="hint">
+          Boleh dikosongkan jika tidak menyelenggarakan ujian praktek.
+        </span>
+        <textarea
+          id="soalPraktek"
+          placeholder="Contoh:
+1. Praktikkan tata cara ...
+2. Simulasikan percakapan bahasa Arab tentang ...
+3. Bacakan teks berikut dengan kaidah yang benar.
+4. Peragakan langkah-langkah ..."
+        ></textarea>
+      </div>
+
+      <div class="soal-card">
+        <div class="soal-title">
+          <div class="soal-icon">4</div>
+          <h3>Soal Ujian Karya Tulis</h3>
+        </div>
+        <span class="hint">
+          Boleh dikosongkan jika tidak menyelenggarakan ujian karya tulis.
+          Biasanya digunakan untuk kelas 3, kelas 6, atau calon wisudawan.
+        </span>
+        <textarea
+          id="soalKaryaTulis"
+          placeholder="Contoh:
+Buatlah karya tulis sederhana dengan tema:
+1. Adab Santri di Zaman Digital
+2. Peran Ilmu dalam Membentuk Akhlak
+3. Solusi Remaja Muslim Menghadapi Krisis Pergaulan
+
+Ketentuan:
+- Minimal ... halaman
+- Menggunakan sistematika ...
+- Dikumpulkan pada ..."
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <label for="catatanGuru">Catatan Tambahan Guru</label>
+        <span class="hint">
+          Opsional. Bisa berisi keterangan tambahan, aturan pengerjaan, atau kebutuhan khusus.
+        </span>
+        <textarea
+          id="catatanGuru"
+          style="min-height:110px;"
+          placeholder="Contoh:
+- Soal lisan diacak oleh penguji.
+- Santri membawa alat tulis sendiri.
+- Untuk praktek, santri diuji secara berpasangan."
+        ></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn-outline" onclick="resetForm()">Kosongkan</button>
+        <button type="button" class="btn-secondary" onclick="buatPreview()">Lihat Preview</button>
+        <button type="submit" class="btn-primary" id="btnKirim">Kirim</button>
+      </div>
+
+      <div id="successMessage" class="success-message">
+        ✅ Soal berhasil dikirim.
+      </div>
+
+      <div id="errorMessage" class="error-message">
+        ❌ Soal gagal dikirim. Silakan periksa koneksi internet atau hubungi admin.
+      </div>
+    </form>
+
+    <div id="preview" class="preview">
+      <h3>Preview Soal UAS</h3>
+
+      <div class="preview-box" id="previewIdentitas"></div>
+      <div class="preview-box" id="previewLisan"></div>
+      <div class="preview-box" id="previewTulis"></div>
+      <div class="preview-box" id="previewPraktek"></div>
+      <div class="preview-box" id="previewKaryaTulis"></div>
+      <div class="preview-box" id="previewCatatan"></div>
+
+      <div class="actions">
+        <button class="btn-outline" onclick="window.print()">Cetak / Simpan PDF</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // =========================================================
+    // KONFIGURASI
+    // =========================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+      projectId: "absensi-santri-fajrul-islam",
+      appId: "1:739928369926:web:7e95375c3ddba0f584cdd07"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const database = firebase.database();
+    const DB_PATH = "persiapan_uas_guru_mapel/poinB";
+
+    const form = document.getElementById("soalForm");
+    const tanggalIsi = document.getElementById("tanggalIsi");
+    const btnKirim = document.getElementById("btnKirim");
+    const successMessage = document.getElementById("successMessage");
+    const errorMessage = document.getElementById("errorMessage");
+
+    tanggalIsi.valueAsDate = new Date();
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      sembunyikanPesan();
+
+      const data = ambilDataForm();
+
+      if (!validasiData(data)) return;
+
+      btnKirim.disabled = true;
+      btnKirim.textContent = "Mengirim...";
+
+      try {
+        const newRef = database.ref(DB_PATH).push();
+
+        await newRef.set({
+          id: newRef.key,
+          jenisForm: "Input Soal UAS Guru Mapel - Poin B",
+          tahunAjaran: "2025/2026",
+          batasPengisian: "2026-06-19",
+
+          namaGuru: data.namaGuru,
+          mapel: data.mapel,
+          kelas: data.kelas,
+          tanggalIsi: data.tanggalIsi,
+
+          soalLisan: data.soalLisan,
+          soalTulis: data.soalTulis,
+          soalPraktek: data.soalPraktek,
+          soalKaryaTulis: data.soalKaryaTulis,
+          catatanGuru: data.catatanGuru,
+
+          jenisUjianDiisi: data.jenisUjianDiisi,
+
+          status: "terkirim",
+          createdAt: new Date().toISOString(),
+          createdAtText: new Date().toLocaleString("id-ID")
+        });
+
+        successMessage.style.display = "block";
+        buatPreview(false);
+
+        form.reset();
+        tanggalIsi.valueAsDate = new Date();
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+
+      } catch (error) {
+        console.error("Gagal mengirim soal:", error);
+        errorMessage.style.display = "block";
+        errorMessage.textContent =
+          "❌ Soal gagal dikirim: " + (error.message || "Terjadi kesalahan.");
+      } finally {
+        btnKirim.disabled = false;
+        btnKirim.textContent = "Kirim";
+      }
+    });
+
+    function ambilDataForm() {
+      const soalLisan = document.getElementById("soalLisan").value.trim();
+      const soalTulis = document.getElementById("soalTulis").value.trim();
+      const soalPraktek = document.getElementById("soalPraktek").value.trim();
+      const soalKaryaTulis = document.getElementById("soalKaryaTulis").value.trim();
+
+      const jenisUjianDiisi = [];
+
+      if (soalLisan) jenisUjianDiisi.push("Ujian Lisan");
+      if (soalTulis) jenisUjianDiisi.push("Ujian Tulis");
+      if (soalPraktek) jenisUjianDiisi.push("Ujian Praktek");
+      if (soalKaryaTulis) jenisUjianDiisi.push("Ujian Karya Tulis");
+
+      return {
+        namaGuru: document.getElementById("namaGuru").value.trim(),
+        mapel: document.getElementById("mapel").value.trim(),
+        kelas: document.getElementById("kelas").value,
+        tanggalIsi: document.getElementById("tanggalIsi").value,
+
+        soalLisan,
+        soalTulis,
+        soalPraktek,
+        soalKaryaTulis,
+        catatanGuru: document.getElementById("catatanGuru").value.trim(),
+
+        jenisUjianDiisi
+      };
+    }
+
+    function validasiData(data) {
+      if (!data.namaGuru || !data.mapel || !data.kelas || !data.tanggalIsi) {
+        alert("Mohon lengkapi nama guru, mata pelajaran, kelas/jenjang, dan tanggal pengisian.");
+        return false;
+      }
+
+      if (
+        !data.soalLisan &&
+        !data.soalTulis &&
+        !data.soalPraktek &&
+        !data.soalKaryaTulis
+      ) {
+        alert("Mohon isi minimal satu jenis soal. Bagian lain boleh dikosongkan.");
+        return false;
+      }
+
+      return true;
+    }
+
+    function buatPreview(wajibValidasi = true) {
+      const data = ambilDataForm();
+
+      if (wajibValidasi && !validasiData(data)) return;
+
+      document.getElementById("previewIdentitas").innerHTML =
+        `<strong>Identitas Soal UAS</strong><br>
+        Nama Guru: ${escapeHTML(data.namaGuru)}<br>
+        Mata Pelajaran: ${escapeHTML(data.mapel)}<br>
+        Kelas/Jenjang: ${escapeHTML(data.kelas)}<br>
+        Tanggal Pengisian: ${formatTanggal(data.tanggalIsi)}<br>
+        Jenis Ujian Diisi: ${escapeHTML(data.jenisUjianDiisi.join(", ") || "-")}`;
+
+      document.getElementById("previewLisan").innerHTML =
+        `<strong>Soal Ujian Lisan</strong><br>${escapeHTML(data.soalLisan || "-")}`;
+
+      document.getElementById("previewTulis").innerHTML =
+        `<strong>Soal Ujian Tulis</strong><br>${escapeHTML(data.soalTulis || "-")}`;
+
+      document.getElementById("previewPraktek").innerHTML =
+        `<strong>Soal Ujian Praktek</strong><br>${escapeHTML(data.soalPraktek || "-")}`;
+
+      document.getElementById("previewKaryaTulis").innerHTML =
+        `<strong>Soal Ujian Karya Tulis</strong><br>${escapeHTML(data.soalKaryaTulis || "-")}`;
+
+      document.getElementById("previewCatatan").innerHTML =
+        `<strong>Catatan Tambahan Guru</strong><br>${escapeHTML(data.catatanGuru || "-")}`;
+
+      document.getElementById("preview").style.display = "block";
+
+      if (wajibValidasi) {
+        document.getElementById("preview").scrollIntoView({
+          behavior: "smooth"
+        });
+      }
+    }
+
+    function resetForm() {
+      if (confirm("Yakin ingin mengosongkan form?")) {
+        form.reset();
+        tanggalIsi.valueAsDate = new Date();
+        document.getElementById("preview").style.display = "none";
+        sembunyikanPesan();
+      }
+    }
+
+    function sembunyikanPesan() {
+      successMessage.style.display = "none";
+      errorMessage.style.display = "none";
+    }
+
+    function formatTanggal(tanggal) {
+      if (!tanggal) return "-";
+
+      return new Date(tanggal).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function escapeHTML(text) {
+      if (text === null || text === undefined || text === "") return "-";
+
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;")
+        .replaceAll("\n", "<br>");
+    }
+  </script>
+</body>
+</html>
