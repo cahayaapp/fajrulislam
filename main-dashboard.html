@@ -37,7 +37,7 @@
     /* MAIN CONTENT */
     .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
     
-    /* GAYA TOP NAV MENGIKUTI "HEADER KEDUA" BERANDA WALI */
+    /* GAYA TOP NAV */
     .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-bottom: 1px solid var(--border-soft); z-index: 10; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
     .menu-btn { font-size: 1.6rem; color: var(--navy-main); cursor: pointer; transition: 0.2s;}
     .menu-btn:hover { color: var(--gold-main); }
@@ -149,7 +149,6 @@
 </head>
 <body>
 
-  <!-- TOAST NOTIFIKASI MUNCUL DARI ATAS -->
   <div id="inAppNotif" class="in-app-notif" onclick="bukaPanelNotif()">
     <div class="notif-icon">🔔</div>
     <div class="notif-text">
@@ -160,7 +159,6 @@
 
   <div class="mobile-menu-overlay" onclick="toggleSidebar()"></div>
 
-  <!-- SIDEBAR KIRI -->
   <aside class="sidebar" id="mainSidebar">
     <div class="sidebar-top">
       <div class="brand-header">
@@ -175,7 +173,6 @@
     <div class="sidebar-bottom"><button class="btn-logout" onclick="logout()"><span style="margin-right: 8px;">🚪</span> KELUAR</button></div>
   </aside>
 
-  <!-- PANEL KANAN NOTIFIKASI -->
   <div class="notif-panel" id="sideNotifPanel">
     <div class="notif-header">
       <h3>🔔 Notifikasi</h3>
@@ -186,10 +183,8 @@
     </div>
   </div>
 
-  <!-- MAIN AREA DENGAN HEADER KEDUA -->
   <main class="main-content">
     
-    <!-- TOP NAV (HEADER BERANDA) -->
     <div class="top-nav">
       <div class="menu-btn" onclick="toggleSidebar()">☰</div>
       <div class="app-title-header">
@@ -199,11 +194,9 @@
       <div class="user-profile-icon" id="topNavProfile" onclick="loadPage('profil.html', null)"></div>
     </div>
 
-    <!-- IFRAME KONTEN -->
     <iframe id="contentFrame" src="home.html"></iframe>
   </main>
 
-  <!-- CHAT PENGURUS/WALI GLOBAL -->
   <div class="pengurus-fab-chat" onclick="togglePengurusChat()">
     💬
     <div id="chatUnreadBadge" class="chat-badge">0</div>
@@ -231,6 +224,7 @@
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   
@@ -245,7 +239,7 @@
     const dbFS = firebase.firestore();
     const dbRT = firebase.database();
 
-    // MENU SIDEBAR (Sesuai Konfigurasi Manajemen User)
+    // MENU SIDEBAR: DITAMBAHKAN MODUL SARPRAS MANDIRI
     const allMenuHTML = `
         <div class="menu-group" id="group-utama" style="display: block;">
           <div class="group-label">Utama</div>
@@ -261,14 +255,24 @@
         </div>
         <div class="menu-group">
           <div class="group-label">Modul Supervisor</div>
-          <a class="nav-item menu-akses" id="menu-kontrol-harian" style="display: none;" onclick="loadPage('supervisor/kontrol-harian.html', this)">📊 Pusat Kontrol Harian</a>
+          <!-- PERUBAHAN LINK DI SINI: MENGARAH KE FILE BARU (kbm-guru.html) -->
+          <a class="nav-item menu-akses" id="menu-kontrol-harian" style="display: none;" onclick="loadPage('supervisor/kontrol-harian/kbm-guru.html', this)">📊 Pusat Kontrol Harian</a>
           <a class="nav-item menu-akses" id="menu-kontrol-pekanan" style="display: none;" onclick="loadPage('supervisor/kontrol-pekanan.html', this)">📅 Pusat Kontrol Pekanan</a>
           <a class="nav-item menu-akses" id="menu-raport-bulanan" style="display: none;" onclick="loadPage('supervisor/raport-bulanan.html', this)">📈 Laporan Bulanan & KPI</a>
           <a class="nav-item menu-akses" id="menu-raport-semester" style="display: none;" onclick="loadPage('supervisor/raport-semester.html', this)">🎓 Raport Semester</a>
         </div>
         <div class="menu-group">
+          <div class="group-label">Personil Layanan</div>
+          <a class="nav-item menu-akses" id="menu-jurnal-pkl" style="display: none;" onclick="loadPage('PKL/jurnal-pkl.html', this)">🧹 Input Jurnal PKL</a>
+        </div>
+        <div class="menu-group">
+          <div class="group-label">Kepala Sarpras</div>
+          <a class="nav-item menu-akses" id="menu-jurnal-sarpras" style="display: none;" onclick="loadPage('sarpras/jurnal.html', this)">🔧 Input Jurnal Sarpras</a>
+        </div>
+        <div class="menu-group">
           <div class="group-label">Akademik (Guru)</div>
           <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html', this)">📋 Absensi Halqah</a>
+          <a class="nav-item menu-akses" id="menu-prauas" style="display: none;" onclick="loadPage('guru/prauas.html', this)">🧾 Pra UAS</a>
           <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html', this)">📖 Input Setoran Tahfiz</a>
           <a class="nav-item menu-akses" id="menu-buku-tahfiz" style="display: none;" onclick="loadPage('guru/buku-tahfiz.html', this)">📚 Buku Setoran Santri</a>
           <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html', this)">📝 Input Nilai Bulanan</a>
@@ -311,7 +315,14 @@
 
     function toggleSidebar() { document.getElementById('mainSidebar').classList.toggle('open'); document.querySelector('.mobile-menu-overlay').classList.toggle('open'); }
     function toggleNotifPanel() { document.getElementById('sideNotifPanel').classList.toggle('open'); }
-    function logout() { if(confirm("Keluar aplikasi?")) { localStorage.removeItem('cahayaCurrentUser'); window.location.href = 'index.html'; } }
+    function logout() { 
+      if(confirm("Keluar aplikasi?")) { 
+        firebase.auth().signOut().then(() => {
+          localStorage.removeItem('cahayaCurrentUser'); 
+          window.location.href = 'index.html'; 
+        });
+      } 
+    }
 
     function getPanggilanCerdas(fullName) {
         let parts = fullName.trim().split(/\s+/);
@@ -324,7 +335,7 @@
         }
     }
 
-    // Variabel User
+    // Variabel Sesi User
     const pUserSafe = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
     let rawRoles = pUserSafe.akses || []; if(typeof rawRoles === 'string') rawRoles = [rawRoles];
     const myRoles = rawRoles.map(r => r.toLowerCase());
@@ -341,10 +352,7 @@
 
     async function refreshUserProfileUI() {
       try {
-        if (!pUserSafe || !pUserSafe.akses) { window.location.href = 'index.html'; return; }
-        
         const displayNama = pUserSafe.label || pUserSafe.username || "PENGGUNA";
-
         const avatarEl = document.getElementById('topNavProfile');
         if (pUserSafe.fotoProfil) {
           avatarEl.innerHTML = `<img src="${pUserSafe.fotoProfil}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid white;">`;
@@ -359,9 +367,14 @@
         let ruleMenus = doc.exists ? doc.data() : {};
         let menusToOpen = [];
         myRoles.forEach(role => { if(ruleMenus[role]) { menusToOpen = [...new Set([...menusToOpen, ...ruleMenus[role]])]; } });
-        menusToOpen.push('menu-profil'); // Paksa menu profil tampil
+        menusToOpen.push('menu-profil');
 
-        // Default Load & Title Penyesuaian
+        // Menu Pra UAS ditampilkan otomatis untuk Guru dan pimpinan
+        // meskipun belum dimasukkan ke pengaturan role_menus di Firestore.
+        if (myRoles.some(r => ['guru', 'admin', 'direktur', 'wakil'].includes(r))) {
+          menusToOpen.push('menu-prauas');
+        }
+
         if(isWali) {
             loadPage('wali/beranda.html', document.getElementById('menu-beranda-wali'));
             document.getElementById('currentPageTitle').textContent = "CAHAYA APP";
@@ -372,7 +385,7 @@
             menuHtml.style.display = 'flex'; menuHtml.closest('.menu-group').style.display = 'block';
           } else { menuHtml.style.display = 'none'; }
         });
-      } catch (e) {}
+      } catch (e) { console.error("Gagal memuat UI menu:", e); }
     }
 
     function loadPage(url, el) {
@@ -380,7 +393,6 @@
       if(el && el.classList.contains('nav-item')) el.classList.add('active');
       document.getElementById('contentFrame').src = url;
       
-      // Update Title Khusus Wali agar tetap "CAHAYA APP" atau teks menu
       if(el && el.textContent) {
           let title = el.textContent.replace(/[^\w\s]/gi, '').trim();
           if (title === "Beranda Linimasa" && isWali) title = "CAHAYA APP";
@@ -402,12 +414,24 @@
     document.body.addEventListener('touchstart', function() { if (!audioUnlocked) { notifSound.play().then(()=>{notifSound.pause(); notifSound.currentTime=0;}).catch(()=>{}); audioUnlocked = true; } }, { once: true });
     document.body.addEventListener('click', function() { if (!audioUnlocked) { notifSound.play().then(()=>{notifSound.pause(); notifSound.currentTime=0;}).catch(()=>{}); audioUnlocked = true; } }, { once: true });
 
-    document.addEventListener('DOMContentLoaded', async () => {
-       await refreshUserProfileUI();
-       initChatFilter(); 
-       if (Notification.permission !== "granted") Notification.requestPermission();
-       try { const snap = await dbFS.collection('users').get(); snap.forEach(doc => pListUsers.push(doc.data())); } catch (err) {}
-       listenToGlobalMessagesAndNotifs(); 
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        console.log("Otorisasi Sesi Berhasil:", user.email);
+        
+        await refreshUserProfileUI();
+        initChatFilter(); 
+        if (Notification.permission !== "granted") Notification.requestPermission();
+        
+        try { 
+          const snap = await dbFS.collection('users').get(); 
+          pListUsers = [];
+          snap.forEach(doc => pListUsers.push(doc.data())); 
+        } catch (err) { console.error("Gagal memuat master user:", err); }
+        
+        listenToGlobalMessagesAndNotifs(); 
+      } else {
+        window.location.href = 'index.html';
+      }
     });
 
     function initChatFilter() {
@@ -461,38 +485,38 @@
           }
 
           Object.keys(allRooms).forEach(roomId => {
-             try {
-                 if(roomId.includes(meClean) && roomId !== 'room_broadcast_wali') {
-                    let msgs = allRooms[roomId]; if(!msgs || typeof msgs !== 'object') return; 
-                    let msgValues = Object.values(msgs).filter(m => m && m.waktu); if(msgValues.length === 0) return;
+              try {
+                  if(roomId.includes(meClean) && roomId !== 'room_broadcast_wali') {
+                     let msgs = allRooms[roomId]; if(!msgs || typeof msgs !== 'object') return; 
+                     let msgValues = Object.values(msgs).filter(m => m && m.waktu); if(msgValues.length === 0) return;
 
-                    let lastMsg = msgValues[msgValues.length - 1];
-                    let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim;
-                    
-                    if (!opponentLabel) {
-                       let roomParts = roomId.replace('chat_', '').split('_');
-                       let oppClean = roomParts[0] === meClean ? roomParts[1] : roomParts[0];
-                       let oppUser = pListUsers.find(u => { return (u.label||u.username||'').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === oppClean; });
-                       if (oppUser) { opponentLabel = oppUser.label || oppUser.username; } 
-                       else if (oppClean && oppClean.startsWith('abiummi')) {
-                          let childName = oppClean.replace('abiummi', ''); opponentLabel = "Abi Ummi " + childName.charAt(0).toUpperCase() + childName.slice(1);
-                       } else { opponentLabel = oppClean || "Tidak Diketahui"; }
-                    }
+                     let lastMsg = msgValues[msgValues.length - 1];
+                     let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim;
+                     
+                     if (!opponentLabel) {
+                        let roomParts = roomId.replace('chat_', '').split('_');
+                        let oppClean = roomParts[0] === meClean ? roomParts[1] : roomParts[0];
+                        let oppUser = pListUsers.find(u => { return (u.label||u.username||'').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === oppClean; });
+                        if (oppUser) { opponentLabel = oppUser.label || oppUser.username; } 
+                        else if (oppClean && oppClean.startsWith('abiummi')) {
+                           let childName = oppClean.replace('abiummi', ''); opponentLabel = "Abi Ummi " + childName.charAt(0).toUpperCase() + childName.slice(1);
+                        } else { opponentLabel = oppClean || "Tidak Diketahui"; }
+                     }
 
-                    let oppUser = pListUsers.find(u => (u.label||u.username) === opponentLabel);
-                    let displayOpponent = (oppUser && !opponentLabel.toLowerCase().includes('wali')) ? "@" + oppUser.username : opponentLabel;
+                     let oppUser = pListUsers.find(u => (u.label||u.username) === opponentLabel);
+                     let displayOpponent = (oppUser && !opponentLabel.toLowerCase().includes('wali')) ? "@" + oppUser.username : opponentLabel;
 
-                    let isUnread = false;
-                    if (lastMsg.pengirim !== namaSaya) {
-                        let lastReadTime = localStorage.getItem('chat_read_' + roomId) || "0";
-                        if (new Date(lastMsg.waktu) > new Date(lastReadTime)) {
-                            unreadTotal++; isUnread = true; latestMessageText = lastMsg.teks; latestMessageSender = displayOpponent;
-                            chatUnreadData.push({ tipe: 'chat', title: 'Pesan Baru: ' + displayOpponent, desc: lastMsg.teks, waktu: lastMsg.waktu, roomId: roomId, opponentActualLabel: opponentLabel, opponentDisplay: displayOpponent, isUnread: true });
-                        }
-                    }
-                    myInboxData.push({ roomId, opponentDisplay: displayOpponent, opponentActualLabel: opponentLabel, lastMsg, isUnread });
-                 }
-             } catch(e) {}
+                     let isUnread = false;
+                     if (lastMsg.pengirim !== namaSaya) {
+                         let lastReadTime = localStorage.getItem('chat_read_' + roomId) || "0";
+                         if (new Date(lastMsg.waktu) > new Date(lastReadTime)) {
+                             unreadTotal++; isUnread = true; latestMessageText = lastMsg.teks; latestMessageSender = displayOpponent;
+                             chatUnreadData.push({ tipe: 'chat', title: 'Pesan Baru: ' + displayOpponent, desc: lastMsg.teks, waktu: lastMsg.waktu, roomId: roomId, opponentActualLabel: opponentLabel, opponentDisplay: displayOpponent, isUnread: true });
+                         }
+                     }
+                     myInboxData.push({ roomId, opponentDisplay: displayOpponent, opponentActualLabel: opponentLabel, lastMsg, isUnread });
+                  }
+              } catch(e) {}
           });
 
           if(unreadTotal > lastUnreadCount) {
@@ -508,7 +532,7 @@
           updateNotificationPanel(chatUnreadData, dbNotifData);
        });
 
-       // 2. Pantau Notifikasi Database (Komentar dll)
+       // 2. Pantau Notifikasi Database
        dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}`).on('value', snap => {
            dbNotifData = [];
            const val = snap.val();
