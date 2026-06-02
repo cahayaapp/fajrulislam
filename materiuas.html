@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Data Persiapan UAS Guru Mapel</title>
+
+  <!-- Firebase Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #7a4b20;
+      --primary-dark: #4b2b12;
+      --gold: #c99a45;
+      --soft-gold: #fff6e5;
+      --bg: #f7f3ec;
+      --text: #1f2933;
+      --muted: #64748b;
+      --white: #ffffff;
+      --danger: #b91c1c;
+      --success: #15803d;
+      --border: #e5d8c5;
+      --shadow: 0 20px 50px rgba(75, 43, 18, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(201, 154, 69, 0.18), transparent 30%),
+        linear-gradient(135deg, #f7f3ec 0%, #fffaf2 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 30px 16px;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      border-radius: 28px;
+      padding: 34px 34px 30px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .header::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      top: -90px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      margin-bottom: 18px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.25;
+      letter-spacing: 0.3px;
+    }
+
+    .header p {
+      margin: 12px 0 0;
+      color: #f8ead2;
+      line-height: 1.7;
+      max-width: 780px;
+    }
+
+    .toolbar {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid #d9c9b3;
+      background: #fffdf9;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: 0.2s ease;
+      font-family: inherit;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 4px rgba(201, 154, 69, 0.16);
+      background: white;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: 0 10px 22px rgba(75, 43, 18, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(75, 43, 18, 0.26);
+    }
+
+    .btn-secondary {
+      background: #f1e6d8;
+      color: var(--primary-dark);
+    }
+
+    .btn-secondary:hover {
+      background: #ead8c2;
+    }
+
+    .btn-outline {
+      background: white;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover {
+      background: var(--soft-gold);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .summary-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 12px 26px rgba(75, 43, 18, 0.08);
+    }
+
+    .summary-card .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .summary-card .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+
+    .data-area {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 16px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--primary-dark);
+    }
+
+    .section-title span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 920px;
+    }
+
+    th {
+      background: var(--soft-gold);
+      color: var(--primary-dark);
+      text-align: left;
+      font-size: 13px;
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px;
+      border-bottom: 1px solid #eee3d4;
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    tr:hover td {
+      background: #fffaf2;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f1e6d8;
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 700;
+      margin: 2px 4px 2px 0;
+    }
+
+    .empty {
+      display: none;
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 42px;
+      margin-bottom: 12px;
+    }
+
+    .loading {
+      display: block;
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    .error-box {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: var(--danger);
+      padding: 16px 18px;
+      border-radius: 18px;
+      margin-bottom: 18px;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    /* =========================
+       PRINT PREVIEW MODAL
+    ========================== */
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 1000;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      max-width: 980px;
+      margin: 24px auto;
+      background: #f8f4ec;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-topbar {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .modal-topbar h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .modal-topbar p {
+      margin: 4px 0 0;
+      color: #f8ead2;
+      font-size: 13px;
+    }
+
+    .close {
+      background: rgba(255, 255, 255, 0.16);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 18px 24px;
+      background: white;
+      border-top: 1px solid var(--border);
+    }
+
+    .print-wrapper {
+      padding: 24px;
+    }
+
+    /* =========================
+       PREMIUM PRINT SHEET
+    ========================== */
+
+    .print-sheet {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 22px;
+      background: white;
+      color: #111827;
+      position: relative;
+      overflow: hidden;
+      padding: 17mm 16mm 14mm;
+      box-shadow: 0 18px 45px rgba(75, 43, 18, 0.16);
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .print-sheet:last-child {
+      margin-bottom: 0;
+    }
+
+    .print-sheet::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-top: 9mm solid #6f411d;
+      pointer-events: none;
+    }
+
+    .print-sheet::after {
+      content: "";
+      position: absolute;
+      right: -38mm;
+      top: -38mm;
+      width: 100mm;
+      height: 100mm;
+      border-radius: 50%;
+      background: rgba(201, 154, 69, 0.12);
+      pointer-events: none;
+    }
+
+    .print-doc-header {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: start;
+      margin-top: 4mm;
+      padding-bottom: 8mm;
+      border-bottom: 1.8px solid #d8c3a5;
+    }
+
+    .print-kop-small {
+      font-size: 10.5pt;
+      letter-spacing: 0.9px;
+      font-weight: 800;
+      color: #7a4b20;
+      text-transform: uppercase;
+      margin-bottom: 2mm;
+    }
+
+    .print-title {
+      margin: 0;
+      font-size: 20pt;
+      line-height: 1.18;
+      color: #2f1c0c;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .print-subtitle {
+      margin-top: 2mm;
+      font-size: 10.5pt;
+      line-height: 1.55;
+      color: #57412a;
+    }
+
+    .print-code-box {
+      border: 1.5px solid #d8c3a5;
+      border-radius: 14px;
+      padding: 4mm 5mm;
+      min-width: 50mm;
+      background: #fffaf2;
+      text-align: right;
+    }
+
+    .print-code-box .label {
+      font-size: 8.5pt;
+      color: #7c6a56;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 1mm;
+      font-weight: 700;
+    }
+
+    .print-code-box .value {
+      font-size: 12pt;
+      color: #2f1c0c;
+      font-weight: 900;
+    }
+
+    .print-identity {
+      position: relative;
+      z-index: 1;
+      margin-top: 7mm;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3.5mm;
+    }
+
+    .print-id-item {
+      border: 1px solid #e1d2bd;
+      border-radius: 12px;
+      padding: 3.5mm;
+      background: #fffdf9;
+      min-height: 23mm;
+    }
+
+    .print-id-item .label {
+      font-size: 8.5pt;
+      color: #7c6a56;
+      margin-bottom: 1.2mm;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .print-id-item .value {
+      font-size: 11pt;
+      line-height: 1.35;
+      font-weight: 800;
+      color: #2f1c0c;
+    }
+
+    .print-section {
+      position: relative;
+      z-index: 1;
+      margin-top: 6mm;
+      border: 1px solid #dfcfb9;
+      border-radius: 14px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .print-section-title {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      background: #fff6e5;
+      border-bottom: 1px solid #dfcfb9;
+      padding: 3.5mm 4mm;
+      color: #2f1c0c;
+      font-weight: 900;
+      font-size: 11.5pt;
+    }
+
+    .print-number {
+      width: 8mm;
+      height: 8mm;
+      border-radius: 50%;
+      background: #7a4b20;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9pt;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .print-section-body {
+      padding: 4mm 5mm;
+      font-size: 10.6pt;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      color: #1f2933;
+    }
+
+    .print-ujian-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2mm;
+      padding: 4mm 5mm;
+    }
+
+    .print-ujian-pill {
+      border: 1px solid #d8c3a5;
+      background: #fffaf2;
+      color: #2f1c0c;
+      border-radius: 999px;
+      padding: 2.2mm 4mm;
+      font-size: 10pt;
+      font-weight: 800;
+    }
+
+    .print-signature {
+      position: relative;
+      z-index: 1;
+      margin-top: 8mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16mm;
+      align-items: end;
+    }
+
+    .print-note {
+      border-left: 4px solid #c99a45;
+      background: #fffaf2;
+      padding: 4mm;
+      border-radius: 10px;
+      font-size: 9.5pt;
+      line-height: 1.55;
+      color: #57412a;
+    }
+
+    .signature-box {
+      text-align: center;
+      font-size: 10pt;
+      color: #2f1c0c;
+    }
+
+    .signature-space {
+      height: 18mm;
+    }
+
+    .signature-name {
+      font-weight: 900;
+      border-top: 1px solid #6b5a46;
+      padding-top: 2mm;
+    }
+
+    .print-footer {
+      position: absolute;
+      left: 16mm;
+      right: 16mm;
+      bottom: 8mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #eadcc9;
+      padding-top: 3mm;
+      font-size: 8.5pt;
+      color: #7c6a56;
+    }
+
+    @media (max-width: 900px) {
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .print-sheet {
+        width: 100%;
+        min-height: auto;
+        padding: 28px;
+      }
+
+      .print-identity {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 20px 12px;
+      }
+
+      .header {
+        padding: 26px 22px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .section-title {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .modal-actions {
+        flex-direction: column;
+      }
+
+      .print-doc-header {
+        grid-template-columns: 1fr;
+      }
+
+      .print-code-box {
+        text-align: left;
+      }
+
+      .print-identity {
+        grid-template-columns: 1fr;
+      }
+
+      .print-signature {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    @media print {
+      html,
+      body {
+        width: 210mm;
+        background: white;
+        padding: 0;
+        margin: 0;
+      }
+
+      body * {
+        visibility: hidden !important;
+      }
+
+      #printArea,
+      #printArea * {
+        visibility: visible !important;
+      }
+
+      #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 210mm;
+        padding: 0;
+        margin: 0;
+        background: white;
+      }
+
+      .modal {
+        display: block !important;
+        position: static;
+        background: white;
+        padding: 0;
+        overflow: visible;
+      }
+
+      .modal-content {
+        width: 210mm;
+        max-width: 210mm;
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
+        background: white;
+      }
+
+      .modal-topbar,
+      .modal-actions {
+        display: none !important;
+      }
+
+      .print-wrapper {
+        padding: 0;
+      }
+
+      .print-sheet {
+        width: 210mm;
+        height: 297mm;
+        min-height: 297mm;
+        max-height: 297mm;
+        margin: 0;
+        box-shadow: none;
+        page-break-after: always;
+        break-after: page;
+        overflow: hidden;
+      }
+
+      .print-sheet:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+
+      .print-section {
+        break-inside: avoid;
+      }
+
+      .print-footer {
+        position: absolute;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="badge">PESANTREN CAHAYA FAJRUL ISLAM</div>
+      <h1>Data Persiapan Ujian Akhir Semester</h1>
+      <p>
+        Halaman ini digunakan untuk melihat, memeriksa, dan mencetak data persiapan UAS
+        yang telah dikirim oleh guru mapel pada Poin A: Mendesak.
+      </p>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="Cari nama guru, mapel, kelas, atau isi materi..." />
+
+      <select id="filterKelas">
+        <option value="">Semua Kelas/Jenjang</option>
+        <option>Kelas 1 Wustho</option>
+        <option>Kelas 2 Wustho</option>
+        <option>Kelas 3 Wustho</option>
+        <option>Kelas 4 Ulya</option>
+        <option>Kelas 5 Ulya</option>
+        <option>Kelas 6 Ulya</option>
+        <option>Gabungan Beberapa Kelas</option>
+      </select>
+
+      <select id="filterUjian">
+        <option value="">Semua Jenis Ujian</option>
+        <option>Ujian Lisan</option>
+        <option>Ujian Tulis</option>
+        <option>Ujian Praktik</option>
+        <option>Ujian Karya Tulis</option>
+      </select>
+
+      <button class="btn-secondary" onclick="muatData()">Refresh</button>
+      <button class="btn-primary" onclick="cetakSemua()">Cetak Data Tampil</button>
+    </div>
+
+    <div class="summary">
+      <div class="summary-card">
+        <div class="label">Total Pengiriman</div>
+        <div class="value" id="totalData">0</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Jumlah Guru</div>
+        <div class="value" id="totalGuru">0</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Jumlah Mapel</div>
+        <div class="value" id="totalMapel">0</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Data Tampil</div>
+        <div class="value" id="totalTampil">0</div>
+      </div>
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <div class="data-area">
+      <div class="section-title">
+        <div>
+          <h2>Daftar Data Terkirim</h2>
+          <span>Data diambil langsung dari Firebase Realtime Database</span>
+        </div>
+      </div>
+
+      <div class="loading" id="loading">Memuat data dari Firebase...</div>
+
+      <div class="empty" id="emptyState">
+        <div class="empty-icon">📭</div>
+        <strong>Belum ada data yang cocok.</strong>
+        <p>Silakan cek kembali filter pencarian atau pastikan data sudah dikirim.</p>
+      </div>
+
+      <div class="table-wrap" id="tableWrap" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Guru</th>
+              <th>Mapel</th>
+              <th>Kelas/Jenjang</th>
+              <th>Jenis Ujian</th>
+              <th>Tanggal Isi</th>
+              <th>Waktu Kirim</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="dataBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cetak -->
+  <div class="modal" id="detailModal">
+    <div class="modal-content">
+      <div class="modal-topbar">
+        <div>
+          <h3>Preview Cetak</h3>
+          <p>Setiap input akan dicetak sebagai 1 halaman A4.</p>
+        </div>
+        <button class="close" onclick="tutupModal()">×</button>
+      </div>
+
+      <div class="print-wrapper" id="printArea"></div>
+
+      <div class="modal-actions">
+        <button class="btn-outline" onclick="tutupModal()">Tutup</button>
+        <button class="btn-primary" onclick="window.print()">Cetak / Simpan PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================
+    // KONFIGURASI FIREBASE
+    // =========================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+      projectId: "absensi-santri-fajrul-islam",
+      appId: "1:739928369926:web:7e95375c3ddba0f584cdd07"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const database = firebase.database();
+    const DB_PATH = "persiapan_uas_guru_mapel/poinA";
+
+    let semuaData = [];
+    let dataTampil = [];
+
+    const searchInput = document.getElementById("searchInput");
+    const filterKelas = document.getElementById("filterKelas");
+    const filterUjian = document.getElementById("filterUjian");
+
+    searchInput.addEventListener("input", tampilkanData);
+    filterKelas.addEventListener("change", tampilkanData);
+    filterUjian.addEventListener("change", tampilkanData);
+
+    window.addEventListener("DOMContentLoaded", muatData);
+
+    // =========================================================
+    // MUAT DATA FIREBASE
+    // =========================================================
+    function muatData() {
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("tableWrap").style.display = "none";
+      document.getElementById("emptyState").style.display = "none";
+      document.getElementById("errorBox").style.display = "none";
+
+      database.ref(DB_PATH).once("value")
+        .then(snapshot => {
+          const raw = snapshot.val() || {};
+
+          semuaData = Object.keys(raw).map(key => ({
+            firebaseKey: key,
+            ...raw[key]
+          }));
+
+          semuaData.sort((a, b) => {
+            const kelasA = (a.kelas || "").localeCompare(b.kelas || "");
+            if (kelasA !== 0) return kelasA;
+
+            const mapelA = (a.mapel || "").localeCompare(b.mapel || "");
+            if (mapelA !== 0) return mapelA;
+
+            const waktuA = new Date(a.createdAt || a.tanggalIsi || 0).getTime();
+            const waktuB = new Date(b.createdAt || b.tanggalIsi || 0).getTime();
+            return waktuB - waktuA;
+          });
+
+          updateRingkasan();
+          tampilkanData();
+        })
+        .catch(error => {
+          console.error(error);
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("errorBox").style.display = "block";
+          document.getElementById("errorBox").textContent =
+            "❌ Gagal membaca data: " + (error.message || "Terjadi kesalahan.");
+        });
+    }
+
+    // =========================================================
+    // TAMPILKAN DATA
+    // =========================================================
+    function tampilkanData() {
+      const keyword = searchInput.value.toLowerCase().trim();
+      const kelasDipilih = filterKelas.value;
+      const ujianDipilih = filterUjian.value;
+
+      dataTampil = semuaData.filter(item => {
+        const gabunganTeks = [
+          item.namaGuru,
+          item.mapel,
+          item.kelas,
+          item.tanggalIsi,
+          item.babHafalan,
+          item.batasanMateri,
+          Array.isArray(item.jenisUjian) ? item.jenisUjian.join(" ") : ""
+        ].join(" ").toLowerCase();
+
+        const cocokKeyword = !keyword || gabunganTeks.includes(keyword);
+        const cocokKelas = !kelasDipilih || item.kelas === kelasDipilih;
+        const cocokUjian =
+          !ujianDipilih ||
+          (Array.isArray(item.jenisUjian) && item.jenisUjian.includes(ujianDipilih));
+
+        return cocokKeyword && cocokKelas && cocokUjian;
+      });
+
+      const tbody = document.getElementById("dataBody");
+      tbody.innerHTML = "";
+
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("totalTampil").textContent = dataTampil.length;
+
+      if (!dataTampil.length) {
+        document.getElementById("tableWrap").style.display = "none";
+        document.getElementById("emptyState").style.display = "block";
+        return;
+      }
+
+      document.getElementById("emptyState").style.display = "none";
+      document.getElementById("tableWrap").style.display = "block";
+
+      dataTampil.forEach((item, index) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td><strong>${escapeHTML(item.namaGuru || "-")}</strong></td>
+          <td>${escapeHTML(item.mapel || "-")}</td>
+          <td>${escapeHTML(item.kelas || "-")}</td>
+          <td>${renderJenisUjian(item.jenisUjian)}</td>
+          <td>${formatTanggal(item.tanggalIsi)}</td>
+          <td>${escapeHTML(item.createdAtText || formatTanggalJam(item.createdAt) || "-")}</td>
+          <td>
+            <button class="btn-outline" onclick="lihatDetail('${item.firebaseKey}')">
+              Detail / Cetak
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // =========================================================
+    // RINGKASAN
+    // =========================================================
+    function updateRingkasan() {
+      const guruSet = new Set(
+        semuaData.map(item => (item.namaGuru || "").trim().toLowerCase()).filter(Boolean)
+      );
+
+      const mapelSet = new Set(
+        semuaData.map(item => (item.mapel || "").trim().toLowerCase()).filter(Boolean)
+      );
+
+      document.getElementById("totalData").textContent = semuaData.length;
+      document.getElementById("totalGuru").textContent = guruSet.size;
+      document.getElementById("totalMapel").textContent = mapelSet.size;
+      document.getElementById("totalTampil").textContent = semuaData.length;
+    }
+
+    // =========================================================
+    // DETAIL / CETAK
+    // =========================================================
+    function lihatDetail(firebaseKey) {
+      const item = semuaData.find(data => data.firebaseKey === firebaseKey);
+
+      if (!item) {
+        alert("Data tidak ditemukan.");
+        return;
+      }
+
+      isiPrintArea([item]);
+      bukaModal();
+    }
+
+    function cetakSemua() {
+      if (!dataTampil.length) {
+        alert("Tidak ada data yang bisa dicetak.");
+        return;
+      }
+
+      isiPrintArea(dataTampil);
+      bukaModal();
+
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    }
+
+    function bukaModal() {
+      document.getElementById("detailModal").style.display = "block";
+    }
+
+    function tutupModal() {
+      document.getElementById("detailModal").style.display = "none";
+    }
+
+    window.addEventListener("click", function (event) {
+      const modal = document.getElementById("detailModal");
+      if (event.target === modal) {
+        tutupModal();
+      }
+    });
+
+    // =========================================================
+    // ISI AREA CETAK
+    // =========================================================
+    function isiPrintArea(dataArray) {
+      const printArea = document.getElementById("printArea");
+
+      printArea.innerHTML = dataArray.map((item, index) => {
+        const nomorDokumen = buatNomorDokumen(item, index + 1);
+
+        return `
+          <section class="print-sheet">
+            <div class="print-doc-header">
+              <div>
+                <div class="print-kop-small">Pesantren Cahaya Fajrul Islam</div>
+                <h1 class="print-title">Persiapan Ujian Akhir Semester</h1>
+                <div class="print-subtitle">
+                  Poin A: Mendesak — Guru Mapel<br>
+                  Tahun Ajaran 2025/2026
+                </div>
+              </div>
+
+              <div class="print-code-box">
+                <div class="label">Kode Dokumen</div>
+                <div class="value">${escapeHTML(nomorDokumen)}</div>
+              </div>
+            </div>
+
+            <div class="print-identity">
+              <div class="print-id-item">
+                <div class="label">Nama Guru</div>
+                <div class="value">${escapeHTML(item.namaGuru || "-")}</div>
+              </div>
+
+              <div class="print-id-item">
+                <div class="label">Mata Pelajaran</div>
+                <div class="value">${escapeHTML(item.mapel || "-")}</div>
+              </div>
+
+              <div class="print-id-item">
+                <div class="label">Kelas/Jenjang</div>
+                <div class="value">${escapeHTML(item.kelas || "-")}</div>
+              </div>
+
+              <div class="print-id-item">
+                <div class="label">Tanggal Pengisian</div>
+                <div class="value">${formatTanggal(item.tanggalIsi)}</div>
+              </div>
+            </div>
+
+            <div class="print-section">
+              <div class="print-section-title">
+                <span class="print-number">1</span>
+                Bab-bab Minimal yang Wajib Dihafal Santri
+              </div>
+              <div class="print-section-body">${escapeHTML(item.babHafalan || "-")}</div>
+            </div>
+
+            <div class="print-section">
+              <div class="print-section-title">
+                <span class="print-number">2</span>
+                Bab-bab atau Batasan Materi yang Akan Diujikan
+              </div>
+              <div class="print-section-body">${escapeHTML(item.batasanMateri || "-")}</div>
+            </div>
+
+            <div class="print-section">
+              <div class="print-section-title">
+                <span class="print-number">3</span>
+                Jenis Ujian yang Akan Dilaksanakan
+              </div>
+              <div class="print-ujian-list">
+                ${renderJenisUjianCetak(item.jenisUjian)}
+              </div>
+            </div>
+
+            <div class="print-signature">
+              <div class="print-note">
+                <strong>Catatan Panitia:</strong><br>
+                Dokumen ini merupakan data awal persiapan guru mapel untuk pelaksanaan Ujian Akhir Semester.
+                Soal lengkap ujian tulis, lisan, praktik, atau karya tulis disiapkan pada Poin B.
+              </div>
+
+              <div class="signature-box">
+                <div>Guru Mapel</div>
+                <div class="signature-space"></div>
+                <div class="signature-name">${escapeHTML(item.namaGuru || "................................")}</div>
+              </div>
+            </div>
+
+            <div class="print-footer">
+              <div>Dicetak dari Sistem Persiapan UAS Pesantren Cahaya Fajrul Islam</div>
+              <div>${escapeHTML(item.createdAtText || formatTanggalJam(item.createdAt) || "-")}</div>
+            </div>
+          </section>
+        `;
+      }).join("");
+    }
+
+    // =========================================================
+    // HELPER
+    // =========================================================
+    function buatNomorDokumen(item, nomor) {
+      const kelas = (item.kelas || "Kelas")
+        .replaceAll(" ", "")
+        .replaceAll("/", "-")
+        .toUpperCase();
+
+      const mapel = (item.mapel || "Mapel")
+        .replaceAll(" ", "-")
+        .replaceAll("/", "-")
+        .toUpperCase();
+
+      return `UAS-A/${kelas}/${mapel}/${String(nomor).padStart(3, "0")}`;
+    }
+
+    function renderJenisUjian(jenisUjian) {
+      if (!Array.isArray(jenisUjian) || !jenisUjian.length) {
+        return "-";
+      }
+
+      return jenisUjian.map(item => `<span class="pill">${escapeHTML(item)}</span>`).join("");
+    }
+
+    function renderJenisUjianCetak(jenisUjian) {
+      if (!Array.isArray(jenisUjian) || !jenisUjian.length) {
+        return `<span class="print-ujian-pill">-</span>`;
+      }
+
+      return jenisUjian
+        .map(item => `<span class="print-ujian-pill">${escapeHTML(item)}</span>`)
+        .join("");
+    }
+
+    function formatTanggal(tanggal) {
+      if (!tanggal) return "-";
+
+      const opsi = {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      };
+
+      return new Date(tanggal).toLocaleDateString("id-ID", opsi);
+    }
+
+    function formatTanggalJam(value) {
+      if (!value) return "-";
+
+      const tanggal = new Date(value);
+
+      if (isNaN(tanggal.getTime())) return "-";
+
+      return tanggal.toLocaleString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function escapeHTML(text) {
+      if (text === null || text === undefined || text === "") return "-";
+
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;")
+        .replaceAll("\n", "<br>");
+    }
+  </script>
+</body>
+</html>
