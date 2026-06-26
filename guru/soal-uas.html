@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Bank Soal UAS | Pesantren Cahaya Fajrul Islam</title>
+
+  <link rel="preload" href="../assets/logo-pesantren.png" as="image">
+
+  <!-- Firebase Compat SDK -->
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #7a4b20;
+      --primary-dark: #47270f;
+      --gold: #c99a45;
+      --gold-soft: #fff6e5;
+      --text: #1f2937;
+      --muted: #64748b;
+      --border: #e5d8c5;
+      --danger: #b91c1c;
+      --shadow: 0 18px 45px rgba(75, 43, 18, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(201, 154, 69, 0.17), transparent 30%),
+        linear-gradient(135deg, #f7f3ec 0%, #fffaf3 100%);
+    }
+
+    button,
+    input,
+    select {
+      font-family: inherit;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .container {
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 28px 16px 50px;
+    }
+
+    /* =========================================================
+       HEADER UTAMA
+    ========================================================= */
+    .header {
+      position: relative;
+      overflow: hidden;
+      border-radius: 30px;
+      padding: 34px;
+      margin-bottom: 24px;
+      color: white;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      box-shadow: var(--shadow);
+    }
+
+    .header::before,
+    .header::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .header::before {
+      width: 260px;
+      height: 260px;
+      top: -110px;
+      right: -80px;
+    }
+
+    .header::after {
+      width: 150px;
+      height: 150px;
+      right: 150px;
+      bottom: -100px;
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.13);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 31px;
+      line-height: 1.25;
+    }
+
+    .header p {
+      max-width: 720px;
+      margin: 10px 0 0;
+      color: #faead0;
+      line-height: 1.7;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* =========================================================
+       BUTTON
+    ========================================================= */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: 0.2s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      box-shadow: 0 10px 20px rgba(75, 43, 18, 0.18);
+    }
+
+    .btn-light {
+      color: var(--primary-dark);
+      background: white;
+    }
+
+    .btn-light:hover {
+      background: var(--gold-soft);
+    }
+
+    .btn-outline {
+      color: var(--primary);
+      border: 1px solid var(--border);
+      background: white;
+    }
+
+    .btn-outline:hover {
+      background: var(--gold-soft);
+    }
+
+    /* =========================================================
+       CARD / SECTION
+    ========================================================= */
+    .filter-card,
+    .list-card {
+      padding: 24px;
+      margin-bottom: 22px;
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+    }
+
+    .section-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-icon {
+      display: grid;
+      width: 45px;
+      height: 45px;
+      place-items: center;
+      border-radius: 15px;
+      color: white;
+      background: linear-gradient(135deg, var(--gold), var(--primary));
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 21px;
+    }
+
+    .section-title span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* =========================================================
+       FILTER
+    ========================================================= */
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      color: #3f2d1d;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid #ddcdb8;
+      border-radius: 14px;
+      padding: 12px 13px;
+      outline: none;
+      color: var(--text);
+      background: #fffdf9;
+      font-size: 14px;
+      transition: 0.2s ease;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--gold);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(201, 154, 69, 0.14);
+    }
+
+    .filter-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* =========================================================
+       SUMMARY
+    ========================================================= */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .summary-card {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: white;
+      box-shadow: 0 10px 25px rgba(75, 43, 18, 0.07);
+    }
+
+    .summary-card span {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .summary-card strong {
+      display: block;
+      color: var(--primary-dark);
+      font-size: 26px;
+    }
+
+    /* =========================================================
+       LIST SOAL
+    ========================================================= */
+    .loading,
+    .empty-state,
+    .error-state {
+      padding: 55px 20px;
+      border: 1px dashed var(--border);
+      border-radius: 20px;
+      color: var(--muted);
+      background: #fffaf3;
+      text-align: center;
+    }
+
+    .error-state {
+      color: var(--danger);
+      border-color: #fecaca;
+      background: #fff5f5;
+    }
+
+    .loading-icon,
+    .empty-icon,
+    .error-icon {
+      display: block;
+      margin-bottom: 12px;
+      font-size: 42px;
+    }
+
+    .soal-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .soal-item {
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: linear-gradient(180deg, #ffffff 0%, #fffaf3 100%);
+      transition: 0.2s ease;
+    }
+
+    .soal-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 28px rgba(75, 43, 18, 0.1);
+    }
+
+    .soal-item-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .soal-number {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 14px;
+      color: white;
+      background: linear-gradient(135deg, var(--gold), var(--primary));
+      font-weight: 900;
+    }
+
+    .soal-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .soal-mapel {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 19px;
+      line-height: 1.35;
+    }
+
+    .soal-meta {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      padding: 7px 11px;
+      border: 1px solid #f0d7a8;
+      border-radius: 999px;
+      color: #80591d;
+      background: var(--gold-soft);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .soal-preview {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--gold);
+      border-radius: 0 14px 14px 0;
+      color: #475569;
+      background: #fffdf8;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .soal-item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 17px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* =========================================================
+       MODAL DETAIL
+    ========================================================= */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      inset: 0;
+      overflow-y: auto;
+      padding: 22px;
+      background: rgba(39, 24, 12, 0.58);
+    }
+
+    .modal.show {
+      display: block;
+    }
+
+    .modal-box {
+      max-width: 950px;
+      margin: 20px auto;
+      overflow: hidden;
+      border-radius: 26px;
+      background: white;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 20px 24px;
+      color: white;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .close-modal {
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 12px;
+      cursor: pointer;
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      font-size: 22px;
+    }
+
+    .modal-body {
+      padding: 25px;
+    }
+
+    .detail-identitas {
+      padding: 18px;
+      margin-bottom: 20px;
+      border: 1px solid #efd8ad;
+      border-radius: 18px;
+      background: var(--gold-soft);
+      line-height: 1.75;
+    }
+
+    .detail-identitas strong {
+      color: var(--primary-dark);
+    }
+
+    .jenis-block {
+      overflow: hidden;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+
+    .jenis-block-title {
+      padding: 13px 17px;
+      border-bottom: 1px solid var(--border);
+      color: var(--primary-dark);
+      background: linear-gradient(135deg, #fff9ef, #f8ead8);
+      font-weight: 900;
+    }
+
+    .jenis-block-content {
+      padding: 17px;
+      color: #334155;
+      white-space: pre-wrap;
+      line-height: 1.75;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 18px 24px;
+      border-top: 1px solid var(--border);
+      background: #fffdf9;
+    }
+
+    /* =========================================================
+       PRINT AREA
+    ========================================================= */
+    #printArea {
+      display: none;
+    }
+
+    #printArea.prepare-measure {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: -30000px;
+      width: 194mm;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .print-document {
+      width: 194mm;
+      margin: 0;
+      padding: 0;
+      color: #000;
+    }
+
+    .print-sheet {
+      width: 194mm;
+      margin: 0;
+      padding: 0;
+      break-after: page;
+      page-break-after: always;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .print-sheet:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+
+    .print-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 5px;
+  margin-bottom: 7px;
+  border-bottom: 1.5px solid #47270f;
+}
+
+.print-logo {
+  display: block;
+  width: 180px;
+  max-width: 100%;
+  height: auto;
+  max-height: 46px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.print-header-right {
+  flex: 0 0 auto;
+  text-align: right;
+  font-size: 8px;
+  line-height: 1.3;
+}
+
+.print-doc-title {
+  margin: 6px 0 7px;
+  text-align: center;
+}
+
+.print-doc-title h2 {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.print-identitas {
+  width: 100%;
+  margin-bottom: 7px;
+  border-collapse: collapse;
+  font-size: 8.5px;
+  line-height: 1.15;
+}
+
+.print-identitas td {
+  padding: 3px 5px;
+  border: 1px solid #555;
+  vertical-align: top;
+}
+
+.print-identitas td:first-child {
+  width: 125px;
+  background: #f3f3f3;
+  font-weight: 800;
+}
+
+.print-soal-block {
+  margin-bottom: 6px;
+}
+
+.print-soal-title {
+  padding: 4px 7px;
+  border: 1px solid #333;
+  background: #eeeeee;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.15px;
+}
+
+.print-soal-text {
+  min-height: 0;
+  padding: 7px 9px;
+  border: 1px solid #333;
+  border-top: 0;
+
+  column-count: 2;
+  column-gap: 16px;
+  column-rule: 1px solid #c8c8c8;
+  column-fill: balance;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-align: justify;
+
+  font-size: 8.7px;
+  line-height: 1.3;
+}
+
+.print-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid #999;
+  color: #555;
+  font-size: 7px;
+  line-height: 1.15;
+}
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+    @media (max-width: 850px) {
+      .header-content,
+      .section-top,
+      .soal-item-top {
+        flex-direction: column;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
+      }
+
+      .filter-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .container {
+        padding: 16px 12px 36px;
+      }
+
+      .header,
+      .filter-card,
+      .list-card {
+        padding: 20px;
+        border-radius: 22px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-actions,
+      .soal-item-actions,
+      .modal-actions {
+        justify-content: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .modal {
+        padding: 10px;
+      }
+
+      .modal-body {
+        padding: 18px;
+      }
+    }
+
+    /* =========================================================
+       PRINT
+    ========================================================= */
+    @media print {
+      @page {
+        size: A4;
+        margin: 8mm;
+      }
+
+      body {
+        background: white !important;
+      }
+
+      .container,
+      .modal {
+        display: none !important;
+      }
+
+      #printArea {
+        display: block !important;
+      }
+
+      #printArea.prepare-measure {
+        position: static !important;
+        visibility: visible !important;
+      }
+
+      .print-document {
+        width: 194mm;
+        margin: 0;
+        padding: 0;
+      }
+
+      .print-sheet {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <main class="container">
+
+```
+<section class="header">
+  <div class="header-content">
+    <div>
+      <div class="badge">📚 PESANTREN CAHAYA FAJRUL ISLAM</div>
+
+      <h1>Bank Soal Ujian Akhir Semester</h1>
+
+      <p>
+        Halaman untuk melihat, mencari, membuka, dan mencetak soal UAS
+        yang telah dikirim oleh guru mata pelajaran.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-light" id="btnCetakHasil">
+        🖨️ Cetak Soal Ujian Tulis
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="filter-card">
+  <div class="section-top">
+    <div class="section-title">
+      <div class="section-icon">⌕</div>
+
+      <div>
+        <h2>Filter & Pencarian Soal</h2>
+        <span>Gunakan filter untuk menemukan naskah soal tertentu.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-grid">
+    <div class="field">
+      <label for="searchInput">Cari Guru, Mapel, atau Kelas</label>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Contoh: Fiqih, Ust. Ahmad, Kelas 3..."
+      />
+    </div>
+
+    <div class="field">
+      <label for="filterMapel">Mata Pelajaran</label>
+      <select id="filterMapel">
+        <option value="">Semua Mata Pelajaran</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="filterKelas">Kelas/Jenjang</label>
+      <select id="filterKelas">
+        <option value="">Semua Kelas/Jenjang</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="filterJenis">Jenis Ujian</label>
+      <select id="filterJenis">
+        <option value="">Semua Jenis Ujian</option>
+        <option value="Ujian Lisan">Ujian Lisan</option>
+        <option value="Ujian Tulis">Ujian Tulis</option>
+        <option value="Ujian Praktek">Ujian Praktek</option>
+        <option value="Ujian Karya Tulis">Ujian Karya Tulis</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="filter-actions">
+    <button class="btn btn-outline" id="btnResetFilter">
+      ↻ Reset Filter
+    </button>
+
+    <button class="btn btn-primary" id="btnCetakHasilBawah">
+      🖨️ Cetak Soal Ujian Tulis
+    </button>
+  </div>
+</section>
+
+<section class="summary-grid">
+  <div class="summary-card">
+    <span>Total Soal Masuk</span>
+    <strong id="totalSoal">0</strong>
+  </div>
+
+  <div class="summary-card">
+    <span>Soal Ditampilkan</span>
+    <strong id="totalDitampilkan">0</strong>
+  </div>
+
+  <div class="summary-card">
+    <span>Jumlah Mata Pelajaran</span>
+    <strong id="totalMapel">0</strong>
+  </div>
+</section>
+
+<section class="list-card">
+  <div class="section-top">
+    <div class="section-title">
+      <div class="section-icon">📝</div>
+
+      <div>
+        <h2>Daftar Soal UAS</h2>
+        <span>
+          Detail menampilkan seluruh jenis soal. Cetak hanya menampilkan soal ujian tulis.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div id="soalContainer">
+    <div class="loading">
+      <span class="loading-icon">⏳</span>
+      Memuat data soal dari Firebase...
+    </div>
+  </div>
+</section>
+```
+
+  </main>
+
+  <!-- MODAL DETAIL -->
+
+  <div id="modalDetail" class="modal">
+    <div class="modal-box">
+
+```
+  <div class="modal-header">
+    <h2>Detail Naskah Soal UAS</h2>
+    <button class="close-modal" id="btnTutupModal" title="Tutup">×</button>
+  </div>
+
+  <div id="modalContent" class="modal-body"></div>
+
+  <div class="modal-actions">
+    <button class="btn btn-outline" id="btnTutupModalBawah">
+      Tutup
+    </button>
+
+    <button class="btn btn-primary" id="btnCetakDetail">
+      🖨️ Cetak Soal Ujian Tulis
+    </button>
+  </div>
+
+</div>
+```
+
+  </div>
+
+  <!-- KHUSUS UNTUK CETAK -->
+
+  <div id="printArea"></div>
+
+  <script>
+    // =========================================================
+    // KONFIGURASI FIREBASE
+    // =========================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+      projectId: "absensi-santri-fajrul-islam",
+      appId: "1:739928369926:web:7e95375c3ddba0f584cdd07"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const database = firebase.database();
+    const DB_PATH = "persiapan_uas_guru_mapel/poinB";
+
+    // Lebar dan tinggi area cetak A4 setelah margin 8 mm.
+    const PRINT_WIDTH_MM = 194;
+    const PRINT_HEIGHT_PX = 1062;
+
+    // =========================================================
+    // ELEMENT
+    // =========================================================
+    const soalContainer = document.getElementById("soalContainer");
+    const searchInput = document.getElementById("searchInput");
+    const filterMapel = document.getElementById("filterMapel");
+    const filterKelas = document.getElementById("filterKelas");
+    const filterJenis = document.getElementById("filterJenis");
+    const modalDetail = document.getElementById("modalDetail");
+    const modalContent = document.getElementById("modalContent");
+    const btnCetakDetail = document.getElementById("btnCetakDetail");
+    const printArea = document.getElementById("printArea");
+
+    let semuaSoal = [];
+
+    // =========================================================
+    // LOAD DATA FIREBASE
+    // =========================================================
+    database.ref(DB_PATH).on(
+      "value",
+      function(snapshot) {
+        const data = snapshot.val();
+
+        semuaSoal = data
+          ? Object.entries(data).map(([key, value]) => ({
+              id: value.id || key,
+              ...value
+            }))
+          : [];
+
+        semuaSoal.sort((a, b) => {
+          const tanggalA = new Date(a.createdAt || a.tanggalIsi || 0).getTime();
+          const tanggalB = new Date(b.createdAt || b.tanggalIsi || 0).getTime();
+          return tanggalB - tanggalA;
+        });
+
+        isiFilterDinamis();
+        renderDaftarSoal();
+        updateSummary();
+      },
+      function(error) {
+        console.error("Gagal mengambil data soal:", error);
+
+        soalContainer.innerHTML = `
+          <div class="error-state">
+            <span class="error-icon">⚠️</span>
+            <strong>Data soal gagal dimuat.</strong><br>
+            ${escapeHTML(error.message || "Silakan periksa koneksi internet atau aturan Firebase.")}
+          </div>
+        `;
+      }
+    );
+
+    // =========================================================
+    // EVENT FILTER
+    // =========================================================
+    searchInput.addEventListener("input", renderDaftarSoal);
+    filterMapel.addEventListener("change", renderDaftarSoal);
+    filterKelas.addEventListener("change", renderDaftarSoal);
+    filterJenis.addEventListener("change", renderDaftarSoal);
+
+    document.getElementById("btnResetFilter").addEventListener("click", resetFilter);
+    document.getElementById("btnCetakHasil").addEventListener("click", cetakSemuaSoalTulis);
+    document.getElementById("btnCetakHasilBawah").addEventListener("click", cetakSemuaSoalTulis);
+
+    document.getElementById("btnTutupModal").addEventListener("click", tutupModal);
+    document.getElementById("btnTutupModalBawah").addEventListener("click", tutupModal);
+
+    soalContainer.addEventListener("click", function(event) {
+      const tombolDetail = event.target.closest("[data-action='detail']");
+      const tombolCetak = event.target.closest("[data-action='print']");
+
+      if (tombolDetail) {
+        lihatDetail(tombolDetail.dataset.id);
+      }
+
+      if (tombolCetak) {
+        cetakSatuSoalTulis(tombolCetak.dataset.id);
+      }
+    });
+
+    // =========================================================
+    // FILTER DINAMIS
+    // =========================================================
+    function isiFilterDinamis() {
+      const mapelTerpilih = filterMapel.value;
+      const kelasTerpilih = filterKelas.value;
+
+      const daftarMapel = [...new Set(
+        semuaSoal.map(item => item.mapel).filter(Boolean)
+      )].sort();
+
+      const daftarKelas = [...new Set(
+        semuaSoal.map(item => item.kelas).filter(Boolean)
+      )].sort();
+
+      filterMapel.innerHTML = `
+        <option value="">Semua Mata Pelajaran</option>
+        ${daftarMapel.map(mapel => `
+          <option value="${escapeAttribute(mapel)}">${escapeHTML(mapel)}</option>
+        `).join("")}
+      `;
+
+      filterKelas.innerHTML = `
+        <option value="">Semua Kelas/Jenjang</option>
+        ${daftarKelas.map(kelas => `
+          <option value="${escapeAttribute(kelas)}">${escapeHTML(kelas)}</option>
+        `).join("")}
+      `;
+
+      filterMapel.value = daftarMapel.includes(mapelTerpilih) ? mapelTerpilih : "";
+      filterKelas.value = daftarKelas.includes(kelasTerpilih) ? kelasTerpilih : "";
+    }
+
+    // =========================================================
+    // FILTER DATA
+    // =========================================================
+    function getSoalTerfilter() {
+      const kataKunci = searchInput.value.trim().toLowerCase();
+      const mapel = filterMapel.value;
+      const kelas = filterKelas.value;
+      const jenis = filterJenis.value;
+
+      return semuaSoal.filter(item => {
+        const jenisUjian = getJenisUjian(item);
+
+        const gabunganTeks = [
+          item.namaGuru,
+          item.mapel,
+          item.kelas,
+          item.soalLisan,
+          item.soalTulis,
+          item.soalPraktek,
+          item.soalKaryaTulis,
+          item.catatanGuru
+        ].join(" ").toLowerCase();
+
+        const sesuaiKataKunci = !kataKunci || gabunganTeks.includes(kataKunci);
+        const sesuaiMapel = !mapel || item.mapel === mapel;
+        const sesuaiKelas = !kelas || item.kelas === kelas;
+        const sesuaiJenis = !jenis || jenisUjian.includes(jenis);
+
+        return sesuaiKataKunci && sesuaiMapel && sesuaiKelas && sesuaiJenis;
+      });
+    }
+
+    // =========================================================
+    // RENDER DAFTAR
+    // =========================================================
+    function renderDaftarSoal() {
+      const data = getSoalTerfilter();
+
+      if (!data.length) {
+        soalContainer.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-icon">📭</span>
+            <strong>Belum ada soal yang sesuai.</strong><br>
+            Coba ubah kata kunci atau filter pencarian.
+          </div>
+        `;
+
+        updateSummary();
+        return;
+      }
+
+      soalContainer.innerHTML = `
+        <div class="soal-list">
+          ${data.map((item, index) => renderSoalItem(item, index)).join("")}
+        </div>
+      `;
+
+      updateSummary();
+    }
+
+    function renderSoalItem(item, index) {
+      const jenisUjian = getJenisUjian(item);
+      const preview = ambilPreviewSoal(item);
+      const memilikiSoalTulis = adaIsi(item.soalTulis);
+
+      return `
+        <article class="soal-item">
+          <div class="soal-item-top">
+            <div class="soal-number">${index + 1}</div>
+
+            <div class="soal-main">
+              <h3 class="soal-mapel">
+                ${escapeHTML(item.mapel || "Mata Pelajaran Belum Diisi")}
+              </h3>
+
+              <div class="soal-meta">
+                <strong>Guru:</strong> ${escapeHTML(item.namaGuru || "-")}<br>
+                <strong>Kelas/Jenjang:</strong> ${escapeHTML(item.kelas || "-")}<br>
+                <strong>Tanggal Input:</strong> ${formatTanggal(item.tanggalIsi)}
+              </div>
+
+              <div class="chips">
+                ${
+                  jenisUjian.length
+                    ? jenisUjian.map(jenis => `
+                      <span class="chip">${escapeHTML(jenis)}</span>
+                    `).join("")
+                    : `<span class="chip">Belum ada jenis soal</span>`
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="soal-preview">${escapeHTML(preview)}</div>
+
+          <div class="soal-item-actions">
+            <button
+              class="btn btn-outline"
+              data-action="detail"
+              data-id="${escapeAttribute(item.id)}"
+            >
+              👁 Lihat Detail
+            </button>
+
+            <button
+              class="btn btn-primary"
+              data-action="print"
+              data-id="${escapeAttribute(item.id)}"
+              ${memilikiSoalTulis ? "" : "disabled"}
+              title="${memilikiSoalTulis ? "Cetak soal ujian tulis" : "Belum ada soal ujian tulis"}"
+            >
+              🖨️ Cetak Soal Tulis
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    // =========================================================
+    // DETAIL - MENAMPILKAN SEMUA JENIS UJIAN YANG TERISI
+    // =========================================================
+    function lihatDetail(id) {
+      const item = semuaSoal.find(soal => soal.id === id);
+
+      if (!item) {
+        alert("Data soal tidak ditemukan.");
+        return;
+      }
+
+      modalContent.innerHTML = renderDetailSoal(item);
+
+      btnCetakDetail.disabled = !adaIsi(item.soalTulis);
+
+      btnCetakDetail.onclick = function() {
+        cetakSatuSoalTulis(item.id);
+      };
+
+      modalDetail.classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
+
+    function tutupModal() {
+      modalDetail.classList.remove("show");
+      document.body.style.overflow = "";
+    }
+
+    function renderDetailSoal(item) {
+      const jenisUjian = getJenisUjian(item);
+
+      return `
+        <div class="detail-identitas">
+          <strong>Nama Guru:</strong> ${escapeHTML(item.namaGuru || "-")}<br>
+          <strong>Mata Pelajaran:</strong> ${escapeHTML(item.mapel || "-")}<br>
+          <strong>Kelas/Jenjang:</strong> ${escapeHTML(item.kelas || "-")}<br>
+          <strong>Tanggal Pengisian:</strong> ${formatTanggal(item.tanggalIsi)}<br>
+          <strong>Jenis Ujian Terisi:</strong> ${escapeHTML(jenisUjian.join(", ") || "-")}
+        </div>
+
+        ${renderJenisBlock("1. Soal Ujian Lisan", item.soalLisan)}
+        ${renderJenisBlock("2. Soal Ujian Tulis", item.soalTulis)}
+        ${renderJenisBlock("3. Soal Ujian Praktek", item.soalPraktek)}
+        ${renderJenisBlock("4. Soal Ujian Karya Tulis", item.soalKaryaTulis)}
+        ${renderJenisBlock("Catatan Tambahan Guru", item.catatanGuru)}
+      `;
+    }
+
+    function renderJenisBlock(judul, isi) {
+      if (!adaIsi(isi)) return "";
+
+      return `
+        <div class="jenis-block">
+          <div class="jenis-block-title">${escapeHTML(judul)}</div>
+          <div class="jenis-block-content">${escapeHTML(isi)}</div>
+        </div>
+      `;
+    }
+
+    // =========================================================
+    // CETAK - HANYA SOAL UJIAN TULIS
+    // =========================================================
+    async function cetakSatuSoalTulis(id) {
+      const item = semuaSoal.find(soal => soal.id === id);
+
+      if (!item) {
+        alert("Data soal tidak ditemukan.");
+        return;
+      }
+
+      if (!adaIsi(item.soalTulis)) {
+        alert("Soal ini belum memiliki isi Soal Ujian Tulis untuk dicetak.");
+        return;
+      }
+
+      tutupModal();
+      await prosesCetak([item]);
+    }
+
+    async function cetakSemuaSoalTulis() {
+      const data = getSoalTerfilter().filter(item => adaIsi(item.soalTulis));
+
+      if (!data.length) {
+        alert("Tidak ada Soal Ujian Tulis yang dapat dicetak berdasarkan filter saat ini.");
+        return;
+      }
+
+      await prosesCetak(data);
+    }
+
+    async function prosesCetak(data) {
+      isiAreaCetak(data);
+
+      printArea.classList.add("prepare-measure");
+
+      await tungguRender();
+      await tungguGambarCetak();
+
+      sesuaikanSemuaHalamanCetak();
+
+      printArea.classList.remove("prepare-measure");
+
+      setTimeout(() => {
+        window.print();
+      }, 180);
+    }
+
+    function isiAreaCetak(data) {
+      printArea.innerHTML = `
+        <div class="print-document">
+          ${data.map(item => renderPrintSheet(item)).join("")}
+        </div>
+      `;
+    }
+
+    function renderPrintSheet(item) {
+      return `
+        <section class="print-sheet">
+
+          <header class="print-header">
+            <div class="print-header-left">
+              <img
+                src="../assets/logo-pesantren.png"
+                alt="Logo Pesantren Cahaya Fajrul Islam"
+                class="print-logo"
+              >
+            </div>
+
+            <div class="print-header-right">
+              Ujian Akhir Semester<br>
+              Tahun Ajaran 2025/2026
+            </div>
+          </header>
+
+          <div class="print-doc-title">
+            <h2>Naskah Soal Ujian Tulis</h2>
+          </div>
+
+          <table class="print-identitas">
+            <tr>
+              <td>Nama Guru Mapel</td>
+              <td>${escapeHTML(item.namaGuru || "-")}</td>
+            </tr>
+
+            <tr>
+              <td>Mata Pelajaran</td>
+              <td>${escapeHTML(item.mapel || "-")}</td>
+            </tr>
+
+            <tr>
+              <td>Kelas/Jenjang</td>
+              <td>${escapeHTML(item.kelas || "-")}</td>
+            </tr>
+
+            
+          </table>
+
+          <div class="print-soal-block">
+            <div class="print-soal-title">SOAL UJIAN TULIS</div>
+            <div class="print-soal-text">${escapeHTML(item.soalTulis)}</div>
+          </div>
+
+          
+
+        </section>
+      `;
+    }
+
+    // =========================================================
+    // AGAR NASKAH SOAL DIUSAHAKAN MUAT SATU HALAMAN
+    // =========================================================
+    function sesuaikanSemuaHalamanCetak() {
+      const sheets = [...printArea.querySelectorAll(".print-sheet")];
+
+      sheets.forEach(sheet => {
+        sheet.style.zoom = "1";
+        sheet.style.width = `${PRINT_WIDTH_MM}mm`;
+      });
+
+      void printArea.offsetHeight;
+
+      sheets.forEach(sheet => {
+        const tinggiAsli = sheet.getBoundingClientRect().height;
+
+        if (tinggiAsli <= PRINT_HEIGHT_PX) return;
+
+        const skala = Math.max(
+          0.38,
+          Math.min(1, (PRINT_HEIGHT_PX / tinggiAsli) * 0.985)
+        );
+
+        sheet.style.zoom = skala;
+        sheet.style.width = `${(PRINT_WIDTH_MM / skala).toFixed(3)}mm`;
+      });
+    }
+
+    function tungguRender() {
+      return new Promise(resolve => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(resolve);
+        });
+      });
+    }
+
+    function tungguGambarCetak() {
+      const semuaGambar = [...printArea.querySelectorAll("img")];
+
+      return Promise.all(
+        semuaGambar.map(gambar => {
+          if (gambar.complete) {
+            return Promise.resolve();
+          }
+
+          return new Promise(resolve => {
+            gambar.onload = resolve;
+            gambar.onerror = resolve;
+          });
+        })
+      );
+    }
+
+    // =========================================================
+    // RESET / SUMMARY
+    // =========================================================
+    function resetFilter() {
+      searchInput.value = "";
+      filterMapel.value = "";
+      filterKelas.value = "";
+      filterJenis.value = "";
+
+      renderDaftarSoal();
+    }
+
+    function updateSummary() {
+      const hasilFilter = getSoalTerfilter();
+
+      const jumlahMapel = new Set(
+        semuaSoal.map(item => item.mapel).filter(Boolean)
+      ).size;
+
+      document.getElementById("totalSoal").textContent = semuaSoal.length;
+      document.getElementById("totalDitampilkan").textContent = hasilFilter.length;
+      document.getElementById("totalMapel").textContent = jumlahMapel;
+    }
+
+    // =========================================================
+    // UTILITAS
+    // =========================================================
+    function getJenisUjian(item) {
+      const jenis = [];
+
+      if (adaIsi(item.soalLisan)) jenis.push("Ujian Lisan");
+      if (adaIsi(item.soalTulis)) jenis.push("Ujian Tulis");
+      if (adaIsi(item.soalPraktek)) jenis.push("Ujian Praktek");
+      if (adaIsi(item.soalKaryaTulis)) jenis.push("Ujian Karya Tulis");
+
+      return jenis;
+    }
+
+    function ambilPreviewSoal(item) {
+      const sumberSoal = [
+        item.soalTulis,
+        item.soalLisan,
+        item.soalPraktek,
+        item.soalKaryaTulis
+      ].find(isi => adaIsi(isi));
+
+      if (!sumberSoal) {
+        return "Belum ada isi soal yang dapat ditampilkan.";
+      }
+
+      const teks = String(sumberSoal).trim();
+
+      return teks.length > 230
+        ? teks.substring(0, 230) + "..."
+        : teks;
+    }
+
+    function adaIsi(teks) {
+      return teks !== null &&
+        teks !== undefined &&
+        String(teks).trim() !== "";
+    }
+
+    function formatTanggal(tanggal) {
+      if (!tanggal) return "-";
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(tanggal)) {
+        const [tahun, bulan, hari] = tanggal.split("-").map(Number);
+        const date = new Date(tahun, bulan - 1, hari);
+
+        return date.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        });
+      }
+
+      const date = new Date(tanggal);
+
+      if (isNaN(date.getTime())) {
+        return String(tanggal);
+      }
+
+      return date.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function formatTanggalWaktu(tanggal) {
+      if (!tanggal) return "-";
+
+      const date = new Date(tanggal);
+
+      if (isNaN(date.getTime())) {
+        return String(tanggal);
+      }
+
+      return date.toLocaleString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function escapeHTML(text) {
+      if (text === null || text === undefined || text === "") {
+        return "-";
+      }
+
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(text) {
+      if (text === null || text === undefined) {
+        return "";
+      }
+
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    // Tutup modal saat klik area gelap
+    modalDetail.addEventListener("click", function(event) {
+      if (event.target === modalDetail) {
+        tutupModal();
+      }
+    });
+
+    // Tombol ESC
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "Escape") {
+        tutupModal();
+      }
+    });
+  </script>
+
+</body>
+</html>
