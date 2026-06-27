@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CAHAYA APP - Pantau Pengisian Asesmen Akhir Semester</title>
+
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+
+  <style>
+    :root {
+      --success: #059669;
+      --success-soft: #ecfdf5;
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --warning: #b45309;
+      --warning-soft: #fffbeb;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+    }
+
+    body { background: #f5f7fb; }
+
+    #loadingOverlay {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.92); backdrop-filter: blur(5px);
+      color: var(--navy-dark); transition: opacity .35s ease;
+    }
+    .loading-icon { font-size: 2.7rem; animation: pulseSoft 1.3s ease-in-out infinite alternate; }
+    @keyframes pulseSoft { from { transform: scale(.94); opacity:.65; } to { transform: scale(1.06); opacity:1; } }
+
+    .page-hero {
+      position: relative; overflow: hidden; padding: 30px 28px; margin-bottom: 22px;
+      border-radius: 20px; color: white;
+      background: linear-gradient(135deg, var(--navy-dark), #173d69 58%, #245e82);
+      box-shadow: 0 18px 40px rgba(15, 41, 73, .18);
+    }
+    .page-hero::after {
+      content: ""; position:absolute; width:260px; height:260px; border-radius:50%;
+      right:-92px; top:-112px; border: 36px solid rgba(212,175,55,.18);
+    }
+    .page-hero > * { position: relative; z-index:1; }
+    .hero-eyebrow { font-size:.75rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#f8d878; margin-bottom:8px; }
+    .hero-title { font-family:'Playfair Display',serif; font-size:clamp(1.55rem, 3vw, 2.15rem); line-height:1.15; font-weight:800; margin:0 0 8px; }
+    .hero-subtitle { margin:0; max-width:680px; font-size:.92rem; color:rgba(255,255,255,.8); line-height:1.6; }
+
+    .filter-card { padding:20px; margin-bottom:20px; }
+    .filter-title { display:flex; align-items:center; gap:9px; font-weight:800; color:var(--navy-dark); margin-bottom:14px; }
+    .filter-grid { display:grid; grid-template-columns: minmax(160px, .8fr) minmax(170px, 1fr) minmax(180px, 1.25fr) minmax(160px, .8fr) auto; gap:12px; align-items:end; }
+    .filter-grid .form-group { margin:0; }
+    .filter-grid label { font-weight:700; font-size:.8rem; color:var(--slate-700); }
+    .filter-grid .form-control { min-height:43px; }
+
+    .btn-refresh, .btn-print {
+      min-height:43px; padding:0 16px; border:0; border-radius:10px; font-weight:800;
+      cursor:pointer; transition:.2s ease; white-space:nowrap;
+    }
+    .btn-refresh { background:var(--navy-dark); color:#fff; }
+    .btn-refresh:hover { transform:translateY(-1px); filter:brightness(1.08); }
+    .btn-print { background:#fff; color:var(--navy-dark); border:1px solid var(--slate-200); }
+    .btn-print:hover { background:var(--slate-50); }
+
+    .summary-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:15px; margin-bottom:20px; }
+    .summary-card { position:relative; overflow:hidden; padding:18px; border-radius:16px; background:#fff; border:1px solid rgba(148,163,184,.22); box-shadow:0 7px 22px rgba(15,23,42,.045); }
+    .summary-card::after { content:""; position:absolute; left:0; top:0; width:5px; height:100%; background:var(--navy-dark); }
+    .summary-card.completed::after { background:var(--success); }
+    .summary-card.pending::after { background:var(--danger); }
+    .summary-card.progress::after { background:var(--gold-main); }
+    .summary-label { display:block; font-size:.75rem; color:var(--slate-500); font-weight:800; letter-spacing:.03em; text-transform:uppercase; }
+    .summary-value { display:block; margin-top:7px; font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:800; color:var(--navy-dark); line-height:1; }
+    .summary-note { display:block; margin-top:7px; color:var(--slate-500); font-size:.78rem; }
+
+    .progress-panel { display:grid; grid-template-columns:1fr auto; gap:18px; align-items:center; margin-bottom:22px; padding:18px 20px; border-radius:16px; background:linear-gradient(135deg, #fffdf5, #fff); border:1px solid rgba(212,175,55,.28); }
+    .progress-title { margin:0 0 5px; color:var(--navy-dark); font-weight:800; }
+    .progress-text { margin:0; color:var(--slate-500); font-size:.86rem; }
+    .progress-wrap { height:11px; border-radius:100px; overflow:hidden; margin-top:13px; background:#f1f5f9; }
+    .progress-bar { height:100%; width:0; border-radius:100px; background:linear-gradient(90deg, var(--gold-main), #f7d56a); transition:width .45s ease; }
+    .progress-percent { display:flex; align-items:center; justify-content:center; min-width:80px; height:58px; border-radius:14px; color:var(--gold-dark); background:#fff7d6; font-family:'Playfair Display',serif; font-weight:800; font-size:1.25rem; }
+
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:18px; }
+    .toolbar-left { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .toolbar-title { margin:0; font-family:'Playfair Display',serif; color:var(--navy-dark); font-size:1.25rem; }
+    .toolbar-note { color:var(--slate-500); font-size:.82rem; }
+    .legend { display:flex; gap:9px; flex-wrap:wrap; }
+    .legend-item { display:inline-flex; align-items:center; gap:6px; font-size:.76rem; font-weight:700; color:var(--slate-700); }
+    .dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+    .dot.done { background:var(--success); }.dot.wait { background:var(--danger); }
+
+    .usrah-list { display:flex; flex-direction:column; gap:16px; }
+    .usrah-card { overflow:hidden; border-radius:16px; background:#fff; border:1px solid rgba(148,163,184,.22); box-shadow:0 7px 22px rgba(15,23,42,.045); }
+    .usrah-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; background:linear-gradient(135deg, #fbfcfe, #f3f7fb); border-bottom:1px solid var(--slate-200); }
+    .usrah-name-box { display:flex; align-items:center; gap:11px; min-width:0; }
+    .usrah-avatar { width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; background:rgba(212,175,55,.14); color:var(--gold-dark); font-size:1.15rem; }
+    .usrah-name { color:var(--navy-dark); font-weight:800; margin:0; font-size:1rem; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+    .usrah-sub { margin:3px 0 0; color:var(--slate-500); font-size:.76rem; }
+    .usrah-counter { min-width:105px; text-align:right; font-size:.79rem; color:var(--slate-500); font-weight:700; }
+    .usrah-counter strong { display:block; color:var(--navy-dark); font-family:'Playfair Display',serif; font-size:1.05rem; }
+
+    .student-table-wrap { overflow-x:auto; }
+    .student-table { width:100%; border-collapse:collapse; min-width:700px; }
+    .student-table th { text-align:left; padding:11px 18px; background:#fff; color:var(--slate-500); border-bottom:1px solid var(--slate-200); font-size:.73rem; letter-spacing:.03em; text-transform:uppercase; }
+    .student-table td { padding:13px 18px; color:var(--slate-700); border-bottom:1px solid #eef2f7; vertical-align:middle; font-size:.85rem; }
+    .student-table tbody tr:last-child td { border-bottom:0; }
+    .student-table tbody tr:hover { background:#fbfdff; }
+    .student-no { color:var(--slate-500); font-weight:700; width:48px; }
+    .student-name { color:var(--navy-dark); font-weight:800; }
+    .record-meta { font-size:.78rem; color:var(--slate-500); line-height:1.45; }
+    .record-meta strong { display:block; color:var(--slate-700); }
+    .status-badge { display:inline-flex; align-items:center; gap:7px; min-width:108px; justify-content:center; padding:7px 10px; border-radius:100px; font-size:.74rem; font-weight:800; }
+    .status-badge.done { color:var(--success); background:var(--success-soft); border:1px solid #a7f3d0; }
+    .status-badge.wait { color:var(--danger); background:var(--danger-soft); border:1px solid #fecaca; }
+    .status-badge i { width:7px; height:7px; border-radius:50%; background:currentColor; }
+    .btn-view { border:1px solid #bfdbfe; background:#eff6ff; color:#1d4ed8; border-radius:8px; padding:7px 10px; font-size:.75rem; font-weight:800; cursor:pointer; }
+    .btn-view:hover { background:#dbeafe; }
+
+    .empty-state { padding:38px 20px; text-align:center; border:1px dashed #cbd5e1; border-radius:16px; background:#fff; color:var(--slate-500); }
+    .empty-state .empty-icon { display:block; font-size:2rem; margin-bottom:10px; }
+    .empty-state strong { display:block; color:var(--navy-dark); margin-bottom:5px; }
+    .hidden { display:none !important; }
+
+    #detailModal { position:fixed; inset:0; z-index:5000; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.58); backdrop-filter:blur(3px); }
+    #detailModal.show { display:flex; }
+    .modal-card { width:min(680px, 100%); max-height:88vh; overflow:auto; padding:0; border-radius:18px; background:#fff; box-shadow:0 25px 70px rgba(0,0,0,.28); }
+    .modal-head { display:flex; justify-content:space-between; gap:15px; align-items:flex-start; padding:20px; background:linear-gradient(135deg, var(--navy-dark), #1e4a72); color:#fff; }
+    .modal-head h3 { margin:0; font-family:'Playfair Display',serif; font-size:1.25rem; }
+    .modal-head p { margin:5px 0 0; color:rgba(255,255,255,.75); font-size:.8rem; }
+    .modal-close { width:32px; height:32px; border:0; border-radius:10px; cursor:pointer; background:rgba(255,255,255,.14); color:white; font-size:1.2rem; }
+    .modal-body { padding:20px; }
+    .detail-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+    .detail-item { padding:12px; border-radius:11px; background:var(--slate-50); border:1px solid var(--slate-200); }
+    .detail-item span { display:block; font-size:.7rem; font-weight:800; color:var(--slate-500); text-transform:uppercase; margin-bottom:4px; }
+    .detail-item strong { display:block; color:var(--navy-dark); font-size:.84rem; line-height:1.35; }
+    .narrative-block { margin-top:14px; padding:14px; background:#fffcf0; border-left:4px solid var(--gold-main); border-radius:10px; }
+    .narrative-block h4 { margin:0 0 7px; color:var(--navy-dark); font-size:.87rem; }
+    .narrative-block p { margin:0; color:var(--slate-700); font-size:.83rem; line-height:1.65; white-space:pre-wrap; }
+
+    @media (max-width: 950px) {
+      .filter-grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .filter-grid .btn-refresh { width:100%; }
+      .summary-grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 620px) {
+      .page-hero { padding:24px 20px; border-radius:16px; }
+      .filter-grid { grid-template-columns:1fr; }
+      .summary-grid { grid-template-columns:1fr 1fr; gap:10px; }
+      .summary-card { padding:14px; }
+      .progress-panel { grid-template-columns:1fr; }
+      .progress-percent { width:100%; min-width:0; }
+      .toolbar { align-items:flex-start; flex-direction:column; }
+      .usrah-head { align-items:flex-start; }
+      .usrah-counter { min-width:auto; text-align:left; }
+      .detail-grid { grid-template-columns:1fr; }
+    }
+
+    @media print {
+      body { background:#fff; }
+      #loadingOverlay, .filter-card, .btn-print, .btn-refresh, #detailModal { display:none !important; }
+      .page-hero { box-shadow:none; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .summary-card, .usrah-card, .progress-panel { box-shadow:none; break-inside:avoid; }
+      .usrah-list { gap:10px; }
+      .student-table { min-width:0; }
+      .student-table th, .student-table td { padding:8px 10px; font-size:10px; }
+      .btn-view { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="loading-icon">📊</div>
+  <div style="font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:800; margin-top:14px;">Memuat Pantauan Asesmen...</div>
+  <div style="font-size:.84rem; color:#64748b; margin-top:5px;">Membandingkan data Master Usrah dan pengisian asesmen.</div>
+</div>
+
+<main class="cahaya-container" style="padding-top:24px; padding-bottom:42px;">
+  <section class="page-hero">
+    <div class="hero-eyebrow">CAHAYA APP • Monitoring Akademik & Pembinaan</div>
+    <h1 class="hero-title">Pantau Pengisian Asesmen Akhir Semester</h1>
+    <p class="hero-subtitle">Memantau kelengkapan asesmen seluruh santri berdasarkan kelompok Master Usrah. Status diperbarui langsung dari data asesmen akhir semester yang telah tersimpan.</p>
+  </section>
+
+  <section class="cahaya-card filter-card">
+    <div class="filter-title">⚙️ Pengaturan Pantauan</div>
+    <div class="filter-grid">
+      <div class="form-group">
+        <label for="semesterFilter">Semester</label>
+        <select id="semesterFilter" class="form-control">
+          <option value="Ganjil">Semester Ganjil</option>
+          <option value="Genap">Semester Genap</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="tahunFilter">Tahun Pelajaran</label>
+        <input id="tahunFilter" class="form-control" list="tahunPelajaranList" placeholder="Contoh: 2025/2026" maxlength="9" />
+        <datalist id="tahunPelajaranList"></datalist>
+      </div>
+      <div class="form-group">
+        <label for="statusFilter">Tampilkan Status</label>
+        <select id="statusFilter" class="form-control">
+          <option value="semua">Semua Santri</option>
+          <option value="sudah">Sudah Diisi</option>
+          <option value="belum">Belum Diisi</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="cariSantri">Cari Santri</label>
+        <input id="cariSantri" class="form-control" type="search" placeholder="Ketik nama santri..." />
+      </div>
+      <button class="btn-refresh" id="btnRefresh" type="button">↻ Perbarui Data</button>
+    </div>
+  </section>
+
+  <section class="summary-grid">
+    <article class="summary-card">
+      <span class="summary-label">Total Santri Usrah</span>
+      <strong class="summary-value" id="totalSantri">0</strong>
+      <span class="summary-note">Seluruh data pada Master Usrah</span>
+    </article>
+    <article class="summary-card completed">
+      <span class="summary-label">Sudah Diisi</span>
+      <strong class="summary-value" id="totalSudah">0</strong>
+      <span class="summary-note">Asesmen sesuai filter aktif</span>
+    </article>
+    <article class="summary-card pending">
+      <span class="summary-label">Belum Diisi</span>
+      <strong class="summary-value" id="totalBelum">0</strong>
+      <span class="summary-note">Perlu ditindaklanjuti oleh pendamping</span>
+    </article>
+    <article class="summary-card progress">
+      <span class="summary-label">Kelompok Usrah</span>
+      <strong class="summary-value" id="totalUsrah">0</strong>
+      <span class="summary-note">Kelompok yang terdaftar di master</span>
+    </article>
+  </section>
+
+  <section class="progress-panel">
+    <div>
+      <h2 class="progress-title">Progres Pengisian Keseluruhan</h2>
+      <p class="progress-text" id="progressInfo">Memuat data pengisian asesmen...</p>
+      <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+    <div class="progress-percent" id="progressPercent">0%</div>
+  </section>
+
+  <section>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div>
+          <h2 class="toolbar-title">Status per Kelompok Usrah</h2>
+          <div class="toolbar-note" id="filterInfo">Memuat data...</div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="legend-item"><i class="dot done"></i> Sudah diasesmen</span>
+        <span class="legend-item"><i class="dot wait"></i> Belum diasesmen</span>
+        <button class="btn-print" type="button" onclick="window.print()">🖨️ Cetak Rekap</button>
+      </div>
+    </div>
+    <div id="usrahList" class="usrah-list"></div>
+  </section>
+</main>
+
+<div id="detailModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="modalTitle">Detail Asesmen Santri</h3>
+        <p id="modalSubtitle">-</p>
+      </div>
+      <button class="modal-close" type="button" onclick="tutupModal()" aria-label="Tutup">×</button>
+    </div>
+    <div id="modalBody" class="modal-body"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const state = {
+    masterUsrah: {},
+    asesmen: [],
+    recordMap: new Map()
+  };
+
+  function escapeHTML(value = "") {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function normalKey(nama) {
+    return String(nama || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLocaleLowerCase("id-ID");
+  }
+
+  function formatTanggal(tanggal) {
+    if (!tanggal) return "-";
+    const parsed = new Date(`${tanggal}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return String(tanggal);
+    return new Intl.DateTimeFormat("id-ID", { day:"2-digit", month:"long", year:"numeric" }).format(parsed);
+  }
+
+  function defaultPeriode() {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+    const mulai = month >= 7 ? year : year - 1;
+    return {
+      semester: month >= 7 ? "Ganjil" : "Genap",
+      tahunPelajaran: `${mulai}/${mulai + 1}`
+    };
+  }
+
+  function isObject(value) {
+    return value && typeof value === "object" && !Array.isArray(value);
+  }
+
+  function daftarSantriDariKelompok(dataKelompok) {
+    if (Array.isArray(dataKelompok)) {
+      return dataKelompok.map(item => {
+        if (typeof item === "string") return item;
+        if (isObject(item)) return item.namaSantri || item.nama || item.name || "";
+        return "";
+      }).filter(Boolean);
+    }
+
+    if (isObject(dataKelompok)) {
+      if (Array.isArray(dataKelompok.santri)) return daftarSantriDariKelompok(dataKelompok.santri);
+      if (Array.isArray(dataKelompok.anggota)) return daftarSantriDariKelompok(dataKelompok.anggota);
+
+      return Object.entries(dataKelompok)
+        .map(([key, value]) => {
+          if (typeof value === "string") return value;
+          if (isObject(value)) return value.namaSantri || value.nama || value.name || key;
+          return typeof key === "string" ? key : "";
+        })
+        .filter(nama => nama && !["nama", "namaNaqib", "pengasuh", "catatan"].includes(normalKey(nama)));
+    }
+
+    return [];
+  }
+
+  function normalizeMaster(rawMaster) {
+    const result = {};
+    if (!isObject(rawMaster)) return result;
+
+    Object.entries(rawMaster).forEach(([namaUsrah, dataKelompok]) => {
+      const daftar = daftarSantriDariKelompok(dataKelompok)
+        .map(nama => String(nama).trim())
+        .filter(Boolean);
+      result[namaUsrah] = [...new Set(daftar)];
+    });
+
+    return result;
+  }
+
+  function waktuRecord(record) {
+    const raw = record.timestamp || record.updatedAt || record.createdAt || record.tanggalAsesmen || "";
+    const time = new Date(raw).getTime();
+    return Number.isNaN(time) ? 0 : time;
+  }
+
+  function getFilter() {
+    return {
+      semester: document.getElementById("semesterFilter").value,
+      tahunPelajaran: document.getElementById("tahunFilter").value.trim(),
+      status: document.getElementById("statusFilter").value,
+      keyword: normalKey(document.getElementById("cariSantri").value)
+    };
+  }
+
+  // Mendukung format baru: periode.semester / periode.tahunPelajaran,
+  // sekaligus tetap membaca format lama bila semester dan tahunPelajaran tersimpan di root.
+  function semesterRecord(record) {
+    return String(record?.periode?.semester || record?.semester || "").trim();
+  }
+
+  function tahunRecord(record) {
+    return String(record?.periode?.tahunPelajaran || record?.tahunPelajaran || "").trim();
+  }
+
+  function buildRecordMap() {
+    const { semester, tahunPelajaran } = getFilter();
+    const map = new Map();
+
+    state.asesmen
+      .filter(item => semesterRecord(item) === semester && tahunRecord(item) === tahunPelajaran)
+      .forEach(record => {
+        const key = normalKey(record.namaSantri);
+        if (!key) return;
+        const lama = map.get(key);
+        if (!lama || waktuRecord(record) > waktuRecord(lama)) map.set(key, record);
+      });
+
+    state.recordMap = map;
+  }
+
+  function getStats() {
+    const daftarUnik = new Map();
+    Object.entries(state.masterUsrah).forEach(([usrah, daftar]) => {
+      daftar.forEach(nama => {
+        const key = normalKey(nama);
+        if (key && !daftarUnik.has(key)) daftarUnik.set(key, { nama, usrah });
+      });
+    });
+
+    let sudah = 0;
+    daftarUnik.forEach((_, key) => {
+      if (state.recordMap.has(key)) sudah += 1;
+    });
+
+    const total = daftarUnik.size;
+    return { total, sudah, belum: total - sudah, usrah: Object.keys(state.masterUsrah).length };
+  }
+
+  function renderSummary() {
+    const { total, sudah, belum, usrah } = getStats();
+    const percent = total ? Math.round((sudah / total) * 100) : 0;
+
+    document.getElementById("totalSantri").textContent = total;
+    document.getElementById("totalSudah").textContent = sudah;
+    document.getElementById("totalBelum").textContent = belum;
+    document.getElementById("totalUsrah").textContent = usrah;
+    document.getElementById("progressBar").style.width = `${percent}%`;
+    document.getElementById("progressPercent").textContent = `${percent}%`;
+    document.getElementById("progressInfo").textContent = total
+      ? `${sudah} dari ${total} santri telah diasesmen. Masih ada ${belum} santri yang perlu dilengkapi.`
+      : "Belum ditemukan data santri pada Master Usrah.";
+  }
+
+  function formatWaktuInput(timestamp) {
+    if (!timestamp) return "-";
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("id-ID", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" }).format(date);
+  }
+
+  function getRecordMeta(record) {
+    if (!record) return '<span class="record-meta">Menunggu pengisian asesmen</span>';
+    const pendamping = record.namaNaqib || record.namaPengisi || "Pendamping belum tercatat";
+    const tanggal = record.tanggalAsesmen ? formatTanggal(record.tanggalAsesmen) : formatWaktuInput(record.timestamp);
+    return `<div class="record-meta"><strong>${escapeHTML(tanggal)}</strong>${escapeHTML(pendamping)}</div>`;
+  }
+
+  function renderUsrah() {
+    const container = document.getElementById("usrahList");
+    const filter = getFilter();
+    const periodeLabel = `Semester ${filter.semester} • Tahun Pelajaran ${filter.tahunPelajaran || "-"}`;
+    document.getElementById("filterInfo").textContent = `Menampilkan ${periodeLabel}`;
+
+    const cards = [];
+    const sortedUsrah = Object.keys(state.masterUsrah).sort((a, b) => a.localeCompare(b, "id"));
+
+    sortedUsrah.forEach((namaUsrah) => {
+      const daftarSantri = state.masterUsrah[namaUsrah] || [];
+      const rows = daftarSantri.map((nama, index) => {
+        const record = state.recordMap.get(normalKey(nama));
+        const sudah = Boolean(record);
+        const cocokStatus = filter.status === "semua" || (filter.status === "sudah" && sudah) || (filter.status === "belum" && !sudah);
+        const cocokNama = !filter.keyword || normalKey(nama).includes(filter.keyword);
+        return { nama, index, record, sudah, tampil: cocokStatus && cocokNama };
+      }).filter(row => row.tampil);
+
+      if (rows.length === 0) return;
+
+      const totalKelompok = daftarSantri.length;
+      const sudahKelompok = daftarSantri.filter(nama => state.recordMap.has(normalKey(nama))).length;
+      const belumKelompok = totalKelompok - sudahKelompok;
+      const persenKelompok = totalKelompok ? Math.round((sudahKelompok / totalKelompok) * 100) : 0;
+
+      const bodyRows = rows.map((row) => {
+        const dataAttr = row.record ? `data-record-key="${escapeHTML(normalKey(row.nama))}"` : "";
+        return `
+          <tr>
+            <td class="student-no">${row.index + 1}</td>
+            <td class="student-name">${escapeHTML(row.nama)}</td>
+            <td>
+              <span class="status-badge ${row.sudah ? "done" : "wait"}"><i></i>${row.sudah ? "Sudah Diisi" : "Belum Diisi"}</span>
+            </td>
+            <td>${getRecordMeta(row.record)}</td>
+            <td>${row.sudah ? `<button type="button" class="btn-view" ${dataAttr}>Lihat Ringkas</button>` : "-"}</td>
+          </tr>`;
+      }).join("");
+
+      cards.push(`
+        <article class="usrah-card">
+          <div class="usrah-head">
+            <div class="usrah-name-box">
+              <div class="usrah-avatar">👥</div>
+              <div>
+                <h3 class="usrah-name">Usrah ${escapeHTML(namaUsrah)}</h3>
+                <p class="usrah-sub">${totalKelompok} santri • ${sudahKelompok} selesai • ${belumKelompok} belum</p>
+              </div>
+            </div>
+            <div class="usrah-counter"><strong>${persenKelompok}%</strong>Pengisian selesai</div>
+          </div>
+          <div class="student-table-wrap">
+            <table class="student-table">
+              <thead>
+                <tr><th>No.</th><th>Nama Santri</th><th>Status</th><th>Data Pengisian</th><th>Aksi</th></tr>
+              </thead>
+              <tbody>${bodyRows}</tbody>
+            </table>
+          </div>
+        </article>`);
+    });
+
+    if (cards.length === 0) {
+      const pesan = Object.keys(state.masterUsrah).length === 0
+        ? "Data Master Usrah belum ditemukan atau belum berisi kelompok santri."
+        : "Tidak ada santri yang sesuai dengan filter status atau pencarian saat ini.";
+      container.innerHTML = `<div class="empty-state"><span class="empty-icon">🔎</span><strong>Data tidak ditemukan</strong><span>${escapeHTML(pesan)}</span></div>`;
+      return;
+    }
+
+    container.innerHTML = cards.join("");
+    container.querySelectorAll(".btn-view").forEach(btn => {
+      btn.addEventListener("click", () => bukaModal(btn.dataset.recordKey));
+    });
+  }
+
+  function renderAll() {
+    buildRecordMap();
+    renderSummary();
+    renderUsrah();
+  }
+
+  function isiDatalistTahun() {
+    const list = document.getElementById("tahunPelajaranList");
+    const tahunData = [...new Set(state.asesmen.map(item => tahunRecord(item)).filter(Boolean))]
+      .sort((a,b) => b.localeCompare(a, "id"));
+    const current = defaultPeriode().tahunPelajaran;
+    if (!tahunData.includes(current)) tahunData.unshift(current);
+    list.innerHTML = tahunData.map(tahun => `<option value="${escapeHTML(tahun)}"></option>`).join("");
+  }
+
+  function detailNarasi(record) {
+    const narasi = record.narasi || {};
+    const bagian = [
+      ["Cinta Allah (Spiritual)", narasi.spiritual],
+      ["Akhlak Mulia (Relasional)", narasi.relasional],
+      ["Hati Bersih (Emosional)", narasi.emosional],
+      ["Akal Cerdas (Intelektual)", narasi.intelektual],
+      ["Fisik Berdaya", narasi.fisik]
+    ].filter(([, isi]) => isi && String(isi).trim());
+
+    if (!bagian.length) return '<div class="narrative-block"><h4>Narasi Asesmen</h4><p>Narasi belum diisi.</p></div>';
+    return bagian.map(([judul, isi]) => `<div class="narrative-block"><h4>${escapeHTML(judul)}</h4><p>${escapeHTML(isi)}</p></div>`).join("");
+  }
+
+  window.bukaModal = function(recordKey) {
+    const record = state.recordMap.get(recordKey);
+    if (!record) return;
+    const tindakLanjut = record.tindakLanjut || {};
+    const fokus = Array.isArray(tindakLanjut.fokusSemesterBerikutnya) ? tindakLanjut.fokusSemesterBerikutnya.join(", ") : "-";
+
+    document.getElementById("modalTitle").textContent = record.namaSantri || "Detail Asesmen";
+    document.getElementById("modalSubtitle").textContent = `Semester ${semesterRecord(record) || "-"} • Tahun Pelajaran ${tahunRecord(record) || "-"}`;
+    document.getElementById("modalBody").innerHTML = `
+      <div class="detail-grid">
+        <div class="detail-item"><span>Tanggal Asesmen</span><strong>${escapeHTML(formatTanggal(record.tanggalAsesmen))}</strong></div>
+        <div class="detail-item"><span>Pengisi / Naqib</span><strong>${escapeHTML(record.namaNaqib || record.namaPengisi || "-")}</strong></div>
+        <div class="detail-item"><span>Disimpan Pada</span><strong>${escapeHTML(formatWaktuInput(record.timestamp))}</strong></div>
+        <div class="detail-item"><span>Fokus Semester Berikutnya</span><strong>${escapeHTML(fokus)}</strong></div>
+      </div>
+      ${detailNarasi(record)}
+      ${tindakLanjut.rangkumanSemesterIni ? `<div class="narrative-block"><h4>Rangkuman Semester</h4><p>${escapeHTML(tindakLanjut.rangkumanSemesterIni)}</p></div>` : ""}
+      ${tindakLanjut.catatanWaliSantri ? `<div class="narrative-block"><h4>Catatan untuk Wali Santri</h4><p>${escapeHTML(tindakLanjut.catatanWaliSantri)}</p></div>` : ""}
+    `;
+    const modal = document.getElementById("detailModal");
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+  };
+
+  window.tutupModal = function() {
+    const modal = document.getElementById("detailModal");
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+  };
+
+  async function muatData() {
+    const btn = document.getElementById("btnRefresh");
+    btn.disabled = true;
+    btn.textContent = "⏳ Memuat...";
+
+    try {
+      const [masterSnap, asesmenSnap] = await Promise.all([
+        get(ref(db, "cahaya_app/master_usrah")),
+        get(ref(db, "cahaya_app/asesmen_akhir_semester"))
+      ]);
+
+      state.masterUsrah = normalizeMaster(masterSnap.exists() ? masterSnap.val() : {});
+      state.asesmen = asesmenSnap.exists()
+        ? Object.entries(asesmenSnap.val()).map(([id, value]) => ({ id, ...(value || {}) }))
+        : [];
+
+      isiDatalistTahun();
+      renderAll();
+    } catch (error) {
+      console.error(error);
+      document.getElementById("usrahList").innerHTML = `
+        <div class="empty-state"><span class="empty-icon">⚠️</span><strong>Data gagal dimuat</strong><span>${escapeHTML(error.message || "Periksa koneksi atau aturan akses Firebase.")}</span></div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "↻ Perbarui Data";
+      const overlay = document.getElementById("loadingOverlay");
+      overlay.style.opacity = "0";
+      setTimeout(() => { overlay.style.display = "none"; }, 350);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const periode = defaultPeriode();
+    document.getElementById("semesterFilter").value = periode.semester;
+    document.getElementById("tahunFilter").value = periode.tahunPelajaran;
+
+    document.getElementById("btnRefresh").addEventListener("click", muatData);
+    ["semesterFilter", "tahunFilter", "statusFilter", "cariSantri"].forEach(id => {
+      const element = document.getElementById(id);
+      const eventName = id === "cariSantri" ? "input" : "change";
+      element.addEventListener(eventName, renderAll);
+    });
+
+    document.getElementById("detailModal").addEventListener("click", (event) => {
+      if (event.target.id === "detailModal") tutupModal();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") tutupModal();
+    });
+
+    muatData();
+  });
+</script>
+</body>
+</html>
