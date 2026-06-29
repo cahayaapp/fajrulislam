@@ -94,9 +94,18 @@
         <input type="date" class="form-control" id="tanggalAsesmen">
       </div>
       <div class="form-group">
-        <label>Nama Santri (Binaan Usrah)</label>
-        <select class="form-control" id="namaSantri" style="font-weight: bold; color: var(--navy-dark);">
-          <option value="">-- Memuat Data --</option>
+        <label>Usrah / Naqib Pengasuh</label>
+        <select class="form-control" id="pilihanUsrah" style="font-weight: bold; color: var(--navy-dark);">
+          <option value="">-- Memuat Pilihan Usrah --</option>
+        </select>
+        <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:0.75rem;">
+          Setiap akun dapat memilih seluruh usrah yang tersedia.
+        </small>
+      </div>
+      <div class="form-group">
+        <label>Nama Santri</label>
+        <select class="form-control" id="namaSantri" style="font-weight: bold; color: var(--navy-dark);" disabled>
+          <option value="">-- Pilih Usrah Terlebih Dahulu --</option>
         </select>
       </div>
     </div>
@@ -350,10 +359,63 @@
     });
   }
 
-  // Tarik nama mentah dari LocalStorage, lalu bersihkan!
+  // Identitas akun yang sedang login hanya digunakan sebagai jejak penginput.
+  // Daftar usrah tidak lagi dibatasi oleh akun ini.
   const user = JSON.parse(localStorage.getItem("cahayaCurrentUser") || "{}");
-  const rawNama = user.label || user.username || "Naqib";
-  const namaNaqib = bersihkanNama(rawNama); 
+  const rawNamaPenginput = user.label || user.username || "Pengguna";
+  const namaPenginput = bersihkanNama(rawNamaPenginput);
+
+  // Menyimpan seluruh data master usrah agar setiap akun dapat memilih usrah mana pun.
+  let dataMasterUsrah = {};
+
+  function normalisasiDaftarSantri(dataUsrah) {
+    if (Array.isArray(dataUsrah)) {
+      return dataUsrah
+        .filter(Boolean)
+        .map(nama => String(nama).trim())
+        .filter(Boolean);
+    }
+
+    // Antisipasi bila data Firebase tersimpan dalam bentuk object.
+    if (dataUsrah && typeof dataUsrah === "object") {
+      if (Array.isArray(dataUsrah.santri)) {
+        return dataUsrah.santri
+          .filter(Boolean)
+          .map(nama => String(nama).trim())
+          .filter(Boolean);
+      }
+
+      return Object.values(dataUsrah)
+        .filter(item => typeof item === "string")
+        .map(nama => nama.trim())
+        .filter(Boolean);
+    }
+
+    return [];
+  }
+
+  function isiDaftarSantri(namaUsrah) {
+    const selectSantri = document.getElementById("namaSantri");
+    selectSantri.innerHTML = '<option value="">-- Pilih Nama Santri --</option>';
+
+    if (!namaUsrah || !dataMasterUsrah[namaUsrah]) {
+      selectSantri.disabled = true;
+      selectSantri.innerHTML = '<option value="">-- Pilih Usrah Terlebih Dahulu --</option>';
+      return;
+    }
+
+    const daftarSantri = normalisasiDaftarSantri(dataMasterUsrah[namaUsrah])
+      .sort((a, b) => a.localeCompare(b, "id"));
+
+    if (daftarSantri.length === 0) {
+      selectSantri.disabled = true;
+      selectSantri.innerHTML = '<option value="">⚠️ Belum ada santri pada usrah ini</option>';
+      return;
+    }
+
+    daftarSantri.forEach(nama => selectSantri.appendChild(new Option(nama, nama)));
+    selectSantri.disabled = false;
+  }
 
   document.addEventListener("DOMContentLoaded", async function(){
     const sekarang = new Date();
@@ -364,32 +426,52 @@
     document.getElementById("tanggalAsesmen").value = sekarang.toISOString().split("T")[0];
     document.getElementById("semesterAsesmen").value = bulanSekarang >= 7 ? "Ganjil" : "Genap";
     document.getElementById("tahunPelajaran").value = `${awalTahunPelajaran}/${awalTahunPelajaran + 1}`;
-    
-    // Menarik Data Daftar Santri Asrama/Usrah dari Database berdasarkan Nama Naqib yang sudah "Dibersihkan"
+
     try {
       const snapUsrah = await get(ref(db, 'cahaya_app/master_usrah'));
-      const select = document.getElementById("namaSantri");
-      select.innerHTML = '<option value="">-- Pilih Santri Binaan --</option>';
-      
-      if (snapUsrah.exists()) {
-        const dataUsrah = snapUsrah.val();
-        // Cari kelompok yang diasuh oleh Naqib yang sedang login
-        const kelompokSaya = dataUsrah[namaNaqib] || [];
-        
-        if(kelompokSaya.length > 0) {
-          kelompokSaya.sort().forEach(nama => {
-            select.appendChild(new Option(nama, nama));
-          });
-        } else {
-          select.innerHTML = `<option value="">⚠️ Anda belum memiliki santri binaan di Master Usrah (${namaNaqib})</option>`;
-        }
+      const selectUsrah = document.getElementById("pilihanUsrah");
+      selectUsrah.innerHTML = '<option value="">-- Pilih Usrah / Naqib Pengasuh --</option>';
+
+      if (!snapUsrah.exists()) {
+        selectUsrah.innerHTML = '<option value="">⚠️ Master usrah belum tersedia</option>';
+        selectUsrah.disabled = true;
+        return;
       }
+
+      dataMasterUsrah = snapUsrah.val() || {};
+
+      const daftarUsrah = Object.keys(dataMasterUsrah)
+        .filter(nama => normalisasiDaftarSantri(dataMasterUsrah[nama]).length > 0)
+        .sort((a, b) => a.localeCompare(b, "id"));
+
+      if (daftarUsrah.length === 0) {
+        selectUsrah.innerHTML = '<option value="">⚠️ Belum ada usrah dengan data santri</option>';
+        selectUsrah.disabled = true;
+        return;
+      }
+
+      daftarUsrah.forEach(namaUsrah => {
+        const jumlahSantri = normalisasiDaftarSantri(dataMasterUsrah[namaUsrah]).length;
+        selectUsrah.appendChild(new Option(`${namaUsrah} (${jumlahSantri} Santri)`, namaUsrah));
+      });
+
+      // Bila nama akun sama dengan nama usrah, jadikan sebagai pilihan awal,
+      // tetapi pengguna tetap bebas mengganti ke usrah lainnya.
+      if (Object.prototype.hasOwnProperty.call(dataMasterUsrah, namaPenginput)) {
+        selectUsrah.value = namaPenginput;
+        isiDaftarSantri(namaPenginput);
+      }
+
+      selectUsrah.addEventListener("change", function() {
+        isiDaftarSantri(this.value);
+      });
     } catch (error) {
       console.error("Gagal memuat data Usrah", error);
+      document.getElementById("pilihanUsrah").innerHTML = '<option value="">❌ Gagal memuat pilihan usrah</option>';
+    } finally {
+      document.getElementById('loadingOverlay').style.opacity = '0';
+      setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
     }
-    
-    document.getElementById('loadingOverlay').style.opacity = '0';
-    setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 500);
   });
 
   // FUNGSI GENERATE NARASI AKHIR SEMESTER
@@ -493,10 +575,11 @@
     const tanggal = document.getElementById("tanggalAsesmen").value;
     const semester = document.getElementById("semesterAsesmen").value;
     const tahunPelajaran = document.getElementById("tahunPelajaran").value.trim();
+    const namaUsrah = document.getElementById("pilihanUsrah").value;
     const santri = document.getElementById("namaSantri").value;
 
-    if(!tanggal || !semester || !tahunPelajaran || !santri) {
-      alert("⚠️ Lengkapi Semester, Tahun Pelajaran, Tanggal Penetapan, dan Nama Santri terlebih dahulu.");
+    if(!tanggal || !semester || !tahunPelajaran || !namaUsrah || !santri) {
+      alert("⚠️ Lengkapi Semester, Tahun Pelajaran, Tanggal Penetapan, Usrah/Naqib Pengasuh, dan Nama Santri terlebih dahulu.");
       return;
     }
 
@@ -516,8 +599,10 @@
         tahunPelajaran: tahunPelajaran
       },
       tanggalAsesmen: tanggal,
+      usrah: namaUsrah,
+      namaNaqib: namaUsrah,
       namaSantri: santri,
-      namaNaqib: namaNaqib,
+      namaPenginput: namaPenginput,
 
       observasiPilihan: {
         spiritual: { sp1: getVal("sp1"), sp2: getVal("sp2"), sp3: getVal("sp3") },
