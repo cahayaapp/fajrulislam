@@ -174,14 +174,55 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || 'null');
+
+  // Aman bila halaman dibuka tanpa data login yang tersimpan.
+  // Sebelumnya user=null dapat membuat proses tampak terus "MENYIMPAN..."
+  // karena user.label dibaca di luar blok penanganan error.
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || 'null');
+  } catch (error) {
+    console.warn('Data login lokal tidak terbaca. Menggunakan nama guru default.', error);
+  }
+
   let dataHalqahCloud = {};
+  let cacheSetoranTahfiz = {};
+  let cacheSetoranSiap = false;
+  let indexSetoranPerSantri = {};
 
   const cardColors = [
     { bg: '#E3F2FD', border: '#64B5F6' }, { bg: '#E8F5E9', border: '#81C784' },
     { bg: '#FFF3E0', border: '#FFB74D' }, { bg: '#FCE4EC', border: '#F06292' },
     { bg: '#F3E5F5', border: '#BA68C8' }, { bg: '#E0F7FA', border: '#4DD0E1' }
   ];
+
+  // Mengamankan nama santri saat ditampilkan di HTML/data-attribute.
+  // Penting untuk nama yang memiliki tanda petik satu, seperti A'ISYAH.
+  const escapeHtml = (value = '') => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+  // Indeks lokal agar halaman tidak membaca dan memindai seluruh database
+  // setiap kali satu setoran disimpan/diperbarui.
+  const bangunIndexSetoran = (dataObj = {}) => {
+    const index = {};
+    Object.entries(dataObj || {}).forEach(([id, record]) => {
+      const namaSantri = record?.data?.[0]?.nama;
+      if (!namaSantri) return;
+      if (!index[namaSantri]) index[namaSantri] = [];
+      index[namaSantri].push({ id, ...record });
+    });
+    indexSetoranPerSantri = index;
+  };
+
+  const simpanCacheSetoran = (dataObj = {}) => {
+    cacheSetoranTahfiz = dataObj || {};
+    cacheSetoranSiap = true;
+    bangunIndexSetoran(cacheSetoranTahfiz);
+  };
 
   window.opsiSuratHTML = '<option value="">-- Pilih Surat --</option>';
 
@@ -317,7 +358,11 @@
     try {
       const snap = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
       preloadedDb = snap.exists() ? snap.val() : {};
-    } catch(e) { console.error("DB Fetch Error:", e); }
+      simpanCacheSetoran(preloadedDb);
+    } catch(e) {
+      console.error("DB Fetch Error:", e);
+      cacheSetoranSiap = false;
+    }
 
     container.innerHTML = '';
     const todayStr = new Date().toISOString().split('T')[0];
@@ -325,12 +370,13 @@
     listSantri.forEach((nama, i) => {
       const theme = cardColors[i % cardColors.length];
       const safeId = nama.replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
+      const namaHtml = escapeHtml(nama);
 
       const cardHtml = `
         <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal">
           
           <div class="santri-card-header" onclick="toggleCard('${safeId}')">
-            <h3>${i+1}. ${nama}</h3>
+            <h3>${i+1}. ${namaHtml}</h3>
             <div style="display:flex; align-items:center; gap:10px;">
               <span id="badge_info_${safeId}" style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">Buka Card</span>
               <span class="icon-toggle">▼</span>
@@ -392,7 +438,7 @@
                 <textarea class="form-control" id="catatan_${safeId}" rows="2" placeholder="Catatan tajwid / kelancaran (opsional)..."></textarea>
               </div>
 
-              <button class="btn-simpan-card" id="btn_simpan_${safeId}" onclick="simpanSetoranCard('${nama}', '${safeId}')">💾 SIMPAN DATA SETORAN</button>
+              <button class="btn-simpan-card" id="btn_simpan_${safeId}" data-nama="${namaHtml}" onclick="simpanSetoranDariTombol(this, '${safeId}')">💾 SIMPAN DATA SETORAN</button>
               <button class="btn-batal-card" id="btn_batal_${safeId}" onclick="batalEditCard('${safeId}')">Batal Edit</button>
             </div>
 
@@ -498,61 +544,89 @@
   };
 
   // --- FIREBASE & PARSER EDIT ---
+  // Nama dibaca dari data-attribute, bukan disisipkan langsung ke onclick.
+  // Dengan demikian tanda petik satu/dobel pada nama santri tetap aman.
+  window.simpanSetoranDariTombol = (button, safeId) => {
+    window.simpanSetoranCard(button.dataset.nama || '', safeId);
+  };
+
   window.simpanSetoranCard = async (nama, safeId) => {
     const btn = document.getElementById(`btn_simpan_${safeId}`);
-    const mode = document.getElementById(`card_${safeId}`).getAttribute('data-mode');
-    let strSetoran = "";
-    
-    if(mode === 'tunggal') {
-      let parts = [];
-      document.querySelectorAll(`.class-row-${safeId}`).forEach(r => {
-        const idx = r.querySelector('.sel-surat').value;
-        const m = r.querySelector('.inp-mulai').value;
-        const s = r.querySelector('.inp-sampai').value;
-        if(idx && m && s) parts.push(`${window.daftarSurat[idx].nama} (${m}-${s})`);
-      });
-      strSetoran = parts.join(", ");
-    } else {
-      const sIdx = document.querySelector(`.sel-awal-${safeId}`).value;
-      const eIdx = document.querySelector(`.sel-akhir-${safeId}`).value;
-      const lAyt = document.querySelector(`.inp-ayat-akhir-${safeId}`).value;
-      if(sIdx && eIdx && lAyt) {
-        if(sIdx === eIdx) strSetoran = `${window.daftarSurat[sIdx].nama} (1-${lAyt})`;
-        else strSetoran = `${window.daftarSurat[sIdx].nama} s/d ${window.daftarSurat[eIdx].nama} (Ayat ${lAyt})`;
-      }
-    }
-
-    if(!strSetoran) return alert(`Lengkapi data surat/ayat untuk ${nama}!`);
-
-    btn.innerHTML = "⏳ MENYIMPAN..."; btn.disabled = true;
-
-    const editId = document.getElementById(`edit_id_${safeId}`).value;
-    const payload = {
-      tanggal: document.getElementById(`tgl_${safeId}`).value,
-      program: document.getElementById('tfzProgram').value,
-      kelompok: document.getElementById('tfzKelompok').value,
-      guru: user.label || user.username || 'Guru Tahfiz',
-      data: [{
-        nama: nama,
-        setoran: strSetoran,
-        ayat: document.getElementById(`ayat_${safeId}`).value,
-        kesalahan: document.getElementById(`salah_${safeId}`).value || "0",
-        nilai: document.getElementById(`predikat_${safeId}`).value,
-        keterangan: document.getElementById(`catatan_${safeId}`).value
-      }],
-      waktuSimpan: new Date().toISOString()
-    };
+    if (!btn || btn.disabled) return;
 
     try {
-      if (editId) await update(ref(db, `cahaya_app/setoran_tahfiz/${editId}`), payload);
-      else await push(ref(db, 'cahaya_app/setoran_tahfiz'), payload);
-      
-      batalEditCard(safeId);
-      fetchRiwayatSantri(nama, safeId); 
+      const mode = document.getElementById(`card_${safeId}`).getAttribute('data-mode');
+      let strSetoran = "";
+
+      if(mode === 'tunggal') {
+        const parts = [];
+        document.querySelectorAll(`.class-row-${safeId}`).forEach(r => {
+          const idx = r.querySelector('.sel-surat').value;
+          const m = r.querySelector('.inp-mulai').value;
+          const s = r.querySelector('.inp-sampai').value;
+          if(idx !== '' && m && s) parts.push(`${window.daftarSurat[idx].nama} (${m}-${s})`);
+        });
+        strSetoran = parts.join(", ");
+      } else {
+        const sIdx = document.querySelector(`.sel-awal-${safeId}`).value;
+        const eIdx = document.querySelector(`.sel-akhir-${safeId}`).value;
+        const lAyt = document.querySelector(`.inp-ayat-akhir-${safeId}`).value;
+        if(sIdx !== '' && eIdx !== '' && lAyt) {
+          if(sIdx === eIdx) strSetoran = `${window.daftarSurat[sIdx].nama} (1-${lAyt})`;
+          else strSetoran = `${window.daftarSurat[sIdx].nama} s/d ${window.daftarSurat[eIdx].nama} (Ayat ${lAyt})`;
+        }
+      }
+
+      if(!strSetoran) {
+        alert(`Lengkapi data surat/ayat untuk ${nama}!`);
+        return;
+      }
+
+      btn.innerHTML = "⏳ MENYIMPAN...";
+      btn.disabled = true;
+
+      const editId = document.getElementById(`edit_id_${safeId}`).value;
+      const payload = {
+        tanggal: document.getElementById(`tgl_${safeId}`).value,
+        program: document.getElementById('tfzProgram').value,
+        kelompok: document.getElementById('tfzKelompok').value,
+        guru: user?.label || user?.username || 'Guru Tahfiz',
+        data: [{
+          nama: nama,
+          setoran: strSetoran,
+          ayat: document.getElementById(`ayat_${safeId}`).value,
+          kesalahan: document.getElementById(`salah_${safeId}`).value || "0",
+          nilai: document.getElementById(`predikat_${safeId}`).value,
+          keterangan: document.getElementById(`catatan_${safeId}`).value
+        }],
+        waktuSimpan: new Date().toISOString()
+      };
+
+      if (editId) {
+        await update(ref(db, `cahaya_app/setoran_tahfiz/${editId}`), payload);
+        cacheSetoranTahfiz[editId] = payload;
+      } else {
+        const hasilPush = await push(ref(db, 'cahaya_app/setoran_tahfiz'), payload);
+        cacheSetoranTahfiz[hasilPush.key] = payload;
+      }
+
+      // Riwayat langsung menggunakan cache lokal; tidak mengunduh ulang seluruh database.
+      simpanCacheSetoran(cacheSetoranTahfiz);
+      window.batalEditCard(safeId);
+      await window.fetchRiwayatSantri(nama, safeId, cacheSetoranTahfiz);
+
+      btn.innerHTML = "✓ DATA TERSIMPAN";
+      setTimeout(() => {
+        if (btn && !document.getElementById(`edit_id_${safeId}`).value) {
+          btn.innerHTML = "💾 SIMPAN DATA SETORAN";
+        }
+      }, 900);
     } catch(err) {
-      alert("Gagal: " + err.message);
+      console.error('Gagal menyimpan setoran:', err);
+      alert("Gagal menyimpan data: " + (err?.message || "Terjadi kesalahan yang tidak diketahui."));
     } finally {
-      btn.innerHTML = "💾 SIMPAN DATA SETORAN"; btn.disabled = false;
+      btn.disabled = false;
+      if (btn.innerHTML.includes('MENYIMPAN')) btn.innerHTML = "💾 SIMPAN DATA SETORAN";
     }
   };
 
@@ -564,26 +638,29 @@
 
     try {
       let dataObj = preloadedData;
-      if (!dataObj) {
-         const snapshot = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
-         dataObj = snapshot.exists() ? snapshot.val() : {};
-      }
-
-      let riwayatBulanIni = [];
-      let pencapaianSemua = new Array(114).fill(0);
-
-      for (let key in dataObj) {
-        const record = dataObj[key];
-        if (record.data && record.data[0] && record.data[0].nama === nama) {
-          
-          let teksSetoran = record.data[0].setoran || "";
-          jalankanParser(teksSetoran, pencapaianSemua);
-
-          if (record.tanggal && record.tanggal.startsWith(bulanIni)) {
-            riwayatBulanIni.push({ id: key, ...record });
-          }
+      if (dataObj === null) {
+        if (cacheSetoranSiap) {
+          dataObj = cacheSetoranTahfiz;
+        } else {
+          const snapshot = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
+          dataObj = snapshot.exists() ? snapshot.val() : {};
+          simpanCacheSetoran(dataObj);
         }
       }
+
+      // Pakai indeks nama agar tidak memindai seluruh database pada setiap card.
+      if (dataObj !== cacheSetoranTahfiz) bangunIndexSetoran(dataObj);
+      const semuaRiwayatSantri = indexSetoranPerSantri[nama] || [];
+      const riwayatBulanIni = [];
+      const pencapaianSemua = new Array(114).fill(0);
+
+      semuaRiwayatSantri.forEach((record) => {
+        const teksSetoran = record.data?.[0]?.setoran || "";
+        jalankanParser(teksSetoran, pencapaianSemua);
+        if (record.tanggal && record.tanggal.startsWith(bulanIni)) {
+          riwayatBulanIni.push(record);
+        }
+      });
 
       let resResume = kalkulasiArrayPencapaian(pencapaianSemua);
       resumeContainer.innerHTML = `
@@ -617,6 +694,7 @@
         if(dat.nilai.includes("BIMBINGAN")) { bColor = '#dc2626'; bBg = '#fef2f2'; }
         
         const dataString = encodeURIComponent(JSON.stringify(r));
+        const namaHtml = escapeHtml(nama);
 
         return `
           <div class="riwayat-item">
@@ -630,7 +708,7 @@
             </div>
             <div class="riwayat-actions">
               <button class="btn-icon btn-edit-icon" onclick="siapkanEditCard('${safeId}', '${dataString}')" title="Edit">✎</button>
-              <button class="btn-icon btn-hapus-icon" onclick="hapusSetoranCard('${r.id}', '${nama}', '${safeId}')" title="Hapus">✕</button>
+              <button class="btn-icon btn-hapus-icon" data-nama="${namaHtml}" onclick="hapusSetoranDariTombol(this, '${r.id}', '${safeId}')" title="Hapus">✕</button>
             </div>
           </div>
         `;
@@ -716,11 +794,17 @@
     document.getElementById(`btn_batal_${safeId}`).style.display = "none";
   };
 
+  window.hapusSetoranDariTombol = (button, idNode, safeId) => {
+    hapusSetoranCard(idNode, button.dataset.nama, safeId);
+  };
+
   window.hapusSetoranCard = async (idNode, nama, safeId) => {
     if(confirm(`Hapus data setoran ini dari riwayat ${nama}?`)) {
       try {
         await remove(ref(db, `cahaya_app/setoran_tahfiz/${idNode}`));
-        fetchRiwayatSantri(nama, safeId);
+        delete cacheSetoranTahfiz[idNode];
+        simpanCacheSetoran(cacheSetoranTahfiz);
+        window.fetchRiwayatSantri(nama, safeId, cacheSetoranTahfiz);
       } catch(e) { alert("Gagal menghapus: " + e.message); }
     }
   };
