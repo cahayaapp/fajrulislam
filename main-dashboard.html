@@ -1,0 +1,3246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CAHAYA APP – Portal Utama</title>
+  <link rel="icon" type="image/png" href="assets/logofi.png" />
+  <link rel="stylesheet" href="css/cahaya-theme.css" />
+  
+  <style>
+    /* =========================================================
+       CAHAYA APP — MAIN DASHBOARD FRESH EDTECH 2026/2027
+       Shell • Sidebar • Workspace • Chat • Notification
+       ========================================================= */
+
+    :root {
+      --shell-primary: var(--primary, #2878ff);
+      --shell-primary-dark: var(--primary-dark, #1557d5);
+      --shell-cyan: var(--cyan, #19c6e6);
+      --shell-purple: var(--purple, #7667f5);
+      --shell-orange: var(--orange, #ff9f43);
+      --shell-green: var(--green, #29c58d);
+      --shell-red: var(--red, #ff5d6c);
+      --shell-ink: var(--text-heading, #152347);
+      --shell-text: var(--text-main, #1f2d4d);
+      --shell-muted: var(--text-muted, #71809e);
+      --shell-line: var(--border, #e5ebf5);
+      --shell-soft: var(--bg-main, #f5f8ff);
+      --shell-card: #ffffff;
+      --sidebar-width: 294px;
+      --topbar-height: 76px;
+      --shell-shadow: 0 18px 45px rgba(35, 78, 160, .10);
+      --shell-shadow-lg: 0 24px 60px rgba(26, 56, 116, .18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Nunito', 'Poppins', sans-serif;
+      color: var(--shell-text);
+      background:
+        radial-gradient(circle at 72% -10%, rgba(25, 198, 230, .12), transparent 26%),
+        linear-gradient(180deg, #f3f7ff 0%, #f8fbff 100%);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      display: flex;
+      flex-direction: row;
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* =========================================================
+       SIDEBAR
+       ========================================================= */
+
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100%;
+      flex: 0 0 var(--sidebar-width);
+      position: relative;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(25, 198, 230, .09), transparent 25%),
+        #ffffff;
+      border-right: 1px solid rgba(219, 229, 244, .88);
+      box-shadow: 12px 0 35px rgba(37, 75, 145, .055);
+      transition: transform .32s cubic-bezier(.22, 1, .36, 1), left .32s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .sidebar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(40, 120, 255, .18), rgba(25, 198, 230, .04), transparent 80%);
+      pointer-events: none;
+    }
+
+    .sidebar-top {
+      flex-shrink: 0;
+      padding: 20px 18px 14px;
+      position: relative;
+    }
+
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      margin-bottom: 15px;
+    }
+
+    .brand-logo-shell {
+      width: 54px;
+      height: 54px;
+      flex: 0 0 54px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #ffffff 0%, #edf5ff 100%);
+      border: 1px solid #dbe9fd;
+      box-shadow: 0 10px 25px rgba(40, 120, 255, .15);
+    }
+
+    .brand-logo-shell::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      z-index: -1;
+      border-radius: 21px;
+      background: linear-gradient(135deg, rgba(40, 120, 255, .14), rgba(25, 198, 230, .08));
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      filter: drop-shadow(0 5px 9px rgba(20, 72, 150, .13));
+    }
+
+    .brand-text {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .brand-kicker {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--shell-primary);
+      font-size: .59rem;
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      color: var(--shell-ink);
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 1000;
+      line-height: 1.05;
+      letter-spacing: -.3px;
+    }
+
+    .brand-text p {
+      max-width: 155px;
+      margin: 5px 0 0;
+      overflow: hidden;
+      color: var(--shell-muted);
+      font-size: .61rem;
+      font-weight: 800;
+      line-height: 1.25;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      text-transform: none;
+      letter-spacing: .1px;
+    }
+
+    .sidebar-close {
+      display: none;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      place-items: center;
+      color: #6c7c98;
+      cursor: pointer;
+      background: #f1f6fd;
+      border: 1px solid #e3ebf7;
+      border-radius: 11px;
+    }
+
+    .sidebar-school-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(135deg, #eef5ff 0%, #edfaff 100%);
+      border: 1px solid #d9e9ff;
+      border-radius: 15px;
+    }
+
+    .sidebar-school-pill::after {
+      content: '';
+      width: 62px;
+      height: 62px;
+      position: absolute;
+      top: -36px;
+      right: -20px;
+      border: 12px solid rgba(40, 120, 255, .08);
+      border-radius: 50%;
+    }
+
+    .school-status-dot {
+      width: 10px;
+      height: 10px;
+      flex: 0 0 10px;
+      position: relative;
+      z-index: 1;
+      background: var(--shell-green);
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(41, 197, 141, .13);
+    }
+
+    .sidebar-school-pill div {
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar-school-pill strong,
+    .sidebar-school-pill span {
+      display: block;
+    }
+
+    .sidebar-school-pill strong {
+      color: var(--shell-ink);
+      font-size: .72rem;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .sidebar-school-pill span {
+      margin-top: 2px;
+      color: var(--shell-muted);
+      font-size: .61rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .sidebar-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding: 4px 11px 22px;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #ccdaed transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: #ccdaed;
+      border-radius: 999px;
+    }
+
+    .nav-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .menu-group {
+      display: none;
+      margin: 0 0 11px;
+      animation: shellGroupIn .35s ease both;
+    }
+
+    @keyframes shellGroupIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .group-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0 0 6px;
+      padding: 10px 12px 4px;
+      color: #8b99af;
+      font-size: .59rem;
+      font-weight: 1000;
+      line-height: 1.2;
+      letter-spacing: 1.15px;
+      text-transform: uppercase;
+    }
+
+    .group-label::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      flex: 0 0 5px;
+      background: linear-gradient(135deg, var(--shell-primary), var(--shell-cyan));
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(40, 120, 255, .08);
+    }
+
+    .nav-item {
+      min-height: 45px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      position: relative;
+      margin: 2px 0;
+      padding: 10px 13px;
+      overflow: hidden;
+      color: #556581;
+      font-size: .82rem;
+      font-weight: 800;
+      line-height: 1.3;
+      text-decoration: none;
+      cursor: pointer;
+      background: transparent;
+      border: 1px solid transparent;
+      border-left: 1px solid transparent;
+      border-radius: 13px;
+      transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+    }
+
+    .nav-item::after {
+      content: '›';
+      margin-left: auto;
+      color: #b2bed0;
+      font-size: 1.15rem;
+      font-weight: 600;
+      transform: translateX(-2px);
+      transition: .18s ease;
+    }
+
+    .nav-item:hover {
+      padding-left: 13px;
+      color: var(--shell-primary-dark);
+      background: #f2f7ff;
+      border-color: #e0ebfb;
+      transform: translateX(2px);
+    }
+
+    .nav-item:hover::after {
+      color: var(--shell-primary);
+      transform: translateX(1px);
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--shell-primary) 0%, #3f87ff 54%, var(--shell-cyan) 135%);
+      border-color: rgba(40, 120, 255, .3);
+      box-shadow: 0 9px 20px rgba(40, 120, 255, .21);
+      transform: none;
+    }
+
+    .nav-item.active::before {
+      content: '';
+      width: 4px;
+      height: 22px;
+      position: absolute;
+      left: 5px;
+      top: 50%;
+      background: rgba(255, 255, 255, .85);
+      border-radius: 999px;
+      transform: translateY(-50%);
+    }
+
+    .nav-item.active::after {
+      color: rgba(255, 255, 255, .82);
+      transform: translateX(0);
+    }
+
+    #sidebarNotifBadge {
+      margin-left: auto !important;
+      padding: 2px 7px !important;
+      color: #ffffff !important;
+      font-size: .59rem !important;
+      font-weight: 1000 !important;
+      line-height: 1.4 !important;
+      background: var(--shell-red) !important;
+      border: 2px solid rgba(255, 255, 255, .78) !important;
+      border-radius: 999px !important;
+      box-shadow: 0 4px 9px rgba(255, 93, 108, .22);
+    }
+
+    .nav-item.active #sidebarNotifBadge {
+      color: var(--shell-red) !important;
+      background: #ffffff !important;
+    }
+
+    .sidebar-bottom {
+      flex-shrink: 0;
+      padding: 13px 14px 16px;
+      background: rgba(255, 255, 255, .96);
+      border-top: 1px solid #e9eff8;
+      box-shadow: 0 -12px 25px rgba(39, 77, 144, .045);
+    }
+
+    .sidebar-user-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      margin-bottom: 10px;
+      padding: 9px 10px;
+      background: #f7faff;
+      border: 1px solid #e5edf9;
+      border-radius: 14px;
+    }
+
+    .sidebar-user-avatar {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: #ffffff;
+      font-size: .9rem;
+      font-weight: 1000;
+      background: linear-gradient(135deg, var(--shell-purple), var(--shell-primary));
+      border: 2px solid #ffffff;
+      border-radius: 13px;
+      box-shadow: 0 7px 14px rgba(118, 103, 245, .18);
+    }
+
+    .sidebar-user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .sidebar-user-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .sidebar-user-copy strong,
+    .sidebar-user-copy span {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-user-copy strong {
+      color: var(--shell-ink);
+      font-size: .75rem;
+      font-weight: 1000;
+    }
+
+    .sidebar-user-copy span {
+      margin-top: 2px;
+      color: var(--shell-muted);
+      font-size: .61rem;
+      font-weight: 750;
+    }
+
+    .btn-logout {
+      width: 100%;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      color: #d84355;
+      font-size: .75rem;
+      font-weight: 1000;
+      letter-spacing: .25px;
+      cursor: pointer;
+      background: #fff4f5;
+      border: 1px solid #ffd9dd;
+      border-radius: 13px;
+      transition: .2s ease;
+    }
+
+    .btn-logout:hover {
+      color: #ffffff;
+      background: linear-gradient(135deg, #ff6473, #e94759);
+      border-color: transparent;
+      box-shadow: 0 10px 22px rgba(233, 71, 89, .22);
+      transform: translateY(-1px);
+    }
+
+    /* =========================================================
+       MAIN WORKSPACE & TOPBAR
+       ========================================================= */
+
+    .main-content {
+      min-width: 0;
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .main-content::before {
+      content: '';
+      height: 165px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(229, 240, 255, .65), transparent);
+    }
+
+    .top-nav {
+      min-height: var(--topbar-height);
+      flex-shrink: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      position: relative;
+      padding: 11px 22px;
+      background: rgba(255, 255, 255, .87);
+      border-bottom: 1px solid rgba(219, 229, 244, .9);
+      box-shadow: 0 8px 30px rgba(36, 75, 145, .055);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .top-nav-left,
+    .top-nav-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .top-nav-left {
+      min-width: 0;
+      gap: 13px;
+    }
+
+    .top-nav-right {
+      flex-shrink: 0;
+      gap: 10px;
+    }
+
+    .menu-btn {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: var(--shell-primary);
+      font-size: 1.3rem;
+      cursor: pointer;
+      background: #eef5ff;
+      border: 1px solid #dce9fc;
+      border-radius: 14px;
+      box-shadow: 0 6px 15px rgba(40, 120, 255, .08);
+      transition: .2s ease;
+    }
+
+    .menu-btn:hover {
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--shell-primary), #4389ff);
+      border-color: transparent;
+      box-shadow: 0 9px 20px rgba(40, 120, 255, .2);
+      transform: translateY(-1px);
+    }
+
+    .page-heading {
+      min-width: 0;
+    }
+
+    .page-kicker {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--shell-primary);
+      font-size: .57rem;
+      font-weight: 1000;
+      line-height: 1.1;
+      letter-spacing: 1.05px;
+      text-transform: uppercase;
+    }
+
+    .app-title-header {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--shell-ink);
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.04rem;
+      font-weight: 1000;
+      line-height: 1.2;
+      letter-spacing: -.1px;
+    }
+
+    .app-title-header img {
+      width: 27px;
+      height: 27px;
+      object-fit: contain;
+    }
+
+    #currentPageTitle {
+      max-width: 48vw;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .top-action-btn {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      color: #65758f;
+      font-size: 1.05rem;
+      cursor: pointer;
+      background: #f6f9fd;
+      border: 1px solid #e3ebf7;
+      border-radius: 13px;
+      transition: .2s ease;
+    }
+
+    .top-action-btn:hover {
+      color: var(--shell-primary);
+      background: #edf5ff;
+      border-color: #d5e5fc;
+      transform: translateY(-1px);
+    }
+
+    .top-notif-badge {
+      min-width: 18px;
+      height: 18px;
+      display: none;
+      place-items: center;
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      padding: 0 5px;
+      color: #ffffff;
+      font-size: .52rem;
+      font-weight: 1000;
+      background: var(--shell-red);
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      box-shadow: 0 4px 10px rgba(255, 93, 108, .25);
+    }
+
+    .top-user-copy {
+      max-width: 170px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      min-width: 0;
+      margin-left: 3px;
+    }
+
+    .top-user-copy strong,
+    .top-user-copy span {
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .top-user-copy strong {
+      color: var(--shell-ink);
+      font-size: .75rem;
+      font-weight: 1000;
+    }
+
+    .top-user-copy span {
+      margin-top: 2px;
+      color: var(--shell-muted);
+      font-size: .6rem;
+      font-weight: 750;
+    }
+
+    .user-profile-icon {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: #ffffff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 1000;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--shell-purple), var(--shell-primary));
+      border: 3px solid #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(86, 94, 214, .2), 0 0 0 1px #dbe7f8;
+      transition: .2s ease;
+    }
+
+    .user-profile-icon:hover {
+      transform: translateY(-2px) rotate(-2deg);
+      box-shadow: 0 12px 24px rgba(86, 94, 214, .26), 0 0 0 1px #dbe7f8;
+    }
+
+    .user-profile-icon img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border: 0 !important;
+      border-radius: 11px !important;
+    }
+
+    #contentFrame {
+      width: 100%;
+      min-height: 0;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+      background: transparent;
+      border: 0;
+    }
+
+    /* =========================================================
+       OVERLAY
+       ========================================================= */
+
+    .mobile-menu-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0;
+      background: rgba(20, 35, 68, .56);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      transition: opacity .28s ease;
+    }
+
+    .mobile-menu-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* =========================================================
+       FLOATING CHAT BUTTON
+       ========================================================= */
+
+    .pengurus-fab-chat {
+      width: 58px;
+      height: 58px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      right: 24px;
+      bottom: 22px;
+      z-index: 9999;
+      overflow: visible;
+      color: #ffffff;
+      font-size: 1.42rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--shell-primary) 0%, #4a8cff 48%, var(--shell-cyan) 125%);
+      border: 3px solid rgba(255, 255, 255, .93);
+      border-radius: 19px;
+      box-shadow: 0 15px 32px rgba(40, 120, 255, .28), 0 0 0 1px rgba(40, 120, 255, .14);
+      transition: transform .22s ease, box-shadow .22s ease;
+    }
+
+    .pengurus-fab-chat::before {
+      content: '';
+      position: absolute;
+      inset: -7px;
+      z-index: -1;
+      opacity: .65;
+      background: rgba(40, 120, 255, .09);
+      border-radius: 24px;
+    }
+
+    .pengurus-fab-chat:hover {
+      transform: translateY(-4px) scale(1.025);
+      box-shadow: 0 20px 38px rgba(40, 120, 255, .34), 0 0 0 1px rgba(40, 120, 255, .14);
+    }
+
+    .chat-badge {
+      width: 24px;
+      height: 24px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      padding: 0 5px;
+      color: #ffffff;
+      font-family: 'Nunito', sans-serif;
+      font-size: .64rem;
+      font-weight: 1000;
+      background: var(--shell-red);
+      border: 3px solid #ffffff;
+      border-radius: 999px;
+      box-shadow: 0 6px 13px rgba(255, 93, 108, .3);
+    }
+
+    /* =========================================================
+       CHAT WINDOW
+       ========================================================= */
+
+    .pengurus-chat-window {
+      width: 380px;
+      max-width: calc(100vw - 34px);
+      height: min(610px, calc(100vh - 125px));
+      display: none;
+      flex-direction: column;
+      position: fixed;
+      right: 22px;
+      bottom: 92px;
+      z-index: 10000;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .98);
+      border: 1px solid rgba(215, 227, 244, .95);
+      border-radius: 24px;
+      box-shadow: var(--shell-shadow-lg);
+      font-family: 'Nunito', 'Poppins', sans-serif;
+      animation: chatWindowIn .25s ease both;
+    }
+
+    @keyframes chatWindowIn {
+      from { opacity: 0; transform: translateY(12px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .p-chat-header {
+      min-height: 74px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      padding: 16px 18px;
+      color: #ffffff;
+      background:
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, .2), transparent 28%),
+        linear-gradient(135deg, var(--shell-primary) 0%, #377fff 52%, #16b9d8 130%);
+      border: 0;
+    }
+
+    .p-chat-header::after {
+      content: '';
+      width: 90px;
+      height: 90px;
+      position: absolute;
+      top: -58px;
+      right: 35px;
+      border: 18px solid rgba(255, 255, 255, .09);
+      border-radius: 50%;
+    }
+
+    .p-chat-heading {
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .p-chat-kicker {
+      display: block;
+      margin-bottom: 3px;
+      color: rgba(255, 255, 255, .76);
+      font-size: .56rem;
+      font-weight: 1000;
+      letter-spacing: 1.15px;
+      text-transform: uppercase;
+    }
+
+    .p-chat-header h4 {
+      max-width: 245px;
+      margin: 0;
+      overflow: hidden;
+      color: #ffffff;
+      font-size: .96rem;
+      font-weight: 1000;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .panel-close-btn {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      z-index: 2;
+      color: #ffffff;
+      font-size: 1rem;
+      cursor: pointer;
+      background: rgba(255, 255, 255, .15);
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      transition: .18s ease;
+    }
+
+    .panel-close-btn:hover {
+      background: rgba(255, 255, 255, .25);
+      transform: rotate(4deg);
+    }
+
+    .p-chat-tabs {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      padding: 7px;
+      background: #eef4fc;
+      border-bottom: 1px solid #e0e9f6;
+    }
+
+    .p-tab {
+      min-height: 39px;
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 8px 10px;
+      color: #71809b;
+      font-size: .72rem;
+      font-weight: 900;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      transition: .18s ease;
+    }
+
+    .p-tab:hover {
+      color: var(--shell-primary);
+      background: rgba(255, 255, 255, .72);
+    }
+
+    .p-tab.active {
+      color: var(--shell-primary-dark);
+      background: #ffffff;
+      border-color: #dce8f8;
+      box-shadow: 0 6px 15px rgba(35, 78, 160, .08);
+    }
+
+    .p-chat-filter {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      flex-shrink: 0;
+      padding: 12px;
+      background: #ffffff;
+      border-bottom: 1px solid #e5edf8;
+    }
+
+    .p-chat-filter select {
+      width: 100%;
+      min-height: 43px;
+      padding: 9px 12px;
+      color: var(--shell-text);
+      font-size: .74rem;
+      font-weight: 750;
+      outline: none;
+      background: #f7faff;
+      border: 1px solid #dce6f5;
+      border-radius: 12px;
+      transition: .18s ease;
+    }
+
+    .p-chat-filter select:focus {
+      background: #ffffff;
+      border-color: var(--shell-primary);
+      box-shadow: 0 0 0 4px rgba(40, 120, 255, .1);
+    }
+
+    .p-inbox-list {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 7px;
+      background: #ffffff;
+      scrollbar-width: thin;
+      scrollbar-color: #d1ddef transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .inbox-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      position: relative;
+      margin: 2px 0;
+      padding: 11px;
+      cursor: pointer;
+      user-select: none;
+      background: #ffffff;
+      border: 1px solid transparent;
+      border-bottom: 1px solid #edf2f8;
+      border-radius: 13px;
+      transition: .18s ease;
+    }
+
+    .inbox-item:hover {
+      background: #f5f9ff;
+      border-color: #e0eaf8;
+      transform: translateX(2px);
+    }
+
+    .inbox-avatar {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      display: grid;
+      place-items: center;
+      color: var(--shell-primary-dark);
+      font-size: 1rem;
+      font-weight: 1000;
+      background: linear-gradient(145deg, #eaf3ff, #f1edff);
+      border: 1px solid #d9e7fb;
+      border-radius: 14px;
+    }
+
+    .inbox-info {
+      flex: 1;
+      min-width: 0;
+      pointer-events: none;
+    }
+
+    .inbox-name,
+    .inbox-preview {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .inbox-name {
+      margin-bottom: 3px;
+      color: var(--shell-ink);
+      font-size: .78rem;
+      font-weight: 950;
+    }
+
+    .inbox-preview {
+      color: var(--shell-muted);
+      font-size: .69rem;
+      font-weight: 650;
+    }
+
+    .unread-indicator {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 9px;
+      display: none;
+      background: var(--shell-red);
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(255, 93, 108, .12);
+    }
+
+    .inbox-item.broadcast-room {
+      background: #fff8ec;
+      border: 1px solid #ffe0b2;
+      border-left: 4px solid var(--shell-orange);
+    }
+
+    .inbox-item.broadcast-room .inbox-avatar {
+      color: #bb6a12;
+      background: #ffedce;
+      border-color: #ffd596;
+    }
+
+    .p-chat-body {
+      flex: 1;
+      min-height: 0;
+      display: none;
+      flex-direction: column;
+      gap: 9px;
+      overflow-y: auto;
+      padding: 14px;
+      background:
+        radial-gradient(circle at 90% 0%, rgba(40, 120, 255, .05), transparent 25%),
+        #f5f8fc;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #ccd9eb transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .p-chat-msg {
+      max-width: 84%;
+      position: relative;
+      padding: 10px 13px;
+      color: var(--shell-text);
+      font-size: .76rem;
+      font-weight: 650;
+      line-height: 1.48;
+      word-wrap: break-word;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 15px;
+      box-shadow: 0 5px 13px rgba(38, 69, 119, .055);
+    }
+
+    .p-msg-self {
+      align-self: flex-end;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--shell-primary), #4b8eff);
+      border-bottom-right-radius: 4px;
+    }
+
+    .p-msg-other {
+      align-self: flex-start;
+      background: #ffffff;
+      border: 1px solid #dfe8f5;
+      border-bottom-left-radius: 4px;
+    }
+
+    .p-msg-info {
+      margin-bottom: 4px;
+      color: #93a1b7;
+      font-size: .57rem;
+      font-weight: 800;
+    }
+
+    .p-msg-self .p-msg-info {
+      color: rgba(255, 255, 255, .74);
+    }
+
+    .msg-options-menu {
+      min-width: 135px;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      position: absolute;
+      right: 16px;
+      z-index: 1100;
+      background: #ffffff;
+      border: 1px solid #dfe7f3;
+      border-radius: 13px;
+      box-shadow: 0 13px 30px rgba(23, 51, 102, .18);
+    }
+
+    .msg-options-menu button {
+      width: 100%;
+      padding: 10px 13px;
+      color: var(--shell-text);
+      font-size: .7rem;
+      font-weight: 800;
+      text-align: left;
+      cursor: pointer;
+      background: #ffffff;
+      border: 0;
+      transition: .16s ease;
+    }
+
+    .msg-options-menu button:hover {
+      color: var(--shell-red);
+      background: #fff3f4;
+    }
+
+    .p-chat-footer {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      padding: 10px 11px;
+      background: #ffffff;
+      border-top: 1px solid #e2eaf6;
+    }
+
+    .p-chat-footer input {
+      min-width: 0;
+      min-height: 43px;
+      flex: 1;
+      padding: 10px 14px;
+      color: var(--shell-text);
+      font-size: .76rem;
+      font-weight: 700;
+      outline: none;
+      background: #f5f8fc;
+      border: 1px solid #dce6f3;
+      border-radius: 14px;
+      transition: .18s ease;
+    }
+
+    .p-chat-footer input:focus {
+      background: #ffffff;
+      border-color: var(--shell-primary);
+      box-shadow: 0 0 0 4px rgba(40, 120, 255, .09);
+    }
+
+    .p-chat-footer button {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-size: 1rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--shell-primary), var(--shell-cyan));
+      border: 0;
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(40, 120, 255, .21);
+      transition: .18s ease;
+    }
+
+    .p-chat-footer button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 23px rgba(40, 120, 255, .27);
+    }
+
+    /* =========================================================
+       NOTIFICATION DRAWER
+       ========================================================= */
+
+    .notif-panel {
+      width: 370px;
+      max-width: 94vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      right: -410px;
+      z-index: 10005;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .98);
+      border-left: 1px solid #dce7f5;
+      box-shadow: -20px 0 55px rgba(27, 56, 111, .18);
+      transition: right .34s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .notif-panel.open {
+      right: 0;
+    }
+
+    .notif-header {
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      padding: 22px 20px;
+      color: #ffffff;
+      background:
+        radial-gradient(circle at 90% 15%, rgba(255, 255, 255, .2), transparent 27%),
+        linear-gradient(135deg, #6c5ce7 0%, var(--shell-primary) 62%, var(--shell-cyan) 135%);
+      border: 0;
+    }
+
+    .notif-header::after {
+      content: '';
+      width: 118px;
+      height: 118px;
+      position: absolute;
+      right: -49px;
+      bottom: -73px;
+      border: 23px solid rgba(255, 255, 255, .08);
+      border-radius: 50%;
+    }
+
+    .notif-heading {
+      position: relative;
+      z-index: 1;
+    }
+
+    .notif-kicker {
+      display: block;
+      margin-bottom: 4px;
+      color: rgba(255, 255, 255, .75);
+      font-size: .57rem;
+      font-weight: 1000;
+      letter-spacing: 1.25px;
+      text-transform: uppercase;
+    }
+
+    .notif-header h3 {
+      margin: 0;
+      color: #ffffff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.22rem;
+      font-weight: 1000;
+      letter-spacing: -.25px;
+    }
+
+    .notif-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding: 13px;
+      background: #f4f8fd;
+      scrollbar-width: thin;
+      scrollbar-color: #ccd9eb transparent;
+    }
+
+    .notif-card {
+      position: relative;
+      padding: 14px 14px 13px;
+      color: var(--shell-text);
+      cursor: pointer;
+      background: #ffffff;
+      border: 1px solid #e0e9f6;
+      border-radius: 15px;
+      box-shadow: 0 6px 18px rgba(39, 75, 137, .055);
+      transition: .18s ease;
+    }
+
+    .notif-card:hover {
+      border-color: #c9dcf7;
+      box-shadow: 0 11px 24px rgba(39, 75, 137, .09);
+      transform: translateY(-2px);
+    }
+
+    .notif-card.unread {
+      padding-left: 18px;
+      background: linear-gradient(135deg, #f1f7ff, #f0fbff);
+      border-color: #cfe2fc;
+      border-left: 4px solid var(--shell-primary);
+    }
+
+    .notif-card.unread::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      position: absolute;
+      top: 15px;
+      right: 14px;
+      background: var(--shell-primary);
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(40, 120, 255, .1);
+    }
+
+    .notif-title {
+      padding-right: 15px;
+      margin-bottom: 5px;
+      color: var(--shell-ink);
+      font-size: .77rem;
+      font-weight: 1000;
+      line-height: 1.35;
+    }
+
+    .notif-desc {
+      color: #61708a;
+      font-size: .7rem;
+      font-weight: 650;
+      line-height: 1.48;
+    }
+
+    .notif-time {
+      display: block;
+      margin-top: 9px;
+      color: #93a1b7;
+      font-size: .56rem;
+      font-weight: 900;
+      letter-spacing: .35px;
+      text-transform: uppercase;
+    }
+
+    /* =========================================================
+       IN-APP TOAST
+       ========================================================= */
+
+    .in-app-notif {
+      width: calc(100% - 32px);
+      max-width: 390px;
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      position: fixed;
+      top: -125px;
+      left: 50%;
+      z-index: 100000;
+      padding: 10px 13px;
+      overflow: hidden;
+      color: var(--shell-text);
+      cursor: pointer;
+      background: rgba(255, 255, 255, .97);
+      border: 1px solid #d9e6f7;
+      border-left: 0;
+      border-radius: 17px;
+      box-shadow: 0 18px 42px rgba(25, 56, 111, .2);
+      backdrop-filter: blur(16px);
+      transform: translateX(-50%);
+      transition: top .42s cubic-bezier(.22, 1.3, .36, 1);
+    }
+
+    .in-app-notif::before {
+      content: '';
+      width: 5px;
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      left: 0;
+      background: linear-gradient(180deg, var(--shell-primary), var(--shell-cyan));
+      border-radius: 0 6px 6px 0;
+    }
+
+    .in-app-notif.show {
+      top: 16px;
+    }
+
+    .in-app-notif .notif-icon {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      display: grid;
+      place-items: center;
+      color: var(--shell-primary);
+      font-size: 1.15rem;
+      background: linear-gradient(145deg, #eaf3ff, #eefbff);
+      border: 1px solid #d4e7ff;
+      border-radius: 14px;
+    }
+
+    .in-app-notif .notif-text {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .in-app-notif .notif-title-toast,
+    .in-app-notif .notif-desc-toast {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .in-app-notif .notif-title-toast {
+      color: var(--shell-ink);
+      font-size: .74rem;
+      font-weight: 1000;
+    }
+
+    .in-app-notif .notif-desc-toast {
+      margin-top: 3px;
+      color: var(--shell-muted);
+      font-size: .66rem;
+      font-weight: 650;
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (min-width: 901px) {
+      .menu-btn {
+        display: none;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      :root {
+        --sidebar-width: 274px;
+      }
+
+      .top-user-copy {
+        max-width: 130px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: min(300px, calc(100vw - 42px));
+        height: 100%;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        flex-basis: auto;
+        box-shadow: 20px 0 55px rgba(20, 43, 85, .22);
+        transform: translateX(-105%);
+      }
+
+      .sidebar.open {
+        left: 0;
+        transform: translateX(0);
+      }
+
+      .sidebar-close {
+        display: grid;
+      }
+
+      .mobile-menu-overlay {
+        display: block;
+      }
+
+      .main-content {
+        width: 100%;
+        height: 100%;
+        flex: 1;
+      }
+
+      .top-nav {
+        min-height: 68px;
+        padding: 9px 13px;
+      }
+
+      .top-user-copy {
+        display: none;
+      }
+
+      .app-title-header {
+        font-size: .94rem;
+      }
+
+      #currentPageTitle {
+        max-width: 49vw;
+      }
+    }
+
+    @media (max-width: 560px) {
+      :root {
+        --topbar-height: 64px;
+      }
+
+      .top-nav {
+        gap: 8px;
+        padding: 8px 10px;
+      }
+
+      .top-nav-left {
+        min-width: 0;
+        gap: 9px;
+      }
+
+      .top-nav-right {
+        gap: 7px;
+      }
+
+      .menu-btn,
+      .top-action-btn,
+      .user-profile-icon {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+        border-radius: 12px;
+      }
+
+      .page-kicker {
+        display: none;
+      }
+
+      .app-title-header img {
+        display: none;
+      }
+
+      .app-title-header {
+        font-size: .86rem;
+      }
+
+      #currentPageTitle {
+        max-width: calc(100vw - 155px);
+      }
+
+      .pengurus-fab-chat {
+        width: 54px;
+        height: 54px;
+        right: 14px;
+        bottom: 17px;
+        border-radius: 18px;
+      }
+
+      .pengurus-chat-window {
+        width: calc(100vw - 16px);
+        max-width: none;
+        height: min(76vh, 620px);
+        right: 8px;
+        bottom: 79px;
+        border-radius: 21px;
+      }
+
+      .notif-panel {
+        width: 100vw;
+        max-width: none;
+        right: -105vw;
+      }
+
+      .notif-header {
+        min-height: 88px;
+        padding: 18px 16px;
+      }
+
+      .in-app-notif.show {
+        top: 9px;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .top-action-btn {
+        display: none !important;
+      }
+
+      #currentPageTitle {
+        max-width: calc(100vw - 112px);
+      }
+
+      .sidebar {
+        width: calc(100vw - 28px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="css/pengurus-whatsapp-chat.css" />
+</head>
+<body>
+
+  <div id="inAppNotif" class="in-app-notif" onclick="bukaPanelNotif()">
+    <div class="notif-icon">🔔</div>
+    <div class="notif-text">
+      <span class="notif-title-toast" id="notifTitle">Pemberitahuan Baru</span>
+      <span class="notif-desc-toast" id="notifDesc">Cek sekarang...</span>
+    </div>
+  </div>
+
+  <div class="mobile-menu-overlay" onclick="toggleSidebar()"></div>
+
+  <aside class="sidebar" id="mainSidebar">
+    <div class="sidebar-top">
+      <div class="brand-header">
+        <div class="brand-logo-shell">
+          <img src="assets/logofi.png" alt="Logo Pesantren Cahaya Fajrul Islam" class="brand-logo" />
+        </div>
+        <div class="brand-text">
+          <span class="brand-kicker">Holistic Islamic School</span>
+          <h1>CAHAYA APP</h1>
+          <p id="roleBadge">Pesantren Cahaya Fajrul Islam</p>
+        </div>
+        <button class="sidebar-close" type="button" onclick="toggleSidebar()" aria-label="Tutup menu">✕</button>
+      </div>
+
+      <div class="sidebar-school-pill">
+        <span class="school-status-dot"></span>
+        <div>
+          <strong>Tahun Ajaran 2026/2027</strong>
+          <span>Ruang kerja terpadu pesantren</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-scroll">
+      <nav class="nav-menu" id="dynamicMenu"></nav>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-user-card">
+        <div class="sidebar-user-avatar" id="sidebarUserAvatar">C</div>
+        <div class="sidebar-user-copy">
+          <strong id="sidebarUserName">Pengguna CAHAYA</strong>
+          <span id="sidebarUserRole">Menyiapkan akses...</span>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">
+        <span>↪</span> Keluar dari Aplikasi
+      </button>
+    </div>
+  </aside>
+
+  <div class="notif-panel" id="sideNotifPanel">
+    <div class="notif-header">
+      <div class="notif-heading">
+        <span class="notif-kicker">Pusat Informasi</span>
+        <h3>Notifikasi</h3>
+      </div>
+      <button class="panel-close-btn" type="button" onclick="toggleNotifPanel()" aria-label="Tutup notifikasi">✕</button>
+    </div>
+    <div class="notif-body" id="listNotifikasi">
+      <div style="text-align:center; color:#94a3b8; margin-top:20px; font-size:0.85rem;">
+        Memuat pemberitahuan...
+      </div>
+    </div>
+  </div>
+
+  <main class="main-content">
+    <div class="top-nav">
+      <div class="top-nav-left">
+        <button class="menu-btn" type="button" onclick="toggleSidebar()" aria-label="Buka menu">☰</button>
+        <div class="page-heading">
+          <span class="page-kicker">CAHAYA Workspace</span>
+          <div class="app-title-header">
+            <img src="assets/logofi.png" alt="Logo">
+            <span id="currentPageTitle">CAHAYA APP</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-nav-right">
+        <button class="top-action-btn" id="topNavNotif" type="button" style="display:none;" onclick="toggleNotifPanel()" aria-label="Buka notifikasi">
+          🔔
+          <span class="top-notif-badge" id="topNotifBadge">0</span>
+        </button>
+        <div class="top-user-copy">
+          <strong id="topUserName">Pengguna CAHAYA</strong>
+          <span id="topUserRole">Ruang kerja digital</span>
+        </div>
+        <div class="user-profile-icon" id="topNavProfile" style="display:none;" onclick="openAuthorizedMenu('menu-profil')"></div>
+      </div>
+    </div>
+
+    <iframe id="contentFrame" src="about:blank" title="Konten CAHAYA APP"></iframe>
+  </main>
+
+  <button
+    class="pengurus-fab-chat"
+    id="featureChatFab"
+    type="button"
+    style="display:none;"
+    onclick="togglePengurusChat()"
+    aria-label="Buka WhatsApp CAHAYA"
+  >
+    <span class="pw-fab-icon">💬</span>
+    <span id="chatUnreadBadge" class="chat-badge">0</span>
+  </button>
+
+  <section
+    class="pengurus-chat-window"
+    id="pengurusChatWindow"
+    aria-label="WhatsApp CAHAYA"
+  >
+    <header class="pw-chat-header">
+      <button
+        type="button"
+        class="pw-header-button"
+        id="pwBackButton"
+        onclick="showPengurusChatList()"
+        aria-label="Kembali ke daftar obrolan"
+        style="display:none;"
+      >←</button>
+
+      <div class="pw-header-avatar" id="pwHeaderAvatar">C</div>
+
+      <div class="pw-header-copy">
+        <strong id="chatHeaderTitle">WhatsApp CAHAYA</strong>
+        <span id="pwHeaderSubtitle">Pusat komunikasi pengurus</span>
+      </div>
+
+      <button
+        type="button"
+        class="pw-header-button"
+        id="pwSearchToggle"
+        onclick="togglePengurusSearch()"
+        aria-label="Cari kontak"
+      >⌕</button>
+
+      <button
+        type="button"
+        class="pw-header-button"
+        onclick="togglePengurusChat()"
+        aria-label="Tutup obrolan"
+      >✕</button>
+    </header>
+
+    <div class="pw-list-view" id="pwListView">
+      <div class="pw-search-bar" id="pwSearchBar">
+        <label>
+          <span>⌕</span>
+          <input
+            type="search"
+            id="pwContactSearch"
+            placeholder="Cari nama, username, atau role"
+            autocomplete="off"
+            oninput="filterPengurusContacts()"
+          >
+        </label>
+      </div>
+
+      <div class="pw-access-note" id="pwAccessNote">
+        Menyiapkan daftar kontak yang diizinkan...
+      </div>
+
+      <div class="pw-broadcast-list" id="pwBroadcastList"></div>
+
+      <div id="viewInbox" class="p-inbox-list pw-contact-list">
+        <div class="pw-empty">Memuat percakapan...</div>
+      </div>
+    </div>
+
+    <div id="viewNew" style="display:none;">
+      <div id="tabInbox"></div>
+      <div id="tabNew"></div>
+      <select id="pChatRole" style="display:none;"></select>
+      <select id="pChatRecipient" style="display:none;"></select>
+    </div>
+
+    <div class="p-chat-body pw-chat-body" id="pChatBody"></div>
+
+    <footer class="p-chat-footer pw-chat-footer" id="pChatFooter">
+      <div class="pw-input-shell">
+        <textarea
+          id="pChatInput"
+          rows="1"
+          placeholder="Ketik pesan"
+          oninput="autoResizePengurusInput()"
+          onkeydown="handlePengurusChatEnter(event)"
+        ></textarea>
+      </div>
+
+      <button
+        type="button"
+        class="pw-send-button"
+        id="pwSendButton"
+        onclick="sendPengurusMessage()"
+        aria-label="Kirim pesan"
+      >➤</button>
+    </footer>
+
+    <div
+      class="pw-action-overlay"
+      id="pwActionOverlay"
+      onclick="closePengurusActionSheet(event)"
+    >
+      <div class="pw-action-sheet" onclick="event.stopPropagation()">
+        <div class="pw-action-title" id="pwActionTitle">Opsi Pesan</div>
+
+        <button
+          type="button"
+          id="pwEditAction"
+          onclick="editSelectedPengurusMsg()"
+        >✏️ Edit Pesan</button>
+
+        <button
+          type="button"
+          id="pwCopyAction"
+          onclick="copySelectedPengurusMsg()"
+        >📋 Salin Pesan</button>
+
+        <button
+          type="button"
+          class="danger"
+          id="pwDeleteAction"
+          onclick="deleteSelectedPengurusMsg()"
+        >🗑️ Hapus Pesan</button>
+
+        <button type="button" onclick="closePengurusActionSheet()">Batal</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+      projectId: "absensi-santri-fajrul-islam"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const dbFS = firebase.firestore();
+    const dbRT = firebase.database();
+
+    const allMenuHTML = `
+      <div class="menu-group" id="group-utama">
+        <div class="group-label">Utama</div>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-notifikasi" style="display:none;" onclick="toggleNotifPanel()">🔔 Notifikasi <span id="sidebarNotifBadge" style="background:#ef4444; color:white; padding:2px 8px; border-radius:10px; font-size:0.7rem; margin-left:auto; display:none; font-weight:800;">0</span></a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Akses Wali Santri</div>
+        <a class="nav-item menu-akses" id="menu-beranda-wali" style="display: none;" onclick="loadPage('wali/beranda.html', this)">✨ Beranda Linimasa</a>
+        <a class="nav-item menu-akses" id="menu-laporan-wali" style="display: none;" onclick="loadPage('wali/laporan.html', this)">📊 Laporan Akademik</a>
+        <a class="nav-item menu-akses" id="menu-admin-wali" style="display: none;" onclick="loadPage('wali/administrasi.html', this)">💳 Info Administrasi</a>
+        <a class="nav-item menu-akses" id="menu-modul-wali" style="display: none;" onclick="loadPage('wali/modul.html', this)">📚 Modul & Materi</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Modul Supervisor</div>
+        <a class="nav-item menu-akses" id="menu-kontrol-harian" style="display: none;" onclick="loadPage('supervisor/kontrol-harian/kbm-guru.html', this)">📊 Pusat Kontrol Harian</a>
+        <a class="nav-item menu-akses" id="menu-kontrol-pekanan" style="display: none;" onclick="loadPage('supervisor/kontrol-pekanan.html', this)">📅 Pusat Kontrol Pekanan</a>
+        <a class="nav-item menu-akses" id="menu-raport-bulanan" style="display: none;" onclick="loadPage('supervisor/raport-bulanan.html', this)">📈 Laporan Bulanan & KPI</a>
+        <a class="nav-item menu-akses" id="menu-raport-semester" style="display: none;" onclick="loadPage('supervisor/raport-semester.html', this)">🎓 Raport Semester</a>
+        <a class="nav-item menu-akses" id="menu-monitoring-absen-guru" style="display: none;" onclick="loadPage('supervisor/monitoringabsenguru.html', this)">📍 Monitoring Absensi Guru</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Personil Layanan</div>
+        <a class="nav-item menu-akses" id="menu-jurnal-pkl" style="display: none;" onclick="loadPage('PKL/jurnal-pkl.html', this)">🧹 Jurnal Keamanan & Kebersihan</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Kepala Sarpras</div>
+        <a class="nav-item menu-akses" id="menu-jurnal-sarpras" style="display: none;" onclick="loadPage('sarpras/jurnal.html', this)">🔧 Input Jurnal Sarpras</a>
+        <a class="nav-item menu-akses" id="menu-checklist-sarpras" style="display: none;" onclick="loadPage('sarpras/checklist.html', this)">✅ Checklist Harian Sarpras</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Kesehatan</div>
+        <a class="nav-item menu-akses" id="menu-jurnal-kesehatan" style="display: none;" onclick="loadPage('kesehatan/jurnal.html', this)">🩺 Jurnal Kesehatan</a>
+        <a class="nav-item menu-akses" id="menu-pemeriksaan-kesehatan" style="display: none;" onclick="loadPage('kesehatan/pemeriksaan.html', this)">🧑‍⚕️ Pemeriksaan Kesehatan</a>
+        <a class="nav-item menu-akses" id="menu-stok-obat" style="display: none;" onclick="loadPage('kesehatan/stokobat.html', this)">💊 Stok Obat UKS</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Akademik (Guru)</div>
+
+        <a class="nav-item menu-akses" id="menu-absen-guru" style="display: none;" onclick="loadPage('guru/absenguru.html', this)">📍 Absen Guru</a>
+
+        <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html', this)">📋 Absensi KBM</a>
+
+        <a class="nav-item menu-akses" id="menu-prauas" style="display: none;" onclick="loadPage('guru/prauas.html', this)">🧾 Pra UAS</a>
+
+        <a class="nav-item menu-akses" id="menu-input-soal-uas" style="display: none;" onclick="loadPage('guru/inputsoal.html', this)">📝 Input Soal UAS</a>
+
+        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html', this)">📖 Input Setoran Tahfiz</a>
+
+        <a class="nav-item menu-akses" id="menu-buku-tahfiz" style="display: none;" onclick="loadPage('guru/buku-tahfiz.html', this)">📚 Buku Setoran Santri</a>
+
+        <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html', this)">📝 Input Nilai Bulanan</a>
+
+        <a class="nav-item menu-akses" id="menu-raport" style="display: none;" onclick="loadPage('guru/inputRaportBulanan.html', this)">📊 Raport Bulanan</a>
+
+        <a class="nav-item menu-akses" id="menu-halqah" style="display: none;" onclick="loadPage('guru/edit-kelas.html', this)">⚙️ Manajemen Kelas</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Asrama (Naqib)</div>
+        <a class="nav-item menu-akses" id="menu-absen-asrama" style="display: none;" onclick="loadPage('naqib/absensi.html', this)">📋 Absensi Program</a>
+        <a class="nav-item menu-akses" id="menu-disiplin" style="display: none;" onclick="loadPage('naqib/kedisiplinan.html', this)">⚖️ Lapor Pelanggaran</a>
+        <a class="nav-item menu-akses" id="menu-mentoring" style="display: none;" onclick="loadPage('naqib/mentoring.html', this)">🤝 Mentoring</a>
+        <a class="nav-item menu-akses" id="menu-gamifikasi" style="display: none;" onclick="loadPage('naqib/gamifikasi.html', this)">🌟 Catat Inisiatif</a>
+        <a class="nav-item menu-akses" id="menu-jadwal-piket" style="display: none;" onclick="loadPage('naqib/jadwalpiket.html', this)">🗓️ Jadwal Piket Naqib</a>
+        <a class="nav-item menu-akses" id="menu-jurnal-piket" style="display: none;" onclick="loadPage('naqib/jurnal-piket.html', this)">📝 Jurnal Pengawasan</a>
+        <a class="nav-item menu-akses" id="menu-usrah" style="display: none;" onclick="loadPage('naqib/edit-usrah.html', this)">⚙️ Manajemen Usrah</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Pusat Asesmen</div>
+        <a class="nav-item menu-akses" id="menu-asesmen-naqib" style="display: none;" onclick="loadPage('pusat-asesmen/naqib.html', this)">🧘 Asesmen Mandiri Naqib</a>
+        <a class="nav-item menu-akses" id="menu-asesmen-guru" style="display: none;" onclick="loadPage('pusat-asesmen/guru.html', this)">🧘 Asesmen Mandiri Guru</a>
+        <a class="nav-item menu-akses" id="menu-asesmen-santri" style="display: none;" onclick="loadPage('pusat-asesmen/santri.html', this)">📊 Asesmen CAHAYA Santri</a>
+        <a class="nav-item menu-akses" id="menu-asesmen-sdm" style="display: none;" onclick="loadPage('pusat-asesmen/sdm-supervisor.html', this)">👁️ Asesmen Kinerja SDM</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Bimbingan Konseling</div>
+        <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="loadPage('konselor/daftar-kasus-baru.html', this)">⏳ Tindak Pelanggaran</a>
+        <a class="nav-item menu-akses" id="menu-buku-kasus" style="display: none;" onclick="loadPage('konselor/buku-kasus-riwayat.html', this)">📚 Buku Rekam Jejak Kasus</a>
+        <a class="nav-item menu-akses" id="menu-evaluasi-kasus" style="display: none;" onclick="loadPage('konselor/evaluasi-kasus.html', this)">📈 Evaluasi Pembinaan</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">SETTING</div>
+        <a class="nav-item menu-akses" id="menu-komentar" style="display: none;" onclick="loadPage('admin/admin_komentar.html', this)">💬 Manajemen Komentar</a>
+        <a class="nav-item menu-akses" id="menu-media" style="display: none;" onclick="loadPage('admin/admin_media.html', this)">📸 Pengaturan Media IG/YT</a>
+        <a class="nav-item menu-akses" id="menu-db-master" style="display: none;" onclick="loadPage('admin/database.html', this)">🗄️ Database Master</a>
+        <a class="nav-item menu-akses" id="menu-jadwal" style="display: none;" onclick="loadPage('admin/atur-jadwal.html', this)">📅 Atur Jadwal KBM</a>
+        <a class="nav-item menu-akses" id="menu-qr-kelas" style="display: none;" onclick="loadPage('admin/qrkelas.html', this)">▦ Master QR Kelas</a>
+        <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html', this)">🔐 Manajemen User</a>
+        <a class="nav-item menu-akses" id="menu-koreksi" style="display: none;" onclick="loadPage('admin/settings.html', this)">🛠️ Pusat Koreksi Data</a>
+        <a class="nav-item menu-akses" id="menu-profil" style="display: none;" onclick="loadPage('profil.html', this)">👤 Pengaturan Profil</a>
+      </div>
+    `;
+
+    function toggleSidebar() {
+      document.getElementById('mainSidebar').classList.toggle('open');
+      document.querySelector('.mobile-menu-overlay').classList.toggle('open');
+    }
+
+    function bolehAksesMenu(menuId) {
+      return authorizationReady && authorizedMenuIds.has(menuId);
+    }
+
+    function tampilkanPesanTidakBerwenang(menuId = "") {
+      console.warn("Akses menu ditolak:", menuId);
+      alert("Akses ditolak. Menu ini belum dicentang pada Manajemen User.");
+    }
+
+    function toggleNotifPanel() {
+      if (!bolehAksesMenu('menu-notifikasi')) {
+        tampilkanPesanTidakBerwenang('menu-notifikasi');
+        return;
+      }
+
+      document.getElementById('sideNotifPanel').classList.toggle('open');
+    }
+
+    function logout() { 
+      if(confirm("Keluar aplikasi?")) { 
+        firebase.auth().signOut().then(() => {
+          localStorage.removeItem('cahayaCurrentUser'); 
+          window.location.href = 'index.html'; 
+        });
+      } 
+    }
+
+    function getPanggilanCerdas(fullName) {
+      let parts = fullName.trim().split(/\s+/);
+      const regexM = /^(m\.|m|muhammad|mohammad|mochammad|moch\.|moch|mohd\.|mohd|mhd\.|mhd)$/i;
+
+      if (regexM.test(parts[0]) && parts.length > 1) {
+        parts.shift();
+        let sisa = parts.join(" ").replace(/^(al\-|al\s|el\-|el\s)/i, '').trim();
+        let sisaParts = sisa.split(/\s|\-/);
+        return sisaParts[sisaParts.length - 1].charAt(0).toUpperCase() + sisaParts[sisaParts.length - 1].slice(1).toLowerCase();
+      } else {
+        let namaDepan = parts[0] || "Santri";
+        return namaDepan.charAt(0).toUpperCase() + namaDepan.slice(1).toLowerCase();
+      }
+    }
+
+    let pUserSafe = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+
+    let rawRoles = pUserSafe.akses || [];
+    if(typeof rawRoles === 'string') rawRoles = [rawRoles];
+
+    function normalisasiRole(role) {
+      const nilai = String(role || "").toLowerCase().trim();
+
+      const aliasRole = {
+        "administrator": "admin",
+        "wakil direktur": "wakil",
+        "wakil_direktur": "wakil",
+        "wadir": "wakil",
+        "ketua yayasan": "yayasan",
+        "center of learning & achievement": "cla",
+        "center of learning and achievement": "cla",
+        "kepala sarpras": "sarpras",
+        "tim layanan": "layanan",
+        "tim kesehatan": "kesehatan",
+        "petugas kesehatan": "kesehatan"
+      };
+
+      return aliasRole[nilai] || nilai;
+    }
+
+    let myRoles = [...new Set(
+      rawRoles.map(normalisasiRole).filter(Boolean)
+    )];
+
+    let authorizedMenuIds = new Set();
+    let authorizationReady = false;
+
+    let isTopLevel = myRoles.some(r => ['admin', 'direktur', 'wakil'].includes(r));
+    let isKonselor = myRoles.includes('konselor');
+    let isWali = myRoles.includes('wali');
+    let realUsername = pUserSafe.username || "guest";
+    let namaSaya = pUserSafe.label || pUserSafe.nama || pUserSafe.username || "Pengurus";
+
+    function labelRole(role) {
+      const labels = {
+        admin: "Administrator",
+        direktur: "Direktur",
+        wakil: "Wakil Direktur",
+        supervisor: "Supervisor",
+        yayasan: "Ketua Yayasan",
+        guru: "Guru",
+        naqib: "Naqib",
+        konselor: "Konselor",
+        cla: "Center of Learning & Achievement",
+        layanan: "Tim Layanan",
+        sarpras: "Kepala Sarpras",
+        kesehatan: "Tim Kesehatan",
+        wali: "Wali Santri"
+      };
+
+      return labels[role] || role;
+    }
+
+    function terapkanProfilAktif(profile = {}, authUser = null) {
+      const data = { ...profile };
+
+      let roles = data.akses || data.jabatan || data.role || [];
+      if (!Array.isArray(roles)) roles = [roles];
+
+      roles = [...new Set(
+        roles.map(normalisasiRole).filter(Boolean)
+      )];
+
+      const usernameAuth =
+        authUser?.email?.split("@")[0]?.toLowerCase() || "";
+
+      data.username =
+        data.username ||
+        usernameAuth ||
+        "guest";
+
+      data.uid =
+        authUser?.uid ||
+        data.uid ||
+        "";
+
+      data.email =
+        authUser?.email ||
+        data.email ||
+        `${data.username}@cahayaapp.id`;
+
+      const labelTidakLayak = [
+        "",
+        "user",
+        "pengguna",
+        "pengguna cahaya",
+        "pengguna cahaya app",
+        String(data.username || "").toLowerCase()
+      ];
+
+      let namaTampilan = String(
+        data.label ||
+        data.nama ||
+        data.namaTampilan ||
+        ""
+      ).trim();
+
+      if (
+        roles.includes("admin") &&
+        labelTidakLayak.includes(namaTampilan.toLowerCase())
+      ) {
+        namaTampilan = "Admin Cahaya";
+      }
+
+      if (!namaTampilan) {
+        namaTampilan = roles.includes("admin")
+          ? "Admin Cahaya"
+          : data.username;
+      }
+
+      data.label = namaTampilan;
+      data.nama = namaTampilan;
+      data.namaTampilan = namaTampilan;
+      data.akses = roles;
+      data.jabatan = roles;
+      data.role = roles[0] || "";
+      data.roleLabel = roles.map(labelRole).join(" • ");
+
+      pUserSafe = data;
+      rawRoles = roles;
+      myRoles = roles;
+
+      isTopLevel = myRoles.some(
+        role => ["admin", "direktur", "wakil"].includes(role)
+      );
+
+      isKonselor = myRoles.includes("konselor");
+      isWali = myRoles.includes("wali");
+      realUsername = data.username || "guest";
+      namaSaya = data.label || data.username || "Pengurus";
+
+      if (isWali) {
+        const anakAman = String(
+          data.namaAnak || "Santri"
+        ).toUpperCase();
+
+        namaSaya =
+          "Abi Ummi " +
+          getPanggilanCerdas(anakAman);
+      }
+
+      localStorage.setItem(
+        "cahayaCurrentUser",
+        JSON.stringify(data)
+      );
+
+      // Dapat dibaca halaman iframe beranda pada origin yang sama.
+      window.cahayaCurrentUser = data;
+
+      // Kirim langsung bila iframe sudah aktif.
+      kirimProfilKeFrame();
+
+      return data;
+    }
+
+    // Samakan struktur sesi lama dan baru sejak halaman dibuka.
+    terapkanProfilAktif(pUserSafe);
+
+    function kirimProfilKeFrame() {
+      const frame = document.getElementById("contentFrame");
+
+      if (
+        !frame ||
+        !frame.contentWindow ||
+        !pUserSafe
+      ) {
+        return;
+      }
+
+      try {
+        frame.contentWindow.postMessage(
+          {
+            type: "CAHAYA_PROFILE_SYNC",
+            profile: pUserSafe
+          },
+          "*"
+        );
+      } catch (error) {
+        console.warn(
+          "Profil belum dapat dikirim ke iframe:",
+          error
+        );
+      }
+    }
+
+    window.addEventListener(
+      "message",
+      event => {
+        if (
+          event.data?.type !==
+          "CAHAYA_PROFILE_REQUEST"
+        ) {
+          return;
+        }
+
+        kirimProfilKeFrame();
+      }
+    );
+
+    function ambilUrlDariMenu(menuElement) {
+      if (!menuElement) return "";
+      const onclickText = menuElement.getAttribute("onclick") || "";
+      const cocok = onclickText.match(/loadPage\('([^']+)'/);
+      return cocok ? cocok[1] : "";
+    }
+
+    function cariMenuBerdasarkanUrl(url) {
+      return [...document.querySelectorAll('#dynamicMenu .menu-akses')]
+        .find(menu => ambilUrlDariMenu(menu) === url) || null;
+    }
+
+    function terapkanOtorisasiFiturTambahan() {
+      const profileButton = document.getElementById('topNavProfile');
+      const topNotifButton = document.getElementById('topNavNotif');
+      const chatFab = document.getElementById('featureChatFab');
+      const chatWindow = document.getElementById('pengurusChatWindow');
+      const notifPanel = document.getElementById('sideNotifPanel');
+      const notifToast = document.getElementById('inAppNotif');
+
+      profileButton.style.display = bolehAksesMenu('menu-profil') ? 'flex' : 'none';
+      if (topNotifButton) topNotifButton.style.display = bolehAksesMenu('menu-notifikasi') ? 'grid' : 'none';
+      chatFab.style.display = bolehAksesMenu('menu-chat') ? 'flex' : 'none';
+
+      if (!bolehAksesMenu('menu-chat')) chatWindow.style.display = 'none';
+
+      if (!bolehAksesMenu('menu-notifikasi')) {
+        notifPanel.classList.remove('open');
+        notifToast.classList.remove('show');
+      }
+    }
+
+    function tampilkanHalamanTanpaAkses() {
+      const frame = document.getElementById('contentFrame');
+      frame.removeAttribute('src');
+      frame.srcdoc = `
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <style>
+            body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;font-family:Arial,sans-serif;color:#0f172a;padding:24px;box-sizing:border-box}
+            .box{max-width:560px;background:white;border:1px solid #e2e8f0;border-radius:18px;padding:30px;text-align:center;box-shadow:0 12px 35px rgba(15,23,42,.08)}
+            .icon{font-size:42px;margin-bottom:12px} h2{margin:0 0 10px} p{color:#64748b;line-height:1.65;margin:0}
+          </style>
+        </head>
+        <body><div class="box"><div class="icon">🔒</div><h2>Belum Ada Menu yang Diotorisasi</h2><p>Administrator perlu mencentang minimal satu menu untuk role akun ini melalui halaman Manajemen Pengguna.</p></div></body>
+        </html>`;
+
+      document.getElementById('currentPageTitle').textContent = "Akses Belum Diberikan";
+    }
+
+    function bukaHalamanAwalYangDiizinkan() {
+      const prioritas = [];
+      if (isWali) prioritas.push('menu-beranda-wali');
+      prioritas.push('menu-home');
+
+      for (const menuId of prioritas) {
+        if (!bolehAksesMenu(menuId)) continue;
+        const menu = document.getElementById(menuId);
+        const url = ambilUrlDariMenu(menu);
+        if (menu && url) {
+          loadPage(url, menu);
+          return;
+        }
+      }
+
+      const menuPertama = [...document.querySelectorAll('#dynamicMenu .nav-item.menu-akses')]
+        .find(menu => bolehAksesMenu(menu.id) && Boolean(ambilUrlDariMenu(menu)));
+
+      if (menuPertama) {
+        loadPage(ambilUrlDariMenu(menuPertama), menuPertama);
+        return;
+      }
+
+      tampilkanHalamanTanpaAkses();
+    }
+
+    async function refreshUserProfileUI() {
+      try {
+        authorizationReady = false;
+        authorizedMenuIds = new Set();
+
+        const displayNama =
+          pUserSafe.label ||
+          pUserSafe.nama ||
+          pUserSafe.username ||
+          "PENGGUNA";
+
+        const avatarEl = document.getElementById('topNavProfile');
+        const roleBadge = document.getElementById('roleBadge');
+
+        roleBadge.textContent =
+          pUserSafe.roleLabel ||
+          myRoles.map(labelRole).join(" • ") ||
+          "Pengguna CAHAYA";
+
+        roleBadge.title =
+          `${displayNama} — ${roleBadge.textContent}`;
+
+        const roleText = roleBadge.textContent;
+        const topUserName = document.getElementById('topUserName');
+        const topUserRole = document.getElementById('topUserRole');
+        const sidebarUserName = document.getElementById('sidebarUserName');
+        const sidebarUserRole = document.getElementById('sidebarUserRole');
+        const sidebarUserAvatar = document.getElementById('sidebarUserAvatar');
+
+        if (topUserName) topUserName.textContent = displayNama;
+        if (topUserRole) topUserRole.textContent = roleText;
+        if (sidebarUserName) sidebarUserName.textContent = displayNama;
+        if (sidebarUserRole) sidebarUserRole.textContent = roleText;
+
+        if (sidebarUserAvatar) {
+          if (pUserSafe.fotoProfil) {
+            sidebarUserAvatar.innerHTML = `<img src="${pUserSafe.fotoProfil}" alt="Foto profil ${displayNama}">`;
+          } else {
+            sidebarUserAvatar.textContent = displayNama.charAt(0).toUpperCase();
+          }
+        }
+
+        if (pUserSafe.fotoProfil) {
+          avatarEl.innerHTML = `<img src="${pUserSafe.fotoProfil}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid white;">`;
+        } else {
+          avatarEl.textContent = displayNama.charAt(0).toUpperCase();
+        }
+
+        document.getElementById('dynamicMenu').innerHTML = allMenuHTML;
+
+        document.querySelectorAll('.menu-group').forEach(group => group.style.display = 'none');
+        document.querySelectorAll('#dynamicMenu .menu-akses').forEach(menu => menu.style.display = 'none');
+
+        const roleMenuDoc = await dbFS.collection("settings").doc("role_menus").get();
+        const roleMenuRules = roleMenuDoc.exists ? roleMenuDoc.data() : {};
+        const gabunganMenu = [];
+
+        myRoles.forEach(role => {
+          const daftarMenu = Array.isArray(roleMenuRules[role]) ? roleMenuRules[role] : [];
+          daftarMenu.forEach(menuId => {
+            if (!gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
+          });
+        });
+
+        const menuIdsYangTersedia = new Set(
+          [...document.querySelectorAll('#dynamicMenu .menu-akses')]
+            .map(menu => menu.id)
+            .filter(Boolean)
+        );
+
+        // Chat merupakan fitur dashboard, bukan item sidebar.
+        menuIdsYangTersedia.add('menu-chat');
+
+        authorizedMenuIds = new Set(
+          gabunganMenu.filter(menuId =>
+            menuIdsYangTersedia.has(menuId)
+          )
+        );
+
+        authorizationReady = true;
+
+        document.querySelectorAll('#dynamicMenu .nav-item.menu-akses').forEach(menu => {
+          const diizinkan = bolehAksesMenu(menu.id);
+          menu.style.display = diizinkan ? 'flex' : 'none';
+          if (diizinkan) {
+            const group = menu.closest('.menu-group');
+            if (group) group.style.display = 'block';
+          }
+        });
+
+        terapkanOtorisasiFiturTambahan();
+        bukaHalamanAwalYangDiizinkan();
+
+      } catch (error) {
+        authorizationReady = true;
+        authorizedMenuIds = new Set();
+        document.querySelectorAll('.menu-group').forEach(group => group.style.display = 'none');
+        terapkanOtorisasiFiturTambahan();
+        tampilkanHalamanTanpaAkses();
+        console.error("Gagal memuat otorisasi menu:", error);
+      }
+    }
+
+    function openAuthorizedMenu(menuId) {
+      if (!bolehAksesMenu(menuId)) {
+        tampilkanPesanTidakBerwenang(menuId);
+        return;
+      }
+
+      const menu = document.getElementById(menuId);
+      if (!menu) {
+        console.error("Elemen menu tidak ditemukan:", menuId);
+        return;
+      }
+
+      if (menuId === 'menu-notifikasi') {
+        toggleNotifPanel();
+        return;
+      }
+
+      const url = ambilUrlDariMenu(menu);
+      if (!url) {
+        console.error("URL menu tidak ditemukan:", menuId);
+        return;
+      }
+
+      loadPage(url, menu);
+    }
+
+    function loadPage(url, el) {
+      const menuElement = (el && el.classList && el.classList.contains('menu-akses'))
+        ? el
+        : cariMenuBerdasarkanUrl(url);
+
+      const menuId = menuElement?.id || "";
+
+      if (!menuId || !bolehAksesMenu(menuId)) {
+        tampilkanPesanTidakBerwenang(menuId);
+        return;
+      }
+
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      if (menuElement.classList.contains('nav-item')) menuElement.classList.add('active');
+
+      const frame = document.getElementById('contentFrame');
+      frame.removeAttribute('srcdoc');
+
+      frame.onload = () => {
+        kirimProfilKeFrame();
+      };
+
+      frame.src = url;
+
+      if (menuElement.textContent) {
+        let title = menuElement.textContent.replace(/[^\w\s]/gi, '').trim();
+        if (title === "Beranda Linimasa" && isWali) title = "CAHAYA APP";
+        document.getElementById('currentPageTitle').textContent = title;
+      }
+
+      if (window.innerWidth <= 900) document.getElementById('mainSidebar').classList.remove('open');
+      document.querySelector('.mobile-menu-overlay').classList.remove('open');
+    }
+
+    let pListUsers = [];
+    let targetAktifLabel = "";
+    let targetAktifDisplay = "";
+    let pChatListener = null;
+    let editModeId = null;
+    let lastUnreadCount = 0; 
+    let allGlobalNotifs = []; 
+
+    const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    let audioUnlocked = false;
+
+    document.body.addEventListener('touchstart', function() {
+      if (!audioUnlocked) {
+        notifSound.play().then(() => {
+          notifSound.pause();
+          notifSound.currentTime = 0;
+        }).catch(() => {});
+        audioUnlocked = true;
+      }
+    }, { once: true });
+
+    document.body.addEventListener('click', function() {
+      if (!audioUnlocked) {
+        notifSound.play().then(() => {
+          notifSound.pause();
+          notifSound.currentTime = 0;
+        }).catch(() => {});
+        audioUnlocked = true;
+      }
+    }, { once: true });
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        console.log("Otorisasi Sesi Berhasil:", user.email);
+
+        try {
+          const usernameAuth =
+            user.email?.split("@")[0]?.toLowerCase() || "";
+
+          let profilFirestore = null;
+
+          if (usernameAuth) {
+            const profilDoc = await dbFS
+              .collection("users")
+              .doc(usernameAuth)
+              .get();
+
+            if (profilDoc.exists) {
+              profilFirestore = profilDoc.data();
+            }
+          }
+
+          // Fallback untuk dokumen lama yang memakai username sesi lokal.
+          if (
+            !profilFirestore &&
+            pUserSafe.username &&
+            pUserSafe.username !== usernameAuth
+          ) {
+            const profilLokalDoc = await dbFS
+              .collection("users")
+              .doc(pUserSafe.username)
+              .get();
+
+            if (profilLokalDoc.exists) {
+              profilFirestore = profilLokalDoc.data();
+            }
+          }
+
+          const profilGabungan = {
+            ...pUserSafe,
+            ...(profilFirestore || {}),
+            username:
+              profilFirestore?.username ||
+              usernameAuth ||
+              pUserSafe.username,
+            uid: user.uid,
+            email: user.email
+          };
+
+          terapkanProfilAktif(
+            profilGabungan,
+            user
+          );
+        } catch (profileError) {
+          console.error(
+            "Gagal menyinkronkan profil pengguna:",
+            profileError
+          );
+
+          terapkanProfilAktif(
+            {
+              ...pUserSafe,
+              uid: user.uid,
+              email: user.email,
+              username:
+                pUserSafe.username ||
+                user.email?.split("@")[0]
+            },
+            user
+          );
+        }
+
+        await refreshUserProfileUI();
+
+        if (bolehAksesMenu('menu-chat')) {
+          initChatFilter();
+        }
+
+        /*
+         * Izin notifikasi tidak diminta otomatis.
+         * Browser akan meminta izin setelah pengguna berinteraksi.
+         */
+if (bolehAksesMenu('menu-chat')) {
+          try {
+            const snap = await dbFS.collection('users').get();
+            pListUsers = [];
+            snap.forEach(doc => pListUsers.push(doc.data()));
+          } catch (err) {
+            console.error("Gagal memuat master user:", err);
+          }
+        }
+
+        if (
+          bolehAksesMenu('menu-chat') ||
+          bolehAksesMenu('menu-notifikasi')
+        ) {
+          listenToGlobalMessagesAndNotifs();
+        }
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+
+    function initChatFilter() {
+      let opts = `<option value="">-- Pilih Tujuan --</option>`;
+
+      if (isTopLevel) {
+        opts += `<option value="broadcast" style="font-weight:bold; color:#d97706;">📢 Broadcast Pengumuman</option>`;
+        opts += `<option value="wali">👤 Wali Santri (Personal)</option>`;
+        opts += `<option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="supervisor">Supervisor</option><option value="konselor">Konselor</option><option value="naqib">Naqib</option><option value="guru">Guru</option><option value="kesehatan">Tim Kesehatan</option><option value="sarpras">Kepala Sarpras</option><option value="layanan">Tim Layanan</option><option value="cla">CLA</option>`;
+      } else if (isKonselor) {
+        opts += `<option value="wali">👤 Wali Santri (Personal)</option><option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="naqib">Naqib</option><option value="guru">Guru</option><option value="kesehatan">Tim Kesehatan</option><option value="sarpras">Kepala Sarpras</option><option value="layanan">Tim Layanan</option>`;
+      } else {
+        opts += `<option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="supervisor">Supervisor</option><option value="konselor">Konselor</option><option value="naqib">Naqib</option><option value="guru">Guru</option><option value="kesehatan">Tim Kesehatan</option><option value="sarpras">Kepala Sarpras</option><option value="layanan">Tim Layanan</option><option value="cla">CLA</option>`;
+      }
+
+      document.getElementById('pChatRole').innerHTML = opts;
+    }
+
+    function showInAppNotif(title, desc) {
+      if (!bolehAksesMenu('menu-notifikasi')) return;
+
+      document.getElementById('notifTitle').textContent = title;
+      document.getElementById('notifDesc').textContent = desc;
+
+      const notifEl = document.getElementById('inAppNotif');
+      notifEl.classList.add('show');
+
+      setTimeout(() => {
+        notifEl.classList.remove('show');
+      }, 4000);
+    }
+
+    function bukaPanelNotif() {
+      if (!bolehAksesMenu('menu-notifikasi')) {
+        tampilkanPesanTidakBerwenang('menu-notifikasi');
+        return;
+      }
+
+      document.getElementById('inAppNotif').classList.remove('show');
+      toggleNotifPanel();
+    }
+
+    function listenToGlobalMessagesAndNotifs() {
+      let chatUnreadData = [];
+      let dbNotifData = [];
+
+      dbRT.ref('cahaya_app/pesan_global').on('value', snap => {
+        chatUnreadData = [];
+
+        const allRooms = snap.val();
+        if(!allRooms) return;
+
+        let unreadTotal = 0;
+        let myInboxData = [];
+        let meClean = namaSaya.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        let latestMessageText = "";
+        let latestMessageSender = "";
+
+        if(isTopLevel && allRooms['room_broadcast_wali']) {
+          try {
+            let bMsgs = Object.values(allRooms['room_broadcast_wali']);
+
+            if(bMsgs.length > 0) {
+              let lastMsg = bMsgs[bMsgs.length - 1];
+
+              if(lastMsg && lastMsg.waktu) {
+                myInboxData.push({
+                  roomId: 'room_broadcast_wali',
+                  opponentDisplay: '📢 PENGUMUMAN WALI',
+                  opponentActualLabel: 'BROADCAST',
+                  lastMsg: lastMsg,
+                  isUnread: false
+                });
+              }
+            }
+          } catch(e) {}
+        }
+
+        Object.keys(allRooms).forEach(roomId => {
+          try {
+            if(roomId.includes(meClean) && roomId !== 'room_broadcast_wali') {
+              let msgs = allRooms[roomId];
+              if(!msgs || typeof msgs !== 'object') return; 
+
+              let msgValues = Object.values(msgs).filter(m => m && m.waktu);
+              if(msgValues.length === 0) return;
+
+              let lastMsg = msgValues[msgValues.length - 1];
+              let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim;
+              
+              if (!opponentLabel) {
+                let roomParts = roomId.replace('chat_', '').split('_');
+                let oppClean = roomParts[0] === meClean ? roomParts[1] : roomParts[0];
+
+                let oppUser = pListUsers.find(u => {
+                  return (u.label || u.username || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === oppClean;
+                });
+
+                if (oppUser) {
+                  opponentLabel = oppUser.label || oppUser.username;
+                } else if (oppClean && oppClean.startsWith('abiummi')) {
+                  let childName = oppClean.replace('abiummi', '');
+                  opponentLabel = "Abi Ummi " + childName.charAt(0).toUpperCase() + childName.slice(1);
+                } else {
+                  opponentLabel = oppClean || "Tidak Diketahui";
+                }
+              }
+
+              let oppUser = pListUsers.find(u => (u.label || u.username) === opponentLabel);
+              let displayOpponent = (oppUser && !opponentLabel.toLowerCase().includes('wali')) ? "@" + oppUser.username : opponentLabel;
+
+              let isUnread = false;
+
+              if (lastMsg.pengirim !== namaSaya) {
+                let lastReadTime = localStorage.getItem('chat_read_' + roomId) || "0";
+
+                if (new Date(lastMsg.waktu) > new Date(lastReadTime)) {
+                  unreadTotal++;
+                  isUnread = true;
+                  latestMessageText = lastMsg.teks;
+                  latestMessageSender = displayOpponent;
+
+                  chatUnreadData.push({
+                    tipe: 'chat',
+                    title: 'Pesan Baru: ' + displayOpponent,
+                    desc: lastMsg.teks,
+                    waktu: lastMsg.waktu,
+                    roomId: roomId,
+                    opponentActualLabel: opponentLabel,
+                    opponentDisplay: displayOpponent,
+                    isUnread: true
+                  });
+                }
+              }
+
+              myInboxData.push({
+                roomId,
+                opponentDisplay: displayOpponent,
+                opponentActualLabel: opponentLabel,
+                lastMsg,
+                isUnread
+              });
+            }
+          } catch(e) {}
+        });
+
+        if(unreadTotal > lastUnreadCount) {
+          notifSound.play().catch(e => {});
+          showInAppNotif(latestMessageSender, latestMessageText); 
+
+          if (Notification.permission === "granted" && window.innerWidth > 900) {
+            new Notification("Pesan Baru: " + latestMessageSender, {
+              body: latestMessageText,
+              icon: "assets/logofi.png"
+            });
+          }
+        }
+
+        lastUnreadCount = unreadTotal;
+
+        const badge = document.getElementById('chatUnreadBadge');
+
+        if(unreadTotal > 0) {
+          badge.textContent = unreadTotal;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+
+        if(document.getElementById('viewInbox').style.display !== 'none') {
+          renderInboxUI(myInboxData);
+        }
+        
+        updateNotificationPanel(chatUnreadData, dbNotifData);
+      });
+
+      dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}`).on('value', snap => {
+        dbNotifData = [];
+        const val = snap.val();
+
+        if (val) {
+          Object.keys(val).forEach(key => {
+            let n = val[key];
+            n.notifId = key;
+            n.tipe = n.tipe || 'database';
+            dbNotifData.push(n);
+          });
+        }
+        
+        const unreadDB = dbNotifData.filter(x => x.dibaca === false);
+
+        if (unreadDB.length > 0) {
+          notifSound.play().catch(e => {});
+          let latest = unreadDB[unreadDB.length - 1];
+          showInAppNotif(latest.title, latest.desc);
+          dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}/${latest.notifId}`).update({dibaca: true});
+        }
+        
+        updateNotificationPanel(chatUnreadData, dbNotifData);
+      });
+    }
+
+    function updateNotificationPanel(arrChat, arrDb) {
+      allGlobalNotifs = [...arrChat, ...arrDb].sort((a,b) => new Date(b.waktu) - new Date(a.waktu));
+      
+      const badgeSidebar = document.getElementById('sidebarNotifBadge');
+      const badgeTop = document.getElementById('topNotifBadge');
+      const countUnread = allGlobalNotifs.filter(x => x.isUnread || x.dibaca === false).length;
+
+      if(countUnread > 0) {
+        if (badgeSidebar) {
+          badgeSidebar.style.display = 'inline-block';
+          badgeSidebar.textContent = countUnread;
+        }
+        if (badgeTop) {
+          badgeTop.style.display = 'grid';
+          badgeTop.textContent = countUnread;
+        }
+      } else {
+        if (badgeSidebar) badgeSidebar.style.display = 'none';
+        if (badgeTop) badgeTop.style.display = 'none';
+      }
+
+      const listCont = document.getElementById('listNotifikasi');
+      listCont.innerHTML = '';
+
+      if(allGlobalNotifs.length === 0) {
+        listCont.innerHTML = '<div style="text-align:center; color:#94a3b8; margin-top:20px; font-size:0.85rem;">Belum ada pemberitahuan.</div>';
+        return;
+      }
+
+      allGlobalNotifs.forEach(n => {
+        const isU = (n.tipe === 'chat') ? n.isUnread : !n.dibaca;
+        const timeStr = new Date(n.waktu).toLocaleString('id-ID', {
+          day:'numeric',
+          month:'short',
+          hour:'2-digit',
+          minute:'2-digit'
+        });
+        
+        let clickAction = '';
+
+        if (n.tipe === 'chat') {
+          clickAction = `onclick="bukaChatDariPanel('${n.opponentActualLabel}', '${n.opponentDisplay}', '${n.roomId}')"`;
+        } else if (n.tipe === 'komentar' && n.eventId) {
+          clickAction = `onclick="bukaKomentarDariPanel('${n.eventId}', '${n.notifId}')"`;
+        }
+
+        listCont.insertAdjacentHTML('beforeend', `
+          <div class="notif-card ${isU ? 'unread' : ''}" ${clickAction}>
+            <div class="notif-title">${n.title}</div>
+            <div class="notif-desc">${n.desc}</div>
+            <span class="notif-time">${timeStr}</span>
+          </div>
+        `);
+      });
+    }
+
+    window.bukaChatDariPanel = function(label, display, roomId) {
+      toggleNotifPanel();
+      document.getElementById('pengurusChatWindow').style.display = 'flex';
+      startChat(label, display, roomId);
+    }
+    
+    window.bukaKomentarDariPanel = function(eventId, notifId) {
+      if (!bolehAksesMenu('menu-beranda-wali')) {
+        tampilkanPesanTidakBerwenang('menu-beranda-wali');
+        return;
+      }
+
+      toggleNotifPanel();
+
+      dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}/${notifId}`).update({
+        dibaca: true
+      });
+      
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+      const menuWali = document.getElementById('menu-beranda-wali');
+
+      if (menuWali) {
+        menuWali.classList.add('active');
+      }
+
+      document.getElementById('currentPageTitle').textContent = "CAHAYA APP";
+      
+      const iframe = document.getElementById('contentFrame');
+
+      if (!iframe.src.includes('beranda.html')) {
+        iframe.src = 'wali/beranda.html';
+      }
+      
+      setTimeout(() => {
+        iframe.contentWindow.postMessage({
+          type: 'SCROLL_TO_POST',
+          eventId: eventId
+        }, '*');
+      }, 1200); 
+    }
+
+    function renderInboxUI(inboxData) {
+      const container = document.getElementById('viewInbox');
+      container.innerHTML = '';
+
+      if(inboxData.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:30px; font-size:0.85rem; color:#94a3b8;">Belum ada riwayat obrolan.</div>';
+        return;
+      }
+
+      inboxData.sort((a,b) => new Date(b.lastMsg.waktu) - new Date(a.lastMsg.waktu));
+      
+      inboxData.forEach(item => {
+        let dotHtml = item.isUnread ? `<div class="unread-indicator" style="display:block;"></div>` : '';
+        let boldClass = item.isUnread ? `font-weight:800; color:#0f172a;` : `font-weight:400; color:#64748b;`;
+        let boxClass = item.roomId === 'room_broadcast_wali' ? 'inbox-item broadcast-room' : 'inbox-item';
+        let inisial = item.opponentDisplay === '📢 PENGUMUMAN WALI' ? '📢' : item.opponentDisplay.replace('@','').charAt(0).toUpperCase();
+
+        container.insertAdjacentHTML('beforeend', `
+          <div class="${boxClass}" onclick="startChat('${item.opponentActualLabel}', '${item.opponentDisplay}', '${item.roomId}')" oncontextmenu="event.preventDefault(); showInboxOptions(event, '${item.roomId}')">
+            <div class="inbox-avatar">${inisial}</div>
+            <div class="inbox-info">
+              <span class="inbox-name">${item.opponentDisplay}</span>
+              <span class="inbox-preview" style="${boldClass}">${item.lastMsg.teks}</span>
+            </div>
+            ${dotHtml}
+            <div id="inbox_menu_${item.roomId}" class="msg-options-menu" style="top:50%; bottom:auto; transform:translateY(-50%); right:20px;" onclick="event.stopPropagation();">
+              <button class="btn-del" onclick="hapusObrolan(event, '${item.roomId}')">🗑️ Hapus Obrolan</button>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    function showInboxOptions(e, roomId) {
+      e.stopPropagation();
+
+      document.querySelectorAll('.msg-options-menu').forEach(m => {
+        m.style.display = 'none';
+      });
+
+      const menu = document.getElementById('inbox_menu_' + roomId);
+
+      if(menu) {
+        menu.style.display = 'flex';
+
+        setTimeout(() => {
+          window.onclick = () => {
+            menu.style.display = 'none';
+            window.onclick = null;
+          };
+        }, 100);
+      }
+    }
+
+    function hapusObrolan(e, roomId) {
+      e.stopPropagation();
+
+      if(roomId === 'room_broadcast_wali') {
+        alert("Pengumuman Pusat tidak dapat dihapus.");
+        return;
+      }
+
+      if(confirm("Hapus seluruh riwayat obrolan ini?")) {
+        dbRT.ref(`cahaya_app/pesan_global/${roomId}`).remove();
+      }
+    }
+
+    function togglePengurusChat() {
+      if (!bolehAksesMenu('menu-chat')) {
+        tampilkanPesanTidakBerwenang('menu-chat');
+        return;
+      }
+
+      const cw = document.getElementById('pengurusChatWindow');
+
+      if (cw.style.display === 'flex') {
+        cw.style.display = 'none';
+
+        if(pChatListener) {
+          dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
+        }
+      } else {
+        cw.style.display = 'flex';
+        switchChatTab('inbox');
+      }
+    }
+
+    function switchChatTab(type) {
+      document.getElementById('tabInbox').classList.toggle('active', type === 'inbox');
+      document.getElementById('tabNew').classList.toggle('active', type === 'new');
+
+      document.getElementById('viewInbox').style.display = (type === 'inbox') ? 'flex' : 'none';
+      document.getElementById('viewNew').style.display = (type === 'new') ? 'flex' : 'none';
+
+      document.getElementById('pChatBody').style.display = 'none';
+      document.getElementById('pChatFooter').style.display = 'none';
+      document.getElementById('chatHeaderTitle').textContent = "Pusat Komunikasi";
+
+      if(pChatListener) {
+        dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
+      }
+
+      if(type === 'inbox') {
+        dbRT.ref('cahaya_app/pesan_global').once('value');
+      }
+    }
+
+    function loadPengurusTujuan() {
+      const role = document.getElementById('pChatRole').value.toLowerCase();
+      const sel = document.getElementById('pChatRecipient');
+
+      sel.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      sel.style.display = 'none';
+
+      if(!role) return;
+
+      if(role === 'broadcast') {
+        sel.innerHTML = `<option value="BROADCAST_WALI|📢 PENGUMUMAN WALI">Kirim ke Seluruh Wali Santri</option>`;
+        sel.style.display = 'block';
+        openChatFromDropdown(); 
+      } else {
+        let f = pListUsers.filter(u => {
+          let arr = Array.isArray(u.akses) ? u.akses.map(r => r.toLowerCase()) : [];
+          return arr.includes(role);
+        });
+
+        if(f.length > 0) {
+          f.forEach(u => {
+            let act = u.label || u.username;
+            let dsp = role === 'wali' ? act : `@${u.username}`;
+            sel.innerHTML += `<option value="${act}|${dsp}">${dsp}</option>`;
+          });
+
+          sel.style.display = 'block';
+        } else {
+          document.getElementById('pChatBody').innerHTML = `<div style="text-align:center; color:#ef4444; font-size:0.8rem; margin-top:20px;">Belum ada akun di divisi ini.</div>`;
+          document.getElementById('viewNew').style.display = 'none';
+          document.getElementById('pChatBody').style.display = 'flex';
+        }
+      }
+    }
+
+    function openChatFromDropdown() {
+      const val = document.getElementById('pChatRecipient').value;
+
+      if(val) {
+        let parts = val.split('|');
+        startChat(parts[0], parts[1]);
+      }
+    }
+
+    function pGetRoomId(a, b) {
+      let clean = (s) => s.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      return "chat_" + [clean(a), clean(b)].sort().join('_');
+    }
+
+    function startChat(opponentActualLabel, opponentDisplay, existingRoomId = null) {
+      targetAktifLabel = opponentActualLabel;
+      targetAktifDisplay = opponentDisplay;
+
+      let roomId;
+
+      if (opponentActualLabel === "BROADCAST_WALI" || opponentActualLabel === "BROADCAST") {
+        roomId = "room_broadcast_wali";
+        document.getElementById('chatHeaderTitle').textContent = "📢 Broadcast Pimpinan";
+        document.getElementById('pChatInput').disabled = false;
+        document.getElementById('pChatInput').placeholder = "Ketik Pengumuman...";
+      } else {
+        roomId = existingRoomId || pGetRoomId(namaSaya, opponentActualLabel);
+        document.getElementById('chatHeaderTitle').textContent = "Chat: " + opponentDisplay;
+        document.getElementById('pChatInput').disabled = false;
+        document.getElementById('pChatInput').placeholder = "Ketik pesan...";
+      }
+      
+      document.getElementById('viewInbox').style.display = 'none';
+      document.getElementById('viewNew').style.display = 'none';
+      document.getElementById('pChatBody').style.display = 'flex';
+      document.getElementById('pChatFooter').style.display = 'flex';
+      
+      setTimeout(() => {
+        document.getElementById('pChatInput').focus();
+      }, 100);
+
+      localStorage.setItem('chat_read_' + roomId, new Date().toISOString());
+      dbRT.ref('cahaya_app/pesan_global').once('value'); 
+
+      if(pChatListener) {
+        dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
+      }
+
+      pChatListener = roomId;
+
+      dbRT.ref(`cahaya_app/pesan_global/${roomId}`).on('value', snap => {
+        const body = document.getElementById('pChatBody');
+        body.innerHTML = '';
+
+        const data = snap.val();
+
+        if(!data) {
+          body.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:0.8rem; margin-top:20px;">Mulai percakapan.</div>';
+          return;
+        }
+        
+        Object.keys(data).forEach(msgId => {
+          const m = data[msgId];
+          const isMe = m.pengirim === namaSaya;
+          const timeStr = new Date(m.waktu).toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          let senderDisplay = isMe ? "Anda" : opponentDisplay;
+
+          let menuHtml = `<div id="menu_${msgId}" class="msg-options-menu">${isMe ? `<button onclick="editPesan('${roomId}', '${msgId}', '${m.teks.replace(/'/g, "\\'")}')">✏️ Edit</button><button class="btn-del" onclick="hapusPesan('${roomId}', '${msgId}')">🗑️ Hapus</button>` : `<button onclick="salinTeks('${m.teks.replace(/'/g, "\\'")}')">📋 Salin</button>`}</div>`;
+
+          body.insertAdjacentHTML('beforeend', `
+            <div class="p-chat-msg ${isMe ? 'p-msg-self' : 'p-msg-other'}" oncontextmenu="event.preventDefault(); showMsgOptions(event, '${msgId}')" onclick="showMsgOptions(event, '${msgId}')">
+              <div class="p-msg-info">${senderDisplay} • ${timeStr} ${m.diedit ? '(diedit)' : ''}</div>
+              <div id="txt_${msgId}">${m.teks}</div>
+              ${menuHtml}
+            </div>
+          `);
+        });
+
+        body.scrollTo({
+          top: body.scrollHeight,
+          behavior: 'smooth'
+        });
+      });
+    }
+
+    function showMsgOptions(e, mid) {
+      e.stopPropagation();
+
+      document.querySelectorAll('.msg-options-menu').forEach(m => {
+        m.style.display = 'none';
+      });
+
+      const menu = document.getElementById('menu_' + mid);
+
+      if(menu) {
+        menu.style.display = 'flex';
+
+        setTimeout(() => {
+          window.onclick = () => {
+            menu.style.display = 'none';
+            window.onclick = null;
+          };
+        }, 100);
+      }
+    }
+
+    function sendPengurusMessage() {
+      const inp = document.getElementById('pChatInput');
+      const txt = inp.value.trim();
+
+      if(!txt || !targetAktifLabel) return;
+
+      let rid = (targetAktifLabel === "BROADCAST_WALI" || targetAktifLabel === "BROADCAST")
+        ? "room_broadcast_wali"
+        : pGetRoomId(namaSaya, targetAktifLabel);
+
+      if (editModeId) {
+        dbRT.ref(`cahaya_app/pesan_global/${rid}/${editModeId}`).update({
+          teks: txt,
+          diedit: true
+        });
+
+        editModeId = null;
+      } else {
+        dbRT.ref(`cahaya_app/pesan_global/${rid}`).push({
+          teks: txt,
+          pengirim: namaSaya,
+          waktu: new Date().toISOString()
+        });
+      }
+      
+      localStorage.setItem('chat_read_' + rid, new Date().toISOString());
+      inp.value = '';
+      inp.focus();
+    }
+
+    function editPesan(roomId, msgId, oldText) {
+      const inp = document.getElementById('pChatInput');
+      inp.value = oldText;
+      inp.focus();
+      editModeId = msgId;
+    }
+
+    function hapusPesan(roomId, msgId) {
+      if(confirm("Hapus pesan ini dari ruang obrolan?")) {
+        dbRT.ref(`cahaya_app/pesan_global/${roomId}`).remove();
+      }
+    }
+
+    function salinTeks(txt) {
+      navigator.clipboard.writeText(txt);
+      alert("Pesan berhasil disalin.");
+    }
+
+    function handlePengurusChatEnter(e) {
+      if(e.key === 'Enter') {
+        sendPengurusMessage();
+      }
+    }
+  </script>
+  <script src="js/pengurus-whatsapp-chat.js"></script>
+</body>
+</html>
