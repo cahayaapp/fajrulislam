@@ -1,40 +1,2541 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CAHAYA APP — Portal Bersama Pesantren</title>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
 
-  <link rel="icon" type="image/png" href="assets/logofi.png" />
-  <link rel="apple-touch-icon" href="assets/logofi.png" />
-  <link rel="manifest" href="manifest.json" />
+  <title>CAHAYA APP — Pesantren Cahaya Fajrul Islam</title>
 
-  <meta name="theme-color" content="#2878ff" />
-  <meta name="description" content="Portal bersama wali santri, pengurus, dan pegawai Pesantren Cahaya Fajrul Islam untuk memantau perkembangan santri, berkomunikasi, dan mengelola layanan pesantren." />
+  <link
+    rel="icon"
+    type="image/png"
+    href="assets/logofi.png"
+  >
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
+
+  <meta
+    name="theme-color"
+    content="#075eea"
+  >
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900;1000&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
 
   <style>
     :root {
-      --primary: #2878ff;
-      --primary-dark: #1557d5;
-      --primary-deep: #103b92;
-      --cyan: #19c6e6;
-      --purple: #7667f5;
-      --orange: #ff9f43;
-      --green: #29c58d;
-      --red: #ff5d6c;
+      --blue-950: #06379f;
+      --blue-900: #074ac5;
+      --blue-800: #075eea;
+      --blue-700: #1479f4;
+      --blue-600: #2098f6;
+      --cyan-500: #23d5e8;
+      --cyan-300: #85f4e5;
 
-      --bg: #f4f8ff;
-      --card: #ffffff;
-      --text: #1f2d4d;
-      --heading: #152347;
-      --muted: #71809e;
-      --soft: #94a0b8;
-      --border: #e4ebf6;
+      --ink-950: #0f2350;
+      --ink-800: #1a3362;
+      --ink-600: #536886;
+      --ink-400: #8292aa;
 
+      --line: #dce8f7;
+      --soft-blue: #eef6ff;
+      --soft-cyan: #eefcfb;
+      --white: #ffffff;
+
+      --shadow-panel:
+        0 30px 70px rgba(21, 72, 159, .18);
+
+      --shadow-card:
+        0 14px 32px rgba(27, 78, 154, .10);
+
+      --shadow-button:
+        0 16px 34px rgba(16, 88, 221, .27);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      min-height: 100%;
+      background: #eef5ff;
+    }
+
+    body {
+      min-height: 100dvh;
+      overflow-x: hidden;
+      color: var(--ink-950);
+      font-family:
+        "Nunito",
+        "Plus Jakarta Sans",
+        sans-serif;
+      background:
+        linear-gradient(
+          180deg,
+          #0862e7 0,
+          #168bf2 34%,
+          #f4f8ff 34%,
+          #f6f9ff 100%
+        );
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-shell {
+      width: 100%;
+      min-height: 100dvh;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(
+          180deg,
+          transparent 0,
+          transparent 38%,
+          #f5f9ff 38%,
+          #f8fbff 100%
+        );
+    }
+
+    /* =========================================================
+       HERO
+       ========================================================= */
+
+    .hero {
+      min-height: 520px;
+      position: relative;
+      overflow: hidden;
+      padding:
+        calc(30px + env(safe-area-inset-top))
+        28px
+        110px;
+      color: #ffffff;
+      background:
+        radial-gradient(
+          circle at 78% 18%,
+          rgba(255,255,255,.19),
+          transparent 17%
+        ),
+        radial-gradient(
+          circle at 95% 55%,
+          rgba(33,216,229,.30),
+          transparent 30%
+        ),
+        linear-gradient(
+          145deg,
+          #043aa8 0%,
+          #075eea 43%,
+          #16bde3 108%
+        );
+      border-radius:
+        0 0 54px 54px;
+      box-shadow:
+        0 28px 65px rgba(6,73,183,.25);
+    }
+
+    .hero::before {
+      content: "";
+      width: 290px;
+      height: 290px;
+      position: absolute;
+      top: -132px;
+      right: -98px;
+      border: 46px solid rgba(255,255,255,.07);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: "";
+      width: 120%;
+      height: 135px;
+      position: absolute;
+      right: -10%;
+      bottom: -90px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      transform: rotate(-2deg);
+      pointer-events: none;
+    }
+
+    .hero-sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .9;
+    }
+
+    .spark {
+      width: 5px;
+      height: 5px;
+      position: absolute;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 0 16px rgba(255,255,255,.95);
+    }
+
+    .spark.s1 {
+      top: 122px;
+      right: 28%;
+    }
+
+    .spark.s2 {
+      top: 218px;
+      right: 43%;
+    }
+
+    .spark.s3 {
+      top: 310px;
+      right: 14%;
+    }
+
+    .brand-row {
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      gap: 17px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .brand-logo {
+      width: 74px;
+      height: 74px;
+      flex: 0 0 74px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: 7px;
+      border: 2px solid rgba(255,255,255,.70);
+      border-radius: 23px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.98),
+          rgba(242,248,255,.91)
+        );
+      box-shadow:
+        0 18px 36px rgba(2,44,136,.25);
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    .brand-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .brand-copy h1 {
+      color: #ffffff;
+      font-size: clamp(1.55rem, 5vw, 2rem);
+      font-weight: 1000;
+      line-height: 1.05;
+      letter-spacing: -.6px;
+    }
+
+    .brand-copy p {
+      margin-top: 7px;
+      color: rgba(255,255,255,.82);
+      font-size: clamp(.63rem, 2.6vw, .82rem);
+      font-weight: 900;
+      line-height: 1.35;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+    }
+
+    .hero-content {
+      max-width: 650px;
+      position: relative;
+      z-index: 5;
+      margin-top: 64px;
+    }
+
+    .hero-pill {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      color: #ffffff;
+      font-size: clamp(.66rem, 2.7vw, .80rem);
+      font-weight: 900;
+      letter-spacing: .7px;
+      border: 1px solid rgba(255,255,255,.30);
+      border-radius: 999px;
+      background: rgba(255,255,255,.11);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .hero-pill svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+    }
+
+    .hero-title {
+      max-width: 540px;
+      margin-top: 22px;
+      color: #ffffff;
+      font-size: clamp(2.25rem, 9vw, 4.6rem);
+      font-weight: 1000;
+      line-height: .98;
+      letter-spacing: -1.7px;
+      text-wrap: balance;
+    }
+
+    .hero-title span {
+      display: block;
+      margin-top: 9px;
+      color: transparent;
+      background:
+        linear-gradient(
+          90deg,
+          #69f4ff,
+          #73f7d0
+        );
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow:
+        0 11px 28px rgba(35,216,231,.20);
+    }
+
+    .hero-line {
+      width: min(300px, 75%);
+      height: 2px;
+      position: relative;
+      margin-top: 23px;
+      background:
+        linear-gradient(
+          90deg,
+          #55eeff,
+          rgba(85,238,255,0)
+        );
+    }
+
+    .hero-line::after {
+      content: "";
+      width: 9px;
+      height: 9px;
+      position: absolute;
+      top: 50%;
+      left: 68%;
+      border-radius: 50%;
+      background: #c8ffff;
+      box-shadow:
+        0 0 18px #8dfcff;
+      transform: translateY(-50%);
+    }
+
+    .hero-desc {
+      max-width: 385px;
+      margin-top: 18px;
+      color: rgba(255,255,255,.86);
+      font-size: clamp(.84rem, 3.4vw, 1rem);
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    /* =========================================================
+       ILUSTRASI MASJID
+       ========================================================= */
+
+    .mosque-art {
+      width: min(49vw, 510px);
+      position: absolute;
+      right: -5%;
+      bottom: 42px;
+      z-index: 2;
+      opacity: .96;
+      filter:
+        drop-shadow(
+          0 22px 34px rgba(0,35,115,.25)
+        );
+      pointer-events: none;
+    }
+
+    .mosque-art .glow-window {
+      filter:
+        drop-shadow(
+          0 0 10px rgba(255,224,155,.75)
+        );
+    }
+
+    .hero-leaves {
+      width: 170px;
+      height: 170px;
+      position: absolute;
+      right: -32px;
+      bottom: -4px;
+      z-index: 3;
+      opacity: .38;
+      transform: rotate(-10deg);
+      pointer-events: none;
+    }
+
+    /* =========================================================
+       PANEL PUTIH
+       ========================================================= */
+
+    .content-wrap {
+      width: min(100%, 980px);
+      position: relative;
+      z-index: 10;
+      margin: -52px auto 0;
+      padding:
+        0 18px
+        calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .welcome-panel {
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      padding:
+        42px 22px 24px;
+      border: 1px solid rgba(255,255,255,.94);
+      border-radius:
+        44px 44px 34px 34px;
+      background:
+        radial-gradient(
+          circle at 88% 0,
+          rgba(35,213,232,.08),
+          transparent 23%
+        ),
+        linear-gradient(
+          180deg,
+          rgba(255,255,255,.99),
+          rgba(248,251,255,.99)
+        );
+      box-shadow:
+        var(--shadow-panel);
+    }
+
+    .welcome-panel::before {
+      content: "";
+      width: 86%;
+      height: 26px;
+      position: absolute;
+      top: -13px;
+      left: 7%;
+      border-radius: 50%;
+      background:
+        linear-gradient(
+          90deg,
+          rgba(37,217,238,.28),
+          rgba(255,255,255,.92),
+          rgba(39,238,203,.30)
+        );
+      filter: blur(7px);
+      opacity: .7;
+      pointer-events: none;
+    }
+
+    .panel-emblem {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      color: var(--blue-700);
+      border: 6px solid rgba(255,255,255,.96);
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 12px 28px rgba(23,92,195,.16);
+      transform: translateX(-50%);
+    }
+
+    .panel-emblem svg {
+      width: 31px;
+      height: 31px;
+    }
+
+    .welcome-kicker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      color: var(--blue-700);
+      font-size: clamp(.66rem, 2.7vw, .81rem);
+      font-weight: 1000;
+      letter-spacing: .65px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .welcome-kicker::before,
+    .welcome-kicker::after {
+      content: "";
+      width: 24px;
+      height: 3px;
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          90deg,
+          var(--blue-700),
+          var(--cyan-500)
+        );
+    }
+
+    .welcome-title {
+      margin-top: 8px;
+      color: var(--ink-950);
+      font-size: clamp(2rem, 8vw, 3rem);
+      font-weight: 1000;
+      line-height: 1.05;
+      letter-spacing: -1.2px;
+      text-align: center;
+    }
+
+    .welcome-title::after {
+      content: "";
+      width: 50px;
+      height: 4px;
+      display: block;
+      margin: 13px auto 0;
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          90deg,
+          var(--blue-700),
+          var(--cyan-500)
+        );
+    }
+
+    .portal-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 13px;
+      margin-top: 28px;
+    }
+
+    .portal-option {
+      min-height: 190px;
+      position: relative;
+      overflow: hidden;
+      padding: 18px 15px 17px;
+      cursor: pointer;
+      text-align: left;
+      border: 1px solid #d6e6fa;
+      border-radius: 24px;
+      background:
+        linear-gradient(
+          145deg,
+          #f8fbff,
+          #eef5ff
+        );
+      box-shadow:
+        var(--shadow-card);
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+    }
+
+    .portal-option:nth-child(2) {
+      border-color: #d1efec;
+      background:
+        linear-gradient(
+          145deg,
+          #f8ffff,
+          #ecfbf8
+        );
+    }
+
+    .portal-option:hover {
+      border-color: #b9d4f7;
+      box-shadow:
+        0 17px 38px rgba(27,78,154,.14);
+      transform: translateY(-3px);
+    }
+
+    .portal-option::after {
+      content: "";
+      width: 92px;
+      height: 92px;
+      position: absolute;
+      right: -31px;
+      bottom: -39px;
+      border: 18px solid rgba(34,130,240,.06);
+      border-radius: 50%;
+    }
+
+    .portal-option:nth-child(2)::after {
+      border-color: rgba(25,192,176,.07);
+    }
+
+    .option-icon {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      color: var(--blue-700);
+      border-radius: 17px;
+      background: #ffffff;
+      box-shadow:
+        0 12px 24px rgba(37,105,196,.13);
+    }
+
+    .portal-option:nth-child(2)
+    .option-icon {
+      color: #0aaba5;
+    }
+
+    .option-icon svg {
+      width: 27px;
+      height: 27px;
+    }
+
+    .portal-option h3 {
+      margin-top: 13px;
+      color: var(--ink-950);
+      font-size: clamp(.9rem, 3.6vw, 1.09rem);
+      font-weight: 1000;
+      line-height: 1.12;
+    }
+
+    .portal-option h3::after {
+      content: "";
+      width: 31px;
+      height: 3px;
+      display: block;
+      margin-top: 9px;
+      border-radius: 999px;
+      background: var(--blue-600);
+    }
+
+    .portal-option:nth-child(2)
+    h3::after {
+      background: #23c0b5;
+    }
+
+    .portal-option p {
+      margin-top: 10px;
+      color: var(--ink-600);
+      font-size: clamp(.68rem, 2.75vw, .78rem);
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .option-arrow {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      position: absolute;
+      right: 13px;
+      bottom: 13px;
+      color: var(--blue-700);
+      font-size: 1.2rem;
+      font-weight: 1000;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 10px 22px rgba(31,91,172,.13);
+    }
+
+    .portal-option:nth-child(2)
+    .option-arrow {
+      color: #0aaba5;
+    }
+
+    .primary-button {
+      width: 100%;
+      min-height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 13px;
+      position: relative;
+      overflow: hidden;
+      margin-top: 19px;
+      padding: 14px 20px;
+      color: #ffffff;
+      font-size: clamp(.94rem, 4vw, 1.15rem);
+      font-weight: 1000;
+      cursor: pointer;
+      border: 0;
+      border-radius: 20px;
+      background:
+        linear-gradient(
+          135deg,
+          #0848d2 0%,
+          #0967ed 56%,
+          #13c4e3 132%
+        );
+      box-shadow:
+        var(--shadow-button);
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+    }
+
+    .primary-button::after {
+      content: "";
+      width: 44%;
+      height: 180%;
+      position: absolute;
+      top: -40%;
+      left: -60%;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          rgba(255,255,255,.26),
+          transparent
+        );
+      transform: skewX(-24deg);
+      animation:
+        buttonShine 4s ease-in-out infinite;
+    }
+
+    .primary-button:hover {
+      box-shadow:
+        0 20px 42px rgba(16,88,221,.34);
+      transform: translateY(-2px);
+    }
+
+    .primary-button:active {
+      transform: translateY(1px);
+    }
+
+    .button-shield {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+    }
+
+    .button-arrow {
+      margin-left: auto;
+      font-size: 1.45rem;
+      line-height: 1;
+    }
+
+    .support-note {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-top: 17px;
+      padding: 14px 15px;
+      color: var(--ink-600);
+      font-size: clamp(.68rem, 2.8vw, .79rem);
+      font-weight: 800;
+      line-height: 1.45;
+      border: 1px solid #dbe9fa;
+      border-radius: 19px;
+      background:
+        linear-gradient(
+          145deg,
+          #f4f8ff,
+          #edf5ff
+        );
+    }
+
+    .note-icon {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      display: grid;
+      place-items: center;
+      color: var(--blue-700);
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow:
+        0 9px 21px rgba(31,91,172,.11);
+    }
+
+    .note-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .install-button {
+      width: 100%;
+      min-height: 48px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 12px 16px;
+      color: var(--blue-700);
+      font-size: .78rem;
+      font-weight: 1000;
+      cursor: pointer;
+      border: 1px dashed #bfd8f6;
+      border-radius: 16px;
+      background: #f5f9ff;
+    }
+
+    .panel-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 22px;
+      color: var(--blue-700);
+    }
+
+    .panel-divider::before,
+    .panel-divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          #93c9ff,
+          transparent
+        );
+    }
+
+    .panel-divider svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .copyright {
+      margin-top: 15px;
+      color: var(--ink-400);
+      font-size: .62rem;
+      font-weight: 900;
+      letter-spacing: .8px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    /* =========================================================
+       LOGIN VIEW
+       ========================================================= */
+
+    #welcomeView {
+      display: block;
+      animation:
+        viewIn .35s ease both;
+    }
+
+    #loginView {
+      display: none;
+      animation:
+        viewIn .35s ease both;
+    }
+
+    .login-head {
+      text-align: center;
+    }
+
+    .login-title {
+      margin-top: 9px;
+      color: var(--ink-950);
+      font-size: clamp(1.85rem, 7vw, 2.65rem);
+      font-weight: 1000;
+      line-height: 1.06;
+      letter-spacing: -1px;
+    }
+
+    .login-desc {
+      max-width: 480px;
+      margin: 10px auto 0;
+      color: var(--ink-600);
+      font-size: .78rem;
+      font-weight: 750;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .login-form {
+      margin-top: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--ink-800);
+      font-size: .68rem;
+      font-weight: 1000;
+      letter-spacing: .4px;
+    }
+
+    .input-shell {
+      min-height: 57px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: #f8fbff;
+      transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+    }
+
+    .input-shell:focus-within {
+      border-color: #78b7ff;
+      background: #ffffff;
+      box-shadow:
+        0 0 0 4px rgba(32,152,246,.10);
+    }
+
+    .input-icon {
+      width: 22px;
+      height: 22px;
+      flex: 0 0 22px;
+      color: var(--blue-700);
+    }
+
+    .form-control {
+      min-width: 0;
+      flex: 1;
+      padding: 16px 0;
+      color: var(--ink-950);
+      font-size: .88rem;
+      font-weight: 800;
+      outline: none;
+      border: 0;
+      background: transparent;
+    }
+
+    .form-control::placeholder {
+      color: #9caac0;
+      font-weight: 700;
+    }
+
+    .toggle-password {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 36px;
+      color: #7d8da5;
+      cursor: pointer;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+    }
+
+    .toggle-password:hover {
+      color: var(--blue-700);
+      background: var(--soft-blue);
+    }
+
+    #errorMsg {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px 13px;
+      color: #b42318;
+      font-size: .72rem;
+      font-weight: 850;
+      line-height: 1.45;
+      border: 1px solid #ffd1d7;
+      border-radius: 14px;
+      background: #fff2f4;
+    }
+
+    .back-button {
+      width: 100%;
+      min-height: 46px;
+      margin-top: 11px;
+      color: var(--blue-700);
+      font-size: .75rem;
+      font-weight: 1000;
+      cursor: pointer;
+      border: 0;
+      border-radius: 15px;
+      background: #eef6ff;
+    }
+
+    /* =========================================================
+       SPLASH
+       ========================================================= */
+
+    #splashScreen {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      padding: 24px;
+      color: #ffffff;
+      background:
+        radial-gradient(
+          circle at 70% 25%,
+          rgba(35,213,232,.25),
+          transparent 23%
+        ),
+        linear-gradient(
+          145deg,
+          #043aa8,
+          #075eea 55%,
+          #15bce1
+        );
+      transition:
+        opacity .7s ease,
+        visibility .7s ease;
+    }
+
+    .splash-logo {
+      width: 104px;
+      height: 104px;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      border: 3px solid rgba(255,255,255,.78);
+      border-radius: 30px;
+      background: #ffffff;
+      box-shadow:
+        0 24px 55px rgba(0,42,125,.28);
+      animation:
+        splashPulse 1.8s ease-in-out infinite;
+    }
+
+    .splash-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .splash-title {
+      margin-top: 20px;
+      font-size: 1.35rem;
+      font-weight: 1000;
+      letter-spacing: 1.2px;
+    }
+
+    .splash-subtitle {
+      margin-top: 6px;
+      color: rgba(255,255,255,.78);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: 1.1px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .splash-loader {
+      width: 78px;
+      height: 4px;
+      position: relative;
+      overflow: hidden;
+      margin-top: 24px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.22);
+    }
+
+    .splash-loader::after {
+      content: "";
+      width: 38px;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: -38px;
+      border-radius: inherit;
+      background: #ffffff;
+      animation:
+        loaderMove 1.3s ease-in-out infinite;
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (min-width: 760px) {
+      .hero {
+        min-height: 650px;
+        padding:
+          42px 7vw
+          140px;
+        border-radius:
+          0 0 76px 76px;
+      }
+
+      .brand-logo {
+        width: 86px;
+        height: 86px;
+        flex-basis: 86px;
+      }
+
+      .hero-content {
+        margin-top: 86px;
+      }
+
+      .mosque-art {
+        right: 4%;
+        bottom: 35px;
+      }
+
+      .content-wrap {
+        margin-top: -74px;
+        padding-right: 34px;
+        padding-left: 34px;
+      }
+
+      .welcome-panel {
+        padding:
+          54px 48px 32px;
+        border-radius:
+          58px 58px 42px 42px;
+      }
+
+      .portal-option {
+        min-height: 215px;
+        padding: 22px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .hero {
+        min-height: 495px;
+        padding:
+          calc(24px + env(safe-area-inset-top))
+          20px
+          106px;
+        border-radius:
+          0 0 44px 44px;
+      }
+
+      .brand-row {
+        gap: 13px;
+      }
+
+      .brand-logo {
+        width: 64px;
+        height: 64px;
+        flex-basis: 64px;
+        border-radius: 20px;
+      }
+
+      .hero-content {
+        margin-top: 52px;
+      }
+
+      .hero-title {
+        max-width: 340px;
+      }
+
+      .hero-desc {
+        max-width: 245px;
+      }
+
+      .mosque-art {
+        width: 53vw;
+        right: -13%;
+        bottom: 48px;
+        opacity: .86;
+      }
+
+      .hero-leaves {
+        width: 130px;
+        height: 130px;
+        right: -47px;
+      }
+
+      .content-wrap {
+        margin-top: -47px;
+        padding-right: 13px;
+        padding-left: 13px;
+      }
+
+      .welcome-panel {
+        padding:
+          39px 16px 22px;
+        border-radius:
+          38px 38px 30px 30px;
+      }
+
+      .portal-grid {
+        gap: 10px;
+        margin-top: 23px;
+      }
+
+      .portal-option {
+        min-height: 185px;
+        padding: 15px 12px;
+        border-radius: 21px;
+      }
+
+      .option-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 15px;
+      }
+
+      .option-icon svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .option-arrow {
+        width: 32px;
+        height: 32px;
+      }
+
+      .primary-button {
+        min-height: 61px;
+        border-radius: 18px;
+      }
+    }
+
+    @media (max-width: 350px) {
+      .hero {
+        min-height: 510px;
+      }
+
+      .portal-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .portal-option {
+        min-height: 155px;
+      }
+
+      .portal-option p {
+        max-width: 78%;
+      }
+    }
+
+    @media (min-width: 1050px) {
+      .app-shell {
+        padding-bottom: 50px;
+      }
+
+      .hero {
+        min-height: 690px;
+      }
+
+      .content-wrap {
+        max-width: 980px;
+      }
+
+      .portal-grid {
+        gap: 18px;
+      }
+    }
+
+    @keyframes viewIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes buttonShine {
+      0%,
+      62% {
+        left: -60%;
+      }
+
+      100% {
+        left: 130%;
+      }
+    }
+
+    @keyframes splashPulse {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes loaderMove {
+      0% {
+        left: -38px;
+      }
+
+      100% {
+        left: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div
+    id="splashScreen"
+    aria-label="Memuat CAHAYA APP"
+  >
+    <div class="splash-logo">
+      <img
+        src="assets/logofi.png"
+        alt="Logo Pesantren Cahaya Fajrul Islam"
+      >
+    </div>
+
+    <div
+      class="splash-title"
+      id="loadingText"
+    >
+      CAHAYA APP
+    </div>
+
+    <div class="splash-subtitle">
+      Pesantren Cahaya Fajrul Islam
+    </div>
+
+    <div class="splash-loader"></div>
+  </div>
+
+  <main class="app-shell">
+    <section class="hero">
+      <div
+        class="hero-sparkles"
+        aria-hidden="true"
+      >
+        <span class="spark s1"></span>
+        <span class="spark s2"></span>
+        <span class="spark s3"></span>
+      </div>
+
+      <div class="brand-row">
+        <div class="brand-logo">
+          <img
+            src="assets/logofi.png"
+            alt="Logo CAHAYA APP"
+          >
+        </div>
+
+        <div class="brand-copy">
+          <h1>CAHAYA APP</h1>
+
+          <p>
+            Pesantren Cahaya Fajrul Islam
+          </p>
+        </div>
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-pill">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2.6 14 7l4.4-1.4-1.4 4.4 4.4 2-4.4 2 1.4 4.4-4.4-1.4-2 4.4-2-4.4-4.4 1.4 1.4-4.4-4.4-2 4.4-2-1.4-4.4L10 7l2-4.4Z"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linejoin="round"
+            />
+          </svg>
+
+          HOLISTIC ISLAMIC SCHOOL
+        </div>
+
+        <h2 class="hero-title">
+          Bersama kita wujudkan
+          <span>GEN CAHAYA</span>
+        </h2>
+
+        <div class="hero-line"></div>
+
+        <p class="hero-desc">
+          Mendidik hati, menguatkan ilmu,
+          membangun peradaban.
+        </p>
+      </div>
+
+      <svg
+        class="mosque-art"
+        viewBox="0 0 520 570"
+        fill="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient
+            id="mosqueWall"
+            x1="143"
+            y1="188"
+            x2="430"
+            y2="558"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#F5FBFF"/>
+            <stop offset="1" stop-color="#A4C9F8"/>
+          </linearGradient>
+
+          <linearGradient
+            id="mosqueDome"
+            x1="290"
+            y1="60"
+            x2="381"
+            y2="184"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#41C8FF"/>
+            <stop offset="1" stop-color="#176DDE"/>
+          </linearGradient>
+
+          <linearGradient
+            id="mosqueShadow"
+            x1="160"
+            y1="206"
+            x2="460"
+            y2="530"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#D7EBFF"/>
+            <stop offset="1" stop-color="#6AA6EA"/>
+          </linearGradient>
+        </defs>
+
+        <path
+          d="M358 39c15 20 11 32-5 42 15-3 27 2 35 15-8-6-17-7-28-4 2-16 1-34-2-53Z"
+          fill="#D9EEFF"
+        />
+
+        <path
+          d="M357 76v20"
+          stroke="#D9EEFF"
+          stroke-width="5"
+          stroke-linecap="round"
+        />
+
+        <path
+          d="M269 170c9-66 46-103 91-105 43-2 85 32 99 102H269Z"
+          fill="url(#mosqueDome)"
+        />
+
+        <path
+          d="M279 162c18-60 49-86 82-88 35-1 69 28 86 87"
+          stroke="#8EDBFF"
+          stroke-width="5"
+          stroke-linecap="round"
+          opacity=".65"
+        />
+
+        <path
+          d="M260 170h208v31H260z"
+          fill="#D7EBFF"
+        />
+
+        <path
+          d="M232 197h263v373H232z"
+          fill="url(#mosqueWall)"
+        />
+
+        <path
+          d="M112 288h152v282H112z"
+          fill="url(#mosqueShadow)"
+        />
+
+        <path
+          d="M50 343h93v227H50z"
+          fill="#7EB2EC"
+        />
+
+        <path
+          d="M289 262h149v308H289z"
+          fill="#BDD8F8"
+        />
+
+        <path
+          d="M307 570V356c0-49 31-87 57-110 27 22 57 61 57 110v214H307Z"
+          fill="#83AFE7"
+        />
+
+        <path
+          d="M326 570V368c0-37 20-69 38-87 19 18 38 50 38 87v202H326Z"
+          fill="#E8F4FF"
+        />
+
+        <path
+          class="glow-window"
+          d="M342 570V386c0-25 12-50 22-63 11 13 23 38 23 63v184H342Z"
+          fill="#FFE6A8"
+          opacity=".68"
+        />
+
+        <path
+          d="M333 385h62M333 430h62M333 475h62"
+          stroke="#6C9FDC"
+          stroke-width="4"
+          opacity=".7"
+        />
+
+        <path
+          d="M364 325v245"
+          stroke="#6C9FDC"
+          stroke-width="4"
+          opacity=".7"
+        />
+
+        <path
+          d="M141 570V395c0-35 21-67 45-87 23 20 44 52 44 87v175H141Z"
+          fill="#DAEBFF"
+        />
+
+        <path
+          class="glow-window"
+          d="M160 570V411c0-25 12-47 26-61 13 14 26 36 26 61v159H160Z"
+          fill="#FFE5A1"
+          opacity=".5"
+        />
+
+        <path
+          d="M72 570V434c0-25 15-49 33-64 17 15 32 39 32 64v136H72Z"
+          fill="#C9E2FF"
+        />
+
+        <path
+          d="M251 228h223M251 247h223"
+          stroke="#80AFE7"
+          stroke-width="7"
+          opacity=".82"
+        />
+
+        <path
+          d="M99 315h162M58 371h84"
+          stroke="#BBD8F7"
+          stroke-width="7"
+          opacity=".86"
+        />
+
+        <path
+          d="M0 570h520"
+          stroke="#B9DAF8"
+          stroke-width="10"
+          stroke-linecap="round"
+        />
+      </svg>
+
+      <svg
+        class="hero-leaves"
+        viewBox="0 0 180 180"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M16 168c37-46 62-85 83-145"
+          stroke="#012A87"
+          stroke-width="9"
+          stroke-linecap="round"
+        />
+
+        <path
+          d="M72 97C39 70 22 67 8 72c10 30 27 43 64 25Z"
+          fill="#01399F"
+        />
+
+        <path
+          d="M88 58C78 27 80 11 89 0c24 20 30 39-1 58Z"
+          fill="#01399F"
+        />
+
+        <path
+          d="M100 116c33-26 52-28 69-21-15 29-35 40-69 21Z"
+          fill="#01399F"
+        />
+      </svg>
+    </section>
+
+    <div class="content-wrap">
+      <section class="welcome-panel">
+        <div class="panel-emblem">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2.5 14.2 7l4.6-1.2-1.3 4.5 4.2 1.7-4.2 1.7 1.3 4.5-4.6-1.2L12 21.5 9.8 17l-4.6 1.2 1.3-4.5L2.3 12l4.2-1.7-1.3-4.5L9.8 7 12 2.5Z"
+              stroke="currentColor"
+              stroke-width="1.45"
+              stroke-linejoin="round"
+            />
+
+            <circle
+              cx="12"
+              cy="12"
+              r="3.1"
+              stroke="currentColor"
+              stroke-width="1.45"
+            />
+          </svg>
+        </div>
+
+        <div id="welcomeView">
+          <p class="welcome-kicker">
+            Bismillahirrahmanirrahim
+          </p>
+
+          <h2 class="welcome-title">
+            Selamat Datang
+          </h2>
+
+          <div class="portal-grid">
+            <button
+              type="button"
+              class="portal-option"
+              onclick="tampilkanLogin()"
+              aria-label="Masuk sebagai Wali Santri"
+            >
+              <span class="option-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="9"
+                    cy="8"
+                    r="3"
+                    fill="currentColor"
+                    opacity=".92"
+                  />
+
+                  <circle
+                    cx="16.5"
+                    cy="9"
+                    r="2.4"
+                    fill="currentColor"
+                    opacity=".72"
+                  />
+
+                  <path
+                    d="M3.7 19c.3-4 2.4-6.1 5.3-6.1 3 0 5.1 2.1 5.4 6.1H3.7Z"
+                    fill="currentColor"
+                  />
+
+                  <path
+                    d="M13.7 18.8c.2-3 1.7-4.8 4-4.8 2.2 0 3.8 1.8 4 4.8h-8Z"
+                    fill="currentColor"
+                    opacity=".72"
+                  />
+                </svg>
+              </span>
+
+              <h3>Wali Santri</h3>
+
+              <p>
+                Memantau perkembangan anak,
+                laporan, agenda, dan informasi
+                pesantren.
+              </p>
+
+              <span class="option-arrow">→</span>
+            </button>
+
+            <button
+              type="button"
+              class="portal-option"
+              onclick="tampilkanLogin()"
+              aria-label="Masuk sebagai Pengurus dan Pegawai"
+            >
+              <span class="option-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M8.3 6.2V5.1c0-1.1.9-2 2-2h3.4c1.1 0 2 .9 2 2v1.1"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+
+                  <rect
+                    x="3"
+                    y="6"
+                    width="18"
+                    height="14"
+                    rx="3"
+                    fill="currentColor"
+                    opacity=".92"
+                  />
+
+                  <path
+                    d="M3 11.5c4.6 2.5 13.4 2.5 18 0"
+                    stroke="#fff"
+                    stroke-width="1.5"
+                    opacity=".9"
+                  />
+
+                  <rect
+                    x="10"
+                    y="11"
+                    width="4"
+                    height="3.2"
+                    rx="1"
+                    fill="#fff"
+                  />
+                </svg>
+              </span>
+
+              <h3>
+                Pengurus &amp; Pegawai
+              </h3>
+
+              <p>
+                Mengelola tugas, pembinaan,
+                akademik, layanan, dan
+                operasional.
+              </p>
+
+              <span class="option-arrow">→</span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="primary-button"
+            onclick="tampilkanLogin()"
+          >
+            <svg
+              class="button-shield"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 2.5 20 6v5.3c0 5.2-3.3 8.5-8 10.2-4.7-1.7-8-5-8-10.2V6l8-3.5Z"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linejoin="round"
+              />
+
+              <path
+                d="m8.6 12 2.1 2.1 4.8-5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+
+            <span>
+              Masuk ke Portal CAHAYA
+            </span>
+
+            <span class="button-arrow">
+              →
+            </span>
+          </button>
+
+          <div class="support-note">
+            <span class="note-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2.8 19.4 6v5c0 4.8-3 7.8-7.4 9.5C7.6 18.8 4.6 15.8 4.6 11V6L12 2.8Z"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linejoin="round"
+                />
+
+                <rect
+                  x="9"
+                  y="10.2"
+                  width="6"
+                  height="5"
+                  rx="1.2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+
+                <path
+                  d="M10.2 10.2V8.8a1.8 1.8 0 1 1 3.6 0v1.4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+
+            <span>
+              Gunakan username dan kata sandi
+              resmi yang diberikan oleh pihak
+              pesantren.
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="install-button"
+            id="tombolInstal"
+          >
+            📲 Instal CAHAYA APP
+          </button>
+        </div>
+
+        <div id="loginView">
+          <div class="login-head">
+            <p class="welcome-kicker">
+              Portal Terintegrasi
+            </p>
+
+            <h2 class="login-title">
+              Masuk ke CAHAYA APP
+            </h2>
+
+            <p class="login-desc">
+              Silakan gunakan akun resmi yang
+              telah diberikan oleh pihak pesantren.
+            </p>
+          </div>
+
+          <form
+            class="login-form"
+            id="loginForm"
+          >
+            <div id="errorMsg">
+              Username atau kata sandi tidak valid.
+            </div>
+
+            <div class="form-group">
+              <label for="username">
+                Username
+              </label>
+
+              <div class="input-shell">
+                <svg
+                  class="input-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="12"
+                    cy="8"
+                    r="3.4"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                  />
+
+                  <path
+                    d="M5.2 20c.4-4.2 3-6.6 6.8-6.6s6.4 2.4 6.8 6.6"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+                </svg>
+
+                <input
+                  type="text"
+                  id="username"
+                  class="form-control"
+                  placeholder="Masukkan username"
+                  autocomplete="username"
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="password">
+                Kata Sandi
+              </label>
+
+              <div class="input-shell">
+                <svg
+                  class="input-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="5"
+                    y="10"
+                    width="14"
+                    height="10"
+                    rx="2.5"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                  />
+
+                  <path
+                    d="M8.2 10V7.7a3.8 3.8 0 1 1 7.6 0V10"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+                </svg>
+
+                <input
+                  type="password"
+                  id="password"
+                  class="form-control"
+                  placeholder="Masukkan kata sandi"
+                  autocomplete="current-password"
+                  required
+                >
+
+                <button
+                  type="button"
+                  class="toggle-password"
+                  onclick="togglePasswordVisibility()"
+                  aria-label="Lihat atau sembunyikan kata sandi"
+                >
+                  <svg
+                    id="eyeIcon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    width="20"
+                    height="20"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="2.7"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="primary-button"
+              id="btnSubmit"
+            >
+              <svg
+                class="button-shield"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2.5 20 6v5.3c0 5.2-3.3 8.5-8 10.2-4.7-1.7-8-5-8-10.2V6l8-3.5Z"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linejoin="round"
+                />
+
+                <path
+                  d="m8.6 12 2.1 2.1 4.8-5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+
+              <span id="btnSubmitText">
+                Login Sekarang
+              </span>
+
+              <span class="button-arrow">
+                →
+              </span>
+            </button>
+          </form>
+
+          <button
+            type="button"
+            class="back-button"
+            onclick="tampilkanWelcome()"
+          >
+            ← Kembali ke Halaman Awal
+          </button>
+        </div>
+
+        <div class="panel-divider">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2.5 14.2 7l4.6-1.2-1.3 4.5 4.2 1.7-4.2 1.7 1.3 4.5-4.6-1.2L12 21.5 9.8 17l-4.6 1.2 1.3-4.5L2.3 12l4.2-1.7-1.3-4.5L9.8 7 12 2.5Z"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+
+        <p class="copyright">
+          © 2026 Pesantren Cahaya Fajrul Islam
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey:
+        "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+
+      authDomain:
+        "absensi-santri-fajrul-islam.firebaseapp.com",
+
+      databaseURL:
+        "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+
+      projectId:
+        "absensi-santri-fajrul-islam",
+
+      storageBucket:
+        "absensi-santri-fajrul-islam.firebasestorage.app",
+
+      messagingSenderId:
+        "739982369926",
+
+      appId:
+        "1:739982369926:web:7e5375c3ddbaf0584cdd07"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(
+        firebaseConfig
+      );
+    }
+
+    const db =
+      firebase.firestore();
+
+    let deferredInstallPrompt =
+      null;
+
+    function tampilkanLogin() {
+      document.getElementById(
+        "welcomeView"
+      ).style.display =
+        "none";
+
+      document.getElementById(
+        "loginView"
+      ).style.display =
+        "block";
+
+      window.scrollTo({
+        top:
+          document.querySelector(
+            ".content-wrap"
+          ).offsetTop - 8,
+
+        behavior:
+          "smooth"
+      });
+
+      setTimeout(() => {
+        document.getElementById(
+          "username"
+        ).focus();
+      }, 320);
+    }
+
+    function tampilkanWelcome() {
+      document.getElementById(
+        "loginView"
+      ).style.display =
+        "none";
+
+      document.getElementById(
+        "welcomeView"
+      ).style.display =
+        "block";
+
+      document.getElementById(
+        "errorMsg"
+      ).style.display =
+        "none";
+
+      document.getElementById(
+        "loginForm"
+      ).reset();
+
+      const passwordInput =
+        document.getElementById(
+          "password"
+        );
+
+      if (passwordInput) {
+        passwordInput.type =
+          "password";
+      }
+
+      resetEyeIcon();
+
+      window.scrollTo({
+        top:
+          document.querySelector(
+            ".content-wrap"
+          ).offsetTop - 8,
+
+        behavior:
+          "smooth"
+      });
+    }
+
+    function togglePasswordVisibility() {
+      const passwordInput =
+        document.getElementById(
+          "password"
+        );
+
+      const eyeIcon =
+        document.getElementById(
+          "eyeIcon"
+        );
+
+      if (
+        passwordInput.type ===
+        "password"
+      ) {
+        passwordInput.type =
+          "text";
+
+        eyeIcon.innerHTML = `
+          <path
+            d="M3 3l18 18"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          />
+
+          <path
+            d="M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16.8 16.8 0 0 1-2.7 3.4M6.1 6.2C3.7 8 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+
+          <path
+            d="M9.9 9.9a3 3 0 0 0 4.2 4.2"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          />
+        `;
+      } else {
+        passwordInput.type =
+          "password";
+
+        resetEyeIcon();
+      }
+    }
+
+    function resetEyeIcon() {
+      const eyeIcon =
+        document.getElementById(
+          "eyeIcon"
+        );
+
+      if (!eyeIcon) {
+        return;
+      }
+
+      eyeIcon.innerHTML = `
+        <path
+          d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+
+        <circle
+          cx="12"
+          cy="12"
+          r="2.7"
+          stroke="currentColor"
+          stroke-width="1.7"
+        />
+      `;
+    }
+
+    function tampilkanSistemLoading(
+      teks
+    ) {
+      const splash =
+        document.getElementById(
+          "splashScreen"
+        );
+
+      document.getElementById(
+        "loadingText"
+      ).textContent =
+        teks;
+
+      splash.style.visibility =
+        "visible";
+
+      splash.style.opacity =
+        "1";
+    }
+
+    function tutupSplash() {
+      const splash =
+        document.getElementById(
+          "splashScreen"
+        );
+
+      splash.style.opacity =
+        "0";
+
+      setTimeout(() => {
+        splash.style.visibility =
+          "hidden";
+      }, 720);
+    }
+
+    setTimeout(
+      tutupSplash,
+      1450
+    );
+
+    document.getElementById(
+      "loginForm"
+    ).addEventListener(
+      "submit",
+      async event => {
+        event.preventDefault();
+
+        const usernameInput =
+          document.getElementById(
+            "username"
+          );
+
+        const passwordInput =
+          document.getElementById(
+            "password"
+          );
+
+        const button =
+          document.getElementById(
+            "btnSubmit"
+          );
+
+        const buttonText =
+          document.getElementById(
+            "btnSubmitText"
+          );
+
+        const errorBox =
+          document.getElementById(
+            "errorMsg"
+          );
+
+        const username =
+          usernameInput.value
+            .trim()
+            .toLowerCase();
+
+        const password =
+          passwordInput.value
+            .trim();
+
+        button.disabled =
+          true;
+
+        buttonText.textContent =
+          "Bismillaah...";
+
+        errorBox.style.display =
+          "none";
+
+        const email =
+          username.includes("@")
+            ? username
+            : username +
+              "@cahayaapp.id";
+
+        const usernameMurni =
+          email.split("@")[0];
+
+        try {
+          const credential =
+            await firebase.auth()
+              .signInWithEmailAndPassword(
+                email,
+                password
+              );
+
+          const userDoc =
+            await db
+              .collection("users")
+              .doc(usernameMurni)
+              .get();
+
+          let finalUserData;
+
+          if (userDoc.exists) {
+            finalUserData =
+              userDoc.data();
+
+            if (
+              !finalUserData.akses
+            ) {
+              finalUserData.akses =
+                ["wali"];
+            }
+          } else {
+            const isStaff =
+              usernameMurni.includes(
+                "admin"
+              ) ||
+              usernameMurni.includes(
+                "guru"
+              ) ||
+              usernameMurni ===
+                "multazam";
+
+            finalUserData = {
+              username:
+                usernameMurni,
+
+              label:
+                isStaff
+                  ? "Pengurus CAHAYA"
+                  : "Wali Santri",
+
+              akses:
+                isStaff
+                  ? ["guru"]
+                  : ["wali"],
+
+              namaAnak:
+                usernameMurni
+            };
+          }
+
+          const sessionPayload = {
+            ...finalUserData,
+            uid:
+              credential.user.uid
+          };
+
+          localStorage.setItem(
+            "cahayaCurrentUser",
+            JSON.stringify(
+              sessionPayload
+            )
+          );
+
+          const roles =
+            Array.isArray(
+              sessionPayload.akses
+            )
+              ? sessionPayload.akses
+              : [
+                  sessionPayload.akses
+                ];
+
+          const isWali =
+            roles
+              .map(role =>
+                String(role)
+                  .toLowerCase()
+              )
+              .includes("wali");
+
+          tampilkanSistemLoading(
+            isWali
+              ? "Memuat Portal Wali..."
+              : "Memverifikasi Akses..."
+          );
+
+          setTimeout(() => {
+            window.location.href =
+              isWali
+                ? "wali/dashboard/index.html"
+                : "main-dashboard.html";
+          }, 850);
+        } catch (error) {
+          console.error(
+            "Login gagal:",
+            error
+          );
+
+          button.disabled =
+            false;
+
+          buttonText.textContent =
+            "Login Sekarang";
+
+          errorBox.textContent =
+            "Kredensial tidak valid. Periksa kembali username dan kata sandi Anda.";
+
+          errorBox.style.display =
+            "block";
+        }
+      }
+    );
+
+    window.addEventListener(
+      "beforeinstallprompt",
+      event => {
+        event.preventDefault();
+
+        deferredInstallPrompt =
+          event;
+
+        document.getElementById(
+          "tombolInstal"
+        ).style.display =
+          "flex";
+      }
+    );
+
+    document.getElementById(
+      "tombolInstal"
+    ).addEventListener(
+      "click",
+      async () => {
+        if (
+          !deferredInstallPrompt
+        ) {
+          return;
+        }
+
+        deferredInstallPrompt
+          .prompt();
+
+        await deferredInstallPrompt
+          .userChoice;
+
+        deferredInstallPrompt =
+          null;
+
+        document.getElementById(
+          "tombolInstal"
+        ).style.display =
+          "none";
+      }
+    );
+
+    window.addEventListener(
+      "load",
+      () => {
+        let user = null;
+
+        try {
+          user =
+            JSON.parse(
+              localStorage.getItem(
+                "cahayaCurrentUser"
+              ) ||
+              "null"
+            );
+        } catch (error) {
+          user = null;
+        }
+
+        if (
+          !user ||
+          !user.akses
+        ) {
+          return;
+        }
+
+        const roles =
+          Array.isArray(
+            user.akses
+          )
+            ? user.akses
+            : [user.akses];
+
+        tampilkanSistemLoading(
+          "Menghubungkan Sesi..."
+        );
+
+        const isWali =
+          roles
+            .map(role =>
+              String(role)
+                .toLowerCase()
+            )
+            .includes("wali");
+
+        setTimeout(() => {
+          window.location.href =
+            isWali
+              ? "wali/dashboard/index.html"
+              : "main-dashboard.html";
+        }, 500);
+      }
+    );
+  </script>
+</body>
+</html>
       --shadow-xl: 0 30px 80px rgba(31, 72, 145, 0.18);
       --shadow-card: 0 18px 45px rgba(39, 86, 165, 0.11);
       --shadow-btn: 0 14px 30px rgba(40, 120, 255, 0.27);
