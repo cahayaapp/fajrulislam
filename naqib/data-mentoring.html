@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CAHAYA APP - Laporan Catatan Mentor</title>
+
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+
+  <style>
+    :root {
+      --navy: #0f172a;
+      --navy-soft: #1e293b;
+      --gold: #d4af37;
+      --gold-soft: #fef3c7;
+      --gold-border: #fcd34d;
+
+      --blue: #2563eb;
+      --blue-soft: #dbeafe;
+      --blue-bg: #eff6ff;
+
+      --green: #059669;
+      --green-soft: #d1fae5;
+      --green-bg: #ecfdf5;
+
+      --red: #dc2626;
+      --red-soft: #fee2e2;
+      --red-bg: #fef2f2;
+
+      --purple: #7c3aed;
+      --purple-soft: #ede9fe;
+      --purple-bg: #f5f3ff;
+
+      --teal: #0f766e;
+      --teal-soft: #ccfbf1;
+      --teal-bg: #f0fdfa;
+
+      --orange: #ea580c;
+      --orange-soft: #ffedd5;
+      --orange-bg: #fff7ed;
+
+      --pink: #db2777;
+      --pink-soft: #fce7f3;
+      --pink-bg: #fdf2f8;
+
+      --slate: #475569;
+      --slate-soft: #f8fafc;
+      --border: #e2e8f0;
+      --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.055);
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(212,175,55,0.12), transparent 32%),
+        radial-gradient(circle at top right, rgba(37,99,235,0.10), transparent 32%),
+        linear-gradient(180deg, #f8fafc, #eef2f7 55%, #f8fafc);
+      color: var(--navy);
+    }
+
+    .hero {
+      background:
+        linear-gradient(135deg, rgba(15,23,42,0.96), rgba(30,41,59,0.96)),
+        radial-gradient(circle at right, rgba(212,175,55,0.3), transparent 40%);
+      border-radius: 28px;
+      color: white;
+      padding: 34px 38px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "🌱";
+      position: absolute;
+      right: 26px;
+      top: -18px;
+      font-size: 9rem;
+      opacity: 0.09;
+      pointer-events: none;
+    }
+
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: var(--gold-soft);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--gold-soft);
+      margin: 0 0 8px;
+      line-height: 1.18;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 860px;
+      line-height: 1.65;
+      opacity: 0.92;
+      font-size: 0.94rem;
+    }
+
+    .akses-info {
+      display: none;
+      background: #ffffff;
+      border: 1px solid #dbeafe;
+      color: #1e3a8a;
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 18px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: "";
+      position: absolute;
+      right: -22px;
+      top: -22px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+
+    .stat-card.blue::after { background: var(--blue-soft); }
+    .stat-card.green::after { background: var(--green-soft); }
+    .stat-card.red::after { background: var(--red-soft); }
+    .stat-card.purple::after { background: var(--purple-soft); }
+    .stat-card.gold::after { background: var(--gold-soft); }
+
+    .stat-label {
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #64748b;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 950;
+      line-height: 1;
+      color: var(--navy);
+      position: relative;
+      z-index: 2;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.86);
+      border: 1px solid rgba(226,232,240,0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--navy);
+      margin: 0 0 16px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 7px;
+    }
+
+    .form-control {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid #cbd5e1;
+      border-radius: 13px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--navy);
+      box-sizing: border-box;
+      transition: 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 4px rgba(212,175,55,0.13);
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .btn-small {
+      border: none;
+      border-radius: 13px;
+      padding: 11px 15px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.88rem;
+    }
+
+    .btn-small:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(15,23,42,0.09);
+    }
+
+    .btn-navy { background: var(--navy); color: white; }
+    .btn-gold { background: var(--gold-soft); color: #92400e; border: 1px solid var(--gold-border); }
+    .btn-blue { background: var(--blue-soft); color: #1e40af; border: 1px solid #93c5fd; }
+    .btn-red { background: var(--red-soft); color: #991b1b; border: 1px solid #fca5a5; }
+
+    .list-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .jumlah-tampil {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: #475569;
+      padding: 9px 13px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 900;
+    }
+
+    .report-list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .report-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .report-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 7px;
+      background: linear-gradient(90deg, var(--gold), var(--blue), var(--teal));
+    }
+
+    .report-card.konselor::before {
+      background: linear-gradient(90deg, var(--red), #fb7185, var(--gold));
+    }
+
+    .report-card.coaching::before {
+      background: linear-gradient(90deg, var(--purple), #8b5cf6, var(--gold));
+    }
+
+    .report-head {
+      padding: 24px 24px 18px;
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,0.12), transparent 26%),
+        linear-gradient(135deg, #ffffff, #f8fafc);
+      cursor: pointer;
+    }
+
+    .head-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .identity h2 {
+      font-family: 'Playfair Display', serif;
+      margin: 0 0 6px;
+      color: var(--navy);
+      font-size: 1.55rem;
+      line-height: 1.2;
+    }
+
+    .meta {
+      color: #64748b;
+      font-size: 0.86rem;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .period-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .period-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 0.78rem;
+      font-weight: 950;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .pill-week { background: var(--gold-soft); color: #92400e; border-color: var(--gold-border); }
+    .pill-month { background: var(--blue-soft); color: #1e40af; border-color: #93c5fd; }
+    .pill-year { background: var(--green-soft); color: #065f46; border-color: #6ee7b7; }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 0.77rem;
+      font-weight: 950;
+      border: 1px solid transparent;
+    }
+
+    .badge-dimensi { background: var(--teal-soft); color: var(--teal); border-color: #5eead4; }
+    .badge-normal { background: var(--green-soft); color: var(--green); border-color: #6ee7b7; }
+    .badge-konselor { background: var(--red-soft); color: var(--red); border-color: #fca5a5; }
+    .badge-coaching { background: var(--purple-soft); color: var(--purple); border-color: #c4b5fd; }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .preview-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 8px 18px rgba(15,23,42,0.035);
+    }
+
+    .preview-box h4 {
+      margin: 0 0 7px;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #64748b;
+      font-weight: 950;
+    }
+
+    .preview-box p {
+      margin: 0;
+      color: #334155;
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+
+    .review-card {
+      margin-top: 12px;
+      background: linear-gradient(135deg, var(--gold-soft), #fff);
+      border: 1px solid var(--gold-border);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .review-card h4 {
+      margin: 0 0 8px;
+      color: #92400e;
+      font-size: 0.82rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .review-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: #fff;
+      border: 1px solid var(--gold-border);
+      color: #92400e;
+      font-weight: 950;
+      font-size: 0.8rem;
+      margin-bottom: 8px;
+    }
+
+    .review-card p {
+      margin: 0;
+      color: #334155;
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+
+    .toggle-detail {
+      margin-top: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--blue);
+      font-weight: 950;
+      font-size: 0.84rem;
+    }
+
+    .report-detail {
+      display: none;
+      border-top: 1px solid var(--border);
+      background: linear-gradient(180deg, #f8fafc, #fff);
+      padding: 18px 24px 24px;
+    }
+
+    .report-card.open .report-detail {
+      display: block;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .detail-card {
+      border-radius: 22px;
+      padding: 16px;
+      border: 1px solid transparent;
+      box-shadow: 0 10px 20px rgba(15,23,42,0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .detail-card::after {
+      content: "";
+      position: absolute;
+      right: -20px;
+      top: -20px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      opacity: 0.22;
+    }
+
+    .detail-card.full {
+      grid-column: 1 / -1;
+    }
+
+    .tone-blue {
+      background: linear-gradient(135deg, var(--blue-bg), #ffffff);
+      border-color: #bfdbfe;
+    }
+    .tone-blue::after { background: var(--blue-soft); }
+
+    .tone-green {
+      background: linear-gradient(135deg, var(--green-bg), #ffffff);
+      border-color: #a7f3d0;
+    }
+    .tone-green::after { background: var(--green-soft); }
+
+    .tone-gold {
+      background: linear-gradient(135deg, #fff8e8, #ffffff);
+      border-color: #fde68a;
+    }
+    .tone-gold::after { background: #fde68a; }
+
+    .tone-red {
+      background: linear-gradient(135deg, var(--red-bg), #ffffff);
+      border-color: #fecaca;
+    }
+    .tone-red::after { background: var(--red-soft); }
+
+    .tone-purple {
+      background: linear-gradient(135deg, var(--purple-bg), #ffffff);
+      border-color: #ddd6fe;
+    }
+    .tone-purple::after { background: var(--purple-soft); }
+
+    .tone-orange {
+      background: linear-gradient(135deg, var(--orange-bg), #ffffff);
+      border-color: #fed7aa;
+    }
+    .tone-orange::after { background: var(--orange-soft); }
+
+    .tone-teal {
+      background: linear-gradient(135deg, var(--teal-bg), #ffffff);
+      border-color: #99f6e4;
+    }
+    .tone-teal::after { background: var(--teal-soft); }
+
+    .tone-pink {
+      background: linear-gradient(135deg, var(--pink-bg), #ffffff);
+      border-color: #fbcfe8;
+    }
+    .tone-pink::after { background: var(--pink-soft); }
+
+    .tone-slate {
+      background: linear-gradient(135deg, #f8fafc, #ffffff);
+      border-color: #e2e8f0;
+    }
+    .tone-slate::after { background: #e2e8f0; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.05rem;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(255,255,255,0.95);
+      box-shadow: 0 8px 14px rgba(15,23,42,0.05);
+    }
+
+    .card-title-wrap h4 {
+      margin: 0 0 4px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--navy);
+      font-weight: 950;
+    }
+
+    .card-title-wrap .subtitle {
+      font-size: 0.77rem;
+      color: #64748b;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    .detail-card p {
+      margin: 0;
+      color: #334155;
+      font-size: 0.93rem;
+      line-height: 1.72;
+      white-space: pre-wrap;
+      position: relative;
+      z-index: 2;
+    }
+
+    .detail-card .pill-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 0.78rem;
+      font-weight: 950;
+      margin-top: 4px;
+      position: relative;
+      z-index: 2;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.95);
+      color: var(--navy);
+    }
+
+    .chart-card {
+      grid-column: 1 / -1;
+      background:
+        linear-gradient(135deg, #ffffff, #f8fafc),
+        radial-gradient(circle at top right, rgba(37,99,235,0.08), transparent 28%);
+      border: 1px solid #dbeafe;
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 10px 20px rgba(15,23,42,0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-card::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      top: -30px;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(212,175,55,0.12));
+      opacity: 0.9;
+    }
+
+    .chart-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .chart-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--blue-soft), var(--gold-soft));
+      font-size: 1.1rem;
+      box-shadow: 0 8px 16px rgba(15,23,42,0.06);
+    }
+
+    .chart-head h4 {
+      margin: 0 0 4px;
+      font-size: 0.84rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--navy);
+      font-weight: 950;
+    }
+
+    .chart-head p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .dimension-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .dimension-row {
+      background: rgba(255,255,255,0.86);
+      border: 1px solid #eef2f7;
+      border-radius: 18px;
+      padding: 12px 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .dimension-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .dimension-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 900;
+      color: var(--navy);
+      font-size: 0.92rem;
+    }
+
+    .dimension-emoji {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid #edf2f7;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 10px rgba(15,23,42,0.04);
+    }
+
+    .dimension-score {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 950;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      color: var(--navy);
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 12px;
+      background: #edf2f7;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bar-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(255,255,255,0.18), transparent 45%, rgba(255,255,255,0.18));
+      opacity: 0.8;
+    }
+
+    .bar-red { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .bar-orange { background: linear-gradient(90deg, #f97316, #fb923c); }
+    .bar-blue { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+    .bar-green { background: linear-gradient(90deg, #10b981, #34d399); }
+    .bar-gold { background: linear-gradient(90deg, #d4af37, #facc15); }
+
+    .bar-caption {
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: #94a3b8;
+      font-weight: 800;
+    }
+
+    .narasi-final {
+      background:
+        linear-gradient(135deg, #fff, #fffbeb),
+        radial-gradient(circle at top right, rgba(212,175,55,0.12), transparent 28%);
+      border: 1px solid var(--gold-border);
+      border-radius: 20px;
+      padding: 18px;
+      color: #334155;
+      line-height: 1.78;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      position: relative;
+      z-index: 2;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 42px 20px;
+      background: #fff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 24px;
+      color: #64748b;
+    }
+
+    .empty-state .emoji {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+    }
+
+    .empty-state h3 {
+      margin: 0 0 6px;
+      color: var(--navy);
+      font-family: 'Playfair Display', serif;
+    }
+
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(6px);
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: var(--navy);
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      transition: 0.5s;
+    }
+
+    @media(max-width: 768px) {
+      .hero {
+        padding: 26px 22px;
+        border-radius: 22px;
+      }
+
+      .hero h1 {
+        font-size: 1.48rem;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .head-row {
+        flex-direction: column;
+      }
+
+      .period-box {
+        justify-content: flex-start;
+      }
+
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-actions {
+        flex-direction: column;
+      }
+
+      .btn-small {
+        width: 100%;
+      }
+
+      .report-head,
+      .report-detail {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dimension-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media print {
+      body { background: #fff !important; }
+
+      .hero,
+      .akses-info,
+      .stats-grid,
+      .panel:first-of-type,
+      .toggle-detail,
+      #loadingOverlay {
+        display: none !important;
+      }
+
+      .panel {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+      }
+
+      .report-card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+
+      .report-detail {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="loadingOverlay">
+  <div style="font-size: 2.6rem; margin-bottom: 14px;">📘</div>
+  <div style="font-weight: 800;">Memuat Laporan Catatan Mentor...</div>
+</div>
+
+<main class="cahaya-container">
+
+  <section class="hero">
+    <div class="hero-kicker">📘 Laporan Perkembangan Pekanan</div>
+    <h1>Catatan Mentor Individu</h1>
+    <p>
+      Halaman ini menyajikan rekam perjalanan mentoring santri dari pekan ke pekan.
+      Setiap catatan dibaca sebagai proses pertumbuhan: hangat, objektif, informatif, dan terarah untuk pembinaan berikutnya.
+    </p>
+  </section>
+
+  <div class="akses-info" id="aksesInfo"></div>
+
+  <section class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-label">Total Catatan</div>
+      <div class="stat-number" id="statTotal">0</div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-label">Mentoring</div>
+      <div class="stat-number" id="statMentoring">0</div>
+    </div>
+
+    <div class="stat-card red">
+      <div class="stat-label">Rekom Konselor</div>
+      <div class="stat-number" id="statKonselor">0</div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-label">Coaching</div>
+      <div class="stat-number" id="statCoaching">0</div>
+    </div>
+
+    <div class="stat-card gold">
+      <div class="stat-label">Santri Tercatat</div>
+      <div class="stat-number" id="statSantri">0</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3 class="panel-title">🔎 Filter Laporan</h3>
+
+    <div class="filter-grid">
+      <div class="form-group">
+        <label>Dari Tanggal</label>
+        <input type="date" class="form-control" id="filterTanggalAwal">
+      </div>
+
+      <div class="form-group">
+        <label>Sampai Tanggal</label>
+        <input type="date" class="form-control" id="filterTanggalAkhir">
+      </div>
+
+      <div class="form-group">
+        <label>Nama Santri</label>
+        <select class="form-control" id="filterSantri">
+          <option value="">Semua Santri</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Mentor</label>
+        <select class="form-control" id="filterMentor">
+          <option value="">Semua Mentor</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Dimensi Utama</label>
+        <select class="form-control" id="filterDimensi">
+          <option value="">Semua Dimensi</option>
+          <option value="Cinta Allah">Cinta Allah</option>
+          <option value="Akhlak Mulia">Akhlak Mulia</option>
+          <option value="Hati Bersih">Hati Bersih</option>
+          <option value="Akal Cerdas">Akal Cerdas</option>
+          <option value="Fisik Berdaya">Fisik Berdaya</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Tindak Lanjut</label>
+        <select class="form-control" id="filterTindakLanjut">
+          <option value="">Semua Tindak Lanjut</option>
+          <option value="Rekom ke Konselor">Rekom ke Konselor</option>
+          <option value="Mentoring">Mentoring</option>
+          <option value="Coaching">Coaching</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Pekan Ke-</label>
+        <select class="form-control" id="filterPekan">
+          <option value="">Semua Pekan</option>
+          <option value="1">Pekan ke-1</option>
+          <option value="2">Pekan ke-2</option>
+          <option value="3">Pekan ke-3</option>
+          <option value="4">Pekan ke-4</option>
+          <option value="5">Pekan ke-5</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Cari Kata</label>
+        <input type="text" class="form-control" id="filterKeyword" placeholder="Cari isi catatan...">
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn-small btn-navy" onclick="terapkanFilter()">🔎 Terapkan Filter</button>
+      <button class="btn-small btn-gold" onclick="resetFilter()">↺ Reset Filter</button>
+      <button class="btn-small btn-blue" onclick="exportCSV()">⬇️ Export CSV</button>
+      <button class="btn-small btn-red" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="list-top">
+      <h3 class="panel-title" style="margin-bottom:0;">📋 Daftar Catatan Mentor</h3>
+      <div class="jumlah-tampil" id="jumlahTampil">Menampilkan 0 catatan</div>
+    </div>
+
+    <div class="report-list" id="catatanList"></div>
+  </section>
+
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+    projectId: "absensi-santri-fajrul-islam"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+
+  let namaLogin =
+    localStorage.getItem('namaNaqib') ||
+    user.username ||
+    user.label ||
+    user.nama ||
+    user.name ||
+    "Mentor";
+
+  namaLogin = namaLogin
+    .replace(/^Mu'?allim(ah)?\s+|^Naqib(ah)?\s+|^Mentor\s+|^Mrs\s+|^Ustadz\s+|^Ustadzah\s+/i, "")
+    .trim();
+
+  namaLogin = namaLogin.charAt(0).toUpperCase() + namaLogin.slice(1).toLowerCase();
+
+  let semuaCatatan = [];
+  let catatanTampil = [];
+
+  function getRoleLogin() {
+    return (
+      user.role ||
+      user.level ||
+      user.jabatan ||
+      user.posisi ||
+      user.tipeAkun ||
+      user.akses ||
+      localStorage.getItem('role') ||
+      localStorage.getItem('level') ||
+      localStorage.getItem('jabatan') ||
+      localStorage.getItem('posisi') ||
+      localStorage.getItem('tipeAkun') ||
+      localStorage.getItem('akses') ||
+      ""
+    ).toString().toLowerCase();
+  }
+
+  function cekAksesDirektur() {
+    const roleLogin = getRoleLogin();
+    const namaLower = namaLogin.toLowerCase();
+    const usernameLower = (user.username || "").toString().toLowerCase();
+    const labelLower = (user.label || "").toString().toLowerCase();
+    const emailLower = (user.email || "").toString().toLowerCase();
+
+    return (
+      roleLogin.includes("direktur") ||
+      roleLogin.includes("superadmin") ||
+      roleLogin.includes("super admin") ||
+      roleLogin.includes("admin") ||
+      roleLogin.includes("pimpinan") ||
+      roleLogin.includes("pengasuh") ||
+      roleLogin.includes("supervisor") ||
+
+      namaLower.includes("direktur") ||
+      namaLower.includes("multazam") ||
+      namaLower.includes("abah") ||
+
+      usernameLower.includes("direktur") ||
+      usernameLower.includes("multazam") ||
+      usernameLower.includes("abah") ||
+
+      labelLower.includes("direktur") ||
+      labelLower.includes("multazam") ||
+      labelLower.includes("abah") ||
+
+      emailLower.includes("multazam")
+    );
+  }
+
+  function normalisasiNama(nama) {
+    return (nama || "")
+      .toString()
+      .trim()
+      .replace(/\s+/g, " ");
+  }
+
+  function aman(teks) {
+    return (teks || "-")
+      .toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function potong(teks, max = 220) {
+    teks = (teks || "").toString().trim();
+    if (!teks) return "-";
+    return teks.length > max ? teks.substring(0, max) + "..." : teks;
+  }
+
+  function isiFallback(data, fieldBaru, fieldLama) {
+    return data[fieldBaru] || data[fieldLama] || "";
+  }
+
+  function getNamaBulan(index) {
+    const bulan = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    return bulan[index] || "-";
+  }
+
+  function getPeriode(tanggal) {
+    if (!tanggal) {
+      return { pekanKe: "-", bulan: "-", tahun: "-", tanggalFormat: "-" };
+    }
+
+    const d = new Date(tanggal + "T00:00:00");
+
+    if (isNaN(d.getTime())) {
+      return { pekanKe: "-", bulan: "-", tahun: "-", tanggalFormat: tanggal };
+    }
+
+    const hari = d.getDate();
+    const pekanKe = Math.ceil(hari / 7);
+    const bulan = getNamaBulan(d.getMonth());
+    const tahun = d.getFullYear();
+    const tanggalFormat = `${String(hari).padStart(2, "0")} ${bulan} ${tahun}`;
+
+    return { pekanKe, bulan, tahun, tanggalFormat };
+  }
+
+  function normalisasiTindakLanjut(value, perluRujukKonselor) {
+    if (!value && perluRujukKonselor) return "Rekom ke Konselor";
+
+    const v = (value || "").toLowerCase();
+
+    if (v.includes("konselor")) return "Rekom ke Konselor";
+    if (v.includes("coaching")) return "Coaching";
+    if (v.includes("mentoring")) return "Mentoring";
+
+    return value || "Mentoring";
+  }
+
+  function statusDariTindakLanjut(tindakLanjutUtama, perluRujukKonselor) {
+    const tindak = normalisasiTindakLanjut(tindakLanjutUtama, perluRujukKonselor);
+
+    if (tindak === "Rekom ke Konselor") return "Perlu Perhatian Konselor";
+    if (tindak === "Coaching") return "Coaching Peningkatan";
+    return "Monitoring Mentor";
+  }
+
+  function hasilEmoji(kategori) {
+    if (kategori === "Semakin Menurun") return "📉";
+    if (kategori === "Tiada Perubahan") return "➖";
+    if (kategori === "Sedikit Lebih Baik") return "↗️";
+    if (kategori === "Sangat Lebih Baik") return "📈";
+    if (kategori === "Memuaskan") return "🌟";
+    return "🕊️";
+  }
+
+  function nilaiToScore(nilai) {
+    if (nilai === "Perlu Ditingkatkan") return 20;
+    if (nilai === "Cukup") return 40;
+    if (nilai === "Baik") return 60;
+    if (nilai === "Sangat Baik") return 80;
+    if (nilai === "Istimewa") return 100;
+    return 0;
+  }
+
+  function nilaiBarClass(nilai) {
+    if (nilai === "Perlu Ditingkatkan") return "bar-red";
+    if (nilai === "Cukup") return "bar-orange";
+    if (nilai === "Baik") return "bar-blue";
+    if (nilai === "Sangat Baik") return "bar-green";
+    if (nilai === "Istimewa") return "bar-gold";
+    return "bar-blue";
+  }
+
+  function renderDimensionRow(emoji, label, nilai) {
+    const score = nilaiToScore(nilai);
+    const barClass = nilaiBarClass(nilai);
+
+    return `
+      <div class="dimension-row">
+        <div class="dimension-top">
+          <div class="dimension-label">
+            <span class="dimension-emoji">${emoji}</span>
+            <span>${aman(label)}</span>
+          </div>
+          <div class="dimension-score">
+            <span>${aman(nilai || "Belum dinilai")}</span>
+            <span>${score}/100</span>
+          </div>
+        </div>
+
+        <div class="bar-track">
+          <div class="bar-fill ${barClass}" style="width:${score}%;"></div>
+        </div>
+
+        <div class="bar-caption">
+          <span>Perlu Ditingkatkan</span>
+          <span>Istimewa</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderNilaiUmum(item) {
+    return `
+      <div class="chart-card">
+        <div class="chart-head">
+          <div class="chart-icon">📊</div>
+          <div>
+            <h4>Chart Penilaian 5 Dimensi CAHAYA</h4>
+            <p>Visual perkembangan umum ananda pada pekan ini.</p>
+          </div>
+        </div>
+
+        <div class="dimension-chart">
+          ${renderDimensionRow("🌙", "Cinta Allah", item.nilaiCintaAllah)}
+          ${renderDimensionRow("🤝", "Akhlak Mulia", item.nilaiAkhlakMulia)}
+          ${renderDimensionRow("💛", "Hati Bersih", item.nilaiHatiBersih)}
+          ${renderDimensionRow("🧠", "Akal Cerdas", item.nilaiAkalCerdas)}
+          ${renderDimensionRow("💪", "Fisik Berdaya", item.nilaiFisikBerdaya)}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderHasilReview(item) {
+    const hasil = item.reviewDariPekanBerikutnya;
+
+    if (!hasil) {
+      return `
+        <div class="review-card">
+          <h4>Hasil dari Target Pekan Ini</h4>
+          <span class="review-status">🕊️ Belum Direview</span>
+          <p>Hasil mentoring untuk target pekan ini belum tersedia. Biasanya hasil ini akan muncul setelah mentor mengisi catatan pada pekan berikutnya.</p>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="review-card">
+        <h4>Hasil dari Target Pekan Ini</h4>
+        <span class="review-status">${hasilEmoji(hasil.kategori)} ${aman(hasil.kategori)}</span>
+        <p>${aman(hasil.catatan)}</p>
+      </div>
+    `;
+  }
+
+  function detailCard({ title, subtitle = "", icon = "📝", tone = "tone-slate", text = "-", full = false, pill = "" }) {
+    return `
+      <div class="detail-card ${tone} ${full ? "full" : ""}">
+        <div class="card-top">
+          <div class="card-icon">${icon}</div>
+          <div class="card-title-wrap">
+            <h4>${aman(title)}</h4>
+            ${subtitle ? `<div class="subtitle">${aman(subtitle)}</div>` : ``}
+          </div>
+        </div>
+        ${pill ? `<div class="pill-inline">${pill}</div>` : ``}
+        <p>${aman(text)}</p>
+      </div>
+    `;
+  }
+
+  function hubungkanHasilPekanSebelumnya(dataArray) {
+    const kelompokSantri = {};
+
+    dataArray.forEach(item => {
+      const key = (item.namaSantri || "").toLowerCase();
+      if (!kelompokSantri[key]) kelompokSantri[key] = [];
+      kelompokSantri[key].push(item);
+    });
+
+    Object.values(kelompokSantri).forEach(list => {
+      list.sort((a, b) => {
+        const ta = a.tanggalMentoring || "";
+        const tb = b.tanggalMentoring || "";
+        const wa = a.timestamp || "";
+        const wb = b.timestamp || "";
+        return (ta + wa).localeCompare(tb + wb);
+      });
+
+      for (let i = 0; i < list.length; i++) {
+        const catatanSaatIni = list[i];
+        const catatanPekanBerikutnya = list[i + 1];
+
+        if (
+          catatanPekanBerikutnya &&
+          (catatanPekanBerikutnya.hasilPekanSebelumnya || catatanPekanBerikutnya.catatanHasilSebelumnya)
+        ) {
+          catatanSaatIni.reviewDariPekanBerikutnya = {
+            kategori: catatanPekanBerikutnya.hasilPekanSebelumnya || "Belum Ada Kategori",
+            catatan: catatanPekanBerikutnya.catatanHasilSebelumnya || "Belum ada catatan hasil.",
+            tanggalReview: catatanPekanBerikutnya.tanggalMentoring || "",
+            mentorReview: catatanPekanBerikutnya.namaMentor || catatanPekanBerikutnya.namaNaqib || ""
+          };
+        }
+      }
+    });
+
+    return dataArray;
+  }
+
+  async function muatDataCatatan() {
+    const aksesInfo = document.getElementById("aksesInfo");
+    const isDirektur = cekAksesDirektur();
+
+    try {
+      const snap = await get(ref(db, "cahaya_app/log_mentoring_naqib"));
+
+      let dataArray = [];
+
+      if (snap.exists()) {
+        const data = snap.val();
+
+        dataArray = Object.entries(data).map(([id, item]) => {
+          const tindakLanjutUtama = normalisasiTindakLanjut(
+            item.tindakLanjutUtama || item.tindakLanjut,
+            item.perluRujukKonselor
+          );
+
+          const statusCatatan = item.statusCatatan || statusDariTindakLanjut(tindakLanjutUtama, item.perluRujukKonselor);
+          const periode = getPeriode(item.tanggalMentoring);
+
+          return {
+            id,
+            ...item,
+
+            namaSantri: normalisasiNama(item.namaSantri),
+            namaMentor: normalisasiNama(item.namaMentor || item.namaNaqib || item.mentor || "Mentor"),
+
+            dimensiUtama: item.dimensiUtama || item.dimensiFokus || "",
+
+            nilaiCintaAllah: item.nilaiCintaAllah || item.penilaianUmum?.cintaAllah || "",
+            nilaiAkhlakMulia: item.nilaiAkhlakMulia || item.penilaianUmum?.akhlakMulia || "",
+            nilaiHatiBersih: item.nilaiHatiBersih || item.penilaianUmum?.hatiBersih || "",
+            nilaiAkalCerdas: item.nilaiAkalCerdas || item.penilaianUmum?.akalCerdas || "",
+            nilaiFisikBerdaya: item.nilaiFisikBerdaya || item.penilaianUmum?.fisikBerdaya || "",
+
+            hasilPekanSebelumnya: item.hasilPekanSebelumnya || "",
+            catatanHasilSebelumnya: item.catatanHasilSebelumnya || "",
+
+            ringkasanKeadaan: isiFallback(item, "ringkasanKeadaan", "catatanAkarMasalah"),
+            halApresiasi: isiFallback(item, "halApresiasi", "catatanApresiasi"),
+            targetPekanDepan: item.targetPekanDepan || item.fokusPekanDepan || "",
+            langkahRealistis: item.langkahRealistis || item.targetKecil || item.rencanaAksi || "",
+            halDipantau: item.halDipantau || "",
+
+            tindakLanjutUtama: tindakLanjutUtama,
+            tindakLanjut: tindakLanjutUtama,
+            statusCatatan: statusCatatan,
+
+            narasiOtomatis: item.narasiOtomatis || "",
+
+            pekanKe: periode.pekanKe,
+            bulan: periode.bulan,
+            tahun: periode.tahun,
+            tanggalFormat: periode.tanggalFormat
+          };
+        });
+      }
+
+      dataArray = hubungkanHasilPekanSebelumnya(dataArray);
+
+      if (isDirektur) {
+        semuaCatatan = dataArray;
+
+        aksesInfo.style.display = "block";
+        aksesInfo.innerHTML = `🔓 <strong>Akses Direktur/Supervisor aktif.</strong> Menampilkan seluruh laporan catatan mentor dari semua santri.`;
+
+      } else {
+        semuaCatatan = dataArray.filter(item => {
+          return normalisasiNama(item.namaMentor).toLowerCase() === namaLogin.toLowerCase();
+        });
+
+        aksesInfo.style.display = "block";
+        aksesInfo.innerHTML = `🔐 <strong>Akses Mentor aktif.</strong> Menampilkan catatan yang diinput oleh: <strong>${aman(namaLogin)}</strong>.`;
+      }
+
+      semuaCatatan.sort((a, b) => {
+        const tglA = a.tanggalMentoring || "";
+        const tglB = b.tanggalMentoring || "";
+        const timeA = a.timestamp || "";
+        const timeB = b.timestamp || "";
+        return (tglB + timeB).localeCompare(tglA + timeA);
+      });
+
+      isiFilterSantri();
+      isiFilterMentor();
+      terapkanFilter();
+
+    } catch (error) {
+      console.error(error);
+      document.getElementById("catatanList").innerHTML = `
+        <div class="empty-state">
+          <div class="emoji">⚠️</div>
+          <h3>Gagal Memuat Data</h3>
+          <p>${aman(error.message)}</p>
+        </div>
+      `;
+    }
+  }
+
+  function isiFilterSantri() {
+    const select = document.getElementById("filterSantri");
+    const daftar = [...new Set(semuaCatatan.map(item => item.namaSantri).filter(Boolean))];
+
+    daftar.sort((a, b) => a.localeCompare(b, "id"));
+
+    select.innerHTML = '<option value="">Semua Santri</option>';
+    daftar.forEach(nama => select.appendChild(new Option(nama, nama)));
+  }
+
+  function isiFilterMentor() {
+    const select = document.getElementById("filterMentor");
+    const daftar = [...new Set(semuaCatatan.map(item => item.namaMentor).filter(Boolean))];
+
+    daftar.sort((a, b) => a.localeCompare(b, "id"));
+
+    select.innerHTML = '<option value="">Semua Mentor</option>';
+    daftar.forEach(nama => select.appendChild(new Option(nama, nama)));
+  }
+
+  window.terapkanFilter = function() {
+    const tglAwal = document.getElementById("filterTanggalAwal").value;
+    const tglAkhir = document.getElementById("filterTanggalAkhir").value;
+    const santri = document.getElementById("filterSantri").value;
+    const mentor = document.getElementById("filterMentor").value;
+    const dimensi = document.getElementById("filterDimensi").value;
+    const tindakLanjut = document.getElementById("filterTindakLanjut").value;
+    const pekan = document.getElementById("filterPekan").value;
+    const keyword = document.getElementById("filterKeyword").value.trim().toLowerCase();
+
+    catatanTampil = semuaCatatan.filter(item => {
+      const tanggal = item.tanggalMentoring || "";
+
+      if (tglAwal && tanggal < tglAwal) return false;
+      if (tglAkhir && tanggal > tglAkhir) return false;
+      if (santri && item.namaSantri !== santri) return false;
+      if (mentor && item.namaMentor !== mentor) return false;
+      if (dimensi && item.dimensiUtama !== dimensi) return false;
+      if (tindakLanjut && item.tindakLanjutUtama !== tindakLanjut) return false;
+      if (pekan && String(item.pekanKe) !== String(pekan)) return false;
+
+      if (keyword) {
+        const gabungan = [
+          item.namaSantri,
+          item.namaMentor,
+          item.tanggalFormat,
+          item.pekanKe,
+          item.bulan,
+          item.tahun,
+          item.dimensiUtama,
+          item.nilaiCintaAllah,
+          item.nilaiAkhlakMulia,
+          item.nilaiHatiBersih,
+          item.nilaiAkalCerdas,
+          item.nilaiFisikBerdaya,
+          item.ringkasanKeadaan,
+          item.halApresiasi,
+          item.targetPekanDepan,
+          item.langkahRealistis,
+          item.halDipantau,
+          item.tindakLanjutUtama,
+          item.statusCatatan,
+          item.reviewDariPekanBerikutnya?.kategori,
+          item.reviewDariPekanBerikutnya?.catatan,
+          item.narasiOtomatis
+        ].join(" ").toLowerCase();
+
+        if (!gabungan.includes(keyword)) return false;
+      }
+
+      return true;
+    });
+
+    renderStatistik();
+    renderDaftarCatatan();
+  };
+
+  window.resetFilter = function() {
+    document.getElementById("filterTanggalAwal").value = "";
+    document.getElementById("filterTanggalAkhir").value = "";
+    document.getElementById("filterSantri").value = "";
+    document.getElementById("filterMentor").value = "";
+    document.getElementById("filterDimensi").value = "";
+    document.getElementById("filterTindakLanjut").value = "";
+    document.getElementById("filterPekan").value = "";
+    document.getElementById("filterKeyword").value = "";
+
+    terapkanFilter();
+  };
+
+  function renderStatistik() {
+    const total = catatanTampil.length;
+    const mentoring = catatanTampil.filter(item => item.tindakLanjutUtama === "Mentoring").length;
+    const konselor = catatanTampil.filter(item => item.tindakLanjutUtama === "Rekom ke Konselor").length;
+    const coaching = catatanTampil.filter(item => item.tindakLanjutUtama === "Coaching").length;
+    const santriUnik = new Set(catatanTampil.map(item => item.namaSantri).filter(Boolean)).size;
+
+    document.getElementById("statTotal").textContent = total;
+    document.getElementById("statMentoring").textContent = mentoring;
+    document.getElementById("statKonselor").textContent = konselor;
+    document.getElementById("statCoaching").textContent = coaching;
+    document.getElementById("statSantri").textContent = santriUnik;
+
+    document.getElementById("jumlahTampil").textContent = `Menampilkan ${total} catatan`;
+  }
+
+  function renderDaftarCatatan() {
+    const container = document.getElementById("catatanList");
+
+    if (catatanTampil.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="emoji">📝</div>
+          <h3>Belum Ada Catatan yang Cocok</h3>
+          <p>Data belum tersedia atau filter yang dipilih belum menemukan hasil.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = catatanTampil.map((item, index) => {
+      const tindak = item.tindakLanjutUtama;
+      let badgeClass = "badge-normal";
+      let cardClass = "report-card";
+      let tindakEmoji = "🤝";
+
+      if (tindak === "Rekom ke Konselor") {
+        badgeClass = "badge-konselor";
+        cardClass = "report-card konselor";
+        tindakEmoji = "🚨";
+      } else if (tindak === "Coaching") {
+        badgeClass = "badge-coaching";
+        cardClass = "report-card coaching";
+        tindakEmoji = "🚀";
+      }
+
+      return `
+        <article class="${cardClass}" id="catatan-${index}">
+          <div class="report-head" onclick="toggleDetail(${index})">
+            <div class="head-row">
+              <div class="identity">
+                <h2>${aman(item.namaSantri || "-")}</h2>
+                <div class="meta">
+                  📅 ${aman(item.tanggalFormat)}
+                  &nbsp;•&nbsp;
+                  👤 Mentor: ${aman(item.namaMentor || "-")}
+                </div>
+              </div>
+
+              <div class="period-box">
+                <span class="period-pill pill-week">🗓️ Pekan ke-${aman(item.pekanKe)}</span>
+                <span class="period-pill pill-month">🌙 ${aman(item.bulan)}</span>
+                <span class="period-pill pill-year">📌 ${aman(item.tahun)}</span>
+              </div>
+            </div>
+
+            <div class="badge-row">
+              <span class="badge badge-dimensi">🎯 ${aman(item.dimensiUtama || "-")}</span>
+              <span class="badge ${badgeClass}">${tindakEmoji} ${aman(tindak || "-")}</span>
+            </div>
+
+            <div class="preview-grid">
+              <div class="preview-box">
+                <h4>Ringkasan Keadaan</h4>
+                <p>${aman(potong(item.ringkasanKeadaan, 260))}</p>
+              </div>
+
+              <div class="preview-box">
+                <h4>Target Pekan Depan</h4>
+                <p>${aman(potong(item.targetPekanDepan, 220))}</p>
+              </div>
+            </div>
+
+            ${renderHasilReview(item)}
+
+            <div class="toggle-detail">👁️ Klik untuk membaca laporan lengkap</div>
+          </div>
+
+          <div class="report-detail">
+            <div class="detail-grid">
+              ${renderNilaiUmum(item)}
+
+              ${detailCard({
+                title: "Ringkasan Keadaan Ananda",
+                subtitle: "Gambaran objektif kondisi pekan ini",
+                icon: "🔍",
+                tone: "tone-blue",
+                text: item.ringkasanKeadaan
+              })}
+
+              ${detailCard({
+                title: "Hal yang Diapresiasi",
+                subtitle: "Kebaikan dan benih positif yang tumbuh",
+                icon: "🌟",
+                tone: "tone-gold",
+                text: item.halApresiasi
+              })}
+
+              ${detailCard({
+                title: "Tindak Lanjut Pembinaan",
+                subtitle: "Arah pendampingan yang dipilih mentor",
+                icon: tindak === "Rekom ke Konselor" ? "🚨" : (tindak === "Coaching" ? "🚀" : "🤝"),
+                tone: tindak === "Rekom ke Konselor" ? "tone-red" : (tindak === "Coaching" ? "tone-purple" : "tone-green"),
+                text: item.tindakLanjutUtama,
+                pill: `${tindakEmoji} ${aman(item.statusCatatan || "-")}`
+              })}
+
+              ${detailCard({
+                title: "Target Pekan Depan",
+                subtitle: "Fokus utama pertumbuhan berikutnya",
+                icon: "🎯",
+                tone: "tone-purple",
+                text: item.targetPekanDepan
+              })}
+
+              ${detailCard({
+                title: "Langkah-langkah Realistis",
+                subtitle: "Tindakan kecil yang bisa dijalankan",
+                icon: "🛤️",
+                tone: "tone-teal",
+                text: item.langkahRealistis
+              })}
+
+              ${detailCard({
+                title: "Hal yang Perlu Dipantau",
+                subtitle: "Fokus observasi pada pekan selanjutnya",
+                icon: "👀",
+                tone: "tone-orange",
+                text: item.halDipantau
+              })}
+
+              ${detailCard({
+                title: "Narasi Catatan Mentor",
+                subtitle: "Rangkuman deskriptif yang hangat dan objektif",
+                icon: "🪶",
+                tone: "tone-pink",
+                text: item.narasiOtomatis || "Narasi otomatis belum tersedia pada catatan ini.",
+                full: true
+              })}
+
+              ${detailCard({
+                title: "Info Sistem",
+                subtitle: "Metadata penyimpanan catatan",
+                icon: "🧾",
+                tone: "tone-slate",
+                text:
+`Jenis catatan: ${item.jenisCatatan || "-"}
+Akses input: ${item.aksesInput || "-"}
+Role login: ${item.roleLogin || "-"}
+Status catatan: ${item.statusCatatan || "-"}
+Waktu simpan: ${item.timestamp || "-"}` 
+              })}
+            </div>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  window.toggleDetail = function(index) {
+    const el = document.getElementById(`catatan-${index}`);
+    if (el) el.classList.toggle("open");
+  };
+
+  function csvEscape(value) {
+    value = (value || "").toString().replace(/"/g, '""');
+    return `"${value}"`;
+  }
+
+  window.exportCSV = function() {
+    if (catatanTampil.length === 0) {
+      alert("⚠️ Tidak ada data untuk diexport.");
+      return;
+    }
+
+    const header = [
+      "Tanggal",
+      "Pekan Ke",
+      "Bulan",
+      "Tahun",
+      "Nama Santri",
+      "Mentor",
+      "Nilai Cinta Allah",
+      "Nilai Akhlak Mulia",
+      "Nilai Hati Bersih",
+      "Nilai Akal Cerdas",
+      "Nilai Fisik Berdaya",
+      "Dimensi Utama",
+      "Ringkasan Keadaan",
+      "Hal yang Diapresiasi",
+      "Tindak Lanjut",
+      "Target Pekan Depan",
+      "Langkah Realistis",
+      "Hal Dipantau",
+      "Hasil Review Target Pekan Ini",
+      "Catatan Review Target Pekan Ini",
+      "Narasi Otomatis",
+      "Timestamp"
+    ];
+
+    const rows = catatanTampil.map(item => [
+      item.tanggalMentoring || "",
+      item.pekanKe || "",
+      item.bulan || "",
+      item.tahun || "",
+      item.namaSantri || "",
+      item.namaMentor || "",
+      item.nilaiCintaAllah || "",
+      item.nilaiAkhlakMulia || "",
+      item.nilaiHatiBersih || "",
+      item.nilaiAkalCerdas || "",
+      item.nilaiFisikBerdaya || "",
+      item.dimensiUtama || "",
+      item.ringkasanKeadaan || "",
+      item.halApresiasi || "",
+      item.tindakLanjutUtama || "",
+      item.targetPekanDepan || "",
+      item.langkahRealistis || "",
+      item.halDipantau || "",
+      item.reviewDariPekanBerikutnya?.kategori || "",
+      item.reviewDariPekanBerikutnya?.catatan || "",
+      item.narasiOtomatis || "",
+      item.timestamp || ""
+    ]);
+
+    const csvContent = [
+      header.map(csvEscape).join(","),
+      ...rows.map(row => row.map(csvEscape).join(","))
+    ].join("\n");
+
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8;"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const tanggalFile = new Date().toISOString().split("T")[0];
+
+    link.href = url;
+    link.download = `laporan-catatan-mentor-${tanggalFile}.csv`;
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await muatDataCatatan();
+
+    document.getElementById("filterKeyword").addEventListener("input", () => {
+      terapkanFilter();
+    });
+
+    document.getElementById("loadingOverlay").style.opacity = "0";
+    setTimeout(() => {
+      document.getElementById("loadingOverlay").style.display = "none";
+    }, 500);
+  });
+</script>
+
+</body>
+</html>

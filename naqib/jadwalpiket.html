@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>CAHAYA APP - Jadwal Piket Pengawasan Naqib</title>
+
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+
+  <style>
+    :root {
+      --jp-emerald: #073e31;
+      --jp-emerald-2: #0b5541;
+      --jp-emerald-3: #12735a;
+      --jp-gold: #d7a944;
+      --jp-gold-light: #f3d886;
+      --jp-cream: #fffaf0;
+      --jp-cream-2: #f7efdf;
+      --jp-heading: #173b32;
+      --jp-text: #314b44;
+      --jp-muted: #75877f;
+      --jp-border: #e4d7b8;
+      --jp-blue: #2878ff;
+      --jp-green: #25b983;
+      --jp-red: #ef5968;
+      --jp-shadow: 0 18px 44px rgba(11, 61, 48, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    body {
+      padding: 18px;
+      color: var(--jp-text);
+      font-family: "Nunito", "Poppins", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(215,169,68,0.13), transparent 27%),
+        radial-gradient(circle at 100% 0%, rgba(18,115,90,0.10), transparent 25%),
+        linear-gradient(180deg, #f5f8f4 0%, #fbfcfa 100%);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      animation: pageIn 0.38s ease both;
+    }
+
+    @keyframes pageIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 205px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 30px 32px;
+      overflow: hidden;
+      color: #ffffff;
+      border: 1px solid rgba(243,216,134,0.48);
+      border-radius: 27px;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(243,216,134,0.22), transparent 25%),
+        linear-gradient(135deg, #052f27 0%, #073e31 46%, #0d5f48 100%);
+      box-shadow: 0 20px 50px rgba(7,62,49,0.25);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 11px;
+      pointer-events: none;
+      border: 1px solid rgba(243,216,134,0.24);
+      border-radius: 20px;
+    }
+
+    .hero::after {
+      content: "☾";
+      position: absolute;
+      right: 255px;
+      bottom: -73px;
+      color: var(--jp-gold-light);
+      font-family: Georgia, serif;
+      font-size: 11rem;
+      opacity: 0.07;
+      pointer-events: none;
+    }
+
+    .hero-copy,
+    .hero-live {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 11px;
+      padding: 6px 12px;
+      color: var(--jp-gold-light);
+      font-size: 0.66rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      border: 1px solid rgba(243,216,134,0.34);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .hero h1 {
+      max-width: 720px;
+      margin: 0;
+      color: #ffffff;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: 0.2px;
+    }
+
+    .hero h1 span {
+      display: block;
+      margin-top: 3px;
+      color: var(--jp-gold-light);
+    }
+
+    .hero p {
+      max-width: 700px;
+      margin: 10px 0 0;
+      color: rgba(255,255,255,0.76);
+      font-size: 0.79rem;
+      font-weight: 650;
+      line-height: 1.62;
+    }
+
+    .hero-live {
+      width: 270px;
+      padding: 16px;
+      border: 1px solid rgba(243,216,134,0.30);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(9px);
+    }
+
+    .live-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: rgba(255,255,255,0.70);
+      font-size: 0.60rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #56e3a9;
+      box-shadow: 0 0 0 5px rgba(86,227,169,0.12);
+      animation: blink 1.3s ease-in-out infinite alternate;
+    }
+
+    @keyframes blink {
+      from {
+        opacity: 0.65;
+        transform: scale(0.92);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1.08);
+      }
+    }
+
+    .live-name {
+      display: block;
+      margin-top: 12px;
+      color: #ffffff;
+      font-family: Georgia, serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .live-meta {
+      display: block;
+      margin-top: 5px;
+      color: var(--jp-gold-light);
+      font-size: 0.65rem;
+      font-weight: 850;
+      line-height: 1.45;
+    }
+
+    .live-clock {
+      display: block;
+      margin-top: 11px;
+      padding-top: 10px;
+      color: rgba(255,255,255,0.73);
+      font-size: 0.61rem;
+      font-weight: 750;
+      border-top: 1px solid rgba(255,255,255,0.12);
+    }
+
+    /* SUMMARY */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .summary-card {
+      position: relative;
+      overflow: hidden;
+      padding: 15px 16px;
+      border: 1px solid #e6eadd;
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: 0 8px 22px rgba(28,73,58,0.07);
+    }
+
+    .summary-card::after {
+      content: "";
+      position: absolute;
+      width: 58px;
+      height: 58px;
+      top: -24px;
+      right: -22px;
+      border-radius: 50%;
+      background: var(--summary-soft);
+    }
+
+    .summary-label,
+    .summary-value {
+      position: relative;
+      z-index: 1;
+      display: block;
+    }
+
+    .summary-label {
+      margin-bottom: 6px;
+      color: var(--jp-muted);
+      font-size: 0.58rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .summary-value {
+      overflow: hidden;
+      color: var(--summary-color);
+      font-size: 0.95rem;
+      font-weight: 950;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .summary-card.day {
+      --summary-color: var(--jp-emerald-2);
+      --summary-soft: #e9f6f0;
+    }
+
+    .summary-card.block {
+      --summary-color: #9b691b;
+      --summary-soft: #fff4da;
+    }
+
+    .summary-card.next {
+      --summary-color: #285d9d;
+      --summary-soft: #ecf4ff;
+    }
+
+    .summary-card.sync {
+      --summary-color: #6b56bb;
+      --summary-soft: #f1edff;
+    }
+
+    /* PANEL */
+    .panel {
+      margin-bottom: 16px;
+      padding: 22px;
+      border: 1px solid #e2e8df;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.98);
+      box-shadow: var(--jp-shadow);
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 17px;
+    }
+
+    .heading-copy {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+    }
+
+    .heading-icon {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: grid;
+      place-items: center;
+      color: var(--jp-emerald-2);
+      font-size: 1.08rem;
+      border-radius: 13px;
+      background: #eaf7f1;
+    }
+
+    .panel-heading h2,
+    .panel-heading h3 {
+      margin: 0;
+      color: var(--jp-heading);
+      font-size: 1.05rem;
+      font-weight: 950;
+      line-height: 1.25;
+    }
+
+    .panel-heading p {
+      margin: 5px 0 0;
+      color: var(--jp-muted);
+      font-size: 0.69rem;
+      font-weight: 650;
+      line-height: 1.5;
+    }
+
+    .heading-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    /* BUTTON */
+    .button {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 13px;
+      font-size: 0.67rem;
+      font-weight: 900;
+      cursor: pointer;
+      border-radius: 11px;
+      transition: 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .button-primary {
+      color: #ffffff;
+      border: 1px solid transparent;
+      background: linear-gradient(135deg, var(--jp-emerald-2), var(--jp-emerald-3));
+      box-shadow: 0 8px 18px rgba(11,85,65,0.18);
+    }
+
+    .button-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 11px 23px rgba(11,85,65,0.23);
+    }
+
+    .button-gold {
+      color: #5d4210;
+      border: 1px solid #e3c573;
+      background: #fff6dc;
+    }
+
+    .button-gold:hover {
+      color: #ffffff;
+      border-color: var(--jp-gold);
+      background: var(--jp-gold);
+    }
+
+    .button-light {
+      color: var(--jp-emerald-2);
+      border: 1px solid #cfe2d9;
+      background: #f3faf7;
+    }
+
+    .button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* BLOCK SETTING */
+    .block-settings {
+      display: none;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+      padding: 14px;
+      border: 1px solid #e1e7dd;
+      border-radius: 15px;
+      background: #f7faf7;
+    }
+
+    .block-settings.show {
+      display: grid;
+    }
+
+    .block-setting {
+      padding: 12px;
+      border: 1px solid #e2e8df;
+      border-radius: 13px;
+      background: #ffffff;
+    }
+
+    .block-setting strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--jp-heading);
+      font-size: 0.69rem;
+      font-weight: 950;
+    }
+
+    .time-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .time-control {
+      width: 100%;
+      min-height: 39px;
+      padding: 7px 8px;
+      color: var(--jp-text);
+      font-size: 0.68rem;
+      font-weight: 800;
+      outline: none;
+      border: 1.4px solid #dce5df;
+      border-radius: 9px;
+      background: #f9fbfa;
+    }
+
+    .time-separator {
+      color: var(--jp-muted);
+      font-size: 0.64rem;
+      font-weight: 900;
+    }
+
+    /* SCHEDULE TABLE */
+    .schedule-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--jp-border);
+      border-radius: 19px;
+      background: var(--jp-cream);
+      box-shadow: inset 0 0 0 4px rgba(215,169,68,0.10);
+    }
+
+    .schedule-table {
+      width: 100%;
+      min-width: 790px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .schedule-table th,
+    .schedule-table td {
+      border-right: 1px solid #cfbd91;
+      border-bottom: 1px solid #cfbd91;
+    }
+
+    .schedule-table th:last-child,
+    .schedule-table td:last-child {
+      border-right: none;
+    }
+
+    .schedule-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .schedule-table thead th {
+      height: 72px;
+      padding: 10px;
+      color: #ffffff;
+      text-align: center;
+      background:
+        linear-gradient(180deg, #0c604a 0%, #073e31 100%);
+    }
+
+    .schedule-table thead th:first-child {
+      width: 22%;
+    }
+
+    .schedule-table thead strong,
+    .schedule-table thead span {
+      display: block;
+    }
+
+    .schedule-table thead strong {
+      font-family: Georgia, serif;
+      font-size: 0.92rem;
+      font-weight: 800;
+    }
+
+    .schedule-table thead span {
+      margin-top: 5px;
+      color: var(--jp-gold-light);
+      font-size: 0.54rem;
+      font-weight: 800;
+    }
+
+    .schedule-table tbody td {
+      height: 68px;
+      padding: 8px 10px;
+      text-align: center;
+      background: rgba(255,250,240,0.96);
+      transition: 0.17s ease;
+    }
+
+    .schedule-table tbody tr:hover td {
+      background: #fffdf8;
+    }
+
+    .schedule-table tr.current-row td {
+      background: #ecf9f2;
+    }
+
+    .schedule-table td.current-cell {
+      position: relative;
+      color: #ffffff;
+      background:
+        linear-gradient(135deg, var(--jp-emerald-2), var(--jp-emerald-3)) !important;
+      box-shadow: inset 0 0 0 3px rgba(243,216,134,0.46);
+    }
+
+    .schedule-table td.current-cell::after {
+      content: "SEDANG PIKET";
+      position: absolute;
+      top: 5px;
+      right: 6px;
+      padding: 3px 5px;
+      color: #5d4210;
+      font-size: 0.42rem;
+      font-weight: 950;
+      letter-spacing: 0.35px;
+      border-radius: 999px;
+      background: var(--jp-gold-light);
+    }
+
+    .day-cell {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      color: var(--jp-heading);
+      font-family: Georgia, serif;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-align: left;
+    }
+
+    .day-icon {
+      width: 35px;
+      height: 35px;
+      flex: 0 0 35px;
+      display: grid;
+      place-items: center;
+      color: var(--jp-emerald-2);
+      font-family: Arial, sans-serif;
+      font-size: 0.93rem;
+      border-radius: 11px;
+      background: #eaf6f0;
+    }
+
+    .duty-name {
+      color: var(--jp-heading);
+      font-family: Georgia, serif;
+      font-size: 0.87rem;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .current-cell .duty-name {
+      color: #ffffff;
+    }
+
+    .duty-input {
+      display: none;
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 10px;
+      color: var(--jp-heading);
+      font-size: 0.75rem;
+      font-weight: 850;
+      text-align: center;
+      outline: none;
+      border: 1.5px solid #d4c69f;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .schedule-table.editing .duty-name {
+      display: none;
+    }
+
+    .schedule-table.editing .duty-input {
+      display: block;
+    }
+
+    .schedule-table.editing td.current-cell {
+      background: #ecf9f2 !important;
+      box-shadow: none;
+    }
+
+    .schedule-table.editing td.current-cell::after {
+      display: none;
+    }
+
+    /* FOOTER MOTTO */
+    .motto {
+      margin-top: 15px;
+      padding: 16px;
+      color: var(--jp-cream);
+      text-align: center;
+      border: 1px solid rgba(243,216,134,0.34);
+      border-radius: 15px;
+      background:
+        linear-gradient(135deg, #073e31, #0b5541);
+    }
+
+    .motto-arabic {
+      display: block;
+      color: var(--jp-gold-light);
+      font-family: "Times New Roman", serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      direction: rtl;
+    }
+
+    .motto-text {
+      display: block;
+      margin-top: 5px;
+      color: rgba(255,255,255,0.78);
+      font-size: 0.64rem;
+      font-weight: 700;
+    }
+
+    .motto-values {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .motto-values span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 9px;
+      color: var(--jp-gold-light);
+      font-size: 0.58rem;
+      font-weight: 900;
+      border: 1px solid rgba(243,216,134,0.22);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* INTEGRATION INFO */
+    .integration-box {
+      margin-top: 15px;
+      padding: 14px;
+      border: 1px solid #d8e7df;
+      border-radius: 14px;
+      background: #f4faf7;
+    }
+
+    .integration-box strong,
+    .integration-box code,
+    .integration-box span {
+      display: block;
+    }
+
+    .integration-box strong {
+      color: var(--jp-heading);
+      font-size: 0.72rem;
+      font-weight: 950;
+    }
+
+    .integration-box code {
+      margin-top: 7px;
+      padding: 9px 11px;
+      overflow-x: auto;
+      color: #174c3c;
+      font-size: 0.63rem;
+      font-weight: 800;
+      border: 1px solid #d5e4dc;
+      border-radius: 9px;
+      background: #ffffff;
+    }
+
+    .integration-box span {
+      margin-top: 7px;
+      color: var(--jp-muted);
+      font-size: 0.61rem;
+      font-weight: 650;
+      line-height: 1.48;
+    }
+
+    /* LOADING / TOAST */
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--jp-heading);
+      text-align: center;
+      background: rgba(247,250,247,0.96);
+      backdrop-filter: blur(10px);
+      transition: 0.35s ease;
+    }
+
+    .loader-mark {
+      width: 72px;
+      height: 72px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 14px;
+      color: var(--jp-gold-light);
+      font-size: 1.7rem;
+      border: 1px solid rgba(243,216,134,0.35);
+      border-radius: 23px;
+      background: linear-gradient(135deg, var(--jp-emerald), var(--jp-emerald-3));
+      box-shadow: 0 14px 30px rgba(7,62,49,0.22);
+      animation: pulse 1.15s ease-in-out infinite alternate;
+    }
+
+    #loadingText {
+      font-size: 0.88rem;
+      font-weight: 900;
+    }
+
+    @keyframes pulse {
+      from {
+        transform: scale(0.95);
+      }
+
+      to {
+        transform: scale(1.04);
+      }
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      z-index: 5500;
+      width: min(450px, calc(100vw - 26px));
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 13px 15px;
+      color: var(--jp-heading);
+      border: 1px solid #dce7e0;
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow: 0 17px 42px rgba(22,62,49,0.20);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 24px);
+      transition: 0.27s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, 0);
+    }
+
+    .toast-icon {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: #eef8f3;
+    }
+
+    .toast.success .toast-icon {
+      background: #e8fbf4;
+    }
+
+    .toast.error .toast-icon {
+      background: #fff0f2;
+    }
+
+    .toast strong,
+    .toast span {
+      display: block;
+    }
+
+    .toast strong {
+      font-size: 0.75rem;
+      font-weight: 900;
+    }
+
+    .toast span {
+      margin-top: 2px;
+      color: var(--jp-muted);
+      font-size: 0.67rem;
+      font-weight: 650;
+      line-height: 1.42;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-live {
+        width: 100%;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 10px;
+      }
+
+      .hero {
+        min-height: 0;
+        padding: 24px 18px;
+        border-radius: 21px;
+      }
+
+      .panel {
+        padding: 18px 13px;
+        border-radius: 18px;
+      }
+
+      .panel-heading {
+        display: block;
+      }
+
+      .heading-actions {
+        margin-top: 12px;
+        justify-content: stretch;
+      }
+
+      .heading-actions .button {
+        flex: 1;
+      }
+
+      .block-settings {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 1.7rem;
+      }
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        background: #ffffff;
+      }
+
+      .hero-live,
+      .summary-grid,
+      .heading-actions,
+      .block-settings,
+      .integration-box,
+      #loadingOverlay,
+      .toast {
+        display: none !important;
+      }
+
+      .page {
+        max-width: none;
+      }
+
+      .hero {
+        min-height: 0;
+        margin-bottom: 10px;
+        padding: 18px;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .panel {
+        padding: 0;
+        border: none;
+        box-shadow: none;
+      }
+
+      .schedule-wrap {
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .schedule-table {
+        min-width: 0;
+      }
+
+      .schedule-table th,
+      .schedule-table td {
+        height: 52px;
+      }
+
+      .schedule-table thead th {
+        height: 60px;
+      }
+
+      @page {
+        size: A4 landscape;
+        margin: 9mm;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loadingOverlay">
+    <div class="loader-mark">☾</div>
+    <div id="loadingText">Memuat jadwal pengawasan...</div>
+  </div>
+
+  <div id="appToast" class="toast" role="status" aria-live="polite">
+    <div class="toast-icon" id="toastIcon">✓</div>
+    <div>
+      <strong id="toastTitle">Berhasil</strong>
+      <span id="toastMessage">Jadwal berhasil disimpan.</span>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="hero-label">Pesantren Cahaya Fajrul Islam</span>
+
+        <h1>
+          Jadwal Piket
+          <span>Pengawasan Naqib</span>
+        </h1>
+
+        <p>
+          Pembagian petugas pengawasan 24 jam berdasarkan tiga blok.
+          Amanah dijaga dengan disiplin, kehadiran, dan tanggung jawab.
+        </p>
+      </div>
+
+      <div class="hero-live">
+        <span class="live-label">
+          <span class="live-dot"></span>
+          Sedang Piket Sekarang
+        </span>
+
+        <strong class="live-name" id="liveDutyName">Memuat...</strong>
+        <span class="live-meta" id="liveDutyMeta">-</span>
+        <span class="live-clock" id="liveClock">Waktu Indonesia Barat</span>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <article class="summary-card day">
+        <span class="summary-label">Hari Jadwal Aktif</span>
+        <strong class="summary-value" id="summaryScheduleDay">-</strong>
+      </article>
+
+      <article class="summary-card block">
+        <span class="summary-label">Blok Aktif</span>
+        <strong class="summary-value" id="summaryActiveBlock">-</strong>
+      </article>
+
+      <article class="summary-card next">
+        <span class="summary-label">Petugas Berikutnya</span>
+        <strong class="summary-value" id="summaryNextDuty">-</strong>
+      </article>
+
+      <article class="summary-card sync">
+        <span class="summary-label">Sinkronisasi Firebase</span>
+        <strong class="summary-value" id="summarySync">Menunggu</strong>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div class="heading-copy">
+          <div class="heading-icon">📅</div>
+
+          <div>
+            <h2>Jadwal Piket Pekanan</h2>
+            <p>
+              Blok 3 berlangsung hingga dini hari berikutnya. Sebelum pukul
+              03.30, sistem memakai petugas Blok 3 dari hari sebelumnya.
+            </p>
+          </div>
+        </div>
+
+        <div class="heading-actions">
+          <button
+            type="button"
+            class="button button-light"
+            id="editButton"
+            onclick="toggleEdit()"
+          >
+            ✏️ Edit Jadwal
+          </button>
+
+          <button
+            type="button"
+            class="button button-primary"
+            id="saveButton"
+            onclick="saveSchedule()"
+            style="display:none;"
+          >
+            💾 Simpan ke Firebase
+          </button>
+
+          <button
+            type="button"
+            class="button button-gold"
+            onclick="window.print()"
+          >
+            🖨️ Cetak
+          </button>
+        </div>
+      </div>
+
+      <div class="block-settings" id="blockSettings">
+        <div class="block-setting">
+          <strong>Blok 1</strong>
+
+          <div class="time-row">
+            <input type="time" class="time-control" id="block1Start">
+            <span class="time-separator">s.d.</span>
+            <input type="time" class="time-control" id="block1End">
+          </div>
+        </div>
+
+        <div class="block-setting">
+          <strong>Blok 2</strong>
+
+          <div class="time-row">
+            <input type="time" class="time-control" id="block2Start">
+            <span class="time-separator">s.d.</span>
+            <input type="time" class="time-control" id="block2End">
+          </div>
+        </div>
+
+        <div class="block-setting">
+          <strong>Blok 3 — Melewati Tengah Malam</strong>
+
+          <div class="time-row">
+            <input type="time" class="time-control" id="block3Start">
+            <span class="time-separator">s.d.</span>
+            <input type="time" class="time-control" id="block3End">
+          </div>
+        </div>
+      </div>
+
+      <div class="schedule-wrap">
+        <table class="schedule-table" id="scheduleTable">
+          <thead>
+            <tr>
+              <th>
+                <strong>Hari</strong>
+                <span>Jadwal Pekanan</span>
+              </th>
+
+              <th>
+                <strong>Blok 1</strong>
+                <span id="headerBlock1">03.30–11.20</span>
+              </th>
+
+              <th>
+                <strong>Blok 2</strong>
+                <span id="headerBlock2">11.20–17.50</span>
+              </th>
+
+              <th>
+                <strong>Blok 3</strong>
+                <span id="headerBlock3">17.50–03.30</span>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody id="scheduleBody"></tbody>
+        </table>
+      </div>
+
+      <div class="motto">
+        <span class="motto-arabic">مَنْ جَدَّ وَجَدَ</span>
+
+        <span class="motto-text">
+          “Barang siapa yang bersungguh-sungguh, niscaya ia akan berhasil.”
+        </span>
+
+        <div class="motto-values">
+          <span>◆ Amanah</span>
+          <span>◆ Disiplin</span>
+          <span>◆ Tanggung Jawab</span>
+        </div>
+      </div>
+
+      <div class="integration-box">
+        <strong>Jalur Firebase untuk Integrasi Beranda</strong>
+
+        <code>cahaya_app/jadwal_piket_naqib</code>
+
+        <span>
+          Beranda dapat membaca struktur jadwal ini untuk menentukan petugas
+          aktif berdasarkan hari dan waktu. Snapshot petugas aktif juga
+          diperbarui pada jalur
+          <b>cahaya_app/piket_naqib_saat_ini</b>.
+        </span>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+    import {
+      getDatabase,
+      ref,
+      get,
+      set,
+      update
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
+      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+      projectId: "absensi-santri-fajrul-islam"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const SCHEDULE_PATH = "cahaya_app/jadwal_piket_naqib";
+    const CURRENT_DUTY_PATH = "cahaya_app/piket_naqib_saat_ini";
+    const TIMEZONE = "Asia/Jakarta";
+
+    const DAY_ORDER = [
+      "senin",
+      "selasa",
+      "rabu",
+      "kamis",
+      "jumat",
+      "sabtu",
+      "ahad"
+    ];
+
+    const DAY_META = {
+      senin: {
+        label: "Senin",
+        icon: "☀️"
+      },
+      selasa: {
+        label: "Selasa",
+        icon: "☾"
+      },
+      rabu: {
+        label: "Rabu",
+        icon: "📖"
+      },
+      kamis: {
+        label: "Kamis",
+        icon: "✹"
+      },
+      jumat: {
+        label: "Jumat",
+        icon: "🕌"
+      },
+      sabtu: {
+        label: "Sabtu",
+        icon: "🏮"
+      },
+      ahad: {
+        label: "Ahad",
+        icon: "◉"
+      }
+    };
+
+    const DEFAULT_DATA = {
+      versi: "Jadwal Piket Pengawasan Naqib 2026/2027",
+
+      zonaWaktu: TIMEZONE,
+
+      blok: {
+        blok1: {
+          label: "Blok 1",
+          mulai: "03:30",
+          selesai: "11:20"
+        },
+
+        blok2: {
+          label: "Blok 2",
+          mulai: "11:20",
+          selesai: "17:50"
+        },
+
+        blok3: {
+          label: "Blok 3",
+          mulai: "17:50",
+          selesai: "03:30",
+          melewatiTengahMalam: true
+        }
+      },
+
+      jadwal: {
+        senin: {
+          blok1: "Favian",
+          blok2: "Yong",
+          blok3: "Kamal"
+        },
+
+        selasa: {
+          blok1: "Favian",
+          blok2: "Kamal",
+          blok3: "Yong"
+        },
+
+        rabu: {
+          blok1: "Kamal",
+          blok2: "Yong",
+          blok3: "Favian"
+        },
+
+        kamis: {
+          blok1: "Yong",
+          blok2: "Favian",
+          blok3: "Kamal"
+        },
+
+        jumat: {
+          blok1: "Favian",
+          blok2: "Abi Dandi",
+          blok3: "Abi Dandi"
+        },
+
+        sabtu: {
+          blok1: "Abi Dandi",
+          blok2: "Yong",
+          blok3: "Favian"
+        },
+
+        ahad: {
+          blok1: "Kamal",
+          blok2: "Favian",
+          blok3: "Yong"
+        }
+      }
+    };
+
+    let scheduleData = structuredClone(DEFAULT_DATA);
+    let editing = false;
+    let toastTimer = null;
+    let currentUser = {};
+
+    try {
+      currentUser = JSON.parse(
+        localStorage.getItem("cahayaCurrentUser") || "{}"
+      );
+    } catch (error) {
+      console.warn("Data pengguna tidak terbaca:", error);
+    }
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function userName() {
+      return (
+        currentUser.label ||
+        currentUser.nama ||
+        currentUser.username ||
+        "Admin Cahaya"
+      );
+    }
+
+    function showToast(type, title, message) {
+      const toast = document.getElementById("appToast");
+
+      toast.className = `toast ${type}`;
+
+      document.getElementById("toastTitle").textContent = title;
+      document.getElementById("toastMessage").textContent = message;
+      document.getElementById("toastIcon").textContent =
+        type === "success" ? "✓" : "!";
+
+      requestAnimationFrame(() => {
+        toast.classList.add("show");
+      });
+
+      clearTimeout(toastTimer);
+
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 4200);
+    }
+
+    function hideLoading() {
+      const overlay = document.getElementById("loadingOverlay");
+
+      overlay.style.opacity = "0";
+
+      setTimeout(() => {
+        overlay.style.display = "none";
+      }, 330);
+    }
+
+    function formatTime(value = "") {
+      return String(value).replace(":", ".");
+    }
+
+    function timeToMinutes(value = "00:00") {
+      const [hour, minute] =
+        String(value).split(":").map(Number);
+
+      return (hour || 0) * 60 + (minute || 0);
+    }
+
+    function jakartaParts(date = new Date()) {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: TIMEZONE,
+        weekday: "long",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+      }).formatToParts(date);
+
+      const map = {};
+
+      parts.forEach(part => {
+        if (part.type !== "literal") {
+          map[part.type] = part.value;
+        }
+      });
+
+      return map;
+    }
+
+    function dayKeyFromEnglish(value = "") {
+      const map = {
+        monday: "senin",
+        tuesday: "selasa",
+        wednesday: "rabu",
+        thursday: "kamis",
+        friday: "jumat",
+        saturday: "sabtu",
+        sunday: "ahad"
+      };
+
+      return map[String(value).toLowerCase()] || "senin";
+    }
+
+    function previousDay(dayKey) {
+      const index = DAY_ORDER.indexOf(dayKey);
+
+      return DAY_ORDER[
+        (index - 1 + DAY_ORDER.length) %
+        DAY_ORDER.length
+      ];
+    }
+
+    function nextDay(dayKey) {
+      const index = DAY_ORDER.indexOf(dayKey);
+
+      return DAY_ORDER[
+        (index + 1) %
+        DAY_ORDER.length
+      ];
+    }
+
+    function currentDuty(date = new Date()) {
+      const parts = jakartaParts(date);
+
+      const calendarDay =
+        dayKeyFromEnglish(parts.weekday);
+
+      const minuteNow =
+        Number(parts.hour) * 60 +
+        Number(parts.minute);
+
+      const block1Start =
+        timeToMinutes(scheduleData.blok.blok1.mulai);
+
+      const block1End =
+        timeToMinutes(scheduleData.blok.blok1.selesai);
+
+      const block2Start =
+        timeToMinutes(scheduleData.blok.blok2.mulai);
+
+      const block2End =
+        timeToMinutes(scheduleData.blok.blok2.selesai);
+
+      const block3Start =
+        timeToMinutes(scheduleData.blok.blok3.mulai);
+
+      const block3End =
+        timeToMinutes(scheduleData.blok.blok3.selesai);
+
+      let scheduleDay = calendarDay;
+      let blockKey = "blok3";
+
+      if (
+        minuteNow >= block1Start &&
+        minuteNow < block1End
+      ) {
+        blockKey = "blok1";
+      } else if (
+        minuteNow >= block2Start &&
+        minuteNow < block2End
+      ) {
+        blockKey = "blok2";
+      } else if (
+        minuteNow >= block3Start
+      ) {
+        blockKey = "blok3";
+      } else if (
+        minuteNow < block3End
+      ) {
+        /*
+          Dini hari masih merupakan lanjutan Blok 3
+          dari baris jadwal hari sebelumnya.
+        */
+        blockKey = "blok3";
+        scheduleDay = previousDay(calendarDay);
+      } else {
+        /*
+          Perlindungan jika waktu blok diedit dan menyisakan celah.
+          Gunakan blok terdekat berdasarkan urutan.
+        */
+        if (minuteNow < block1Start) {
+          blockKey = "blok3";
+          scheduleDay = previousDay(calendarDay);
+        } else if (minuteNow < block2Start) {
+          blockKey = "blok1";
+        } else if (minuteNow < block3Start) {
+          blockKey = "blok2";
+        }
+      }
+
+      const block =
+        scheduleData.blok[blockKey];
+
+      const name =
+        scheduleData.jadwal?.[scheduleDay]?.[blockKey] ||
+        "Belum Diatur";
+
+      return {
+        calendarDay,
+        scheduleDay,
+        blockKey,
+        blockLabel: block.label,
+        start: block.mulai,
+        end: block.selesai,
+        name,
+        now: `${parts.hour}:${parts.minute}`,
+        date: `${parts.year}-${parts.month}-${parts.day}`,
+        timezone: TIMEZONE
+      };
+    }
+
+    function nextDutyInfo(active) {
+      let day = active.scheduleDay;
+      let blockKey = "blok1";
+
+      if (active.blockKey === "blok1") {
+        blockKey = "blok2";
+      } else if (active.blockKey === "blok2") {
+        blockKey = "blok3";
+      } else {
+        blockKey = "blok1";
+        day = nextDay(active.scheduleDay);
+      }
+
+      return {
+        day,
+        blockKey,
+        name:
+          scheduleData.jadwal?.[day]?.[blockKey] ||
+          "Belum Diatur",
+        block:
+          scheduleData.blok[blockKey]
+      };
+    }
+
+    function renderHeaders() {
+      document.getElementById("headerBlock1").textContent =
+        `${formatTime(scheduleData.blok.blok1.mulai)}–` +
+        `${formatTime(scheduleData.blok.blok1.selesai)}`;
+
+      document.getElementById("headerBlock2").textContent =
+        `${formatTime(scheduleData.blok.blok2.mulai)}–` +
+        `${formatTime(scheduleData.blok.blok2.selesai)}`;
+
+      document.getElementById("headerBlock3").textContent =
+        `${formatTime(scheduleData.blok.blok3.mulai)}–` +
+        `${formatTime(scheduleData.blok.blok3.selesai)}`;
+    }
+
+    function renderBlockSettings() {
+      document.getElementById("block1Start").value =
+        scheduleData.blok.blok1.mulai;
+
+      document.getElementById("block1End").value =
+        scheduleData.blok.blok1.selesai;
+
+      document.getElementById("block2Start").value =
+        scheduleData.blok.blok2.mulai;
+
+      document.getElementById("block2End").value =
+        scheduleData.blok.blok2.selesai;
+
+      document.getElementById("block3Start").value =
+        scheduleData.blok.blok3.mulai;
+
+      document.getElementById("block3End").value =
+        scheduleData.blok.blok3.selesai;
+    }
+
+    function renderSchedule() {
+      const active = currentDuty();
+
+      const body =
+        document.getElementById("scheduleBody");
+
+      body.innerHTML = DAY_ORDER.map(dayKey => {
+        const day = DAY_META[dayKey];
+        const isActiveDay =
+          dayKey === active.scheduleDay;
+
+        return `
+          <tr class="${isActiveDay ? "current-row" : ""}">
+            <td>
+              <div class="day-cell">
+                <span class="day-icon">${day.icon}</span>
+                <span>${escapeHtml(day.label)}</span>
+              </div>
+            </td>
+
+            ${["blok1", "blok2", "blok3"].map(blockKey => {
+              const name =
+                scheduleData.jadwal?.[dayKey]?.[blockKey] ||
+                "";
+
+              const currentClass =
+                isActiveDay &&
+                blockKey === active.blockKey
+                  ? "current-cell"
+                  : "";
+
+              return `
+                <td class="${currentClass}">
+                  <span class="duty-name">
+                    ${escapeHtml(name || "Belum Diatur")}
+                  </span>
+
+                  <input
+                    type="text"
+                    class="duty-input"
+                    data-day="${dayKey}"
+                    data-block="${blockKey}"
+                    value="${escapeHtml(name)}"
+                    placeholder="Nama petugas"
+                  >
+                </td>
+              `;
+            }).join("")}
+          </tr>
+        `;
+      }).join("");
+
+      document.getElementById("scheduleTable")
+        .classList.toggle("editing", editing);
+
+      renderHeaders();
+      updateLivePanel();
+    }
+
+    function updateLivePanel() {
+      const active = currentDuty();
+      const next = nextDutyInfo(active);
+
+      document.getElementById("liveDutyName").textContent =
+        active.name;
+
+      document.getElementById("liveDutyMeta").textContent =
+        `${DAY_META[active.scheduleDay].label} • ` +
+        `${active.blockLabel} • ` +
+        `${formatTime(active.start)}–${formatTime(active.end)}`;
+
+      document.getElementById("liveClock").textContent =
+        `${active.date} • ${active.now} WIB`;
+
+      document.getElementById("summaryScheduleDay").textContent =
+        DAY_META[active.scheduleDay].label;
+
+      document.getElementById("summaryActiveBlock").textContent =
+        `${active.blockLabel} • ` +
+        `${formatTime(active.start)}–${formatTime(active.end)}`;
+
+      document.getElementById("summaryNextDuty").textContent =
+        `${next.name} • ${DAY_META[next.day].label} ${next.block.label}`;
+
+      highlightCurrentCell(active);
+      publishCurrentDuty(active, next);
+    }
+
+    function highlightCurrentCell(active) {
+      document
+        .querySelectorAll(".schedule-table td.current-cell")
+        .forEach(cell => {
+          cell.classList.remove("current-cell");
+        });
+
+      document
+        .querySelectorAll(".schedule-table tr.current-row")
+        .forEach(row => {
+          row.classList.remove("current-row");
+        });
+
+      const input = document.querySelector(
+        `.duty-input[data-day="${active.scheduleDay}"]` +
+        `[data-block="${active.blockKey}"]`
+      );
+
+      if (!input) return;
+
+      const cell = input.closest("td");
+      const row = input.closest("tr");
+
+      cell?.classList.add("current-cell");
+      row?.classList.add("current-row");
+    }
+
+    function readEditorValues() {
+      const nextData = clone(scheduleData);
+
+      document
+        .querySelectorAll(".duty-input")
+        .forEach(input => {
+          const day = input.dataset.day;
+          const block = input.dataset.block;
+
+          nextData.jadwal[day][block] =
+            input.value.trim() || "Belum Diatur";
+        });
+
+      nextData.blok.blok1.mulai =
+        document.getElementById("block1Start").value ||
+        nextData.blok.blok1.mulai;
+
+      nextData.blok.blok1.selesai =
+        document.getElementById("block1End").value ||
+        nextData.blok.blok1.selesai;
+
+      nextData.blok.blok2.mulai =
+        document.getElementById("block2Start").value ||
+        nextData.blok.blok2.mulai;
+
+      nextData.blok.blok2.selesai =
+        document.getElementById("block2End").value ||
+        nextData.blok.blok2.selesai;
+
+      nextData.blok.blok3.mulai =
+        document.getElementById("block3Start").value ||
+        nextData.blok.blok3.mulai;
+
+      nextData.blok.blok3.selesai =
+        document.getElementById("block3End").value ||
+        nextData.blok.blok3.selesai;
+
+      nextData.blok.blok3.melewatiTengahMalam = true;
+
+      return nextData;
+    }
+
+    function validateSchedule(data) {
+      for (const day of DAY_ORDER) {
+        for (const block of ["blok1", "blok2", "blok3"]) {
+          if (!String(data.jadwal?.[day]?.[block] || "").trim()) {
+            return {
+              valid: false,
+              message:
+                `${DAY_META[day].label} ${data.blok[block].label} belum memiliki petugas.`
+            };
+          }
+        }
+      }
+
+      return {
+        valid: true
+      };
+    }
+
+    function toggleEdit() {
+      editing = !editing;
+
+      if (!editing) {
+        renderBlockSettings();
+        renderSchedule();
+      }
+
+      document.getElementById("scheduleTable")
+        .classList.toggle("editing", editing);
+
+      document.getElementById("blockSettings")
+        .classList.toggle("show", editing);
+
+      document.getElementById("saveButton").style.display =
+        editing ? "inline-flex" : "none";
+
+      document.getElementById("editButton").textContent =
+        editing
+          ? "✕ Batal Edit"
+          : "✏️ Edit Jadwal";
+    }
+
+    async function saveSchedule() {
+      const nextData = readEditorValues();
+      const validation = validateSchedule(nextData);
+
+      if (!validation.valid) {
+        showToast(
+          "error",
+          "Jadwal belum lengkap",
+          validation.message
+        );
+        return;
+      }
+
+      const button =
+        document.getElementById("saveButton");
+
+      button.disabled = true;
+      button.innerHTML = "⏳ Menyimpan...";
+
+      const nowIso = new Date().toISOString();
+
+      nextData.meta = {
+        diperbaruiPada: nowIso,
+        diperbaruiOleh: userName(),
+        sumber: "nasib/jadwalpiket.html"
+      };
+
+      try {
+        await set(
+          ref(db, SCHEDULE_PATH),
+          nextData
+        );
+
+        scheduleData = nextData;
+        editing = false;
+
+        renderBlockSettings();
+        renderSchedule();
+
+        document.getElementById("scheduleTable")
+          .classList.remove("editing");
+
+        document.getElementById("blockSettings")
+          .classList.remove("show");
+
+        document.getElementById("saveButton").style.display =
+          "none";
+
+        document.getElementById("editButton").textContent =
+          "✏️ Edit Jadwal";
+
+        document.getElementById("summarySync").textContent =
+          "Tersimpan";
+
+        showToast(
+          "success",
+          "Jadwal berhasil disimpan",
+          "Perubahan jadwal sudah tersimpan di Firebase dan siap dibaca Beranda."
+        );
+      } catch (error) {
+        console.error("Gagal menyimpan jadwal:", error);
+
+        showToast(
+          "error",
+          "Jadwal gagal disimpan",
+          error?.message ||
+          "Periksa koneksi dan aturan Firebase."
+        );
+      } finally {
+        button.disabled = false;
+        button.innerHTML = "💾 Simpan ke Firebase";
+      }
+    }
+
+    async function publishCurrentDuty(active, next) {
+      try {
+        const nowIso = new Date().toISOString();
+
+        await set(
+          ref(db, CURRENT_DUTY_PATH),
+          {
+            namaPetugas: active.name,
+            hariKalender: active.calendarDay,
+            hariJadwal: active.scheduleDay,
+            labelHari:
+              DAY_META[active.scheduleDay].label,
+
+            blok: active.blockKey,
+            labelBlok: active.blockLabel,
+            mulai: active.start,
+            selesai: active.end,
+
+            tanggal: active.date,
+            waktuWIB: active.now,
+            zonaWaktu: TIMEZONE,
+
+            petugasBerikutnya: next.name,
+            hariBerikutnya: next.day,
+            blokBerikutnya: next.blockKey,
+
+            sumberJadwal: SCHEDULE_PATH,
+            diperbaruiPada: nowIso
+          }
+        );
+
+        document.getElementById("summarySync").textContent =
+          "Aktif";
+      } catch (error) {
+        console.warn(
+          "Snapshot petugas aktif belum dapat diperbarui:",
+          error
+        );
+
+        document.getElementById("summarySync").textContent =
+          "Jadwal Terbaca";
+      }
+    }
+
+    async function loadSchedule() {
+      try {
+        const snapshot = await get(
+          ref(db, SCHEDULE_PATH)
+        );
+
+        if (snapshot.exists()) {
+          const saved = snapshot.val();
+
+          scheduleData = {
+            ...clone(DEFAULT_DATA),
+            ...saved,
+            blok: {
+              ...clone(DEFAULT_DATA.blok),
+              ...(saved.blok || {})
+            },
+            jadwal: {
+              ...clone(DEFAULT_DATA.jadwal),
+              ...(saved.jadwal || {})
+            }
+          };
+
+          document.getElementById("summarySync").textContent =
+            "Terhubung";
+        } else {
+          scheduleData = clone(DEFAULT_DATA);
+
+          const seeded = {
+            ...scheduleData,
+            meta: {
+              dibuatPada: new Date().toISOString(),
+              dibuatOleh: userName(),
+              sumber: "nasib/jadwalpiket.html",
+              status: "JADWAL_AWAL"
+            }
+          };
+
+          await set(
+            ref(db, SCHEDULE_PATH),
+            seeded
+          );
+
+          scheduleData = seeded;
+
+          document.getElementById("summarySync").textContent =
+            "Jadwal Awal Dibuat";
+        }
+
+        renderBlockSettings();
+        renderSchedule();
+      } catch (error) {
+        console.error("Gagal memuat jadwal:", error);
+
+        scheduleData = clone(DEFAULT_DATA);
+
+        renderBlockSettings();
+        renderSchedule();
+
+        document.getElementById("summarySync").textContent =
+          "Mode Lokal";
+
+        showToast(
+          "error",
+          "Firebase belum dapat dibaca",
+          "Jadwal bawaan tetap ditampilkan. Periksa koneksi atau aturan Firebase."
+        );
+      } finally {
+        hideLoading();
+      }
+    }
+
+    /*
+      Fungsi ini dapat dipakai saat halaman dibuka langsung.
+      Beranda sebaiknya membaca SCHEDULE_PATH dan menjalankan logika
+      yang sama agar status tidak bergantung pada halaman ini.
+    */
+    window.getPiketNaqibSaatIni = () => currentDuty();
+
+    window.toggleEdit = toggleEdit;
+    window.saveSchedule = saveSchedule;
+    window.switchScheduleEdit = toggleEdit;
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      loadSchedule
+    );
+
+    setInterval(() => {
+      if (!editing) {
+        updateLivePanel();
+      }
+    }, 60 * 1000);
+  </script>
+</body>
+</html>
