@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CAHAYA APP - Dashboard Pimpinan Harian</title>
+
+  <link rel="stylesheet" href="../css/cahaya-theme.css">
+
+  <style>
+    :root {
+      --dp-primary: var(--primary, #2878ff);
+      --dp-primary-dark: var(--primary-dark, #1557d5);
+      --dp-cyan: var(--cyan, #19c6e6);
+      --dp-green: var(--green, #25b983);
+      --dp-orange: var(--orange, #f59e42);
+      --dp-red: var(--red, #ef5968);
+      --dp-purple: var(--purple, #7667f5);
+      --dp-heading: var(--text-heading, #16264a);
+      --dp-text: var(--text-main, #2d3c5d);
+      --dp-muted: var(--text-muted, #7483a0);
+      --dp-border: var(--border, #e1e9f5);
+      --dp-bg: var(--bg-main, #f5f8ff);
+      --dp-shadow: 0 15px 38px rgba(35, 78, 160, 0.10);
+      --dp-radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    body {
+      padding: 18px;
+      color: var(--dp-text);
+      font-family: "Nunito", "Poppins", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(25, 198, 230, 0.12), transparent 27%),
+        radial-gradient(circle at 100% 3%, rgba(118, 103, 245, 0.08), transparent 25%),
+        linear-gradient(180deg, #f4f8ff 0%, #fbfcff 100%);
+    }
+
+    button,
+    input,
+    select { font: inherit; }
+
+    .page {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      animation: pageIn .35s ease both;
+    }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .control-panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(40, 120, 255, .20);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 97% 0%, rgba(25, 198, 230, .18), transparent 32%),
+        linear-gradient(135deg, #edf5ff 0%, #f9fbff 55%, #eefcff 100%);
+      box-shadow: 0 15px 36px rgba(40, 120, 255, .12);
+    }
+
+    .control-panel::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 22px;
+      right: 22px;
+      height: 4px;
+      border-radius: 0 0 10px 10px;
+      background: linear-gradient(90deg, var(--dp-primary), var(--dp-cyan));
+    }
+
+    .control-panel::after {
+      content: "";
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      right: -78px;
+      bottom: -90px;
+      border: 25px solid rgba(40, 120, 255, .05);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .control-copy,
+    .control-actions { position: relative; z-index: 1; }
+
+    .control-copy {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .control-icon {
+      width: 48px;
+      height: 48px;
+      flex: 0 0 48px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 1.2rem;
+      border-radius: 15px;
+      background: linear-gradient(135deg, var(--dp-primary), var(--dp-cyan));
+      box-shadow: 0 10px 22px rgba(40, 120, 255, .22);
+    }
+
+    .control-copy h1 {
+      margin: 0;
+      color: var(--dp-primary-dark);
+      font-size: clamp(1.18rem, 3vw, 1.55rem);
+      font-weight: 950;
+      line-height: 1.2;
+    }
+
+    .control-copy p {
+      margin: 5px 0 0;
+      color: #647694;
+      font-size: .69rem;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .control-actions {
+      display: grid;
+      grid-template-columns: minmax(155px, 1fr) auto;
+      gap: 9px;
+      align-items: end;
+    }
+
+    .date-wrap label {
+      display: block;
+      margin-bottom: 6px;
+      color: #254d84;
+      font-size: .62rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: .45px;
+    }
+
+    .date-input {
+      width: 100%;
+      min-height: 45px;
+      padding: 9px 12px;
+      color: var(--dp-heading);
+      font-size: .76rem;
+      font-weight: 850;
+      outline: none;
+      border: 1.5px solid #cddcf2;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .95);
+    }
+
+    .date-input:focus {
+      border-color: var(--dp-primary);
+      box-shadow: 0 0 0 4px rgba(40, 120, 255, .09);
+    }
+
+    .refresh-btn {
+      min-height: 45px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: 950;
+      cursor: pointer;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--dp-primary), var(--dp-cyan));
+      box-shadow: 0 9px 20px rgba(40, 120, 255, .20);
+    }
+
+    .refresh-btn:disabled { opacity: .62; cursor: wait; }
+
+    .sync-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 15px;
+      padding: 0 3px;
+      color: var(--dp-muted);
+      font-size: .62rem;
+      font-weight: 750;
+    }
+
+    .sync-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 9px;
+      color: #1768cb;
+      border: 1px solid #cee1ff;
+      border-radius: 999px;
+      background: #edf5ff;
+    }
+
+    .sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--dp-green);
+      box-shadow: 0 0 0 4px rgba(37, 185, 131, .11);
+    }
+
+    .pulse-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .pulse-card {
+      min-width: 0;
+      position: relative;
+      overflow: hidden;
+      padding: 15px;
+      border: 1px solid var(--dp-border);
+      border-radius: 17px;
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(35, 78, 160, .07);
+    }
+
+    .pulse-card::after {
+      content: "";
+      position: absolute;
+      width: 68px;
+      height: 68px;
+      right: -28px;
+      top: -28px;
+      border-radius: 50%;
+      background: var(--pulse-soft, #eaf3ff);
+    }
+
+    .pulse-label,
+    .pulse-value,
+    .pulse-note { position: relative; z-index: 1; display: block; }
+
+    .pulse-label {
+      color: var(--dp-muted);
+      font-size: .55rem;
+      font-weight: 950;
+      letter-spacing: .35px;
+      text-transform: uppercase;
+    }
+
+    .pulse-value {
+      margin-top: 6px;
+      overflow: hidden;
+      color: var(--pulse-color, var(--dp-primary-dark));
+      font-size: 1.18rem;
+      font-weight: 950;
+      line-height: 1.05;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pulse-note {
+      margin-top: 5px;
+      overflow: hidden;
+      color: var(--dp-muted);
+      font-size: .58rem;
+      font-weight: 700;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pulse-card.green { --pulse-color: #16865f; --pulse-soft: #e8faf3; }
+    .pulse-card.orange { --pulse-color: #b96c16; --pulse-soft: #fff3e6; }
+    .pulse-card.red { --pulse-color: #d64555; --pulse-soft: #fff0f2; }
+    .pulse-card.purple { --pulse-color: #6759d8; --pulse-soft: #f0eeff; }
+
+    .alerts {
+      display: none;
+      margin-bottom: 15px;
+      padding: 14px 15px;
+      border: 1px solid #f1d5a7;
+      border-left: 5px solid var(--dp-orange);
+      border-radius: 14px;
+      background: #fff8ed;
+    }
+
+    .alerts.show { display: block; }
+
+    .alerts h2 {
+      margin: 0 0 8px;
+      color: #885514;
+      font-size: .78rem;
+      font-weight: 950;
+    }
+
+    .alert-list {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding-left: 18px;
+      color: #805d2a;
+      font-size: .65rem;
+      font-weight: 750;
+      line-height: 1.45;
+    }
+
+    .module {
+      margin-bottom: 15px;
+      overflow: hidden;
+      border: 1px solid var(--dp-border);
+      border-radius: var(--dp-radius);
+      background: rgba(255, 255, 255, .98);
+      box-shadow: var(--dp-shadow);
+    }
+
+    .module-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      border-bottom: 1px solid #e8eef7;
+      background: linear-gradient(135deg, #f7faff, #eef6ff);
+    }
+
+    .module-title {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .module-icon {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 1.05rem;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--dp-primary), var(--dp-cyan));
+      box-shadow: 0 8px 18px rgba(40, 120, 255, .18);
+    }
+
+    .module-title h2 {
+      margin: 0;
+      color: var(--dp-heading);
+      font-size: .96rem;
+      font-weight: 950;
+      line-height: 1.25;
+    }
+
+    .module-title p {
+      margin: 4px 0 0;
+      color: var(--dp-muted);
+      font-size: .61rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .module-status {
+      flex: 0 0 auto;
+      padding: 6px 9px;
+      color: #1768cb;
+      font-size: .57rem;
+      font-weight: 950;
+      border: 1px solid #cfe1ff;
+      border-radius: 999px;
+      background: #edf5ff;
+    }
+
+    .module-body {
+      padding: 16px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric-card {
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid #e4ebf5;
+      border-radius: 15px;
+      background: #fbfdff;
+    }
+
+    .metric-card.accent {
+      border-color: #d3e4ff;
+      background: linear-gradient(135deg, #f1f7ff, #f7fbff);
+    }
+
+    .metric-card.warning {
+      border-color: #f3ddba;
+      background: #fff9f0;
+    }
+
+    .metric-card.danger {
+      border-color: #f0cdd2;
+      background: #fff4f5;
+    }
+
+    .metric-label {
+      display: block;
+      color: var(--dp-muted);
+      font-size: .54rem;
+      font-weight: 950;
+      letter-spacing: .35px;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      display: block;
+      margin-top: 6px;
+      overflow: hidden;
+      color: var(--dp-heading);
+      font-size: .96rem;
+      font-weight: 950;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric-detail {
+      display: block;
+      margin-top: 4px;
+      color: var(--dp-muted);
+      font-size: .58rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(280px, .82fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .subpanel {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid #e4ebf5;
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .subpanel h3 {
+      margin: 0 0 10px;
+      color: var(--dp-heading);
+      font-size: .76rem;
+      font-weight: 950;
+    }
+
+    .rank-list,
+    .bar-list,
+    .note-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .rank-item {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      padding: 8px 9px;
+      border: 1px solid #edf1f7;
+      border-radius: 11px;
+      background: #fbfdff;
+    }
+
+    .rank-no {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      color: var(--dp-primary-dark);
+      font-size: .62rem;
+      font-weight: 950;
+      border-radius: 9px;
+      background: #eaf3ff;
+    }
+
+    .rank-copy { min-width: 0; }
+
+    .rank-copy strong,
+    .rank-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .rank-copy strong { color: var(--dp-heading); font-size: .66rem; font-weight: 950; }
+    .rank-copy span { margin-top: 2px; color: var(--dp-muted); font-size: .55rem; font-weight: 700; }
+
+    .rank-value {
+      color: var(--dp-primary-dark);
+      font-size: .68rem;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(95px, .7fr) minmax(100px, 1fr) 44px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .bar-label {
+      overflow: hidden;
+      color: var(--dp-heading);
+      font-size: .61rem;
+      font-weight: 850;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bar-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e7edf6;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--dp-primary), var(--dp-cyan));
+    }
+
+    .bar-value {
+      color: var(--dp-primary-dark);
+      font-size: .6rem;
+      font-weight: 950;
+      text-align: right;
+    }
+
+    .note-item {
+      padding: 9px 10px;
+      color: #5b6b87;
+      font-size: .59rem;
+      font-weight: 700;
+      line-height: 1.45;
+      border: 1px solid #e8eef7;
+      border-radius: 11px;
+      background: #fbfdff;
+    }
+
+    .empty {
+      padding: 15px;
+      color: var(--dp-muted);
+      font-size: .62rem;
+      font-weight: 750;
+      text-align: center;
+      border: 1px dashed #d9e3f0;
+      border-radius: 12px;
+      background: #fafcff;
+    }
+
+    .data-quality {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .quality-item {
+      min-width: 0;
+      padding: 11px;
+      border: 1px solid #e4ebf5;
+      border-radius: 13px;
+      background: #fbfdff;
+    }
+
+    .quality-item strong,
+    .quality-item span { display: block; }
+
+    .quality-item strong {
+      overflow: hidden;
+      color: var(--dp-heading);
+      font-size: .62rem;
+      font-weight: 950;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .quality-item span {
+      margin-top: 4px;
+      color: var(--dp-muted);
+      font-size: .55rem;
+      font-weight: 700;
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px;
+      color: var(--dp-heading);
+      text-align: center;
+      background: rgba(246, 249, 255, .95);
+      backdrop-filter: blur(9px);
+      transition: .3s ease;
+    }
+
+    .loader {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 1.3rem;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--dp-primary), var(--dp-cyan));
+      box-shadow: 0 13px 28px rgba(40, 120, 255, .22);
+      animation: pulse 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(.95); }
+      to { transform: scale(1.04); }
+    }
+
+    .loading strong { font-size: .82rem; font-weight: 950; }
+    .loading span { max-width: 430px; color: var(--dp-muted); font-size: .62rem; font-weight: 700; line-height: 1.5; }
+
+    @media (max-width: 1080px) {
+      .pulse-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .data-quality { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 10px; }
+
+      .control-panel {
+        grid-template-columns: 1fr;
+        padding: 17px 14px;
+        border-radius: 18px;
+      }
+
+      .control-actions { grid-template-columns: 1fr; }
+      .refresh-btn { width: 100%; }
+      .pulse-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metric-grid { grid-template-columns: 1fr; }
+      .split { grid-template-columns: 1fr; }
+      .module-head { align-items: flex-start; padding: 14px; }
+      .module-status { max-width: 115px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .module-body { padding: 12px; }
+      .data-quality { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .bar-row { grid-template-columns: minmax(82px, .8fr) minmax(80px, 1fr) 40px; }
+    }
+
+    @media (max-width: 420px) {
+      .pulse-grid { grid-template-columns: 1fr; }
+      .data-quality { grid-template-columns: 1fr; }
+      .control-copy { align-items: flex-start; }
+      .control-icon { width: 43px; height: 43px; flex-basis: 43px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loadingOverlay">
+    <div class="loader">📊</div>
+    <strong id="loadingTitle">Menyusun resume harian...</strong>
+    <span id="loadingMessage">Mengambil data pendidikan, pembinaan, kedisiplinan, kesehatan, dan operasional.</span>
+  </div>
+
+  <main class="page">
+    <section class="control-panel">
+      <div class="control-copy">
+        <div class="control-icon">📊</div>
+        <div>
+          <h1>Dashboard Pimpinan Harian</h1>
+          <p>Resume strategis seluruh modul CAHAYA App untuk pengambilan keputusan harian.</p>
+        </div>
+      </div>
+
+      <div class="control-actions">
+        <div class="date-wrap">
+          <label for="dashboardDate">Tanggal Laporan</label>
+          <input class="date-input" type="date" id="dashboardDate">
+        </div>
+        <button class="refresh-btn" id="refreshButton" type="button">↻ Segarkan Data</button>
+      </div>
+    </section>
+
+    <div class="sync-line">
+      <span id="dateLabel">Memuat tanggal...</span>
+      <span class="sync-badge"><span class="sync-dot"></span><span id="syncText">Menghubungkan Firebase</span></span>
+    </div>
+
+    <section class="pulse-grid" aria-label="Ringkasan utama">
+      <article class="pulse-card green">
+        <span class="pulse-label">Kehadiran Guru</span>
+        <strong class="pulse-value" id="pulseTeacher">—</strong>
+        <span class="pulse-note" id="pulseTeacherNote">Belum dihitung</span>
+      </article>
+      <article class="pulse-card">
+        <span class="pulse-label">Kehadiran Santri KBM</span>
+        <strong class="pulse-value" id="pulseStudent">—</strong>
+        <span class="pulse-note" id="pulseStudentNote">Belum dihitung</span>
+      </article>
+      <article class="pulse-card purple">
+        <span class="pulse-label">Kehadiran Program</span>
+        <strong class="pulse-value" id="pulseProgram">—</strong>
+        <span class="pulse-note" id="pulseProgramNote">Belum dihitung</span>
+      </article>
+      <article class="pulse-card green">
+        <span class="pulse-label">Kinerja Naqib</span>
+        <strong class="pulse-value" id="pulseNaqib">—</strong>
+        <span class="pulse-note" id="pulseNaqibNote">Belum ada jurnal</span>
+      </article>
+      <article class="pulse-card orange">
+        <span class="pulse-label">Kasus Hari Ini</span>
+        <strong class="pulse-value" id="pulseCases">0</strong>
+        <span class="pulse-note" id="pulseCasesNote">0 kritis</span>
+      </article>
+      <article class="pulse-card red">
+        <span class="pulse-label">Perlu Atensi</span>
+        <strong class="pulse-value" id="pulseAttention">0</strong>
+        <span class="pulse-note" id="pulseAttentionNote">Tidak ada temuan</span>
+      </article>
+    </section>
+
+    <section class="alerts" id="alertsPanel">
+      <h2>⚠️ Atensi Pimpinan Hari Ini</h2>
+      <ul class="alert-list" id="alertList"></ul>
+    </section>
+
+    <section class="module" id="educationModule">
+      <header class="module-head">
+        <div class="module-title">
+          <span class="module-icon">🎓</span>
+          <div>
+            <h2>Pendidikan</h2>
+            <p>Kehadiran guru, kehadiran santri, kedisiplinan guru, KKM, dan tahfiz.</p>
+          </div>
+        </div>
+        <span class="module-status" id="educationStatus">Menunggu data</span>
+      </header>
+      <div class="module-body">
+        <div class="metric-grid">
+          <article class="metric-card accent">
+            <span class="metric-label">Kehadiran Guru</span>
+            <strong class="metric-value" id="eduTeacherAttendance">—</strong>
+            <span class="metric-detail" id="eduTeacherAttendanceDetail">Berdasarkan jadwal harian</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Ketepatan Waktu Guru</span>
+            <strong class="metric-value" id="eduTeacherOnTime">—</strong>
+            <span class="metric-detail" id="eduTeacherOnTimeDetail">Dari absensi yang tercatat</span>
+          </article>
+          <article class="metric-card accent">
+            <span class="metric-label">Kehadiran Santri KBM</span>
+            <strong class="metric-value" id="eduStudentAttendance">—</strong>
+            <span class="metric-detail" id="eduStudentAttendanceDetail">Hadir dan terlambat dihitung hadir</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Nilai Harian di Atas KKM</span>
+            <strong class="metric-value" id="eduKkmOverall">—</strong>
+            <span class="metric-detail" id="eduKkmOverallDetail">KKM dasar 75</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Guru Terdisiplin</span>
+            <strong class="metric-value" id="eduBestTeacher">—</strong>
+            <span class="metric-detail" id="eduBestTeacherDetail">Belum ada peringkat</span>
+          </article>
+          <article class="metric-card warning">
+            <span class="metric-label">Guru Perlu Pembinaan</span>
+            <strong class="metric-value" id="eduLowestTeacher">—</strong>
+            <span class="metric-detail" id="eduLowestTeacherDetail">Belum ada peringkat</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Setoran Hafalan Terbanyak</span>
+            <strong class="metric-value" id="eduTopTahfiz">—</strong>
+            <span class="metric-detail" id="eduTopTahfizDetail">Belum ada setoran</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Sesi KBM Terekam</span>
+            <strong class="metric-value" id="eduLearningSessions">0</strong>
+            <span class="metric-detail" id="eduLearningSessionsDetail">0 kelas/mapel</span>
+          </article>
+        </div>
+
+        <div class="split">
+          <section class="subpanel">
+            <h3>Capaian KKM per Kelas</h3>
+            <div class="bar-list" id="kkmClassList"></div>
+          </section>
+          <section class="subpanel">
+            <h3>Peringkat Kedisiplinan Guru</h3>
+            <div class="rank-list" id="teacherRankList"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="module" id="mentoringModule">
+      <header class="module-head">
+        <div class="module-title">
+          <span class="module-icon">🌱</span>
+          <div>
+            <h2>Pembinaan Santri</h2>
+            <p>Kinerja Naqib, kehadiran program, disiplin usrah, mentoring, dan inisiatif.</p>
+          </div>
+        </div>
+        <span class="module-status" id="mentoringStatus">Menunggu data</span>
+      </header>
+      <div class="module-body">
+        <div class="metric-grid">
+          <article class="metric-card accent">
+            <span class="metric-label">Kinerja Naqib</span>
+            <strong class="metric-value" id="mentorNaqibPerformance">—</strong>
+            <span class="metric-detail" id="mentorNaqibPerformanceDetail">Rata-rata jurnal pengawasan</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Kehadiran Program Putra</span>
+            <strong class="metric-value" id="mentorProgramPutra">—</strong>
+            <span class="metric-detail" id="mentorProgramPutraDetail">Belum terdeteksi</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Kehadiran Program Putri</span>
+            <strong class="metric-value" id="mentorProgramPutri">—</strong>
+            <span class="metric-detail" id="mentorProgramPutriDetail">Belum terdeteksi</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Usrah Paling Disiplin</span>
+            <strong class="metric-value" id="mentorBestUsrah">—</strong>
+            <span class="metric-detail" id="mentorBestUsrahDetail">Belum ada peringkat</span>
+          </article>
+          <article class="metric-card warning">
+            <span class="metric-label">Usrah Perlu Atensi</span>
+            <strong class="metric-value" id="mentorLowestUsrah">—</strong>
+            <span class="metric-detail" id="mentorLowestUsrahDetail">Belum ada peringkat</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Catatan Mentoring</span>
+            <strong class="metric-value" id="mentorNotes">0</strong>
+            <span class="metric-detail" id="mentorNotesDetail">0 santri dibahas</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Poin Inisiatif Tertinggi</span>
+            <strong class="metric-value" id="mentorTopInitiative">—</strong>
+            <span class="metric-detail" id="mentorTopInitiativeDetail">Belum ada apresiasi</span>
+          </article>
+          <article class="metric-card accent">
+            <span class="metric-label">Naqib Piket Saat Ini</span>
+            <strong class="metric-value" id="mentorCurrentDuty">—</strong>
+            <span class="metric-detail" id="mentorCurrentDutyDetail">Belum tersinkron</span>
+          </article>
+        </div>
+
+        <div class="split">
+          <section class="subpanel">
+            <h3>Kedisiplinan Usrah</h3>
+            <div class="bar-list" id="usrahRankList"></div>
+          </section>
+          <section class="subpanel">
+            <h3>Kinerja Naqib per Personil</h3>
+            <div class="rank-list" id="naqibRankList"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="module" id="disciplineModule">
+      <header class="module-head">
+        <div class="module-title">
+          <span class="module-icon">⚖️</span>
+          <div>
+            <h2>Kedisiplinan & Konseling</h2>
+            <p>Laporan pelanggaran, kasus kritis, antrean Konselor, dan penyelesaian kasus.</p>
+          </div>
+        </div>
+        <span class="module-status" id="disciplineStatus">Menunggu data</span>
+      </header>
+      <div class="module-body">
+        <div class="metric-grid">
+          <article class="metric-card warning">
+            <span class="metric-label">Laporan Pelanggaran</span>
+            <strong class="metric-value" id="disciplineReports">0</strong>
+            <span class="metric-detail" id="disciplineReportsDetail">0 santri</span>
+          </article>
+          <article class="metric-card danger">
+            <span class="metric-label">Kasus Kritis</span>
+            <strong class="metric-value" id="disciplineCritical">0</strong>
+            <span class="metric-detail" id="disciplineCriticalDetail">Tidak ada kasus kritis</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Menunggu Penanganan</span>
+            <strong class="metric-value" id="disciplinePending">0</strong>
+            <span class="metric-detail" id="disciplinePendingDetail">Antrean hari ini</span>
+          </article>
+          <article class="metric-card accent">
+            <span class="metric-label">Diselesaikan Hari Ini</span>
+            <strong class="metric-value" id="disciplineResolved">0</strong>
+            <span class="metric-detail" id="disciplineResolvedDetail">Laporan penindakan</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Kategori Terbanyak</span>
+            <strong class="metric-value" id="disciplineTopCategory">—</strong>
+            <span class="metric-detail" id="disciplineTopCategoryDetail">Belum ada laporan</span>
+          </article>
+          <article class="metric-card warning">
+            <span class="metric-label">Santri Paling Sering Dilaporkan</span>
+            <strong class="metric-value" id="disciplineTopStudent">—</strong>
+            <span class="metric-detail" id="disciplineTopStudentDetail">Belum ada laporan</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Kedisiplinan</span>
+            <strong class="metric-value" id="disciplineCount">0</strong>
+            <span class="metric-detail">Laporan kategori kedisiplinan</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Kebersihan & Kerapian</span>
+            <strong class="metric-value" id="cleanlinessCount">0</strong>
+            <span class="metric-detail">Laporan kebersihan dan kerapian</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="module" id="healthModule">
+      <header class="module-head">
+        <div class="module-title">
+          <span class="module-icon">🩺</span>
+          <div>
+            <h2>Kesehatan Santri</h2>
+            <p>Santri sakit, pemeriksaan, rujukan, kinerja UKS, dan keamanan stok obat.</p>
+          </div>
+        </div>
+        <span class="module-status" id="healthStatus">Menunggu data</span>
+      </header>
+      <div class="module-body">
+        <div class="metric-grid">
+          <article class="metric-card warning">
+            <span class="metric-label">Santri Izin Sakit</span>
+            <strong class="metric-value" id="healthSickStudents">0</strong>
+            <span class="metric-detail" id="healthSickStudentsDetail">Tidak ada izin sakit</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Pemeriksaan Hari Ini</span>
+            <strong class="metric-value" id="healthExaminations">0</strong>
+            <span class="metric-detail" id="healthExaminationsDetail">0 santri diperiksa</span>
+          </article>
+          <article class="metric-card danger">
+            <span class="metric-label">Rujukan / Atensi Medis</span>
+            <strong class="metric-value" id="healthReferrals">0</strong>
+            <span class="metric-detail" id="healthReferralsDetail">Tidak ada rujukan</span>
+          </article>
+          <article class="metric-card accent">
+            <span class="metric-label">Kinerja Personil UKS</span>
+            <strong class="metric-value" id="healthPerformance">—</strong>
+            <span class="metric-detail" id="healthPerformanceDetail">Belum ada jurnal</span>
+          </article>
+          <article class="metric-card warning">
+            <span class="metric-label">Stok Obat Menipis</span>
+            <strong class="metric-value" id="healthLowStock">0</strong>
+            <span class="metric-detail" id="healthLowStockDetail">Tidak ada stok menipis</span>
+          </article>
+          <article class="metric-card danger">
+            <span class="metric-label">Obat Kedaluwarsa/Dekat</span>
+            <strong class="metric-value" id="healthExpiring">0</strong>
+            <span class="metric-detail" id="healthExpiringDetail">Aman</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Putra Sakit</span>
+            <strong class="metric-value" id="healthPutra">0</strong>
+            <span class="metric-detail">Berdasarkan unit/asrama</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Putri Sakit</span>
+            <strong class="metric-value" id="healthPutri">0</strong>
+            <span class="metric-detail">Berdasarkan unit/asrama</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="module" id="operationsModule">
+      <header class="module-head">
+        <div class="module-title">
+          <span class="module-icon">🏗️</span>
+          <div>
+            <h2>Sarpras, Keamanan & Kebersihan</h2>
+            <p>Kinerja personil, kondisi fasilitas, kerusakan, dan temuan penting harian.</p>
+          </div>
+        </div>
+        <span class="module-status" id="operationsStatus">Menunggu data</span>
+      </header>
+      <div class="module-body">
+        <div class="metric-grid">
+          <article class="metric-card accent">
+            <span class="metric-label">Kinerja Sarpras</span>
+            <strong class="metric-value" id="opsSarprasPerformance">—</strong>
+            <span class="metric-detail" id="opsSarprasPerformanceDetail">Belum ada jurnal</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Checklist Sarpras</span>
+            <strong class="metric-value" id="opsChecklistProgress">—</strong>
+            <span class="metric-detail" id="opsChecklistProgressDetail">Belum ada pengecekan</span>
+          </article>
+          <article class="metric-card warning">
+            <span class="metric-label">Rusak Ringan</span>
+            <strong class="metric-value" id="opsMinorDamage">0</strong>
+            <span class="metric-detail">Objek perlu perbaikan</span>
+          </article>
+          <article class="metric-card danger">
+            <span class="metric-label">Rusak Berat</span>
+            <strong class="metric-value" id="opsMajorDamage">0</strong>
+            <span class="metric-detail">Objek perlu tindakan segera</span>
+          </article>
+          <article class="metric-card accent">
+            <span class="metric-label">Kinerja Keamanan & Kebersihan</span>
+            <strong class="metric-value" id="opsSecurityPerformance">—</strong>
+            <span class="metric-detail" id="opsSecurityPerformanceDetail">Belum ada jurnal</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Temuan Penting</span>
+            <strong class="metric-value" id="opsImportantNotes">0</strong>
+            <span class="metric-detail" id="opsImportantNotesDetail">Tidak ada catatan</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Objek Kondisi Baik</span>
+            <strong class="metric-value" id="opsGoodObjects">0</strong>
+            <span class="metric-detail">Dari checklist hari ini</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Laporan Masuk</span>
+            <strong class="metric-value" id="opsReportsCount">0</strong>
+            <span class="metric-detail">Jurnal dan checklist</span>
+          </article>
+        </div>
+
+        <div class="split">
+          <section class="subpanel">
+            <h3>Temuan & Catatan Penting</h3>
+            <div class="note-list" id="operationsNotes"></div>
+          </section>
+          <section class="subpanel">
+            <h3>Rekap Kondisi Fasilitas</h3>
+            <div class="bar-list" id="facilityConditionList"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="module">
+      <header class="module-head">
+        <div class="module-title">
+          <span class="module-icon">🔄</span>
+          <div>
+            <h2>Kelengkapan Data Hari Ini</h2>
+            <p>Memastikan setiap divisi sudah mengirim data harian ke CAHAYA App.</p>
+          </div>
+        </div>
+        <span class="module-status" id="qualityStatus">Memeriksa sumber</span>
+      </header>
+      <div class="module-body">
+        <div class="data-quality" id="dataQualityGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+      projectId: "absensi-santri-fajrul-islam"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const db = firebase.database();
+    const KKM_DEFAULT = 75;
+    const AUTO_REFRESH_MS = 5 * 60 * 1000;
+
+    const PATHS = {
+      teacherAttendance: "cahaya_app/absensi_guru",
+      teacherAttendanceLog: "cahaya_app/log_absensi_guru",
+      learningAttendance: "cahaya_app/absensi_pembelajaran",
+      programAttendance: "cahaya_app/absensi_program_harian",
+      monthlyScores: "cahaya_app/nilai_ujian_bulanan",
+      tahfiz: "cahaya_app/setoran_tahfiz",
+      naqibJournal: "cahaya_app/jurnal_piket_naqib",
+      mentoring: "cahaya_app/log_mentoring_naqib",
+      reports: "cahaya_app/log_lapor_inisiatif",
+      actionReports: "cahaya_app/laporan_penindakan",
+      healthJournal: "cahaya_app/jurnal_kesehatan",
+      examinations: "cahaya_app/pemeriksaan_kesehatan",
+      sickPermissions: "cahaya_app/izin_sakit_harian",
+      medicineStock: "cahaya_app/stok_obat_uks",
+      sarprasJournal: "cahaya_app/jurnal_sarpras",
+      sarprasChecklist: "cahaya_app/checklist_harian_sarpras",
+      securityJournal: "cahaya_app/jurnal_keamanan_kebersihan",
+      currentDuty: "cahaya_app/piket_naqib_saat_ini",
+      masterUsrah: "cahaya_app/master_usrah"
+    };
+
+    const TEACHER_NAMES = {
+      MULTAZAM: "Abah Multazam",
+      RASYIDIN: "Abi Rasyidin",
+      NAQIEB: "Mu’allim Naqieb",
+      ZAKI: "Mu’allim Zaki",
+      RAHIEL: "Mu’allim Rahiel",
+      FAIQ: "Mu’allim Faiq",
+      FALAH: "Mu’allim Al Falah",
+      FATIMAH: "Ummi Fatimah",
+      MEILISA: "Ummi Meilisa",
+      ALAMANDA: "Ummi Alamanda",
+      HANIF: "Mu’allim Hanif"
+    };
+
+    const TEACHER_ALIASES = {
+      MULTAZAM: ["multazam", "abah multazam", "multazam zakaria"],
+      RASYIDIN: ["rasyidin", "rosyidin", "abi rasyidin", "abi rosyidin"],
+      NAQIEB: ["naqieb", "muhammad naqieb"],
+      ZAKI: ["zaki", "muhammad zaki"],
+      RAHIEL: ["rahiel", "mika rahiel", "mika rahiel yusuf"],
+      FAIQ: ["faiq", "muhammad faiq"],
+      FALAH: ["falah", "al falah", "muhammad al falah", "m al falah"],
+      FATIMAH: ["fatimah"],
+      MEILISA: ["meilisa", "melisa"],
+      ALAMANDA: ["alamanda"],
+      HANIF: ["hanif"]
+    };
+
+    const CLASS_SCHEDULE = {
+      1: { 1: "Aqidah", 2: "Fiqih", 3: "Shirah", 4: "Adab" },
+      2: { 1: "Fiqih", 2: "Adab", 3: "Shirah", 4: "Hadits" },
+      3: { 1: "Adab", 2: "Shirah", 3: "Hadits", 4: "Fiqih" },
+      4: { 1: "Aqidah Tasawuf", 2: "Hadits Ahkam", 3: "Nahwu Sharaf", 4: "Shirah" },
+      5: { 1: "Aqidah Tasawuf", 2: "Hadits Ahkam", 3: "Balaghah", 4: "Manajemen dan Bisnis" }
+    };
+
+    const CLASS_TEACHERS = {
+      1: { 1: "FAIQ", 2: "RASYIDIN", 3: "NAQIEB", 4: "NAQIEB" },
+      2: { 1: "RASYIDIN", 2: "NAQIEB", 3: "RAHIEL", 4: "FAIQ" },
+      3: { 1: "NAQIEB", 2: "RAHIEL", 3: "FAIQ", 4: "RASYIDIN" },
+      4: { 1: "MULTAZAM", 2: "MULTAZAM", 3: "RASYIDIN", 4: "RAHIEL" },
+      5: { 1: "MULTAZAM", 2: "MULTAZAM", 3: "MULTAZAM", 4: "MULTAZAM" }
+    };
+
+    const PUTRI_CLASS_SCHEDULE = {
+      1: { 1: "Aqidah", 2: "Fiqih", 3: "Shirah", 4: "Adab" },
+      2: { 1: "Fiqih", 2: "Adab", 3: "Hadits", 4: "Shirah" },
+      3: { 1: "Adab", 2: "Shirah", 3: "Fiqih", 4: "Hadits" },
+      4: { 1: "Aqidah Tasawuf", 2: "Hadits Ahkam", 5: ["Nahwu Sharaf", "Shirah"] }
+    };
+
+    const PUTRI_CLASS_TEACHERS = {
+      1: { 1: "FATIMAH", 2: "ALAMANDA", 3: "MEILISA", 4: "MEILISA" },
+      2: { 1: "ALAMANDA", 2: "FATIMAH", 3: "FATIMAH", 4: "ALAMANDA" },
+      3: { 1: "MEILISA", 2: "MEILISA", 3: "ALAMANDA", 4: "FATIMAH" },
+      4: { 1: "MULTAZAM", 2: "MULTAZAM", 5: ["MULTAZAM", "MULTAZAM"] }
+    };
+
+    const EXTRA_DAILY_SUBJECTS = {
+      putra: {
+        1: [{ subject: "Bahasa Arab", teacher: "HANIF" }, { subject: "Al-Qur’an", teacher: "HANIF" }],
+        2: [{ subject: "Bahasa Arab", teacher: "RAHIEL" }, { subject: "Bahasa Arab", teacher: "FAIQ" }, { subject: "Al-Qur’an", teacher: "FALAH" }],
+        3: [{ subject: "Bahasa Arab", teacher: "ZAKI" }, { subject: "Al-Qur’an", teacher: "FAIQ" }],
+        4: [{ subject: "Bahasa Arab", teacher: "MULTAZAM" }, { subject: "Al-Qur’an", teacher: "ZAKI" }],
+        5: [{ subject: "Bahasa Arab", teacher: "MULTAZAM" }, { subject: "Al-Qur’an", teacher: "MULTAZAM" }]
+      },
+      putri: {
+        1: [{ subject: "Bahasa Arab", teacher: "FATIMAH" }, { subject: "Al-Qur’an", teacher: "FATIMAH" }],
+        2: [{ subject: "Bahasa Arab", teacher: "MEILISA" }, { subject: "Al-Qur’an", teacher: "MEILISA" }],
+        3: [{ subject: "Bahasa Arab", teacher: "ALAMANDA" }, { subject: "Al-Qur’an", teacher: "ALAMANDA" }],
+        4: [{ subject: "Bahasa Arab", teacher: "ALAMANDA" }, { subject: "Al-Qur’an", teacher: "ALAMANDA" }]
+      }
+    };
+
+    let rawData = {};
+    let loadErrors = {};
+    let refreshTimer = null;
+
+    function el(id) { return document.getElementById(id); }
+    function num(value) { const parsed = Number(value); return Number.isFinite(parsed) ? parsed : 0; }
+    function percent(value) { return Number.isFinite(value) ? `${Math.round(value)}%` : "—"; }
+    function clamp(value, min = 0, max = 100) { return Math.min(max, Math.max(min, value)); }
+    function average(values) { const valid = values.filter(Number.isFinite); return valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : NaN; }
+    function sum(values) { return values.reduce((total, value) => total + num(value), 0); }
+    function unique(values) { return [...new Set(values.filter(Boolean))]; }
+
+    function localDateValue(date = new Date()) {
+      return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+    }
+
+    function formatDateId(value) {
+      if (!value) return "—";
+      const date = new Date(`${value}T12:00:00`);
+      if (Number.isNaN(date.getTime())) return value;
+      return new Intl.DateTimeFormat("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(date);
+    }
+
+    function normalizeText(value = "") {
+      return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/\s+/g, " ");
+    }
+
+    function normalizeKey(value = "") {
+      return normalizeText(value).replace(/[^a-z0-9]/g, "");
+    }
+
+    function escapeHtml(value = "") {
+      return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function objectValues(value) {
+      return value && typeof value === "object" ? Object.values(value) : [];
+    }
+
+    function flatRecords(value) {
+      return objectValues(value).filter(item => item && typeof item === "object" && !Array.isArray(item));
+    }
+
+    function recordDate(record = {}) {
+      const candidates = [
+        record.tanggal,
+        record.tanggal_ujian,
+        record.tanggalUjian,
+        record.tanggalMentoring,
+        record.tanggalPenindakan,
+        record.tanggalKejadian,
+        record.date,
+        record.waktu,
+        record.waktuSubmit,
+        record.waktuSimpan,
+        record.timestamp,
+        record.dibuatPada
+      ];
+      for (const candidate of candidates) {
+        if (typeof candidate === "string" && /^\d{4}-\d{2}-\d{2}/.test(candidate)) return candidate.slice(0, 10);
+      }
+      return "";
+    }
+
+    function deepCollect(value, predicate, output = []) {
+      if (!value || typeof value !== "object") return output;
+      if (!Array.isArray(value) && predicate(value)) output.push(value);
+      Object.values(value).forEach(child => {
+        if (child && typeof child === "object") deepCollect(child, predicate, output);
+      });
+      return output;
+    }
+
+    function teacherCodeFromValue(value = "") {
+      const normalized = normalizeText(value);
+      const compact = normalized.replace(/\s+/g, "");
+      for (const [code, aliases] of Object.entries(TEACHER_ALIASES)) {
+        if (code.toLowerCase() === normalized || aliases.some(alias => {
+          const normAlias = normalizeText(alias);
+          const compactAlias = normAlias.replace(/\s+/g, "");
+          return normalized === normAlias || compact === compactAlias || (normAlias.length >= 4 && normalized.includes(normAlias));
+        })) return code;
+      }
+      return String(value || "").trim().toUpperCase() || "GURU";
+    }
+
+    function teacherDisplay(code) {
+      return TEACHER_NAMES[code] || code || "—";
+    }
+
+    function statusPresent(status = "") {
+      const value = normalizeText(status);
+      return value === "hadir" || value === "terlambat" || value.includes("tepat waktu") || value === "tepat_waktu";
+    }
+
+    function statusOnTime(status = "") {
+      const value = normalizeText(status);
+      return value === "hadir" || value === "tepat_waktu" || value.includes("tepat waktu");
+    }
+
+    function statusExcluded(status = "") {
+      const value = normalizeText(status);
+      return ["izin", "sakit", "tidak berlaku", "tidak_berlaku"].includes(value);
+    }
+
+    function dailySessions(subject) {
+      return normalizeKey(subject) === "alquran" ? 2 : 1;
+    }
+
+    function normalizeLessonEntries(subjectValue, teacherValue) {
+      if (!subjectValue) return [];
+      if (Array.isArray(subjectValue)) {
+        return subjectValue.map((subject, index) => ({
+          subject,
+          teacher: Array.isArray(teacherValue) ? teacherValue[index] : teacherValue
+        })).filter(item => item.subject && item.teacher);
+      }
+      return [{ subject: subjectValue, teacher: teacherValue }].filter(item => item.subject && item.teacher);
+    }
+
+    function buildExpectedTeacherSessions(dateValue) {
+      const day = new Date(`${dateValue}T12:00:00`).getDay();
+      const sessions = [];
+      const sections = [
+        { unit: "PUTRA", label: "Putra", schedule: CLASS_SCHEDULE, teachers: CLASS_TEACHERS, extra: EXTRA_DAILY_SUBJECTS.putra },
+        { unit: "PUTRI", label: "Putri", schedule: PUTRI_CLASS_SCHEDULE, teachers: PUTRI_CLASS_TEACHERS, extra: EXTRA_DAILY_SUBJECTS.putri }
+      ];
+
+      sections.forEach(section => {
+        Object.keys(section.schedule).forEach(classNumber => {
+          const core = normalizeLessonEntries(section.schedule[classNumber]?.[day], section.teachers[classNumber]?.[day]);
+          core.forEach((item, index) => sessions.push({
+            id: `${section.unit}-${classNumber}-${day}-${item.teacher}-${item.subject}-${index}`,
+            teacher: String(item.teacher).toUpperCase(),
+            subject: item.subject,
+            className: `Kelas ${classNumber} ${section.label}`,
+            unit: section.unit
+          }));
+
+          if (day >= 1 && day <= 4) {
+            (section.extra[classNumber] || []).forEach((item, index) => {
+              const count = dailySessions(item.subject);
+              for (let sessionIndex = 0; sessionIndex < count; sessionIndex++) {
+                sessions.push({
+                  id: `${section.unit}-${classNumber}-${day}-${item.teacher}-${item.subject}-extra-${index}-${sessionIndex}`,
+                  teacher: String(item.teacher).toUpperCase(),
+                  subject: item.subject,
+                  className: `Kelas ${classNumber} ${section.label}`,
+                  unit: section.unit
+                });
+              }
+            });
+          }
+        });
+      });
+
+      return sessions;
+    }
+
+    async function loadPath(name, path) {
+      try {
+        const snapshot = await db.ref(path).once("value");
+        rawData[name] = snapshot.val() || {};
+        loadErrors[name] = "";
+      } catch (error) {
+        rawData[name] = {};
+        loadErrors[name] = error?.message || "Gagal memuat";
+      }
+    }
+
+    async function loadAllData() {
+      const button = el("refreshButton");
+      button.disabled = true;
+      button.textContent = "⏳ Memuat...";
+      el("syncText").textContent = "Mengambil data terbaru";
+
+      await Promise.all(Object.entries(PATHS).map(([name, path]) => loadPath(name, path)));
+
+      button.disabled = false;
+      button.textContent = "↻ Segarkan Data";
+      el("syncText").textContent = `Sinkron ${new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date())}`;
+    }
+
+    function teacherAttendanceRecords(dateValue) {
+      const nested = deepCollect(rawData.teacherAttendance, item => recordDate(item) === dateValue && (item.namaGuru || item.guruKodeKalender || item.statusKehadiran));
+      const flat = flatRecords(rawData.teacherAttendanceLog).filter(item => recordDate(item) === dateValue);
+      const map = new Map();
+      [...nested, ...flat].forEach(item => {
+        const key = item.idAbsensi || `${item.guruKey || item.namaGuru}-${item.jadwalId || item.mapel}-${item.sesiId || item.waktuTibaWIB || ""}`;
+        map.set(key, item);
+      });
+      return [...map.values()];
+    }
+
+    function renderTeacherEducation(dateValue) {
+      const expected = buildExpectedTeacherSessions(dateValue);
+      const actual = teacherAttendanceRecords(dateValue);
+      const expectedByTeacher = {};
+      const actualByTeacher = {};
+
+      expected.forEach(item => {
+        const code = teacherCodeFromValue(item.teacher);
+        expectedByTeacher[code] = (expectedByTeacher[code] || 0) + 1;
+      });
+
+      actual.forEach(item => {
+        const code = teacherCodeFromValue(item.guruKodeKalender || item.namaGuru || item.guru || item.guruKey);
+        if (!actualByTeacher[code]) actualByTeacher[code] = { total: 0, onTime: 0, late: 0 };
+        actualByTeacher[code].total++;
+        if (statusOnTime(item.statusKehadiran || item.statusKehadiranLabel)) actualByTeacher[code].onTime++;
+        if (num(item.keterlambatanMenit) > 0 || normalizeText(item.statusKehadiran).includes("terlambat")) actualByTeacher[code].late++;
+      });
+
+      const rankings = Object.keys(expectedByTeacher).map(code => {
+        const expectedCount = expectedByTeacher[code];
+        const data = actualByTeacher[code] || { total: 0, onTime: 0, late: 0 };
+        const attendanceRate = expectedCount ? clamp(data.total / expectedCount * 100) : 0;
+        const onTimeRate = data.total ? data.onTime / data.total * 100 : 0;
+        const disciplineScore = attendanceRate * .7 + onTimeRate * .3;
+        return { code, expected: expectedCount, actual: data.total, onTime: data.onTime, attendanceRate, onTimeRate, disciplineScore };
+      }).sort((a, b) => b.disciplineScore - a.disciplineScore || b.attendanceRate - a.attendanceRate);
+
+      const totalExpected = expected.length;
+      const totalActual = actual.length;
+      const attendanceRate = totalExpected ? clamp(totalActual / totalExpected * 100) : NaN;
+      const totalOnTime = actual.filter(item => statusOnTime(item.statusKehadiran || item.statusKehadiranLabel)).length;
+      const onTimeRate = totalActual ? totalOnTime / totalActual * 100 : NaN;
+
+      el("eduTeacherAttendance").textContent = percent(attendanceRate);
+      el("eduTeacherAttendanceDetail").textContent = totalExpected ? `${totalActual} dari ${totalExpected} sesi terjadwal` : "Tidak ada jadwal mengajar";
+      el("eduTeacherOnTime").textContent = percent(onTimeRate);
+      el("eduTeacherOnTimeDetail").textContent = totalActual ? `${totalOnTime} tepat waktu • ${totalActual - totalOnTime} terlambat` : "Belum ada absensi guru";
+      el("pulseTeacher").textContent = percent(attendanceRate);
+      el("pulseTeacherNote").textContent = totalExpected ? `${totalActual}/${totalExpected} sesi` : "Tidak ada jadwal";
+
+      const best = rankings[0];
+      const lowest = rankings[rankings.length - 1];
+      el("eduBestTeacher").textContent = best ? teacherDisplay(best.code) : "—";
+      el("eduBestTeacherDetail").textContent = best ? `${Math.round(best.disciplineScore)} poin disiplin • ${best.actual}/${best.expected} sesi` : "Belum ada jadwal";
+      el("eduLowestTeacher").textContent = lowest ? teacherDisplay(lowest.code) : "—";
+      el("eduLowestTeacherDetail").textContent = lowest ? `${Math.round(lowest.disciplineScore)} poin disiplin • ${lowest.actual}/${lowest.expected} sesi` : "Belum ada jadwal";
+
+      renderRankList("teacherRankList", rankings.slice(0, 6).map(item => ({
+        name: teacherDisplay(item.code),
+        detail: `${item.actual}/${item.expected} sesi • tepat waktu ${Math.round(item.onTimeRate)}%`,
+        value: `${Math.round(item.disciplineScore)}`
+      })));
+
+      return { expected, actual, attendanceRate, onTimeRate, rankings };
+    }
+
+    function renderLearningEducation(dateValue) {
+      const logs = flatRecords(rawData.learningAttendance).filter(item => recordDate(item) === dateValue);
+      const attendanceItems = [];
+      const scoresByClass = {};
+
+      logs.forEach(log => {
+        const className = log.kelas || log.sub || "Tanpa Kelas";
+        (Array.isArray(log.data) ? log.data : objectValues(log.data)).forEach(item => {
+          attendanceItems.push({ ...item, className, subject: log.mapel, guru: log.guru });
+          const score = Number(item.nilaiUlanganHarian);
+          if (Number.isFinite(score)) {
+            if (!scoresByClass[className]) scoresByClass[className] = [];
+            scoresByClass[className].push(score);
+          }
+        });
+      });
+
+      const monthlyScores = flatRecords(rawData.monthlyScores).filter(item => recordDate(item) === dateValue);
+      monthlyScores.forEach(item => {
+        const className = item.kelas_kelompok || item.kelas || "Tanpa Kelas";
+        const score = Number(item.nilai_total ?? item.nilai);
+        if (Number.isFinite(score)) {
+          if (!scoresByClass[className]) scoresByClass[className] = [];
+          scoresByClass[className].push(score);
+        }
+      });
+
+      const activeAttendance = attendanceItems.filter(item => !statusExcluded(item.status));
+      const present = activeAttendance.filter(item => statusPresent(item.status)).length;
+      const late = activeAttendance.filter(item => normalizeText(item.status) === "terlambat").length;
+      const studentAttendance = activeAttendance.length ? present / activeAttendance.length * 100 : NaN;
+
+      const classKkm = Object.entries(scoresByClass).map(([className, scores]) => {
+        const passed = scores.filter(score => score >= KKM_DEFAULT).length;
+        return { className, total: scores.length, passed, rate: scores.length ? passed / scores.length * 100 : 0, average: average(scores) };
+      }).sort((a, b) => b.rate - a.rate || b.average - a.average);
+
+      const allScores = Object.values(scoresByClass).flat();
+      const passedAll = allScores.filter(score => score >= KKM_DEFAULT).length;
+      const kkmOverall = allScores.length ? passedAll / allScores.length * 100 : NaN;
+
+      el("eduStudentAttendance").textContent = percent(studentAttendance);
+      el("eduStudentAttendanceDetail").textContent = activeAttendance.length ? `${present} hadir dari ${activeAttendance.length} catatan • ${late} terlambat` : "Belum ada absensi pembelajaran";
+      el("pulseStudent").textContent = percent(studentAttendance);
+      el("pulseStudentNote").textContent = activeAttendance.length ? `${present}/${activeAttendance.length} catatan` : "Belum ada data";
+      el("eduKkmOverall").textContent = percent(kkmOverall);
+      el("eduKkmOverallDetail").textContent = allScores.length ? `${passedAll} dari ${allScores.length} nilai ≥ ${KKM_DEFAULT}` : "Belum ada nilai harian/ujian";
+      el("eduLearningSessions").textContent = String(logs.length);
+      el("eduLearningSessionsDetail").textContent = `${unique(logs.map(item => `${item.kelas || item.sub}-${item.mapel}`)).length} kelas/mapel`;
+
+      renderBars("kkmClassList", classKkm.slice(0, 8).map(item => ({ label: item.className, value: item.rate, text: `${Math.round(item.rate)}%` })));
+      return { logs, activeAttendance, studentAttendance, classKkm, kkmOverall, allScores };
+    }
+
+    function renderTahfiz(dateValue) {
+      const records = flatRecords(rawData.tahfiz).filter(item => recordDate(item) === dateValue && normalizeText(item.program) === "tahfiz");
+      const totals = {};
+      records.forEach(record => {
+        (Array.isArray(record.data) ? record.data : objectValues(record.data)).forEach(item => {
+          const name = item.nama || item.namaSantri || "Santri";
+          totals[name] = (totals[name] || 0) + num(item.ayat);
+        });
+      });
+      const ranking = Object.entries(totals).map(([name, ayat]) => ({ name, ayat })).sort((a, b) => b.ayat - a.ayat);
+      const top = ranking[0];
+      el("eduTopTahfiz").textContent = top ? top.name : "—";
+      el("eduTopTahfizDetail").textContent = top ? `${top.ayat} ayat disetorkan hari ini` : "Belum ada setoran tahfiz";
+      return { records, ranking };
+    }
+
+    function genderFromText(value = "") {
+      const text = normalizeText(value);
+      if (text.includes("putri") || text.includes("perempuan") || text.includes("akhwat")) return "PUTRI";
+      if (text.includes("putra") || text.includes("laki") || text.includes("ikhwan")) return "PUTRA";
+      return "";
+    }
+
+    function programItemScore(status) {
+      const value = normalizeText(status);
+      if (value === "hadir") return 100;
+      if (value === "terlambat") return 50;
+      if (value === "alfa" || value === "tidak hadir") return 0;
+      return null;
+    }
+
+    function renderMentoring(dateValue) {
+      const journals = flatRecords(rawData.naqibJournal).filter(item => recordDate(item) === dateValue);
+      const programLogs = flatRecords(rawData.programAttendance).filter(item => recordDate(item) === dateValue);
+      const mentoringLogs = flatRecords(rawData.mentoring).filter(item => recordDate(item) === dateValue);
+      const initiatives = flatRecords(rawData.reports).filter(item => recordDate(item) === dateValue && normalizeText(item.tipe).includes("inisiatif"));
+
+      const naqibMap = {};
+      journals.forEach(item => {
+        const name = item.naqib || item.namaPersonil || item.penginput || "Naqib";
+        const score = Number(item.persentasePengawasan ?? item.persentaseKinerja ?? item.persentase);
+        if (!Number.isFinite(score)) return;
+        if (!naqibMap[name]) naqibMap[name] = [];
+        naqibMap[name].push(score);
+      });
+      const naqibRanking = Object.entries(naqibMap).map(([name, scores]) => ({ name, score: average(scores), blocks: scores.length })).sort((a, b) => b.score - a.score);
+      const naqibPerformance = average(journals.map(item => Number(item.persentasePengawasan ?? item.persentaseKinerja ?? item.persentase)));
+
+      const usrahScores = {};
+      const genderScores = { PUTRA: [], PUTRI: [] };
+      let totalProgramItems = 0;
+      let presentProgramItems = 0;
+
+      programLogs.forEach(log => {
+        const logGender = genderFromText(`${log.labelUsrah || ""} ${log.usrah || ""} ${log.jenisCakupan || ""}`);
+        const items = Array.isArray(log.data) ? log.data : objectValues(log.data);
+        items.forEach(item => {
+          const score = programItemScore(item.status);
+          if (score === null) return;
+          totalProgramItems++;
+          if (score >= 50) presentProgramItems++;
+          const usrah = item.usrahAsal || log.usrah || log.labelUsrah || "Usrah Belum Diketahui";
+          if (!usrahScores[usrah]) usrahScores[usrah] = [];
+          usrahScores[usrah].push(score);
+          const gender = genderFromText(`${usrah} ${logGender}`) || logGender;
+          if (gender && genderScores[gender]) genderScores[gender].push(score >= 50 ? 100 : 0);
+        });
+      });
+
+      const usrahRanking = Object.entries(usrahScores).map(([name, scores]) => ({ name, rate: average(scores), total: scores.length })).sort((a, b) => b.rate - a.rate);
+      const overallProgram = totalProgramItems ? presentProgramItems / totalProgramItems * 100 : NaN;
+      const putraRate = average(genderScores.PUTRA);
+      const putriRate = average(genderScores.PUTRI);
+
+      const initiativeTotals = {};
+      initiatives.forEach(item => {
+        const name = item.namaSantri || item.pelapor || item.santri || "Santri";
+        initiativeTotals[name] = (initiativeTotals[name] || 0) + num(item.poinDiberikan ?? item.poin);
+      });
+      const initiativeRanking = Object.entries(initiativeTotals).map(([name, points]) => ({ name, points })).sort((a, b) => b.points - a.points);
+
+      const currentDuty = rawData.currentDuty && typeof rawData.currentDuty === "object" ? rawData.currentDuty : {};
+      const dutyName = currentDuty.nama || currentDuty.naqib || currentDuty.petugas || currentDuty.namaNaqib || currentDuty.pic || "—";
+      const dutyMeta = currentDuty.blok || currentDuty.shift || currentDuty.rentangWaktu || currentDuty.keterangan || "Data piket belum lengkap";
+
+      el("mentorNaqibPerformance").textContent = percent(naqibPerformance);
+      el("mentorNaqibPerformanceDetail").textContent = journals.length ? `${journals.length} jurnal/blok masuk` : "Belum ada jurnal pengawasan";
+      el("pulseNaqib").textContent = percent(naqibPerformance);
+      el("pulseNaqibNote").textContent = journals.length ? `${journals.length} jurnal` : "Belum ada jurnal";
+      el("mentorProgramPutra").textContent = percent(putraRate);
+      el("mentorProgramPutraDetail").textContent = genderScores.PUTRA.length ? `${genderScores.PUTRA.filter(item => item === 100).length}/${genderScores.PUTRA.length} catatan hadir` : "Data putra belum terdeteksi";
+      el("mentorProgramPutri").textContent = percent(putriRate);
+      el("mentorProgramPutriDetail").textContent = genderScores.PUTRI.length ? `${genderScores.PUTRI.filter(item => item === 100).length}/${genderScores.PUTRI.length} catatan hadir` : "Data putri belum terdeteksi";
+      el("pulseProgram").textContent = percent(overallProgram);
+      el("pulseProgramNote").textContent = totalProgramItems ? `${presentProgramItems}/${totalProgramItems} catatan` : "Belum ada data";
+
+      const bestUsrah = usrahRanking[0];
+      const lowestUsrah = usrahRanking[usrahRanking.length - 1];
+      el("mentorBestUsrah").textContent = bestUsrah ? bestUsrah.name : "—";
+      el("mentorBestUsrahDetail").textContent = bestUsrah ? `${Math.round(bestUsrah.rate)}% • ${bestUsrah.total} catatan` : "Belum ada peringkat";
+      el("mentorLowestUsrah").textContent = lowestUsrah ? lowestUsrah.name : "—";
+      el("mentorLowestUsrahDetail").textContent = lowestUsrah ? `${Math.round(lowestUsrah.rate)}% • ${lowestUsrah.total} catatan` : "Belum ada peringkat";
+
+      const mentoringStudents = unique(mentoringLogs.map(item => item.namaSantri || item.santri));
+      el("mentorNotes").textContent = String(mentoringLogs.length);
+      el("mentorNotesDetail").textContent = `${mentoringStudents.length} santri dibahas`;
+      const topInitiative = initiativeRanking[0];
+      el("mentorTopInitiative").textContent = topInitiative ? topInitiative.name : "—";
+      el("mentorTopInitiativeDetail").textContent = topInitiative ? `${topInitiative.points} poin kebaikan` : "Belum ada apresiasi";
+      el("mentorCurrentDuty").textContent = dutyName;
+      el("mentorCurrentDutyDetail").textContent = dutyMeta;
+
+      renderBars("usrahRankList", usrahRanking.slice(0, 8).map(item => ({ label: item.name, value: item.rate, text: `${Math.round(item.rate)}%` })));
+      renderRankList("naqibRankList", naqibRanking.slice(0, 6).map(item => ({ name: item.name, detail: `${item.blocks} jurnal/blok`, value: `${Math.round(item.score)}%` })));
+
+      return { journals, programLogs, mentoringLogs, initiatives, naqibPerformance, overallProgram, putraRate, putriRate, usrahRanking, naqibRanking };
+    }
+
+    function isResolvedCase(item = {}) {
+      const text = normalizeText(`${item.statusPenanganan || ""} ${item.statusKonseling || ""} ${item.statusPenindakan || ""} ${item.status || ""}`);
+      return text.includes("selesai") || text.includes("sudah ditindak") || text.includes("sudah konseling") || text.includes("dihapus");
+    }
+
+    function renderDiscipline(dateValue) {
+      const reports = flatRecords(rawData.reports).filter(item => recordDate(item) === dateValue && normalizeText(item.tipe).includes("pelanggaran"));
+      const actions = flatRecords(rawData.actionReports).filter(item => recordDate(item) === dateValue);
+      const critical = reports.filter(item => item.kritis === true || normalizeText(item.prioritas) === "kritis" || normalizeText(item.kategoriKhusus) === "kritis");
+      const pending = reports.filter(item => !isResolvedCase(item));
+      const students = unique(reports.map(item => item.santri || item.dilaporkan));
+      const categories = {};
+      const studentCount = {};
+
+      reports.forEach(item => {
+        const category = item.bidangPelanggaran || item.kategori || "Lainnya";
+        categories[category] = (categories[category] || 0) + 1;
+        const student = item.santri || item.dilaporkan || "Santri";
+        studentCount[student] = (studentCount[student] || 0) + 1;
+      });
+
+      const categoryRanking = Object.entries(categories).sort((a, b) => b[1] - a[1]);
+      const studentRanking = Object.entries(studentCount).sort((a, b) => b[1] - a[1]);
+      const disciplineCount = Object.entries(categories).filter(([key]) => normalizeText(key).includes("disiplin")).reduce((total, [, value]) => total + value, 0);
+      const cleanlinessCount = Object.entries(categories).filter(([key]) => normalizeText(key).includes("bersih") || normalizeText(key).includes("rapi")).reduce((total, [, value]) => total + value, 0);
+
+      el("disciplineReports").textContent = String(reports.length);
+      el("disciplineReportsDetail").textContent = `${students.length} santri dilaporkan`;
+      el("disciplineCritical").textContent = String(critical.length);
+      el("disciplineCriticalDetail").textContent = critical.length ? "Memerlukan atensi segera" : "Tidak ada kasus kritis";
+      el("disciplinePending").textContent = String(pending.length);
+      el("disciplinePendingDetail").textContent = pending.length ? "Menunggu Konselor/penindakan" : "Tidak ada antrean baru";
+      el("disciplineResolved").textContent = String(actions.length);
+      el("disciplineResolvedDetail").textContent = `${unique(actions.map(item => item.santri)).length} santri ditindak`;
+      el("disciplineTopCategory").textContent = categoryRanking[0]?.[0] || "—";
+      el("disciplineTopCategoryDetail").textContent = categoryRanking[0] ? `${categoryRanking[0][1]} laporan` : "Belum ada laporan";
+      el("disciplineTopStudent").textContent = studentRanking[0]?.[0] || "—";
+      el("disciplineTopStudentDetail").textContent = studentRanking[0] ? `${studentRanking[0][1]} laporan hari ini` : "Belum ada laporan";
+      el("disciplineCount").textContent = String(disciplineCount);
+      el("cleanlinessCount").textContent = String(cleanlinessCount);
+      el("pulseCases").textContent = String(reports.length);
+      el("pulseCasesNote").textContent = `${critical.length} kritis • ${pending.length} menunggu`;
+
+      return { reports, actions, critical, pending, categories, studentRanking };
+    }
+
+    function daysUntil(dateValue) {
+      if (!dateValue) return Infinity;
+      const selected = new Date(`${el("dashboardDate").value}T00:00:00`);
+      const target = new Date(`${String(dateValue).slice(0, 10)}T00:00:00`);
+      if (Number.isNaN(target.getTime())) return Infinity;
+      return Math.ceil((target - selected) / 86400000);
+    }
+
+    function renderHealth(dateValue) {
+      const healthJournals = flatRecords(rawData.healthJournal).filter(item => recordDate(item) === dateValue);
+      const examinations = flatRecords(rawData.examinations).filter(item => recordDate(item) === dateValue);
+      const permissions = deepCollect(rawData.sickPermissions, item => recordDate(item) === dateValue && (item.namaSantri || item.santri || item.nama));
+      const stock = flatRecords(rawData.medicineStock);
+
+      const permissionNames = unique(permissions.map(item => item.namaSantri || item.santri || item.nama));
+      const examinationNames = unique(examinations.map(item => item.namaSantri || item.santri || item.nama));
+      const allSick = unique([...permissionNames, ...examinationNames]);
+      const referrals = examinations.filter(item => normalizeText(JSON.stringify(item)).includes("rujuk") || normalizeText(item.statusPembelajaran).includes("istirahat total"));
+      const healthPerformance = average(healthJournals.map(item => Number(item.persentaseKinerja ?? item.persentase)));
+
+      const lowStock = stock.filter(item => {
+        const quantity = num(item.stok ?? item.jumlah ?? item.qty ?? item.stokSaatIni);
+        const minimum = num(item.stokMinimum ?? item.minimum ?? item.batasMinimum);
+        return minimum > 0 && quantity <= minimum;
+      });
+      const expiring = stock.filter(item => {
+        const expiry = item.tanggalKedaluwarsa || item.kedaluwarsa || item.expiredDate || item.expiryDate;
+        return daysUntil(expiry) <= 30;
+      });
+
+      const putra = unique([...permissions, ...examinations].filter(item => genderFromText(`${item.unit || ""} ${item.asrama || ""} ${item.kelas || ""}`) === "PUTRA").map(item => item.namaSantri || item.santri || item.nama)).length;
+      const putri = unique([...permissions, ...examinations].filter(item => genderFromText(`${item.unit || ""} ${item.asrama || ""} ${item.kelas || ""}`) === "PUTRI").map(item => item.namaSantri || item.santri || item.nama)).length;
+
+      el("healthSickStudents").textContent = String(allSick.length);
+      el("healthSickStudentsDetail").textContent = allSick.length ? `${allSick.slice(0, 3).join(", ")}${allSick.length > 3 ? " dan lainnya" : ""}` : "Tidak ada izin/pemeriksaan sakit";
+      el("healthExaminations").textContent = String(examinations.length);
+      el("healthExaminationsDetail").textContent = `${examinationNames.length} santri diperiksa`;
+      el("healthReferrals").textContent = String(referrals.length);
+      el("healthReferralsDetail").textContent = referrals.length ? "Periksa kebutuhan rujukan/tindak lanjut" : "Tidak ada rujukan";
+      el("healthPerformance").textContent = percent(healthPerformance);
+      el("healthPerformanceDetail").textContent = healthJournals.length ? `${healthJournals.length} jurnal personil` : "Belum ada jurnal UKS";
+      el("healthLowStock").textContent = String(lowStock.length);
+      el("healthLowStockDetail").textContent = lowStock.length ? lowStock.slice(0, 2).map(item => item.namaObat || item.nama || "Obat").join(", ") : "Tidak ada stok menipis";
+      el("healthExpiring").textContent = String(expiring.length);
+      el("healthExpiringDetail").textContent = expiring.length ? "Kedaluwarsa atau ≤30 hari" : "Aman";
+      el("healthPutra").textContent = String(putra);
+      el("healthPutri").textContent = String(putri);
+
+      return { healthJournals, examinations, permissions, allSick, referrals, healthPerformance, lowStock, expiring };
+    }
+
+    function validNote(value) {
+      const text = String(value || "").trim();
+      return text && !["nihil", "-", "tidak ada"].includes(normalizeText(text));
+    }
+
+    function renderOperations(dateValue) {
+      const sarprasJournals = flatRecords(rawData.sarprasJournal).filter(item => recordDate(item) === dateValue);
+      const checklists = flatRecords(rawData.sarprasChecklist).filter(item => recordDate(item) === dateValue);
+      const securityJournals = flatRecords(rawData.securityJournal).filter(item => recordDate(item) === dateValue);
+      const sarprasPerformance = average(sarprasJournals.map(item => Number(item.persentaseKinerja ?? item.persentase)));
+      const securityPerformance = average(securityJournals.map(item => Number(item.persentaseKinerja ?? item.persentase)));
+      const checklistProgress = average(checklists.map(item => Number(item.persentasePemeriksaan)));
+      const minor = sum(checklists.map(item => item.rusakRingan));
+      const major = sum(checklists.map(item => item.rusakBerat));
+      const good = sum(checklists.map(item => item.kondisiBaik));
+
+      const notes = [];
+      [...sarprasJournals, ...securityJournals].forEach(item => {
+        if (validNote(item.catatanKejadian)) notes.push(item.catatanKejadian);
+      });
+      checklists.forEach(item => {
+        if (validNote(item.catatanHasilPengecekan)) notes.push(item.catatanHasilPengecekan);
+        (Array.isArray(item.detailPengecekan) ? item.detailPengecekan : objectValues(item.detailPengecekan)).forEach(detail => {
+          if (normalizeText(detail.kondisiKode).includes("rusak") && validNote(detail.keterangan)) notes.push(`${detail.namaObjek || "Objek"}: ${detail.keterangan}`);
+        });
+      });
+
+      el("opsSarprasPerformance").textContent = percent(sarprasPerformance);
+      el("opsSarprasPerformanceDetail").textContent = sarprasJournals.length ? `${sarprasJournals.length} jurnal masuk` : "Belum ada jurnal sarpras";
+      el("opsChecklistProgress").textContent = percent(checklistProgress);
+      el("opsChecklistProgressDetail").textContent = checklists.length ? `${checklists.length} checklist masuk` : "Belum ada pengecekan";
+      el("opsMinorDamage").textContent = String(minor);
+      el("opsMajorDamage").textContent = String(major);
+      el("opsSecurityPerformance").textContent = percent(securityPerformance);
+      el("opsSecurityPerformanceDetail").textContent = securityJournals.length ? `${securityJournals.length} jurnal masuk` : "Belum ada jurnal keamanan";
+      el("opsImportantNotes").textContent = String(notes.length);
+      el("opsImportantNotesDetail").textContent = notes.length ? "Periksa daftar temuan di bawah" : "Tidak ada catatan penting";
+      el("opsGoodObjects").textContent = String(good);
+      el("opsReportsCount").textContent = String(sarprasJournals.length + checklists.length + securityJournals.length);
+
+      renderNotes("operationsNotes", notes.slice(0, 8));
+      const totalConditions = good + minor + major;
+      renderBars("facilityConditionList", [
+        { label: "Kondisi Baik", value: totalConditions ? good / totalConditions * 100 : 0, text: String(good) },
+        { label: "Rusak Ringan", value: totalConditions ? minor / totalConditions * 100 : 0, text: String(minor) },
+        { label: "Rusak Berat", value: totalConditions ? major / totalConditions * 100 : 0, text: String(major) }
+      ]);
+
+      return { sarprasJournals, checklists, securityJournals, sarprasPerformance, securityPerformance, checklistProgress, minor, major, good, notes };
+    }
+
+    function renderRankList(id, items) {
+      const container = el(id);
+      if (!items.length) {
+        container.innerHTML = '<div class="empty">Belum ada data untuk tanggal ini.</div>';
+        return;
+      }
+      container.innerHTML = items.map((item, index) => `
+        <div class="rank-item">
+          <span class="rank-no">${index + 1}</span>
+          <div class="rank-copy">
+            <strong>${escapeHtml(item.name)}</strong>
+            <span>${escapeHtml(item.detail || "")}</span>
+          </div>
+          <span class="rank-value">${escapeHtml(item.value)}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderBars(id, items) {
+      const container = el(id);
+      if (!items.length) {
+        container.innerHTML = '<div class="empty">Belum ada data untuk tanggal ini.</div>';
+        return;
+      }
+      container.innerHTML = items.map(item => `
+        <div class="bar-row">
+          <span class="bar-label" title="${escapeHtml(item.label)}">${escapeHtml(item.label)}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${clamp(num(item.value))}%"></div></div>
+          <span class="bar-value">${escapeHtml(item.text)}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderNotes(id, notes) {
+      const container = el(id);
+      if (!notes.length) {
+        container.innerHTML = '<div class="empty">Tidak ada catatan penting pada tanggal ini.</div>';
+        return;
+      }
+      container.innerHTML = notes.map(note => `<div class="note-item">${escapeHtml(note)}</div>`).join("");
+    }
+
+    function moduleCountLabel(count, noun = "data") {
+      return count ? `${count} ${noun}` : "Belum ada data";
+    }
+
+    function renderStatuses(education, mentoring, discipline, health, operations) {
+      el("educationStatus").textContent = moduleCountLabel(education.learning.logs.length + education.teacher.actual.length + education.tahfiz.records.length, "rekaman");
+      el("mentoringStatus").textContent = moduleCountLabel(mentoring.journals.length + mentoring.programLogs.length + mentoring.mentoringLogs.length, "rekaman");
+      el("disciplineStatus").textContent = moduleCountLabel(discipline.reports.length + discipline.actions.length, "kasus/laporan");
+      el("healthStatus").textContent = moduleCountLabel(health.healthJournals.length + health.examinations.length + health.permissions.length, "rekaman");
+      el("operationsStatus").textContent = moduleCountLabel(operations.sarprasJournals.length + operations.checklists.length + operations.securityJournals.length, "laporan");
+    }
+
+    function renderAlerts(education, mentoring, discipline, health, operations) {
+      const alerts = [];
+      if (Number.isFinite(education.teacher.attendanceRate) && education.teacher.attendanceRate < 85) alerts.push(`Kehadiran guru baru ${Math.round(education.teacher.attendanceRate)}% dari jadwal hari ini.`);
+      if (Number.isFinite(education.learning.studentAttendance) && education.learning.studentAttendance < 90) alerts.push(`Kehadiran santri pada KBM ${Math.round(education.learning.studentAttendance)}%.`);
+      if (Number.isFinite(mentoring.overallProgram) && mentoring.overallProgram < 90) alerts.push(`Kehadiran program harian ${Math.round(mentoring.overallProgram)}%.`);
+      if (Number.isFinite(mentoring.naqibPerformance) && mentoring.naqibPerformance < 80) alerts.push(`Rata-rata kinerja Naqib ${Math.round(mentoring.naqibPerformance)}%.`);
+      if (discipline.critical.length) alerts.push(`${discipline.critical.length} kasus berstatus KRITIS memerlukan atensi segera.`);
+      if (discipline.pending.length) alerts.push(`${discipline.pending.length} kasus hari ini masih menunggu penanganan.`);
+      if (health.referrals.length) alerts.push(`${health.referrals.length} pemeriksaan membutuhkan rujukan atau atensi medis.`);
+      if (health.lowStock.length) alerts.push(`${health.lowStock.length} item obat berada pada atau di bawah batas minimum.`);
+      if (health.expiring.length) alerts.push(`${health.expiring.length} item obat kedaluwarsa atau mendekati kedaluwarsa.`);
+      if (operations.major > 0) alerts.push(`${operations.major} objek sarpras mengalami kerusakan berat.`);
+      if (!mentoring.journals.length) alerts.push("Jurnal pengawasan Naqib belum masuk untuk tanggal ini.");
+
+      const failedSources = Object.entries(loadErrors).filter(([, error]) => error);
+      if (failedSources.length) alerts.push(`${failedSources.length} sumber Firebase gagal dibaca. Periksa koneksi atau aturan database.`);
+
+      el("alertList").innerHTML = alerts.map(item => `<li>${escapeHtml(item)}</li>`).join("");
+      el("alertsPanel").classList.toggle("show", alerts.length > 0);
+      el("pulseAttention").textContent = String(alerts.length);
+      el("pulseAttentionNote").textContent = alerts.length ? "Periksa panel atensi" : "Tidak ada temuan";
+    }
+
+    function renderDataQuality(dateValue) {
+      const definitions = [
+        ["Absensi Guru", teacherAttendanceRecords(dateValue).length],
+        ["Absensi KBM", flatRecords(rawData.learningAttendance).filter(item => recordDate(item) === dateValue).length],
+        ["Absensi Program", flatRecords(rawData.programAttendance).filter(item => recordDate(item) === dateValue).length],
+        ["Jurnal Naqib", flatRecords(rawData.naqibJournal).filter(item => recordDate(item) === dateValue).length],
+        ["Mentoring", flatRecords(rawData.mentoring).filter(item => recordDate(item) === dateValue).length],
+        ["Pelanggaran", flatRecords(rawData.reports).filter(item => recordDate(item) === dateValue && normalizeText(item.tipe).includes("pelanggaran")).length],
+        ["Kesehatan", flatRecords(rawData.examinations).filter(item => recordDate(item) === dateValue).length],
+        ["Jurnal UKS", flatRecords(rawData.healthJournal).filter(item => recordDate(item) === dateValue).length],
+        ["Jurnal Sarpras", flatRecords(rawData.sarprasJournal).filter(item => recordDate(item) === dateValue).length],
+        ["Checklist Sarpras", flatRecords(rawData.sarprasChecklist).filter(item => recordDate(item) === dateValue).length],
+        ["Keamanan & Kebersihan", flatRecords(rawData.securityJournal).filter(item => recordDate(item) === dateValue).length],
+        ["Tahfiz", flatRecords(rawData.tahfiz).filter(item => recordDate(item) === dateValue).length]
+      ];
+
+      el("dataQualityGrid").innerHTML = definitions.map(([label, count]) => `
+        <article class="quality-item">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${count ? `✓ ${count} data masuk` : "— Belum ada data"}</span>
+        </article>
+      `).join("");
+
+      const complete = definitions.filter(([, count]) => count > 0).length;
+      el("qualityStatus").textContent = `${complete}/${definitions.length} sumber aktif`;
+    }
+
+    function renderDashboard() {
+      const dateValue = el("dashboardDate").value;
+      el("dateLabel").textContent = formatDateId(dateValue);
+
+      const teacher = renderTeacherEducation(dateValue);
+      const learning = renderLearningEducation(dateValue);
+      const tahfiz = renderTahfiz(dateValue);
+      const education = { teacher, learning, tahfiz };
+      const mentoring = renderMentoring(dateValue);
+      const discipline = renderDiscipline(dateValue);
+      const health = renderHealth(dateValue);
+      const operations = renderOperations(dateValue);
+
+      renderStatuses(education, mentoring, discipline, health, operations);
+      renderAlerts(education, mentoring, discipline, health, operations);
+      renderDataQuality(dateValue);
+    }
+
+    async function refreshDashboard(showOverlay = false) {
+      if (showOverlay) {
+        el("loadingOverlay").style.display = "flex";
+        el("loadingOverlay").style.opacity = "1";
+      }
+      await loadAllData();
+      renderDashboard();
+      el("loadingOverlay").style.opacity = "0";
+      setTimeout(() => { el("loadingOverlay").style.display = "none"; }, 300);
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      el("dashboardDate").value = localDateValue();
+      el("dashboardDate").addEventListener("change", renderDashboard);
+      el("refreshButton").addEventListener("click", () => refreshDashboard(false));
+      await refreshDashboard(true);
+      clearInterval(refreshTimer);
+      refreshTimer = setInterval(() => refreshDashboard(false), AUTO_REFRESH_MS);
+    });
+  </script>
+</body>
+</html>
