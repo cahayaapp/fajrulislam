@@ -3749,30 +3749,34 @@
     const online =
       mode === "firebase";
 
-    document.getElementById(
-      "calendarModeValue"
-    ).textContent = online
-      ? "Tersinkronisasi"
-      : "Data Bawaan";
+    /*
+      Widget Kalender Pendidikan di bagian ringkasan atas
+      memang sudah dihapus. Status sinkronisasi tetap
+      ditampilkan pada panel Agenda Kalender.
+    */
+    const sourceLabel =
+      document.getElementById(
+        "calendarSourceLabel"
+      );
 
-    document.getElementById(
-      "calendarModeText"
-    ).textContent = online
-      ? "Agenda diperbarui langsung dari Kalender Pendidikan."
-      : "Menggunakan agenda bawaan tahun ajaran 2026/2027.";
+    const calendarDot =
+      document.getElementById(
+        "calendarDot"
+      );
 
-    document.getElementById(
-      "calendarSourceLabel"
-    ).textContent = online
-      ? "Kalender Online"
-      : "Kalender Bawaan";
+    if (sourceLabel) {
+      sourceLabel.textContent =
+        online
+          ? "Kalender Online"
+          : "Kalender Bawaan";
+    }
 
-    document.getElementById(
-      "calendarDot"
-    ).classList.toggle(
-      "online",
-      online
-    );
+    if (calendarDot) {
+      calendarDot.classList.toggle(
+        "online",
+        online
+      );
+    }
   }
 
   function listenCalendar() {
