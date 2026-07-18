@@ -465,6 +465,39 @@
       color: rgba(255,255,255,.82);
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
+    .menu-access-empty {
+      display: grid;
+      place-items: center;
+      gap: 7px;
+      margin: 12px 4px;
+      padding: 22px 15px;
+      color: #65758f;
+      text-align: center;
+      border: 1px dashed #cdd9eb;
+      border-radius: 16px;
+      background: #f8fbff;
+    }
+
+    .menu-access-empty > span {
+      font-size: 1.45rem;
+    }
+
+    .menu-access-empty strong {
+      color: var(--wali-ink);
+      font-size: .76rem;
+      font-weight: 1000;
+    }
+
+    .menu-access-empty small {
+      font-size: .62rem;
+      font-weight: 750;
+      line-height: 1.5;
+    }
+
     .sidebar-bottom {
       flex-shrink: 0;
       padding: 13px 14px 16px;
@@ -1099,73 +1132,42 @@
     </div>
 
     <div class="sidebar-scroll">
-      <nav class="nav-menu">
-        <div class="menu-group">
-          <div class="group-label">
-            Informasi Santri
-          </div>
+      <nav class="nav-menu" id="waliNavMenu">
+        <div class="menu-group" id="waliFeatureGroup">
+          <div class="group-label">Informasi Santri</div>
 
-          <a
-            class="nav-item active"
-            onclick="loadPage('beranda.html', this)"
-          >
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Beranda</span>
-            <span class="nav-arrow">›</span>
-          </a>
-
-          <a
-            class="nav-item"
-            onclick="loadPage('akademik.html', this)"
-          >
+          <a class="nav-item" id="menu-akademik-wali" data-menu-id="menu-akademik-wali" data-page-url="akademik.html" onclick="loadPage('akademik.html', this)" hidden>
             <span class="nav-icon">📚</span>
             <span class="nav-label">Laporan Akademik</span>
             <span class="nav-arrow">›</span>
           </a>
 
-          <a
-            class="nav-item"
-            onclick="loadPage('karakter.html', this)"
-          >
+          <a class="nav-item" id="menu-karakter-wali" data-menu-id="menu-karakter-wali" data-page-url="karakter.html" onclick="loadPage('karakter.html', this)" hidden>
             <span class="nav-icon">🕌</span>
-            <span class="nav-label">Laporan Kepribadian</span>
+            <span class="nav-label">Laporan Karakter</span>
             <span class="nav-arrow">›</span>
           </a>
 
-          <a
-            class="nav-item"
-            onclick="loadPage('pembinaan.html', this)"
-          >
+          <a class="nav-item" id="menu-pembinaan-wali" data-menu-id="menu-pembinaan-wali" data-page-url="pembinaan.html" onclick="loadPage('pembinaan.html', this)" hidden>
             <span class="nav-icon">📋</span>
             <span class="nav-label">Laporan Pembinaan</span>
             <span class="nav-arrow">›</span>
           </a>
 
-          <a
-            class="nav-item"
-            onclick="loadPage('raport-bulanan.html', this)"
-          >
-            <span class="nav-icon">📘</span>
-            <span class="nav-label">Raport CAHAYA Bulanan</span>
+          <a class="nav-item" id="menu-informasi-penting-wali" data-menu-id="menu-informasi-penting-wali" data-page-url="informasi-penting.html" onclick="loadPage('informasi-penting.html', this)" hidden>
+            <span class="nav-icon">📌</span>
+            <span class="nav-label">Informasi Penting</span>
             <span class="nav-arrow">›</span>
           </a>
         </div>
 
-        <div class="menu-group">
-          <div class="group-label">
-            Akun & Privasi
-          </div>
-
-          <a
-            class="nav-item"
-            id="navProfil"
-            onclick="loadPage('profil.html', this)"
-          >
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label">Profil & Privasi</span>
-            <span class="nav-arrow">›</span>
-          </a>
+        <div class="menu-access-empty" id="waliNoAccess" hidden>
+          <span>🔒</span>
+          <strong>Belum ada fitur yang diizinkan</strong>
+          <small>Administrator perlu mencentang fitur Portal Wali pada Manajemen Pengguna.</small>
         </div>
+
+        <button type="button" id="navProfil" onclick="loadPage('profil.html', this)" hidden aria-hidden="true"></button>
       </nav>
     </div>
 
@@ -1316,7 +1318,127 @@
 
     let portalState = null;
     let currentPortalPage =
-      "beranda.html";
+      "";
+
+    const WALI_MENU_CONFIG = {
+      "menu-akademik-wali": {
+        url: "akademik.html",
+        title: "Laporan Akademik"
+      },
+      "menu-karakter-wali": {
+        url: "karakter.html",
+        title: "Laporan Karakter"
+      },
+      "menu-pembinaan-wali": {
+        url: "pembinaan.html",
+        title: "Laporan Pembinaan"
+      },
+      "menu-informasi-penting-wali": {
+        url: "informasi-penting.html",
+        title: "Informasi Penting"
+      }
+    };
+
+    const LEGACY_WALI_MENU_MAP = {
+      "menu-laporan-wali": "menu-akademik-wali"
+    };
+
+    let authorizedWaliMenus = new Set();
+    let authorizationReady = false;
+
+    function normalizeWaliMenuList(value) {
+      const result = new Set();
+
+      (Array.isArray(value) ? value : []).forEach(menuId => {
+        result.add(LEGACY_WALI_MENU_MAP[menuId] || menuId);
+      });
+
+      return [...result].filter(menuId => Boolean(WALI_MENU_CONFIG[menuId]));
+    }
+
+    function menuIdFromUrl(url = "") {
+      const cleanUrl = String(url).split("?")[0].split("#")[0];
+
+      return Object.keys(WALI_MENU_CONFIG).find(menuId =>
+        WALI_MENU_CONFIG[menuId].url === cleanUrl
+      ) || "";
+    }
+
+    function isWaliMenuAllowed(menuId) {
+      return Boolean(menuId) && authorizedWaliMenus.has(menuId);
+    }
+
+    function applyWaliMenuVisibility() {
+      const items = [...document.querySelectorAll('.nav-item[data-menu-id]')];
+      let firstAllowed = null;
+
+      items.forEach(item => {
+        const allowed = isWaliMenuAllowed(item.dataset.menuId);
+        item.hidden = !allowed;
+        item.classList.remove("active");
+
+        if (allowed && !firstAllowed) {
+          firstAllowed = item;
+        }
+      });
+
+      const group = document.getElementById("waliFeatureGroup");
+      const empty = document.getElementById("waliNoAccess");
+      const hasAccess = Boolean(firstAllowed);
+
+      if (group) group.hidden = !hasAccess;
+      if (empty) empty.hidden = hasAccess;
+
+      return firstAllowed;
+    }
+
+    async function loadWaliAuthorization(force = false) {
+      if (authorizationReady && !force) {
+        return authorizedWaliMenus;
+      }
+
+      try {
+        const snapshot = await db.collection("settings").doc("role_menus").get();
+        const data = snapshot.exists ? snapshot.data() : {};
+        authorizedWaliMenus = new Set(normalizeWaliMenuList(data.wali));
+      } catch (error) {
+        authorizedWaliMenus = new Set();
+        console.error("Otorisasi Portal Wali gagal dimuat:", error);
+      }
+
+      authorizationReady = true;
+      applyWaliMenuVisibility();
+      return authorizedWaliMenus;
+    }
+
+    function showNoAuthorizedFeature() {
+      document.querySelectorAll(".nav-item").forEach(item =>
+        item.classList.remove("active")
+      );
+
+      const frame = document.getElementById("contentFrame");
+      frame.removeAttribute("src");
+      frame.srcdoc = `<!DOCTYPE html>
+        <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+        <style>
+          *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font-family:Nunito,Arial,sans-serif;color:#33425f;background:linear-gradient(180deg,#f4f8ff,#fbfdff)}
+          .box{width:min(520px,100%);padding:30px;text-align:center;border:1px solid #e2eaf6;border-radius:22px;background:#fff;box-shadow:0 18px 45px rgba(35,78,160,.10)}
+          .icon{font-size:42px}.box h2{margin:12px 0 8px;color:#152347;font-size:1.25rem}.box p{margin:0;color:#71809e;font-size:.86rem;font-weight:650;line-height:1.65}
+        </style></head><body><div class="box"><div class="icon">🔒</div><h2>Akses Belum Diberikan</h2><p>Belum ada fitur Portal Wali yang diaktifkan untuk akun ini. Administrator dapat mengaturnya melalui Manajemen Pengguna.</p></div></body></html>`;
+
+      document.getElementById("currentPageTitle").textContent = "Akses Belum Diberikan";
+    }
+
+    async function openFirstAuthorizedFeature() {
+      const firstAllowed = applyWaliMenuVisibility();
+
+      if (!firstAllowed) {
+        showNoAuthorizedFeature();
+        return;
+      }
+
+      await loadPage(firstAllowed.dataset.pageUrl, firstAllowed);
+    }
 
     const CAHAYA_LOGOUT_LOCK_KEY =
       "cahayaLogoutUntil";
@@ -1612,6 +1734,7 @@
           "contentFrame"
         );
 
+      frame.removeAttribute("srcdoc");
       frame.src =
         currentPortalPage;
     }
@@ -1620,6 +1743,21 @@
       url,
       element
     ) {
+      const menuId =
+        element?.dataset?.menuId ||
+        menuIdFromUrl(url);
+
+      if (menuId) {
+        if (!authorizationReady) {
+          await loadWaliAuthorization();
+        }
+
+        if (!isWaliMenuAllowed(menuId)) {
+          showNoAuthorizedFeature();
+          return;
+        }
+      }
+
       document.querySelectorAll(
         ".nav-item"
       ).forEach(item =>
@@ -1773,15 +1911,8 @@
         try {
           await preparePortal();
 
-          const frame =
-            document.getElementById(
-              "contentFrame"
-            );
-
-          await openPortalPage(
-            frame.dataset.initialPage ||
-            "beranda.html"
-          );
+          await loadWaliAuthorization();
+          await openFirstAuthorizedFeature();
         } catch (error) {
           console.error(
             "Portal Wali gagal dibuka:",
