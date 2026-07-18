@@ -33,8 +33,167 @@
     .btn-delete { background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; font-family: 'Poppins'; transition: 0.2s;}
     .btn-delete:hover { background: #dc2626; }
   </style>
+
+<style id="ruangguru-comments-override">
+  :root{--rg-primary:#2878ff;--rg-cyan:#19c6e6;--rg-heading:#152347;--rg-text:#31415f;--rg-muted:#71809e;--rg-border:#e2eaf6}
+  *{box-sizing:border-box}
+  html,body{width:100%;min-height:100%;overflow-x:hidden}
+  body{
+    margin:0!important;padding:14px!important;color:var(--rg-text)!important;
+    font-family:"Nunito","Poppins",Arial,sans-serif!important;
+    background:radial-gradient(circle at 4% 2%,rgba(25,198,230,.10),transparent 24%),radial-gradient(circle at 96% 6%,rgba(118,103,245,.09),transparent 23%),linear-gradient(180deg,#f4f8ff,#fbfdff)!important
+  }
+  .admin-container{width:100%!important;max-width:920px!important;margin:0 auto!important}
+  #loading{padding:42px 18px!important;color:#8290a8!important;font-size:.76rem!important;font-weight:800!important;border:1px dashed #d6e3f4!important;border-radius:18px!important;background:rgba(255,255,255,.75)!important}
+  .post-card{margin-bottom:14px!important;padding:20px!important;border:1px solid var(--rg-border)!important;border-radius:21px!important;background:rgba(255,255,255,.98)!important;box-shadow:0 12px 34px rgba(35,78,160,.09)!important}
+  .post-text{margin-bottom:14px!important;padding:14px 15px!important;color:#52627e!important;font-size:.78rem!important;line-height:1.58!important;border:1px solid #d9e8fb!important;border-left:5px solid var(--rg-primary)!important;border-radius:13px!important;background:#f3f8ff!important}
+  .post-text p{margin:0 0 5px!important;color:var(--rg-heading)!important;font-size:.68rem!important;font-weight:900!important;text-transform:uppercase!important;letter-spacing:.35px!important}
+  .comment-item{padding:15px 0!important;border-bottom:1px dashed #e1e9f4!important}
+  .comment-header{gap:10px!important}
+  .comment-author{color:var(--rg-heading)!important;font-size:.8rem!important;font-weight:900!important}
+  .comment-time{color:#8b99af!important;font-size:.61rem!important;font-weight:700!important}
+  .comment-body{margin:7px 0 10px!important;color:#4f5f7b!important;font-size:.78rem!important;font-weight:650!important;line-height:1.55!important}
+  .reply-box{margin-top:7px!important;padding:10px 13px!important;color:#47627c!important;font-size:.72rem!important;font-weight:650!important;border:1px solid #d5eee5!important;border-left:5px solid #25b983!important;border-radius:12px!important;background:#effbf6!important}
+  .reply-box b{color:#177354!important;font-weight:900!important}
+  .reply-input-area{gap:8px!important;margin-top:11px!important}
+  .reply-input-area input{min-height:43px!important;padding:9px 12px!important;color:var(--rg-text)!important;font-family:inherit!important;font-size:.75rem!important;font-weight:700!important;outline:none!important;border:1.5px solid #dfe7f3!important;border-radius:11px!important;background:#f8faff!important}
+  .reply-input-area input:focus{border-color:var(--rg-primary)!important;background:#fff!important;box-shadow:0 0 0 4px rgba(40,120,255,.09)!important}
+  .reply-input-area button{min-height:43px!important;padding:0 17px!important;color:#fff!important;font-family:inherit!important;font-size:.7rem!important;font-weight:900!important;border:none!important;border-radius:11px!important;background:linear-gradient(135deg,var(--rg-primary),var(--rg-cyan))!important;box-shadow:0 8px 18px rgba(40,120,255,.18)!important}
+  .btn-delete{min-height:33px!important;padding:5px 10px!important;color:#d34656!important;font-family:inherit!important;font-size:.62rem!important;font-weight:900!important;border:1px solid #f3cbd0!important;border-radius:9px!important;background:#fff1f3!important}
+  .btn-delete:hover{color:#fff!important;background:#ef5968!important}
+  @media(max-width:620px){body{padding:9px!important}.post-card{padding:16px 13px!important;border-radius:18px!important}.reply-input-area{flex-direction:column!important}.reply-input-area button{width:100%!important}}
+</style>
+
 </head>
 <body>
+
+<div class="admin-container"><div id="loading" style="text-align:center; color:#94a3b8; padding: 50px;">Memuat data interaksi...</div>
+  <div id="postsContainer"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  const firebaseConfig = { 
+    apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI", 
+    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com", 
+    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com", 
+    projectId: "absensi-santri-fajrul-islam" 
+  };
+  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+  const dbRT = firebase.database();
+
+  const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+  const adminName = user.label || user.username || "Admin";
+
+  dbRT.ref('cahaya_app/interaksi_cerita').on('value', snap => {
+      document.getElementById('loading').style.display = 'none';
+      const container = document.getElementById('postsContainer');
+      container.innerHTML = '';
+      
+      const data = snap.val() || {};
+      const listEvents = Object.keys(data).reverse(); 
+
+      let hasComments = false;
+
+      listEvents.forEach(eventId => {
+          const item = data[eventId];
+          if (!item.komentar) return; 
+          
+          hasComments = true;
+          const postInfo = item.post_info ? item.post_info.teks : "Teks postingan tidak tersedia.";
+          
+          let htmlComments = '';
+          Object.keys(item.komentar).forEach(kId => {
+              const k = item.komentar[kId];
+              const dTime = new Date(k.waktu).toLocaleString('id-ID');
+              
+              // Render Thread Balasan Berkali-kali
+              let replyHtml = '';
+              if (k.balasan) {
+                  Object.keys(k.balasan).forEach(bId => {
+                      const b = k.balasan[bId];
+                      replyHtml += `<div class="reply-box"><b>${b.pengirim}</b>: ${b.teks}</div>`;
+                  });
+              }
+
+              htmlComments += `
+                  <div class="comment-item">
+                      <div class="comment-header">
+                          <div class="comment-author">${k.pengirim} <span class="comment-time">${dTime}</span></div>
+                          <button class="btn-delete" onclick="hapusKomen('${eventId}', '${kId}')">Hapus</button>
+                      </div>
+                      <div class="comment-body">${k.teks}</div>
+                      ${replyHtml}
+                      <div class="reply-input-area">
+                          <input type="text" id="inp_${eventId}_${kId}" placeholder="Tulis balasan sebagai @${adminName}...">
+                          <button onclick="balasKomen('${eventId}', '${kId}')">Balas</button>
+                      </div>
+                  </div>
+              `;
+          });
+
+          container.insertAdjacentHTML('beforeend', `
+              <div class="post-card">
+                  <div class="post-text">
+                      <p>Postingan Terkait:</p>${postInfo}
+                  </div>
+                  <div>${htmlComments}</div>
+              </div>
+          `);
+      });
+
+      if (!hasComments) {
+          container.innerHTML = '<div style="text-align:center; color:#94a3b8; font-style:italic;">Belum ada interaksi komentar.</div>';
+      }
+  });
+
+  // FUNGSI BALAS & KIRIM NOTIFIKASI
+  function balasKomen(eventId, commentId) {
+      const inp = document.getElementById(`inp_${eventId}_${commentId}`);
+      const teksBalasan = inp.value.trim();
+      if (!teksBalasan) return;
+
+      dbRT.ref(`cahaya_app/interaksi_cerita/${eventId}/komentar/${commentId}/balasan`).push({
+          teks: teksBalasan,
+          pengirim: "@" + adminName,
+          waktu: new Date().toISOString()
+      }).then(() => {
+          alert("✅ Balasan terkirim!");
+          dbRT.ref(`cahaya_app/interaksi_cerita/${eventId}/komentar/${commentId}`).once('value', snap => {
+              const dataKomen = snap.val();
+              if (dataKomen && dataKomen.username) {
+                  dbRT.ref(`cahaya_app/notifikasi_wali/${dataKomen.username}`).push({
+                      title: "Komentar Anda Dibalas",
+                      desc: `@${adminName}: ${teksBalasan}`,
+                      waktu: new Date().toISOString(),
+                      tipe: "komentar",
+                      eventId: eventId,
+                      dibaca: false
+                  });
+              }
+          });
+      }).catch(err => { alert("Gagal membalas: " + err.message); });
+  }
+
+  // FUNGSI HAPUS KOMENTAR
+  function hapusKomen(eventId, commentId) {
+      const konfirmasi = confirm("⚠️ Apakah Anda yakin ingin menghapus komentar ini beserta seluruh balasannya?");
+      if (konfirmasi) {
+          dbRT.ref(`cahaya_app/interaksi_cerita/${eventId}/komentar/${commentId}`).remove()
+              .then(() => {
+                  // UI akan otomatis ter-update karena kita menggunakan event listener .on('value') di atas
+                  console.log("Komentar berhasil dihapus.");
+              })
+              .catch(err => {
+                  alert("❌ Gagal menghapus komentar: " + err.message);
+              });
+      }
+  }
+</script>
+</body>
+</html><body>
 
 <div class="admin-container">
   <h2>💬 Pusat Komunikasi Lini Masa</h2>
