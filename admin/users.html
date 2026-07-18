@@ -418,13 +418,21 @@
           </div>
         </div>
 
-        <div class="menu-section">
-          <h4>👪 Modul Wali Santri</h4>
+        <div class="menu-section" id="sectionWaliMenu" style="background:linear-gradient(135deg,#f0f7ff,#f4fbff); border-color:#bfdbfe;">
+          <h4 style="color:#1557d5; border-bottom-color:#93c5fd;">👪 Otorisasi Portal Wali Santri</h4>
           <div class="checkbox-grid" style="margin-top: 0;">
-            <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-beranda-wali"> Beranda Linimasa</label>
-            <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-laporan-wali"> Laporan Akademik</label>
-            <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-admin-wali"> Info Administrasi</label>
-            <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-modul-wali"> Modul & Materi</label>
+            <label class="check-label" style="background:#ffffff; border-color:#bfdbfe;"><input type="checkbox" class="cb-menu" value="menu-akademik-wali"> 📚 Laporan Akademik</label>
+            <label class="check-label" style="background:#ffffff; border-color:#c4b5fd;"><input type="checkbox" class="cb-menu" value="menu-karakter-wali"> 🕌 Laporan Karakter</label>
+            <label class="check-label" style="background:#ffffff; border-color:#fdba74;"><input type="checkbox" class="cb-menu" value="menu-pembinaan-wali"> 📋 Laporan Pembinaan</label>
+            <label class="check-label" style="background:#ffffff; border-color:#6ee7b7;"><input type="checkbox" class="cb-menu" value="menu-informasi-penting-wali"> 📌 Informasi Penting</label>
+          </div>
+        </div>
+
+
+        <div class="menu-section" id="sectionPimpinanMenu" style="background:linear-gradient(135deg,#fff8eb,#fffdf7); border-color:#f6d38b;">
+          <h4 style="color:#a45b13; border-bottom-color:#f3c86f;">🏛️ Modul Pimpinan</h4>
+          <div class="checkbox-grid" style="margin-top:0;">
+            <label class="check-label" style="background:#ffffff; border-color:#f3c86f;"><input type="checkbox" class="cb-menu" value="menu-dashboard-pimpinan"> 📊 Dashboard Pimpinan</label>
           </div>
         </div>
 
@@ -598,12 +606,41 @@
   let isEditMode = false;
   let dynamicRoleMenus = {};
 
-  function daftarMenuOtorisasiTersedia() {
+  const LEGACY_WALI_MENU_MAP = {
+    "menu-laporan-wali": "menu-akademik-wali"
+  };
+
+  function daftarMenuOtorisasiTersedia(role = "") {
+    const root = role === "wali"
+      ? document.getElementById("sectionWaliMenu")
+      : document;
+
     return [...new Set(
-      [...document.querySelectorAll('.cb-menu')]
+      [...root.querySelectorAll('.cb-menu')]
         .map(cb => cb.value)
         .filter(Boolean)
     )];
+  }
+
+  function normalisasiMenuRole(role, daftar = []) {
+    const hasil = new Set();
+
+    (Array.isArray(daftar) ? daftar : []).forEach(menuId => {
+      if (role === "wali" && LEGACY_WALI_MENU_MAP[menuId]) {
+        hasil.add(LEGACY_WALI_MENU_MAP[menuId]);
+      } else {
+        hasil.add(menuId);
+      }
+    });
+
+    return [...hasil];
+  }
+
+  function aturTampilanBagianOtorisasi(role) {
+    document.querySelectorAll('#areaChecklistMenu .menu-section').forEach(section => {
+      const khususWali = section.id === 'sectionWaliMenu';
+      section.style.display = role === 'wali' && !khususWali ? 'none' : '';
+    });
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
@@ -741,11 +778,16 @@
 
   window.renderChecklistMenu = () => {
     const role = document.getElementById('selectRoleMenu').value;
-    const allowed = Array.isArray(dynamicRoleMenus[role])
-      ? dynamicRoleMenus[role]
-      : [];
+    aturTampilanBagianOtorisasi(role);
 
-    const knownMenus = new Set(daftarMenuOtorisasiTersedia());
+    const allowed = normalisasiMenuRole(
+      role,
+      Array.isArray(dynamicRoleMenus[role])
+        ? dynamicRoleMenus[role]
+        : []
+    );
+
+    const knownMenus = new Set(daftarMenuOtorisasiTersedia(role));
 
     document.querySelectorAll('.cb-menu').forEach(cb => {
       cb.checked = knownMenus.has(cb.value) && allowed.includes(cb.value);
@@ -754,9 +796,12 @@
 
   window.simpanPengaturanMenu = async () => {
     const role = document.getElementById('selectRoleMenu').value;
-    const knownMenus = new Set(daftarMenuOtorisasiTersedia());
+    const knownMenus = new Set(daftarMenuOtorisasiTersedia(role));
+    const selector = role === 'wali'
+      ? '#sectionWaliMenu .cb-menu:checked'
+      : '.cb-menu:checked';
 
-    const allowed = [...document.querySelectorAll('.cb-menu:checked')]
+    const allowed = [...document.querySelectorAll(selector)]
       .map(cb => cb.value)
       .filter(menuId => knownMenus.has(menuId));
 
