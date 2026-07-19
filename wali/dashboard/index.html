@@ -46,6 +46,7 @@
 
       --sidebar-width: 292px;
       --topbar-height: 78px;
+      --mobile-bottom-nav-height: 74px;
 
       --radius-sm: 12px;
       --radius-md: 16px;
@@ -900,6 +901,486 @@
     }
 
     /* =========================================================
+       TOP CHAT ACTIONS
+       ========================================================= */
+
+    .top-bar-actions,
+    .mobile-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .wali-chat-top-button {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      padding: 0;
+      color: var(--wali-primary);
+      font-size: 1.05rem;
+      cursor: pointer;
+      border: 1px solid #dce8fb;
+      border-radius: 13px;
+      background: linear-gradient(145deg, #edf5ff, #f2fbff);
+      box-shadow: 0 7px 18px rgba(40, 120, 255, .09);
+      transition: .2s ease;
+    }
+
+    .wali-chat-top-button:hover {
+      color: #ffffff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--wali-primary), var(--wali-cyan));
+      box-shadow: 0 11px 24px rgba(40, 120, 255, .22);
+      transform: translateY(-2px);
+    }
+
+    .wali-chat-badge {
+      min-width: 18px;
+      height: 18px;
+      display: none;
+      place-items: center;
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      padding: 0 4px;
+      color: #ffffff;
+      font-size: .49rem;
+      font-weight: 1000;
+      line-height: 1;
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      background: var(--wali-red);
+      box-shadow: 0 5px 11px rgba(255, 95, 112, .27);
+    }
+
+    /* =========================================================
+       MOBILE FIXED SHORTCUTS — MAKSIMAL 5 FITUR
+       ========================================================= */
+
+    .wali-mobile-bottom-nav {
+      display: none;
+    }
+
+    .wali-mobile-bottom-nav-inner {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(var(--wali-shortcut-count, 5), minmax(0, 1fr));
+      align-items: stretch;
+      gap: 3px;
+      padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(215, 226, 243, .96);
+      background: rgba(255, 255, 255, .96);
+      box-shadow: 0 -12px 30px rgba(31, 65, 128, .11);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .wali-mobile-shortcut-btn {
+      min-width: 0;
+      min-height: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      position: relative;
+      padding: 6px 3px;
+      color: #77859e;
+      cursor: pointer;
+      border: 0;
+      border-radius: 14px;
+      background: transparent;
+      transition: color .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .wali-mobile-shortcut-btn::before {
+      content: "";
+      width: 24px;
+      height: 3px;
+      position: absolute;
+      top: 2px;
+      left: 50%;
+      opacity: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--wali-primary), var(--wali-cyan));
+      transform: translateX(-50%) scaleX(.45);
+      transition: .18s ease;
+    }
+
+    .wali-mobile-shortcut-btn:active {
+      transform: scale(.96);
+    }
+
+    .wali-mobile-shortcut-icon {
+      height: 24px;
+      display: grid;
+      place-items: center;
+      font-size: 1.17rem;
+      line-height: 1;
+      filter: grayscale(.12);
+      transition: transform .18s ease, filter .18s ease;
+    }
+
+    .wali-mobile-shortcut-label {
+      width: 100%;
+      overflow: hidden;
+      font-size: .57rem;
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -.08px;
+      text-align: center;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .wali-mobile-shortcut-btn.active {
+      color: var(--wali-primary-dark);
+      background: linear-gradient(180deg, #eef5ff 0%, #f5fbff 100%);
+    }
+
+    .wali-mobile-shortcut-btn.active::before {
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1);
+    }
+
+    .wali-mobile-shortcut-btn.active .wali-mobile-shortcut-icon {
+      filter: none;
+      transform: translateY(-1px) scale(1.06);
+    }
+
+    /* =========================================================
+       WALI LIVE CHAT
+       ========================================================= */
+
+    .wali-chat-window {
+      width: 390px;
+      max-width: calc(100vw - 34px);
+      height: min(610px, calc(100vh - 120px));
+      display: none;
+      flex-direction: column;
+      position: fixed;
+      right: 22px;
+      bottom: 20px;
+      z-index: 10050;
+      overflow: hidden;
+      border: 1px solid rgba(215, 227, 244, .98);
+      border-radius: 24px;
+      background: rgba(255,255,255,.99);
+      box-shadow: 0 25px 65px rgba(27, 58, 121, .22);
+      animation: waliChatIn .24s ease both;
+    }
+
+    @keyframes waliChatIn {
+      from { opacity: 0; transform: translateY(12px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .wali-chat-header {
+      min-height: 72px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      padding: 13px 14px;
+      color: #ffffff;
+      background:
+        radial-gradient(circle at 92% 0%, rgba(255,255,255,.20), transparent 28%),
+        linear-gradient(135deg, var(--wali-primary) 0%, #3b84ff 55%, var(--wali-cyan) 135%);
+    }
+
+    .wali-chat-header-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .wali-chat-header-copy strong,
+    .wali-chat-header-copy span {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .wali-chat-header-copy strong {
+      font-size: .9rem;
+      font-weight: 1000;
+    }
+
+    .wali-chat-header-copy span {
+      margin-top: 2px;
+      color: rgba(255,255,255,.76);
+      font-size: .58rem;
+      font-weight: 800;
+    }
+
+    .wali-chat-header-btn {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: #ffffff;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,.23);
+      border-radius: 12px;
+      background: rgba(255,255,255,.14);
+    }
+
+    .wali-chat-tabs {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      padding: 7px;
+      border-bottom: 1px solid #e0e9f6;
+      background: #eef4fc;
+    }
+
+    .wali-chat-tab {
+      min-height: 38px;
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 8px 10px;
+      color: #71809b;
+      font-size: .7rem;
+      font-weight: 900;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      background: transparent;
+    }
+
+    .wali-chat-tab.active {
+      color: var(--wali-primary-dark);
+      border-color: #dce8f8;
+      background: #ffffff;
+      box-shadow: 0 6px 15px rgba(35, 78, 160, .08);
+    }
+
+    .wali-chat-search {
+      flex-shrink: 0;
+      padding: 10px;
+      border-bottom: 1px solid #e6edf7;
+      background: #ffffff;
+    }
+
+    .wali-chat-search input {
+      width: 100%;
+      min-height: 40px;
+      padding: 9px 12px;
+      color: var(--wali-text);
+      font-size: .72rem;
+      font-weight: 750;
+      outline: none;
+      border: 1px solid #dce6f5;
+      border-radius: 12px;
+      background: #f7faff;
+    }
+
+    .wali-chat-list {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 7px;
+      background: #ffffff;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .wali-chat-list-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin: 2px 0;
+      padding: 11px;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom-color: #edf2f8;
+      border-radius: 13px;
+      background: #ffffff;
+      transition: .18s ease;
+    }
+
+    .wali-chat-list-item:hover {
+      border-color: #e0eaf8;
+      background: #f5f9ff;
+      transform: translateX(2px);
+    }
+
+    .wali-chat-list-item.broadcast {
+      border-color: #ffe0b2;
+      border-left: 4px solid var(--wali-orange);
+      background: #fff8ec;
+    }
+
+    .wali-chat-list-avatar {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: var(--wali-primary-dark);
+      font-size: .95rem;
+      font-weight: 1000;
+      border: 1px solid #d9e7fb;
+      border-radius: 14px;
+      background: linear-gradient(145deg, #eaf3ff, #f1edff);
+    }
+
+    .wali-chat-list-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .wali-chat-list-copy strong,
+    .wali-chat-list-copy span {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .wali-chat-list-copy strong {
+      color: var(--wali-ink);
+      font-size: .76rem;
+      font-weight: 950;
+    }
+
+    .wali-chat-list-copy span {
+      margin-top: 3px;
+      color: var(--wali-muted);
+      font-size: .66rem;
+      font-weight: 650;
+    }
+
+    .wali-chat-unread-dot {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 9px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      background: var(--wali-red);
+      box-shadow: 0 0 0 3px rgba(255,95,112,.12);
+    }
+
+    .wali-chat-empty {
+      display: grid;
+      place-items: center;
+      min-height: 170px;
+      padding: 24px;
+      color: #8b99af;
+      font-size: .75rem;
+      font-weight: 750;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .wali-chat-messages {
+      flex: 1;
+      min-height: 0;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      padding: 13px;
+      background:
+        radial-gradient(circle at 90% 0%, rgba(40,120,255,.05), transparent 25%),
+        #f5f8fc;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .wali-chat-message {
+      max-width: 84%;
+      padding: 9px 12px;
+      color: var(--wali-text);
+      font-size: .74rem;
+      font-weight: 650;
+      line-height: 1.48;
+      overflow-wrap: anywhere;
+      border-radius: 15px;
+      box-shadow: 0 5px 13px rgba(38, 69, 119, .055);
+    }
+
+    .wali-chat-message.self {
+      align-self: flex-end;
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
+      background: linear-gradient(135deg, var(--wali-primary), #4b8eff);
+    }
+
+    .wali-chat-message.other {
+      align-self: flex-start;
+      border: 1px solid #dfe8f5;
+      border-bottom-left-radius: 4px;
+      background: #ffffff;
+    }
+
+    .wali-chat-message-info {
+      margin-bottom: 3px;
+      color: #93a1b7;
+      font-size: .53rem;
+      font-weight: 800;
+    }
+
+    .wali-chat-message.self .wali-chat-message-info {
+      color: rgba(255,255,255,.72);
+    }
+
+    .wali-chat-footer {
+      display: none;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+      padding: 10px;
+      border-top: 1px solid #e2eaf6;
+      background: #ffffff;
+    }
+
+    .wali-chat-footer textarea {
+      min-width: 0;
+      max-height: 110px;
+      min-height: 43px;
+      flex: 1;
+      resize: none;
+      padding: 11px 13px;
+      color: var(--wali-text);
+      font-size: .74rem;
+      font-weight: 700;
+      line-height: 1.4;
+      outline: none;
+      border: 1px solid #dce6f3;
+      border-radius: 14px;
+      background: #f5f8fc;
+    }
+
+    .wali-chat-send {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: #ffffff;
+      font-size: 1rem;
+      cursor: pointer;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--wali-primary), var(--wali-cyan));
+      box-shadow: 0 8px 18px rgba(40, 120, 255, .21);
+    }
+
+
+    /* =========================================================
        RESPONSIVE
        ========================================================= */
 
@@ -916,6 +1397,59 @@
     @media (max-width: 900px) {
       body {
         flex-direction: column;
+      }
+
+      .main-content {
+        width: 100%;
+        height: calc(100vh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+        height: calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+        min-height: 0;
+        flex: 0 0 calc(100vh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+        flex-basis: calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+      }
+
+      .wali-mobile-bottom-nav {
+        width: 100%;
+        height: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom));
+        display: block;
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 9980;
+        pointer-events: none;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        transition: opacity .2s ease, visibility .2s ease, transform .24s ease;
+      }
+
+      .wali-mobile-bottom-nav.ready {
+        pointer-events: auto;
+      }
+
+      body.mobile-sidebar-open .wali-mobile-bottom-nav {
+        display: none !important;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none !important;
+        transform: translateY(110%);
+      }
+
+      .app-footer {
+        display: none;
+      }
+
+      .sidebar {
+        z-index: 10020;
+      }
+
+      .mobile-menu-overlay {
+        z-index: 10010;
+      }
+
+      .wali-chat-window {
+        bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 9px);
       }
 
       .sidebar {
@@ -942,11 +1476,6 @@
 
       .top-bar {
         display: none;
-      }
-
-      .main-content {
-        width: 100%;
-        height: 100%;
       }
 
       .mobile-header {
@@ -1014,6 +1543,10 @@
       }
     }
 
+
+
+
+
     @media (max-width: 560px) {
       .mobile-header {
         min-height: 62px;
@@ -1033,6 +1566,26 @@
         flex-basis: 40px !important;
         font-size: .85rem !important;
         border-radius: 12px;
+      }
+
+      .wali-chat-top-button {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+        border-radius: 12px;
+      }
+
+      .mobile-header-actions {
+        gap: 7px;
+      }
+
+      .wali-chat-window {
+        width: calc(100vw - 16px);
+        max-width: none;
+        height: min(72vh, calc(100dvh - var(--mobile-bottom-nav-height) - 84px - env(safe-area-inset-bottom)));
+        right: 8px;
+        bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
+        border-radius: 21px;
       }
 
       .mobile-brand {
@@ -1136,6 +1689,12 @@
         <div class="menu-group" id="waliFeatureGroup">
           <div class="group-label">Informasi Santri</div>
 
+          <a class="nav-item" id="menu-beranda-wali" data-menu-id="menu-beranda-wali" data-page-url="beranda.html" onclick="loadPage('beranda.html', this)">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Beranda Wali</span>
+            <span class="nav-arrow">›</span>
+          </a>
+
           <a class="nav-item" id="menu-akademik-wali" data-menu-id="menu-akademik-wali" data-page-url="akademik.html" onclick="loadPage('akademik.html', this)" hidden>
             <span class="nav-icon">📚</span>
             <span class="nav-label">Laporan Akademik</span>
@@ -1213,18 +1772,32 @@
         PORTAL WALI
       </div>
 
-      <div
-        class="avatar-circle"
-        id="mobileAvatar"
-        style="
-          width:40px;
-          height:40px;
-          flex-basis:40px;
-          font-size:.9rem;
-        "
-        onclick="document.getElementById('navProfil').click()"
-      >
-        S
+      <div class="mobile-header-actions">
+        <button
+          type="button"
+          class="wali-chat-top-button"
+          id="waliChatTopMobile"
+          onclick="toggleWaliChat()"
+          aria-label="Buka Live Chat"
+          title="Live Chat"
+        >
+          💬
+          <span class="wali-chat-badge" id="waliChatBadgeMobile">0</span>
+        </button>
+
+        <div
+          class="avatar-circle"
+          id="mobileAvatar"
+          style="
+            width:40px;
+            height:40px;
+            flex-basis:40px;
+            font-size:.9rem;
+          "
+          onclick="document.getElementById('navProfil').click()"
+        >
+          S
+        </div>
       </div>
     </header>
 
@@ -1242,11 +1815,24 @@
         </div>
       </div>
 
-      <div
-        class="student-badge"
-        onclick="document.getElementById('navProfil').click()"
-        title="Buka profil santri"
-      >
+      <div class="top-bar-actions">
+        <button
+          type="button"
+          class="wali-chat-top-button"
+          id="waliChatTopDesktop"
+          onclick="toggleWaliChat()"
+          aria-label="Buka Live Chat"
+          title="Live Chat"
+        >
+          💬
+          <span class="wali-chat-badge" id="waliChatBadgeDesktop">0</span>
+        </button>
+
+        <div
+          class="student-badge"
+          onclick="document.getElementById('navProfil').click()"
+          title="Buka profil santri"
+        >
         <div class="student-info">
           <span
             class="label"
@@ -1268,6 +1854,7 @@
           id="studentAvatar"
         >
           S
+        </div>
         </div>
       </div>
     </header>
@@ -1295,15 +1882,72 @@
     </footer>
   </main>
 
+  <nav
+    class="wali-mobile-bottom-nav"
+    id="waliMobileBottomNav"
+    aria-label="Pintasan utama Portal Wali"
+  ></nav>
+
+  <section
+    class="wali-chat-window"
+    id="waliChatWindow"
+    aria-label="Live Chat Portal Wali"
+  >
+    <header class="wali-chat-header">
+      <button
+        type="button"
+        class="wali-chat-header-btn"
+        id="waliChatBackButton"
+        onclick="showWaliChatList()"
+        aria-label="Kembali"
+        style="display:none;"
+      >←</button>
+
+      <div class="wali-chat-header-copy">
+        <strong id="waliChatHeaderTitle">Live Chat CAHAYA</strong>
+        <span id="waliChatHeaderSubtitle">Komunikasi wali dan pengurus pesantren</span>
+      </div>
+
+      <button
+        type="button"
+        class="wali-chat-header-btn"
+        onclick="toggleWaliChat()"
+        aria-label="Tutup Live Chat"
+      >✕</button>
+    </header>
+
+    <div class="wali-chat-tabs" id="waliChatTabs">
+      <button type="button" class="wali-chat-tab active" id="waliInboxTab" onclick="switchWaliChatTab('inbox')">Percakapan</button>
+      <button type="button" class="wali-chat-tab" id="waliContactsTab" onclick="switchWaliChatTab('contacts')">Kontak</button>
+    </div>
+
+    <div class="wali-chat-search" id="waliChatSearchWrap">
+      <input type="search" id="waliChatSearch" placeholder="Cari percakapan atau kontak" oninput="filterWaliChatList()" autocomplete="off">
+    </div>
+
+    <div class="wali-chat-list" id="waliChatList">
+      <div class="wali-chat-empty">Menyiapkan Live Chat...</div>
+    </div>
+
+    <div class="wali-chat-messages" id="waliChatMessages"></div>
+
+    <footer class="wali-chat-footer" id="waliChatFooter">
+      <textarea id="waliChatInput" rows="1" placeholder="Ketik pesan" oninput="autoResizeWaliChatInput()" onkeydown="handleWaliChatEnter(event)"></textarea>
+      <button type="button" class="wali-chat-send" onclick="sendWaliChatMessage()" aria-label="Kirim pesan">➤</button>
+    </footer>
+  </section>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="script.js"></script>
 
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
       authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
       projectId: "absensi-santri-fajrul-islam"
     };
 
@@ -1316,11 +1960,22 @@
     const db =
       firebase.firestore();
 
+    const dbRT =
+      firebase.database();
+
     let portalState = null;
     let currentPortalPage =
       "";
 
+    const WALI_HOME_MENU_ID =
+      "menu-beranda-wali";
+
     const WALI_MENU_CONFIG = {
+      "menu-beranda-wali": {
+        url: "beranda.html",
+        title: "Beranda Wali",
+        alwaysAllowed: true
+      },
       "menu-akademik-wali": {
         url: "akademik.html",
         title: "Laporan Akademik"
@@ -1365,7 +2020,10 @@
     }
 
     function isWaliMenuAllowed(menuId) {
-      return Boolean(menuId) && authorizedWaliMenus.has(menuId);
+      return Boolean(menuId) && (
+        menuId === WALI_HOME_MENU_ID ||
+        authorizedWaliMenus.has(menuId)
+      );
     }
 
     function applyWaliMenuVisibility() {
@@ -1389,6 +2047,7 @@
       if (group) group.hidden = !hasAccess;
       if (empty) empty.hidden = hasAccess;
 
+      renderWaliMobileShortcuts();
       return firstAllowed;
     }
 
@@ -1429,16 +2088,661 @@
       document.getElementById("currentPageTitle").textContent = "Akses Belum Diberikan";
     }
 
-    async function openFirstAuthorizedFeature() {
-      const firstAllowed = applyWaliMenuVisibility();
+    async function openWaliHome() {
+      applyWaliMenuVisibility();
 
-      if (!firstAllowed) {
-        showNoAuthorizedFeature();
+      const homeMenu =
+        document.getElementById(WALI_HOME_MENU_ID);
+
+      await loadPage(
+        "beranda.html",
+        homeMenu
+      );
+    }
+
+
+    const WALI_MOBILE_SHORTCUT_META = {
+      "menu-beranda-wali": {
+        icon: "🏠",
+        label: "Beranda"
+      },
+      "menu-akademik-wali": {
+        icon: "📚",
+        label: "Akademik"
+      },
+      "menu-karakter-wali": {
+        icon: "🕌",
+        label: "Karakter"
+      },
+      "menu-pembinaan-wali": {
+        icon: "📋",
+        label: "Pembinaan"
+      },
+      "menu-informasi-penting-wali": {
+        icon: "📌",
+        label: "Informasi"
+      }
+    };
+
+    const WALI_MOBILE_SHORTCUT_ORDER = [
+      "menu-beranda-wali",
+      "menu-akademik-wali",
+      "menu-karakter-wali",
+      "menu-pembinaan-wali",
+      "menu-informasi-penting-wali"
+    ];
+
+    function getWaliMobileShortcutIds() {
+      return WALI_MOBILE_SHORTCUT_ORDER
+        .filter(isWaliMenuAllowed)
+        .slice(0, 5);
+    }
+
+    function renderWaliMobileShortcuts() {
+      const nav =
+        document.getElementById("waliMobileBottomNav");
+
+      if (!nav) return;
+
+      const menuIds =
+        getWaliMobileShortcutIds();
+
+      if (!menuIds.length) {
+        nav.innerHTML = "";
+        nav.classList.remove("ready");
         return;
       }
 
-      await loadPage(firstAllowed.dataset.pageUrl, firstAllowed);
+      nav.style.setProperty(
+        "--wali-shortcut-count",
+        String(menuIds.length)
+      );
+
+      nav.innerHTML = `
+        <div class="wali-mobile-bottom-nav-inner">
+          ${menuIds.map(menuId => {
+            const meta = WALI_MOBILE_SHORTCUT_META[menuId];
+            return `
+              <button
+                type="button"
+                class="wali-mobile-shortcut-btn"
+                data-menu-id="${menuId}"
+                onclick="openWaliMobileShortcut('${menuId}')"
+                aria-label="Buka ${meta.label}"
+                title="${meta.label}"
+              >
+                <span class="wali-mobile-shortcut-icon">${meta.icon}</span>
+                <span class="wali-mobile-shortcut-label">${meta.label}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      nav.classList.add("ready");
+      setWaliMobileBottomActive(
+        menuIdFromUrl(currentPortalPage) ||
+        WALI_HOME_MENU_ID
+      );
     }
+
+    function setWaliMobileBottomActive(menuId = "") {
+      document
+        .querySelectorAll("#waliMobileBottomNav .wali-mobile-shortcut-btn")
+        .forEach(button => {
+          button.classList.toggle(
+            "active",
+            button.dataset.menuId === menuId
+          );
+        });
+    }
+
+    function openWaliMobileShortcut(menuId) {
+      if (!isWaliMenuAllowed(menuId)) return;
+
+      const menu =
+        document.getElementById(menuId);
+
+      const config =
+        WALI_MENU_CONFIG[menuId];
+
+      if (menu && config) {
+        loadPage(config.url, menu);
+      }
+    }
+
+    let waliChatContacts = [];
+    let waliChatInbox = [];
+    let waliChatMode = "inbox";
+    let waliChatRoomId = "";
+    let waliChatOpponent = "";
+    let waliChatRoomListener = null;
+    let waliChatGlobalListenerStarted = false;
+
+    const WALI_CHAT_ALLOWED_ROLES = new Set([
+      "admin",
+      "direktur",
+      "wakil",
+      "supervisor",
+      "konselor",
+      "naqib",
+      "guru",
+      "kesehatan",
+      "sarpras",
+      "layanan",
+      "cla"
+    ]);
+
+    function cleanWaliChatIdentity(value = "") {
+      return String(value)
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toLowerCase();
+    }
+
+    function getWaliChatIdentity() {
+      const account =
+        portalState?.account || {};
+
+      const student =
+        portalState?.student || {};
+
+      const studentName =
+        student.namaAnak ||
+        student.namaSantri ||
+        student.label ||
+        "Santri";
+
+      return String(
+        account.label ||
+        account.nama ||
+        account.displayName ||
+        account.username ||
+        `Abi Ummi ${studentName}`
+      ).trim();
+    }
+
+    function buildWaliChatRoomId(a, b) {
+      return "chat_" + [
+        cleanWaliChatIdentity(a),
+        cleanWaliChatIdentity(b)
+      ].sort().join("_");
+    }
+
+    function encodeWaliChatArg(value = "") {
+      return encodeURIComponent(String(value)).replace(/'/g, "%27");
+    }
+
+    function escapeWaliChatHTML(value = "") {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatWaliChatTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+
+      return new Intl.DateTimeFormat(
+        "id-ID",
+        {
+          day: "2-digit",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit"
+        }
+      ).format(date);
+    }
+
+    async function initializeWaliChat() {
+      try {
+        const snapshot =
+          await db.collection("users").get();
+
+        const meClean =
+          cleanWaliChatIdentity(getWaliChatIdentity());
+
+        waliChatContacts = [];
+
+        snapshot.forEach(doc => {
+          const user = doc.data() || {};
+          const roles = Array.isArray(user.akses)
+            ? user.akses.map(role => String(role).toLowerCase())
+            : [];
+
+          if (!roles.some(role => WALI_CHAT_ALLOWED_ROLES.has(role))) {
+            return;
+          }
+
+          const actualName =
+            user.label ||
+            user.nama ||
+            user.username ||
+            doc.id;
+
+          if (
+            !actualName ||
+            cleanWaliChatIdentity(actualName) === meClean
+          ) {
+            return;
+          }
+
+          waliChatContacts.push({
+            actualName,
+            displayName:
+              user.label ||
+              user.nama ||
+              (user.username ? `@${user.username}` : doc.id),
+            username: user.username || doc.id,
+            roles,
+            photo:
+              user.fotoProfil ||
+              user.foto ||
+              ""
+          });
+        });
+
+        waliChatContacts.sort((a, b) =>
+          a.displayName.localeCompare(b.displayName, "id")
+        );
+
+        listenToWaliChatRooms();
+      } catch (error) {
+        console.error("Live Chat Wali gagal disiapkan:", error);
+      }
+    }
+
+    function updateWaliChatBadges(total = 0) {
+      [
+        "waliChatBadgeMobile",
+        "waliChatBadgeDesktop"
+      ].forEach(id => {
+        const badge = document.getElementById(id);
+        if (!badge) return;
+
+        badge.textContent =
+          total > 99 ? "99+" : String(total);
+
+        badge.style.display =
+          total > 0 ? "grid" : "none";
+      });
+    }
+
+    function listenToWaliChatRooms() {
+      if (waliChatGlobalListenerStarted) return;
+      waliChatGlobalListenerStarted = true;
+
+      dbRT
+        .ref("cahaya_app/pesan_global")
+        .on("value", snapshot => {
+          const rooms = snapshot.val() || {};
+          const me = getWaliChatIdentity();
+          const meClean = cleanWaliChatIdentity(me);
+          const inbox = [];
+          let unreadTotal = 0;
+
+          const broadcastMessages = rooms.room_broadcast_wali;
+          if (broadcastMessages && typeof broadcastMessages === "object") {
+            const messages = Object.entries(broadcastMessages)
+              .map(([id, message]) => ({ id, ...(message || {}) }))
+              .filter(message => message.waktu)
+              .sort((a, b) => new Date(a.waktu) - new Date(b.waktu));
+
+            if (messages.length) {
+              const lastMessage = messages[messages.length - 1];
+              const lastRead = localStorage.getItem("chat_read_room_broadcast_wali") || "0";
+              const unread = new Date(lastMessage.waktu) > new Date(lastRead);
+
+              if (unread) unreadTotal += 1;
+
+              inbox.push({
+                roomId: "room_broadcast_wali",
+                actualName: "BROADCAST_WALI",
+                displayName: "Pengumuman Pesantren",
+                lastMessage,
+                unread,
+                broadcast: true
+              });
+            }
+          }
+
+          Object.entries(rooms).forEach(([roomId, rawMessages]) => {
+            if (
+              roomId === "room_broadcast_wali" ||
+              !roomId.includes(meClean) ||
+              !rawMessages ||
+              typeof rawMessages !== "object"
+            ) {
+              return;
+            }
+
+            const messages = Object.entries(rawMessages)
+              .map(([id, message]) => ({ id, ...(message || {}) }))
+              .filter(message => message.waktu)
+              .sort((a, b) => new Date(a.waktu) - new Date(b.waktu));
+
+            if (!messages.length) return;
+
+            const lastMessage = messages[messages.length - 1];
+            const otherMessage = messages.find(message =>
+              message.pengirim && message.pengirim !== me
+            );
+
+            let opponent =
+              otherMessage?.pengirim ||
+              "Pengurus Pesantren";
+
+            const knownContact = waliChatContacts.find(contact =>
+              cleanWaliChatIdentity(contact.actualName) ===
+              cleanWaliChatIdentity(opponent)
+            );
+
+            if (knownContact) {
+              opponent = knownContact.displayName;
+            }
+
+            const lastRead =
+              localStorage.getItem(`chat_read_${roomId}`) || "0";
+
+            const unread =
+              lastMessage.pengirim !== me &&
+              new Date(lastMessage.waktu) > new Date(lastRead);
+
+            if (unread) unreadTotal += 1;
+
+            inbox.push({
+              roomId,
+              actualName: otherMessage?.pengirim || opponent,
+              displayName: opponent,
+              lastMessage,
+              unread,
+              broadcast: false
+            });
+          });
+
+          waliChatInbox = inbox.sort((a, b) =>
+            new Date(b.lastMessage.waktu) -
+            new Date(a.lastMessage.waktu)
+          );
+
+          updateWaliChatBadges(unreadTotal);
+
+          if (
+            document.getElementById("waliChatWindow")?.style.display === "flex" &&
+            !waliChatRoomId
+          ) {
+            renderWaliChatList();
+          }
+        });
+    }
+
+    function toggleWaliChat() {
+      const windowElement =
+        document.getElementById("waliChatWindow");
+
+      const isOpen =
+        windowElement.style.display === "flex";
+
+      if (isOpen) {
+        closeWaliChatRoomListener();
+        windowElement.style.display = "none";
+        return;
+      }
+
+      windowElement.style.display = "flex";
+      showWaliChatList();
+    }
+
+    function closeWaliChatRoomListener() {
+      if (waliChatRoomListener && waliChatRoomId) {
+        dbRT
+          .ref(`cahaya_app/pesan_global/${waliChatRoomId}`)
+          .off("value", waliChatRoomListener);
+      }
+
+      waliChatRoomListener = null;
+    }
+
+    function showWaliChatList() {
+      closeWaliChatRoomListener();
+      waliChatRoomId = "";
+      waliChatOpponent = "";
+
+      document.getElementById("waliChatBackButton").style.display = "none";
+      document.getElementById("waliChatHeaderTitle").textContent = "Live Chat CAHAYA";
+      document.getElementById("waliChatHeaderSubtitle").textContent = "Komunikasi wali dan pengurus pesantren";
+      document.getElementById("waliChatTabs").style.display = "flex";
+      document.getElementById("waliChatSearchWrap").style.display = "block";
+      document.getElementById("waliChatList").style.display = "block";
+      document.getElementById("waliChatMessages").style.display = "none";
+      document.getElementById("waliChatFooter").style.display = "none";
+
+      switchWaliChatTab(waliChatMode);
+    }
+
+    function switchWaliChatTab(mode) {
+      waliChatMode = mode === "contacts" ? "contacts" : "inbox";
+
+      document.getElementById("waliInboxTab").classList.toggle("active", waliChatMode === "inbox");
+      document.getElementById("waliContactsTab").classList.toggle("active", waliChatMode === "contacts");
+      document.getElementById("waliChatSearch").value = "";
+
+      renderWaliChatList();
+    }
+
+    function filterWaliChatList() {
+      renderWaliChatList(
+        document.getElementById("waliChatSearch").value
+      );
+    }
+
+    function renderWaliChatList(searchValue = "") {
+      const container =
+        document.getElementById("waliChatList");
+
+      if (!container) return;
+
+      const query =
+        String(searchValue).trim().toLowerCase();
+
+      const items = waliChatMode === "contacts"
+        ? waliChatContacts
+            .filter(contact =>
+              !query ||
+              contact.displayName.toLowerCase().includes(query) ||
+              contact.username.toLowerCase().includes(query)
+            )
+            .map(contact => ({
+              actualName: contact.actualName,
+              displayName: contact.displayName,
+              preview: contact.roles.join(" • "),
+              roomId: buildWaliChatRoomId(
+                getWaliChatIdentity(),
+                contact.actualName
+              ),
+              unread: false,
+              broadcast: false
+            }))
+        : waliChatInbox
+            .filter(item =>
+              !query ||
+              item.displayName.toLowerCase().includes(query) ||
+              String(item.lastMessage?.teks || "").toLowerCase().includes(query)
+            )
+            .map(item => ({
+              ...item,
+              preview: item.lastMessage?.teks || "Belum ada pesan"
+            }));
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div class="wali-chat-empty">
+            ${waliChatMode === "contacts"
+              ? "Belum ada kontak pengurus yang tersedia."
+              : "Belum ada riwayat percakapan."}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map(item => {
+        const initial = item.broadcast
+          ? "📢"
+          : escapeWaliChatHTML(item.displayName.replace("@", "").charAt(0).toUpperCase() || "C");
+
+        return `
+          <button
+            type="button"
+            class="wali-chat-list-item ${item.broadcast ? "broadcast" : ""}"
+            onclick="openWaliChatRoom(
+              '${encodeWaliChatArg(item.actualName)}',
+              '${encodeWaliChatArg(item.displayName)}',
+              '${encodeWaliChatArg(item.roomId)}',
+              ${item.broadcast ? "true" : "false"}
+            )"
+          >
+            <span class="wali-chat-list-avatar">${initial}</span>
+            <span class="wali-chat-list-copy">
+              <strong>${escapeWaliChatHTML(item.displayName)}</strong>
+              <span>${escapeWaliChatHTML(item.preview)}</span>
+            </span>
+            ${item.unread ? '<span class="wali-chat-unread-dot"></span>' : ""}
+          </button>
+        `;
+      }).join("");
+    }
+
+    function openWaliChatRoom(
+      encodedActualName,
+      encodedDisplayName,
+      encodedRoomId,
+      broadcast = false
+    ) {
+      closeWaliChatRoomListener();
+
+      waliChatOpponent =
+        decodeURIComponent(encodedActualName);
+
+      const displayName =
+        decodeURIComponent(encodedDisplayName);
+
+      waliChatRoomId =
+        decodeURIComponent(encodedRoomId);
+
+      localStorage.setItem(
+        `chat_read_${waliChatRoomId}`,
+        new Date().toISOString()
+      );
+
+      document.getElementById("waliChatBackButton").style.display = "grid";
+      document.getElementById("waliChatHeaderTitle").textContent = displayName;
+      document.getElementById("waliChatHeaderSubtitle").textContent = broadcast
+        ? "Pengumuman resmi pesantren"
+        : "Percakapan pribadi";
+      document.getElementById("waliChatTabs").style.display = "none";
+      document.getElementById("waliChatSearchWrap").style.display = "none";
+      document.getElementById("waliChatList").style.display = "none";
+      document.getElementById("waliChatMessages").style.display = "flex";
+      document.getElementById("waliChatFooter").style.display = broadcast ? "none" : "flex";
+
+      const roomRef =
+        dbRT.ref(`cahaya_app/pesan_global/${waliChatRoomId}`);
+
+      waliChatRoomListener = snapshot => {
+        const messages = snapshot.val() || {};
+        renderWaliChatMessages(messages);
+
+        localStorage.setItem(
+          `chat_read_${waliChatRoomId}`,
+          new Date().toISOString()
+        );
+      };
+
+      roomRef.on("value", waliChatRoomListener);
+    }
+
+    function renderWaliChatMessages(rawMessages = {}) {
+      const container =
+        document.getElementById("waliChatMessages");
+
+      const me =
+        getWaliChatIdentity();
+
+      const messages = Object.entries(rawMessages)
+        .map(([id, message]) => ({ id, ...(message || {}) }))
+        .filter(message => message.waktu)
+        .sort((a, b) => new Date(a.waktu) - new Date(b.waktu));
+
+      if (!messages.length) {
+        container.innerHTML = `
+          <div class="wali-chat-empty">
+            Belum ada pesan. Mulai percakapan dengan pengurus pesantren.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = messages.map(message => {
+        const self = message.pengirim === me;
+
+        return `
+          <div class="wali-chat-message ${self ? "self" : "other"}">
+            <div class="wali-chat-message-info">
+              ${escapeWaliChatHTML(message.pengirim || "Pengurus")} •
+              ${escapeWaliChatHTML(formatWaliChatTime(message.waktu))}
+            </div>
+            ${escapeWaliChatHTML(message.teks || "")}
+          </div>
+        `;
+      }).join("");
+
+      container.scrollTop =
+        container.scrollHeight;
+    }
+
+    function autoResizeWaliChatInput() {
+      const input =
+        document.getElementById("waliChatInput");
+
+      input.style.height = "43px";
+      input.style.height =
+        Math.min(input.scrollHeight, 110) + "px";
+    }
+
+    function handleWaliChatEnter(event) {
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        sendWaliChatMessage();
+      }
+    }
+
+    function sendWaliChatMessage() {
+      const input =
+        document.getElementById("waliChatInput");
+
+      const text =
+        String(input.value || "").trim();
+
+      if (!text || !waliChatRoomId) return;
+
+      dbRT
+        .ref(`cahaya_app/pesan_global/${waliChatRoomId}`)
+        .push({
+          teks: text,
+          pengirim: getWaliChatIdentity(),
+          waktu: new Date().toISOString()
+        });
+
+      input.value = "";
+      autoResizeWaliChatInput();
+      input.focus();
+    }
+
 
     const CAHAYA_LOGOUT_LOCK_KEY =
       "cahayaLogoutUntil";
@@ -1798,6 +3102,10 @@
         url
       );
 
+      setWaliMobileBottomActive(
+        menuId || menuIdFromUrl(url)
+      );
+
       if (
         window.innerWidth <= 900 &&
         document.getElementById(
@@ -1815,17 +3123,18 @@
     }
 
     function toggleSidebar() {
-      document.getElementById(
-        "mainSidebar"
-      ).classList.toggle(
-        "open"
-      );
+      const sidebar =
+        document.getElementById("mainSidebar");
 
-      document.querySelector(
-        ".mobile-menu-overlay"
-      ).classList.toggle(
-        "open"
-      );
+      const overlay =
+        document.querySelector(".mobile-menu-overlay");
+
+      const willOpen =
+        !sidebar.classList.contains("open");
+
+      sidebar.classList.toggle("open", willOpen);
+      overlay.classList.toggle("open", willOpen);
+      document.body.classList.toggle("mobile-sidebar-open", willOpen);
     }
 
     async function logout() {
@@ -1912,7 +3221,9 @@
           await preparePortal();
 
           await loadWaliAuthorization();
-          await openFirstAuthorizedFeature();
+          renderWaliMobileShortcuts();
+          await openWaliHome();
+          await initializeWaliChat();
         } catch (error) {
           console.error(
             "Portal Wali gagal dibuka:",
