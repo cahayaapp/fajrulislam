@@ -1,1954 +1,3221 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  />
+  >
 
-  <title>CAHAYA APP – Portal Wali Santri</title>
+  <title>CAHAYA APP — Pesantren Cahaya Fajrul Islam</title>
 
   <link
     rel="icon"
     type="image/png"
-    href="../../assets/logofi.png"
-  />
+    href="assets/logofi.png"
+  >
+
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
+
+  <meta
+    name="theme-color"
+    content="#075eea"
+  >
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
 
   <link
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900;1000&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
     rel="stylesheet"
-  />
+  >
 
   <style>
-    /* =========================================================
-       CAHAYA APP — PORTAL WALI SANTRI
-       Super Premium Fresh EdTech • Ruangguru Inspired
-       Sistem lama dipertahankan sepenuhnya
-       ========================================================= */
-
     :root {
-      --wali-primary: #2878ff;
-      --wali-primary-dark: #1559d6;
-      --wali-primary-deep: #0f47ad;
-      --wali-cyan: #1ac6e7;
-      --wali-purple: #7768f6;
-      --wali-green: #29c58d;
-      --wali-orange: #ff9f43;
-      --wali-red: #ff5f70;
+      --blue-950: #06379f;
+      --blue-900: #074ac5;
+      --blue-800: #075eea;
+      --blue-700: #1479f4;
+      --blue-600: #2098f6;
+      --cyan-500: #23d5e8;
+      --cyan-300: #85f4e5;
 
-      --wali-ink: #152347;
-      --wali-text: #33425f;
-      --wali-muted: #74829c;
-      --wali-line: #e2eaf6;
-      --wali-soft: #f4f8ff;
-      --wali-card: #ffffff;
+      --ink-950: #0f2350;
+      --ink-800: #1a3362;
+      --ink-600: #536886;
+      --ink-400: #8292aa;
 
-      --sidebar-width: 292px;
-      --topbar-height: 78px;
-      --mobile-bottom-nav-height: 74px;
+      --line: #dce8f7;
+      --soft-blue: #eef6ff;
+      --soft-cyan: #eefcfb;
+      --white: #ffffff;
 
-      --radius-sm: 12px;
-      --radius-md: 16px;
-      --radius-lg: 22px;
-      --radius-xl: 28px;
-
-      --shadow-soft:
-        0 10px 28px rgba(35, 78, 160, .075);
+      --shadow-panel:
+        0 30px 70px rgba(21, 72, 159, .18);
 
       --shadow-card:
-        0 18px 45px rgba(35, 78, 160, .11);
+        0 14px 32px rgba(27, 78, 154, .10);
 
-      --shadow-strong:
-        0 25px 65px rgba(27, 58, 121, .18);
+      --shadow-button:
+        0 16px 34px rgba(16, 88, 221, .27);
     }
 
     * {
       box-sizing: border-box;
-    }
-
-    html,
-    body {
-      width: 100%;
-      height: 100%;
       margin: 0;
       padding: 0;
     }
 
+    html {
+      min-height: 100%;
+      background: #eef5ff;
+    }
+
     body {
-      display: flex;
-      overflow: hidden;
-      color: var(--wali-text);
-      font-family: "Nunito", "Plus Jakarta Sans", sans-serif;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      color: var(--ink-950);
+      font-family:
+        "Nunito",
+        "Plus Jakarta Sans",
+        sans-serif;
       background:
-        radial-gradient(
-          circle at 72% -10%,
-          rgba(26, 198, 231, .13),
-          transparent 27%
-        ),
-        radial-gradient(
-          circle at 100% 100%,
-          rgba(119, 104, 246, .09),
-          transparent 28%
-        ),
         linear-gradient(
           180deg,
-          #f2f7ff 0%,
-          #f8fbff 100%
+          #0862e7 0,
+          #168bf2 34%,
+          #f4f8ff 34%,
+          #f6f9ff 100%
         );
       -webkit-tap-highlight-color: transparent;
     }
 
     button,
-    input,
-    select {
+    input {
       font: inherit;
     }
 
-    button,
-    a {
+    button {
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* =========================================================
-       SIDEBAR
-       ========================================================= */
-
-    .sidebar {
-      width: var(--sidebar-width);
-      height: 100%;
-      flex: 0 0 var(--sidebar-width);
+    .app-shell {
+      width: 100%;
+      min-height: 100dvh;
       position: relative;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
       overflow: hidden;
-      background:
-        radial-gradient(
-          circle at 14% 0%,
-          rgba(26, 198, 231, .10),
-          transparent 24%
-        ),
-        #ffffff;
-      border-right: 1px solid rgba(220, 230, 244, .94);
-      box-shadow:
-        13px 0 36px rgba(36, 74, 143, .055);
-      transition:
-        transform .32s cubic-bezier(.22, 1, .36, 1),
-        left .32s cubic-bezier(.22, 1, .36, 1);
-    }
-
-    .sidebar::after {
-      content: "";
-      width: 1px;
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      pointer-events: none;
       background:
         linear-gradient(
           180deg,
-          rgba(40, 120, 255, .17),
-          rgba(26, 198, 231, .04),
-          transparent 78%
+          transparent 0,
+          transparent 38%,
+          #f5f9ff 38%,
+          #f8fbff 100%
         );
     }
 
-    .sidebar-top {
-      flex-shrink: 0;
-      padding: 20px 18px 15px;
-    }
+    /* =========================================================
+       HERO
+       ========================================================= */
 
-    .brand-card {
+    .hero {
+      min-height: 520px;
       position: relative;
       overflow: hidden;
-      padding: 16px;
+      padding:
+        calc(30px + env(safe-area-inset-top))
+        28px
+        110px;
       color: #ffffff;
-      border-radius: 22px;
       background:
         radial-gradient(
-          circle at 90% 5%,
-          rgba(255,255,255,.22),
-          transparent 28%
+          circle at 78% 18%,
+          rgba(255,255,255,.19),
+          transparent 17%
+        ),
+        radial-gradient(
+          circle at 95% 55%,
+          rgba(33,216,229,.30),
+          transparent 30%
         ),
         linear-gradient(
-          135deg,
-          #176cf1 0%,
-          var(--wali-primary) 52%,
-          var(--wali-cyan) 135%
+          145deg,
+          #043aa8 0%,
+          #075eea 43%,
+          #16bde3 108%
         );
+      border-radius:
+        0 0 54px 54px;
       box-shadow:
-        0 18px 38px rgba(40, 120, 255, .23);
+        0 28px 65px rgba(6,73,183,.25);
     }
 
-    .brand-card::before {
+    .hero::before {
       content: "";
-      width: 94px;
-      height: 94px;
+      width: 290px;
+      height: 290px;
       position: absolute;
-      right: -52px;
-      bottom: -54px;
-      border: 17px solid rgba(255,255,255,.09);
+      top: -132px;
+      right: -98px;
+      border: 46px solid rgba(255,255,255,.07);
       border-radius: 50%;
+      pointer-events: none;
     }
 
-    .brand-card::after {
+    .hero::after {
       content: "";
-      width: 58px;
-      height: 58px;
+      width: 120%;
+      height: 135px;
       position: absolute;
-      top: -32px;
-      right: 52px;
-      border: 11px solid rgba(255,255,255,.08);
+      right: -10%;
+      bottom: -90px;
       border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      transform: rotate(-2deg);
+      pointer-events: none;
     }
 
-    .brand-main {
+    .hero-sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .9;
+    }
+
+    .spark {
+      width: 5px;
+      height: 5px;
+      position: absolute;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 0 16px rgba(255,255,255,.95);
+    }
+
+    .spark.s1 {
+      top: 122px;
+      right: 28%;
+    }
+
+    .spark.s2 {
+      top: 218px;
+      right: 43%;
+    }
+
+    .spark.s3 {
+      top: 310px;
+      right: 14%;
+    }
+
+    .brand-row {
+      min-height: 82px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 17px;
       position: relative;
-      z-index: 1;
-    }
-
-    .brand-logo-shell {
-      width: 55px;
-      height: 55px;
-      flex: 0 0 55px;
-      display: grid;
-      place-items: center;
-      border: 1px solid rgba(255,255,255,.33);
-      border-radius: 18px;
-      background: rgba(255,255,255,.94);
-      box-shadow:
-        0 11px 24px rgba(13, 63, 156, .18);
+      z-index: 5;
     }
 
     .brand-logo {
-      width: 43px;
-      height: 43px;
-      object-fit: contain;
-      filter:
-        drop-shadow(
-          0 5px 9px rgba(15, 76, 166, .13)
-        );
-    }
-
-    .brand-text {
-      min-width: 0;
-    }
-
-    .brand-kicker {
-      display: block;
-      margin-bottom: 3px;
-      color: rgba(255,255,255,.72);
-      font-size: .55rem;
-      font-weight: 1000;
-      line-height: 1.2;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-    }
-
-    .brand-text h1 {
-      margin: 0;
-      color: #ffffff;
-      font-size: 1.25rem;
-      font-weight: 1000;
-      line-height: 1.05;
-      letter-spacing: -.25px;
-    }
-
-    .brand-text p {
-      margin: 4px 0 0;
-      color: #e8f5ff;
-      font-size: .64rem;
-      font-weight: 800;
-      line-height: 1.3;
-    }
-
-    .brand-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      position: relative;
-      z-index: 1;
-      margin-top: 14px;
-      padding: 9px 10px;
-      color: rgba(255,255,255,.88);
-      font-size: .61rem;
-      font-weight: 800;
-      line-height: 1.35;
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 13px;
-      background: rgba(255,255,255,.10);
-      backdrop-filter: blur(8px);
-    }
-
-    .brand-status-dot {
-      width: 9px;
-      height: 9px;
-      flex: 0 0 9px;
-      border: 2px solid rgba(255,255,255,.9);
-      border-radius: 50%;
-      background: #56e2a9;
-      box-shadow:
-        0 0 0 4px rgba(86, 226, 169, .17);
-    }
-
-    .sidebar-scroll {
-      flex: 1;
-      min-height: 0;
-      overflow-x: hidden;
-      overflow-y: auto;
-      padding: 3px 11px 22px;
-      scrollbar-width: thin;
-      scrollbar-color: #ccd9ec transparent;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .sidebar-scroll::-webkit-scrollbar {
-      width: 5px;
-    }
-
-    .sidebar-scroll::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .sidebar-scroll::-webkit-scrollbar-thumb {
-      background: #ccd9ec;
-      border-radius: 999px;
-    }
-
-    .nav-menu {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .menu-group {
-      margin: 0 0 12px;
-    }
-
-    .group-label {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      margin: 0 0 6px;
-      padding: 12px 12px 4px;
-      color: #8c9aaf;
-      font-size: .58rem;
-      font-weight: 1000;
-      line-height: 1.2;
-      letter-spacing: 1.12px;
-      text-transform: uppercase;
-    }
-
-    .group-label::before {
-      content: "";
-      width: 5px;
-      height: 5px;
-      flex: 0 0 5px;
-      border-radius: 50%;
-      background:
-        linear-gradient(
-          135deg,
-          var(--wali-primary),
-          var(--wali-cyan)
-        );
-      box-shadow:
-        0 0 0 3px rgba(40, 120, 255, .08);
-    }
-
-    .nav-item {
-      min-height: 47px;
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      position: relative;
-      margin: 2px 0;
-      padding: 10px 13px;
-      overflow: hidden;
-      color: #596985;
-      font-size: .81rem;
-      font-weight: 850;
-      line-height: 1.3;
-      text-decoration: none;
-      cursor: pointer;
-      border: 1px solid transparent;
-      border-radius: 14px;
-      background: transparent;
-      transition:
-        color .18s ease,
-        background .18s ease,
-        border-color .18s ease,
-        transform .18s ease,
-        box-shadow .18s ease;
-    }
-
-    .nav-icon {
-      width: 31px;
-      height: 31px;
-      flex: 0 0 31px;
+      width: 74px;
+      height: 74px;
+      flex: 0 0 74px;
       display: grid;
       place-items: center;
-      font-size: .96rem;
-      border-radius: 10px;
-      background: #eff5ff;
-      transition: .18s ease;
+      overflow: hidden;
+      padding: 7px;
+      border: 2px solid rgba(255,255,255,.70);
+      border-radius: 23px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.98),
+          rgba(242,248,255,.91)
+        );
+      box-shadow:
+        0 18px 36px rgba(2,44,136,.25);
     }
 
-    .nav-label {
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    .brand-copy {
       min-width: 0;
       flex: 1;
     }
 
-    .nav-arrow {
-      margin-left: auto;
-      color: #b4c0d1;
-      font-size: 1.08rem;
-      font-weight: 800;
-      transition: .18s ease;
-    }
-
-    .nav-item:hover {
-      color: var(--wali-primary-dark);
-      border-color: #e0eafb;
-      background: #f3f7ff;
-      transform: translateX(2px);
-    }
-
-    .nav-item:hover .nav-icon {
-      color: var(--wali-primary);
-      background: #e5f0ff;
-    }
-
-    .nav-item:hover .nav-arrow {
-      color: var(--wali-primary);
-      transform: translateX(2px);
-    }
-
-    .nav-item.active {
+    .brand-copy h1 {
       color: #ffffff;
-      border-color: rgba(40, 120, 255, .30);
+      font-size: clamp(1.55rem, 5vw, 2rem);
+      font-weight: 1000;
+      line-height: 1.05;
+      letter-spacing: -.6px;
+    }
+
+    .brand-copy p {
+      margin-top: 7px;
+      color: rgba(255,255,255,.82);
+      font-size: clamp(.63rem, 2.6vw, .82rem);
+      font-weight: 900;
+      line-height: 1.35;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+    }
+
+    .hero-content {
+      max-width: 650px;
+      position: relative;
+      z-index: 5;
+      margin-top: 64px;
+    }
+
+    .hero-pill {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      color: #ffffff;
+      font-size: clamp(.66rem, 2.7vw, .80rem);
+      font-weight: 900;
+      letter-spacing: .7px;
+      border: 1px solid rgba(255,255,255,.30);
+      border-radius: 999px;
+      background: rgba(255,255,255,.11);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .hero-pill svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+    }
+
+    .hero-title {
+      max-width: 540px;
+      margin-top: 22px;
+      color: #ffffff;
+      font-size: clamp(2.25rem, 9vw, 4.6rem);
+      font-weight: 1000;
+      line-height: .98;
+      letter-spacing: -1.7px;
+      text-wrap: balance;
+    }
+
+    .hero-title span {
+      display: block;
+      margin-top: 9px;
+      color: transparent;
       background:
         linear-gradient(
-          135deg,
-          var(--wali-primary) 0%,
-          #3e87ff 55%,
-          var(--wali-cyan) 135%
+          90deg,
+          #69f4ff,
+          #73f7d0
         );
-      box-shadow:
-        0 10px 22px rgba(40, 120, 255, .22);
-      transform: none;
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow:
+        0 11px 28px rgba(35,216,231,.20);
     }
 
-    .nav-item.active::before {
+    .hero-line {
+      width: min(300px, 75%);
+      height: 2px;
+      position: relative;
+      margin-top: 23px;
+      background:
+        linear-gradient(
+          90deg,
+          #55eeff,
+          rgba(85,238,255,0)
+        );
+    }
+
+    .hero-line::after {
       content: "";
-      width: 4px;
-      height: 23px;
+      width: 9px;
+      height: 9px;
       position: absolute;
       top: 50%;
-      left: 5px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.88);
+      left: 68%;
+      border-radius: 50%;
+      background: #c8ffff;
+      box-shadow:
+        0 0 18px #8dfcff;
       transform: translateY(-50%);
     }
 
-    .nav-item.active .nav-icon {
-      color: var(--wali-primary-dark);
-      background: rgba(255,255,255,.93);
-      box-shadow:
-        0 6px 12px rgba(19, 73, 157, .14);
-    }
-
-    .nav-item.active .nav-arrow {
-      color: rgba(255,255,255,.82);
-    }
-
-    [hidden] {
-      display: none !important;
-    }
-
-    .menu-access-empty {
-      display: grid;
-      place-items: center;
-      gap: 7px;
-      margin: 12px 4px;
-      padding: 22px 15px;
-      color: #65758f;
-      text-align: center;
-      border: 1px dashed #cdd9eb;
-      border-radius: 16px;
-      background: #f8fbff;
-    }
-
-    .menu-access-empty > span {
-      font-size: 1.45rem;
-    }
-
-    .menu-access-empty strong {
-      color: var(--wali-ink);
-      font-size: .76rem;
-      font-weight: 1000;
-    }
-
-    .menu-access-empty small {
-      font-size: .62rem;
-      font-weight: 750;
-      line-height: 1.5;
-    }
-
-    .sidebar-bottom {
-      flex-shrink: 0;
-      padding: 13px 14px 16px;
-      border-top: 1px solid #e8eff8;
-      background: rgba(255,255,255,.97);
-      box-shadow:
-        0 -12px 28px rgba(39, 77, 144, .045);
-    }
-
-    .guardian-mini-card {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-      padding: 10px;
-      border: 1px solid #e2eaf6;
-      border-radius: 14px;
-      background:
-        linear-gradient(
-          135deg,
-          #f7faff,
-          #f1f8ff
-        );
-    }
-
-    .guardian-mini-icon {
-      width: 38px;
-      height: 38px;
-      flex: 0 0 38px;
-      display: grid;
-      place-items: center;
-      border-radius: 12px;
-      background:
-        linear-gradient(
-          135deg,
-          #e8f2ff,
-          #e9fbff
-        );
-      color: var(--wali-primary);
-      font-size: 1rem;
-      box-shadow:
-        inset 0 0 0 1px #d8e7fb;
-    }
-
-    .guardian-mini-copy {
-      min-width: 0;
-      flex: 1;
-    }
-
-    .guardian-mini-copy strong,
-    .guardian-mini-copy span {
-      display: block;
-    }
-
-    .guardian-mini-copy strong {
-      color: var(--wali-ink);
-      font-size: .7rem;
-      font-weight: 1000;
-    }
-
-    .guardian-mini-copy span {
-      margin-top: 2px;
-      color: var(--wali-muted);
-      font-size: .57rem;
-      font-weight: 750;
-      line-height: 1.35;
-    }
-
-    .btn-logout {
-      width: 100%;
-      min-height: 43px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 14px;
-      color: #d84456;
-      font-size: .74rem;
-      font-weight: 1000;
-      letter-spacing: .15px;
-      cursor: pointer;
-      border: 1px solid #ffd7dc;
-      border-radius: 13px;
-      background: #fff3f5;
-      transition: .2s ease;
-    }
-
-    .btn-logout:hover {
-      color: #ffffff;
-      border-color: transparent;
-      background:
-        linear-gradient(
-          135deg,
-          #ff6877,
-          #e94759
-        );
-      box-shadow:
-        0 10px 22px rgba(233, 71, 89, .22);
-      transform: translateY(-1px);
+    .hero-desc {
+      max-width: 385px;
+      margin-top: 18px;
+      color: rgba(255,255,255,.86);
+      font-size: clamp(.84rem, 3.4vw, 1rem);
+      font-weight: 700;
+      line-height: 1.55;
     }
 
     /* =========================================================
-       MAIN WORKSPACE
+       ILUSTRASI MASJID
        ========================================================= */
 
-    .main-content {
-      min-width: 0;
-      height: 100%;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
+    .mosque-art {
+      width: min(49vw, 510px);
+      position: absolute;
+      right: -5%;
+      bottom: 42px;
+      z-index: 2;
+      opacity: .96;
+      filter:
+        drop-shadow(
+          0 22px 34px rgba(0,35,115,.25)
+        );
+      pointer-events: none;
     }
 
-    .main-content::before {
-      content: "";
-      height: 175px;
+    .mosque-art .glow-window {
+      filter:
+        drop-shadow(
+          0 0 10px rgba(255,224,155,.75)
+        );
+    }
+
+    .hero-leaves {
+      width: 170px;
+      height: 170px;
       position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
+      right: -32px;
+      bottom: -4px;
+      z-index: 3;
+      opacity: .38;
+      transform: rotate(-10deg);
       pointer-events: none;
+    }
+
+    /* =========================================================
+       PANEL PUTIH
+       ========================================================= */
+
+    .content-wrap {
+      width: min(100%, 980px);
+      position: relative;
+      z-index: 10;
+      margin: -52px auto 0;
+      padding:
+        0 18px
+        calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .welcome-panel {
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      padding:
+        42px 22px 24px;
+      border: 1px solid rgba(255,255,255,.94);
+      border-radius:
+        44px 44px 34px 34px;
       background:
+        radial-gradient(
+          circle at 88% 0,
+          rgba(35,213,232,.08),
+          transparent 23%
+        ),
         linear-gradient(
           180deg,
-          rgba(226, 239, 255, .70),
+          rgba(255,255,255,.99),
+          rgba(248,251,255,.99)
+        );
+      box-shadow:
+        var(--shadow-panel);
+    }
+
+    .welcome-panel::before {
+      content: "";
+      width: 86%;
+      height: 26px;
+      position: absolute;
+      top: -13px;
+      left: 7%;
+      border-radius: 50%;
+      background:
+        linear-gradient(
+          90deg,
+          rgba(37,217,238,.28),
+          rgba(255,255,255,.92),
+          rgba(39,238,203,.30)
+        );
+      filter: blur(7px);
+      opacity: .7;
+      pointer-events: none;
+    }
+
+    .panel-emblem {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      color: var(--blue-700);
+      border: 6px solid rgba(255,255,255,.96);
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 12px 28px rgba(23,92,195,.16);
+      transform: translateX(-50%);
+    }
+
+    .panel-emblem svg {
+      width: 31px;
+      height: 31px;
+    }
+
+    .welcome-kicker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      color: var(--blue-700);
+      font-size: clamp(.66rem, 2.7vw, .81rem);
+      font-weight: 1000;
+      letter-spacing: .65px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .welcome-kicker::before,
+    .welcome-kicker::after {
+      content: "";
+      width: 24px;
+      height: 3px;
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          90deg,
+          var(--blue-700),
+          var(--cyan-500)
+        );
+    }
+
+    .welcome-title {
+      margin-top: 8px;
+      color: var(--ink-950);
+      font-size: clamp(2rem, 8vw, 3rem);
+      font-weight: 1000;
+      line-height: 1.05;
+      letter-spacing: -1.2px;
+      text-align: center;
+    }
+
+    .welcome-title::after {
+      content: "";
+      width: 50px;
+      height: 4px;
+      display: block;
+      margin: 13px auto 0;
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          90deg,
+          var(--blue-700),
+          var(--cyan-500)
+        );
+    }
+
+    .portal-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 13px;
+      margin-top: 28px;
+    }
+
+    .portal-option {
+      min-height: 190px;
+      position: relative;
+      overflow: hidden;
+      padding: 18px 15px 17px;
+      cursor: pointer;
+      text-align: left;
+      border: 1px solid #d6e6fa;
+      border-radius: 24px;
+      background:
+        linear-gradient(
+          145deg,
+          #f8fbff,
+          #eef5ff
+        );
+      box-shadow:
+        var(--shadow-card);
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+    }
+
+    .portal-option:nth-child(2) {
+      border-color: #d1efec;
+      background:
+        linear-gradient(
+          145deg,
+          #f8ffff,
+          #ecfbf8
+        );
+    }
+
+    .portal-option:hover {
+      border-color: #b9d4f7;
+      box-shadow:
+        0 17px 38px rgba(27,78,154,.14);
+      transform: translateY(-3px);
+    }
+
+    .portal-option::after {
+      content: "";
+      width: 92px;
+      height: 92px;
+      position: absolute;
+      right: -31px;
+      bottom: -39px;
+      border: 18px solid rgba(34,130,240,.06);
+      border-radius: 50%;
+    }
+
+    .portal-option:nth-child(2)::after {
+      border-color: rgba(25,192,176,.07);
+    }
+
+    .option-icon {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      color: var(--blue-700);
+      border-radius: 17px;
+      background: #ffffff;
+      box-shadow:
+        0 12px 24px rgba(37,105,196,.13);
+    }
+
+    .portal-option:nth-child(2)
+    .option-icon {
+      color: #0aaba5;
+    }
+
+    .option-icon svg {
+      width: 27px;
+      height: 27px;
+    }
+
+    .portal-option h3 {
+      margin-top: 13px;
+      color: var(--ink-950);
+      font-size: clamp(.9rem, 3.6vw, 1.09rem);
+      font-weight: 1000;
+      line-height: 1.12;
+    }
+
+    .portal-option h3::after {
+      content: "";
+      width: 31px;
+      height: 3px;
+      display: block;
+      margin-top: 9px;
+      border-radius: 999px;
+      background: var(--blue-600);
+    }
+
+    .portal-option:nth-child(2)
+    h3::after {
+      background: #23c0b5;
+    }
+
+    .portal-option p {
+      margin-top: 10px;
+      color: var(--ink-600);
+      font-size: clamp(.68rem, 2.75vw, .78rem);
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .option-arrow {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      position: absolute;
+      right: 13px;
+      bottom: 13px;
+      color: var(--blue-700);
+      font-size: 1.2rem;
+      font-weight: 1000;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 10px 22px rgba(31,91,172,.13);
+    }
+
+    .portal-option:nth-child(2)
+    .option-arrow {
+      color: #0aaba5;
+    }
+
+    .primary-button {
+      width: 100%;
+      min-height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 13px;
+      position: relative;
+      overflow: hidden;
+      margin-top: 19px;
+      padding: 14px 20px;
+      color: #ffffff;
+      font-size: clamp(.94rem, 4vw, 1.15rem);
+      font-weight: 1000;
+      cursor: pointer;
+      border: 0;
+      border-radius: 20px;
+      background:
+        linear-gradient(
+          135deg,
+          #0848d2 0%,
+          #0967ed 56%,
+          #13c4e3 132%
+        );
+      box-shadow:
+        var(--shadow-button);
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+    }
+
+    .primary-button::after {
+      content: "";
+      width: 44%;
+      height: 180%;
+      position: absolute;
+      top: -40%;
+      left: -60%;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          rgba(255,255,255,.26),
+          transparent
+        );
+      transform: skewX(-24deg);
+      animation:
+        buttonShine 4s ease-in-out infinite;
+    }
+
+    .primary-button:hover {
+      box-shadow:
+        0 20px 42px rgba(16,88,221,.34);
+      transform: translateY(-2px);
+    }
+
+    .primary-button:active {
+      transform: translateY(1px);
+    }
+
+    .button-shield {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+    }
+
+    .button-arrow {
+      margin-left: auto;
+      font-size: 1.45rem;
+      line-height: 1;
+    }
+
+    .support-note {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-top: 17px;
+      padding: 14px 15px;
+      color: var(--ink-600);
+      font-size: clamp(.68rem, 2.8vw, .79rem);
+      font-weight: 800;
+      line-height: 1.45;
+      border: 1px solid #dbe9fa;
+      border-radius: 19px;
+      background:
+        linear-gradient(
+          145deg,
+          #f4f8ff,
+          #edf5ff
+        );
+    }
+
+    .note-icon {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      display: grid;
+      place-items: center;
+      color: var(--blue-700);
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow:
+        0 9px 21px rgba(31,91,172,.11);
+    }
+
+    .note-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .install-button {
+      width: 100%;
+      min-height: 48px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 12px 16px;
+      color: var(--blue-700);
+      font-size: .78rem;
+      font-weight: 1000;
+      cursor: pointer;
+      border: 1px dashed #bfd8f6;
+      border-radius: 16px;
+      background: #f5f9ff;
+    }
+
+    .panel-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 22px;
+      color: var(--blue-700);
+    }
+
+    .panel-divider::before,
+    .panel-divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          #93c9ff,
           transparent
         );
     }
 
-    .top-bar {
-      min-height: var(--topbar-height);
-      flex-shrink: 0;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      position: relative;
-      padding: 11px 22px;
-      border-bottom: 1px solid rgba(219, 229, 244, .92);
-      background: rgba(255,255,255,.88);
-      box-shadow:
-        0 8px 30px rgba(36, 75, 145, .055);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-
-    .page-heading {
-      min-width: 0;
-    }
-
-    .page-kicker {
-      display: block;
-      margin-bottom: 3px;
-      color: var(--wali-primary);
-      font-size: .56rem;
-      font-weight: 1000;
-      line-height: 1.1;
-      letter-spacing: 1.08px;
-      text-transform: uppercase;
-    }
-
-    .page-title {
-      max-width: 50vw;
-      overflow: hidden;
-      color: var(--wali-ink);
-      font-size: 1.08rem;
-      font-weight: 1000;
-      line-height: 1.25;
-      letter-spacing: -.15px;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .student-badge {
-      min-width: 245px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 12px;
-      position: relative;
-      padding: 8px 10px 8px 15px;
-      cursor: pointer;
-      border: 1px solid #dfe8f4;
-      border-radius: 16px;
-      background:
-        linear-gradient(
-          135deg,
-          #ffffff,
-          #f7faff
-        );
-      box-shadow:
-        0 7px 20px rgba(35, 78, 160, .075);
-      transition: .2s ease;
-    }
-
-    .student-badge:hover {
-      border-color: #cfe0fa;
-      box-shadow:
-        0 12px 28px rgba(35, 78, 160, .12);
-      transform: translateY(-2px);
-    }
-
-    .student-badge::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 2;
-      border: 2px solid #ffffff;
-      border-radius: 50%;
-      background: var(--wali-green);
-      box-shadow:
-        0 0 0 3px rgba(41, 197, 141, .12);
-    }
-
-    .student-info {
-      min-width: 0;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      text-align: right;
-    }
-
-    .student-info .label {
-      display: block;
-      color: var(--wali-muted);
-      font-size: .53rem;
-      font-weight: 1000;
-      line-height: 1.2;
-      letter-spacing: .8px;
-      text-transform: uppercase;
-    }
-
-    .student-info .name {
-      max-width: 175px;
-      display: block;
-      margin-top: 3px;
-      overflow: hidden;
-      color: var(--wali-ink);
-      font-size: .74rem;
-      font-weight: 1000;
-      line-height: 1.3;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .avatar-circle {
-      width: 45px;
-      height: 45px;
-      flex: 0 0 45px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 1000;
-      border: 3px solid #ffffff;
-      border-radius: 14px;
-      background:
-        linear-gradient(
-          135deg,
-          var(--wali-purple),
-          var(--wali-primary)
-        );
-      box-shadow:
-        0 8px 18px rgba(86, 94, 214, .20),
-        0 0 0 1px #dbe7f8;
-    }
-
-    .avatar-circle img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-    }
-
-    .workspace {
-      min-height: 0;
-      flex: 1;
-      z-index: 1;
-      display: flex;
-      position: relative;
-      padding: 15px 17px 12px;
-    }
-
-    .frame-shell {
-      min-width: 0;
-      min-height: 0;
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      border: 1px solid rgba(220, 230, 244, .94);
-      border-radius: 22px;
-      background: rgba(255,255,255,.76);
-      box-shadow: var(--shadow-card);
-    }
-
-    #contentFrame {
-      width: 100%;
-      min-height: 0;
-      flex: 1;
-      display: block;
-      border: 0;
-      background: transparent;
-    }
-
-    /* =========================================================
-       FOOTER
-       ========================================================= */
-
-    .app-footer {
-      min-height: 42px;
-      flex-shrink: 0;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      position: relative;
-      padding: 8px 20px 10px;
-      color: #7a889f;
-      font-size: .61rem;
-      font-weight: 750;
-      background: transparent;
-    }
-
-    .footer-brand {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      margin: 0;
-      color: var(--wali-ink);
-      font-size: .68rem;
-      font-weight: 1000;
-      letter-spacing: .2px;
-    }
-
-    .footer-brand-mark {
-      width: 8px;
-      height: 8px;
-      border-radius: 3px;
-      background:
-        linear-gradient(
-          135deg,
-          var(--wali-primary),
-          var(--wali-cyan)
-        );
-      box-shadow:
-        0 0 0 4px rgba(40,120,255,.08);
-    }
-
-    .footer-brand span {
-      color: var(--wali-primary);
-    }
-
-    .footer-copyright {
-      margin: 0;
-      text-align: right;
-    }
-
-    /* =========================================================
-       MOBILE HEADER & OVERLAY
-       ========================================================= */
-
-    .mobile-header {
-      display: none;
-    }
-
-    .mobile-menu-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 999;
-      pointer-events: none;
-      opacity: 0;
-      background: rgba(18, 34, 68, .58);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-      transition: opacity .28s ease;
-    }
-
-    .mobile-menu-overlay.open {
-      pointer-events: auto;
-      opacity: 1;
-    }
-
-    #mobileAvatar {
-      cursor: pointer;
-      transition: .2s ease;
-    }
-
-    #mobileAvatar:hover {
-      transform: translateY(-1px) scale(1.03);
-    }
-
-    /* =========================================================
-       TOP CHAT ACTIONS
-       ========================================================= */
-
-    .top-bar-actions,
-    .mobile-header-actions {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-    }
-
-    .wali-chat-top-button {
-      width: 43px;
-      height: 43px;
-      flex: 0 0 43px;
-      display: grid;
-      place-items: center;
-      position: relative;
-      padding: 0;
-      color: var(--wali-primary);
-      font-size: 1.05rem;
-      cursor: pointer;
-      border: 1px solid #dce8fb;
-      border-radius: 13px;
-      background: linear-gradient(145deg, #edf5ff, #f2fbff);
-      box-shadow: 0 7px 18px rgba(40, 120, 255, .09);
-      transition: .2s ease;
-    }
-
-    .wali-chat-top-button:hover {
-      color: #ffffff;
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--wali-primary), var(--wali-cyan));
-      box-shadow: 0 11px 24px rgba(40, 120, 255, .22);
-      transform: translateY(-2px);
-    }
-
-    .wali-chat-badge {
-      min-width: 18px;
-      height: 18px;
-      display: none;
-      place-items: center;
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      padding: 0 4px;
-      color: #ffffff;
-      font-size: .49rem;
-      font-weight: 1000;
-      line-height: 1;
-      border: 2px solid #ffffff;
-      border-radius: 999px;
-      background: var(--wali-red);
-      box-shadow: 0 5px 11px rgba(255, 95, 112, .27);
-    }
-
-    /* =========================================================
-       MOBILE FIXED SHORTCUTS — MAKSIMAL 5 FITUR
-       ========================================================= */
-
-    .wali-mobile-bottom-nav {
-      display: none;
-    }
-
-    .wali-mobile-bottom-nav-inner {
-      width: 100%;
-      height: 100%;
-      display: grid;
-      grid-template-columns: repeat(var(--wali-shortcut-count, 5), minmax(0, 1fr));
-      align-items: stretch;
-      gap: 3px;
-      padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
-      border-top: 1px solid rgba(215, 226, 243, .96);
-      background: rgba(255, 255, 255, .96);
-      box-shadow: 0 -12px 30px rgba(31, 65, 128, .11);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-
-    .wali-mobile-shortcut-btn {
-      min-width: 0;
-      min-height: 56px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      position: relative;
-      padding: 6px 3px;
-      color: #77859e;
-      cursor: pointer;
-      border: 0;
-      border-radius: 14px;
-      background: transparent;
-      transition: color .18s ease, background .18s ease, transform .18s ease;
-    }
-
-    .wali-mobile-shortcut-btn::before {
-      content: "";
+    .panel-divider svg {
       width: 24px;
-      height: 3px;
-      position: absolute;
-      top: 2px;
-      left: 50%;
-      opacity: 0;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--wali-primary), var(--wali-cyan));
-      transform: translateX(-50%) scaleX(.45);
-      transition: .18s ease;
-    }
-
-    .wali-mobile-shortcut-btn:active {
-      transform: scale(.96);
-    }
-
-    .wali-mobile-shortcut-icon {
       height: 24px;
-      display: grid;
-      place-items: center;
-      font-size: 1.17rem;
-      line-height: 1;
-      filter: grayscale(.12);
-      transition: transform .18s ease, filter .18s ease;
     }
 
-    .wali-mobile-shortcut-label {
-      width: 100%;
-      overflow: hidden;
-      font-size: .57rem;
+    .copyright {
+      margin-top: 15px;
+      color: var(--ink-400);
+      font-size: .62rem;
       font-weight: 900;
-      line-height: 1.12;
-      letter-spacing: -.08px;
+      letter-spacing: .8px;
       text-align: center;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .wali-mobile-shortcut-btn.active {
-      color: var(--wali-primary-dark);
-      background: linear-gradient(180deg, #eef5ff 0%, #f5fbff 100%);
-    }
-
-    .wali-mobile-shortcut-btn.active::before {
-      opacity: 1;
-      transform: translateX(-50%) scaleX(1);
-    }
-
-    .wali-mobile-shortcut-btn.active .wali-mobile-shortcut-icon {
-      filter: none;
-      transform: translateY(-1px) scale(1.06);
+      text-transform: uppercase;
     }
 
     /* =========================================================
-       WALI LIVE CHAT
+       LOGIN VIEW
        ========================================================= */
 
-    .wali-chat-window {
-      width: 390px;
-      max-width: calc(100vw - 34px);
-      height: min(610px, calc(100vh - 120px));
+    #welcomeView {
+      display: block;
+      animation:
+        viewIn .35s ease both;
+    }
+
+    #loginView {
       display: none;
-      flex-direction: column;
-      position: fixed;
-      right: 22px;
-      bottom: 20px;
-      z-index: 10050;
-      overflow: hidden;
-      border: 1px solid rgba(215, 227, 244, .98);
-      border-radius: 24px;
-      background: rgba(255,255,255,.99);
-      box-shadow: 0 25px 65px rgba(27, 58, 121, .22);
-      animation: waliChatIn .24s ease both;
+      animation:
+        viewIn .35s ease both;
     }
 
-    @keyframes waliChatIn {
-      from { opacity: 0; transform: translateY(12px) scale(.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+    .login-head {
+      text-align: center;
     }
 
-    .wali-chat-header {
-      min-height: 72px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      position: relative;
-      overflow: hidden;
-      padding: 13px 14px;
-      color: #ffffff;
-      background:
-        radial-gradient(circle at 92% 0%, rgba(255,255,255,.20), transparent 28%),
-        linear-gradient(135deg, var(--wali-primary) 0%, #3b84ff 55%, var(--wali-cyan) 135%);
-    }
-
-    .wali-chat-header-copy {
-      min-width: 0;
-      flex: 1;
-    }
-
-    .wali-chat-header-copy strong,
-    .wali-chat-header-copy span {
-      display: block;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .wali-chat-header-copy strong {
-      font-size: .9rem;
+    .login-title {
+      margin-top: 9px;
+      color: var(--ink-950);
+      font-size: clamp(1.85rem, 7vw, 2.65rem);
       font-weight: 1000;
+      line-height: 1.06;
+      letter-spacing: -1px;
     }
 
-    .wali-chat-header-copy span {
-      margin-top: 2px;
-      color: rgba(255,255,255,.76);
-      font-size: .58rem;
-      font-weight: 800;
-    }
-
-    .wali-chat-header-btn {
-      width: 36px;
-      height: 36px;
-      flex: 0 0 36px;
-      display: grid;
-      place-items: center;
-      padding: 0;
-      color: #ffffff;
-      cursor: pointer;
-      border: 1px solid rgba(255,255,255,.23);
-      border-radius: 12px;
-      background: rgba(255,255,255,.14);
-    }
-
-    .wali-chat-tabs {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-      padding: 7px;
-      border-bottom: 1px solid #e0e9f6;
-      background: #eef4fc;
-    }
-
-    .wali-chat-tab {
-      min-height: 38px;
-      flex: 1;
-      display: grid;
-      place-items: center;
-      padding: 8px 10px;
-      color: #71809b;
-      font-size: .7rem;
-      font-weight: 900;
-      cursor: pointer;
-      border: 1px solid transparent;
-      border-radius: 11px;
-      background: transparent;
-    }
-
-    .wali-chat-tab.active {
-      color: var(--wali-primary-dark);
-      border-color: #dce8f8;
-      background: #ffffff;
-      box-shadow: 0 6px 15px rgba(35, 78, 160, .08);
-    }
-
-    .wali-chat-search {
-      flex-shrink: 0;
-      padding: 10px;
-      border-bottom: 1px solid #e6edf7;
-      background: #ffffff;
-    }
-
-    .wali-chat-search input {
-      width: 100%;
-      min-height: 40px;
-      padding: 9px 12px;
-      color: var(--wali-text);
-      font-size: .72rem;
-      font-weight: 750;
-      outline: none;
-      border: 1px solid #dce6f5;
-      border-radius: 12px;
-      background: #f7faff;
-    }
-
-    .wali-chat-list {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      padding: 7px;
-      background: #ffffff;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .wali-chat-list-item {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      margin: 2px 0;
-      padding: 11px;
-      color: inherit;
-      text-align: left;
-      cursor: pointer;
-      border: 1px solid transparent;
-      border-bottom-color: #edf2f8;
-      border-radius: 13px;
-      background: #ffffff;
-      transition: .18s ease;
-    }
-
-    .wali-chat-list-item:hover {
-      border-color: #e0eaf8;
-      background: #f5f9ff;
-      transform: translateX(2px);
-    }
-
-    .wali-chat-list-item.broadcast {
-      border-color: #ffe0b2;
-      border-left: 4px solid var(--wali-orange);
-      background: #fff8ec;
-    }
-
-    .wali-chat-list-avatar {
-      width: 43px;
-      height: 43px;
-      flex: 0 0 43px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      color: var(--wali-primary-dark);
-      font-size: .95rem;
-      font-weight: 1000;
-      border: 1px solid #d9e7fb;
-      border-radius: 14px;
-      background: linear-gradient(145deg, #eaf3ff, #f1edff);
-    }
-
-    .wali-chat-list-copy {
-      min-width: 0;
-      flex: 1;
-    }
-
-    .wali-chat-list-copy strong,
-    .wali-chat-list-copy span {
-      display: block;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .wali-chat-list-copy strong {
-      color: var(--wali-ink);
-      font-size: .76rem;
-      font-weight: 950;
-    }
-
-    .wali-chat-list-copy span {
-      margin-top: 3px;
-      color: var(--wali-muted);
-      font-size: .66rem;
-      font-weight: 650;
-    }
-
-    .wali-chat-unread-dot {
-      width: 9px;
-      height: 9px;
-      flex: 0 0 9px;
-      border: 2px solid #ffffff;
-      border-radius: 50%;
-      background: var(--wali-red);
-      box-shadow: 0 0 0 3px rgba(255,95,112,.12);
-    }
-
-    .wali-chat-empty {
-      display: grid;
-      place-items: center;
-      min-height: 170px;
-      padding: 24px;
-      color: #8b99af;
-      font-size: .75rem;
+    .login-desc {
+      max-width: 480px;
+      margin: 10px auto 0;
+      color: var(--ink-600);
+      font-size: .78rem;
       font-weight: 750;
       line-height: 1.55;
       text-align: center;
     }
 
-    .wali-chat-messages {
-      flex: 1;
-      min-height: 0;
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-      padding: 13px;
-      background:
-        radial-gradient(circle at 90% 0%, rgba(40,120,255,.05), transparent 25%),
-        #f5f8fc;
-      -webkit-overflow-scrolling: touch;
+    .login-form {
+      margin-top: 25px;
     }
 
-    .wali-chat-message {
-      max-width: 84%;
-      padding: 9px 12px;
-      color: var(--wali-text);
-      font-size: .74rem;
-      font-weight: 650;
-      line-height: 1.48;
-      overflow-wrap: anywhere;
-      border-radius: 15px;
-      box-shadow: 0 5px 13px rgba(38, 69, 119, .055);
+    .form-group {
+      margin-bottom: 16px;
     }
 
-    .wali-chat-message.self {
-      align-self: flex-end;
-      color: #ffffff;
-      border-bottom-right-radius: 4px;
-      background: linear-gradient(135deg, var(--wali-primary), #4b8eff);
+    .form-group label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--ink-800);
+      font-size: .68rem;
+      font-weight: 1000;
+      letter-spacing: .4px;
     }
 
-    .wali-chat-message.other {
-      align-self: flex-start;
-      border: 1px solid #dfe8f5;
-      border-bottom-left-radius: 4px;
+    .input-shell {
+      min-height: 57px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: #f8fbff;
+      transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+    }
+
+    .input-shell:focus-within {
+      border-color: #78b7ff;
       background: #ffffff;
+      box-shadow:
+        0 0 0 4px rgba(32,152,246,.10);
     }
 
-    .wali-chat-message-info {
-      margin-bottom: 3px;
-      color: #93a1b7;
-      font-size: .53rem;
-      font-weight: 800;
+    .input-icon {
+      width: 22px;
+      height: 22px;
+      flex: 0 0 22px;
+      color: var(--blue-700);
     }
 
-    .wali-chat-message.self .wali-chat-message-info {
-      color: rgba(255,255,255,.72);
-    }
-
-    .wali-chat-footer {
-      display: none;
-      align-items: flex-end;
-      gap: 8px;
-      flex-shrink: 0;
-      padding: 10px;
-      border-top: 1px solid #e2eaf6;
-      background: #ffffff;
-    }
-
-    .wali-chat-footer textarea {
+    .form-control {
       min-width: 0;
-      max-height: 110px;
-      min-height: 43px;
       flex: 1;
-      resize: none;
-      padding: 11px 13px;
-      color: var(--wali-text);
-      font-size: .74rem;
-      font-weight: 700;
-      line-height: 1.4;
+      padding: 16px 0;
+      color: var(--ink-950);
+      font-size: .88rem;
+      font-weight: 800;
       outline: none;
-      border: 1px solid #dce6f3;
-      border-radius: 14px;
-      background: #f5f8fc;
+      border: 0;
+      background: transparent;
     }
 
-    .wali-chat-send {
-      width: 43px;
-      height: 43px;
-      flex: 0 0 43px;
+    .form-control::placeholder {
+      color: #9caac0;
+      font-weight: 700;
+    }
+
+    .toggle-password {
+      width: 36px;
+      height: 36px;
       display: grid;
       place-items: center;
-      padding: 0;
-      color: #ffffff;
-      font-size: 1rem;
+      flex: 0 0 36px;
+      color: #7d8da5;
       cursor: pointer;
       border: 0;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--wali-primary), var(--wali-cyan));
-      box-shadow: 0 8px 18px rgba(40, 120, 255, .21);
+      border-radius: 50%;
+      background: transparent;
     }
 
+    .toggle-password:hover {
+      color: var(--blue-700);
+      background: var(--soft-blue);
+    }
+
+    #errorMsg {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px 13px;
+      color: #b42318;
+      font-size: .72rem;
+      font-weight: 850;
+      line-height: 1.45;
+      border: 1px solid #ffd1d7;
+      border-radius: 14px;
+      background: #fff2f4;
+    }
+
+    .back-button {
+      width: 100%;
+      min-height: 46px;
+      margin-top: 11px;
+      color: var(--blue-700);
+      font-size: .75rem;
+      font-weight: 1000;
+      cursor: pointer;
+      border: 0;
+      border-radius: 15px;
+      background: #eef6ff;
+    }
+
+    /* =========================================================
+       SPLASH
+       ========================================================= */
+
+    #splashScreen {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      padding: 24px;
+      color: #ffffff;
+      background:
+        radial-gradient(
+          circle at 70% 25%,
+          rgba(35,213,232,.25),
+          transparent 23%
+        ),
+        linear-gradient(
+          145deg,
+          #043aa8,
+          #075eea 55%,
+          #15bce1
+        );
+      transition:
+        opacity .7s ease,
+        visibility .7s ease;
+    }
+
+    .splash-logo {
+      width: 104px;
+      height: 104px;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      border: 3px solid rgba(255,255,255,.78);
+      border-radius: 30px;
+      background: #ffffff;
+      box-shadow:
+        0 24px 55px rgba(0,42,125,.28);
+      animation:
+        splashPulse 1.8s ease-in-out infinite;
+    }
+
+    .splash-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .splash-title {
+      margin-top: 20px;
+      font-size: 1.35rem;
+      font-weight: 1000;
+      letter-spacing: 1.2px;
+    }
+
+    .splash-subtitle {
+      margin-top: 6px;
+      color: rgba(255,255,255,.78);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: 1.1px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .splash-loader {
+      width: 78px;
+      height: 4px;
+      position: relative;
+      overflow: hidden;
+      margin-top: 24px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.22);
+    }
+
+    .splash-loader::after {
+      content: "";
+      width: 38px;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: -38px;
+      border-radius: inherit;
+      background: #ffffff;
+      animation:
+        loaderMove 1.3s ease-in-out infinite;
+    }
 
     /* =========================================================
        RESPONSIVE
        ========================================================= */
 
-    @media (max-width: 1100px) {
-      :root {
-        --sidebar-width: 275px;
+    @media (min-width: 760px) {
+      .hero {
+        min-height: 650px;
+        padding:
+          42px 7vw
+          140px;
+        border-radius:
+          0 0 76px 76px;
       }
 
-      .student-badge {
-        min-width: 220px;
-      }
-    }
-
-    @media (max-width: 900px) {
-      body {
-        flex-direction: column;
+      .brand-logo {
+        width: 86px;
+        height: 86px;
+        flex-basis: 86px;
       }
 
-      .main-content {
-        width: 100%;
-        height: calc(100vh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
-        height: calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
-        min-height: 0;
-        flex: 0 0 calc(100vh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
-        flex-basis: calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+      .hero-content {
+        margin-top: 86px;
       }
 
-      .wali-mobile-bottom-nav {
-        width: 100%;
-        height: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom));
-        display: block;
-        position: fixed;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 9980;
-        pointer-events: none;
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-        transition: opacity .2s ease, visibility .2s ease, transform .24s ease;
+      .mosque-art {
+        right: 4%;
+        bottom: 35px;
       }
 
-      .wali-mobile-bottom-nav.ready {
-        pointer-events: auto;
+      .content-wrap {
+        margin-top: -74px;
+        padding-right: 34px;
+        padding-left: 34px;
       }
 
-      body.mobile-sidebar-open .wali-mobile-bottom-nav {
-        display: none !important;
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none !important;
-        transform: translateY(110%);
+      .welcome-panel {
+        padding:
+          54px 48px 32px;
+        border-radius:
+          58px 58px 42px 42px;
       }
 
-      .app-footer {
-        display: none;
-      }
-
-      .sidebar {
-        z-index: 10020;
-      }
-
-      .mobile-menu-overlay {
-        z-index: 10010;
-      }
-
-      .wali-chat-window {
-        bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 9px);
-      }
-
-      .sidebar {
-        width: min(300px, calc(100vw - 42px));
-        height: 100%;
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        flex-basis: auto;
-        box-shadow:
-          20px 0 55px rgba(20, 43, 85, .23);
-        transform: translateX(-105%);
-      }
-
-      .sidebar.open {
-        left: 0;
-        transform: translateX(0);
-      }
-
-      .mobile-menu-overlay {
-        display: block;
-      }
-
-      .top-bar {
-        display: none;
-      }
-
-      .mobile-header {
-        min-height: 66px;
-        flex-shrink: 0;
-        z-index: 20;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 11px;
-        position: relative;
-        padding: 9px 12px;
-        border-bottom: 1px solid #dfe8f4;
-        background: rgba(255,255,255,.92);
-        box-shadow:
-          0 7px 24px rgba(35, 78, 160, .065);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-      }
-
-      .menu-toggle-btn {
-        width: 42px;
-        height: 42px;
-        flex: 0 0 42px;
-        display: grid;
-        place-items: center;
-        padding: 0;
-        color: var(--wali-primary);
-        font-size: 1.2rem;
-        cursor: pointer;
-        border: 1px solid #dce8fb;
-        border-radius: 13px;
-        background: #edf5ff;
-      }
-
-      .mobile-brand {
-        min-width: 0;
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        color: var(--wali-ink);
-        font-size: .86rem;
-        font-weight: 1000;
-      }
-
-      .mobile-brand img {
-        width: 30px;
-        height: 30px;
-        object-fit: contain;
-      }
-
-      .workspace {
-        padding: 9px 8px 7px;
-      }
-
-      .frame-shell {
-        border-radius: 17px;
-      }
-
-      .app-footer {
-        min-height: 37px;
-        padding: 7px 12px 8px;
+      .portal-option {
+        min-height: 215px;
+        padding: 22px;
       }
     }
 
-
-
-
-
-    @media (max-width: 560px) {
-      .mobile-header {
-        min-height: 62px;
-        padding: 8px 10px;
+    @media (max-width: 430px) {
+      .hero {
+        min-height: 495px;
+        padding:
+          calc(24px + env(safe-area-inset-top))
+          20px
+          106px;
+        border-radius:
+          0 0 44px 44px;
       }
 
-      .menu-toggle-btn {
-        width: 40px;
-        height: 40px;
-        flex-basis: 40px;
-        border-radius: 12px;
+      .brand-row {
+        gap: 13px;
       }
 
-      #mobileAvatar {
-        width: 40px !important;
-        height: 40px !important;
-        flex-basis: 40px !important;
-        font-size: .85rem !important;
-        border-radius: 12px;
+      .brand-logo {
+        width: 64px;
+        height: 64px;
+        flex-basis: 64px;
+        border-radius: 20px;
       }
 
-      .wali-chat-top-button {
-        width: 40px;
-        height: 40px;
-        flex-basis: 40px;
-        border-radius: 12px;
+      .hero-content {
+        margin-top: 52px;
       }
 
-      .mobile-header-actions {
-        gap: 7px;
+      .hero-title {
+        max-width: 340px;
       }
 
-      .wali-chat-window {
-        width: calc(100vw - 16px);
-        max-width: none;
-        height: min(72vh, calc(100dvh - var(--mobile-bottom-nav-height) - 84px - env(safe-area-inset-bottom)));
-        right: 8px;
-        bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
+      .hero-desc {
+        max-width: 245px;
+      }
+
+      .mosque-art {
+        width: 53vw;
+        right: -13%;
+        bottom: 48px;
+        opacity: .86;
+      }
+
+      .hero-leaves {
+        width: 130px;
+        height: 130px;
+        right: -47px;
+      }
+
+      .content-wrap {
+        margin-top: -47px;
+        padding-right: 13px;
+        padding-left: 13px;
+      }
+
+      .welcome-panel {
+        padding:
+          39px 16px 22px;
+        border-radius:
+          38px 38px 30px 30px;
+      }
+
+      .portal-grid {
+        gap: 10px;
+        margin-top: 23px;
+      }
+
+      .portal-option {
+        min-height: 185px;
+        padding: 15px 12px;
         border-radius: 21px;
       }
 
-      .mobile-brand {
-        font-size: .8rem;
-      }
-
-      .mobile-brand img {
-        width: 28px;
-        height: 28px;
-      }
-
-      .workspace {
-        padding: 7px 6px 5px;
-      }
-
-      .frame-shell {
+      .option-icon {
+        width: 45px;
+        height: 45px;
         border-radius: 15px;
       }
 
-      .app-footer {
-        justify-content: center;
-        min-height: 34px;
-        padding: 6px 9px 7px;
-        text-align: center;
+      .option-icon svg {
+        width: 24px;
+        height: 24px;
       }
 
-      .footer-brand {
-        display: none;
+      .option-arrow {
+        width: 32px;
+        height: 32px;
       }
 
-      .footer-copyright {
-        text-align: center;
-        font-size: .56rem;
+      .primary-button {
+        min-height: 61px;
+        border-radius: 18px;
       }
     }
-  </style>
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#075e54">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
+    @media (max-width: 350px) {
+      .hero {
+        min-height: 510px;
+      }
 
-  <style>
-    body.cahaya-logging-out::after {
-      content: "Menutup sesi dengan aman...";
-      display: grid;
-      place-items: center;
+      .portal-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .portal-option {
+        min-height: 155px;
+      }
+
+      .portal-option p {
+        max-width: 78%;
+      }
+    }
+
+    @media (min-width: 1050px) {
+      .app-shell {
+        padding-bottom: 50px;
+      }
+
+      .hero {
+        min-height: 690px;
+      }
+
+      .content-wrap {
+        max-width: 980px;
+      }
+
+      .portal-grid {
+        gap: 18px;
+      }
+    }
+
+    @keyframes viewIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes buttonShine {
+      0%,
+      62% {
+        left: -60%;
+      }
+
+      100% {
+        left: 130%;
+      }
+    }
+
+    @keyframes splashPulse {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes loaderMove {
+      0% {
+        left: -38px;
+      }
+
+      100% {
+        left: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+    /* =========================================================
+       FIXED ONE-SCREEN LAYOUT
+       Desktop dan mobile terkunci tepat satu viewport.
+       Tidak ada scroll horizontal maupun vertikal.
+       ========================================================= */
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden !important;
+      overscroll-behavior: none;
+    }
+
+    body {
       position: fixed;
       inset: 0;
-      z-index: 999999;
-      color: #17324d;
-      font-size: .92rem;
-      font-weight: 900;
-      background: rgba(246,250,255,.98);
-      backdrop-filter: blur(10px);
     }
+
+    .app-shell {
+      width: 100vw;
+      height: 100dvh;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden !important;
+    }
+
+    .hero,
+    .content-wrap,
+    .welcome-panel,
+    #welcomeView,
+    #loginView {
+      min-width: 0;
+      min-height: 0;
+    }
+
+    /* =========================================================
+       DESKTOP / LAPTOP — DUA KOLOM, SATU LAYAR
+       ========================================================= */
+
+    @media (min-width: 900px) {
+      body {
+        background: #f5f9ff;
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns:
+          minmax(500px, 1.08fr)
+          minmax(500px, .92fr);
+        grid-template-rows: 100dvh;
+        background:
+          linear-gradient(
+            90deg,
+            transparent 0 51%,
+            #f6f9ff 51% 100%
+          );
+      }
+
+      .hero {
+        width: 100%;
+        height: 100dvh;
+        min-height: 0 !important;
+        padding:
+          clamp(22px, 3.8vh, 38px)
+          clamp(34px, 4.8vw, 74px)
+          clamp(24px, 4vh, 42px);
+        border-radius:
+          0 58px 58px 0;
+        box-shadow:
+          18px 0 55px rgba(6,73,183,.18);
+      }
+
+      .hero::before {
+        width: min(24vw, 330px);
+        height: min(24vw, 330px);
+      }
+
+      .hero::after {
+        bottom: -112px;
+      }
+
+      .brand-row {
+        min-height: 0;
+        gap: clamp(12px, 1.5vw, 18px);
+      }
+
+      .brand-logo {
+        width: clamp(58px, 9vh, 76px);
+        height: clamp(58px, 9vh, 76px);
+        flex-basis: clamp(58px, 9vh, 76px);
+        padding: 6px;
+        border-radius: clamp(18px, 2.5vh, 23px);
+      }
+
+      .brand-copy h1 {
+        font-size:
+          clamp(1.45rem, 2.15vw, 2.05rem);
+      }
+
+      .brand-copy p {
+        margin-top: clamp(4px, .8vh, 7px);
+        font-size:
+          clamp(.58rem, .88vw, .78rem);
+      }
+
+      .hero-content {
+        max-width: 650px;
+        margin-top:
+          clamp(34px, 7.5vh, 68px);
+      }
+
+      .hero-pill {
+        padding:
+          clamp(6px, 1vh, 9px)
+          clamp(11px, 1.2vw, 15px);
+        font-size:
+          clamp(.61rem, .8vw, .76rem);
+      }
+
+      .hero-title {
+        max-width: 620px;
+        margin-top:
+          clamp(14px, 2.5vh, 23px);
+        font-size:
+          clamp(2.65rem, 5.5vw, 5.35rem);
+        line-height: .94;
+      }
+
+      .hero-title span {
+        margin-top:
+          clamp(5px, 1vh, 9px);
+      }
+
+      .hero-line {
+        margin-top:
+          clamp(12px, 2vh, 21px);
+      }
+
+      .hero-desc {
+        max-width: 420px;
+        margin-top:
+          clamp(10px, 1.8vh, 17px);
+        font-size:
+          clamp(.74rem, 1.05vw, .96rem);
+        line-height: 1.42;
+      }
+
+      .mosque-art {
+        width:
+          min(35vw, 475px);
+        right: -1.5%;
+        bottom: -1.5vh;
+      }
+
+      .hero-leaves {
+        width:
+          clamp(120px, 15vw, 190px);
+        height:
+          clamp(120px, 15vw, 190px);
+      }
+
+      .content-wrap {
+        width: 100%;
+        max-width: none;
+        height: 100dvh;
+        margin: 0;
+        padding:
+          clamp(14px, 2.5vh, 26px)
+          clamp(20px, 3.4vw, 48px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .welcome-panel {
+        width: min(100%, 650px);
+        max-height:
+          calc(100dvh - clamp(28px, 5vh, 52px));
+        padding:
+          clamp(38px, 5.2vh, 48px)
+          clamp(25px, 3.4vw, 44px)
+          clamp(15px, 2.5vh, 25px);
+        overflow: hidden;
+        border-radius:
+          clamp(28px, 4vh, 42px);
+      }
+
+      .panel-emblem {
+        width:
+          clamp(43px, 6.5vh, 54px);
+        height:
+          clamp(43px, 6.5vh, 54px);
+        top: 8px;
+      }
+
+      .panel-emblem svg {
+        width:
+          clamp(24px, 3.6vh, 30px);
+        height:
+          clamp(24px, 3.6vh, 30px);
+      }
+
+      .welcome-kicker {
+        font-size:
+          clamp(.58rem, .74vw, .76rem);
+      }
+
+      .welcome-title {
+        margin-top:
+          clamp(4px, .7vh, 8px);
+        font-size:
+          clamp(1.75rem, 3vw, 2.7rem);
+      }
+
+      .welcome-title::after {
+        height: 3px;
+        margin-top:
+          clamp(7px, 1.2vh, 11px);
+      }
+
+      .portal-grid {
+        gap:
+          clamp(9px, 1.2vw, 14px);
+        margin-top:
+          clamp(13px, 2.1vh, 21px);
+      }
+
+      .portal-option {
+        min-height:
+          clamp(122px, 19vh, 158px);
+        padding:
+          clamp(12px, 1.8vh, 18px)
+          clamp(12px, 1.35vw, 17px);
+        border-radius:
+          clamp(18px, 2.5vh, 24px);
+      }
+
+      .option-icon {
+        width:
+          clamp(38px, 5.6vh, 48px);
+        height:
+          clamp(38px, 5.6vh, 48px);
+        border-radius:
+          clamp(12px, 1.8vh, 16px);
+      }
+
+      .option-icon svg {
+        width:
+          clamp(21px, 3.1vh, 26px);
+        height:
+          clamp(21px, 3.1vh, 26px);
+      }
+
+      .portal-option h3 {
+        margin-top:
+          clamp(7px, 1.2vh, 11px);
+        font-size:
+          clamp(.78rem, 1.25vw, 1rem);
+      }
+
+      .portal-option h3::after {
+        margin-top:
+          clamp(4px, .7vh, 7px);
+      }
+
+      .portal-option p {
+        margin-top:
+          clamp(5px, .8vh, 8px);
+        font-size:
+          clamp(.59rem, .78vw, .72rem);
+        line-height: 1.32;
+      }
+
+      .option-arrow {
+        width:
+          clamp(27px, 4.2vh, 34px);
+        height:
+          clamp(27px, 4.2vh, 34px);
+      }
+
+      .primary-button {
+        min-height:
+          clamp(48px, 7.2vh, 58px);
+        margin-top:
+          clamp(10px, 1.7vh, 16px);
+        padding:
+          10px 17px;
+        font-size:
+          clamp(.82rem, 1.25vw, 1.04rem);
+        border-radius:
+          clamp(15px, 2.3vh, 20px);
+      }
+
+      .button-shield {
+        width:
+          clamp(23px, 3.5vh, 28px);
+        height:
+          clamp(23px, 3.5vh, 28px);
+        flex-basis:
+          clamp(23px, 3.5vh, 28px);
+      }
+
+      .support-note {
+        gap: 10px;
+        margin-top:
+          clamp(8px, 1.3vh, 12px);
+        padding:
+          clamp(8px, 1.2vh, 11px)
+          clamp(10px, 1.2vw, 14px);
+        font-size:
+          clamp(.58rem, .75vw, .7rem);
+        line-height: 1.32;
+        border-radius:
+          clamp(13px, 1.8vh, 17px);
+      }
+
+      .note-icon {
+        width:
+          clamp(31px, 4.6vh, 38px);
+        height:
+          clamp(31px, 4.6vh, 38px);
+        flex-basis:
+          clamp(31px, 4.6vh, 38px);
+      }
+
+      .panel-divider {
+        margin-top:
+          clamp(8px, 1.3vh, 13px);
+      }
+
+      .panel-divider svg {
+        width:
+          clamp(17px, 2.6vh, 22px);
+        height:
+          clamp(17px, 2.6vh, 22px);
+      }
+
+      .copyright {
+        margin-top:
+          clamp(4px, .8vh, 8px);
+        font-size:
+          clamp(.48rem, .55vw, .58rem);
+      }
+
+      .login-title {
+        margin-top:
+          clamp(4px, .8vh, 8px);
+        font-size:
+          clamp(1.65rem, 2.7vw, 2.45rem);
+      }
+
+      .login-desc {
+        margin-top:
+          clamp(6px, 1vh, 9px);
+        font-size:
+          clamp(.61rem, .76vw, .72rem);
+        line-height: 1.4;
+      }
+
+      .login-form {
+        margin-top:
+          clamp(13px, 2vh, 20px);
+      }
+
+      .form-group {
+        margin-bottom:
+          clamp(8px, 1.3vh, 13px);
+      }
+
+      .form-group label {
+        margin-bottom:
+          clamp(4px, .6vh, 6px);
+      }
+
+      .input-shell {
+        min-height:
+          clamp(45px, 6.5vh, 54px);
+        border-radius:
+          clamp(13px, 1.8vh, 17px);
+      }
+
+      .form-control {
+        padding:
+          clamp(11px, 1.7vh, 15px) 0;
+        font-size:
+          clamp(.77rem, .9vw, .86rem);
+      }
+
+      .back-button {
+        min-height:
+          clamp(38px, 5.6vh, 45px);
+        margin-top:
+          clamp(7px, 1.1vh, 10px);
+      }
+    }
+
+    /* =========================================================
+       MOBILE PORTRAIT — BERTUMPUK, SATU LAYAR
+       ========================================================= */
+
+    @media (max-width: 899px) and (orientation: portrait) {
+      .app-shell {
+        display: grid;
+        grid-template-columns: 100vw;
+        grid-template-rows:
+          44dvh 56dvh;
+        background: #f6f9ff;
+      }
+
+      .hero {
+        width: 100vw;
+        height: 44dvh;
+        min-height: 0 !important;
+        padding:
+          calc(15px + env(safe-area-inset-top))
+          clamp(16px, 4vw, 24px)
+          clamp(36px, 6vh, 52px);
+        border-radius:
+          0 0 40px 40px;
+      }
+
+      .hero::before {
+        width: 210px;
+        height: 210px;
+        top: -105px;
+        right: -75px;
+        border-width: 34px;
+      }
+
+      .hero::after {
+        bottom: -105px;
+      }
+
+      .brand-row {
+        min-height: 0;
+        gap:
+          clamp(10px, 2.8vw, 14px);
+      }
+
+      .brand-logo {
+        width:
+          clamp(50px, 7.8vh, 62px);
+        height:
+          clamp(50px, 7.8vh, 62px);
+        flex-basis:
+          clamp(50px, 7.8vh, 62px);
+        padding: 5px;
+        border-radius:
+          clamp(16px, 2.7vh, 20px);
+      }
+
+      .brand-copy h1 {
+        font-size:
+          clamp(1.18rem, 5.2vw, 1.6rem);
+      }
+
+      .brand-copy p {
+        margin-top:
+          clamp(3px, .6vh, 5px);
+        font-size:
+          clamp(.49rem, 2.35vw, .68rem);
+        letter-spacing: .75px;
+      }
+
+      .hero-content {
+        max-width: 80vw;
+        margin-top:
+          clamp(13px, 3.1vh, 25px);
+      }
+
+      .hero-pill {
+        padding:
+          clamp(5px, .9vh, 7px)
+          clamp(9px, 2.8vw, 12px);
+        font-size:
+          clamp(.52rem, 2.35vw, .66rem);
+      }
+
+      .hero-pill svg {
+        width:
+          clamp(14px, 2.4vh, 17px);
+        height:
+          clamp(14px, 2.4vh, 17px);
+      }
+
+      .hero-title {
+        max-width: 76vw;
+        margin-top:
+          clamp(9px, 1.8vh, 15px);
+        font-size:
+          clamp(1.75rem, 7.8vw, 2.45rem);
+        line-height: .95;
+        letter-spacing: -1.1px;
+      }
+
+      .hero-title span {
+        margin-top:
+          clamp(3px, .7vh, 6px);
+      }
+
+      .hero-line {
+        width: min(230px, 64vw);
+        margin-top:
+          clamp(7px, 1.3vh, 11px);
+      }
+
+      .hero-desc {
+        max-width: 58vw;
+        margin-top:
+          clamp(6px, 1.1vh, 9px);
+        font-size:
+          clamp(.58rem, 2.6vw, .76rem);
+        line-height: 1.32;
+      }
+
+      .spark.s1 {
+        top: 23%;
+      }
+
+      .spark.s2 {
+        top: 48%;
+      }
+
+      .spark.s3 {
+        top: 69%;
+      }
+
+      .mosque-art {
+        width:
+          min(47vw, 210px);
+        right: -10%;
+        bottom: 1.5vh;
+        opacity: .86;
+      }
+
+      .hero-leaves {
+        width:
+          clamp(95px, 28vw, 135px);
+        height:
+          clamp(95px, 28vw, 135px);
+        right: -47px;
+        bottom: -9px;
+      }
+
+      .content-wrap {
+        width: 100vw;
+        height: 60dvh;
+        margin: -4dvh 0 0;
+        padding:
+          0 clamp(9px, 2.7vw, 14px)
+          max(7px, env(safe-area-inset-bottom));
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .welcome-panel {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        padding:
+          clamp(29px, 4.6vh, 38px)
+          clamp(12px, 3.5vw, 17px)
+          clamp(7px, 1.4vh, 12px);
+        overflow: hidden;
+        border-radius:
+          clamp(30px, 7vw, 39px)
+          clamp(30px, 7vw, 39px)
+          25px 25px;
+      }
+
+      .panel-emblem {
+        width:
+          clamp(38px, 6vh, 46px);
+        height:
+          clamp(38px, 6vh, 46px);
+        top: 6px;
+        border-width: 4px;
+      }
+
+      .panel-emblem svg {
+        width:
+          clamp(21px, 3.4vh, 26px);
+        height:
+          clamp(21px, 3.4vh, 26px);
+      }
+
+      .welcome-kicker {
+        gap: 6px;
+        font-size:
+          clamp(.49rem, 2.25vw, .62rem);
+        letter-spacing: .45px;
+      }
+
+      .welcome-kicker::before,
+      .welcome-kicker::after {
+        width:
+          clamp(13px, 4vw, 20px);
+        height: 2px;
+      }
+
+      .welcome-title {
+        margin-top:
+          clamp(3px, .7vh, 6px);
+        font-size:
+          clamp(1.55rem, 6.4vw, 2rem);
+      }
+
+      .welcome-title::after {
+        width: 39px;
+        height: 3px;
+        margin-top:
+          clamp(6px, 1vh, 9px);
+      }
+
+      .portal-grid {
+        gap:
+          clamp(7px, 2vw, 10px);
+        margin-top:
+          clamp(9px, 1.7vh, 14px);
+      }
+
+      .portal-option {
+        min-height:
+          clamp(102px, 16.2vh, 137px);
+        padding:
+          clamp(8px, 1.5vh, 12px)
+          clamp(8px, 2.4vw, 11px);
+        border-radius:
+          clamp(17px, 4.8vw, 22px);
+      }
+
+      .option-icon {
+        width:
+          clamp(34px, 5.4vh, 43px);
+        height:
+          clamp(34px, 5.4vh, 43px);
+        border-radius:
+          clamp(11px, 2vh, 15px);
+      }
+
+      .option-icon svg {
+        width:
+          clamp(18px, 3vh, 23px);
+        height:
+          clamp(18px, 3vh, 23px);
+      }
+
+      .portal-option h3 {
+        margin-top:
+          clamp(5px, .9vh, 8px);
+        font-size:
+          clamp(.72rem, 3.3vw, .92rem);
+      }
+
+      .portal-option h3::after {
+        width: 24px;
+        height: 2px;
+        margin-top:
+          clamp(3px, .6vh, 5px);
+      }
+
+      .portal-option p {
+        margin-top:
+          clamp(4px, .7vh, 6px);
+        padding-right:
+          clamp(10px, 3vw, 18px);
+        font-size:
+          clamp(.50rem, 2.2vw, .65rem);
+        line-height: 1.27;
+      }
+
+      .option-arrow {
+        width:
+          clamp(24px, 4vh, 30px);
+        height:
+          clamp(24px, 4vh, 30px);
+        right: 8px;
+        bottom: 8px;
+        font-size: .96rem;
+      }
+
+      .primary-button {
+        min-height:
+          clamp(43px, 6.6vh, 53px);
+        margin-top:
+          clamp(7px, 1.3vh, 11px);
+        padding: 9px 13px;
+        gap: 8px;
+        font-size:
+          clamp(.75rem, 3.5vw, .94rem);
+        border-radius:
+          clamp(14px, 3.8vw, 18px);
+      }
+
+      .button-shield {
+        width:
+          clamp(21px, 3.5vh, 26px);
+        height:
+          clamp(21px, 3.5vh, 26px);
+        flex-basis:
+          clamp(21px, 3.5vh, 26px);
+      }
+
+      .button-arrow {
+        font-size: 1.12rem;
+      }
+
+      .support-note {
+        gap: 8px;
+        margin-top:
+          clamp(6px, 1.1vh, 9px);
+        padding:
+          clamp(6px, 1vh, 8px)
+          clamp(8px, 2.6vw, 11px);
+        font-size:
+          clamp(.49rem, 2.14vw, .62rem);
+        line-height: 1.28;
+        border-radius:
+          clamp(12px, 3vw, 16px);
+      }
+
+      .note-icon {
+        width:
+          clamp(28px, 4.4vh, 34px);
+        height:
+          clamp(28px, 4.4vh, 34px);
+        flex-basis:
+          clamp(28px, 4.4vh, 34px);
+        border-radius: 11px;
+      }
+
+      .note-icon svg {
+        width:
+          clamp(17px, 2.8vh, 21px);
+        height:
+          clamp(17px, 2.8vh, 21px);
+      }
+
+      .install-button {
+        min-height: 37px;
+        margin-top: 6px;
+        padding: 7px 12px;
+        font-size: .62rem;
+      }
+
+      .panel-divider {
+        gap: 8px;
+        margin-top:
+          clamp(5px, .9vh, 8px);
+      }
+
+      .panel-divider svg {
+        width:
+          clamp(15px, 2.5vh, 19px);
+        height:
+          clamp(15px, 2.5vh, 19px);
+      }
+
+      .copyright {
+        margin-top:
+          clamp(2px, .5vh, 5px);
+        font-size:
+          clamp(.42rem, 1.8vw, .52rem);
+        letter-spacing: .45px;
+      }
+
+      .login-title {
+        margin-top:
+          clamp(3px, .6vh, 5px);
+        font-size:
+          clamp(1.48rem, 6vw, 1.92rem);
+      }
+
+      .login-desc {
+        margin-top:
+          clamp(5px, .8vh, 7px);
+        font-size:
+          clamp(.53rem, 2.25vw, .66rem);
+        line-height: 1.34;
+      }
+
+      .login-form {
+        margin-top:
+          clamp(10px, 1.6vh, 14px);
+      }
+
+      .form-group {
+        margin-bottom:
+          clamp(7px, 1.1vh, 10px);
+      }
+
+      .form-group label {
+        margin-bottom: 4px;
+        font-size:
+          clamp(.55rem, 2.2vw, .64rem);
+      }
+
+      .input-shell {
+        min-height:
+          clamp(42px, 6.3vh, 50px);
+        padding: 0 11px;
+        border-radius:
+          clamp(12px, 3vw, 15px);
+      }
+
+      .input-icon {
+        width:
+          clamp(18px, 2.8vh, 21px);
+        height:
+          clamp(18px, 2.8vh, 21px);
+        flex-basis:
+          clamp(18px, 2.8vh, 21px);
+      }
+
+      .form-control {
+        padding:
+          clamp(10px, 1.5vh, 13px) 0;
+        font-size:
+          clamp(.72rem, 3vw, .83rem);
+      }
+
+      .toggle-password {
+        width:
+          clamp(31px, 4.7vh, 35px);
+        height:
+          clamp(31px, 4.7vh, 35px);
+        flex-basis:
+          clamp(31px, 4.7vh, 35px);
+      }
+
+      #errorMsg {
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        font-size: .58rem;
+        line-height: 1.3;
+      }
+
+      .back-button {
+        min-height:
+          clamp(35px, 5.2vh, 42px);
+        margin-top:
+          clamp(5px, .8vh, 8px);
+        font-size:
+          clamp(.58rem, 2.4vw, .69rem);
+      }
+    }
+
+    /* =========================================================
+       MOBILE SANGAT PENDEK
+       Tetap menampilkan seluruh elemen inti.
+       ========================================================= */
+
+    @media (max-width: 899px)
+      and (orientation: portrait)
+      and (max-height: 700px) {
+
+      .app-shell {
+        grid-template-rows:
+          40dvh 60dvh;
+      }
+
+      .hero {
+        height: 40dvh;
+        padding-bottom: 32px;
+      }
+
+      .hero-content {
+        margin-top: 10px;
+      }
+
+      .hero-desc {
+        margin-top: 4px;
+      }
+
+      .content-wrap {
+        height: 64dvh;
+        margin-top: -4dvh;
+      }
+
+      .welcome-panel {
+        padding-top: 27px;
+        padding-bottom: 5px;
+      }
+
+      .portal-grid {
+        margin-top: 7px;
+      }
+
+      .portal-option {
+        min-height: 96px;
+      }
+
+      .portal-option p {
+        font-size: .48rem;
+        line-height: 1.2;
+      }
+
+      .primary-button {
+        min-height: 41px;
+        margin-top: 6px;
+      }
+
+      .support-note {
+        margin-top: 5px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+
+      .panel-divider {
+        margin-top: 4px;
+      }
+
+      .login-form {
+        margin-top: 8px;
+      }
+
+      .form-group {
+        margin-bottom: 6px;
+      }
+
+      .input-shell {
+        min-height: 39px;
+      }
+
+      .back-button {
+        min-height: 34px;
+        margin-top: 5px;
+      }
+    }
+
+    /* =========================================================
+       MOBILE LANDSCAPE / LAPTOP PENDEK
+       Otomatis menjadi dua kolom supaya tetap satu layar.
+       ========================================================= */
+
+    @media (max-height: 600px)
+      and (orientation: landscape) {
+
+      .app-shell {
+        display: grid;
+        grid-template-columns:
+          minmax(320px, 45vw)
+          minmax(420px, 55vw);
+        grid-template-rows: 100dvh;
+      }
+
+      .hero {
+        width: 100%;
+        height: 100dvh;
+        min-height: 0 !important;
+        padding:
+          16px 26px 18px;
+        border-radius:
+          0 36px 36px 0;
+      }
+
+      .brand-logo {
+        width: 48px;
+        height: 48px;
+        flex-basis: 48px;
+        border-radius: 15px;
+      }
+
+      .brand-copy h1 {
+        font-size: 1.2rem;
+      }
+
+      .brand-copy p {
+        margin-top: 3px;
+        font-size: .48rem;
+      }
+
+      .hero-content {
+        margin-top: 20px;
+      }
+
+      .hero-pill {
+        padding: 5px 9px;
+        font-size: .52rem;
+      }
+
+      .hero-title {
+        margin-top: 10px;
+        font-size:
+          clamp(2rem, 5vw, 3.35rem);
+      }
+
+      .hero-line {
+        margin-top: 8px;
+      }
+
+      .hero-desc {
+        margin-top: 7px;
+        font-size: .62rem;
+      }
+
+      .mosque-art {
+        width:
+          min(30vw, 245px);
+        right: -4%;
+        bottom: -8px;
+      }
+
+      .content-wrap {
+        width: 100%;
+        height: 100dvh;
+        margin: 0;
+        padding: 10px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .welcome-panel {
+        width: min(100%, 620px);
+        max-height: calc(100dvh - 20px);
+        padding:
+          29px 24px 10px;
+        border-radius: 26px;
+      }
+
+      .panel-emblem {
+        width: 40px;
+        height: 40px;
+        top: 4px;
+      }
+
+      .panel-emblem svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .welcome-kicker {
+        font-size: .52rem;
+      }
+
+      .welcome-title {
+        margin-top: 2px;
+        font-size: 1.55rem;
+      }
+
+      .welcome-title::after {
+        margin-top: 5px;
+      }
+
+      .portal-grid {
+        margin-top: 8px;
+        gap: 8px;
+      }
+
+      .portal-option {
+        min-height: 99px;
+        padding: 8px 10px;
+        border-radius: 17px;
+      }
+
+      .option-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+      }
+
+      .option-icon svg {
+        width: 19px;
+        height: 19px;
+      }
+
+      .portal-option h3 {
+        margin-top: 4px;
+        font-size: .72rem;
+      }
+
+      .portal-option h3::after {
+        margin-top: 3px;
+      }
+
+      .portal-option p {
+        margin-top: 4px;
+        font-size: .49rem;
+        line-height: 1.2;
+      }
+
+      .option-arrow {
+        width: 24px;
+        height: 24px;
+      }
+
+      .primary-button {
+        min-height: 40px;
+        margin-top: 7px;
+        font-size: .72rem;
+        border-radius: 13px;
+      }
+
+      .button-shield {
+        width: 20px;
+        height: 20px;
+        flex-basis: 20px;
+      }
+
+      .support-note {
+        margin-top: 5px;
+        padding: 5px 8px;
+        font-size: .49rem;
+      }
+
+      .note-icon {
+        width: 27px;
+        height: 27px;
+        flex-basis: 27px;
+      }
+
+      .panel-divider {
+        margin-top: 4px;
+      }
+
+      .copyright {
+        margin-top: 2px;
+        font-size: .43rem;
+      }
+
+      .login-title {
+        font-size: 1.4rem;
+      }
+
+      .login-desc {
+        margin-top: 4px;
+        font-size: .53rem;
+      }
+
+      .login-form {
+        margin-top: 8px;
+      }
+
+      .form-group {
+        margin-bottom: 6px;
+      }
+
+      .input-shell {
+        min-height: 39px;
+      }
+
+      .form-control {
+        padding: 9px 0;
+        font-size: .7rem;
+      }
+
+      .back-button {
+        min-height: 32px;
+        margin-top: 5px;
+      }
+    }
+
   </style>
 </head>
 
-<body class="portal-shell">
+<body>
   <div
-    class="mobile-menu-overlay"
-    onclick="toggleSidebar()"
-  ></div>
-
-  <aside
-    class="sidebar"
-    id="mainSidebar"
+    id="splashScreen"
+    aria-label="Memuat CAHAYA APP"
   >
-    <div class="sidebar-top">
-      <section class="brand-card">
-        <div class="brand-main">
-          <div class="brand-logo-shell">
-            <img
-              src="../../assets/logofi.png"
-              alt="Logo Pesantren Cahaya Fajrul Islam"
-              class="brand-logo"
+    <div class="splash-logo">
+      <img
+        src="assets/logofi.png"
+        alt="Logo Pesantren Cahaya Fajrul Islam"
+      >
+    </div>
+
+    <div
+      class="splash-title"
+      id="loadingText"
+    >
+      CAHAYA APP
+    </div>
+
+    <div class="splash-subtitle">
+      Pesantren Cahaya Fajrul Islam
+    </div>
+
+    <div class="splash-loader"></div>
+  </div>
+
+  <main class="app-shell">
+    <section class="hero">
+      <div
+        class="hero-sparkles"
+        aria-hidden="true"
+      >
+        <span class="spark s1"></span>
+        <span class="spark s2"></span>
+        <span class="spark s3"></span>
+      </div>
+
+      <div class="brand-row">
+        <div class="brand-logo">
+          <img
+            src="assets/logofi.png"
+            alt="Logo CAHAYA APP"
+          >
+        </div>
+
+        <div class="brand-copy">
+          <h1>CAHAYA APP</h1>
+
+          <p>
+            Pesantren Cahaya Fajrul Islam
+          </p>
+        </div>
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-pill">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2.6 14 7l4.4-1.4-1.4 4.4 4.4 2-4.4 2 1.4 4.4-4.4-1.4-2 4.4-2-4.4-4.4 1.4 1.4-4.4-4.4-2 4.4-2-1.4-4.4L10 7l2-4.4Z"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linejoin="round"
             />
-          </div>
+          </svg>
 
-          <div class="brand-text">
-            <span class="brand-kicker">
-              Holistic Islamic School
-            </span>
-
-            <h1>CAHAYA APP</h1>
-
-            <p>Portal Wali Santri</p>
-          </div>
+          HOLISTIC ISLAMIC SCHOOL
         </div>
 
-        <div class="brand-status">
-          <span class="brand-status-dot"></span>
-          Terhubung dengan perkembangan santri
-        </div>
-      </section>
-    </div>
+        <h2 class="hero-title">
+          Bersama kita wujudkan
+          <span>GEN CAHAYA</span>
+        </h2>
 
-    <div class="sidebar-scroll">
-      <nav class="nav-menu" id="waliNavMenu">
-        <div class="menu-group" id="waliFeatureGroup">
-          <div class="group-label">Informasi Santri</div>
+        <div class="hero-line"></div>
 
-          <a class="nav-item" id="menu-beranda-wali" data-menu-id="menu-beranda-wali" data-page-url="beranda.html" onclick="loadPage('beranda.html', this)">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Beranda Wali</span>
-            <span class="nav-arrow">›</span>
-          </a>
-
-          <a class="nav-item" id="menu-akademik-wali" data-menu-id="menu-akademik-wali" data-page-url="akademik.html" onclick="loadPage('akademik.html', this)" hidden>
-            <span class="nav-icon">📚</span>
-            <span class="nav-label">Laporan Akademik</span>
-            <span class="nav-arrow">›</span>
-          </a>
-
-          <a class="nav-item" id="menu-karakter-wali" data-menu-id="menu-karakter-wali" data-page-url="karakter.html" onclick="loadPage('karakter.html', this)" hidden>
-            <span class="nav-icon">🕌</span>
-            <span class="nav-label">Laporan Karakter</span>
-            <span class="nav-arrow">›</span>
-          </a>
-
-          <a class="nav-item" id="menu-pembinaan-wali" data-menu-id="menu-pembinaan-wali" data-page-url="pembinaan.html" onclick="loadPage('pembinaan.html', this)" hidden>
-            <span class="nav-icon">📋</span>
-            <span class="nav-label">Laporan Pembinaan</span>
-            <span class="nav-arrow">›</span>
-          </a>
-
-          <a class="nav-item" id="menu-informasi-penting-wali" data-menu-id="menu-informasi-penting-wali" data-page-url="informasi-penting.html" onclick="loadPage('informasi-penting.html', this)" hidden>
-            <span class="nav-icon">📌</span>
-            <span class="nav-label">Informasi Penting</span>
-            <span class="nav-arrow">›</span>
-          </a>
-        </div>
-
-        <div class="menu-access-empty" id="waliNoAccess" hidden>
-          <span>🔒</span>
-          <strong>Belum ada fitur yang diizinkan</strong>
-          <small>Administrator perlu mencentang fitur Portal Wali pada Manajemen Pengguna.</small>
-        </div>
-
-        <button type="button" id="navProfil" onclick="loadPage('profil.html', this)" hidden aria-hidden="true"></button>
-      </nav>
-    </div>
-
-    <div class="sidebar-bottom">
-      <div class="guardian-mini-card">
-        <div class="guardian-mini-icon">👪</div>
-
-        <div class="guardian-mini-copy">
-          <strong>Akun Wali Aktif</strong>
-          <span>
-            Akses perkembangan ananda secara aman
-          </span>
-        </div>
+        
       </div>
 
-      <button
-        type="button"
-        class="btn-logout"
-        onclick="logout()"
+      <svg
+        class="mosque-art"
+        viewBox="0 0 520 570"
+        fill="none"
+        aria-hidden="true"
       >
-        <span>🚪</span>
-        Keluar Sistem
-      </button>
-    </div>
-  </aside>
+        <defs>
+          <linearGradient
+            id="mosqueWall"
+            x1="143"
+            y1="188"
+            x2="430"
+            y2="558"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#F5FBFF"/>
+            <stop offset="1" stop-color="#A4C9F8"/>
+          </linearGradient>
 
-  <main class="main-content">
-    <header class="mobile-header">
-      <button
-        type="button"
-        class="menu-toggle-btn"
-        onclick="toggleSidebar()"
-        aria-label="Buka menu"
-      >
-        ☰
-      </button>
+          <linearGradient
+            id="mosqueDome"
+            x1="290"
+            y1="60"
+            x2="381"
+            y2="184"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#41C8FF"/>
+            <stop offset="1" stop-color="#176DDE"/>
+          </linearGradient>
 
-      <div class="mobile-brand">
-        <img
-          src="../../assets/logofi.png"
-          alt="Logo"
+          <linearGradient
+            id="mosqueShadow"
+            x1="160"
+            y1="206"
+            x2="460"
+            y2="530"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#D7EBFF"/>
+            <stop offset="1" stop-color="#6AA6EA"/>
+          </linearGradient>
+        </defs>
+
+        <path
+          d="M358 39c15 20 11 32-5 42 15-3 27 2 35 15-8-6-17-7-28-4 2-16 1-34-2-53Z"
+          fill="#D9EEFF"
         />
-        PORTAL WALI
-      </div>
 
-      <div class="mobile-header-actions">
-        <button
-          type="button"
-          class="wali-chat-top-button"
-          id="waliChatTopMobile"
-          onclick="toggleWaliChat()"
-          aria-label="Buka Live Chat"
-          title="Live Chat"
-        >
-          💬
-          <span class="wali-chat-badge" id="waliChatBadgeMobile">0</span>
-        </button>
+        <path
+          d="M357 76v20"
+          stroke="#D9EEFF"
+          stroke-width="5"
+          stroke-linecap="round"
+        />
 
-        <div
-          class="avatar-circle"
-          id="mobileAvatar"
-          style="
-            width:40px;
-            height:40px;
-            flex-basis:40px;
-            font-size:.9rem;
-          "
-          onclick="document.getElementById('navProfil').click()"
-        >
-          S
-        </div>
-      </div>
-    </header>
+        <path
+          d="M269 170c9-66 46-103 91-105 43-2 85 32 99 102H269Z"
+          fill="url(#mosqueDome)"
+        />
 
-    <header class="top-bar">
-      <div class="page-heading">
-        <span class="page-kicker">
-          Portal Informasi Wali Santri
-        </span>
+        <path
+          d="M279 162c18-60 49-86 82-88 35-1 69 28 86 87"
+          stroke="#8EDBFF"
+          stroke-width="5"
+          stroke-linecap="round"
+          opacity=".65"
+        />
 
-        <div
-          class="page-title"
-          id="currentPageTitle"
-        >
-          Beranda Ringkasan
-        </div>
-      </div>
+        <path
+          d="M260 170h208v31H260z"
+          fill="#D7EBFF"
+        />
 
-      <div class="top-bar-actions">
-        <button
-          type="button"
-          class="wali-chat-top-button"
-          id="waliChatTopDesktop"
-          onclick="toggleWaliChat()"
-          aria-label="Buka Live Chat"
-          title="Live Chat"
-        >
-          💬
-          <span class="wali-chat-badge" id="waliChatBadgeDesktop">0</span>
-        </button>
+        <path
+          d="M232 197h263v373H232z"
+          fill="url(#mosqueWall)"
+        />
 
-        <div
-          class="student-badge"
-          onclick="document.getElementById('navProfil').click()"
-          title="Buka profil santri"
-        >
-        <div class="student-info">
-          <span
-            class="label"
-            id="waliLabel"
-          >
-            Wali dari santri
-          </span>
+        <path
+          d="M112 288h152v282H112z"
+          fill="url(#mosqueShadow)"
+        />
 
-          <span
-            class="name"
-            id="studentNameLabel"
-          >
-            Memuat...
-          </span>
-        </div>
+        <path
+          d="M50 343h93v227H50z"
+          fill="#7EB2EC"
+        />
 
-        <div
-          class="avatar-circle"
-          id="studentAvatar"
-        >
-          S
-        </div>
-        </div>
-      </div>
-    </header>
+        <path
+          d="M289 262h149v308H289z"
+          fill="#BDD8F8"
+        />
 
-    <section class="workspace">
-      <div class="frame-shell">
-        <iframe
-          id="contentFrame"
-          src="about:blank"
-          data-initial-page="beranda.html"
-          title="Konten Portal Wali Santri"
-        ></iframe>
-      </div>
+        <path
+          d="M307 570V356c0-49 31-87 57-110 27 22 57 61 57 110v214H307Z"
+          fill="#83AFE7"
+        />
+
+        <path
+          d="M326 570V368c0-37 20-69 38-87 19 18 38 50 38 87v202H326Z"
+          fill="#E8F4FF"
+        />
+
+        <path
+          class="glow-window"
+          d="M342 570V386c0-25 12-50 22-63 11 13 23 38 23 63v184H342Z"
+          fill="#FFE6A8"
+          opacity=".68"
+        />
+
+        <path
+          d="M333 385h62M333 430h62M333 475h62"
+          stroke="#6C9FDC"
+          stroke-width="4"
+          opacity=".7"
+        />
+
+        <path
+          d="M364 325v245"
+          stroke="#6C9FDC"
+          stroke-width="4"
+          opacity=".7"
+        />
+
+        <path
+          d="M141 570V395c0-35 21-67 45-87 23 20 44 52 44 87v175H141Z"
+          fill="#DAEBFF"
+        />
+
+        <path
+          class="glow-window"
+          d="M160 570V411c0-25 12-47 26-61 13 14 26 36 26 61v159H160Z"
+          fill="#FFE5A1"
+          opacity=".5"
+        />
+
+        <path
+          d="M72 570V434c0-25 15-49 33-64 17 15 32 39 32 64v136H72Z"
+          fill="#C9E2FF"
+        />
+
+        <path
+          d="M251 228h223M251 247h223"
+          stroke="#80AFE7"
+          stroke-width="7"
+          opacity=".82"
+        />
+
+        <path
+          d="M99 315h162M58 371h84"
+          stroke="#BBD8F7"
+          stroke-width="7"
+          opacity=".86"
+        />
+
+        <path
+          d="M0 570h520"
+          stroke="#B9DAF8"
+          stroke-width="10"
+          stroke-linecap="round"
+        />
+      </svg>
+
+      <svg
+        class="hero-leaves"
+        viewBox="0 0 180 180"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M16 168c37-46 62-85 83-145"
+          stroke="#012A87"
+          stroke-width="9"
+          stroke-linecap="round"
+        />
+
+        <path
+          d="M72 97C39 70 22 67 8 72c10 30 27 43 64 25Z"
+          fill="#01399F"
+        />
+
+        <path
+          d="M88 58C78 27 80 11 89 0c24 20 30 39-1 58Z"
+          fill="#01399F"
+        />
+
+        <path
+          d="M100 116c33-26 52-28 69-21-15 29-35 40-69 21Z"
+          fill="#01399F"
+        />
+      </svg>
     </section>
 
-    <footer class="app-footer">
-      <p class="footer-brand">
-        <span class="footer-brand-mark"></span>
-        CAHAYA <span>APP</span>
-      </p>
+    <div class="content-wrap">
+      <section class="welcome-panel">
+        <div class="panel-emblem">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2.5 14.2 7l4.6-1.2-1.3 4.5 4.2 1.7-4.2 1.7 1.3 4.5-4.6-1.2L12 21.5 9.8 17l-4.6 1.2 1.3-4.5L2.3 12l4.2-1.7-1.3-4.5L9.8 7 12 2.5Z"
+              stroke="currentColor"
+              stroke-width="1.45"
+              stroke-linejoin="round"
+            />
 
-      <p class="footer-copyright">
-        &copy; 2026 Pesantren Cahaya Fajrul Islam
-      </p>
-    </footer>
+            <circle
+              cx="12"
+              cy="12"
+              r="3.1"
+              stroke="currentColor"
+              stroke-width="1.45"
+            />
+          </svg>
+        </div>
+
+        <div id="welcomeView">
+          <p class="welcome-kicker">
+            Bismillahirrahmanirrahim
+          </p>
+
+          <h2 class="welcome-title">
+            Selamat Datang
+          </h2>
+
+          <div class="portal-grid">
+            <button
+              type="button"
+              class="portal-option"
+              onclick="tampilkanLogin()"
+              aria-label="Masuk sebagai Wali Santri"
+            >
+              <span class="option-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="9"
+                    cy="8"
+                    r="3"
+                    fill="currentColor"
+                    opacity=".92"
+                  />
+
+                  <circle
+                    cx="16.5"
+                    cy="9"
+                    r="2.4"
+                    fill="currentColor"
+                    opacity=".72"
+                  />
+
+                  <path
+                    d="M3.7 19c.3-4 2.4-6.1 5.3-6.1 3 0 5.1 2.1 5.4 6.1H3.7Z"
+                    fill="currentColor"
+                  />
+
+                  <path
+                    d="M13.7 18.8c.2-3 1.7-4.8 4-4.8 2.2 0 3.8 1.8 4 4.8h-8Z"
+                    fill="currentColor"
+                    opacity=".72"
+                  />
+                </svg>
+              </span>
+
+              <h3>Wali Santri</h3>
+
+              <p>
+                Memantau perkembangan anak,
+                laporan, agenda, dan informasi
+                pesantren.
+              </p>
+
+              <span class="option-arrow">→</span>
+            </button>
+
+            <button
+              type="button"
+              class="portal-option"
+              onclick="tampilkanLogin()"
+              aria-label="Masuk sebagai Pengurus dan Pegawai"
+            >
+              <span class="option-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M8.3 6.2V5.1c0-1.1.9-2 2-2h3.4c1.1 0 2 .9 2 2v1.1"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+
+                  <rect
+                    x="3"
+                    y="6"
+                    width="18"
+                    height="14"
+                    rx="3"
+                    fill="currentColor"
+                    opacity=".92"
+                  />
+
+                  <path
+                    d="M3 11.5c4.6 2.5 13.4 2.5 18 0"
+                    stroke="#fff"
+                    stroke-width="1.5"
+                    opacity=".9"
+                  />
+
+                  <rect
+                    x="10"
+                    y="11"
+                    width="4"
+                    height="3.2"
+                    rx="1"
+                    fill="#fff"
+                  />
+                </svg>
+              </span>
+
+              <h3>
+                Pengurus &amp; Pegawai
+              </h3>
+
+              <p>
+                Mengelola tugas, pembinaan,
+                akademik, layanan, dan
+                operasional.
+              </p>
+
+              <span class="option-arrow">→</span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="primary-button"
+            onclick="tampilkanLogin()"
+          >
+            <svg
+              class="button-shield"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 2.5 20 6v5.3c0 5.2-3.3 8.5-8 10.2-4.7-1.7-8-5-8-10.2V6l8-3.5Z"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linejoin="round"
+              />
+
+              <path
+                d="m8.6 12 2.1 2.1 4.8-5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+
+            <span>
+              Masuk ke Portal CAHAYA
+            </span>
+
+            <span class="button-arrow">
+              →
+            </span>
+          </button>
+
+          <div class="support-note">
+            <span class="note-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2.8 19.4 6v5c0 4.8-3 7.8-7.4 9.5C7.6 18.8 4.6 15.8 4.6 11V6L12 2.8Z"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linejoin="round"
+                />
+
+                <rect
+                  x="9"
+                  y="10.2"
+                  width="6"
+                  height="5"
+                  rx="1.2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+
+                <path
+                  d="M10.2 10.2V8.8a1.8 1.8 0 1 1 3.6 0v1.4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+
+            <span>
+              Gunakan username dan kata sandi
+              resmi yang diberikan oleh pihak
+              pesantren.
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="install-button"
+            id="tombolInstal"
+          >
+            📲 Instal CAHAYA APP
+          </button>
+        </div>
+
+        <div id="loginView">
+          <div class="login-head">
+            <p class="welcome-kicker">
+              Portal Terintegrasi
+            </p>
+
+            <h2 class="login-title">
+              Masuk ke CAHAYA APP
+            </h2>
+
+            <p class="login-desc">
+              Silakan gunakan akun resmi yang
+              telah diberikan oleh pihak pesantren.
+            </p>
+          </div>
+
+          <form
+            class="login-form"
+            id="loginForm"
+          >
+            <div id="errorMsg">
+              Username atau kata sandi tidak valid.
+            </div>
+
+            <div class="form-group">
+              <label for="username">
+                Username
+              </label>
+
+              <div class="input-shell">
+                <svg
+                  class="input-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="12"
+                    cy="8"
+                    r="3.4"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                  />
+
+                  <path
+                    d="M5.2 20c.4-4.2 3-6.6 6.8-6.6s6.4 2.4 6.8 6.6"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+                </svg>
+
+                <input
+                  type="text"
+                  id="username"
+                  class="form-control"
+                  placeholder="Masukkan username"
+                  autocomplete="username"
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="password">
+                Kata Sandi
+              </label>
+
+              <div class="input-shell">
+                <svg
+                  class="input-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="5"
+                    y="10"
+                    width="14"
+                    height="10"
+                    rx="2.5"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                  />
+
+                  <path
+                    d="M8.2 10V7.7a3.8 3.8 0 1 1 7.6 0V10"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+                </svg>
+
+                <input
+                  type="password"
+                  id="password"
+                  class="form-control"
+                  placeholder="Masukkan kata sandi"
+                  autocomplete="current-password"
+                  required
+                >
+
+                <button
+                  type="button"
+                  class="toggle-password"
+                  onclick="togglePasswordVisibility()"
+                  aria-label="Lihat atau sembunyikan kata sandi"
+                >
+                  <svg
+                    id="eyeIcon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    width="20"
+                    height="20"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="2.7"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="primary-button"
+              id="btnSubmit"
+            >
+              <svg
+                class="button-shield"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2.5 20 6v5.3c0 5.2-3.3 8.5-8 10.2-4.7-1.7-8-5-8-10.2V6l8-3.5Z"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linejoin="round"
+                />
+
+                <path
+                  d="m8.6 12 2.1 2.1 4.8-5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+
+              <span id="btnSubmitText">
+                Login Sekarang
+              </span>
+
+              <span class="button-arrow">
+                →
+              </span>
+            </button>
+          </form>
+
+          <button
+            type="button"
+            class="back-button"
+            onclick="tampilkanWelcome()"
+          >
+            ← Kembali ke Halaman Awal
+          </button>
+        </div>
+
+        <div class="panel-divider">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2.5 14.2 7l4.6-1.2-1.3 4.5 4.2 1.7-4.2 1.7 1.3 4.5-4.6-1.2L12 21.5 9.8 17l-4.6 1.2 1.3-4.5L2.3 12l4.2-1.7-1.3-4.5L9.8 7 12 2.5Z"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+
+        <p class="copyright">
+          © 2026 Pesantren Cahaya Fajrul Islam
+        </p>
+      </section>
+    </div>
   </main>
-
-  <nav
-    class="wali-mobile-bottom-nav"
-    id="waliMobileBottomNav"
-    aria-label="Pintasan utama Portal Wali"
-  ></nav>
-
-  <section
-    class="wali-chat-window"
-    id="waliChatWindow"
-    aria-label="Live Chat Portal Wali"
-  >
-    <header class="wali-chat-header">
-      <button
-        type="button"
-        class="wali-chat-header-btn"
-        id="waliChatBackButton"
-        onclick="showWaliChatList()"
-        aria-label="Kembali"
-        style="display:none;"
-      >←</button>
-
-      <div class="wali-chat-header-copy">
-        <strong id="waliChatHeaderTitle">Live Chat CAHAYA</strong>
-        <span id="waliChatHeaderSubtitle">Komunikasi wali dan pengurus pesantren</span>
-      </div>
-
-      <button
-        type="button"
-        class="wali-chat-header-btn"
-        onclick="toggleWaliChat()"
-        aria-label="Tutup Live Chat"
-      >✕</button>
-    </header>
-
-    <div class="wali-chat-tabs" id="waliChatTabs">
-      <button type="button" class="wali-chat-tab active" id="waliInboxTab" onclick="switchWaliChatTab('inbox')">Percakapan</button>
-      <button type="button" class="wali-chat-tab" id="waliContactsTab" onclick="switchWaliChatTab('contacts')">Kontak</button>
-    </div>
-
-    <div class="wali-chat-search" id="waliChatSearchWrap">
-      <input type="search" id="waliChatSearch" placeholder="Cari percakapan atau kontak" oninput="filterWaliChatList()" autocomplete="off">
-    </div>
-
-    <div class="wali-chat-list" id="waliChatList">
-      <div class="wali-chat-empty">Menyiapkan Live Chat...</div>
-    </div>
-
-    <div class="wali-chat-messages" id="waliChatMessages"></div>
-
-    <footer class="wali-chat-footer" id="waliChatFooter">
-      <textarea id="waliChatInput" rows="1" placeholder="Ketik pesan" oninput="autoResizeWaliChatInput()" onkeydown="handleWaliChatEnter(event)"></textarea>
-      <button type="button" class="wali-chat-send" onclick="sendWaliChatMessage()" aria-label="Kirim pesan">➤</button>
-    </footer>
-  </section>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="script.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
-      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
-      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-      projectId: "absensi-santri-fajrul-islam"
+      apiKey:
+        "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+
+      authDomain:
+        "absensi-santri-fajrul-islam.firebaseapp.com",
+
+      databaseURL:
+        "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+
+      projectId:
+        "absensi-santri-fajrul-islam",
+
+      storageBucket:
+        "absensi-santri-fajrul-islam.firebasestorage.app",
+
+      messagingSenderId:
+        "739982369926",
+
+      appId:
+        "1:739982369926:web:7e5375c3ddbaf0584cdd07"
     };
 
     if (!firebase.apps.length) {
@@ -1960,1293 +3227,469 @@
     const db =
       firebase.firestore();
 
-    const dbRT =
-      firebase.database();
-
-    let portalState = null;
-    let currentPortalPage =
-      "";
-
-    const WALI_HOME_MENU_ID =
-      "menu-beranda-wali";
-
-    const WALI_MENU_CONFIG = {
-      "menu-beranda-wali": {
-        url: "beranda.html",
-        title: "Beranda Wali",
-        alwaysAllowed: true
-      },
-      "menu-akademik-wali": {
-        url: "akademik.html",
-        title: "Laporan Akademik"
-      },
-      "menu-karakter-wali": {
-        url: "karakter.html",
-        title: "Laporan Karakter"
-      },
-      "menu-pembinaan-wali": {
-        url: "pembinaan.html",
-        title: "Laporan Pembinaan"
-      },
-      "menu-informasi-penting-wali": {
-        url: "informasi-penting.html",
-        title: "Informasi Penting"
-      }
-    };
-
-    const LEGACY_WALI_MENU_MAP = {
-      "menu-laporan-wali": "menu-akademik-wali"
-    };
-
-    let authorizedWaliMenus = new Set();
-    let authorizationReady = false;
-
-    function normalizeWaliMenuList(value) {
-      const result = new Set();
-
-      (Array.isArray(value) ? value : []).forEach(menuId => {
-        result.add(LEGACY_WALI_MENU_MAP[menuId] || menuId);
-      });
-
-      return [...result].filter(menuId => Boolean(WALI_MENU_CONFIG[menuId]));
-    }
-
-    function menuIdFromUrl(url = "") {
-      const cleanUrl = String(url).split("?")[0].split("#")[0];
-
-      return Object.keys(WALI_MENU_CONFIG).find(menuId =>
-        WALI_MENU_CONFIG[menuId].url === cleanUrl
-      ) || "";
-    }
-
-    function isWaliMenuAllowed(menuId) {
-      return Boolean(menuId) && (
-        menuId === WALI_HOME_MENU_ID ||
-        authorizedWaliMenus.has(menuId)
-      );
-    }
-
-    function applyWaliMenuVisibility() {
-      const items = [...document.querySelectorAll('.nav-item[data-menu-id]')];
-      let firstAllowed = null;
-
-      items.forEach(item => {
-        const allowed = isWaliMenuAllowed(item.dataset.menuId);
-        item.hidden = !allowed;
-        item.classList.remove("active");
-
-        if (allowed && !firstAllowed) {
-          firstAllowed = item;
-        }
-      });
-
-      const group = document.getElementById("waliFeatureGroup");
-      const empty = document.getElementById("waliNoAccess");
-      const hasAccess = Boolean(firstAllowed);
-
-      if (group) group.hidden = !hasAccess;
-      if (empty) empty.hidden = hasAccess;
-
-      renderWaliMobileShortcuts();
-      return firstAllowed;
-    }
-
-    async function loadWaliAuthorization(force = false) {
-      if (authorizationReady && !force) {
-        return authorizedWaliMenus;
-      }
-
-      try {
-        const snapshot = await db.collection("settings").doc("role_menus").get();
-        const data = snapshot.exists ? snapshot.data() : {};
-        authorizedWaliMenus = new Set(normalizeWaliMenuList(data.wali));
-      } catch (error) {
-        authorizedWaliMenus = new Set();
-        console.error("Otorisasi Portal Wali gagal dimuat:", error);
-      }
-
-      authorizationReady = true;
-      applyWaliMenuVisibility();
-      return authorizedWaliMenus;
-    }
-
-    function showNoAuthorizedFeature() {
-      document.querySelectorAll(".nav-item").forEach(item =>
-        item.classList.remove("active")
-      );
-
-      const frame = document.getElementById("contentFrame");
-      frame.removeAttribute("src");
-      frame.srcdoc = `<!DOCTYPE html>
-        <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-        <style>
-          *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font-family:Nunito,Arial,sans-serif;color:#33425f;background:linear-gradient(180deg,#f4f8ff,#fbfdff)}
-          .box{width:min(520px,100%);padding:30px;text-align:center;border:1px solid #e2eaf6;border-radius:22px;background:#fff;box-shadow:0 18px 45px rgba(35,78,160,.10)}
-          .icon{font-size:42px}.box h2{margin:12px 0 8px;color:#152347;font-size:1.25rem}.box p{margin:0;color:#71809e;font-size:.86rem;font-weight:650;line-height:1.65}
-        </style></head><body><div class="box"><div class="icon">🔒</div><h2>Akses Belum Diberikan</h2><p>Belum ada fitur Portal Wali yang diaktifkan untuk akun ini. Administrator dapat mengaturnya melalui Manajemen Pengguna.</p></div></body></html>`;
-
-      document.getElementById("currentPageTitle").textContent = "Akses Belum Diberikan";
-    }
-
-    async function openWaliHome() {
-      applyWaliMenuVisibility();
-
-      const homeMenu =
-        document.getElementById(WALI_HOME_MENU_ID);
-
-      await loadPage(
-        "beranda.html",
-        homeMenu
-      );
-    }
-
-
-    const WALI_MOBILE_SHORTCUT_META = {
-      "menu-beranda-wali": {
-        icon: "🏠",
-        label: "Beranda"
-      },
-      "menu-akademik-wali": {
-        icon: "📚",
-        label: "Akademik"
-      },
-      "menu-karakter-wali": {
-        icon: "🕌",
-        label: "Karakter"
-      },
-      "menu-pembinaan-wali": {
-        icon: "📋",
-        label: "Pembinaan"
-      },
-      "menu-informasi-penting-wali": {
-        icon: "📌",
-        label: "Informasi"
-      }
-    };
-
-    const WALI_MOBILE_SHORTCUT_ORDER = [
-      "menu-beranda-wali",
-      "menu-akademik-wali",
-      "menu-karakter-wali",
-      "menu-pembinaan-wali",
-      "menu-informasi-penting-wali"
-    ];
-
-    function getWaliMobileShortcutIds() {
-      return WALI_MOBILE_SHORTCUT_ORDER
-        .filter(isWaliMenuAllowed)
-        .slice(0, 5);
-    }
-
-    function renderWaliMobileShortcuts() {
-      const nav =
-        document.getElementById("waliMobileBottomNav");
-
-      if (!nav) return;
-
-      const menuIds =
-        getWaliMobileShortcutIds();
-
-      if (!menuIds.length) {
-        nav.innerHTML = "";
-        nav.classList.remove("ready");
-        return;
-      }
-
-      nav.style.setProperty(
-        "--wali-shortcut-count",
-        String(menuIds.length)
-      );
-
-      nav.innerHTML = `
-        <div class="wali-mobile-bottom-nav-inner">
-          ${menuIds.map(menuId => {
-            const meta = WALI_MOBILE_SHORTCUT_META[menuId];
-            return `
-              <button
-                type="button"
-                class="wali-mobile-shortcut-btn"
-                data-menu-id="${menuId}"
-                onclick="openWaliMobileShortcut('${menuId}')"
-                aria-label="Buka ${meta.label}"
-                title="${meta.label}"
-              >
-                <span class="wali-mobile-shortcut-icon">${meta.icon}</span>
-                <span class="wali-mobile-shortcut-label">${meta.label}</span>
-              </button>
-            `;
-          }).join("")}
-        </div>
-      `;
-
-      nav.classList.add("ready");
-      setWaliMobileBottomActive(
-        menuIdFromUrl(currentPortalPage) ||
-        WALI_HOME_MENU_ID
-      );
-    }
-
-    function setWaliMobileBottomActive(menuId = "") {
-      document
-        .querySelectorAll("#waliMobileBottomNav .wali-mobile-shortcut-btn")
-        .forEach(button => {
-          button.classList.toggle(
-            "active",
-            button.dataset.menuId === menuId
-          );
-        });
-    }
-
-    function openWaliMobileShortcut(menuId) {
-      if (!isWaliMenuAllowed(menuId)) return;
-
-      const menu =
-        document.getElementById(menuId);
-
-      const config =
-        WALI_MENU_CONFIG[menuId];
-
-      if (menu && config) {
-        loadPage(config.url, menu);
-      }
-    }
-
-    let waliChatContacts = [];
-    let waliChatInbox = [];
-    let waliChatMode = "inbox";
-    let waliChatRoomId = "";
-    let waliChatOpponent = "";
-    let waliChatRoomListener = null;
-    let waliChatGlobalListenerStarted = false;
-
-    const WALI_CHAT_ALLOWED_ROLES = new Set([
-      "admin",
-      "direktur",
-      "wakil",
-      "supervisor",
-      "konselor",
-      "naqib",
-      "guru",
-      "kesehatan",
-      "sarpras",
-      "layanan",
-      "cla"
-    ]);
-
-    function cleanWaliChatIdentity(value = "") {
-      return String(value)
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .toLowerCase();
-    }
-
-    function getWaliChatIdentity() {
-      const account =
-        portalState?.account || {};
-
-      const student =
-        portalState?.student || {};
-
-      const studentName =
-        student.namaAnak ||
-        student.namaSantri ||
-        student.label ||
-        "Santri";
-
-      return String(
-        account.label ||
-        account.nama ||
-        account.displayName ||
-        account.username ||
-        `Abi Ummi ${studentName}`
-      ).trim();
-    }
-
-    function buildWaliChatRoomId(a, b) {
-      return "chat_" + [
-        cleanWaliChatIdentity(a),
-        cleanWaliChatIdentity(b)
-      ].sort().join("_");
-    }
-
-    function encodeWaliChatArg(value = "") {
-      return encodeURIComponent(String(value)).replace(/'/g, "%27");
-    }
-
-    function escapeWaliChatHTML(value = "") {
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function formatWaliChatTime(value) {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return "";
-
-      return new Intl.DateTimeFormat(
-        "id-ID",
-        {
-          day: "2-digit",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit"
-        }
-      ).format(date);
-    }
-
-    async function initializeWaliChat() {
-      try {
-        const snapshot =
-          await db.collection("users").get();
-
-        const meClean =
-          cleanWaliChatIdentity(getWaliChatIdentity());
-
-        waliChatContacts = [];
-
-        snapshot.forEach(doc => {
-          const user = doc.data() || {};
-          const roles = Array.isArray(user.akses)
-            ? user.akses.map(role => String(role).toLowerCase())
-            : [];
-
-          if (!roles.some(role => WALI_CHAT_ALLOWED_ROLES.has(role))) {
-            return;
-          }
-
-          const actualName =
-            user.label ||
-            user.nama ||
-            user.username ||
-            doc.id;
-
-          if (
-            !actualName ||
-            cleanWaliChatIdentity(actualName) === meClean
-          ) {
-            return;
-          }
-
-          waliChatContacts.push({
-            actualName,
-            displayName:
-              user.label ||
-              user.nama ||
-              (user.username ? `@${user.username}` : doc.id),
-            username: user.username || doc.id,
-            roles,
-            photo:
-              user.fotoProfil ||
-              user.foto ||
-              ""
-          });
-        });
-
-        waliChatContacts.sort((a, b) =>
-          a.displayName.localeCompare(b.displayName, "id")
-        );
-
-        listenToWaliChatRooms();
-      } catch (error) {
-        console.error("Live Chat Wali gagal disiapkan:", error);
-      }
-    }
-
-    function updateWaliChatBadges(total = 0) {
-      [
-        "waliChatBadgeMobile",
-        "waliChatBadgeDesktop"
-      ].forEach(id => {
-        const badge = document.getElementById(id);
-        if (!badge) return;
-
-        badge.textContent =
-          total > 99 ? "99+" : String(total);
-
-        badge.style.display =
-          total > 0 ? "grid" : "none";
-      });
-    }
-
-    function listenToWaliChatRooms() {
-      if (waliChatGlobalListenerStarted) return;
-      waliChatGlobalListenerStarted = true;
-
-      dbRT
-        .ref("cahaya_app/pesan_global")
-        .on("value", snapshot => {
-          const rooms = snapshot.val() || {};
-          const me = getWaliChatIdentity();
-          const meClean = cleanWaliChatIdentity(me);
-          const inbox = [];
-          let unreadTotal = 0;
-
-          const broadcastMessages = rooms.room_broadcast_wali;
-          if (broadcastMessages && typeof broadcastMessages === "object") {
-            const messages = Object.entries(broadcastMessages)
-              .map(([id, message]) => ({ id, ...(message || {}) }))
-              .filter(message => message.waktu)
-              .sort((a, b) => new Date(a.waktu) - new Date(b.waktu));
-
-            if (messages.length) {
-              const lastMessage = messages[messages.length - 1];
-              const lastRead = localStorage.getItem("chat_read_room_broadcast_wali") || "0";
-              const unread = new Date(lastMessage.waktu) > new Date(lastRead);
-
-              if (unread) unreadTotal += 1;
-
-              inbox.push({
-                roomId: "room_broadcast_wali",
-                actualName: "BROADCAST_WALI",
-                displayName: "Pengumuman Pesantren",
-                lastMessage,
-                unread,
-                broadcast: true
-              });
-            }
-          }
-
-          Object.entries(rooms).forEach(([roomId, rawMessages]) => {
-            if (
-              roomId === "room_broadcast_wali" ||
-              !roomId.includes(meClean) ||
-              !rawMessages ||
-              typeof rawMessages !== "object"
-            ) {
-              return;
-            }
-
-            const messages = Object.entries(rawMessages)
-              .map(([id, message]) => ({ id, ...(message || {}) }))
-              .filter(message => message.waktu)
-              .sort((a, b) => new Date(a.waktu) - new Date(b.waktu));
-
-            if (!messages.length) return;
-
-            const lastMessage = messages[messages.length - 1];
-            const otherMessage = messages.find(message =>
-              message.pengirim && message.pengirim !== me
-            );
-
-            let opponent =
-              otherMessage?.pengirim ||
-              "Pengurus Pesantren";
-
-            const knownContact = waliChatContacts.find(contact =>
-              cleanWaliChatIdentity(contact.actualName) ===
-              cleanWaliChatIdentity(opponent)
-            );
-
-            if (knownContact) {
-              opponent = knownContact.displayName;
-            }
-
-            const lastRead =
-              localStorage.getItem(`chat_read_${roomId}`) || "0";
-
-            const unread =
-              lastMessage.pengirim !== me &&
-              new Date(lastMessage.waktu) > new Date(lastRead);
-
-            if (unread) unreadTotal += 1;
-
-            inbox.push({
-              roomId,
-              actualName: otherMessage?.pengirim || opponent,
-              displayName: opponent,
-              lastMessage,
-              unread,
-              broadcast: false
-            });
-          });
-
-          waliChatInbox = inbox.sort((a, b) =>
-            new Date(b.lastMessage.waktu) -
-            new Date(a.lastMessage.waktu)
-          );
-
-          updateWaliChatBadges(unreadTotal);
-
-          if (
-            document.getElementById("waliChatWindow")?.style.display === "flex" &&
-            !waliChatRoomId
-          ) {
-            renderWaliChatList();
-          }
-        });
-    }
-
-    function toggleWaliChat() {
-      const windowElement =
-        document.getElementById("waliChatWindow");
-
-      const isOpen =
-        windowElement.style.display === "flex";
-
-      if (isOpen) {
-        closeWaliChatRoomListener();
-        windowElement.style.display = "none";
-        return;
-      }
-
-      windowElement.style.display = "flex";
-      showWaliChatList();
-    }
-
-    function closeWaliChatRoomListener() {
-      if (waliChatRoomListener && waliChatRoomId) {
-        dbRT
-          .ref(`cahaya_app/pesan_global/${waliChatRoomId}`)
-          .off("value", waliChatRoomListener);
-      }
-
-      waliChatRoomListener = null;
-    }
-
-    function showWaliChatList() {
-      closeWaliChatRoomListener();
-      waliChatRoomId = "";
-      waliChatOpponent = "";
-
-      document.getElementById("waliChatBackButton").style.display = "none";
-      document.getElementById("waliChatHeaderTitle").textContent = "Live Chat CAHAYA";
-      document.getElementById("waliChatHeaderSubtitle").textContent = "Komunikasi wali dan pengurus pesantren";
-      document.getElementById("waliChatTabs").style.display = "flex";
-      document.getElementById("waliChatSearchWrap").style.display = "block";
-      document.getElementById("waliChatList").style.display = "block";
-      document.getElementById("waliChatMessages").style.display = "none";
-      document.getElementById("waliChatFooter").style.display = "none";
-
-      switchWaliChatTab(waliChatMode);
-    }
-
-    function switchWaliChatTab(mode) {
-      waliChatMode = mode === "contacts" ? "contacts" : "inbox";
-
-      document.getElementById("waliInboxTab").classList.toggle("active", waliChatMode === "inbox");
-      document.getElementById("waliContactsTab").classList.toggle("active", waliChatMode === "contacts");
-      document.getElementById("waliChatSearch").value = "";
-
-      renderWaliChatList();
-    }
-
-    function filterWaliChatList() {
-      renderWaliChatList(
-        document.getElementById("waliChatSearch").value
-      );
-    }
-
-    function renderWaliChatList(searchValue = "") {
-      const container =
-        document.getElementById("waliChatList");
-
-      if (!container) return;
-
-      const query =
-        String(searchValue).trim().toLowerCase();
-
-      const items = waliChatMode === "contacts"
-        ? waliChatContacts
-            .filter(contact =>
-              !query ||
-              contact.displayName.toLowerCase().includes(query) ||
-              contact.username.toLowerCase().includes(query)
-            )
-            .map(contact => ({
-              actualName: contact.actualName,
-              displayName: contact.displayName,
-              preview: contact.roles.join(" • "),
-              roomId: buildWaliChatRoomId(
-                getWaliChatIdentity(),
-                contact.actualName
-              ),
-              unread: false,
-              broadcast: false
-            }))
-        : waliChatInbox
-            .filter(item =>
-              !query ||
-              item.displayName.toLowerCase().includes(query) ||
-              String(item.lastMessage?.teks || "").toLowerCase().includes(query)
-            )
-            .map(item => ({
-              ...item,
-              preview: item.lastMessage?.teks || "Belum ada pesan"
-            }));
-
-      if (!items.length) {
-        container.innerHTML = `
-          <div class="wali-chat-empty">
-            ${waliChatMode === "contacts"
-              ? "Belum ada kontak pengurus yang tersedia."
-              : "Belum ada riwayat percakapan."}
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = items.map(item => {
-        const initial = item.broadcast
-          ? "📢"
-          : escapeWaliChatHTML(item.displayName.replace("@", "").charAt(0).toUpperCase() || "C");
-
-        return `
-          <button
-            type="button"
-            class="wali-chat-list-item ${item.broadcast ? "broadcast" : ""}"
-            onclick="openWaliChatRoom(
-              '${encodeWaliChatArg(item.actualName)}',
-              '${encodeWaliChatArg(item.displayName)}',
-              '${encodeWaliChatArg(item.roomId)}',
-              ${item.broadcast ? "true" : "false"}
-            )"
-          >
-            <span class="wali-chat-list-avatar">${initial}</span>
-            <span class="wali-chat-list-copy">
-              <strong>${escapeWaliChatHTML(item.displayName)}</strong>
-              <span>${escapeWaliChatHTML(item.preview)}</span>
-            </span>
-            ${item.unread ? '<span class="wali-chat-unread-dot"></span>' : ""}
-          </button>
-        `;
-      }).join("");
-    }
-
-    function openWaliChatRoom(
-      encodedActualName,
-      encodedDisplayName,
-      encodedRoomId,
-      broadcast = false
-    ) {
-      closeWaliChatRoomListener();
-
-      waliChatOpponent =
-        decodeURIComponent(encodedActualName);
-
-      const displayName =
-        decodeURIComponent(encodedDisplayName);
-
-      waliChatRoomId =
-        decodeURIComponent(encodedRoomId);
-
-      localStorage.setItem(
-        `chat_read_${waliChatRoomId}`,
-        new Date().toISOString()
-      );
-
-      document.getElementById("waliChatBackButton").style.display = "grid";
-      document.getElementById("waliChatHeaderTitle").textContent = displayName;
-      document.getElementById("waliChatHeaderSubtitle").textContent = broadcast
-        ? "Pengumuman resmi pesantren"
-        : "Percakapan pribadi";
-      document.getElementById("waliChatTabs").style.display = "none";
-      document.getElementById("waliChatSearchWrap").style.display = "none";
-      document.getElementById("waliChatList").style.display = "none";
-      document.getElementById("waliChatMessages").style.display = "flex";
-      document.getElementById("waliChatFooter").style.display = broadcast ? "none" : "flex";
-
-      const roomRef =
-        dbRT.ref(`cahaya_app/pesan_global/${waliChatRoomId}`);
-
-      waliChatRoomListener = snapshot => {
-        const messages = snapshot.val() || {};
-        renderWaliChatMessages(messages);
-
-        localStorage.setItem(
-          `chat_read_${waliChatRoomId}`,
-          new Date().toISOString()
-        );
-      };
-
-      roomRef.on("value", waliChatRoomListener);
-    }
-
-    function renderWaliChatMessages(rawMessages = {}) {
-      const container =
-        document.getElementById("waliChatMessages");
-
-      const me =
-        getWaliChatIdentity();
-
-      const messages = Object.entries(rawMessages)
-        .map(([id, message]) => ({ id, ...(message || {}) }))
-        .filter(message => message.waktu)
-        .sort((a, b) => new Date(a.waktu) - new Date(b.waktu));
-
-      if (!messages.length) {
-        container.innerHTML = `
-          <div class="wali-chat-empty">
-            Belum ada pesan. Mulai percakapan dengan pengurus pesantren.
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = messages.map(message => {
-        const self = message.pengirim === me;
-
-        return `
-          <div class="wali-chat-message ${self ? "self" : "other"}">
-            <div class="wali-chat-message-info">
-              ${escapeWaliChatHTML(message.pengirim || "Pengurus")} •
-              ${escapeWaliChatHTML(formatWaliChatTime(message.waktu))}
-            </div>
-            ${escapeWaliChatHTML(message.teks || "")}
-          </div>
-        `;
-      }).join("");
-
-      container.scrollTop =
-        container.scrollHeight;
-    }
-
-    function autoResizeWaliChatInput() {
-      const input =
-        document.getElementById("waliChatInput");
-
-      input.style.height = "43px";
-      input.style.height =
-        Math.min(input.scrollHeight, 110) + "px";
-    }
-
-    function handleWaliChatEnter(event) {
-      if (
-        event.key === "Enter" &&
-        !event.shiftKey
-      ) {
-        event.preventDefault();
-        sendWaliChatMessage();
-      }
-    }
-
-    function sendWaliChatMessage() {
-      const input =
-        document.getElementById("waliChatInput");
-
-      const text =
-        String(input.value || "").trim();
-
-      if (!text || !waliChatRoomId) return;
-
-      dbRT
-        .ref(`cahaya_app/pesan_global/${waliChatRoomId}`)
-        .push({
-          teks: text,
-          pengirim: getWaliChatIdentity(),
-          waktu: new Date().toISOString()
-        });
-
-      input.value = "";
-      autoResizeWaliChatInput();
-      input.focus();
-    }
-
-
-    const CAHAYA_LOGOUT_LOCK_KEY =
-      "cahayaLogoutUntil";
-
-    let portalLogoutInProgress =
-      false;
-
-    function setPortalLogoutLock(
-      durationMs = 15000
-    ) {
-      localStorage.setItem(
-        CAHAYA_LOGOUT_LOCK_KEY,
-        String(
-          Date.now() +
-          durationMs
-        )
-      );
-    }
-
-    function isPortalLogoutLocked() {
-      const until =
-        Number(
-          localStorage.getItem(
-            CAHAYA_LOGOUT_LOCK_KEY
-          ) ||
-          0
-        );
-
-      return Boolean(
-        until &&
-        Date.now() < until
-      );
-    }
-
-    function clearPortalSessionKeys() {
-      [
-        "cahayaCurrentUser",
-        "cahayaWaliAccount",
-        "cahayaWaliStudentProfile",
-        "cahayaCurrentRole",
-        "cahayaCurrentProfile"
-      ].forEach(key => {
-        localStorage.removeItem(key);
-        sessionStorage.removeItem(key);
-      });
-    }
-
-    function portalLoginUrl() {
-      const target =
-        new URL(
-          "../../index.html",
-          window.location.href
-        );
-
-      target.searchParams.set(
-        "logout",
-        "1"
-      );
-      target.searchParams.set(
-        "ts",
-        String(Date.now())
-      );
-
-      return target.href;
-    }
-
-    function renderHeaderData(
-      profile = {}
-    ) {
-      const namaAnak =
-        profile.namaAnak ||
-        profile.namaSantri ||
-        profile.label ||
-        "SANTRI";
-
-      const inisial =
-        String(namaAnak)
-          .charAt(0)
-          .toUpperCase();
+    let deferredInstallPrompt =
+      null;
+
+    function tampilkanLogin() {
+      document.getElementById(
+        "welcomeView"
+      ).style.display =
+        "none";
 
       document.getElementById(
-        "studentNameLabel"
-      ).textContent =
-        String(namaAnak)
-          .toUpperCase();
+        "loginView"
+      ).style.display =
+        "block";
 
-      const desktop =
+      window.scrollTo({
+        top:
+          document.querySelector(
+            ".content-wrap"
+          ).offsetTop - 8,
+
+        behavior:
+          "smooth"
+      });
+
+      setTimeout(() => {
         document.getElementById(
-          "studentAvatar"
+          "username"
+        ).focus();
+      }, 320);
+    }
+
+    function tampilkanWelcome() {
+      document.getElementById(
+        "loginView"
+      ).style.display =
+        "none";
+
+      document.getElementById(
+        "welcomeView"
+      ).style.display =
+        "block";
+
+      document.getElementById(
+        "errorMsg"
+      ).style.display =
+        "none";
+
+      document.getElementById(
+        "loginForm"
+      ).reset();
+
+      const passwordInput =
+        document.getElementById(
+          "password"
         );
 
-      const mobile =
+      if (passwordInput) {
+        passwordInput.type =
+          "password";
+      }
+
+      resetEyeIcon();
+
+      window.scrollTo({
+        top:
+          document.querySelector(
+            ".content-wrap"
+          ).offsetTop - 8,
+
+        behavior:
+          "smooth"
+      });
+    }
+
+    function togglePasswordVisibility() {
+      const passwordInput =
         document.getElementById(
-          "mobileAvatar"
+          "password"
         );
 
-      const photo =
-        profile.fotoProfil ||
-        profile.fotoAnak ||
-        profile.fotoSantri ||
-        "";
+      const eyeIcon =
+        document.getElementById(
+          "eyeIcon"
+        );
 
-      if (photo) {
-        const picture =
-          `<img
-            src="${photo}"
-            alt="Foto santri"
-            onerror="
-              this.remove();
-              this.parentNode.textContent='${inisial}';
-            "
-          >`;
+      if (
+        passwordInput.type ===
+        "password"
+      ) {
+        passwordInput.type =
+          "text";
 
-        desktop.innerHTML =
-          picture;
+        eyeIcon.innerHTML = `
+          <path
+            d="M3 3l18 18"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          />
 
-        mobile.innerHTML =
-          picture;
+          <path
+            d="M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16.8 16.8 0 0 1-2.7 3.4M6.1 6.2C3.7 8 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+
+          <path
+            d="M9.9 9.9a3 3 0 0 0 4.2 4.2"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          />
+        `;
       } else {
-        desktop.textContent =
-          inisial;
+        passwordInput.type =
+          "password";
 
-        mobile.textContent =
-          inisial;
+        resetEyeIcon();
       }
     }
 
-    function sendProfileToFrame() {
-      if (
-        portalLogoutInProgress ||
-        isPortalLogoutLocked()
-      ) {
+    function resetEyeIcon() {
+      const eyeIcon =
+        document.getElementById(
+          "eyeIcon"
+        );
+
+      if (!eyeIcon) {
         return;
       }
 
-      const frame =
-        document.getElementById(
-          "contentFrame"
-        );
+      eyeIcon.innerHTML = `
+        <path
+          d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
 
-      if (
-        !frame?.contentWindow ||
-        !portalState?.student
-      ) {
-        return;
-      }
-
-      try {
-        frame.contentWindow
-          .postMessage(
-            {
-              type:
-                "CAHAYA_PROFILE_SYNC",
-
-              profile:
-                portalState.student,
-
-              account:
-                portalState.account
-            },
-            "*"
-          );
-      } catch (error) {
-        console.warn(
-          "Profil belum dapat dikirim ke halaman:",
-          error
-        );
-      }
+        <circle
+          cx="12"
+          cy="12"
+          r="2.7"
+          stroke="currentColor"
+          stroke-width="1.7"
+        />
+      `;
     }
 
-    function installFrameBridge() {
-      const frame =
-        document.getElementById(
-          "contentFrame"
-        );
-
-      frame.addEventListener(
-        "load",
-        () => {
-          sendProfileToFrame();
-
-          setTimeout(
-            sendProfileToFrame,
-            120
-          );
-
-          setTimeout(
-            sendProfileToFrame,
-            600
-          );
-        }
-      );
-
-      window.addEventListener(
-        "message",
-        event => {
-          if (
-            portalLogoutInProgress ||
-            isPortalLogoutLocked()
-          ) {
-            return;
-          }
-
-          if (
-            event.data?.type ===
-            "CAHAYA_PROFILE_REQUEST"
-          ) {
-            sendProfileToFrame();
-            return;
-          }
-
-          if (
-            event.data?.type ===
-            "CAHAYA_STUDENT_UPDATED"
-          ) {
-            portalState = {
-              ...portalState,
-              account:
-                event.data.account ||
-                CahayaWaliSession
-                  .getAccount(),
-
-              student:
-                event.data.profile ||
-                CahayaWaliSession
-                  .getStudent()
-            };
-
-            renderHeaderData(
-              portalState.student
-            );
-
-            sendProfileToFrame();
-          }
-        }
-      );
-    }
-
-    async function preparePortal() {
-      if (
-        portalLogoutInProgress ||
-        isPortalLogoutLocked()
-      ) {
-        throw new Error(
-          "Logout sedang diproses."
-        );
-      }
-
-      portalState =
-        await CahayaWaliSession
-          .ready({
-            firestore: db
-          });
-
-      if (
-        !portalState.valid ||
-        !CahayaWaliSession
-          .studentName(
-            portalState.student
-          )
-      ) {
-        alert(
-          "Sesi Portal Wali tidak valid. Silakan login kembali dari halaman utama."
-        );
-
-        window.location.href =
-          "../../index.html";
-
-        throw new Error(
-          "Sesi Portal Wali tidak valid."
-        );
-      }
-
-      renderHeaderData(
-        portalState.student
-      );
-
-      return portalState;
-    }
-
-    async function openPortalPage(
-      url
+    function tampilkanSistemLoading(
+      teks
     ) {
-      await preparePortal();
-
-      currentPortalPage =
-        url ||
-        currentPortalPage ||
-        "beranda.html";
-
-      const frame =
+      const splash =
         document.getElementById(
-          "contentFrame"
+          "splashScreen"
         );
 
-      frame.removeAttribute("srcdoc");
-      frame.src =
-        currentPortalPage;
+      document.getElementById(
+        "loadingText"
+      ).textContent =
+        teks;
+
+      splash.style.visibility =
+        "visible";
+
+      splash.style.opacity =
+        "1";
     }
 
-    async function loadPage(
-      url,
-      element
-    ) {
-      const menuId =
-        element?.dataset?.menuId ||
-        menuIdFromUrl(url);
-
-      if (menuId) {
-        if (!authorizationReady) {
-          await loadWaliAuthorization();
-        }
-
-        if (!isWaliMenuAllowed(menuId)) {
-          showNoAuthorizedFeature();
-          return;
-        }
-      }
-
-      document.querySelectorAll(
-        ".nav-item"
-      ).forEach(item =>
-        item.classList.remove(
-          "active"
-        )
-      );
-
-      if (element) {
-        element.classList.add(
-          "active"
+    function tutupSplash() {
+      const splash =
+        document.getElementById(
+          "splashScreen"
         );
 
-        const label =
-          element.querySelector(
-            ".nav-label"
+      splash.style.opacity =
+        "0";
+
+      setTimeout(() => {
+        splash.style.visibility =
+          "hidden";
+      }, 720);
+    }
+
+    setTimeout(
+      tutupSplash,
+      1450
+    );
+
+    document.getElementById(
+      "loginForm"
+    ).addEventListener(
+      "submit",
+      async event => {
+        event.preventDefault();
+
+        const usernameInput =
+          document.getElementById(
+            "username"
           );
 
-        const title =
-          (
-            label
-              ? label.textContent
-              : element.textContent
-          )
-            .replace(
-              /[^\w\s&]/gi,
-              ""
-            )
+        const passwordInput =
+          document.getElementById(
+            "password"
+          );
+
+        const button =
+          document.getElementById(
+            "btnSubmit"
+          );
+
+        const buttonText =
+          document.getElementById(
+            "btnSubmitText"
+          );
+
+        const errorBox =
+          document.getElementById(
+            "errorMsg"
+          );
+
+        const username =
+          usernameInput.value
+            .trim()
+            .toLowerCase();
+
+        const password =
+          passwordInput.value
             .trim();
 
-        document.getElementById(
-          "currentPageTitle"
-        ).textContent =
-          title;
-      }
+        button.disabled =
+          true;
 
-      await openPortalPage(
-        url
-      );
+        buttonText.textContent =
+          "Tunggu sebentar";
 
-      setWaliMobileBottomActive(
-        menuId || menuIdFromUrl(url)
-      );
+        errorBox.style.display =
+          "none";
 
-      if (
-        window.innerWidth <= 900 &&
-        document.getElementById(
-          "mainSidebar"
-        ).classList.contains(
-          "open"
-        )
-      ) {
-        toggleSidebar();
-      }
+        const email =
+          username.includes("@")
+            ? username
+            : username +
+              "@cahayaapp.id";
 
-      document.querySelector(
-        ".main-content"
-      ).scrollTop = 0;
-    }
+        const usernameMurni =
+          email.split("@")[0];
 
-    function toggleSidebar() {
-      const sidebar =
-        document.getElementById("mainSidebar");
+        try {
+          const credential =
+            await firebase.auth()
+              .signInWithEmailAndPassword(
+                email,
+                password
+              );
 
-      const overlay =
-        document.querySelector(".mobile-menu-overlay");
+          const userDoc =
+            await db
+              .collection("users")
+              .doc(usernameMurni)
+              .get();
 
-      const willOpen =
-        !sidebar.classList.contains("open");
+          let finalUserData;
 
-      sidebar.classList.toggle("open", willOpen);
-      overlay.classList.toggle("open", willOpen);
-      document.body.classList.toggle("mobile-sidebar-open", willOpen);
-    }
+          if (userDoc.exists) {
+            finalUserData =
+              userDoc.data();
 
-    async function logout() {
-      if (
-        !confirm(
-          "Apakah Anda yakin ingin keluar dari Portal Wali?"
-        )
-      ) {
-        return;
-      }
+            if (
+              !finalUserData.akses
+            ) {
+              finalUserData.akses =
+                ["wali"];
+            }
+          } else {
+            const isStaff =
+              usernameMurni.includes(
+                "admin"
+              ) ||
+              usernameMurni.includes(
+                "guru"
+              ) ||
+              usernameMurni ===
+                "multazam";
 
-      if (
-        portalLogoutInProgress
-      ) {
-        return;
-      }
+            finalUserData = {
+              username:
+                usernameMurni,
 
-      portalLogoutInProgress =
-        true;
+              label:
+                isStaff
+                  ? "Pengurus CAHAYA"
+                  : "Wali Santri",
 
-      setPortalLogoutLock(
-        15000
-      );
+              akses:
+                isStaff
+                  ? ["guru"]
+                  : ["wali"],
 
-      document.body.classList.add(
-        "cahaya-logging-out"
-      );
+              namaAnak:
+                usernameMurni
+            };
+          }
 
-      const frame =
-        document.getElementById(
-          "contentFrame"
-        );
+          const sessionPayload = {
+            ...finalUserData,
+            uid:
+              credential.user.uid
+          };
 
-      if (frame) {
-        frame.src =
-          "about:blank";
-      }
+          localStorage.setItem(
+            "cahayaCurrentUser",
+            JSON.stringify(
+              sessionPayload
+            )
+          );
 
-      portalState = null;
+          const roles =
+            Array.isArray(
+              sessionPayload.akses
+            )
+              ? sessionPayload.akses
+              : [
+                  sessionPayload.akses
+                ];
 
-      try {
-        CahayaWaliSession.clear();
-      } catch (error) {}
+          const isWali =
+            roles
+              .map(role =>
+                String(role)
+                  .toLowerCase()
+              )
+              .includes("wali");
 
-      clearPortalSessionKeys();
+          tampilkanSistemLoading(
+            isWali
+              ? "Memuat Portal Wali..."
+              : "Memverifikasi Akses..."
+          );
 
-      try {
-        if (
-          firebase.auth
-        ) {
-          await firebase.auth()
-            .signOut();
+          setTimeout(() => {
+            window.location.href =
+              isWali
+                ? "wali/dashboard/index.html"
+                : "main-dashboard.html";
+          }, 850);
+        } catch (error) {
+          console.error(
+            "Login gagal:",
+            error
+          );
+
+          button.disabled =
+            false;
+
+          buttonText.textContent =
+            "Login Sekarang";
+
+          errorBox.textContent =
+            "Kredensial tidak valid. Periksa kembali username dan kata sandi Anda.";
+
+          errorBox.style.display =
+            "block";
         }
-      } catch (error) {
-        console.warn(
-          "Firebase sign-out belum selesai:",
-          error
-        );
       }
+    );
 
-      clearPortalSessionKeys();
+    window.addEventListener(
+      "beforeinstallprompt",
+      event => {
+        event.preventDefault();
 
-      window.location.replace(
-        portalLoginUrl()
-      );
-    }
+        deferredInstallPrompt =
+          event;
 
-    document.addEventListener(
-      "DOMContentLoaded",
+        document.getElementById(
+          "tombolInstal"
+        ).style.display =
+          "flex";
+      }
+    );
+
+    document.getElementById(
+      "tombolInstal"
+    ).addEventListener(
+      "click",
       async () => {
         if (
-          isPortalLogoutLocked()
+          !deferredInstallPrompt
         ) {
-          clearPortalSessionKeys();
-          window.location.replace(
-            portalLoginUrl()
-          );
           return;
         }
 
-        installFrameBridge();
+        deferredInstallPrompt
+          .prompt();
 
-        try {
-          await preparePortal();
+        await deferredInstallPrompt
+          .userChoice;
 
-          await loadWaliAuthorization();
-          renderWaliMobileShortcuts();
-          await openWaliHome();
-          await initializeWaliChat();
-        } catch (error) {
-          console.error(
-            "Portal Wali gagal dibuka:",
-            error
-          );
-        }
+        deferredInstallPrompt =
+          null;
+
+        document.getElementById(
+          "tombolInstal"
+        ).style.display =
+          "none";
       }
     );
-  
 
     window.addEventListener(
-      "pageshow",
+      "load",
       () => {
-        if (
-          isPortalLogoutLocked()
-        ) {
-          clearPortalSessionKeys();
-          window.location.replace(
-            portalLoginUrl()
-          );
+        let user = null;
+
+        try {
+          user =
+            JSON.parse(
+              localStorage.getItem(
+                "cahayaCurrentUser"
+              ) ||
+              "null"
+            );
+        } catch (error) {
+          user = null;
         }
+
+        if (
+          !user ||
+          !user.akses
+        ) {
+          return;
+        }
+
+        const roles =
+          Array.isArray(
+            user.akses
+          )
+            ? user.akses
+            : [user.akses];
+
+        tampilkanSistemLoading(
+          "Menghubungkan Sesi..."
+        );
+
+        const isWali =
+          roles
+            .map(role =>
+              String(role)
+                .toLowerCase()
+            )
+            .includes("wali");
+
+        setTimeout(() => {
+          window.location.href =
+            isWali
+              ? "wali/dashboard/index.html"
+              : "main-dashboard.html";
+        }, 500);
       }
     );
-</script>
+  </script>
 </body>
 </html>
