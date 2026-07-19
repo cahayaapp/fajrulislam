@@ -29,6 +29,7 @@
       --shell-card: #ffffff;
       --sidebar-width: 294px;
       --topbar-height: 76px;
+      --mobile-bottom-nav-height: 74px;
       --shell-shadow: 0 18px 45px rgba(35, 78, 160, .10);
       --shell-shadow-lg: 0 24px 60px rgba(26, 56, 116, .18);
     }
@@ -1467,6 +1468,7 @@
 
     .mobile-bottom-nav-inner {
       width: 100%;
+      height: 100%;
       display: grid;
       grid-template-columns: repeat(var(--mobile-shortcut-count, 5), minmax(0, 1fr));
       align-items: stretch;
@@ -1577,6 +1579,10 @@
       .menu-btn {
         display: none;
       }
+
+      #topNavChat {
+        display: none !important;
+      }
     }
 
     @media (max-width: 1100px) {
@@ -1621,8 +1627,12 @@
 
       .main-content {
         width: 100%;
-        height: 100%;
-        flex: 1;
+        height: calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+        min-height: 0;
+        flex: 0 0 calc(100vh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+        height: calc(100vh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+        height: calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+        flex-basis: calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
       }
 
       .top-nav {
@@ -1642,12 +1652,9 @@
         max-width: 49vw;
       }
 
-      .main-content {
-        padding-bottom: calc(70px + env(safe-area-inset-bottom));
-      }
-
       .mobile-bottom-nav {
         width: 100%;
+        height: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom));
         display: block;
         position: fixed;
         right: 0;
@@ -1659,12 +1666,21 @@
 
       .mobile-bottom-nav.ready { pointer-events: auto; }
 
+      /* Chat mobile dipindahkan ke topbar, FAB tidak lagi menutup halaman. */
       .pengurus-fab-chat {
-        bottom: calc(86px + env(safe-area-inset-bottom));
+        display: none !important;
+      }
+
+      #topNavNotif {
+        display: none !important;
+      }
+
+      #topNavChat {
+        display: grid;
       }
 
       .pengurus-chat-window {
-        bottom: calc(150px + env(safe-area-inset-bottom));
+        bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 10px);
       }
     }
 
@@ -1712,20 +1728,12 @@
         max-width: calc(100vw - 155px);
       }
 
-      .pengurus-fab-chat {
-        width: 54px;
-        height: 54px;
-        right: 14px;
-        bottom: calc(84px + env(safe-area-inset-bottom));
-        border-radius: 18px;
-      }
-
       .pengurus-chat-window {
         width: calc(100vw - 16px);
         max-width: none;
-        height: min(72vh, calc(100vh - 160px));
+        height: min(72vh, calc(100dvh - var(--mobile-bottom-nav-height) - 88px - env(safe-area-inset-bottom)));
         right: 8px;
-        bottom: calc(145px + env(safe-area-inset-bottom));
+        bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
         border-radius: 21px;
       }
 
@@ -1746,11 +1754,10 @@
     }
 
     @media (max-width: 390px) {
-      #topNavNotif.top-action-btn {
+      #topNavChat.top-action-btn {
         width: 38px;
         height: 38px;
         flex-basis: 38px;
-        display: grid;
         border-radius: 11px;
       }
 
@@ -1884,6 +1891,10 @@
         <button class="top-action-btn" id="topNavNotif" type="button" style="display:none;" onclick="toggleNotifPanel()" aria-label="Buka notifikasi" title="Notifikasi">
           🔔
           <span class="top-notif-badge" id="topNotifBadge">0</span>
+        </button>
+        <button class="top-action-btn" id="topNavChat" type="button" style="display:none;" onclick="togglePengurusChat()" aria-label="Buka Live Chat" title="Live Chat">
+          💬
+          <span class="top-notif-badge" id="topChatBadge">0</span>
         </button>
         <div class="top-user-copy">
           <strong id="topUserName">Pengguna CAHAYA</strong>
@@ -2321,7 +2332,7 @@
     function getMobileShortcutIds() {
       const result = [];
       const add = menuId => {
-        if (!menuId || result.includes(menuId) || !bolehAksesMenu(menuId)) return;
+        if (!menuId || menuId === 'menu-chat' || result.includes(menuId) || !bolehAksesMenu(menuId)) return;
         result.push(menuId);
       };
 
@@ -2333,7 +2344,7 @@
 
       roleTerurut.forEach(role => (mobileShortcutRolePriority[role] || []).forEach(add));
       [...document.querySelectorAll('#dynamicMenu .menu-akses')].map(menu => menu.id).filter(Boolean).forEach(add);
-      ['menu-chat', 'menu-notifikasi', 'menu-profil'].forEach(add);
+      ['menu-notifikasi', 'menu-profil'].forEach(add);
       return result.slice(0, 5);
     }
 
@@ -2396,6 +2407,7 @@
       const mobileNotifBadge = document.getElementById('mobileNotifBadge');
       const mobileChatBadge = document.getElementById('mobileChatBadge');
       const topNotifBadge = document.getElementById('topNotifBadge');
+      const topChatBadge = document.getElementById('topChatBadge');
       const chatUnreadBadge = document.getElementById('chatUnreadBadge');
 
       if (mobileNotifBadge && topNotifBadge) {
@@ -2403,10 +2415,16 @@
         mobileNotifBadge.textContent = nilai > 99 ? '99+' : String(nilai);
         mobileNotifBadge.style.display = nilai > 0 ? 'grid' : 'none';
       }
-      if (mobileChatBadge && chatUnreadBadge) {
+      if (chatUnreadBadge) {
         const nilai = Number(chatUnreadBadge.textContent || 0);
-        mobileChatBadge.textContent = nilai > 99 ? '99+' : String(nilai);
-        mobileChatBadge.style.display = nilai > 0 ? 'grid' : 'none';
+        if (mobileChatBadge) {
+          mobileChatBadge.textContent = nilai > 99 ? '99+' : String(nilai);
+          mobileChatBadge.style.display = nilai > 0 ? 'grid' : 'none';
+        }
+        if (topChatBadge) {
+          topChatBadge.textContent = nilai > 99 ? '99+' : String(nilai);
+          topChatBadge.style.display = nilai > 0 ? 'grid' : 'none';
+        }
       }
     }
 
@@ -2756,6 +2774,7 @@
     function terapkanOtorisasiFiturTambahan() {
       const profileButton = document.getElementById('topNavProfile');
       const topNotifButton = document.getElementById('topNavNotif');
+      const topChatButton = document.getElementById('topNavChat');
       const chatFab = document.getElementById('featureChatFab');
       const chatWindow = document.getElementById('pengurusChatWindow');
       const notifPanel = document.getElementById('sideNotifPanel');
@@ -2763,6 +2782,7 @@
 
       profileButton.style.display = bolehAksesMenu('menu-profil') ? 'flex' : 'none';
       if (topNotifButton) topNotifButton.style.display = bolehAksesMenu('menu-notifikasi') ? 'grid' : 'none';
+      if (topChatButton) topChatButton.style.display = bolehAksesMenu('menu-chat') ? 'grid' : 'none';
       chatFab.style.display = bolehAksesMenu('menu-chat') ? 'flex' : 'none';
 
       if (!bolehAksesMenu('menu-chat')) chatWindow.style.display = 'none';
