@@ -871,14 +871,19 @@
     .import-status.error { color: #b43d4d; }
 
     .upload-progress {
-      grid-column: 2 / -1;
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 5200;
       display: none;
+      width: min(430px, calc(100vw - 36px));
       min-width: 0;
-      margin-top: 1px;
-      padding: 10px 11px;
-      border: 1px solid #d8e5f5;
-      border-radius: 12px;
-      background: rgba(255,255,255,.92);
+      padding: 14px;
+      border: 1px solid #cfe0f5;
+      border-radius: 16px;
+      background: rgba(255,255,255,.97);
+      box-shadow: 0 20px 55px rgba(22,49,92,.24);
+      backdrop-filter: blur(12px);
     }
 
     .upload-progress.show { display: block; }
@@ -918,6 +923,42 @@
       border-radius: inherit;
       background: linear-gradient(90deg, var(--gm-primary), var(--gm-cyan));
       transition: width .18s ease;
+    }
+
+    .upload-progress-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 9px;
+      padding-top: 9px;
+      border-top: 1px dashed #dce6f2;
+    }
+
+    .upload-progress-note {
+      color: var(--gm-muted);
+      font-size: .53rem;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .upload-cancel-btn {
+      flex: 0 0 auto;
+      min-height: 30px;
+      padding: 5px 9px;
+      color: #bd3f50;
+      font-size: .56rem;
+      font-weight: 900;
+      cursor: pointer;
+      border: 1px solid #efc6cd;
+      border-radius: 9px;
+      background: #fff2f4;
+    }
+
+    .upload-cancel-btn:hover {
+      color: #fff;
+      border-color: var(--gm-red);
+      background: var(--gm-red);
     }
 
     .storage-summary {
@@ -1491,6 +1532,7 @@
       .actions .btn { flex: 1 1 calc(50% - 8px); }
       .preview-paper { padding: 26px 20px; }
       .toast { left: 10px; right: 10px; bottom: 10px; max-width: none; }
+      .upload-progress { left: 10px; right: 10px; bottom: 10px; width: auto; }
     }
 
     @media (max-width: 460px) {
@@ -1608,6 +1650,10 @@
               <div class="upload-progress-meta">
                 <span id="uploadProgressBytes">0 B dari 0 B</span>
                 <span id="uploadProgressEta">Menghitung waktu...</span>
+              </div>
+              <div class="upload-progress-actions">
+                <span class="upload-progress-note" id="uploadProgressNote">Upload berjalan langsung. Halaman tetap dapat digunakan.</span>
+                <button class="upload-cancel-btn" id="cancelUploadBtn" type="button">Batalkan</button>
               </div>
             </div>
           </section>
@@ -1776,9 +1822,9 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-storage-compat.js"></script>
 
   <script>
     "use strict";
@@ -1978,6 +2024,11 @@
     let readerFontSize = 18;
     let readerLineHeight = 1.86;
     let activeUploadTask = null;
+    let pendingUploadPromise = null;
+    let pendingUploadError = null;
+    let uploadHeartbeatTimer = null;
+    let uploadInactivityTimer = null;
+    let uploadSessionToken = 0;
     let uploadProgressHideTimer = null;
     let isSaving = false;
 
@@ -2005,6 +2056,8 @@
       uploadProgressBar: document.getElementById("uploadProgressBar"),
       uploadProgressBytes: document.getElementById("uploadProgressBytes"),
       uploadProgressEta: document.getElementById("uploadProgressEta"),
+      uploadProgressNote: document.getElementById("uploadProgressNote"),
+      cancelUploadBtn: document.getElementById("cancelUploadBtn"),
       documentChoiceModal: document.getElementById("documentChoiceModal"),
       closeDocumentChoice: document.getElementById("closeDocumentChoice"),
       selectedDocumentName: document.getElementById("selectedDocumentName"),
@@ -2347,33 +2400,67 @@
         : "";
     }
 
+    function clearUploadTimers() {
+      if (uploadHeartbeatTimer) clearInterval(uploadHeartbeatTimer);
+      if (uploadInactivityTimer) clearTimeout(uploadInactivityTimer);
+      uploadHeartbeatTimer = null;
+      uploadInactivityTimer = null;
+    }
+
     function resetUploadProgress(immediate = false) {
+      clearUploadTimers();
       if (uploadProgressHideTimer) clearTimeout(uploadProgressHideTimer);
       const hide = () => {
         els.uploadProgress.classList.remove("show");
         els.uploadProgressBar.style.width = "0%";
         els.uploadProgressPercent.textContent = "0%";
         els.uploadProgressBytes.textContent = "0 B dari 0 B";
-        els.uploadProgressEta.textContent = "Menghitung waktu...";
+        els.uploadProgressEta.textContent = "Menyiapkan koneksi...";
         els.uploadProgressLabel.textContent = "Mengunggah file asli";
+        els.uploadProgressNote.textContent = "Upload berjalan langsung. Halaman tetap dapat digunakan.";
+        els.cancelUploadBtn.disabled = false;
       };
       if (immediate) hide();
-      else uploadProgressHideTimer = setTimeout(hide, 1400);
+      else uploadProgressHideTimer = setTimeout(hide, 1800);
     }
 
-    function updateUploadProgress({ percent = 0, transferred = 0, total = 0, speed = 0, eta = 0, label = "Mengunggah file asli" } = {}) {
+    function updateUploadProgress({
+      percent = 0,
+      transferred = 0,
+      total = 0,
+      speed = 0,
+      eta = 0,
+      label = "Mengunggah file asli",
+      note = "Upload berjalan langsung. Halaman tetap dapat digunakan.",
+      etaLabel = ""
+    } = {}) {
       const safePercent = Math.min(100, Math.max(0, Math.round(percent)));
       els.uploadProgress.classList.add("show");
       els.uploadProgressLabel.textContent = label;
       els.uploadProgressPercent.textContent = `${safePercent}%`;
       els.uploadProgressBar.style.width = `${safePercent}%`;
       els.uploadProgressBytes.textContent = `${formatFileSize(transferred)} dari ${formatFileSize(total)}`;
-      if (safePercent >= 100) {
+      els.uploadProgressNote.textContent = note;
+      if (etaLabel) {
+        els.uploadProgressEta.textContent = etaLabel;
+      } else if (safePercent >= 100) {
         els.uploadProgressEta.textContent = "Upload selesai";
       } else if (speed > 0 && Number.isFinite(eta)) {
         els.uploadProgressEta.textContent = `${formatFileSize(speed)}/detik • sisa ± ${formatDuration(eta)}`;
       } else {
-        els.uploadProgressEta.textContent = "Menghitung waktu...";
+        els.uploadProgressEta.textContent = "Menyiapkan koneksi...";
+      }
+    }
+
+    function cancelActiveUpload(showMessage = true) {
+      if (!activeUploadTask) return false;
+      try {
+        activeUploadTask.cancel();
+        if (showMessage) showToast("Upload dibatalkan.", "error");
+        return true;
+      } catch (error) {
+        console.warn("Upload tidak dapat dibatalkan:", error);
+        return false;
       }
     }
 
@@ -2514,8 +2601,16 @@
     }
 
     function rememberAttachmentForCleanup() {
-      if (currentImportMeta?.storagePath && currentImportMeta.storagePath !== attachmentToRemove?.storagePath) {
-        attachmentToRemove = { ...currentImportMeta };
+      if (!currentImportMeta?.storagePath) return;
+      const persisted = articleCache.find(item => item.id === currentArticleId);
+      const isPersistedAttachment = persisted?.importMeta?.storagePath === currentImportMeta.storagePath;
+
+      if (isPersistedAttachment) {
+        if (currentImportMeta.storagePath !== attachmentToRemove?.storagePath) {
+          attachmentToRemove = { ...currentImportMeta };
+        }
+      } else {
+        void deleteStorageAttachment(currentImportMeta);
       }
     }
 
@@ -2528,6 +2623,7 @@
         return;
       }
 
+      cleanupUncommittedUpload();
       setImportStatus(`Menyiapkan ${file.name}...`, "normal", true);
       try {
         const result = validation.isPdf ? await extractPdfDocument(file) : await extractWordDocument(file);
@@ -2567,7 +2663,14 @@
       }
     }
 
-    function keepDocumentAsOriginalFile(file) {
+    function ensureArticleIdForUpload() {
+      if (currentArticleId) return currentArticleId;
+      if (!currentTeacherCode) throw new Error("Data guru belum terdeteksi.");
+      currentArticleId = db.ref(`${WRITING_PATH}/${currentTeacherCode}`).push().key;
+      return currentArticleId;
+    }
+
+    function startOriginalFileUpload(file) {
       if (!file) return;
       const validation = validateDocumentFile(file);
       if (!validation.valid) {
@@ -2576,8 +2679,21 @@
         return;
       }
 
+      if (activeUploadTask) cancelActiveUpload(false);
+      const sessionToken = ++uploadSessionToken;
       rememberAttachmentForCleanup();
       pendingDocumentFile = file;
+      pendingUploadError = null;
+      let articleId = "";
+      try {
+        articleId = ensureArticleIdForUpload();
+      } catch (error) {
+        pendingDocumentFile = null;
+        setImportStatus(error.message || "Data guru belum siap untuk mengunggah file.", "error");
+        showToast(error.message || "Data guru belum siap.", "error");
+        return;
+      }
+
       if (!els.articleTitle.value.trim()) els.articleTitle.value = documentTitleFromFileName(file.name);
       currentImportMeta = {
         mode: "file_only",
@@ -2586,13 +2702,61 @@
         mimeType: file.type || (validation.isPdf ? "application/pdf" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
         fileSize: file.size,
         selectedAt: nowIso(),
-        uploadPending: true
+        uploadPending: true,
+        uploadState: "uploading"
       };
+
       markUnsaved();
       const estimate = estimateUploadRange(file.size);
-      const largeNote = file.size > LARGE_FILE_WARNING_BYTES ? " File cukup besar; kompres PDF jika memungkinkan." : "";
-      setImportStatus(`${file.name} siap disimpan sebagai file asli • ${formatFileSize(file.size)} • estimasi upload ${estimate}.${largeNote} Klik “Simpan Tulisan” untuk mulai mengunggah.`, "success");
-      showToast("Dokumen dipilih untuk disimpan sebagai file asli.", "success");
+      setImportStatus(`Upload ${file.name} langsung dimulai • ${formatFileSize(file.size)} • estimasi ${estimate}. Anda tetap dapat mengisi judul, mapel, dan pertemuan.`, "normal", true);
+      showToast("Upload file asli langsung dimulai.", "success");
+
+      const runningPromise = uploadPendingOriginalFile(articleId);
+      pendingUploadPromise = runningPromise
+        .then(meta => {
+          if (sessionToken !== uploadSessionToken) return null;
+          currentImportMeta = meta;
+          pendingDocumentFile = null;
+          pendingUploadError = null;
+          setImportStatus(`${meta.fileName} selesai diunggah • ${formatFileSize(meta.fileSize)}. Sekarang klik “Simpan Tulisan” untuk menyimpan data tulisan.`, "success");
+          markUnsaved();
+          resetUploadProgress();
+          showToast("File asli selesai diunggah.", "success");
+          return meta;
+        })
+        .catch(error => {
+          if (sessionToken !== uploadSessionToken) return null;
+          pendingUploadError = error;
+          const canceled = error?.code === "storage/canceled";
+          currentImportMeta = {
+            ...currentImportMeta,
+            uploadPending: true,
+            uploadState: canceled ? "canceled" : "error"
+          };
+          setImportStatus(
+            canceled
+              ? `Upload ${file.name} dibatalkan. Pilih file kembali untuk mencoba lagi.`
+              : `Upload ${file.name} gagal: ${error.message || "Firebase Storage tidak merespons."}`,
+            "error"
+          );
+          updateUploadProgress({
+            percent: 0,
+            transferred: 0,
+            total: file.size,
+            label: canceled ? "Upload dibatalkan" : "Upload gagal",
+            etaLabel: canceled ? "Dibatalkan pengguna" : "Periksa koneksi atau Storage Rules",
+            note: "File belum tersimpan. Anda dapat memilih dokumen kembali."
+          });
+          els.cancelUploadBtn.disabled = true;
+          return null;
+        })
+        .finally(() => {
+          if (sessionToken !== uploadSessionToken) return;
+          activeUploadTask = null;
+          clearUploadTimers();
+          pendingUploadPromise = null;
+          els.importPanel.classList.remove("busy");
+        });
     }
 
     async function uploadPendingOriginalFile(articleId) {
@@ -2600,25 +2764,102 @@
       const file = pendingDocumentFile;
       const validation = validateDocumentFile(file);
       if (!validation.valid) throw new Error(validation.message);
+      if (!navigator.onLine) throw new Error("Perangkat sedang offline. Sambungkan internet lalu coba kembali.");
 
       const storagePath = `guru_menulis_files/ta_${TAHUN_AJARAN_KEY}/${currentTeacherCode}/${articleId}/${Date.now()}_${safeStorageFileName(file.name)}`;
       const storageRef = storage.ref(storagePath);
       const startedAt = Date.now();
-      setImportStatus(`Mengunggah ${file.name}. Jangan tutup halaman sampai proses selesai.`, "normal", true);
+      let lastTransferred = 0;
+      let lastActivityAt = startedAt;
+      let settled = false;
+      let localHeartbeatTimer = null;
+      let localInactivityTimer = null;
+
+      setImportStatus(`Menghubungkan ${file.name} ke Firebase Storage...`, "normal", true);
       resetUploadProgress(true);
-      updateUploadProgress({ percent: 0, transferred: 0, total: file.size, label: `Mengunggah ${file.name}` });
+      updateUploadProgress({
+        percent: 0,
+        transferred: 0,
+        total: file.size,
+        label: `Menyiapkan upload ${file.name}`,
+        etaLabel: "Menghubungkan ke Firebase Storage...",
+        note: "Upload dimulai sebelum data tulisan disimpan."
+      });
 
       const snapshot = await new Promise((resolve, reject) => {
-        activeUploadTask = storageRef.put(file, { contentType: file.type || undefined });
-        activeUploadTask.on(
-          "state_changed",
+        const metadata = {
+          contentType: file.type || "application/octet-stream",
+          cacheControl: "private,max-age=3600",
+          customMetadata: {
+            teacherCode: currentTeacherCode,
+            articleId,
+            tahunAjaran: TAHUN_AJARAN_KEY
+          }
+        };
+        const uploadTask = storageRef.put(file, metadata);
+        activeUploadTask = uploadTask;
+        const taskEvent = firebase.storage.TaskEvent?.STATE_CHANGED || "state_changed";
+
+        const clearLocalTimers = () => {
+          if (localHeartbeatTimer) clearInterval(localHeartbeatTimer);
+          if (localInactivityTimer) clearTimeout(localInactivityTimer);
+          localHeartbeatTimer = null;
+          localInactivityTimer = null;
+        };
+
+        const finish = (handler, value) => {
+          if (settled) return;
+          settled = true;
+          clearLocalTimers();
+          handler(value);
+        };
+
+        const armInactivityTimeout = () => {
+          if (localInactivityTimer) clearTimeout(localInactivityTimer);
+          localInactivityTimer = setTimeout(() => {
+            if (settled) return;
+            try { uploadTask.cancel(); } catch (_) {}
+            const timeoutError = new Error("Tidak ada respons upload selama 90 detik. Periksa koneksi internet, konfigurasi bucket, atau Firebase Storage Rules.");
+            timeoutError.code = "storage/upload-timeout";
+            finish(reject, timeoutError);
+          }, 90000);
+        };
+
+        armInactivityTimeout();
+        localHeartbeatTimer = setInterval(() => {
+          if (settled) return;
+          const elapsed = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+          const idle = Math.max(0, Math.round((Date.now() - lastActivityAt) / 1000));
+          if (lastTransferred === 0) {
+            updateUploadProgress({
+              percent: 0,
+              transferred: 0,
+              total: file.size,
+              label: `Menghubungkan ${file.name}`,
+              etaLabel: `Menunggu respons server • ${elapsed} detik`,
+              note: idle > 15
+                ? "Respons server lambat. Sistem akan menghentikan otomatis bila 90 detik tanpa aktivitas."
+                : "Sedang membuat sesi upload aman ke Firebase Storage."
+            });
+          }
+        }, 1000);
+
+        uploadTask.on(
+          taskEvent,
           taskSnapshot => {
-            const transferred = taskSnapshot.bytesTransferred || 0;
-            const total = taskSnapshot.totalBytes || file.size || 1;
+            const transferred = Number(taskSnapshot.bytesTransferred || 0);
+            const total = Number(taskSnapshot.totalBytes || file.size || 1);
             const percent = total ? (transferred / total) * 100 : 0;
             const elapsedSeconds = Math.max((Date.now() - startedAt) / 1000, 0.25);
             const speed = transferred / elapsedSeconds;
             const eta = speed > 0 ? (total - transferred) / speed : 0;
+
+            if (transferred > lastTransferred) {
+              lastActivityAt = Date.now();
+              armInactivityTimeout();
+            }
+            lastTransferred = transferred;
+
             updateUploadProgress({
               percent,
               transferred,
@@ -2627,30 +2868,27 @@
               eta,
               label: taskSnapshot.state === "paused"
                 ? `Upload dijeda: ${file.name}`
-                : `Mengunggah ${file.name}`
+                : `Mengunggah ${file.name}`,
+              note: "Upload berlangsung langsung; Anda dapat tetap mengisi formulir."
             });
-            els.saveBtn.textContent = `Mengunggah ${Math.round(percent)}%`;
           },
-          error => {
-            activeUploadTask = null;
-            reject(error);
-          },
+          error => finish(reject, error),
           () => {
-            const completedSnapshot = activeUploadTask.snapshot;
-            activeUploadTask = null;
+            const completedSnapshot = uploadTask.snapshot;
             updateUploadProgress({
               percent: 100,
-              transferred: file.size,
-              total: file.size,
-              label: `Upload ${file.name} selesai`
+              transferred: completedSnapshot.totalBytes || file.size,
+              total: completedSnapshot.totalBytes || file.size,
+              label: `Upload ${file.name} selesai`,
+              note: "File sudah berada di Firebase Storage. Tinggal simpan data tulisan."
             });
-            resolve(completedSnapshot);
+            els.cancelUploadBtn.disabled = true;
+            finish(resolve, completedSnapshot);
           }
         );
       });
 
-      setImportStatus("Upload selesai. Menyimpan data tulisan ke Firebase...", "normal", true);
-      els.saveBtn.textContent = "Menyimpan data...";
+      setImportStatus("Upload selesai. Menyiapkan tautan file...", "normal", true);
       const downloadUrl = await snapshot.ref.getDownloadURL();
       return {
         mode: "file_only",
@@ -2661,7 +2899,8 @@
         storagePath,
         downloadUrl,
         uploadedAt: nowIso(),
-        uploadPending: false
+        uploadPending: false,
+        uploadState: "complete"
       };
     }
 
@@ -2672,6 +2911,20 @@
       } catch (error) {
         if (error?.code !== "storage/object-not-found") console.warn("Lampiran lama gagal dihapus:", error);
       }
+    }
+
+    function cleanupUncommittedUpload() {
+      uploadSessionToken += 1;
+      if (activeUploadTask) cancelActiveUpload(false);
+      const persisted = articleCache.find(item => item.id === currentArticleId);
+      const persistedPath = persisted?.importMeta?.storagePath || "";
+      const currentPath = currentImportMeta?.storagePath || "";
+      if (currentPath && currentPath !== persistedPath) {
+        void deleteStorageAttachment(currentImportMeta);
+      }
+      pendingUploadPromise = null;
+      pendingUploadError = null;
+      clearUploadTimers();
     }
 
     /* =========================================================
@@ -2967,9 +3220,17 @@
         const teacherRef = db.ref(`${WRITING_PATH}/${currentTeacherCode}`);
         if (!currentArticleId) currentArticleId = teacherRef.push().key;
 
-        if (pendingDocumentFile) {
+        if (pendingUploadPromise) {
+          setImportStatus("Upload file masih berjalan. Penyimpanan data akan dilanjutkan otomatis setelah upload selesai...", "normal", true);
+          uploadedMeta = await pendingUploadPromise;
+          if (!uploadedMeta) throw pendingUploadError || new Error("Upload file belum berhasil.");
+          currentImportMeta = uploadedMeta;
+        } else if (pendingUploadError) {
+          throw pendingUploadError;
+        } else if (pendingDocumentFile && currentImportMeta?.uploadPending) {
           uploadedMeta = await uploadPendingOriginalFile(currentArticleId);
           currentImportMeta = uploadedMeta;
+          pendingDocumentFile = null;
         }
 
         const payload = buildArticlePayload(validated);
@@ -3008,10 +3269,12 @@
         showToast("Tulisan berhasil disimpan ke Firebase.", "success");
       } catch (error) {
         console.error(error);
-        if (uploadedMeta?.storagePath) await deleteStorageAttachment(uploadedMeta);
         showToast(`Gagal menyimpan tulisan: ${error.message || "Periksa koneksi, Firebase Rules, dan Storage Rules."}`, "error");
-        if (pendingDocumentFile) setImportStatus(`File belum tersimpan: ${pendingDocumentFile.name}. Silakan coba lagi.`, "error");
-        resetUploadProgress();
+        if (currentImportMeta?.storagePath && currentImportMeta?.uploadState === "complete") {
+          setImportStatus(`File ${currentImportMeta.fileName} sudah selesai diunggah, tetapi data tulisan belum tersimpan. Perbaiki isian atau koneksi lalu klik Simpan lagi; file tidak perlu diunggah ulang.`, "error");
+        } else if (pendingDocumentFile) {
+          setImportStatus(`File belum berhasil diunggah: ${pendingDocumentFile.name}. Pilih dokumen kembali bila upload dibatalkan atau gagal.`, "error");
+        }
       } finally {
         activeUploadTask = null;
         isSaving = false;
@@ -3098,6 +3361,7 @@
     }
 
     function loadArticle(id) {
+      cleanupUncommittedUpload();
       const item = articleCache.find(article => article.id === id);
       if (!item) return;
 
@@ -3145,11 +3409,14 @@
     }
 
     function resetForm({ preserveAssignment = true, restoreLocal = false } = {}) {
+      cleanupUncommittedUpload();
       const assignmentValue = preserveAssignment ? els.assignmentSelect.value : "";
       currentArticleId = "";
       currentCreatedAt = "";
       pendingDocumentFile = null;
       selectedDocumentFile = null;
+      pendingUploadPromise = null;
+      pendingUploadError = null;
       attachmentToRemove = null;
       currentImportMeta = null;
       setImportStatus();
@@ -3370,8 +3637,9 @@
       els.keepOriginalFileBtn.addEventListener("click", () => {
         const file = selectedDocumentFile;
         closeDocumentChoice();
-        keepDocumentAsOriginalFile(file);
+        startOriginalFileUpload(file);
       });
+      els.cancelUploadBtn.addEventListener("click", () => cancelActiveUpload(true));
 
       ["dragenter", "dragover"].forEach(eventName => {
         els.importPanel.addEventListener(eventName, event => {
