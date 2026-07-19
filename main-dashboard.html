@@ -1900,6 +1900,15 @@
         <a class="nav-item menu-akses" id="menu-stok-obat" style="display: none;" onclick="loadPage('kesehatan/stokobat.html', this)">💊 Stok Obat UKS</a>
       </div>
 
+      <div class="menu-group" id="group-observer">
+        <div class="group-label">Tim Observer</div>
+        <a class="nav-item menu-akses" id="menu-observer-pembelajaran" style="display: none;" onclick="loadPage('observer/pembelajaran.html', this)">📚 Observasi Pembelajaran</a>
+        <a class="nav-item menu-akses" id="menu-observer-pengasuhan" style="display: none;" onclick="loadPage('observer/pengasuhan.html', this)">🕌 Observasi Pengasuhan</a>
+        <a class="nav-item menu-akses" id="menu-observer-kebersihan" style="display: none;" onclick="loadPage('observer/kebersihan.html', this)">🧹 Observasi Kebersihan</a>
+        <a class="nav-item menu-akses" id="menu-observer-dapur" style="display: none;" onclick="loadPage('observer/dapur.html', this)">🍲 Observasi Dapur</a>
+        <a class="nav-item menu-akses" id="menu-observer-uks" style="display: none;" onclick="loadPage('observer/uks.html', this)">🩺 Observasi UKS</a>
+      </div>
+
       <div class="menu-group">
         <div class="group-label">Akademik (Guru)</div>
 
@@ -1982,6 +1991,11 @@
       'menu-jurnal-kesehatan': { icon: '🩺', label: 'Jurnal' },
       'menu-pemeriksaan-kesehatan': { icon: '🧑‍⚕️', label: 'Periksa' },
       'menu-stok-obat': { icon: '💊', label: 'Stok Obat' },
+      'menu-observer-pembelajaran': { icon: '📚', label: 'Belajar' },
+      'menu-observer-pengasuhan': { icon: '🕌', label: 'Asuh' },
+      'menu-observer-kebersihan': { icon: '🧹', label: 'Bersih' },
+      'menu-observer-dapur': { icon: '🍲', label: 'Dapur' },
+      'menu-observer-uks': { icon: '🩺', label: 'UKS' },
       'menu-absen-guru': { icon: '📍', label: 'Absen Guru' },
       'menu-absen-kbm': { icon: '📋', label: 'Absensi KBM' },
       'menu-guru-menulis': { icon: '✍️', label: 'Menulis' },
@@ -2022,6 +2036,7 @@
       wakil: ['menu-dashboard-pimpinan','menu-kontrol-harian','menu-raport-bulanan','menu-profil','menu-home'],
       yayasan: ['menu-dashboard-pimpinan','menu-raport-bulanan','menu-raport-semester','menu-profil','menu-home'],
       supervisor: ['menu-kontrol-harian','menu-kontrol-pekanan','menu-raport-bulanan','menu-monitoring-absen-guru','menu-profil','menu-home'],
+      observer: ['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-dapur','menu-observer-uks'],
       guru: ['menu-home','menu-absen-guru','menu-absen-kbm','menu-nilai','menu-raport','menu-tahfiz','menu-profil'],
       naqib: ['menu-home','menu-absen-asrama','menu-disiplin','menu-mentoring','menu-jurnal-piket','menu-gamifikasi','menu-profil'],
       konselor: ['menu-home','menu-antrean-kasus','menu-buku-kasus','menu-evaluasi-kasus','menu-profil'],
@@ -2032,7 +2047,7 @@
       wali: ['menu-beranda-wali','menu-laporan-wali','menu-admin-wali','menu-modul-wali','menu-profil']
     };
 
-    const mobileRoleOrder = ['admin','direktur','wakil','yayasan','supervisor','konselor','naqib','guru','cla','kesehatan','sarpras','layanan','wali'];
+    const mobileRoleOrder = ['admin','direktur','wakil','yayasan','supervisor','observer','konselor','naqib','guru','cla','kesehatan','sarpras','layanan','wali'];
 
     function getMobileShortcutFallbackMeta(menuId) {
       const menu = document.getElementById(menuId);
@@ -2254,7 +2269,10 @@
         "kepala sarpras": "sarpras",
         "tim layanan": "layanan",
         "tim kesehatan": "kesehatan",
-        "petugas kesehatan": "kesehatan"
+        "petugas kesehatan": "kesehatan",
+        "tim observer": "observer",
+        "tim observasi": "observer",
+        "petugas observer": "observer"
       };
 
       return aliasRole[nilai] || nilai;
@@ -2279,6 +2297,7 @@
         direktur: "Direktur",
         wakil: "Wakil Direktur",
         supervisor: "Supervisor",
+        observer: "Tim Observer",
         yayasan: "Ketua Yayasan",
         guru: "Guru",
         naqib: "Naqib",
@@ -2465,6 +2484,16 @@
         .find(menu => ambilUrlDariMenu(menu) === url) || null;
     }
 
+    const DEFAULT_ROLE_MENUS = {
+      observer: [
+        'menu-observer-pembelajaran',
+        'menu-observer-pengasuhan',
+        'menu-observer-kebersihan',
+        'menu-observer-dapur',
+        'menu-observer-uks'
+      ]
+    };
+
     function terapkanOtorisasiFiturTambahan() {
       const profileButton = document.getElementById('topNavProfile');
       const topChatButton = document.getElementById('topNavChat');
@@ -2585,7 +2614,9 @@
         const gabunganMenu = [];
 
         myRoles.forEach(role => {
-          const daftarMenu = Array.isArray(roleMenuRules[role]) ? roleMenuRules[role] : [];
+          const daftarMenu = Array.isArray(roleMenuRules[role])
+            ? roleMenuRules[role]
+            : (DEFAULT_ROLE_MENUS[role] || []);
           daftarMenu.forEach(menuId => {
             if (!gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
           });
