@@ -856,6 +856,16 @@
       line-height: 1.45;
     }
 
+    .import-actions-inline {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .import-actions-inline .btn { min-height: 39px; }
+
     .import-status {
       grid-column: 2 / -1;
       display: none;
@@ -870,96 +880,6 @@
     .import-status.success { color: #177151; }
     .import-status.error { color: #b43d4d; }
 
-    .upload-progress {
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      z-index: 5200;
-      display: none;
-      width: min(430px, calc(100vw - 36px));
-      min-width: 0;
-      padding: 14px;
-      border: 1px solid #cfe0f5;
-      border-radius: 16px;
-      background: rgba(255,255,255,.97);
-      box-shadow: 0 20px 55px rgba(22,49,92,.24);
-      backdrop-filter: blur(12px);
-    }
-
-    .upload-progress.show { display: block; }
-
-    .upload-progress-head,
-    .upload-progress-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .upload-progress-head {
-      color: var(--gm-heading);
-      font-size: .61rem;
-      font-weight: 950;
-    }
-
-    .upload-progress-meta {
-      margin-top: 6px;
-      color: var(--gm-muted);
-      font-size: .53rem;
-      font-weight: 800;
-    }
-
-    .upload-progress-track {
-      height: 8px;
-      margin-top: 7px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: #e7eef8;
-    }
-
-    .upload-progress-bar {
-      width: 0%;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--gm-primary), var(--gm-cyan));
-      transition: width .18s ease;
-    }
-
-    .upload-progress-actions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 9px;
-      padding-top: 9px;
-      border-top: 1px dashed #dce6f2;
-    }
-
-    .upload-progress-note {
-      color: var(--gm-muted);
-      font-size: .53rem;
-      font-weight: 800;
-      line-height: 1.4;
-    }
-
-    .upload-cancel-btn {
-      flex: 0 0 auto;
-      min-height: 30px;
-      padding: 5px 9px;
-      color: #bd3f50;
-      font-size: .56rem;
-      font-weight: 900;
-      cursor: pointer;
-      border: 1px solid #efc6cd;
-      border-radius: 9px;
-      background: #fff2f4;
-    }
-
-    .upload-cancel-btn:hover {
-      color: #fff;
-      border-color: var(--gm-red);
-      background: var(--gm-red);
-    }
 
     .storage-summary {
       display: flex;
@@ -1117,6 +1037,13 @@
       box-shadow: 0 12px 24px rgba(35,78,160,.10);
     }
 
+    .document-option:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
     .document-option.recommended {
       border-color: #afd2ff;
       background: linear-gradient(145deg, #f8fbff, #edf5ff);
@@ -1241,6 +1168,175 @@
       .document-choice-grid { grid-template-columns: 1fr; }
       .document-choice-head { padding: 20px 18px 17px; }
       .document-choice-body { padding: 13px; }
+    }
+
+    /* TAUTAN GOOGLE DRIVE */
+    .drive-link-dialog {
+      width: min(680px, 100%);
+      max-height: 92vh;
+      overflow: hidden;
+      border: 1px solid rgba(222,231,243,.96);
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 30px 80px rgba(10,24,52,.38);
+    }
+
+    .drive-link-head {
+      position: relative;
+      overflow: hidden;
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid #e4ebf5;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(37,185,131,.15), transparent 38%),
+        linear-gradient(135deg, #ffffff, #f4fbf8);
+    }
+
+    .drive-link-head::after {
+      content: "☁";
+      position: absolute;
+      right: 24px;
+      bottom: -38px;
+      color: rgba(37,185,131,.08);
+      font-size: 7rem;
+      font-weight: 950;
+      pointer-events: none;
+    }
+
+    .drive-link-head h3 {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      color: var(--gm-heading);
+      font-size: 1.08rem;
+      font-weight: 950;
+    }
+
+    .drive-link-head p {
+      position: relative;
+      z-index: 1;
+      max-width: 530px;
+      margin: 6px 42px 0 0;
+      color: var(--gm-muted);
+      font-size: .68rem;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .drive-link-body {
+      max-height: calc(92vh - 110px);
+      padding: 18px;
+      overflow-y: auto;
+    }
+
+    .drive-steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin-bottom: 15px;
+    }
+
+    .drive-step {
+      min-width: 0;
+      padding: 11px;
+      color: #536987;
+      font-size: .57rem;
+      font-weight: 800;
+      line-height: 1.45;
+      border: 1px solid #dce7f2;
+      border-radius: 13px;
+      background: #f8fbff;
+    }
+
+    .drive-step b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--gm-heading);
+      font-size: .61rem;
+      font-weight: 950;
+    }
+
+    .drive-step-number {
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 7px;
+      color: #fff;
+      font-size: .55rem;
+      font-weight: 950;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--gm-green), var(--gm-cyan));
+    }
+
+    .drive-form-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(140px, .7fr);
+      gap: 12px;
+    }
+
+    .drive-form-grid .drive-url-field { grid-column: 1 / -1; }
+
+    .drive-candidate {
+      display: none;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 13px;
+      padding: 10px 11px;
+      color: #37624f;
+      font-size: .61rem;
+      font-weight: 850;
+      line-height: 1.45;
+      border: 1px solid #cce7dc;
+      border-radius: 13px;
+      background: #f0faf6;
+    }
+
+    .drive-candidate.show { display: flex; }
+
+    .drive-security-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 13px;
+      padding: 10px 11px;
+      color: #6f5825;
+      font-size: .57rem;
+      font-weight: 800;
+      line-height: 1.5;
+      border: 1px solid #edd8ad;
+      border-radius: 13px;
+      background: #fff9ee;
+    }
+
+    .drive-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px dashed #dce6f2;
+    }
+
+    .drive-actions-left,
+    .drive-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 620px) {
+      .drive-steps,
+      .drive-form-grid { grid-template-columns: 1fr; }
+      .drive-form-grid .drive-url-field { grid-column: auto; }
+      .drive-actions,
+      .drive-actions-left,
+      .drive-actions-right { align-items: stretch; }
+      .drive-actions-left,
+      .drive-actions-right { width: 100%; }
+      .drive-actions .btn { flex: 1 1 100%; }
     }
 
     /* E-READER */
@@ -1532,7 +1628,6 @@
       .actions .btn { flex: 1 1 calc(50% - 8px); }
       .preview-paper { padding: 26px 20px; }
       .toast { left: 10px; right: 10px; bottom: 10px; max-width: none; }
-      .upload-progress { left: 10px; right: 10px; bottom: 10px; width: auto; }
     }
 
     @media (max-width: 460px) {
@@ -1546,7 +1641,8 @@
 
     @media (max-width: 760px) {
       .import-panel { grid-template-columns: auto minmax(0, 1fr); }
-      .import-panel .btn { grid-column: 1 / -1; width: 100%; }
+      .import-actions-inline { grid-column: 1 / -1; width: 100%; }
+      .import-actions-inline .btn { flex: 1 1 calc(50% - 5px); width: auto; }
       .import-status { grid-column: 1 / -1; }
       .reader-topbar {
         grid-template-columns: auto minmax(0, 1fr);
@@ -1632,30 +1728,18 @@
 
           <div class="assignment-chips" id="assignmentChips"></div>
 
-          <section class="import-panel" id="importPanel" aria-label="Impor tulisan dari dokumen">
+          <section class="import-panel" id="importPanel" aria-label="Impor tulisan dan tautan Google Drive">
             <input id="documentFileInput" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
             <div class="import-icon">⇧</div>
             <div class="import-copy">
-              <strong>Unggah tulisan dari PDF atau Word</strong>
-              <span>Pilihan utama: masukkan isi ke editor agar lebih cepat dan hemat Storage. File asli maksimal 10 MB.</span>
+              <strong>Tambahkan tulisan dari PDF, Word, atau Google Drive</strong>
+              <span>Masukkan isi dokumen ke editor atau tautkan file aslinya dari Google Drive tanpa memakai Google Drive.</span>
             </div>
-            <button class="btn btn-light" type="button" id="chooseFileBtn">📄 Pilih Dokumen</button>
+            <div class="import-actions-inline">
+              <button class="btn btn-light" type="button" id="chooseFileBtn">📄 Pilih Dokumen</button>
+              <button class="btn btn-green" type="button" id="linkDriveBtn">☁ Tautkan Drive</button>
+            </div>
             <div class="import-status" id="importStatus" aria-live="polite"></div>
-            <div class="upload-progress" id="uploadProgress" aria-live="polite">
-              <div class="upload-progress-head">
-                <span id="uploadProgressLabel">Mengunggah file asli</span>
-                <strong id="uploadProgressPercent">0%</strong>
-              </div>
-              <div class="upload-progress-track"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
-              <div class="upload-progress-meta">
-                <span id="uploadProgressBytes">0 B dari 0 B</span>
-                <span id="uploadProgressEta">Menghitung waktu...</span>
-              </div>
-              <div class="upload-progress-actions">
-                <span class="upload-progress-note" id="uploadProgressNote">Upload berjalan langsung. Halaman tetap dapat digunakan.</span>
-                <button class="upload-cancel-btn" id="cancelUploadBtn" type="button">Batalkan</button>
-              </div>
-            </div>
           </section>
 
           <div class="editor-shell">
@@ -1739,11 +1823,11 @@
           <select class="control" id="filterAssignment">
             <option value="">Semua mapel & kelas</option>
           </select>
-          <div class="storage-summary" id="storageSummary">
+          <div class="storage-summary" id="driveSummary">
             <div class="storage-summary-icon">☁</div>
             <div class="storage-summary-copy">
-              <strong id="storageUsageText">File asli: 0 B</strong>
-              <span id="storageUsageDetail">Belum ada dokumen yang memakai Firebase Storage.</span>
+              <strong id="driveUsageText">Google Drive: 0 file tertaut</strong>
+              <span id="driveUsageDetail">Penyimpanan file asli dikelola melalui Google Drive.</span>
             </div>
           </div>
         </div>
@@ -1777,13 +1861,67 @@
             <strong>Masukkan Isi ke Editor</strong>
             <p>Teks dari PDF atau Word akan dibaca dan dimasukkan ke ruang editor agar dapat diedit, dirapikan, dan dibaca dalam mode e-reader.</p>
           </button>
-          <button class="document-option file-only" id="keepOriginalFileBtn" type="button">
-            <span class="document-option-icon">📎</span>
-            <strong>Simpan sebagai File Asli</strong>
-            <p>Dokumen diunggah sebagai lampiran tanpa menyalin isinya ke editor. Maksimal 10 MB; file di atas 5 MB sebaiknya dikompres.</p>
+          <button class="document-option file-only" id="linkOriginalDriveBtn" type="button">
+            <span class="document-option-icon">☁</span>
+            <strong>Tautkan File melalui Google Drive</strong>
+            <p>Unggah file asli ke Google Drive, lalu tempel tautannya. CAHAYA APP hanya menyimpan tautan, bukan file asli.</p>
           </button>
         </div>
         <p class="document-choice-note">Anda tetap perlu mengisi judul, mapel/kelas, dan nomor pertemuan sebelum menyimpan tulisan.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="driveLinkModal" role="dialog" aria-modal="true" aria-labelledby="driveLinkTitle">
+    <div class="drive-link-dialog">
+      <div class="drive-link-head">
+        <button class="modal-close document-choice-close" id="closeDriveLink" type="button" aria-label="Tutup">×</button>
+        <h3 id="driveLinkTitle">Tautkan File dari Google Drive</h3>
+        <p>File tetap tersimpan di Google Drive. CAHAYA APP hanya menyimpan nama dan tautannya agar dapat dibuka dari perpustakaan serta mode baca.</p>
+      </div>
+      <div class="drive-link-body">
+        <div class="drive-steps">
+          <div class="drive-step"><span class="drive-step-number">1</span><b>Unggah ke Drive</b>Buka Google Drive dan unggah PDF atau Word.</div>
+          <div class="drive-step"><span class="drive-step-number">2</span><b>Atur akses</b>Bagikan hanya kepada akun yang memang perlu membuka dokumen.</div>
+          <div class="drive-step"><span class="drive-step-number">3</span><b>Tempel tautan</b>Salin tautan Drive dan masukkan pada formulir di bawah.</div>
+        </div>
+
+        <div class="drive-candidate" id="driveCandidateSummary"></div>
+
+        <div class="drive-form-grid">
+          <div class="field-group">
+            <label class="field-label" for="driveFileName">Nama file <span class="required">*</span></label>
+            <input class="control" id="driveFileName" type="text" maxlength="180" placeholder="Contoh: Materi Aqidah Al-Quddus.pdf" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="driveFileType">Jenis file</label>
+            <select class="control" id="driveFileType">
+              <option value="pdf">PDF</option>
+              <option value="word">Word (.docx)</option>
+              <option value="other">Dokumen lain</option>
+            </select>
+          </div>
+          <div class="field-group drive-url-field">
+            <label class="field-label" for="driveFileUrl">Tautan berbagi Google Drive <span class="required">*</span></label>
+            <input class="control" id="driveFileUrl" type="url" inputmode="url" placeholder="https://drive.google.com/file/d/.../view" />
+          </div>
+        </div>
+
+        <div class="drive-security-note">
+          <span>🔒</span>
+          <span>CAHAYA APP tidak mengubah izin Drive. Untuk dokumen internal, gunakan akses terbatas dan bagikan kepada akun Google yang diperlukan. Jangan gunakan “Siapa saja yang memiliki link” untuk dokumen sensitif.</span>
+        </div>
+
+        <div class="drive-actions">
+          <div class="drive-actions-left">
+            <button class="btn btn-green" id="openGoogleDriveBtn" type="button">☁ Buka Google Drive</button>
+            <button class="btn btn-light" id="checkDriveLinkBtn" type="button">↗ Periksa Tautan</button>
+          </div>
+          <div class="drive-actions-right">
+            <button class="btn btn-danger" id="removeDriveLinkBtn" type="button" hidden>Hapus Tautan</button>
+            <button class="btn btn-primary" id="saveDriveLinkBtn" type="button">🔗 Hubungkan File</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1824,7 +1962,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-storage-compat.js"></script>
 
   <script>
     "use strict";
@@ -1836,13 +1973,11 @@
       apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
       authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
       databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-      projectId: "absensi-santri-fajrul-islam",
-      storageBucket: "absensi-santri-fajrul-islam.appspot.com"
+      projectId: "absensi-santri-fajrul-islam"
     };
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const storage = firebase.storage();
 
     const TAHUN_AJARAN_LABEL = "2026/2027";
     const TAHUN_AJARAN_KEY = "2026_2027";
@@ -2016,20 +2151,11 @@
     let toastTimer = null;
     let noticeTimer = null;
     let currentImportMeta = null;
-    let pendingDocumentFile = null;
     let selectedDocumentFile = null;
-    let attachmentToRemove = null;
-    let currentObjectUrl = "";
+    let driveCandidateFile = null;
     let currentReaderKey = "draft";
     let readerFontSize = 18;
     let readerLineHeight = 1.86;
-    let activeUploadTask = null;
-    let pendingUploadPromise = null;
-    let pendingUploadError = null;
-    let uploadHeartbeatTimer = null;
-    let uploadInactivityTimer = null;
-    let uploadSessionToken = 0;
-    let uploadProgressHideTimer = null;
     let isSaving = false;
 
     const els = {
@@ -2049,22 +2175,25 @@
       importPanel: document.getElementById("importPanel"),
       documentFileInput: document.getElementById("documentFileInput"),
       chooseFileBtn: document.getElementById("chooseFileBtn"),
+      linkDriveBtn: document.getElementById("linkDriveBtn"),
       importStatus: document.getElementById("importStatus"),
-      uploadProgress: document.getElementById("uploadProgress"),
-      uploadProgressLabel: document.getElementById("uploadProgressLabel"),
-      uploadProgressPercent: document.getElementById("uploadProgressPercent"),
-      uploadProgressBar: document.getElementById("uploadProgressBar"),
-      uploadProgressBytes: document.getElementById("uploadProgressBytes"),
-      uploadProgressEta: document.getElementById("uploadProgressEta"),
-      uploadProgressNote: document.getElementById("uploadProgressNote"),
-      cancelUploadBtn: document.getElementById("cancelUploadBtn"),
       documentChoiceModal: document.getElementById("documentChoiceModal"),
       closeDocumentChoice: document.getElementById("closeDocumentChoice"),
       selectedDocumentName: document.getElementById("selectedDocumentName"),
       selectedDocumentSize: document.getElementById("selectedDocumentSize"),
       documentSizeAdvisory: document.getElementById("documentSizeAdvisory"),
       extractToEditorBtn: document.getElementById("extractToEditorBtn"),
-      keepOriginalFileBtn: document.getElementById("keepOriginalFileBtn"),
+      linkOriginalDriveBtn: document.getElementById("linkOriginalDriveBtn"),
+      driveLinkModal: document.getElementById("driveLinkModal"),
+      closeDriveLink: document.getElementById("closeDriveLink"),
+      driveCandidateSummary: document.getElementById("driveCandidateSummary"),
+      driveFileName: document.getElementById("driveFileName"),
+      driveFileType: document.getElementById("driveFileType"),
+      driveFileUrl: document.getElementById("driveFileUrl"),
+      openGoogleDriveBtn: document.getElementById("openGoogleDriveBtn"),
+      checkDriveLinkBtn: document.getElementById("checkDriveLinkBtn"),
+      removeDriveLinkBtn: document.getElementById("removeDriveLinkBtn"),
+      saveDriveLinkBtn: document.getElementById("saveDriveLinkBtn"),
       editorToolbar: document.getElementById("editorToolbar"),
       formatBlock: document.getElementById("formatBlock"),
       insertLinkBtn: document.getElementById("insertLinkBtn"),
@@ -2079,9 +2208,9 @@
       filterAssignment: document.getElementById("filterAssignment"),
       articleList: document.getElementById("articleList"),
       libraryFooter: document.getElementById("libraryFooter"),
-      storageSummary: document.getElementById("storageSummary"),
-      storageUsageText: document.getElementById("storageUsageText"),
-      storageUsageDetail: document.getElementById("storageUsageDetail"),
+      driveSummary: document.getElementById("driveSummary"),
+      driveUsageText: document.getElementById("driveUsageText"),
+      driveUsageDetail: document.getElementById("driveUsageDetail"),
       previewModal: document.getElementById("previewModal"),
       closePreview: document.getElementById("closePreview"),
       previewPaper: document.getElementById("previewPaper"),
@@ -2166,32 +2295,6 @@
       return `${(size / (1024 * 1024)).toFixed(1)} MB`;
     }
 
-    function formatDuration(totalSeconds) {
-      const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
-      if (seconds < 60) return `${seconds} detik`;
-      const minutes = Math.floor(seconds / 60);
-      const remainder = seconds % 60;
-      return remainder ? `${minutes} menit ${remainder} detik` : `${minutes} menit`;
-    }
-
-    function estimateUploadRange(bytes) {
-      const size = Number(bytes) || 0;
-      if (!size) return "kurang dari 1 detik";
-      const overhead = 1.18;
-      const fastSeconds = (size * 8 / 5_000_000) * overhead;
-      const slowSeconds = (size * 8 / 2_000_000) * overhead;
-      return `${formatDuration(fastSeconds)}–${formatDuration(slowSeconds)}`;
-    }
-
-    function safeStorageFileName(name) {
-      const cleaned = String(name || "dokumen")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-zA-Z0-9._-]+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      return cleaned.slice(0, 140) || "dokumen";
-    }
 
     function sanitizeEditorHtml(html) {
       const template = document.createElement("template");
@@ -2250,6 +2353,7 @@
       els.meetingNumber.disabled = locked;
       els.assignmentSelect.disabled = locked || !getTeacherAssignments().length;
       els.chooseFileBtn.disabled = locked;
+      els.linkDriveBtn.disabled = locked;
       els.newBtn.disabled = locked;
       els.previewBtn.disabled = locked;
       els.deleteCurrentBtn.disabled = locked || !currentArticleId;
@@ -2390,7 +2494,7 @@
 
 
     /* =========================================================
-       4B. IMPOR / UNGGAH DOKUMEN PDF & WORD
+       4B. IMPOR PDF/WORD & TAUTAN GOOGLE DRIVE
        ========================================================= */
     function setImportStatus(message = "", type = "normal", busy = false) {
       els.importPanel.classList.toggle("busy", busy);
@@ -2400,112 +2504,66 @@
         : "";
     }
 
-    function clearUploadTimers() {
-      if (uploadHeartbeatTimer) clearInterval(uploadHeartbeatTimer);
-      if (uploadInactivityTimer) clearTimeout(uploadInactivityTimer);
-      uploadHeartbeatTimer = null;
-      uploadInactivityTimer = null;
+    function getAttachmentUrl(meta = currentImportMeta) {
+      return String(meta?.driveUrl || meta?.downloadUrl || "").trim();
     }
 
-    function resetUploadProgress(immediate = false) {
-      clearUploadTimers();
-      if (uploadProgressHideTimer) clearTimeout(uploadProgressHideTimer);
-      const hide = () => {
-        els.uploadProgress.classList.remove("show");
-        els.uploadProgressBar.style.width = "0%";
-        els.uploadProgressPercent.textContent = "0%";
-        els.uploadProgressBytes.textContent = "0 B dari 0 B";
-        els.uploadProgressEta.textContent = "Menyiapkan koneksi...";
-        els.uploadProgressLabel.textContent = "Mengunggah file asli";
-        els.uploadProgressNote.textContent = "Upload berjalan langsung. Halaman tetap dapat digunakan.";
-        els.cancelUploadBtn.disabled = false;
-      };
-      if (immediate) hide();
-      else uploadProgressHideTimer = setTimeout(hide, 1800);
+    function hasDriveAttachment(meta = currentImportMeta) {
+      const url = getAttachmentUrl(meta);
+      return Boolean(url && /https?:\/\//i.test(url));
     }
 
-    function updateUploadProgress({
-      percent = 0,
-      transferred = 0,
-      total = 0,
-      speed = 0,
-      eta = 0,
-      label = "Mengunggah file asli",
-      note = "Upload berjalan langsung. Halaman tetap dapat digunakan.",
-      etaLabel = ""
-    } = {}) {
-      const safePercent = Math.min(100, Math.max(0, Math.round(percent)));
-      els.uploadProgress.classList.add("show");
-      els.uploadProgressLabel.textContent = label;
-      els.uploadProgressPercent.textContent = `${safePercent}%`;
-      els.uploadProgressBar.style.width = `${safePercent}%`;
-      els.uploadProgressBytes.textContent = `${formatFileSize(transferred)} dari ${formatFileSize(total)}`;
-      els.uploadProgressNote.textContent = note;
-      if (etaLabel) {
-        els.uploadProgressEta.textContent = etaLabel;
-      } else if (safePercent >= 100) {
-        els.uploadProgressEta.textContent = "Upload selesai";
-      } else if (speed > 0 && Number.isFinite(eta)) {
-        els.uploadProgressEta.textContent = `${formatFileSize(speed)}/detik • sisa ± ${formatDuration(eta)}`;
-      } else {
-        els.uploadProgressEta.textContent = "Menyiapkan koneksi...";
-      }
+    function renderDriveUsage() {
+      const linkedFiles = articleCache.filter(item => hasDriveAttachment(item?.importMeta));
+      const pdfCount = linkedFiles.filter(item => String(item.importMeta?.fileType || "").toLowerCase() === "pdf").length;
+      const wordCount = linkedFiles.filter(item => String(item.importMeta?.fileType || "").toLowerCase() === "word").length;
+      els.driveUsageText.textContent = `Google Drive: ${linkedFiles.length} file tertaut`;
+      els.driveUsageDetail.textContent = linkedFiles.length
+        ? `${pdfCount} PDF • ${wordCount} Word • penyimpanan tetap dikelola di Google Drive.`
+        : "Belum ada file Drive tertaut. Penyimpanan file asli tidak memakai Firebase Storage.";
     }
 
-    function cancelActiveUpload(showMessage = true) {
-      if (!activeUploadTask) return false;
-      try {
-        activeUploadTask.cancel();
-        if (showMessage) showToast("Upload dibatalkan.", "error");
-        return true;
-      } catch (error) {
-        console.warn("Upload tidak dapat dibatalkan:", error);
-        return false;
-      }
-    }
-
-    function renderStorageUsage() {
-      const storedFiles = articleCache.filter(item => {
-        const meta = item?.importMeta;
-        return Boolean(meta?.fileSize && (meta?.storagePath || meta?.downloadUrl));
-      });
-      const totalBytes = storedFiles.reduce((sum, item) => sum + (Number(item.importMeta?.fileSize) || 0), 0);
-      const averageBytes = storedFiles.length ? totalBytes / storedFiles.length : 0;
-      els.storageUsageText.textContent = `File asli: ${formatFileSize(totalBytes)}`;
-      els.storageUsageDetail.textContent = storedFiles.length
-        ? `${storedFiles.length} file tersimpan • rata-rata ${formatFileSize(averageBytes)} per file.`
-        : "Belum ada dokumen yang memakai Firebase Storage.";
-    }
-
-    function validateDocumentFile(file) {
+    function validateDocumentFile(file, forExtraction = false) {
       if (!file) return { valid: false, message: "Dokumen belum dipilih." };
       const extension = String(file.name || "").split(".").pop().toLowerCase();
       const isPdf = file.type === "application/pdf" || extension === "pdf";
       const isWord = file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || extension === "docx";
       if (!isPdf && !isWord) return { valid: false, message: "Format belum didukung. Gunakan PDF atau Word berformat .docx." };
-      if (file.size > MAX_DOCUMENT_FILE_BYTES) return { valid: false, message: "Ukuran dokumen maksimal 10 MB. Kompres file terlebih dahulu lalu coba kembali." };
-      return { valid: true, isPdf, isWord, extension, isLarge: file.size > LARGE_FILE_WARNING_BYTES };
+      if (forExtraction && file.size > MAX_DOCUMENT_FILE_BYTES) {
+        return { valid: false, message: "Dokumen di atas 10 MB tidak dimasukkan ke editor agar browser tetap ringan. Unggah file ke Google Drive lalu tautkan file aslinya." };
+      }
+      return {
+        valid: true,
+        isPdf,
+        isWord,
+        extension,
+        canExtract: file.size <= MAX_DOCUMENT_FILE_BYTES,
+        isLarge: file.size > LARGE_FILE_WARNING_BYTES
+      };
     }
 
     function openDocumentChoice(file) {
-      const validation = validateDocumentFile(file);
+      const validation = validateDocumentFile(file, false);
       if (!validation.valid) {
         setImportStatus(validation.message, "error");
         showToast(validation.message, "error");
         els.documentFileInput.value = "";
         return;
       }
+
       selectedDocumentFile = file;
       els.selectedDocumentName.textContent = file.name;
-      els.selectedDocumentSize.textContent = `• ${formatFileSize(file.size)} • maks. 10 MB`;
-      const uploadEstimate = estimateUploadRange(file.size);
-      els.documentSizeAdvisory.className = `document-size-advisory ${validation.isLarge ? "warning" : ""}`.trim();
-      els.documentSizeAdvisory.innerHTML = validation.isLarge
-        ? `<span>⚠</span><span>File ini cukup besar. Jika disimpan sebagai file asli, perkiraan upload sekitar ${escapeHtml(uploadEstimate)} pada koneksi 2–5 Mbps. Pilihan “Masukkan Isi ke Editor” lebih cepat dan tidak memakai Firebase Storage.</span>`
-        : `<span>ℹ</span><span>Jika disimpan sebagai file asli, perkiraan upload sekitar ${escapeHtml(uploadEstimate)} pada koneksi 2–5 Mbps. Memasukkan isi ke editor tidak menyimpan file aslinya.</span>`;
+      els.selectedDocumentSize.textContent = `• ${formatFileSize(file.size)}`;
+      els.extractToEditorBtn.disabled = !validation.canExtract;
+      els.documentSizeAdvisory.className = `document-size-advisory ${!validation.canExtract || validation.isLarge ? "warning" : ""}`.trim();
+      els.documentSizeAdvisory.innerHTML = !validation.canExtract
+        ? `<span>⚠</span><span>Ukuran file melebihi 10 MB sehingga tidak dibaca ke editor. File tetap dapat diunggah ke Google Drive lalu ditautkan tanpa batas dari CAHAYA APP.</span>`
+        : validation.isLarge
+          ? `<span>ℹ</span><span>File cukup besar. Memasukkan isi ke editor mungkin memerlukan beberapa saat. Alternatifnya, tautkan file asli melalui Google Drive.</span>`
+          : `<span>ℹ</span><span>Pilih “Masukkan Isi ke Editor” untuk mengolah teks, atau “Tautkan File melalui Google Drive” untuk mempertahankan dokumen aslinya.</span>`;
       els.documentChoiceModal.classList.add("show");
       document.body.style.overflow = "hidden";
-      requestAnimationFrame(() => els.extractToEditorBtn.focus());
+      requestAnimationFrame(() => (validation.canExtract ? els.extractToEditorBtn : els.linkOriginalDriveBtn).focus());
     }
 
     function closeDocumentChoice() {
@@ -2513,7 +2571,9 @@
       selectedDocumentFile = null;
       els.documentSizeAdvisory.textContent = "";
       els.documentFileInput.value = "";
-      if (!els.previewModal.classList.contains("show")) document.body.style.overflow = "";
+      if (!els.previewModal.classList.contains("show") && !els.driveLinkModal.classList.contains("show")) {
+        document.body.style.overflow = "";
+      }
     }
 
     function documentTitleFromFileName(name) {
@@ -2600,30 +2660,178 @@
       return { html: safeHtml, text: plainText, warnings: result.messages || [], type: "word" };
     }
 
-    function rememberAttachmentForCleanup() {
-      if (!currentImportMeta?.storagePath) return;
-      const persisted = articleCache.find(item => item.id === currentArticleId);
-      const isPersistedAttachment = persisted?.importMeta?.storagePath === currentImportMeta.storagePath;
 
-      if (isPersistedAttachment) {
-        if (currentImportMeta.storagePath !== attachmentToRemove?.storagePath) {
-          attachmentToRemove = { ...currentImportMeta };
-        }
-      } else {
-        void deleteStorageAttachment(currentImportMeta);
+    function inferDriveFileType(name = "", fallback = "other") {
+      const lower = String(name || "").toLowerCase();
+      if (lower.endsWith(".pdf")) return "pdf";
+      if (lower.endsWith(".docx") || lower.endsWith(".doc")) return "word";
+      return ["pdf", "word", "other"].includes(fallback) ? fallback : "other";
+    }
+
+    function parseGoogleDriveLink(rawValue) {
+      const raw = String(rawValue || "").trim();
+      if (!raw) return { valid: false, message: "Tautan Google Drive wajib diisi." };
+
+      let url;
+      try {
+        url = new URL(raw);
+      } catch (_) {
+        return { valid: false, message: "Format tautan tidak valid. Tempel tautan lengkap dari Google Drive." };
       }
+
+      if (url.protocol !== "https:") return { valid: false, message: "Tautan harus menggunakan https://" };
+      const host = url.hostname.toLowerCase();
+      const allowed = host === "drive.google.com" || host.endsWith(".drive.google.com") || host === "docs.google.com" || host.endsWith(".docs.google.com");
+      if (!allowed) return { valid: false, message: "Gunakan tautan dari drive.google.com atau docs.google.com." };
+
+      const patterns = [
+        /\/file\/d\/([a-zA-Z0-9_-]+)/,
+        /\/document\/d\/([a-zA-Z0-9_-]+)/,
+        /\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/,
+        /\/presentation\/d\/([a-zA-Z0-9_-]+)/,
+        /[?&]id=([a-zA-Z0-9_-]+)/
+      ];
+      let fileId = "";
+      for (const pattern of patterns) {
+        const match = raw.match(pattern);
+        if (match?.[1]) {
+          fileId = match[1];
+          break;
+        }
+      }
+
+      if (!fileId) {
+        return { valid: false, message: "Tautan tersebut belum menunjuk ke satu file. Buka file di Google Drive, pilih Bagikan, lalu salin tautannya." };
+      }
+
+      const normalizedUrl = host === "drive.google.com"
+        ? `https://drive.google.com/file/d/${fileId}/view`
+        : raw;
+      return { valid: true, url: normalizedUrl, originalUrl: raw, fileId };
+    }
+
+    function openDriveLinkModal(file = null) {
+      driveCandidateFile = file || null;
+      const existing = hasDriveAttachment(currentImportMeta) ? currentImportMeta : null;
+      const suggestedName = file?.name || existing?.fileName || "";
+      const suggestedType = inferDriveFileType(suggestedName, existing?.fileType || "other");
+
+      els.driveFileName.value = suggestedName;
+      els.driveFileType.value = suggestedType;
+      els.driveFileUrl.value = existing?.driveUrl || "";
+      els.removeDriveLinkBtn.hidden = !existing?.driveUrl;
+
+      if (file) {
+        els.driveCandidateSummary.classList.add("show");
+        els.driveCandidateSummary.innerHTML = `<span>📄</span><span><strong>${escapeHtml(file.name)}</strong><br>${escapeHtml(formatFileSize(file.size))} • unggah file ini ke Google Drive, lalu tempel tautannya.</span>`;
+        if (!els.articleTitle.value.trim()) els.articleTitle.value = documentTitleFromFileName(file.name);
+      } else {
+        els.driveCandidateSummary.classList.remove("show");
+        els.driveCandidateSummary.innerHTML = "";
+      }
+
+      els.driveLinkModal.classList.add("show");
+      document.body.style.overflow = "hidden";
+      requestAnimationFrame(() => (els.driveFileUrl.value ? els.driveFileUrl : els.openGoogleDriveBtn).focus());
+    }
+
+    function closeDriveLinkModal() {
+      els.driveLinkModal.classList.remove("show");
+      driveCandidateFile = null;
+      if (!els.documentChoiceModal.classList.contains("show") && !els.previewModal.classList.contains("show")) {
+        document.body.style.overflow = "";
+      }
+    }
+
+    function checkDriveLink() {
+      const parsed = parseGoogleDriveLink(els.driveFileUrl.value);
+      if (!parsed.valid) {
+        showToast(parsed.message, "error");
+        els.driveFileUrl.focus();
+        return;
+      }
+      window.open(parsed.url, "_blank", "noopener,noreferrer");
+    }
+
+    function saveDriveLink() {
+      const fileName = els.driveFileName.value.trim();
+      const parsed = parseGoogleDriveLink(els.driveFileUrl.value);
+      if (!fileName) {
+        showToast("Nama file wajib diisi.", "error");
+        els.driveFileName.focus();
+        return;
+      }
+      if (!parsed.valid) {
+        showToast(parsed.message, "error");
+        els.driveFileUrl.focus();
+        return;
+      }
+
+      const existing = currentImportMeta || {};
+      const sourceFileName = existing.sourceFileName || (existing.mode === "editor" ? existing.fileName : "");
+      const sourceFileType = existing.sourceFileType || (existing.mode === "editor" ? existing.fileType : "");
+      const sourceFileSize = existing.sourceFileSize || (existing.mode === "editor" ? existing.fileSize : 0);
+      const hasEditorText = Boolean(getPlainText(els.articleEditor.innerHTML));
+
+      currentImportMeta = {
+        ...existing,
+        mode: hasEditorText ? "editor_drive" : "drive_link",
+        sourceFileName: sourceFileName || null,
+        sourceFileType: sourceFileType || null,
+        sourceFileSize: Number(sourceFileSize) || null,
+        fileName,
+        fileType: els.driveFileType.value || inferDriveFileType(fileName),
+        mimeType: els.driveFileType.value === "pdf"
+          ? "application/pdf"
+          : els.driveFileType.value === "word"
+            ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            : "application/octet-stream",
+        fileSize: Number(driveCandidateFile?.size || existing.fileSize || 0),
+        driveUrl: parsed.url,
+        driveOriginalUrl: parsed.originalUrl,
+        driveFileId: parsed.fileId || "",
+        sourcePlatform: "google_drive",
+        linkedAt: nowIso()
+      };
+
+      markUnsaved();
+      setImportStatus(`Google Drive tertaut: ${fileName}${currentImportMeta.fileSize ? ` • ${formatFileSize(currentImportMeta.fileSize)}` : ""}.`, "success");
+      closeDriveLinkModal();
+      showToast("Tautan Google Drive berhasil dihubungkan.", "success");
+    }
+
+    function removeDriveLink() {
+      if (!hasDriveAttachment(currentImportMeta)) return;
+      if (!confirm("Hapus tautan Google Drive dari tulisan ini? File di Google Drive tidak ikut terhapus.")) return;
+
+      const existing = { ...(currentImportMeta || {}) };
+      ["driveUrl", "driveOriginalUrl", "driveFileId", "sourcePlatform", "linkedAt", "downloadUrl", "storagePath", "storageBucket", "uploadedAt", "uploadPending", "uploadState"].forEach(key => delete existing[key]);
+
+      if (existing.sourceFileName || existing.importedAt) {
+        existing.mode = "editor";
+        existing.fileName = existing.sourceFileName || existing.fileName || "";
+        existing.fileType = existing.sourceFileType || existing.fileType || "";
+        existing.fileSize = existing.sourceFileSize || existing.fileSize || 0;
+        currentImportMeta = existing;
+      } else {
+        currentImportMeta = null;
+      }
+
+      markUnsaved();
+      setImportStatus(currentImportMeta?.fileName ? `Sumber dokumen: ${currentImportMeta.fileName}.` : "Tautan Google Drive dihapus.", "normal");
+      closeDriveLinkModal();
+      showToast("Tautan dihapus. File di Google Drive tetap aman.", "success");
     }
 
     async function importDocumentToEditor(file) {
       if (!file) return;
-      const validation = validateDocumentFile(file);
+      const validation = validateDocumentFile(file, true);
       if (!validation.valid) {
         setImportStatus(validation.message, "error");
         showToast(validation.message, "error");
         return;
       }
 
-      cleanupUncommittedUpload();
       setImportStatus(`Menyiapkan ${file.name}...`, "normal", true);
       try {
         const result = validation.isPdf ? await extractPdfDocument(file) : await extractWordDocument(file);
@@ -2637,21 +2845,26 @@
           return;
         }
 
-        rememberAttachmentForCleanup();
-        pendingDocumentFile = null;
+        const existingDrive = hasDriveAttachment(currentImportMeta) ? { ...currentImportMeta } : {};
         els.articleEditor.innerHTML = importedHtml;
         if (!els.articleTitle.value.trim()) els.articleTitle.value = documentTitleFromFileName(file.name);
         currentImportMeta = {
-          mode: "editor",
-          fileName: file.name,
-          fileType: result.type,
-          fileSize: file.size,
+          ...existingDrive,
+          mode: hasDriveAttachment(existingDrive) ? "editor_drive" : "editor",
+          sourceFileName: file.name,
+          sourceFileType: result.type,
+          sourceFileSize: file.size,
           importedAt: nowIso(),
-          pages: result.pages || null
+          pages: result.pages || null,
+          ...(hasDriveAttachment(existingDrive) ? {} : {
+            fileName: file.name,
+            fileType: result.type,
+            fileSize: file.size
+          })
         };
         updateEditorStats();
         markUnsaved();
-        setImportStatus(`${file.name} berhasil dimasukkan ke editor • ${countWords(importedText)} kata${result.pages ? ` • ${result.pages} halaman` : ""}.`, "success");
+        setImportStatus(`${file.name} berhasil dimasukkan ke editor • ${countWords(importedText)} kata${result.pages ? ` • ${result.pages} halaman` : ""}${hasDriveAttachment(currentImportMeta) ? " • file Drive tetap tertaut" : ""}.`, "success");
         showToast("Isi dokumen berhasil dimasukkan ke editor.", "success");
         els.articleEditor.scrollIntoView({ behavior: "smooth", block: "center" });
       } catch (error) {
@@ -2663,268 +2876,8 @@
       }
     }
 
-    function ensureArticleIdForUpload() {
-      if (currentArticleId) return currentArticleId;
-      if (!currentTeacherCode) throw new Error("Data guru belum terdeteksi.");
-      currentArticleId = db.ref(`${WRITING_PATH}/${currentTeacherCode}`).push().key;
-      return currentArticleId;
-    }
-
-    function startOriginalFileUpload(file) {
-      if (!file) return;
-      const validation = validateDocumentFile(file);
-      if (!validation.valid) {
-        setImportStatus(validation.message, "error");
-        showToast(validation.message, "error");
-        return;
-      }
-
-      if (activeUploadTask) cancelActiveUpload(false);
-      const sessionToken = ++uploadSessionToken;
-      rememberAttachmentForCleanup();
-      pendingDocumentFile = file;
-      pendingUploadError = null;
-      let articleId = "";
-      try {
-        articleId = ensureArticleIdForUpload();
-      } catch (error) {
-        pendingDocumentFile = null;
-        setImportStatus(error.message || "Data guru belum siap untuk mengunggah file.", "error");
-        showToast(error.message || "Data guru belum siap.", "error");
-        return;
-      }
-
-      if (!els.articleTitle.value.trim()) els.articleTitle.value = documentTitleFromFileName(file.name);
-      currentImportMeta = {
-        mode: "file_only",
-        fileName: file.name,
-        fileType: validation.isPdf ? "pdf" : "word",
-        mimeType: file.type || (validation.isPdf ? "application/pdf" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-        fileSize: file.size,
-        selectedAt: nowIso(),
-        uploadPending: true,
-        uploadState: "uploading"
-      };
-
-      markUnsaved();
-      const estimate = estimateUploadRange(file.size);
-      setImportStatus(`Upload ${file.name} langsung dimulai • ${formatFileSize(file.size)} • estimasi ${estimate}. Anda tetap dapat mengisi judul, mapel, dan pertemuan.`, "normal", true);
-      showToast("Upload file asli langsung dimulai.", "success");
-
-      const runningPromise = uploadPendingOriginalFile(articleId);
-      pendingUploadPromise = runningPromise
-        .then(meta => {
-          if (sessionToken !== uploadSessionToken) return null;
-          currentImportMeta = meta;
-          pendingDocumentFile = null;
-          pendingUploadError = null;
-          setImportStatus(`${meta.fileName} selesai diunggah • ${formatFileSize(meta.fileSize)}. Sekarang klik “Simpan Tulisan” untuk menyimpan data tulisan.`, "success");
-          markUnsaved();
-          resetUploadProgress();
-          showToast("File asli selesai diunggah.", "success");
-          return meta;
-        })
-        .catch(error => {
-          if (sessionToken !== uploadSessionToken) return null;
-          pendingUploadError = error;
-          const canceled = error?.code === "storage/canceled";
-          currentImportMeta = {
-            ...currentImportMeta,
-            uploadPending: true,
-            uploadState: canceled ? "canceled" : "error"
-          };
-          setImportStatus(
-            canceled
-              ? `Upload ${file.name} dibatalkan. Pilih file kembali untuk mencoba lagi.`
-              : `Upload ${file.name} gagal: ${error.message || "Firebase Storage tidak merespons."}`,
-            "error"
-          );
-          updateUploadProgress({
-            percent: 0,
-            transferred: 0,
-            total: file.size,
-            label: canceled ? "Upload dibatalkan" : "Upload gagal",
-            etaLabel: canceled ? "Dibatalkan pengguna" : "Periksa koneksi atau Storage Rules",
-            note: "File belum tersimpan. Anda dapat memilih dokumen kembali."
-          });
-          els.cancelUploadBtn.disabled = true;
-          return null;
-        })
-        .finally(() => {
-          if (sessionToken !== uploadSessionToken) return;
-          activeUploadTask = null;
-          clearUploadTimers();
-          pendingUploadPromise = null;
-          els.importPanel.classList.remove("busy");
-        });
-    }
-
-    async function uploadPendingOriginalFile(articleId) {
-      if (!pendingDocumentFile) return currentImportMeta;
-      const file = pendingDocumentFile;
-      const validation = validateDocumentFile(file);
-      if (!validation.valid) throw new Error(validation.message);
-      if (!navigator.onLine) throw new Error("Perangkat sedang offline. Sambungkan internet lalu coba kembali.");
-
-      const storagePath = `guru_menulis_files/ta_${TAHUN_AJARAN_KEY}/${currentTeacherCode}/${articleId}/${Date.now()}_${safeStorageFileName(file.name)}`;
-      const storageRef = storage.ref(storagePath);
-      const startedAt = Date.now();
-      let lastTransferred = 0;
-      let lastActivityAt = startedAt;
-      let settled = false;
-      let localHeartbeatTimer = null;
-      let localInactivityTimer = null;
-
-      setImportStatus(`Menghubungkan ${file.name} ke Firebase Storage...`, "normal", true);
-      resetUploadProgress(true);
-      updateUploadProgress({
-        percent: 0,
-        transferred: 0,
-        total: file.size,
-        label: `Menyiapkan upload ${file.name}`,
-        etaLabel: "Menghubungkan ke Firebase Storage...",
-        note: "Upload dimulai sebelum data tulisan disimpan."
-      });
-
-      const snapshot = await new Promise((resolve, reject) => {
-        const metadata = {
-          contentType: file.type || "application/octet-stream",
-          cacheControl: "private,max-age=3600",
-          customMetadata: {
-            teacherCode: currentTeacherCode,
-            articleId,
-            tahunAjaran: TAHUN_AJARAN_KEY
-          }
-        };
-        const uploadTask = storageRef.put(file, metadata);
-        activeUploadTask = uploadTask;
-        const taskEvent = firebase.storage.TaskEvent?.STATE_CHANGED || "state_changed";
-
-        const clearLocalTimers = () => {
-          if (localHeartbeatTimer) clearInterval(localHeartbeatTimer);
-          if (localInactivityTimer) clearTimeout(localInactivityTimer);
-          localHeartbeatTimer = null;
-          localInactivityTimer = null;
-        };
-
-        const finish = (handler, value) => {
-          if (settled) return;
-          settled = true;
-          clearLocalTimers();
-          handler(value);
-        };
-
-        const armInactivityTimeout = () => {
-          if (localInactivityTimer) clearTimeout(localInactivityTimer);
-          localInactivityTimer = setTimeout(() => {
-            if (settled) return;
-            try { uploadTask.cancel(); } catch (_) {}
-            const timeoutError = new Error("Tidak ada respons upload selama 90 detik. Periksa koneksi internet, konfigurasi bucket, atau Firebase Storage Rules.");
-            timeoutError.code = "storage/upload-timeout";
-            finish(reject, timeoutError);
-          }, 90000);
-        };
-
-        armInactivityTimeout();
-        localHeartbeatTimer = setInterval(() => {
-          if (settled) return;
-          const elapsed = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
-          const idle = Math.max(0, Math.round((Date.now() - lastActivityAt) / 1000));
-          if (lastTransferred === 0) {
-            updateUploadProgress({
-              percent: 0,
-              transferred: 0,
-              total: file.size,
-              label: `Menghubungkan ${file.name}`,
-              etaLabel: `Menunggu respons server • ${elapsed} detik`,
-              note: idle > 15
-                ? "Respons server lambat. Sistem akan menghentikan otomatis bila 90 detik tanpa aktivitas."
-                : "Sedang membuat sesi upload aman ke Firebase Storage."
-            });
-          }
-        }, 1000);
-
-        uploadTask.on(
-          taskEvent,
-          taskSnapshot => {
-            const transferred = Number(taskSnapshot.bytesTransferred || 0);
-            const total = Number(taskSnapshot.totalBytes || file.size || 1);
-            const percent = total ? (transferred / total) * 100 : 0;
-            const elapsedSeconds = Math.max((Date.now() - startedAt) / 1000, 0.25);
-            const speed = transferred / elapsedSeconds;
-            const eta = speed > 0 ? (total - transferred) / speed : 0;
-
-            if (transferred > lastTransferred) {
-              lastActivityAt = Date.now();
-              armInactivityTimeout();
-            }
-            lastTransferred = transferred;
-
-            updateUploadProgress({
-              percent,
-              transferred,
-              total,
-              speed,
-              eta,
-              label: taskSnapshot.state === "paused"
-                ? `Upload dijeda: ${file.name}`
-                : `Mengunggah ${file.name}`,
-              note: "Upload berlangsung langsung; Anda dapat tetap mengisi formulir."
-            });
-          },
-          error => finish(reject, error),
-          () => {
-            const completedSnapshot = uploadTask.snapshot;
-            updateUploadProgress({
-              percent: 100,
-              transferred: completedSnapshot.totalBytes || file.size,
-              total: completedSnapshot.totalBytes || file.size,
-              label: `Upload ${file.name} selesai`,
-              note: "File sudah berada di Firebase Storage. Tinggal simpan data tulisan."
-            });
-            els.cancelUploadBtn.disabled = true;
-            finish(resolve, completedSnapshot);
-          }
-        );
-      });
-
-      setImportStatus("Upload selesai. Menyiapkan tautan file...", "normal", true);
-      const downloadUrl = await snapshot.ref.getDownloadURL();
-      return {
-        mode: "file_only",
-        fileName: file.name,
-        fileType: String(file.name).toLowerCase().endsWith(".pdf") ? "pdf" : "word",
-        mimeType: file.type || "application/octet-stream",
-        fileSize: file.size,
-        storagePath,
-        downloadUrl,
-        uploadedAt: nowIso(),
-        uploadPending: false,
-        uploadState: "complete"
-      };
-    }
-
-    async function deleteStorageAttachment(meta) {
-      if (!meta?.storagePath) return;
-      try {
-        await storage.ref(meta.storagePath).delete();
-      } catch (error) {
-        if (error?.code !== "storage/object-not-found") console.warn("Lampiran lama gagal dihapus:", error);
-      }
-    }
-
     function cleanupUncommittedUpload() {
-      uploadSessionToken += 1;
-      if (activeUploadTask) cancelActiveUpload(false);
-      const persisted = articleCache.find(item => item.id === currentArticleId);
-      const persistedPath = persisted?.importMeta?.storagePath || "";
-      const currentPath = currentImportMeta?.storagePath || "";
-      if (currentPath && currentPath !== persistedPath) {
-        void deleteStorageAttachment(currentImportMeta);
-      }
-      pendingUploadPromise = null;
-      pendingUploadError = null;
-      clearUploadTimers();
+      driveCandidateFile = null;
     }
 
     /* =========================================================
@@ -3104,12 +3057,10 @@
           : "Draf lokal dipulihkan. Simpan untuk memasukkannya ke Firebase.";
         updateAssignmentChips();
         updateEditorStats();
-        if (currentImportMeta?.fileName) {
-          if (currentImportMeta.mode === "file_only" && currentImportMeta.uploadPending) {
-            setImportStatus(`Data ${currentImportMeta.fileName} dipulihkan, tetapi file perlu dipilih ulang sebelum disimpan.`, "error");
-          } else {
-            setImportStatus(`${currentImportMeta.fileName} dipulihkan bersama draf lokal.`, "success");
-          }
+        if (hasDriveAttachment(currentImportMeta)) {
+          setImportStatus(`Tautan Google Drive ${currentImportMeta.fileName || "dokumen"} dipulihkan bersama draf lokal.`, "success");
+        } else if (currentImportMeta?.fileName || currentImportMeta?.sourceFileName) {
+          setImportStatus(`${currentImportMeta.sourceFileName || currentImportMeta.fileName} dipulihkan bersama draf lokal.`, "success");
         }
         markUnsaved();
         showToast("Draf lokal sebelumnya dipulihkan.");
@@ -3140,12 +3091,9 @@
       if (!Number.isInteger(meetingNo) || meetingNo < 1 || meetingNo > 99) {
         return { valid: false, message: "Nomor pertemuan harus berupa angka 1 sampai 99." };
       }
-      const hasOriginalFile = Boolean(pendingDocumentFile || currentImportMeta?.downloadUrl);
+      const hasOriginalFile = hasDriveAttachment(currentImportMeta);
       if ((!contentText || contentText.length < 20) && !hasOriginalFile) {
-        return { valid: false, message: "Masukkan isi tulisan minimal 20 karakter atau unggah dokumen sebagai file asli." };
-      }
-      if (currentImportMeta?.mode === "file_only" && currentImportMeta?.uploadPending && !pendingDocumentFile) {
-        return { valid: false, message: "File asli belum tersedia. Pilih kembali dokumen yang akan diunggah." };
+        return { valid: false, message: "Masukkan isi tulisan minimal 20 karakter atau tautkan file asli dari Google Drive." };
       }
 
       return { valid: true, assignment, title, meetingNo, contentHtml, contentText, hasOriginalFile };
@@ -3182,7 +3130,7 @@
         excerpt: validated.contentText
           ? validated.contentText.slice(0, 240)
           : currentImportMeta?.fileName
-            ? `Dokumen ${currentImportMeta.fileName} disimpan sebagai file asli tanpa dimasukkan ke editor.`
+            ? `Dokumen ${currentImportMeta.fileName} ditautkan dari Google Drive tanpa dimasukkan ke editor.`
             : "",
         wordCount: countWords(validated.contentText),
         charCount: validated.contentText.length,
@@ -3190,10 +3138,10 @@
         status: "tersimpan",
         createdAt,
         updatedAt: nowIso(),
-        source: currentImportMeta?.mode === "file_only"
-          ? "unggah_file_asli"
+        source: hasDriveAttachment(currentImportMeta)
+          ? (validated.contentText ? "guru_menulis_google_drive" : "tautan_google_drive")
           : currentImportMeta
-            ? `impor_${currentImportMeta.fileType}`
+            ? `impor_${currentImportMeta.sourceFileType || currentImportMeta.fileType || "dokumen"}`
             : "guru_menulis",
         importMeta: currentImportMeta || null
       };
@@ -3214,46 +3162,21 @@
       isSaving = true;
       setBusy(els.saveBtn, true);
       setSaveLock(true);
-      let uploadedMeta = null;
 
       try {
         const teacherRef = db.ref(`${WRITING_PATH}/${currentTeacherCode}`);
         if (!currentArticleId) currentArticleId = teacherRef.push().key;
 
-        if (pendingUploadPromise) {
-          setImportStatus("Upload file masih berjalan. Penyimpanan data akan dilanjutkan otomatis setelah upload selesai...", "normal", true);
-          uploadedMeta = await pendingUploadPromise;
-          if (!uploadedMeta) throw pendingUploadError || new Error("Upload file belum berhasil.");
-          currentImportMeta = uploadedMeta;
-        } else if (pendingUploadError) {
-          throw pendingUploadError;
-        } else if (pendingDocumentFile && currentImportMeta?.uploadPending) {
-          uploadedMeta = await uploadPendingOriginalFile(currentArticleId);
-          currentImportMeta = uploadedMeta;
-          pendingDocumentFile = null;
-        }
-
         const payload = buildArticlePayload(validated);
         payload.id = currentArticleId;
         payload.importMeta = currentImportMeta || null;
         payload.documentMode = currentImportMeta?.mode || "editor";
-        payload.source = currentImportMeta?.mode === "file_only"
-          ? "unggah_file_asli"
-          : currentImportMeta
-            ? `impor_${currentImportMeta.fileType}`
-            : "guru_menulis";
         if (!payload.contentText && currentImportMeta?.fileName) {
-          payload.excerpt = `Dokumen ${currentImportMeta.fileName} disimpan sebagai file asli tanpa dimasukkan ke editor.`;
+          payload.excerpt = `Dokumen ${currentImportMeta.fileName} ditautkan dari Google Drive tanpa dimasukkan ke editor.`;
         }
 
         await teacherRef.child(currentArticleId).set(payload);
 
-        if (attachmentToRemove?.storagePath && attachmentToRemove.storagePath !== currentImportMeta?.storagePath) {
-          await deleteStorageAttachment(attachmentToRemove);
-        }
-
-        pendingDocumentFile = null;
-        attachmentToRemove = null;
         currentCreatedAt = payload.createdAt;
         els.articleEditor.innerHTML = payload.contentHtml;
         els.deleteCurrentBtn.disabled = false;
@@ -3262,21 +3185,14 @@
         markSaved("Tersimpan di Firebase");
         clearLocalDraft();
         updateEditorStats();
-        if (currentImportMeta?.mode === "file_only") {
-          setImportStatus(`${currentImportMeta.fileName} tersimpan sebagai file asli • ${formatFileSize(currentImportMeta.fileSize)}.`, "success");
-          resetUploadProgress();
+        if (hasDriveAttachment(currentImportMeta)) {
+          setImportStatus(`Google Drive tertaut: ${currentImportMeta.fileName || "dokumen"}${currentImportMeta.fileSize ? ` • ${formatFileSize(currentImportMeta.fileSize)}` : ""}.`, "success");
         }
         showToast("Tulisan berhasil disimpan ke Firebase.", "success");
       } catch (error) {
         console.error(error);
-        showToast(`Gagal menyimpan tulisan: ${error.message || "Periksa koneksi, Firebase Rules, dan Storage Rules."}`, "error");
-        if (currentImportMeta?.storagePath && currentImportMeta?.uploadState === "complete") {
-          setImportStatus(`File ${currentImportMeta.fileName} sudah selesai diunggah, tetapi data tulisan belum tersimpan. Perbaiki isian atau koneksi lalu klik Simpan lagi; file tidak perlu diunggah ulang.`, "error");
-        } else if (pendingDocumentFile) {
-          setImportStatus(`File belum berhasil diunggah: ${pendingDocumentFile.name}. Pilih dokumen kembali bila upload dibatalkan atau gagal.`, "error");
-        }
+        showToast(`Gagal menyimpan tulisan: ${error.message || "Periksa koneksi dan Firebase Rules."}`, "error");
       } finally {
-        activeUploadTask = null;
         isSaving = false;
         setBusy(els.saveBtn, false);
         setSaveLock(false);
@@ -3318,7 +3234,7 @@
       });
 
       els.libraryFooter.textContent = `${articleCache.length} tulisan tersimpan${filtered.length !== articleCache.length ? ` • ${filtered.length} ditampilkan` : ""}`;
-      renderStorageUsage();
+      renderDriveUsage();
 
       if (!filtered.length) {
         els.articleList.innerHTML = `
@@ -3342,10 +3258,10 @@
             <div class="article-meta">
               <span class="meta-pill">${escapeHtml(item.subject || "Mapel")}</span>
               <span class="meta-pill">${escapeHtml(item.section || "Unit")} Kelas ${escapeHtml(item.kelas || "—")}</span>
-              <span class="meta-pill">${item.importMeta?.mode === "file_only" ? `📎 ${escapeHtml(String(item.importMeta.fileType || "file").toUpperCase())} • ${escapeHtml(formatFileSize(item.importMeta?.fileSize || 0))}` : `${escapeHtml(item.wordCount || 0)} kata`}</span>
+              <span class="meta-pill">${hasDriveAttachment(item.importMeta) ? `☁ DRIVE • ${escapeHtml(String(item.importMeta?.fileType || "file").toUpperCase())}${item.importMeta?.fileSize ? ` • ${escapeHtml(formatFileSize(item.importMeta.fileSize))}` : ""}` : `${escapeHtml(item.wordCount || 0)} kata`}</span>
             </div>
 
-            <p class="article-excerpt">${escapeHtml(item.excerpt || item.contentText || (item.importMeta?.fileName ? `File asli: ${item.importMeta.fileName}` : ""))}</p>
+            <p class="article-excerpt">${escapeHtml(item.excerpt || item.contentText || (item.importMeta?.fileName ? `Google Drive: ${item.importMeta.fileName}` : ""))}</p>
 
             <div class="article-foot">
               <span class="article-date">Diperbarui ${escapeHtml(formatDate(item.updatedAt || item.createdAt))}</span>
@@ -3367,8 +3283,6 @@
 
       currentArticleId = item.id;
       currentCreatedAt = item.createdAt || "";
-      pendingDocumentFile = null;
-      attachmentToRemove = null;
       currentImportMeta = item.importMeta || null;
       els.articleTitle.value = item.title || "";
       els.assignmentSelect.value = item.assignmentId || "";
@@ -3377,9 +3291,10 @@
       els.deleteCurrentBtn.disabled = false;
       els.formTitle.textContent = "Edit Materi Ajar";
       els.formSubtitle.textContent = "Tulisan tersimpan sedang dibuka. Simpan kembali setelah melakukan perubahan.";
-      if (currentImportMeta?.fileName) {
-        const label = currentImportMeta.mode === "file_only" ? "File asli tersimpan" : "Sumber dokumen";
-        setImportStatus(`${label}: ${currentImportMeta.fileName}${currentImportMeta.fileSize ? ` • ${formatFileSize(currentImportMeta.fileSize)}` : ""}`, "success");
+      if (hasDriveAttachment(currentImportMeta)) {
+        setImportStatus(`Google Drive tertaut: ${currentImportMeta.fileName || "dokumen"}${currentImportMeta.fileSize ? ` • ${formatFileSize(currentImportMeta.fileSize)}` : ""}`, "success");
+      } else if (currentImportMeta?.sourceFileName || currentImportMeta?.fileName) {
+        setImportStatus(`Sumber dokumen: ${currentImportMeta.sourceFileName || currentImportMeta.fileName}`, "success");
       } else {
         setImportStatus();
       }
@@ -3395,11 +3310,11 @@
       if (!id || !currentTeacherCode) return;
       const item = articleCache.find(article => article.id === id);
       const title = item?.title || els.articleTitle.value.trim() || "tulisan ini";
-      if (!confirm(`Hapus “${title}”? Tulisan yang dihapus tidak dapat dikembalikan.`)) return;
+      const driveNote = hasDriveAttachment(item?.importMeta) ? " File di Google Drive tidak ikut terhapus." : "";
+      if (!confirm(`Hapus “${title}”? Tulisan yang dihapus tidak dapat dikembalikan.${driveNote}`)) return;
 
       try {
         await db.ref(`${WRITING_PATH}/${currentTeacherCode}/${id}`).remove();
-        if (item?.importMeta?.storagePath) await deleteStorageAttachment(item.importMeta);
         if (id === currentArticleId) resetForm({ preserveAssignment: true, restoreLocal: false });
         showToast("Tulisan berhasil dihapus.", "success");
       } catch (error) {
@@ -3413,14 +3328,10 @@
       const assignmentValue = preserveAssignment ? els.assignmentSelect.value : "";
       currentArticleId = "";
       currentCreatedAt = "";
-      pendingDocumentFile = null;
       selectedDocumentFile = null;
-      pendingUploadPromise = null;
-      pendingUploadError = null;
-      attachmentToRemove = null;
+      driveCandidateFile = null;
       currentImportMeta = null;
       setImportStatus();
-      resetUploadProgress(true);
       els.articleTitle.value = "";
       els.meetingNumber.value = "";
       els.articleEditor.innerHTML = "";
@@ -3534,16 +3445,7 @@
       const contentText = getPlainText(contentHtml);
       const attachmentMeta = article?.importMeta || currentImportMeta || null;
 
-      if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl);
-        currentObjectUrl = "";
-      }
-
-      let attachmentUrl = attachmentMeta?.downloadUrl || "";
-      if (!attachmentUrl && !article && pendingDocumentFile) {
-        currentObjectUrl = URL.createObjectURL(pendingDocumentFile);
-        attachmentUrl = currentObjectUrl;
-      }
+      const attachmentUrl = getAttachmentUrl(attachmentMeta);
 
       if (!contentText && !attachmentUrl) {
         showToast("Belum ada isi tulisan atau file yang dapat dibaca.", "error");
@@ -3558,7 +3460,7 @@
       els.readerTopTitle.textContent = title;
       els.readerTopMeta.textContent = `${subject} • ${section} Kelas ${kelas}`;
       els.readerStats.textContent = isFileOnly
-        ? `${String(attachmentMeta?.fileType || "file").toUpperCase()} • ${formatFileSize(attachmentMeta?.fileSize || pendingDocumentFile?.size || 0)}`
+        ? `${String(attachmentMeta?.fileType || "file").toUpperCase()}${attachmentMeta?.fileSize ? ` • ${formatFileSize(attachmentMeta.fileSize)}` : ""}`
         : `${words} kata • sekitar ${readingMinutes} menit baca`;
 
       const cover = `
@@ -3577,21 +3479,21 @@
         </header>`;
 
       if (isFileOnly) {
-        const fileName = attachmentMeta?.fileName || pendingDocumentFile?.name || "Dokumen asli";
+        const fileName = attachmentMeta?.fileName || "Dokumen asli";
         els.previewPaper.innerHTML = `${cover}
           <section class="reader-attachment">
-            <div class="reader-attachment-icon">📎</div>
-            <h2>Dokumen Disimpan sebagai File Asli</h2>
-            <p>${escapeHtml(fileName)} tidak dimasukkan ke editor sehingga tata letak aslinya tetap dipertahankan.</p>
-            <a class="btn btn-primary" href="${escapeHtml(attachmentUrl)}" target="_blank" rel="noopener noreferrer">📄 Buka File Asli</a>
+            <div class="reader-attachment-icon">☁</div>
+            <h2>Dokumen Ditautkan dari Google Drive</h2>
+            <p>${escapeHtml(fileName)} tidak dimasukkan ke editor. File asli tetap tersimpan dan mengikuti izin akses Google Drive.</p>
+            <a class="btn btn-primary" href="${escapeHtml(attachmentUrl)}" target="_blank" rel="noopener noreferrer">☁ Buka di Google Drive</a>
           </section>`;
       } else {
         const attachmentAfterContent = attachmentUrl
           ? `<section class="reader-attachment">
-              <div class="reader-attachment-icon">📎</div>
-              <h2>File Asli Tersedia</h2>
-              <p>${escapeHtml(attachmentMeta?.fileName || "Dokumen asli")} tetap tersimpan sebagai lampiran.</p>
-              <a class="btn btn-primary" href="${escapeHtml(attachmentUrl)}" target="_blank" rel="noopener noreferrer">📄 Buka File Asli</a>
+              <div class="reader-attachment-icon">☁</div>
+              <h2>File Google Drive Tersedia</h2>
+              <p>${escapeHtml(attachmentMeta?.fileName || "Dokumen asli")} ditautkan sebagai dokumen sumber.</p>
+              <a class="btn btn-primary" href="${escapeHtml(attachmentUrl)}" target="_blank" rel="noopener noreferrer">☁ Buka di Google Drive</a>
             </section>`
           : "";
         els.previewPaper.innerHTML = `${cover}<div class="reader-content">${contentHtml}</div>${attachmentAfterContent}`;
@@ -3612,11 +3514,9 @@
     function closePreview() {
       updateReaderProgress();
       els.previewModal.classList.remove("show");
-      if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl);
-        currentObjectUrl = "";
+      if (!els.documentChoiceModal.classList.contains("show") && !els.driveLinkModal.classList.contains("show")) {
+        document.body.style.overflow = "";
       }
-      if (!els.documentChoiceModal.classList.contains("show")) document.body.style.overflow = "";
     }
 
     /* =========================================================
@@ -3624,6 +3524,7 @@
        ========================================================= */
     function bindEvents() {
       els.chooseFileBtn.addEventListener("click", () => els.documentFileInput.click());
+      els.linkDriveBtn.addEventListener("click", () => openDriveLinkModal());
       els.documentFileInput.addEventListener("change", () => openDocumentChoice(els.documentFileInput.files?.[0]));
       els.closeDocumentChoice.addEventListener("click", closeDocumentChoice);
       els.documentChoiceModal.addEventListener("click", event => {
@@ -3634,12 +3535,19 @@
         closeDocumentChoice();
         await importDocumentToEditor(file);
       });
-      els.keepOriginalFileBtn.addEventListener("click", () => {
+      els.linkOriginalDriveBtn.addEventListener("click", () => {
         const file = selectedDocumentFile;
         closeDocumentChoice();
-        startOriginalFileUpload(file);
+        openDriveLinkModal(file);
       });
-      els.cancelUploadBtn.addEventListener("click", () => cancelActiveUpload(true));
+      els.closeDriveLink.addEventListener("click", closeDriveLinkModal);
+      els.driveLinkModal.addEventListener("click", event => {
+        if (event.target === els.driveLinkModal) closeDriveLinkModal();
+      });
+      els.openGoogleDriveBtn.addEventListener("click", () => window.open("https://drive.google.com/drive/my-drive", "_blank", "noopener,noreferrer"));
+      els.checkDriveLinkBtn.addEventListener("click", checkDriveLink);
+      els.saveDriveLinkBtn.addEventListener("click", saveDriveLink);
+      els.removeDriveLinkBtn.addEventListener("click", removeDriveLink);
 
       ["dragenter", "dragover"].forEach(eventName => {
         els.importPanel.addEventListener(eventName, event => {
@@ -3708,7 +3616,7 @@
       els.saveBtn.addEventListener("click", saveArticle);
       els.newBtn.addEventListener("click", () => {
         const hasUnsaved = els.draftState.classList.contains("unsaved") && (
-          els.articleTitle.value.trim() || getPlainText(els.articleEditor.innerHTML) || pendingDocumentFile
+          els.articleTitle.value.trim() || getPlainText(els.articleEditor.innerHTML) || hasDriveAttachment(currentImportMeta)
         );
         if (hasUnsaved && !confirm("Ada perubahan yang belum disimpan. Mulai tulisan baru dan abaikan perubahan tersebut?")) return;
         resetForm({ preserveAssignment: true, restoreLocal: false });
@@ -3755,7 +3663,9 @@
           event.preventDefault();
           saveArticle();
         }
-        if (event.key === "Escape" && els.documentChoiceModal.classList.contains("show")) {
+        if (event.key === "Escape" && els.driveLinkModal.classList.contains("show")) {
+          closeDriveLinkModal();
+        } else if (event.key === "Escape" && els.documentChoiceModal.classList.contains("show")) {
           closeDocumentChoice();
         } else if (event.key === "Escape" && els.previewModal.classList.contains("show")) {
           closePreview();
