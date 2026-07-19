@@ -36,6 +36,7 @@
     /* ROLE BARU: KEPALA SARPRAS (Palet Teal Premium) */
     .role-sarpras { background: #f0fdfa; color: #0f766e; border: 1px solid #14b8a6; }
     .role-kesehatan { background: #ecfeff; color: #0e7490; border: 1px solid #67e8f9; }
+    .role-observer { background: #eef2ff; color: #4338ca; border: 1px solid #a5b4fc; }
 
     /* Modal Form */
     .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.7); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; padding: 20px; animation: fadeIn 0.3s ease; }
@@ -397,6 +398,7 @@
           <option value="cla">🎓 Center of Learning & Achievement</option>
           <option value="wakil">🥈 Wakil Direktur</option>
           <option value="supervisor">🔍 Supervisor</option>
+          <option value="observer">👁️ Tim Observer</option>
           <option value="yayasan">🏛️ Ketua Yayasan</option>
           <option value="direktur">👑 Direktur</option>
           <option value="admin">💻 Administrator</option>
@@ -408,7 +410,7 @@
 
       <div id="areaChecklistMenu">
 
-        <div class="menu-section" style="background:#f0f9ff; border-color:#bae6fd;">
+        <div class="menu-section" id="sectionMainMenu" style="background:#f0f9ff; border-color:#bae6fd;">
           <h4 style="color:#075985; border-bottom-color:#7dd3fc;">🏠 Fitur Utama Aplikasi</h4>
           <div class="checkbox-grid" style="margin-top:0;">
             <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-home"> Beranda Dashboard</label>
@@ -468,6 +470,17 @@
             <label class="check-label" style="border-color:#67e8f9;"><input type="checkbox" class="cb-menu" value="menu-jurnal-kesehatan"> Jurnal Kesehatan</label>
             <label class="check-label" style="border-color:#67e8f9;"><input type="checkbox" class="cb-menu" value="menu-pemeriksaan-kesehatan"> Pemeriksaan Kesehatan</label>
             <label class="check-label" style="border-color:#67e8f9;"><input type="checkbox" class="cb-menu" value="menu-stok-obat"> Stok Obat UKS</label>
+          </div>
+        </div>
+
+        <div class="menu-section" id="sectionObserverMenu" style="background:linear-gradient(135deg,#eef2ff,#f5f7ff); border-color:#c7d2fe;">
+          <h4 style="color:#4338ca; border-bottom-color:#a5b4fc;">👁️ Modul Tim Observer</h4>
+          <div class="checkbox-grid" style="margin-top:0;">
+            <label class="check-label" style="background:#ffffff; border-color:#93c5fd;"><input type="checkbox" class="cb-menu" value="menu-observer-pembelajaran"> 📚 Observasi Pembelajaran</label>
+            <label class="check-label" style="background:#ffffff; border-color:#c4b5fd;"><input type="checkbox" class="cb-menu" value="menu-observer-pengasuhan"> 🕌 Observasi Pengasuhan</label>
+            <label class="check-label" style="background:#ffffff; border-color:#6ee7b7;"><input type="checkbox" class="cb-menu" value="menu-observer-kebersihan"> 🧹 Observasi Kebersihan</label>
+            <label class="check-label" style="background:#ffffff; border-color:#fdba74;"><input type="checkbox" class="cb-menu" value="menu-observer-dapur"> 🍲 Observasi Dapur</label>
+            <label class="check-label" style="background:#ffffff; border-color:#67e8f9;"><input type="checkbox" class="cb-menu" value="menu-observer-uks"> 🩺 Observasi UKS</label>
           </div>
         </div>
 
@@ -570,6 +583,7 @@
         <label class="check-label"><input type="checkbox" value="cla" class="role-checkbox"> Center of Learning (CLA)</label>
         <label class="check-label"><input type="checkbox" value="wakil" class="role-checkbox"> Wakil Direktur</label>
         <label class="check-label"><input type="checkbox" value="supervisor" class="role-checkbox"> Supervisor</label>
+        <label class="check-label" style="border-color:#a5b4fc; background:#eef2ff;"><input type="checkbox" value="observer" class="role-checkbox"> Tim Observer</label>
         <label class="check-label"><input type="checkbox" value="yayasan" class="role-checkbox"> Ketua Yayasan</label>
         <label class="check-label"><input type="checkbox" value="direktur" class="role-checkbox"> Direktur</label>
         <label class="check-label"><input type="checkbox" value="admin" class="role-checkbox"> Admin</label>
@@ -610,13 +624,34 @@
     "menu-laporan-wali": "menu-akademik-wali"
   };
 
+  const OBSERVER_MENU_IDS = [
+    "menu-observer-pembelajaran",
+    "menu-observer-pengasuhan",
+    "menu-observer-kebersihan",
+    "menu-observer-dapur",
+    "menu-observer-uks"
+  ];
+
+  const DEFAULT_ROLE_MENUS = {
+    observer: [...OBSERVER_MENU_IDS]
+  };
+
   function daftarMenuOtorisasiTersedia(role = "") {
-    const root = role === "wali"
-      ? document.getElementById("sectionWaliMenu")
-      : document;
+    let roots = [document];
+
+    if (role === "wali") {
+      roots = [document.getElementById("sectionWaliMenu")];
+    } else if (role === "observer") {
+      roots = [
+        document.getElementById("sectionMainMenu"),
+        document.getElementById("sectionObserverMenu")
+      ];
+    }
 
     return [...new Set(
-      [...root.querySelectorAll('.cb-menu')]
+      roots
+        .filter(Boolean)
+        .flatMap(root => [...root.querySelectorAll('.cb-menu')])
         .map(cb => cb.value)
         .filter(Boolean)
     )];
@@ -639,7 +674,20 @@
   function aturTampilanBagianOtorisasi(role) {
     document.querySelectorAll('#areaChecklistMenu .menu-section').forEach(section => {
       const khususWali = section.id === 'sectionWaliMenu';
-      section.style.display = role === 'wali' && !khususWali ? 'none' : '';
+      const khususObserver = section.id === 'sectionObserverMenu';
+      const fiturUtama = section.id === 'sectionMainMenu';
+
+      if (role === 'wali') {
+        section.style.display = khususWali ? '' : 'none';
+        return;
+      }
+
+      if (role === 'observer') {
+        section.style.display = (fiturUtama || khususObserver) ? '' : 'none';
+        return;
+      }
+
+      section.style.display = '';
     });
   }
 
@@ -771,8 +819,15 @@
   }
 
   async function muatPengaturanMenu() {
-    const d = await db.collection("settings").doc("role_menus").get();
+    const ref = db.collection("settings").doc("role_menus");
+    const d = await ref.get();
     if(d.exists) dynamicRoleMenus = d.data();
+
+    if (!Array.isArray(dynamicRoleMenus.observer)) {
+      dynamicRoleMenus.observer = [...DEFAULT_ROLE_MENUS.observer];
+      await ref.set({ observer: dynamicRoleMenus.observer }, { merge: true });
+    }
+
     renderChecklistMenu();
   }
 
@@ -784,7 +839,7 @@
       role,
       Array.isArray(dynamicRoleMenus[role])
         ? dynamicRoleMenus[role]
-        : []
+        : (DEFAULT_ROLE_MENUS[role] || [])
     );
 
     const knownMenus = new Set(daftarMenuOtorisasiTersedia(role));
@@ -799,7 +854,9 @@
     const knownMenus = new Set(daftarMenuOtorisasiTersedia(role));
     const selector = role === 'wali'
       ? '#sectionWaliMenu .cb-menu:checked'
-      : '.cb-menu:checked';
+      : role === 'observer'
+        ? '#sectionMainMenu .cb-menu:checked, #sectionObserverMenu .cb-menu:checked'
+        : '.cb-menu:checked';
 
     const allowed = [...document.querySelectorAll(selector)]
       .map(cb => cb.value)
