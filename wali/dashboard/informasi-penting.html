@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#2878ff" />
   <title>Informasi Penting Wali Santri | CAHAYA APP</title>
 
@@ -531,6 +531,425 @@
       .pdf-toolbar{align-items:stretch}
       .pdf-toolbar-left,.pdf-toolbar-right{width:100%;justify-content:center}
     }
+  
+
+    /* =========================================================
+       PENYEMPURNAAN UX 2026 — READABILITY, MOBILE, ACCESSIBILITY
+       ========================================================= */
+    :root{
+      --reader-paper:#f4efe6;
+      --reader-sepia:#e8dcc4;
+      --reader-night:#172033;
+      --reader-toolbar:#ffffff;
+      --reader-radius:22px;
+    }
+
+    a,button,select,input{touch-action:manipulation}
+    button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
+      outline:3px solid rgba(40,120,255,.22);
+      outline-offset:2px;
+    }
+    .tab-btn,.btn,.month-nav,.pdf-tool-btn,.chapter-btn{
+      -webkit-tap-highlight-color:transparent;
+    }
+    .section-head p,.hero p,.agenda-desc,.highlight-card span,.number-item,
+    .permit-card p,.duration-table td,.warning-box,.book-meta span{
+      text-wrap:pretty;
+    }
+
+    /* Sedikit menaikkan keterbacaan desktop tanpa membuat layout padat. */
+    .hero p{font-size:.94rem}
+    .tab-btn{font-size:.79rem}
+    .section-head p{font-size:.79rem}
+    .btn{font-size:.76rem}
+    .calendar-status{font-size:.76rem}
+    .agenda-month-head span{font-size:.74rem}
+    .agenda-title{font-size:.9rem}
+    .agenda-desc{font-size:.75rem}
+    .agenda-range{font-size:.7rem}
+    .type-chip{font-size:.61rem}
+    .highlight-card b{font-size:.86rem}
+    .highlight-card span{font-size:.74rem}
+    .doc-banner p{font-size:.78rem}
+    .doc-section h4{font-size:.92rem}
+    .number-item{font-size:.78rem}
+    .permit-card b{font-size:.84rem}
+    .permit-card p{font-size:.76rem}
+    .duration-table th{font-size:.69rem}
+    .duration-table td{font-size:.76rem}
+    .warning-box{font-size:.76rem}
+
+    /* =========================================================
+       EREADER BUKU KEDISIPLINAN
+       ========================================================= */
+    .ebook-reader{
+      --reader-stage-bg:var(--reader-paper);
+      --reader-surface:#ffffff;
+      --reader-surface-soft:#f8faff;
+      --reader-border:#dfe7f2;
+      --reader-ink:#24314a;
+      --reader-muted:#6d7b92;
+      height:clamp(660px,78vh,820px);
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      overflow:hidden;
+      border:1px solid var(--reader-border);
+      border-radius:var(--reader-radius);
+      color:var(--reader-ink);
+      background:var(--reader-surface);
+      box-shadow:0 18px 48px rgba(28,53,105,.13);
+      isolation:isolate;
+    }
+    .ebook-reader[data-theme="sepia"]{
+      --reader-stage-bg:var(--reader-sepia);
+      --reader-surface:#fbf5e9;
+      --reader-surface-soft:#f3ead8;
+      --reader-border:#dfd1b7;
+      --reader-ink:#493c2b;
+      --reader-muted:#786b58;
+    }
+    .ebook-reader[data-theme="night"]{
+      --reader-stage-bg:var(--reader-night);
+      --reader-surface:#11192a;
+      --reader-surface-soft:#1b263a;
+      --reader-border:#31405a;
+      --reader-ink:#edf3ff;
+      --reader-muted:#aebbd0;
+    }
+    .ebook-reader[data-theme="night"] #pdfCanvas{
+      filter:brightness(.82) contrast(.92) sepia(.06);
+    }
+    .ebook-topbar{
+      min-height:72px;
+      flex-shrink:0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:12px 14px;
+      color:var(--reader-ink);
+      background:var(--reader-surface);
+      border-bottom:1px solid var(--reader-border);
+    }
+    .ebook-title{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:11px;
+    }
+    .ebook-title-icon{
+      width:42px;height:42px;flex:0 0 42px;
+      display:grid;place-items:center;
+      color:#fff;font-size:1.15rem;
+      border-radius:13px;
+      background:linear-gradient(135deg,var(--primary),var(--cyan));
+      box-shadow:0 8px 18px rgba(40,120,255,.22);
+    }
+    .ebook-title-copy{min-width:0}
+    .ebook-title-copy strong,
+    .ebook-title-copy span{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+    .ebook-title-copy strong{font-size:.9rem;font-weight:1000;color:var(--reader-ink)}
+    .ebook-title-copy span{margin-top:3px;font-size:.7rem;font-weight:800;color:var(--reader-muted)}
+    .ebook-top-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}
+    .reader-icon-btn{
+      min-width:42px;height:42px;
+      display:inline-flex;align-items:center;justify-content:center;gap:7px;
+      padding:0 11px;
+      color:var(--reader-ink);
+      font-size:.72rem;font-weight:950;
+      border:1px solid var(--reader-border);
+      border-radius:12px;
+      background:var(--reader-surface-soft);
+      transition:.18s ease;
+    }
+    .reader-icon-btn:hover{color:var(--primary);transform:translateY(-1px)}
+    .reader-icon-btn .reader-label{display:inline}
+    .ebook-progress-track{height:4px;flex:0 0 4px;background:var(--reader-surface-soft)}
+    .ebook-progress-bar{
+      width:0;height:100%;display:block;
+      background:linear-gradient(90deg,var(--primary),var(--cyan));
+      transition:width .25s ease;
+    }
+    .ebook-shell{min-height:0;flex:1;display:grid;grid-template-columns:260px minmax(0,1fr)}
+    .reader-toc{
+      min-height:0;
+      display:flex;flex-direction:column;
+      overflow:hidden;
+      background:var(--reader-surface);
+      border-right:1px solid var(--reader-border);
+    }
+    .reader-toc-head{
+      display:flex;align-items:center;justify-content:space-between;gap:8px;
+      padding:13px 14px;
+      border-bottom:1px solid var(--reader-border);
+    }
+    .reader-toc-head strong{font-size:.78rem;font-weight:1000;color:var(--reader-ink)}
+    .reader-toc-close{display:none}
+    .reader-book-summary{
+      display:grid;grid-template-columns:72px minmax(0,1fr);gap:11px;
+      align-items:center;padding:13px 14px;
+      border-bottom:1px solid var(--reader-border);
+      background:var(--reader-surface-soft);
+    }
+    .reader-book-summary img{
+      width:72px;aspect-ratio:3/4;object-fit:cover;
+      border-radius:10px;box-shadow:0 7px 18px rgba(19,37,72,.16);
+    }
+    .reader-book-summary strong{display:block;color:var(--reader-ink);font-size:.75rem;font-weight:1000;line-height:1.38}
+    .reader-book-summary span{display:block;margin-top:5px;color:var(--reader-muted);font-size:.66rem;font-weight:750;line-height:1.45}
+    .reader-chapters{
+      min-height:0;flex:1;display:grid;align-content:start;gap:6px;
+      overflow:auto;padding:10px;
+      scrollbar-width:thin;scrollbar-color:#cbd7e8 transparent;
+    }
+    .chapter-btn{
+      min-height:43px;
+      display:flex;align-items:center;gap:9px;
+      padding:9px 10px;
+      color:var(--reader-muted);
+      font-size:.72rem;font-weight:900;text-align:left;
+      border:1px solid transparent;border-radius:11px;
+      background:transparent;
+      transition:.18s ease;
+    }
+    .chapter-btn::before{
+      content:attr(data-page);
+      width:27px;height:27px;flex:0 0 27px;
+      display:grid;place-items:center;
+      color:var(--primary);font-size:.61rem;font-weight:1000;
+      border-radius:9px;background:#eaf3ff;
+    }
+    .chapter-btn:hover{color:var(--primary);border-color:var(--reader-border);background:var(--reader-surface-soft)}
+    .chapter-btn.active{
+      color:#fff;border-color:transparent;
+      background:linear-gradient(135deg,var(--primary),#4389ff);
+      box-shadow:0 8px 18px rgba(40,120,255,.20);
+    }
+    .chapter-btn.active::before{color:var(--primary-dark);background:#fff}
+    .reader-main{min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--reader-stage-bg)}
+    .reader-toolbar{
+      min-height:58px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:9px 11px;
+      color:var(--reader-ink);
+      border-bottom:1px solid var(--reader-border);
+      background:var(--reader-surface);
+    }
+    .reader-toolbar-group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+    .pdf-tool-btn{
+      min-height:40px;
+      display:inline-flex;align-items:center;justify-content:center;gap:6px;
+      padding:8px 11px;
+      color:var(--reader-ink);font-size:.72rem;font-weight:950;
+      border:1px solid var(--reader-border);border-radius:11px;
+      background:var(--reader-surface-soft);
+    }
+    .pdf-tool-btn:hover{color:var(--primary)}
+    .pdf-tool-btn:disabled{opacity:.42;cursor:not-allowed;transform:none}
+    .reader-page-box{
+      display:flex;align-items:center;gap:6px;
+      padding:5px 8px;
+      border:1px solid var(--reader-border);border-radius:11px;
+      background:var(--reader-surface-soft);
+    }
+    .reader-page-box input{
+      width:46px;height:30px;padding:3px 5px;
+      color:var(--reader-ink);font-size:.76rem;font-weight:1000;text-align:center;
+      outline:none;border:1px solid var(--reader-border);border-radius:8px;
+      background:var(--reader-surface);
+    }
+    .reader-page-box span{color:var(--reader-muted);font-size:.72rem;font-weight:900}
+    .pdf-stage{
+      min-height:0;flex:1;
+      display:flex;align-items:flex-start;justify-content:center;
+      position:relative;
+      padding:22px;
+      overflow:auto;
+      scroll-behavior:smooth;
+      background:
+        radial-gradient(circle at 50% 0%,rgba(255,255,255,.20),transparent 38%),
+        var(--reader-stage-bg);
+      overscroll-behavior:contain;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(74,92,122,.35) transparent;
+    }
+    #pdfCanvas{
+      max-width:none;
+      height:auto;
+      flex:0 0 auto;
+      background:#fff;
+      border-radius:2px;
+      box-shadow:0 12px 38px rgba(12,28,57,.25);
+      transition:filter .2s ease,opacity .2s ease;
+    }
+    .pdf-loading{
+      min-height:320px;width:100%;
+      display:grid;place-items:center;
+      padding:38px;
+      color:var(--reader-muted);font-size:.84rem;font-weight:850;text-align:center;
+    }
+    .reader-bottom-nav{
+      min-height:58px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:9px 12px;
+      border-top:1px solid var(--reader-border);
+      background:var(--reader-surface);
+    }
+    .reader-bottom-nav button{
+      min-height:40px;
+      display:flex;align-items:center;gap:7px;
+      padding:8px 12px;
+      color:var(--reader-ink);font-size:.72rem;font-weight:950;
+      border:1px solid var(--reader-border);border-radius:11px;
+      background:var(--reader-surface-soft);
+    }
+    .reader-bottom-nav button:disabled{opacity:.42}
+    .reader-current-chapter{
+      min-width:0;flex:1;
+      overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+      color:var(--reader-muted);font-size:.7rem;font-weight:850;text-align:center;
+    }
+    .reader-scrim{display:none}
+    .ebook-reader.is-reading-mode{
+      position:fixed;inset:0;z-index:100000;
+      width:100%;height:100%;min-height:0;
+      border:0;border-radius:0;
+      box-shadow:none;
+    }
+    body.reader-open{overflow:hidden}
+    .ebook-reader.is-reading-mode .ebook-shell{min-height:0;flex:1}
+    .ebook-reader.is-reading-mode .pdf-stage{height:auto}
+
+    @media(max-width:900px){
+      .ebook-shell{grid-template-columns:1fr}
+      .reader-toc{
+        width:min(320px,88vw);
+        position:absolute;top:76px;bottom:0;left:0;z-index:40;
+        border-right:1px solid var(--reader-border);
+        box-shadow:20px 0 45px rgba(16,33,66,.24);
+        transform:translateX(-105%);
+        transition:transform .25s cubic-bezier(.22,1,.36,1);
+      }
+      .ebook-reader.toc-open .reader-toc{transform:translateX(0)}
+      .reader-toc-close{
+        width:34px;height:34px;display:grid;place-items:center;
+        color:var(--reader-ink);font-size:1rem;
+        border:1px solid var(--reader-border);border-radius:10px;
+        background:var(--reader-surface-soft);
+      }
+      .reader-scrim{
+        display:block;position:absolute;inset:76px 0 0;z-index:35;
+        pointer-events:none;opacity:0;
+        background:rgba(13,25,49,.48);backdrop-filter:blur(3px);
+        transition:opacity .2s ease;
+      }
+      .ebook-reader.toc-open .reader-scrim{pointer-events:auto;opacity:1}
+    }
+
+    @media(max-width:650px){
+      body{font-size:16px}
+      .app{padding:9px 9px calc(28px + env(safe-area-inset-bottom))}
+      .hero{gap:15px;padding:21px 17px;border-radius:21px}
+      .hero h1{font-size:1.8rem;line-height:1.08;letter-spacing:-.65px}
+      .hero p{font-size:.94rem;line-height:1.65}
+      .kicker{font-size:.72rem;padding:7px 10px}
+      .hero-logo{min-height:78px;padding:10px 16px}
+      .hero-logo img{width:min(210px,70%)}
+
+      .nav-tabs{
+        gap:7px;margin:12px 0;padding:6px;
+        scroll-snap-type:x mandatory;
+      }
+      .tab-btn{
+        min-width:162px;min-height:50px;
+        padding:10px 13px;
+        font-size:.82rem;
+        scroll-snap-align:start;
+      }
+      .section-card{margin-bottom:14px;border-radius:18px}
+      .section-head{gap:13px;padding:17px 14px 14px}
+      .title-wrap{align-items:flex-start}
+      .section-icon{width:44px;height:44px;flex-basis:44px;border-radius:14px}
+      .section-head h2{font-size:1.08rem;line-height:1.34}
+      .section-head p{font-size:.88rem;line-height:1.58}
+      .actions{gap:8px}
+      .btn{min-height:46px;padding:10px 13px;font-size:.82rem;border-radius:12px}
+      .body-pad{padding:14px}
+
+      .month-select{min-height:47px;font-size:.9rem}
+      .month-nav{width:44px;height:44px;font-size:1rem}
+      .calendar-status{padding:12px;font-size:.84rem;line-height:1.45}
+      .agenda-month-head{align-items:flex-start}
+      .agenda-month-head h3{font-size:1.08rem}
+      .agenda-month-head span{font-size:.8rem}
+      .agenda-item{grid-template-columns:61px minmax(0,1fr);gap:11px;padding:12px}
+      .date-box{min-height:60px}
+      .date-box strong{font-size:1.42rem}
+      .date-box span{font-size:.66rem}
+      .agenda-title{font-size:.98rem;line-height:1.4}
+      .agenda-desc{font-size:.86rem;line-height:1.55}
+      .agenda-range{font-size:.79rem;line-height:1.45}
+      .type-chip{font-size:.69rem;padding:6px 9px}
+      .empty{padding:24px 15px;font-size:.88rem}
+
+      .highlight-card{padding:14px}
+      .highlight-card .ico{width:40px;height:40px;font-size:1.08rem}
+      .highlight-card b{font-size:.95rem}
+      .highlight-card span{font-size:.85rem;line-height:1.56}
+      .doc-banner{padding:17px 15px}
+      .doc-banner h3{font-size:1rem;line-height:1.35}
+      .doc-banner p{font-size:.86rem;line-height:1.55}
+      .doc-content{padding:14px}
+      .doc-section h4{font-size:.97rem}
+      .number-item{grid-template-columns:34px minmax(0,1fr);padding:12px;font-size:.88rem;line-height:1.6}
+      .number-item::before{width:32px;height:32px;font-size:.75rem}
+      .permit-card{padding:13px}
+      .permit-card b{font-size:.93rem}
+      .permit-card p{font-size:.86rem;line-height:1.58}
+      .duration-table th{font-size:.75rem;white-space:nowrap}
+      .duration-table td{font-size:.84rem;line-height:1.55;min-width:145px}
+      .warning-box{padding:13px;font-size:.86rem;line-height:1.6}
+
+      .ebook-reader{height:clamp(520px,calc(100dvh - 18px),720px);min-height:0;border-radius:17px}
+      .ebook-topbar{min-height:66px;padding:10px}
+      .ebook-title-icon{width:39px;height:39px;flex-basis:39px}
+      .ebook-title-copy strong{font-size:.84rem}
+      .ebook-title-copy span{font-size:.7rem}
+      .reader-icon-btn{min-width:40px;height:40px;padding:0 9px}
+      .reader-icon-btn .reader-label{display:none}
+      .reader-toolbar{align-items:stretch;flex-direction:column;padding:8px}
+      .reader-toolbar-group{width:100%;justify-content:center}
+      .pdf-tool-btn{min-height:44px;font-size:.79rem;padding:9px 10px}
+      .reader-page-box{min-height:44px}
+      .reader-page-box input{height:32px;font-size:.84rem}
+      .reader-page-box span{font-size:.78rem}
+      .pdf-stage{padding:10px 8px 18px}
+      .pdf-loading{font-size:.9rem}
+      .reader-bottom-nav{padding:8px}
+      .reader-bottom-nav button{min-height:44px;font-size:.78rem;padding:9px 11px}
+      .reader-current-chapter{font-size:.73rem}
+      .reader-toc{top:70px}
+      .reader-scrim{inset:70px 0 0}
+      .ebook-reader.is-reading-mode{padding-bottom:env(safe-area-inset-bottom)}
+    }
+
+    @media(max-width:390px){
+      .hero h1{font-size:1.65rem}
+      .hero p{font-size:.9rem}
+      .tab-btn{min-width:150px}
+      .section-head h2{font-size:1rem}
+      .btn{font-size:.78rem}
+      .ebook-title-copy span{display:none}
+      .reader-current-chapter{display:none}
+      .reader-bottom-nav button{flex:1;justify-content:center}
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+    }
+
   </style>
 </head>
 <body>
@@ -719,56 +1138,106 @@
           <div class="title-wrap">
             <div class="section-icon">📘</div>
             <div>
-              <h2>Buku Induk Sistem Pembinaan & Kedisiplinan</h2>
-              <p>Pedoman tata tertib, penanganan kasus, pembinaan restoratif, dan gamifikasi edukatif santri.</p>
+              <h2>Buku Induk Sistem Pembinaan &amp; Kedisiplinan</h2>
+              <p>Baca pedoman tata tertib, penanganan kasus, pembinaan restoratif, dan gamifikasi edukatif dalam mode eReader.</p>
             </div>
           </div>
           <div class="actions">
             <a class="btn" href="buku-induk-kedisiplinan.pdf" download>⬇️ Download PDF</a>
-            <a class="btn secondary" href="buku-induk-kedisiplinan.pdf" target="_blank" rel="noopener">↗️ Buka Penuh</a>
+            <a class="btn secondary" href="buku-induk-kedisiplinan.pdf" target="_blank" rel="noopener">↗️ Buka PDF</a>
           </div>
         </div>
 
         <div class="body-pad">
-          <div class="book-layout">
-            <aside class="book-side">
-              <div class="book-cover"><img src="cover-buku-kedisiplinan.jpg" alt="Sampul Buku Induk Kedisiplinan"></div>
-              <div class="book-meta">
-                <strong>Buku Induk Sistem Pembinaan dan Kedisiplinan Santri CAHAYA</strong>
-                <span>28 halaman • Pedoman resmi tahun 2026 • Disahkan oleh Yayasan Insan Bestari Sejahtera.</span>
+          <section class="ebook-reader" id="ebookReader" data-theme="paper" aria-label="Pembaca Buku Induk Kedisiplinan">
+            <header class="ebook-topbar">
+              <div class="ebook-title">
+                <div class="ebook-title-icon">📖</div>
+                <div class="ebook-title-copy">
+                  <strong>Buku Induk Kedisiplinan</strong>
+                  <span id="readerStatus">Menyiapkan ruang baca...</span>
+                </div>
               </div>
-              <div class="chapter-list">
-                <button class="chapter-btn" data-page="3">Kata Pengantar</button>
-                <button class="chapter-btn" data-page="5">Peraturan Hidup Santri</button>
-                <button class="chapter-btn" data-page="8">Prinsip Penilaian Pelanggaran</button>
-                <button class="chapter-btn" data-page="10">Klasifikasi Pelanggaran</button>
-                <button class="chapter-btn" data-page="14">Program Pembinaan & Refleksi</button>
-                <button class="chapter-btn" data-page="16">Pelanggaran Kritis</button>
-                <button class="chapter-btn" data-page="19">Ketentuan Gawai & Media Sosial</button>
-                <button class="chapter-btn" data-page="22">Sistem Poin Kedisiplinan</button>
-                <button class="chapter-btn" data-page="24">Pencatatan Pelanggaran Harian</button>
-                <button class="chapter-btn" data-page="26">FAQ Wali Santri</button>
-              </div>
-            </aside>
 
-            <div class="pdf-reader">
-              <div class="pdf-toolbar">
-                <div class="pdf-toolbar-left">
-                  <button class="pdf-tool-btn" type="button" id="pdfPrev">← Sebelumnya</button>
-                  <span class="page-indicator">Halaman <span id="pdfPageNum">1</span> / <span id="pdfPageCount">-</span></span>
-                  <button class="pdf-tool-btn" type="button" id="pdfNext">Berikutnya →</button>
-                </div>
-                <div class="pdf-toolbar-right">
-                  <button class="pdf-tool-btn" type="button" id="pdfZoomOut">− Zoom</button>
-                  <button class="pdf-tool-btn" type="button" id="pdfZoomIn">+ Zoom</button>
-                </div>
+              <div class="ebook-top-actions">
+                <button class="reader-icon-btn" type="button" id="readerTocToggle" aria-label="Buka daftar isi" title="Daftar isi">
+                  ☰ <span class="reader-label">Daftar Isi</span>
+                </button>
+                <button class="reader-icon-btn" type="button" id="readerThemeToggle" aria-label="Ganti tema membaca" title="Ganti tema">
+                  ◐ <span class="reader-label">Tema</span>
+                </button>
+                <button class="reader-icon-btn" type="button" id="readerModeToggle" aria-label="Aktifkan mode baca penuh" title="Mode baca penuh">
+                  ⛶ <span class="reader-label">Mode Baca</span>
+                </button>
               </div>
-              <div class="pdf-stage" id="pdfStage">
-                <div class="pdf-loading" id="pdfLoading">Memuat Buku Induk Kedisiplinan...</div>
-                <canvas id="pdfCanvas" style="display:none;"></canvas>
+            </header>
+
+            <div class="ebook-progress-track" aria-hidden="true">
+              <span class="ebook-progress-bar" id="readerProgressBar"></span>
+            </div>
+
+            <div class="ebook-shell">
+              <aside class="reader-toc" id="readerToc" aria-label="Daftar isi buku">
+                <div class="reader-toc-head">
+                  <strong>Daftar Isi</strong>
+                  <button class="reader-toc-close" id="readerTocClose" type="button" aria-label="Tutup daftar isi">✕</button>
+                </div>
+
+                <div class="reader-book-summary">
+                  <img src="cover-buku-kedisiplinan.jpg" alt="Sampul Buku Induk Kedisiplinan" loading="lazy" onerror="this.style.display='none'">
+                  <div>
+                    <strong>Sistem Pembinaan dan Kedisiplinan Santri CAHAYA</strong>
+                    <span>Pedoman resmi 2026 • Yayasan Insan Bestari Sejahtera</span>
+                  </div>
+                </div>
+
+                <div class="reader-chapters">
+                  <button class="chapter-btn" data-page="3" data-title="Kata Pengantar">Kata Pengantar</button>
+                  <button class="chapter-btn" data-page="5" data-title="Peraturan Hidup Santri">Peraturan Hidup Santri</button>
+                  <button class="chapter-btn" data-page="8" data-title="Prinsip Penilaian Pelanggaran">Prinsip Penilaian Pelanggaran</button>
+                  <button class="chapter-btn" data-page="10" data-title="Klasifikasi Pelanggaran">Klasifikasi Pelanggaran</button>
+                  <button class="chapter-btn" data-page="14" data-title="Program Pembinaan & Refleksi">Program Pembinaan &amp; Refleksi</button>
+                  <button class="chapter-btn" data-page="16" data-title="Pelanggaran Kritis">Pelanggaran Kritis</button>
+                  <button class="chapter-btn" data-page="19" data-title="Ketentuan Gawai & Media Sosial">Ketentuan Gawai &amp; Media Sosial</button>
+                  <button class="chapter-btn" data-page="22" data-title="Sistem Poin Kedisiplinan">Sistem Poin Kedisiplinan</button>
+                  <button class="chapter-btn" data-page="24" data-title="Pencatatan Pelanggaran Harian">Pencatatan Pelanggaran Harian</button>
+                  <button class="chapter-btn" data-page="26" data-title="FAQ Wali Santri">FAQ Wali Santri</button>
+                </div>
+              </aside>
+
+              <div class="reader-scrim" id="readerScrim" aria-hidden="true"></div>
+
+              <div class="reader-main">
+                <div class="reader-toolbar">
+                  <div class="reader-toolbar-group">
+                    <button class="pdf-tool-btn" type="button" id="pdfPrev" aria-label="Halaman sebelumnya">← Sebelumnya</button>
+                    <div class="reader-page-box" title="Ketik nomor halaman lalu tekan Enter">
+                      <input id="pdfPageInput" type="number" min="1" value="1" inputmode="numeric" aria-label="Nomor halaman">
+                      <span>/ <span id="pdfPageCount">-</span></span>
+                    </div>
+                    <button class="pdf-tool-btn" type="button" id="pdfNext" aria-label="Halaman berikutnya">Berikutnya →</button>
+                  </div>
+
+                  <div class="reader-toolbar-group">
+                    <button class="pdf-tool-btn" type="button" id="pdfZoomOut" aria-label="Perkecil halaman">−</button>
+                    <button class="pdf-tool-btn" type="button" id="pdfFit" aria-label="Sesuaikan halaman dengan layar">Pas Layar</button>
+                    <button class="pdf-tool-btn" type="button" id="pdfZoomIn" aria-label="Perbesar halaman">+</button>
+                  </div>
+                </div>
+
+                <div class="pdf-stage" id="pdfStage" tabindex="0" aria-label="Halaman buku. Geser ke kiri atau kanan untuk berpindah halaman.">
+                  <div class="pdf-loading" id="pdfLoading">Memuat Buku Induk Kedisiplinan...</div>
+                  <canvas id="pdfCanvas" style="display:none;"></canvas>
+                </div>
+
+                <footer class="reader-bottom-nav">
+                  <button type="button" id="readerPrevBottom">← Halaman</button>
+                  <div class="reader-current-chapter" id="readerCurrentChapter">Sampul dan halaman awal</div>
+                  <button type="button" id="readerNextBottom">Halaman →</button>
+                </footer>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </article>
     </section>
@@ -1000,14 +1469,33 @@
     }
 
     function bindTabs(){
-      document.querySelectorAll(".tab-btn").forEach(button=>{
+      const buttons=[...document.querySelectorAll(".tab-btn")];
+      const panels=[...document.querySelectorAll(".tab-panel")];
+      buttons.forEach((button,index)=>{
+        button.setAttribute("role","tab");
+        button.setAttribute("aria-controls",`tab-${button.dataset.tab}`);
+        button.setAttribute("aria-selected",button.classList.contains("active")?"true":"false");
         button.addEventListener("click",()=>{
           const target=button.dataset.tab;
-          document.querySelectorAll(".tab-btn").forEach(btn=>btn.classList.toggle("active",btn===button));
-          document.querySelectorAll(".tab-panel").forEach(panel=>panel.classList.toggle("active",panel.id===`tab-${target}`));
-          if(target==="disiplin"&&!pdfDoc) loadBookPdf();
+          buttons.forEach(btn=>{
+            const active=btn===button;
+            btn.classList.toggle("active",active);
+            btn.setAttribute("aria-selected",String(active));
+          });
+          panels.forEach(panel=>panel.classList.toggle("active",panel.id===`tab-${target}`));
+          button.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+          if(target==="disiplin"&&!pdfDoc)loadBookPdf().catch(()=>{});
+        });
+        button.addEventListener("keydown",event=>{
+          if(event.key!=="ArrowRight"&&event.key!=="ArrowLeft")return;
+          event.preventDefault();
+          const nextIndex=(index+(event.key==="ArrowRight"?1:-1)+buttons.length)%buttons.length;
+          buttons[nextIndex].focus();
+          buttons[nextIndex].click();
         });
       });
+      document.querySelector(".nav-tabs")?.setAttribute("role","tablist");
+      panels.forEach(panel=>panel.setAttribute("role","tabpanel"));
     }
 
     els.monthSelect.addEventListener("change",()=>{
@@ -1244,78 +1732,261 @@
     window.downloadSopPdf=downloadSopPdf;
 
     pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    const READER_STORAGE_KEY="cahayaWaliDisciplineReader";
+    const READER_THEMES=["paper","sepia","night"];
     let pdfDoc=null;
     let pdfPage=1;
-    let pdfScale=1.2;
+    let pdfScale=1;
     let pdfRendering=false;
     let pdfPending=null;
+    let pdfRenderTask=null;
+    let readerTouchStartX=0;
+    let readerTouchStartY=0;
 
     const pdfEls={
+      reader:document.getElementById("ebookReader"),
       canvas:document.getElementById("pdfCanvas"),
       loading:document.getElementById("pdfLoading"),
-      pageNum:document.getElementById("pdfPageNum"),
+      status:document.getElementById("readerStatus"),
+      pageInput:document.getElementById("pdfPageInput"),
       pageCount:document.getElementById("pdfPageCount"),
       prev:document.getElementById("pdfPrev"),
       next:document.getElementById("pdfNext"),
+      prevBottom:document.getElementById("readerPrevBottom"),
+      nextBottom:document.getElementById("readerNextBottom"),
       zoomIn:document.getElementById("pdfZoomIn"),
       zoomOut:document.getElementById("pdfZoomOut"),
-      stage:document.getElementById("pdfStage")
+      fit:document.getElementById("pdfFit"),
+      stage:document.getElementById("pdfStage"),
+      tocToggle:document.getElementById("readerTocToggle"),
+      tocClose:document.getElementById("readerTocClose"),
+      scrim:document.getElementById("readerScrim"),
+      themeToggle:document.getElementById("readerThemeToggle"),
+      modeToggle:document.getElementById("readerModeToggle"),
+      progress:document.getElementById("readerProgressBar"),
+      currentChapter:document.getElementById("readerCurrentChapter")
     };
 
-    async function loadBookPdf(){
-      if(pdfDoc)return;
+    function getReaderState(){
       try{
-        pdfEls.loading.style.display="block";
-        pdfDoc=await pdfjsLib.getDocument("buku-induk-kedisiplinan.pdf").promise;
-        pdfEls.pageCount.textContent=pdfDoc.numPages;
-        await renderPdfPage(1);
+        return JSON.parse(localStorage.getItem(READER_STORAGE_KEY)||"{}")||{};
       }catch(error){
-        pdfEls.loading.textContent="Buku tidak dapat dimuat di pembaca. Gunakan tombol Buka Penuh atau Download PDF.";
-        console.error(error);
+        return{};
       }
     }
 
-    async function renderPdfPage(num){
+    function saveReaderState(){
+      try{
+        localStorage.setItem(READER_STORAGE_KEY,JSON.stringify({
+          page:pdfPage,
+          scale:pdfScale,
+          theme:pdfEls.reader.dataset.theme||"paper"
+        }));
+      }catch(error){}
+    }
+
+    function setReaderStatus(text){
+      if(pdfEls.status)pdfEls.status.textContent=text;
+    }
+
+    function updateReaderUi(){
+      const total=pdfDoc?.numPages||0;
+      const progress=total?Math.max(0,Math.min(100,(pdfPage/total)*100)):0;
+      pdfEls.progress.style.width=`${progress}%`;
+      pdfEls.pageInput.value=String(pdfPage);
+      pdfEls.pageInput.max=String(total||1);
+      pdfEls.prev.disabled=pdfPage<=1;
+      pdfEls.prevBottom.disabled=pdfPage<=1;
+      pdfEls.next.disabled=!total||pdfPage>=total;
+      pdfEls.nextBottom.disabled=!total||pdfPage>=total;
+
+      let activeTitle="Sampul dan halaman awal";
+      let activeButton=null;
+      document.querySelectorAll(".chapter-btn").forEach(button=>{
+        const chapterPage=Number(button.dataset.page)||1;
+        if(chapterPage<=pdfPage&&(activeButton===null||chapterPage>Number(activeButton.dataset.page))){
+          activeButton=button;
+          activeTitle=button.dataset.title||button.textContent.trim();
+        }
+      });
+      document.querySelectorAll(".chapter-btn").forEach(button=>button.classList.toggle("active",button===activeButton));
+      pdfEls.currentChapter.textContent=activeTitle;
+      setReaderStatus(total?`Halaman ${pdfPage} dari ${total} • ${Math.round(progress)}% selesai`:"Memuat dokumen...");
+    }
+
+    function showReaderError(message,error){
+      pdfEls.loading.style.display="grid";
+      pdfEls.loading.innerHTML=`<div><div style="font-size:2rem;margin-bottom:10px">📄</div><strong style="display:block;color:var(--reader-ink);margin-bottom:6px">Buku belum dapat ditampilkan</strong><span>${escapeHtml(message)}</span></div>`;
+      setReaderStatus("Dokumen gagal dimuat");
+      if(error)console.error(error);
+    }
+
+    async function loadBookPdf(){
+      if(pdfDoc)return pdfDoc;
+      const stored=getReaderState();
+      if(READER_THEMES.includes(stored.theme))pdfEls.reader.dataset.theme=stored.theme;
+      if(Number.isFinite(Number(stored.scale)))pdfScale=Math.max(.65,Math.min(2,Number(stored.scale)));
+
+      try{
+        pdfEls.loading.style.display="grid";
+        setReaderStatus("Memuat dokumen...");
+        pdfDoc=await pdfjsLib.getDocument({
+          url:"buku-induk-kedisiplinan.pdf",
+          cMapPacked:true
+        }).promise;
+        pdfEls.pageCount.textContent=pdfDoc.numPages;
+        const initialPage=Math.max(1,Math.min(pdfDoc.numPages,Number(stored.page)||1));
+        await renderPdfPage(initialPage,{scrollTop:false});
+        return pdfDoc;
+      }catch(error){
+        showReaderError("Gunakan tombol Buka PDF atau Download PDF untuk mengakses dokumen.",error);
+        throw error;
+      }
+    }
+
+    async function renderPdfPage(num,{scrollTop=true}={}){
       if(!pdfDoc)return;
-      if(pdfRendering){pdfPending=num;return;}
+      const target=Math.max(1,Math.min(pdfDoc.numPages,Number(num)||1));
+      if(pdfRendering){pdfPending=target;return;}
       pdfRendering=true;
-      const page=await pdfDoc.getPage(num);
-      const baseViewport=page.getViewport({scale:1});
-      const available=Math.max(280,pdfEls.stage.clientWidth-22);
-      const fitScale=Math.min(1.55,available/baseViewport.width);
-      const viewport=page.getViewport({scale:fitScale*pdfScale});
-      const canvas=pdfEls.canvas;
-      const ctx=canvas.getContext("2d");
-      canvas.width=viewport.width;
-      canvas.height=viewport.height;
-      canvas.style.display="block";
-      pdfEls.loading.style.display="none";
-      await page.render({canvasContext:ctx,viewport}).promise;
-      pdfPage=num;
-      pdfEls.pageNum.textContent=num;
-      pdfEls.prev.disabled=num<=1;
-      pdfEls.next.disabled=num>=pdfDoc.numPages;
-      pdfRendering=false;
-      if(pdfPending!==null){
-        const pending=pdfPending;pdfPending=null;
-        renderPdfPage(pending);
+      pdfEls.canvas.style.opacity=".55";
+
+      try{
+        const page=await pdfDoc.getPage(target);
+        const baseViewport=page.getViewport({scale:1});
+        const available=Math.max(270,pdfEls.stage.clientWidth-24);
+        const fitScale=Math.max(.35,Math.min(1.7,available/baseViewport.width));
+        const viewport=page.getViewport({scale:fitScale*pdfScale});
+        const outputScale=Math.min(window.devicePixelRatio||1,2);
+        const canvas=pdfEls.canvas;
+        const ctx=canvas.getContext("2d",{alpha:false});
+
+        if(pdfRenderTask){
+          try{pdfRenderTask.cancel();}catch(error){}
+          pdfRenderTask=null;
+        }
+
+        canvas.width=Math.floor(viewport.width*outputScale);
+        canvas.height=Math.floor(viewport.height*outputScale);
+        canvas.style.width=`${Math.floor(viewport.width)}px`;
+        canvas.style.height=`${Math.floor(viewport.height)}px`;
+        canvas.style.display="block";
+        pdfEls.loading.style.display="none";
+
+        pdfRenderTask=page.render({
+          canvasContext:ctx,
+          viewport,
+          transform:outputScale!==1?[outputScale,0,0,outputScale,0,0]:null,
+          background:"rgb(255,255,255)"
+        });
+        await pdfRenderTask.promise;
+        pdfRenderTask=null;
+
+        pdfPage=target;
+        updateReaderUi();
+        saveReaderState();
+        if(scrollTop)pdfEls.stage.scrollTo({top:0,left:0,behavior:"smooth"});
+      }catch(error){
+        if(error?.name!=="RenderingCancelledException")showReaderError("Halaman tidak dapat dirender. Silakan coba kembali.",error);
+      }finally{
+        pdfEls.canvas.style.opacity="1";
+        pdfRendering=false;
+        if(pdfPending!==null){
+          const pending=pdfPending;
+          pdfPending=null;
+          renderPdfPage(pending);
+        }
       }
     }
 
-    pdfEls.prev.addEventListener("click",()=>{if(pdfPage>1)renderPdfPage(pdfPage-1)});
-    pdfEls.next.addEventListener("click",()=>{if(pdfDoc&&pdfPage<pdfDoc.numPages)renderPdfPage(pdfPage+1)});
-    pdfEls.zoomIn.addEventListener("click",()=>{pdfScale=Math.min(2,pdfScale+.15);renderPdfPage(pdfPage)});
-    pdfEls.zoomOut.addEventListener("click",()=>{pdfScale=Math.max(.65,pdfScale-.15);renderPdfPage(pdfPage)});
-    document.querySelectorAll(".chapter-btn").forEach(btn=>btn.addEventListener("click",()=>{
-      const page=Number(btn.dataset.page);
-      if(!pdfDoc){loadBookPdf().then(()=>renderPdfPage(page));}
-      else renderPdfPage(page);
-      document.getElementById("pdfStage").scrollIntoView({behavior:"smooth",block:"start"});
+    function goToReaderPage(page){
+      if(!pdfDoc){
+        loadBookPdf().then(()=>renderPdfPage(page)).catch(()=>{});
+        return;
+      }
+      renderPdfPage(page);
+    }
+
+    function closeReaderToc(){
+      pdfEls.reader.classList.remove("toc-open");
+      pdfEls.tocToggle.setAttribute("aria-expanded","false");
+    }
+
+    function toggleReaderToc(){
+      const open=pdfEls.reader.classList.toggle("toc-open");
+      pdfEls.tocToggle.setAttribute("aria-expanded",String(open));
+    }
+
+    function cycleReaderTheme(){
+      const current=pdfEls.reader.dataset.theme||"paper";
+      const next=READER_THEMES[(READER_THEMES.indexOf(current)+1)%READER_THEMES.length];
+      pdfEls.reader.dataset.theme=next;
+      const labels={paper:"Tema terang",sepia:"Tema sepia",night:"Tema malam"};
+      pdfEls.themeToggle.title=labels[next];
+      saveReaderState();
+    }
+
+    function toggleReaderMode(){
+      const active=pdfEls.reader.classList.toggle("is-reading-mode");
+      document.body.classList.toggle("reader-open",active);
+      pdfEls.modeToggle.innerHTML=active?'✕ <span class="reader-label">Keluar</span>':'⛶ <span class="reader-label">Mode Baca</span>';
+      pdfEls.modeToggle.setAttribute("aria-label",active?"Keluar dari mode baca penuh":"Aktifkan mode baca penuh");
+      closeReaderToc();
+      setTimeout(()=>{if(pdfDoc)renderPdfPage(pdfPage,{scrollTop:false})},120);
+    }
+
+    pdfEls.prev.addEventListener("click",()=>goToReaderPage(pdfPage-1));
+    pdfEls.next.addEventListener("click",()=>goToReaderPage(pdfPage+1));
+    pdfEls.prevBottom.addEventListener("click",()=>goToReaderPage(pdfPage-1));
+    pdfEls.nextBottom.addEventListener("click",()=>goToReaderPage(pdfPage+1));
+    pdfEls.zoomIn.addEventListener("click",()=>{pdfScale=Math.min(2,pdfScale+.15);goToReaderPage(pdfPage)});
+    pdfEls.zoomOut.addEventListener("click",()=>{pdfScale=Math.max(.65,pdfScale-.15);goToReaderPage(pdfPage)});
+    pdfEls.fit.addEventListener("click",()=>{pdfScale=1;goToReaderPage(pdfPage)});
+    pdfEls.pageInput.addEventListener("change",()=>goToReaderPage(Number(pdfEls.pageInput.value)));
+    pdfEls.pageInput.addEventListener("keydown",event=>{
+      if(event.key==="Enter"){
+        event.preventDefault();
+        pdfEls.pageInput.blur();
+        goToReaderPage(Number(pdfEls.pageInput.value));
+      }
+    });
+    pdfEls.tocToggle.addEventListener("click",toggleReaderToc);
+    pdfEls.tocClose.addEventListener("click",closeReaderToc);
+    pdfEls.scrim.addEventListener("click",closeReaderToc);
+    pdfEls.themeToggle.addEventListener("click",cycleReaderTheme);
+    pdfEls.modeToggle.addEventListener("click",toggleReaderMode);
+
+    document.querySelectorAll(".chapter-btn").forEach(button=>button.addEventListener("click",()=>{
+      goToReaderPage(Number(button.dataset.page));
+      closeReaderToc();
     }));
+
+    pdfEls.stage.addEventListener("touchstart",event=>{
+      const touch=event.changedTouches[0];
+      readerTouchStartX=touch.clientX;
+      readerTouchStartY=touch.clientY;
+    },{passive:true});
+    pdfEls.stage.addEventListener("touchend",event=>{
+      const touch=event.changedTouches[0];
+      const dx=touch.clientX-readerTouchStartX;
+      const dy=touch.clientY-readerTouchStartY;
+      if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.25){
+        if(dx<0)goToReaderPage(pdfPage+1);
+        else goToReaderPage(pdfPage-1);
+      }
+    },{passive:true});
+
+    pdfEls.stage.addEventListener("keydown",event=>{
+      if(event.key==="ArrowRight"||event.key==="PageDown")goToReaderPage(pdfPage+1);
+      if(event.key==="ArrowLeft"||event.key==="PageUp")goToReaderPage(pdfPage-1);
+      if(event.key==="Escape"&&pdfEls.reader.classList.contains("is-reading-mode"))toggleReaderMode();
+    });
+
     window.addEventListener("resize",()=>{
       if(pdfDoc&&!pdfRendering){
         clearTimeout(window.__pdfResizeTimer);
-        window.__pdfResizeTimer=setTimeout(()=>renderPdfPage(pdfPage),180);
+        window.__pdfResizeTimer=setTimeout(()=>renderPdfPage(pdfPage,{scrollTop:false}),220);
       }
     });
 
