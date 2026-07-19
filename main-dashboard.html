@@ -1458,6 +1458,117 @@
       font-weight: 650;
     }
 
+
+    /* =========================================================
+       MOBILE FIXED SHORTCUTS — ROLE-AWARE, MAX. 5 FITUR
+       ========================================================= */
+
+    .mobile-bottom-nav { display: none; }
+
+    .mobile-bottom-nav-inner {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(var(--mobile-shortcut-count, 5), minmax(0, 1fr));
+      align-items: stretch;
+      gap: 3px;
+      padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+      background: rgba(255, 255, 255, .96);
+      border-top: 1px solid rgba(215, 226, 243, .96);
+      box-shadow: 0 -12px 30px rgba(31, 65, 128, .11);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .mobile-shortcut-btn {
+      min-width: 0;
+      min-height: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      position: relative;
+      padding: 6px 3px;
+      color: #77859e;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+      border-radius: 14px;
+      transition: color .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .mobile-shortcut-btn::before {
+      content: '';
+      width: 24px;
+      height: 3px;
+      position: absolute;
+      top: 2px;
+      left: 50%;
+      opacity: 0;
+      background: linear-gradient(90deg, var(--shell-primary), var(--shell-cyan));
+      border-radius: 999px;
+      transform: translateX(-50%) scaleX(.45);
+      transition: .18s ease;
+    }
+
+    .mobile-shortcut-btn:active { transform: scale(.96); }
+
+    .mobile-shortcut-icon {
+      height: 24px;
+      display: grid;
+      place-items: center;
+      font-size: 1.17rem;
+      line-height: 1;
+      filter: grayscale(.12);
+      transition: transform .18s ease, filter .18s ease;
+    }
+
+    .mobile-shortcut-label {
+      width: 100%;
+      overflow: hidden;
+      font-size: .57rem;
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -.08px;
+      text-align: center;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .mobile-shortcut-btn.active {
+      color: var(--shell-primary-dark);
+      background: linear-gradient(180deg, #eef5ff 0%, #f5fbff 100%);
+    }
+
+    .mobile-shortcut-btn.active::before {
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1);
+    }
+
+    .mobile-shortcut-btn.active .mobile-shortcut-icon {
+      filter: none;
+      transform: translateY(-1px) scale(1.06);
+    }
+
+    .mobile-shortcut-badge {
+      min-width: 17px;
+      height: 17px;
+      display: none;
+      place-items: center;
+      position: absolute;
+      top: 5px;
+      left: calc(50% + 8px);
+      padding: 0 4px;
+      color: #ffffff;
+      font-size: .47rem;
+      font-weight: 1000;
+      line-height: 1;
+      background: var(--shell-red);
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      box-shadow: 0 4px 9px rgba(255, 93, 108, .23);
+    }
+
     /* =========================================================
        RESPONSIVE
        ========================================================= */
@@ -1530,6 +1641,31 @@
       #currentPageTitle {
         max-width: 49vw;
       }
+
+      .main-content {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom));
+      }
+
+      .mobile-bottom-nav {
+        width: 100%;
+        display: block;
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 9980;
+        pointer-events: none;
+      }
+
+      .mobile-bottom-nav.ready { pointer-events: auto; }
+
+      .pengurus-fab-chat {
+        bottom: calc(86px + env(safe-area-inset-bottom));
+      }
+
+      .pengurus-chat-window {
+        bottom: calc(150px + env(safe-area-inset-bottom));
+      }
     }
 
     @media (max-width: 560px) {
@@ -1580,16 +1716,16 @@
         width: 54px;
         height: 54px;
         right: 14px;
-        bottom: 17px;
+        bottom: calc(84px + env(safe-area-inset-bottom));
         border-radius: 18px;
       }
 
       .pengurus-chat-window {
         width: calc(100vw - 16px);
         max-width: none;
-        height: min(76vh, 620px);
+        height: min(72vh, calc(100vh - 160px));
         right: 8px;
-        bottom: 79px;
+        bottom: calc(145px + env(safe-area-inset-bottom));
         border-radius: 21px;
       }
 
@@ -1759,6 +1895,12 @@
 
     <iframe id="contentFrame" src="about:blank" title="Konten CAHAYA APP"></iframe>
   </main>
+
+  <nav
+    class="mobile-bottom-nav"
+    id="mobileBottomNav"
+    aria-label="Pintasan utama sesuai role"
+  ></nav>
 
   <button
     class="pengurus-fab-chat"
@@ -2095,6 +2237,194 @@
       </div>
     `;
 
+    const mobileShortcutMeta = {
+      'menu-home': { icon: '🏠', label: 'Beranda' },
+      'menu-notifikasi': { icon: '🔔', label: 'Notifikasi', badge: 'notif' },
+      'menu-chat': { icon: '💬', label: 'Chat', badge: 'chat' },
+      'menu-beranda-wali': { icon: '✨', label: 'Linimasa' },
+      'menu-laporan-wali': { icon: '📊', label: 'Laporan' },
+      'menu-admin-wali': { icon: '💳', label: 'Administrasi' },
+      'menu-modul-wali': { icon: '📚', label: 'Modul' },
+      'menu-dashboard-pimpinan': { icon: '📊', label: 'Pimpinan' },
+      'menu-kontrol-harian': { icon: '📍', label: 'Kontrol' },
+      'menu-kontrol-pekanan': { icon: '📅', label: 'Pekanan' },
+      'menu-raport-bulanan': { icon: '📈', label: 'KPI Bulanan' },
+      'menu-raport-semester': { icon: '🎓', label: 'Semester' },
+      'menu-monitoring-absen-guru': { icon: '🧭', label: 'Monitor Guru' },
+      'menu-jurnal-pkl': { icon: '🧹', label: 'Jurnal' },
+      'menu-jurnal-sarpras': { icon: '🔧', label: 'Jurnal' },
+      'menu-checklist-sarpras': { icon: '✅', label: 'Checklist' },
+      'menu-jurnal-kesehatan': { icon: '🩺', label: 'Jurnal' },
+      'menu-pemeriksaan-kesehatan': { icon: '🧑‍⚕️', label: 'Periksa' },
+      'menu-stok-obat': { icon: '💊', label: 'Stok Obat' },
+      'menu-absen-guru': { icon: '📍', label: 'Absen Guru' },
+      'menu-absen-kbm': { icon: '📋', label: 'Absensi KBM' },
+      'menu-guru-menulis': { icon: '✍️', label: 'Menulis' },
+      'menu-prauas': { icon: '🧾', label: 'Pra UAS' },
+      'menu-input-soal-uas': { icon: '📝', label: 'Soal UAS' },
+      'menu-tahfiz': { icon: '📖', label: 'Setoran' },
+      'menu-buku-tahfiz': { icon: '📚', label: 'Buku Tahfiz' },
+      'menu-nilai': { icon: '📝', label: 'Nilai' },
+      'menu-raport': { icon: '📊', label: 'Raport' },
+      'menu-halqah': { icon: '⚙️', label: 'Kelas' },
+      'menu-absen-asrama': { icon: '📋', label: 'Absensi' },
+      'menu-disiplin': { icon: '⚖️', label: 'Pelanggaran' },
+      'menu-mentoring': { icon: '🤝', label: 'Mentoring' },
+      'menu-gamifikasi': { icon: '🌟', label: 'Inisiatif' },
+      'menu-jadwal-piket': { icon: '🗓️', label: 'Piket' },
+      'menu-jurnal-piket': { icon: '📝', label: 'Jurnal' },
+      'menu-usrah': { icon: '⚙️', label: 'Usrah' },
+      'menu-asesmen-naqib': { icon: '🧘', label: 'Asesmen' },
+      'menu-asesmen-guru': { icon: '🧘', label: 'Asesmen' },
+      'menu-asesmen-santri': { icon: '📊', label: 'Santri' },
+      'menu-asesmen-sdm': { icon: '👁️', label: 'Kinerja' },
+      'menu-antrean-kasus': { icon: '⏳', label: 'Tindak Kasus' },
+      'menu-buku-kasus': { icon: '📚', label: 'Rekam Kasus' },
+      'menu-evaluasi-kasus': { icon: '📈', label: 'Evaluasi' },
+      'menu-komentar': { icon: '💬', label: 'Komentar' },
+      'menu-media': { icon: '📸', label: 'Media' },
+      'menu-db-master': { icon: '🗄️', label: 'Database' },
+      'menu-jadwal': { icon: '📅', label: 'Jadwal' },
+      'menu-qr-kelas': { icon: '▦', label: 'QR Kelas' },
+      'menu-users': { icon: '🔐', label: 'User' },
+      'menu-koreksi': { icon: '🛠️', label: 'Koreksi' },
+      'menu-profil': { icon: '👤', label: 'Profil' }
+    };
+
+    const mobileShortcutRolePriority = {
+      admin: ['menu-home','menu-dashboard-pimpinan','menu-kontrol-harian','menu-users','menu-db-master','menu-notifikasi','menu-profil'],
+      direktur: ['menu-dashboard-pimpinan','menu-kontrol-harian','menu-raport-bulanan','menu-notifikasi','menu-profil','menu-home'],
+      wakil: ['menu-dashboard-pimpinan','menu-kontrol-harian','menu-raport-bulanan','menu-notifikasi','menu-profil','menu-home'],
+      yayasan: ['menu-dashboard-pimpinan','menu-raport-bulanan','menu-raport-semester','menu-notifikasi','menu-profil','menu-home'],
+      supervisor: ['menu-kontrol-harian','menu-kontrol-pekanan','menu-raport-bulanan','menu-monitoring-absen-guru','menu-profil','menu-home'],
+      guru: ['menu-home','menu-absen-guru','menu-absen-kbm','menu-nilai','menu-raport','menu-tahfiz','menu-profil'],
+      naqib: ['menu-home','menu-absen-asrama','menu-disiplin','menu-mentoring','menu-jurnal-piket','menu-gamifikasi','menu-profil'],
+      konselor: ['menu-home','menu-antrean-kasus','menu-buku-kasus','menu-evaluasi-kasus','menu-notifikasi','menu-profil'],
+      cla: ['menu-home','menu-kontrol-harian','menu-raport-bulanan','menu-asesmen-santri','menu-notifikasi','menu-profil'],
+      layanan: ['menu-home','menu-jurnal-pkl','menu-chat','menu-notifikasi','menu-profil'],
+      sarpras: ['menu-home','menu-checklist-sarpras','menu-jurnal-sarpras','menu-chat','menu-profil'],
+      kesehatan: ['menu-home','menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan','menu-stok-obat','menu-profil'],
+      wali: ['menu-beranda-wali','menu-laporan-wali','menu-admin-wali','menu-modul-wali','menu-notifikasi','menu-profil']
+    };
+
+    const mobileRoleOrder = ['admin','direktur','wakil','yayasan','supervisor','konselor','naqib','guru','cla','kesehatan','sarpras','layanan','wali'];
+
+    function getMobileShortcutFallbackMeta(menuId) {
+      const menu = document.getElementById(menuId);
+      const rawText = String(menu?.textContent || menuId)
+        .replace(/\d+/g, '')
+        .replace(/[^\p{L}\p{N}\s]/gu, '')
+        .trim();
+      return { icon: '•', label: rawText || 'Fitur' };
+    }
+
+    function getMobileShortcutIds() {
+      const result = [];
+      const add = menuId => {
+        if (!menuId || result.includes(menuId) || !bolehAksesMenu(menuId)) return;
+        result.push(menuId);
+      };
+
+      const roleTerurut = [...myRoles].sort((a, b) => {
+        const aIndex = mobileRoleOrder.indexOf(a);
+        const bIndex = mobileRoleOrder.indexOf(b);
+        return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+      });
+
+      roleTerurut.forEach(role => (mobileShortcutRolePriority[role] || []).forEach(add));
+      [...document.querySelectorAll('#dynamicMenu .menu-akses')].map(menu => menu.id).filter(Boolean).forEach(add);
+      ['menu-chat', 'menu-notifikasi', 'menu-profil'].forEach(add);
+      return result.slice(0, 5);
+    }
+
+    function renderMobileBottomNav() {
+      const nav = document.getElementById('mobileBottomNav');
+      if (!nav) return;
+
+      if (!authorizationReady) {
+        nav.innerHTML = '';
+        nav.classList.remove('ready');
+        return;
+      }
+
+      const shortcutIds = getMobileShortcutIds();
+      if (!shortcutIds.length) {
+        nav.innerHTML = '';
+        nav.classList.remove('ready');
+        return;
+      }
+
+      nav.style.setProperty('--mobile-shortcut-count', String(shortcutIds.length));
+      nav.innerHTML = `
+        <div class="mobile-bottom-nav-inner">
+          ${shortcutIds.map(menuId => {
+            const meta = mobileShortcutMeta[menuId] || getMobileShortcutFallbackMeta(menuId);
+            const badgeId = meta.badge === 'notif' ? 'mobileNotifBadge' : meta.badge === 'chat' ? 'mobileChatBadge' : '';
+            return `
+              <button type="button" class="mobile-shortcut-btn" data-menu-id="${menuId}"
+                onclick="openMobileShortcut('${menuId}')" aria-label="Buka ${meta.label}" title="${meta.label}">
+                <span class="mobile-shortcut-icon">${meta.icon}</span>
+                <span class="mobile-shortcut-label">${meta.label}</span>
+                ${badgeId ? `<span class="mobile-shortcut-badge" id="${badgeId}">0</span>` : ''}
+              </button>`;
+          }).join('')}
+        </div>`;
+
+      nav.classList.add('ready');
+      const activeSidebarMenu = document.querySelector('#dynamicMenu .nav-item.active');
+      setMobileBottomActive(activeSidebarMenu?.id || '');
+      sinkronkanBadgePintasanMobile();
+    }
+
+    function setMobileBottomActive(menuId = '') {
+      document.querySelectorAll('#mobileBottomNav .mobile-shortcut-btn').forEach(button => {
+        button.classList.toggle('active', button.dataset.menuId === menuId);
+      });
+    }
+
+    function openMobileShortcut(menuId) {
+      if (!bolehAksesMenu(menuId)) {
+        tampilkanPesanTidakBerwenang(menuId);
+        return;
+      }
+      if (menuId === 'menu-chat') return togglePengurusChat();
+      if (menuId === 'menu-notifikasi') return toggleNotifPanel();
+      openAuthorizedMenu(menuId);
+    }
+
+    function sinkronkanBadgePintasanMobile() {
+      const mobileNotifBadge = document.getElementById('mobileNotifBadge');
+      const mobileChatBadge = document.getElementById('mobileChatBadge');
+      const topNotifBadge = document.getElementById('topNotifBadge');
+      const chatUnreadBadge = document.getElementById('chatUnreadBadge');
+
+      if (mobileNotifBadge && topNotifBadge) {
+        const nilai = Number(topNotifBadge.textContent || 0);
+        mobileNotifBadge.textContent = nilai > 99 ? '99+' : String(nilai);
+        mobileNotifBadge.style.display = nilai > 0 ? 'grid' : 'none';
+      }
+      if (mobileChatBadge && chatUnreadBadge) {
+        const nilai = Number(chatUnreadBadge.textContent || 0);
+        mobileChatBadge.textContent = nilai > 99 ? '99+' : String(nilai);
+        mobileChatBadge.style.display = nilai > 0 ? 'grid' : 'none';
+      }
+    }
+
+    const mobileBadgeObserver = new MutationObserver(sinkronkanBadgePintasanMobile);
+    window.addEventListener('DOMContentLoaded', () => {
+      ['topNotifBadge', 'chatUnreadBadge'].forEach(id => {
+        const target = document.getElementById(id);
+        if (target) mobileBadgeObserver.observe(target, {
+          childList: true,
+          characterData: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['style', 'class']
+        });
+      });
+    });
+
+
     function toggleSidebar() {
       document.getElementById('mainSidebar').classList.toggle('open');
       document.querySelector('.mobile-menu-overlay').classList.toggle('open');
@@ -2115,7 +2445,15 @@
         return;
       }
 
-      document.getElementById('sideNotifPanel').classList.toggle('open');
+      const panel = document.getElementById('sideNotifPanel');
+      panel.classList.toggle('open');
+
+      if (panel.classList.contains('open')) {
+        setMobileBottomActive('menu-notifikasi');
+      } else {
+        const activeSidebarMenu = document.querySelector('#dynamicMenu .nav-item.active');
+        setMobileBottomActive(activeSidebarMenu?.id || '');
+      }
     }
 
     async function logout() {
@@ -2433,6 +2771,8 @@
         notifPanel.classList.remove('open');
         notifToast.classList.remove('show');
       }
+
+      renderMobileBottomNav();
     }
 
     function tampilkanHalamanTanpaAkses() {
@@ -2625,6 +2965,7 @@
 
       document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
       if (menuElement.classList.contains('nav-item')) menuElement.classList.add('active');
+      setMobileBottomActive(menuId);
 
       const frame = document.getElementById('contentFrame');
       frame.removeAttribute('srcdoc');
@@ -3161,8 +3502,12 @@ if (bolehAksesMenu('menu-chat')) {
         if(pChatListener) {
           dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
         }
+
+        const activeSidebarMenu = document.querySelector('#dynamicMenu .nav-item.active');
+        setMobileBottomActive(activeSidebarMenu?.id || '');
       } else {
         cw.style.display = 'flex';
+        setMobileBottomActive('menu-chat');
         switchChatTab('inbox');
       }
     }
