@@ -6,11 +6,11 @@
   <title>CAHAYA APP – Portal Utama</title>
   <link rel="icon" type="image/png" href="assets/logofi.png" />
   <link rel="stylesheet" href="css/cahaya-theme.css" />
-
+  
   <style>
     /* =========================================================
        CAHAYA APP — MAIN DASHBOARD FRESH EDTECH 2026/2027
-       Shell • Sidebar • Workspace • Chat
+       Shell • Sidebar • Workspace • Chat • Notification
        ========================================================= */
 
     :root {
@@ -372,6 +372,24 @@
     .nav-item.active::after {
       color: rgba(255, 255, 255, .82);
       transform: translateX(0);
+    }
+
+    #sidebarNotifBadge {
+      margin-left: auto !important;
+      padding: 2px 7px !important;
+      color: #ffffff !important;
+      font-size: .59rem !important;
+      font-weight: 1000 !important;
+      line-height: 1.4 !important;
+      background: var(--shell-red) !important;
+      border: 2px solid rgba(255, 255, 255, .78) !important;
+      border-radius: 999px !important;
+      box-shadow: 0 4px 9px rgba(255, 93, 108, .22);
+    }
+
+    .nav-item.active #sidebarNotifBadge {
+      color: var(--shell-red) !important;
+      background: #ffffff !important;
     }
 
     .sidebar-bottom {
@@ -1202,6 +1220,356 @@
       box-shadow: 0 12px 23px rgba(40, 120, 255, .27);
     }
 
+    /* =========================================================
+       NOTIFICATION DRAWER
+       ========================================================= */
+
+    .notif-panel {
+      width: 370px;
+      max-width: 94vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      right: -410px;
+      z-index: 10005;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .98);
+      border-left: 1px solid #dce7f5;
+      box-shadow: -20px 0 55px rgba(27, 56, 111, .18);
+      transition: right .34s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .notif-panel.open {
+      right: 0;
+    }
+
+    .notif-header {
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      padding: 22px 20px;
+      color: #ffffff;
+      background:
+        radial-gradient(circle at 90% 15%, rgba(255, 255, 255, .2), transparent 27%),
+        linear-gradient(135deg, #6c5ce7 0%, var(--shell-primary) 62%, var(--shell-cyan) 135%);
+      border: 0;
+    }
+
+    .notif-header::after {
+      content: '';
+      width: 118px;
+      height: 118px;
+      position: absolute;
+      right: -49px;
+      bottom: -73px;
+      border: 23px solid rgba(255, 255, 255, .08);
+      border-radius: 50%;
+    }
+
+    .notif-heading {
+      position: relative;
+      z-index: 1;
+    }
+
+    .notif-kicker {
+      display: block;
+      margin-bottom: 4px;
+      color: rgba(255, 255, 255, .75);
+      font-size: .57rem;
+      font-weight: 1000;
+      letter-spacing: 1.25px;
+      text-transform: uppercase;
+    }
+
+    .notif-header h3 {
+      margin: 0;
+      color: #ffffff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.22rem;
+      font-weight: 1000;
+      letter-spacing: -.25px;
+    }
+
+    .notif-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding: 13px;
+      background: #f4f8fd;
+      scrollbar-width: thin;
+      scrollbar-color: #ccd9eb transparent;
+    }
+
+    .notif-card {
+      position: relative;
+      padding: 14px 14px 13px;
+      color: var(--shell-text);
+      cursor: pointer;
+      background: #ffffff;
+      border: 1px solid #e0e9f6;
+      border-radius: 15px;
+      box-shadow: 0 6px 18px rgba(39, 75, 137, .055);
+      transition: .18s ease;
+    }
+
+    .notif-card:hover {
+      border-color: #c9dcf7;
+      box-shadow: 0 11px 24px rgba(39, 75, 137, .09);
+      transform: translateY(-2px);
+    }
+
+    .notif-card.unread {
+      padding-left: 18px;
+      background: linear-gradient(135deg, #f1f7ff, #f0fbff);
+      border-color: #cfe2fc;
+      border-left: 4px solid var(--shell-primary);
+    }
+
+    .notif-card.unread::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      position: absolute;
+      top: 15px;
+      right: 14px;
+      background: var(--shell-primary);
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(40, 120, 255, .1);
+    }
+
+    .notif-title {
+      padding-right: 15px;
+      margin-bottom: 5px;
+      color: var(--shell-ink);
+      font-size: .77rem;
+      font-weight: 1000;
+      line-height: 1.35;
+    }
+
+    .notif-desc {
+      color: #61708a;
+      font-size: .7rem;
+      font-weight: 650;
+      line-height: 1.48;
+    }
+
+    .notif-time {
+      display: block;
+      margin-top: 9px;
+      color: #93a1b7;
+      font-size: .56rem;
+      font-weight: 900;
+      letter-spacing: .35px;
+      text-transform: uppercase;
+    }
+
+    /* =========================================================
+       IN-APP TOAST
+       ========================================================= */
+
+    .in-app-notif {
+      width: calc(100% - 32px);
+      max-width: 390px;
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      position: fixed;
+      top: -125px;
+      left: 50%;
+      z-index: 100000;
+      padding: 10px 13px;
+      overflow: hidden;
+      color: var(--shell-text);
+      cursor: pointer;
+      background: rgba(255, 255, 255, .97);
+      border: 1px solid #d9e6f7;
+      border-left: 0;
+      border-radius: 17px;
+      box-shadow: 0 18px 42px rgba(25, 56, 111, .2);
+      backdrop-filter: blur(16px);
+      transform: translateX(-50%);
+      transition: top .42s cubic-bezier(.22, 1.3, .36, 1);
+    }
+
+    .in-app-notif::before {
+      content: '';
+      width: 5px;
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      left: 0;
+      background: linear-gradient(180deg, var(--shell-primary), var(--shell-cyan));
+      border-radius: 0 6px 6px 0;
+    }
+
+    .in-app-notif.show {
+      top: 16px;
+    }
+
+    .in-app-notif .notif-icon {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      display: grid;
+      place-items: center;
+      color: var(--shell-primary);
+      font-size: 1.15rem;
+      background: linear-gradient(145deg, #eaf3ff, #eefbff);
+      border: 1px solid #d4e7ff;
+      border-radius: 14px;
+    }
+
+    .in-app-notif .notif-text {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .in-app-notif .notif-title-toast,
+    .in-app-notif .notif-desc-toast {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .in-app-notif .notif-title-toast {
+      color: var(--shell-ink);
+      font-size: .74rem;
+      font-weight: 1000;
+    }
+
+    .in-app-notif .notif-desc-toast {
+      margin-top: 3px;
+      color: var(--shell-muted);
+      font-size: .66rem;
+      font-weight: 650;
+    }
+
+
+    /* =========================================================
+       MOBILE FIXED SHORTCUTS — ROLE-AWARE, MAX. 5 FITUR
+       ========================================================= */
+
+    .mobile-bottom-nav { display: none; }
+
+    .mobile-bottom-nav-inner {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(var(--mobile-shortcut-count, 5), minmax(0, 1fr));
+      align-items: stretch;
+      gap: 3px;
+      padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+      background: rgba(255, 255, 255, .96);
+      border-top: 1px solid rgba(215, 226, 243, .96);
+      box-shadow: 0 -12px 30px rgba(31, 65, 128, .11);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .mobile-shortcut-btn {
+      min-width: 0;
+      min-height: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      position: relative;
+      padding: 6px 3px;
+      color: #77859e;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+      border-radius: 14px;
+      transition: color .18s ease, background .18s ease, transform .18s ease;
+    }
+
+    .mobile-shortcut-btn::before {
+      content: '';
+      width: 24px;
+      height: 3px;
+      position: absolute;
+      top: 2px;
+      left: 50%;
+      opacity: 0;
+      background: linear-gradient(90deg, var(--shell-primary), var(--shell-cyan));
+      border-radius: 999px;
+      transform: translateX(-50%) scaleX(.45);
+      transition: .18s ease;
+    }
+
+    .mobile-shortcut-btn:active { transform: scale(.96); }
+
+    .mobile-shortcut-icon {
+      height: 24px;
+      display: grid;
+      place-items: center;
+      font-size: 1.17rem;
+      line-height: 1;
+      filter: grayscale(.12);
+      transition: transform .18s ease, filter .18s ease;
+    }
+
+    .mobile-shortcut-label {
+      width: 100%;
+      overflow: hidden;
+      font-size: .57rem;
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -.08px;
+      text-align: center;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .mobile-shortcut-btn.active {
+      color: var(--shell-primary-dark);
+      background: linear-gradient(180deg, #eef5ff 0%, #f5fbff 100%);
+    }
+
+    .mobile-shortcut-btn.active::before {
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1);
+    }
+
+    .mobile-shortcut-btn.active .mobile-shortcut-icon {
+      filter: none;
+      transform: translateY(-1px) scale(1.06);
+    }
+
+    .mobile-shortcut-badge {
+      min-width: 17px;
+      height: 17px;
+      display: none;
+      place-items: center;
+      position: absolute;
+      top: 5px;
+      left: calc(50% + 8px);
+      padding: 0 4px;
+      color: #ffffff;
+      font-size: .47rem;
+      font-weight: 1000;
+      line-height: 1;
+      background: var(--shell-red);
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      box-shadow: 0 4px 9px rgba(255, 93, 108, .23);
+    }
 
     /* =========================================================
        RESPONSIVE
@@ -1322,6 +1690,10 @@
         display: none !important;
       }
 
+      #topNavNotif {
+        display: none !important;
+      }
+
       #topNavChat {
         display: grid;
       }
@@ -1383,6 +1755,21 @@
         bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
         border-radius: 21px;
       }
+
+      .notif-panel {
+        width: 100vw;
+        max-width: none;
+        right: -105vw;
+      }
+
+      .notif-header {
+        min-height: 88px;
+        padding: 18px 16px;
+      }
+
+      .in-app-notif.show {
+        top: 9px;
+      }
     }
 
     @media (max-width: 390px) {
@@ -1419,7 +1806,7 @@
         transition-duration: .01ms !important;
       }
     }
-
+  
 
     body.cahaya-logging-out::after {
       content: "Menutup sesi dengan aman...";
@@ -1439,6 +1826,14 @@
   <link rel="stylesheet" href="css/pengurus-whatsapp-chat.css" />
 </head>
 <body>
+
+  <div id="inAppNotif" class="in-app-notif" onclick="bukaPanelNotif()">
+    <div class="notif-icon">🔔</div>
+    <div class="notif-text">
+      <span class="notif-title-toast" id="notifTitle">Pemberitahuan Baru</span>
+      <span class="notif-desc-toast" id="notifDesc">Cek sekarang...</span>
+    </div>
+  </div>
 
   <div class="mobile-menu-overlay" onclick="toggleSidebar()"></div>
 
@@ -1482,6 +1877,22 @@
       </button>
     </div>
   </aside>
+
+  <div class="notif-panel" id="sideNotifPanel">
+    <div class="notif-header">
+      <div class="notif-heading">
+        <span class="notif-kicker">Pusat Informasi</span>
+        <h3>Notifikasi</h3>
+      </div>
+      <button class="panel-close-btn" type="button" onclick="toggleNotifPanel()" aria-label="Tutup notifikasi">✕</button>
+    </div>
+    <div class="notif-body" id="listNotifikasi">
+      <div style="text-align:center; color:#94a3b8; margin-top:20px; font-size:0.85rem;">
+        Memuat pemberitahuan...
+      </div>
+    </div>
+  </div>
+
   <main class="main-content">
     <div class="top-nav">
       <div class="top-nav-left">
@@ -1496,6 +1907,10 @@
       </div>
 
       <div class="top-nav-right">
+        <button class="top-action-btn" id="topNavNotif" type="button" style="display:none;" onclick="toggleNotifPanel()" aria-label="Buka notifikasi" title="Notifikasi">
+          🔔
+          <span class="top-notif-badge" id="topNotifBadge">0</span>
+        </button>
         <button class="top-action-btn" id="topNavChat" type="button" style="display:none;" onclick="togglePengurusChat()" aria-label="Buka Live Chat" title="Live Chat">
           💬
           <span class="top-notif-badge" id="topChatBadge">0</span>
@@ -1657,7 +2072,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
+  
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
@@ -1745,6 +2160,7 @@
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
         <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-notifikasi" style="display:none;" onclick="toggleNotifPanel()">🔔 Notifikasi <span id="sidebarNotifBadge" style="background:#ef4444; color:white; padding:2px 8px; border-radius:10px; font-size:0.7rem; margin-left:auto; display:none; font-weight:800;">0</span></a>
       </div>
 
       <div class="menu-group">
@@ -1853,6 +2269,7 @@
 
     const mobileShortcutMeta = {
       'menu-home': { icon: '🏠', label: 'Beranda' },
+      'menu-notifikasi': { icon: '🔔', label: 'Notifikasi', badge: 'notif' },
       'menu-chat': { icon: '💬', label: 'Chat', badge: 'chat' },
       'menu-beranda-wali': { icon: '✨', label: 'Linimasa' },
       'menu-laporan-wali': { icon: '📊', label: 'Laporan' },
@@ -1905,19 +2322,19 @@
     };
 
     const mobileShortcutRolePriority = {
-      admin: ['menu-home','menu-dashboard-pimpinan','menu-kontrol-harian','menu-users','menu-db-master','menu-profil'],
-      direktur: ['menu-dashboard-pimpinan','menu-kontrol-harian','menu-raport-bulanan','menu-profil','menu-home'],
-      wakil: ['menu-dashboard-pimpinan','menu-kontrol-harian','menu-raport-bulanan','menu-profil','menu-home'],
-      yayasan: ['menu-dashboard-pimpinan','menu-raport-bulanan','menu-raport-semester','menu-profil','menu-home'],
+      admin: ['menu-home','menu-dashboard-pimpinan','menu-kontrol-harian','menu-users','menu-db-master','menu-notifikasi','menu-profil'],
+      direktur: ['menu-dashboard-pimpinan','menu-kontrol-harian','menu-raport-bulanan','menu-notifikasi','menu-profil','menu-home'],
+      wakil: ['menu-dashboard-pimpinan','menu-kontrol-harian','menu-raport-bulanan','menu-notifikasi','menu-profil','menu-home'],
+      yayasan: ['menu-dashboard-pimpinan','menu-raport-bulanan','menu-raport-semester','menu-notifikasi','menu-profil','menu-home'],
       supervisor: ['menu-kontrol-harian','menu-kontrol-pekanan','menu-raport-bulanan','menu-monitoring-absen-guru','menu-profil','menu-home'],
       guru: ['menu-home','menu-absen-guru','menu-absen-kbm','menu-nilai','menu-raport','menu-tahfiz','menu-profil'],
       naqib: ['menu-home','menu-absen-asrama','menu-disiplin','menu-mentoring','menu-jurnal-piket','menu-gamifikasi','menu-profil'],
-      konselor: ['menu-home','menu-antrean-kasus','menu-buku-kasus','menu-evaluasi-kasus','menu-profil'],
-      cla: ['menu-home','menu-kontrol-harian','menu-raport-bulanan','menu-asesmen-santri','menu-profil'],
-      layanan: ['menu-home','menu-jurnal-pkl','menu-chat','menu-profil'],
+      konselor: ['menu-home','menu-antrean-kasus','menu-buku-kasus','menu-evaluasi-kasus','menu-notifikasi','menu-profil'],
+      cla: ['menu-home','menu-kontrol-harian','menu-raport-bulanan','menu-asesmen-santri','menu-notifikasi','menu-profil'],
+      layanan: ['menu-home','menu-jurnal-pkl','menu-chat','menu-notifikasi','menu-profil'],
       sarpras: ['menu-home','menu-checklist-sarpras','menu-jurnal-sarpras','menu-chat','menu-profil'],
       kesehatan: ['menu-home','menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan','menu-stok-obat','menu-profil'],
-      wali: ['menu-beranda-wali','menu-laporan-wali','menu-admin-wali','menu-modul-wali','menu-profil']
+      wali: ['menu-beranda-wali','menu-laporan-wali','menu-admin-wali','menu-modul-wali','menu-notifikasi','menu-profil']
     };
 
     const mobileRoleOrder = ['admin','direktur','wakil','yayasan','supervisor','konselor','naqib','guru','cla','kesehatan','sarpras','layanan','wali'];
@@ -1946,7 +2363,7 @@
 
       roleTerurut.forEach(role => (mobileShortcutRolePriority[role] || []).forEach(add));
       [...document.querySelectorAll('#dynamicMenu .menu-akses')].map(menu => menu.id).filter(Boolean).forEach(add);
-      [ 'menu-profil'].forEach(add);
+      ['menu-notifikasi', 'menu-profil'].forEach(add);
       return result.slice(0, 5);
     }
 
@@ -1972,7 +2389,7 @@
         <div class="mobile-bottom-nav-inner">
           ${shortcutIds.map(menuId => {
             const meta = mobileShortcutMeta[menuId] || getMobileShortcutFallbackMeta(menuId);
-            const badgeId = meta.badge === 'chat' ? 'mobileChatBadge' : '';
+            const badgeId = meta.badge === 'notif' ? 'mobileNotifBadge' : meta.badge === 'chat' ? 'mobileChatBadge' : '';
             return `
               <button type="button" class="mobile-shortcut-btn" data-menu-id="${menuId}"
                 onclick="openMobileShortcut('${menuId}')" aria-label="Buka ${meta.label}" title="${meta.label}">
@@ -2001,14 +2418,22 @@
         return;
       }
       if (menuId === 'menu-chat') return togglePengurusChat();
+      if (menuId === 'menu-notifikasi') return toggleNotifPanel();
       openAuthorizedMenu(menuId);
     }
 
     function sinkronkanBadgePintasanMobile() {
+      const mobileNotifBadge = document.getElementById('mobileNotifBadge');
       const mobileChatBadge = document.getElementById('mobileChatBadge');
+      const topNotifBadge = document.getElementById('topNotifBadge');
       const topChatBadge = document.getElementById('topChatBadge');
       const chatUnreadBadge = document.getElementById('chatUnreadBadge');
 
+      if (mobileNotifBadge && topNotifBadge) {
+        const nilai = Number(topNotifBadge.textContent || 0);
+        mobileNotifBadge.textContent = nilai > 99 ? '99+' : String(nilai);
+        mobileNotifBadge.style.display = nilai > 0 ? 'grid' : 'none';
+      }
       if (chatUnreadBadge) {
         const nilai = Number(chatUnreadBadge.textContent || 0);
         if (mobileChatBadge) {
@@ -2024,7 +2449,7 @@
 
     const mobileBadgeObserver = new MutationObserver(sinkronkanBadgePintasanMobile);
     window.addEventListener('DOMContentLoaded', () => {
-      ['chatUnreadBadge'].forEach(id => {
+      ['topNotifBadge', 'chatUnreadBadge'].forEach(id => {
         const target = document.getElementById(id);
         if (target) mobileBadgeObserver.observe(target, {
           childList: true,
@@ -2056,7 +2481,24 @@
       alert("Akses ditolak. Menu ini belum dicentang pada Manajemen User.");
     }
 
-        async function logout() {
+    function toggleNotifPanel() {
+      if (!bolehAksesMenu('menu-notifikasi')) {
+        tampilkanPesanTidakBerwenang('menu-notifikasi');
+        return;
+      }
+
+      const panel = document.getElementById('sideNotifPanel');
+      panel.classList.toggle('open');
+
+      if (panel.classList.contains('open')) {
+        setMobileBottomActive('menu-notifikasi');
+      } else {
+        const activeSidebarMenu = document.querySelector('#dynamicMenu .nav-item.active');
+        setMobileBottomActive(activeSidebarMenu?.id || '');
+      }
+    }
+
+    async function logout() {
       if (
         !confirm(
           "Keluar aplikasi?"
@@ -2355,15 +2797,24 @@
 
     function terapkanOtorisasiFiturTambahan() {
       const profileButton = document.getElementById('topNavProfile');
+      const topNotifButton = document.getElementById('topNavNotif');
       const topChatButton = document.getElementById('topNavChat');
       const chatFab = document.getElementById('featureChatFab');
       const chatWindow = document.getElementById('pengurusChatWindow');
+      const notifPanel = document.getElementById('sideNotifPanel');
+      const notifToast = document.getElementById('inAppNotif');
 
       profileButton.style.display = bolehAksesMenu('menu-profil') ? 'flex' : 'none';
+      if (topNotifButton) topNotifButton.style.display = bolehAksesMenu('menu-notifikasi') ? 'grid' : 'none';
       if (topChatButton) topChatButton.style.display = bolehAksesMenu('menu-chat') ? 'grid' : 'none';
       chatFab.style.display = bolehAksesMenu('menu-chat') ? 'flex' : 'none';
 
       if (!bolehAksesMenu('menu-chat')) chatWindow.style.display = 'none';
+
+      if (!bolehAksesMenu('menu-notifikasi')) {
+        notifPanel.classList.remove('open');
+        notifToast.classList.remove('show');
+      }
 
       renderMobileBottomNav();
     }
@@ -2530,6 +2981,11 @@
         return;
       }
 
+      if (menuId === 'menu-notifikasi') {
+        toggleNotifPanel();
+        return;
+      }
+
       const url = ambilUrlDariMenu(menu);
       if (!url) {
         console.error("URL menu tidak ditemukan:", menuId);
@@ -2582,6 +3038,31 @@
     let targetAktifDisplay = "";
     let pChatListener = null;
     let editModeId = null;
+    let lastUnreadCount = 0; 
+    let allGlobalNotifs = []; 
+
+    const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    let audioUnlocked = false;
+
+    document.body.addEventListener('touchstart', function() {
+      if (!audioUnlocked) {
+        notifSound.play().then(() => {
+          notifSound.pause();
+          notifSound.currentTime = 0;
+        }).catch(() => {});
+        audioUnlocked = true;
+      }
+    }, { once: true });
+
+    document.body.addEventListener('click', function() {
+      if (!audioUnlocked) {
+        notifSound.play().then(() => {
+          notifSound.pause();
+          notifSound.currentTime = 0;
+        }).catch(() => {});
+        audioUnlocked = true;
+      }
+    }, { once: true });
 
     firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
@@ -2659,6 +3140,11 @@
         if (bolehAksesMenu('menu-chat')) {
           initChatFilter();
         }
+
+        /*
+         * Izin notifikasi tidak diminta otomatis.
+         * Browser akan meminta izin setelah pengguna berinteraksi.
+         */
 if (bolehAksesMenu('menu-chat')) {
           try {
             const snap = await dbFS.collection('users').get();
@@ -2669,8 +3155,11 @@ if (bolehAksesMenu('menu-chat')) {
           }
         }
 
-        if (bolehAksesMenu('menu-chat')) {
-          listenToGlobalMessages();
+        if (
+          bolehAksesMenu('menu-chat') ||
+          bolehAksesMenu('menu-notifikasi')
+        ) {
+          listenToGlobalMessagesAndNotifs();
         }
       } else {
         setCahayaLogoutLock(
@@ -2697,104 +3186,289 @@ if (bolehAksesMenu('menu-chat')) {
       document.getElementById('pChatRole').innerHTML = opts;
     }
 
-            function listenToGlobalMessages() {
-      dbRT.ref('cahaya_app/pesan_global').on('value', snap => {
-        const allRooms = snap.val() || {};
-        let unreadTotal = 0;
-        const myInboxData = [];
-        const meClean = namaSaya.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    function showInAppNotif(title, desc) {
+      if (!bolehAksesMenu('menu-notifikasi')) return;
 
-        if (isTopLevel && allRooms['room_broadcast_wali']) {
+      document.getElementById('notifTitle').textContent = title;
+      document.getElementById('notifDesc').textContent = desc;
+
+      const notifEl = document.getElementById('inAppNotif');
+      notifEl.classList.add('show');
+
+      setTimeout(() => {
+        notifEl.classList.remove('show');
+      }, 4000);
+    }
+
+    function bukaPanelNotif() {
+      if (!bolehAksesMenu('menu-notifikasi')) {
+        tampilkanPesanTidakBerwenang('menu-notifikasi');
+        return;
+      }
+
+      document.getElementById('inAppNotif').classList.remove('show');
+      toggleNotifPanel();
+    }
+
+    function listenToGlobalMessagesAndNotifs() {
+      let chatUnreadData = [];
+      let dbNotifData = [];
+
+      dbRT.ref('cahaya_app/pesan_global').on('value', snap => {
+        chatUnreadData = [];
+
+        const allRooms = snap.val();
+        if(!allRooms) return;
+
+        let unreadTotal = 0;
+        let myInboxData = [];
+        let meClean = namaSaya.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        let latestMessageText = "";
+        let latestMessageSender = "";
+
+        if(isTopLevel && allRooms['room_broadcast_wali']) {
           try {
-            const bMsgs = Object.values(allRooms['room_broadcast_wali']).filter(m => m && m.waktu);
-            if (bMsgs.length > 0) {
-              const lastMsg = bMsgs[bMsgs.length - 1];
-              myInboxData.push({
-                roomId: 'room_broadcast_wali',
-                opponentDisplay: '📢 PENGUMUMAN WALI',
-                opponentActualLabel: 'BROADCAST',
-                lastMsg,
-                isUnread: false
-              });
+            let bMsgs = Object.values(allRooms['room_broadcast_wali']);
+
+            if(bMsgs.length > 0) {
+              let lastMsg = bMsgs[bMsgs.length - 1];
+
+              if(lastMsg && lastMsg.waktu) {
+                myInboxData.push({
+                  roomId: 'room_broadcast_wali',
+                  opponentDisplay: '📢 PENGUMUMAN WALI',
+                  opponentActualLabel: 'BROADCAST',
+                  lastMsg: lastMsg,
+                  isUnread: false
+                });
+              }
             }
-          } catch (error) {
-            console.warn('Gagal membaca ruang broadcast:', error);
-          }
+          } catch(e) {}
         }
 
         Object.keys(allRooms).forEach(roomId => {
           try {
-            if (!roomId.includes(meClean) || roomId === 'room_broadcast_wali') return;
+            if(roomId.includes(meClean) && roomId !== 'room_broadcast_wali') {
+              let msgs = allRooms[roomId];
+              if(!msgs || typeof msgs !== 'object') return; 
 
-            const msgs = allRooms[roomId];
-            if (!msgs || typeof msgs !== 'object') return;
+              let msgValues = Object.values(msgs).filter(m => m && m.waktu);
+              if(msgValues.length === 0) return;
 
-            const msgValues = Object.values(msgs).filter(m => m && m.waktu);
-            if (msgValues.length === 0) return;
+              let lastMsg = msgValues[msgValues.length - 1];
+              let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim;
+              
+              if (!opponentLabel) {
+                let roomParts = roomId.replace('chat_', '').split('_');
+                let oppClean = roomParts[0] === meClean ? roomParts[1] : roomParts[0];
 
-            const lastMsg = msgValues[msgValues.length - 1];
-            let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim;
+                let oppUser = pListUsers.find(u => {
+                  return (u.label || u.username || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === oppClean;
+                });
 
-            if (!opponentLabel) {
-              const roomParts = roomId.replace('chat_', '').split('_');
-              const oppClean = roomParts[0] === meClean ? roomParts[1] : roomParts[0];
-              const oppUser = pListUsers.find(u =>
-                (u.label || u.username || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === oppClean
-              );
-
-              if (oppUser) {
-                opponentLabel = oppUser.label || oppUser.username;
-              } else if (oppClean && oppClean.startsWith('abiummi')) {
-                const childName = oppClean.replace('abiummi', '');
-                opponentLabel = 'Abi Ummi ' + childName.charAt(0).toUpperCase() + childName.slice(1);
-              } else {
-                opponentLabel = oppClean || 'Tidak Diketahui';
+                if (oppUser) {
+                  opponentLabel = oppUser.label || oppUser.username;
+                } else if (oppClean && oppClean.startsWith('abiummi')) {
+                  let childName = oppClean.replace('abiummi', '');
+                  opponentLabel = "Abi Ummi " + childName.charAt(0).toUpperCase() + childName.slice(1);
+                } else {
+                  opponentLabel = oppClean || "Tidak Diketahui";
+                }
               }
-            }
 
-            const oppUser = pListUsers.find(u => (u.label || u.username) === opponentLabel);
-            const displayOpponent = oppUser && !opponentLabel.toLowerCase().includes('wali')
-              ? '@' + oppUser.username
-              : opponentLabel;
+              let oppUser = pListUsers.find(u => (u.label || u.username) === opponentLabel);
+              let displayOpponent = (oppUser && !opponentLabel.toLowerCase().includes('wali')) ? "@" + oppUser.username : opponentLabel;
 
-            let isUnread = false;
-            if (lastMsg.pengirim !== namaSaya) {
-              const lastReadTime = localStorage.getItem('chat_read_' + roomId) || '0';
-              if (new Date(lastMsg.waktu) > new Date(lastReadTime)) {
-                unreadTotal += 1;
-                isUnread = true;
+              let isUnread = false;
+
+              if (lastMsg.pengirim !== namaSaya) {
+                let lastReadTime = localStorage.getItem('chat_read_' + roomId) || "0";
+
+                if (new Date(lastMsg.waktu) > new Date(lastReadTime)) {
+                  unreadTotal++;
+                  isUnread = true;
+                  latestMessageText = lastMsg.teks;
+                  latestMessageSender = displayOpponent;
+
+                  chatUnreadData.push({
+                    tipe: 'chat',
+                    title: 'Pesan Baru: ' + displayOpponent,
+                    desc: lastMsg.teks,
+                    waktu: lastMsg.waktu,
+                    roomId: roomId,
+                    opponentActualLabel: opponentLabel,
+                    opponentDisplay: displayOpponent,
+                    isUnread: true
+                  });
+                }
               }
-            }
 
-            myInboxData.push({
-              roomId,
-              opponentDisplay: displayOpponent,
-              opponentActualLabel: opponentLabel,
-              lastMsg,
-              isUnread
-            });
-          } catch (error) {
-            console.warn('Gagal membaca ruang chat:', roomId, error);
-          }
+              myInboxData.push({
+                roomId,
+                opponentDisplay: displayOpponent,
+                opponentActualLabel: opponentLabel,
+                lastMsg,
+                isUnread
+              });
+            }
+          } catch(e) {}
         });
 
-        const badge = document.getElementById('chatUnreadBadge');
-        if (badge) {
-          badge.textContent = unreadTotal > 99 ? '99+' : String(unreadTotal);
-          badge.style.display = unreadTotal > 0 ? 'flex' : 'none';
+        if(unreadTotal > lastUnreadCount) {
+          notifSound.play().catch(e => {});
+          showInAppNotif(latestMessageSender, latestMessageText); 
+
+          if (Notification.permission === "granted" && window.innerWidth > 900) {
+            new Notification("Pesan Baru: " + latestMessageSender, {
+              body: latestMessageText,
+              icon: "assets/logofi.png"
+            });
+          }
         }
 
-        const inbox = document.getElementById('viewInbox');
-        if (inbox && inbox.style.display !== 'none') {
+        lastUnreadCount = unreadTotal;
+
+        const badge = document.getElementById('chatUnreadBadge');
+
+        if(unreadTotal > 0) {
+          badge.textContent = unreadTotal;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+
+        if(document.getElementById('viewInbox').style.display !== 'none') {
           renderInboxUI(myInboxData);
         }
+        
+        updateNotificationPanel(chatUnreadData, dbNotifData);
+      });
 
-        sinkronkanBadgePintasanMobile();
+      dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}`).on('value', snap => {
+        dbNotifData = [];
+        const val = snap.val();
+
+        if (val) {
+          Object.keys(val).forEach(key => {
+            let n = val[key];
+            n.notifId = key;
+            n.tipe = n.tipe || 'database';
+            dbNotifData.push(n);
+          });
+        }
+        
+        const unreadDB = dbNotifData.filter(x => x.dibaca === false);
+
+        if (unreadDB.length > 0) {
+          notifSound.play().catch(e => {});
+          let latest = unreadDB[unreadDB.length - 1];
+          showInAppNotif(latest.title, latest.desc);
+          dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}/${latest.notifId}`).update({dibaca: true});
+        }
+        
+        updateNotificationPanel(chatUnreadData, dbNotifData);
       });
     }
 
+    function updateNotificationPanel(arrChat, arrDb) {
+      allGlobalNotifs = [...arrChat, ...arrDb].sort((a,b) => new Date(b.waktu) - new Date(a.waktu));
+      
+      const badgeSidebar = document.getElementById('sidebarNotifBadge');
+      const badgeTop = document.getElementById('topNotifBadge');
+      const countUnread = allGlobalNotifs.filter(x => x.isUnread || x.dibaca === false).length;
 
-        function renderInboxUI(inboxData) {
+      if(countUnread > 0) {
+        if (badgeSidebar) {
+          badgeSidebar.style.display = 'inline-block';
+          badgeSidebar.textContent = countUnread;
+        }
+        if (badgeTop) {
+          badgeTop.style.display = 'grid';
+          badgeTop.textContent = countUnread;
+        }
+      } else {
+        if (badgeSidebar) badgeSidebar.style.display = 'none';
+        if (badgeTop) badgeTop.style.display = 'none';
+      }
+
+      const listCont = document.getElementById('listNotifikasi');
+      listCont.innerHTML = '';
+
+      if(allGlobalNotifs.length === 0) {
+        listCont.innerHTML = '<div style="text-align:center; color:#94a3b8; margin-top:20px; font-size:0.85rem;">Belum ada pemberitahuan.</div>';
+        return;
+      }
+
+      allGlobalNotifs.forEach(n => {
+        const isU = (n.tipe === 'chat') ? n.isUnread : !n.dibaca;
+        const timeStr = new Date(n.waktu).toLocaleString('id-ID', {
+          day:'numeric',
+          month:'short',
+          hour:'2-digit',
+          minute:'2-digit'
+        });
+        
+        let clickAction = '';
+
+        if (n.tipe === 'chat') {
+          clickAction = `onclick="bukaChatDariPanel('${n.opponentActualLabel}', '${n.opponentDisplay}', '${n.roomId}')"`;
+        } else if (n.tipe === 'komentar' && n.eventId) {
+          clickAction = `onclick="bukaKomentarDariPanel('${n.eventId}', '${n.notifId}')"`;
+        }
+
+        listCont.insertAdjacentHTML('beforeend', `
+          <div class="notif-card ${isU ? 'unread' : ''}" ${clickAction}>
+            <div class="notif-title">${n.title}</div>
+            <div class="notif-desc">${n.desc}</div>
+            <span class="notif-time">${timeStr}</span>
+          </div>
+        `);
+      });
+    }
+
+    window.bukaChatDariPanel = function(label, display, roomId) {
+      toggleNotifPanel();
+      document.getElementById('pengurusChatWindow').style.display = 'flex';
+      startChat(label, display, roomId);
+    }
+    
+    window.bukaKomentarDariPanel = function(eventId, notifId) {
+      if (!bolehAksesMenu('menu-beranda-wali')) {
+        tampilkanPesanTidakBerwenang('menu-beranda-wali');
+        return;
+      }
+
+      toggleNotifPanel();
+
+      dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}/${notifId}`).update({
+        dibaca: true
+      });
+      
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+      const menuWali = document.getElementById('menu-beranda-wali');
+
+      if (menuWali) {
+        menuWali.classList.add('active');
+      }
+
+      document.getElementById('currentPageTitle').textContent = "CAHAYA APP";
+      
+      const iframe = document.getElementById('contentFrame');
+
+      if (!iframe.src.includes('beranda.html')) {
+        iframe.src = 'wali/beranda.html';
+      }
+      
+      setTimeout(() => {
+        iframe.contentWindow.postMessage({
+          type: 'SCROLL_TO_POST',
+          eventId: eventId
+        }, '*');
+      }, 1200); 
+    }
+
+    function renderInboxUI(inboxData) {
       const container = document.getElementById('viewInbox');
       container.innerHTML = '';
 
@@ -2804,7 +3478,7 @@ if (bolehAksesMenu('menu-chat')) {
       }
 
       inboxData.sort((a,b) => new Date(b.lastMsg.waktu) - new Date(a.lastMsg.waktu));
-
+      
       inboxData.forEach(item => {
         let dotHtml = item.isUnread ? `<div class="unread-indicator" style="display:block;"></div>` : '';
         let boldClass = item.isUnread ? `font-weight:800; color:#0f172a;` : `font-weight:400; color:#64748b;`;
@@ -2917,7 +3591,7 @@ if (bolehAksesMenu('menu-chat')) {
       if(role === 'broadcast') {
         sel.innerHTML = `<option value="BROADCAST_WALI|📢 PENGUMUMAN WALI">Kirim ke Seluruh Wali Santri</option>`;
         sel.style.display = 'block';
-        openChatFromDropdown();
+        openChatFromDropdown(); 
       } else {
         let f = pListUsers.filter(u => {
           let arr = Array.isArray(u.akses) ? u.akses.map(r => r.toLowerCase()) : [];
@@ -2971,18 +3645,18 @@ if (bolehAksesMenu('menu-chat')) {
         document.getElementById('pChatInput').disabled = false;
         document.getElementById('pChatInput').placeholder = "Ketik pesan...";
       }
-
+      
       document.getElementById('viewInbox').style.display = 'none';
       document.getElementById('viewNew').style.display = 'none';
       document.getElementById('pChatBody').style.display = 'flex';
       document.getElementById('pChatFooter').style.display = 'flex';
-
+      
       setTimeout(() => {
         document.getElementById('pChatInput').focus();
       }, 100);
 
       localStorage.setItem('chat_read_' + roomId, new Date().toISOString());
-      dbRT.ref('cahaya_app/pesan_global').once('value');
+      dbRT.ref('cahaya_app/pesan_global').once('value'); 
 
       if(pChatListener) {
         dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
@@ -3000,7 +3674,7 @@ if (bolehAksesMenu('menu-chat')) {
           body.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:0.8rem; margin-top:20px;">Mulai percakapan.</div>';
           return;
         }
-
+        
         Object.keys(data).forEach(msgId => {
           const m = data[msgId];
           const isMe = m.pengirim === namaSaya;
@@ -3074,7 +3748,7 @@ if (bolehAksesMenu('menu-chat')) {
           waktu: new Date().toISOString()
         });
       }
-
+      
       localStorage.setItem('chat_read_' + rid, new Date().toISOString());
       inp.value = '';
       inp.focus();
