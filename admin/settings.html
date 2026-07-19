@@ -74,8 +74,8 @@
     
     .dynamic-form-row { margin-bottom: 15px; }
     .dynamic-form-row label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px; }
-    .dynamic-form-row input, .dynamic-form-row textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.9rem; outline: none; }
-    .dynamic-form-row input:focus, .dynamic-form-row textarea:focus { border-color: var(--gold-main); }
+    .dynamic-form-row input, .dynamic-form-row textarea, .dynamic-form-row select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.9rem; outline: none; }
+    .dynamic-form-row input:focus, .dynamic-form-row textarea:focus, .dynamic-form-row select:focus { border-color: var(--gold-main); }
     .dynamic-form-row textarea { resize: vertical; min-height: 80px; font-family: monospace; font-size: 0.8rem; background: #f8fafc;}
 
     /* Styling Table */
@@ -193,6 +193,7 @@
   .filter-group input[type="date"],
   .dynamic-form-row input,
   .dynamic-form-row textarea,
+  .dynamic-form-row select,
   .custom-select-display {
     min-height: 46px !important;
     color: var(--text-main) !important;
@@ -209,6 +210,7 @@
   .filter-group input[type="date"]:hover,
   .dynamic-form-row input:hover,
   .dynamic-form-row textarea:hover,
+  .dynamic-form-row select:hover,
   .custom-select-display:hover {
     border-color: #c8d8ec !important;
     background: #fff !important;
@@ -216,7 +218,8 @@
   .form-control:focus,
   .filter-group input[type="date"]:focus,
   .dynamic-form-row input:focus,
-  .dynamic-form-row textarea:focus {
+  .dynamic-form-row textarea:focus,
+  .dynamic-form-row select:focus {
     border-color: var(--primary) !important;
     background: #fff !important;
     box-shadow: 0 0 0 4px rgba(40,120,255,.09) !important;
@@ -477,29 +480,72 @@
             CONTRENG SEMUA TABEL (HATI-HATI)
           </label>
 
-          <div class="optgroup-label">Modul Bimbingan Konseling (Konselor)</div>
-          <!-- TABEL RAHASIA KONSELOR ADA DI SINI -->
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="buku_kasus_konselor" onchange="updateDropdownLabel()"> 📚 Buku Rekam Jejak Konselor (Induk)</label>
+          <div class="optgroup-label">Database Master & Struktur</div>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="master_akademik" onchange="updateDropdownLabel()"> 🎓 Master Akademik, Kelas, Guru & Mapel</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="master_usrah" onchange="updateDropdownLabel()"> 👥 Master Usrah & Anggota Santri</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="master_program_harian" onchange="updateDropdownLabel()"> 🗓️ Master Program Harian Asrama</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="master_ruang_kelas" onchange="updateDropdownLabel()"> 🚪 Master Ruang & Kode QR Kelas</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="jadwal_piket_naqib" onchange="updateDropdownLabel()"> 🕒 Jadwal Piket Naqib</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="piket_naqib_saat_ini" onchange="updateDropdownLabel()"> 📍 Snapshot Petugas Piket Aktif</label>
 
-          <div class="optgroup-label">Modul Asrama & Kedisiplinan</div>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="absensi_program_harian" onchange="updateDropdownLabel()"> 📋 Absensi Program Asrama (Naqib)</label>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="log_lapor_inisiatif" onchange="updateDropdownLabel()"> 🌟 Laporan Inisiatif & Pelanggaran</label>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="pelanggaran_santri" onchange="updateDropdownLabel()"> ⚖️ Tabel Kasus (Sistem Lama)</label>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="log_mentoring_naqib" onchange="updateDropdownLabel()"> 🤝 Log Mentoring Individu</label>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="jurnal_piket_naqib" onchange="updateDropdownLabel()"> 📝 Jurnal Piket Naqib</label>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="poin_manual" onchange="updateDropdownLabel()"> ⭐ Input Poin Manual</label>
-
-          <div class="optgroup-label">Modul Akademik</div>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="absensi_pembelajaran" onchange="updateDropdownLabel()"> 👨‍🏫 Absensi KBM (Guru)</label>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="setoran_tahfiz" onchange="updateDropdownLabel()"> 📖 Setoran Tahfizul Qur'an</label>
+          <div class="optgroup-label">Akademik, Pengajaran & Tahfiz</div>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="absensi_guru" onchange="updateDropdownLabel()"> 📍 Absensi Kehadiran Guru</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="log_absensi_guru" onchange="updateDropdownLabel()"> 🧾 Log Absensi Guru</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="absensi_pembelajaran" onchange="updateDropdownLabel()"> 👨‍🏫 Absensi Pembelajaran/KBM Santri</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="absensi_halqah" onchange="updateDropdownLabel()"> 🕌 Absensi Halqah</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="setoran_tahfiz" onchange="updateDropdownLabel()"> 📖 Setoran Tahfiz Al-Qur'an</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="nilai_ujian" onchange="updateDropdownLabel()"> 🧮 Nilai Ujian Umum</label>
           <label class="custom-option"><input type="checkbox" class="node-cb" value="nilai_ujian_bulanan" onchange="updateDropdownLabel()"> 📝 Nilai Ujian Bulanan</label>
 
-          <div class="optgroup-label">Pusat Asesmen & Evaluasi</div>
+          <div class="optgroup-label">Kalender Pendidikan & Materi</div>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="kalender_pendidikan/ta_2026_2027/events" onchange="updateDropdownLabel()"> 📆 Kalender Pendidikan 2026/2027</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="kalender_materi_pembelajaran/ta_2026_2027" onchange="updateDropdownLabel()"> 📚 Kalender Materi Pembelajaran</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="guru_kits_materi/ta_2026_2027" onchange="updateDropdownLabel()"> 🗂️ Materi Guru Kits (Legacy)</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="guru_kits_hasil_ai/ta_2026_2027" onchange="updateDropdownLabel()"> 🤖 Hasil RPP/AI Guru Kits (Legacy)</label>
+
+          <div class="optgroup-label">Pembinaan Asrama & Mentoring</div>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="absensi_program_harian" onchange="updateDropdownLabel()"> 📋 Absensi Program Harian Asrama</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="log_mentoring_naqib" onchange="updateDropdownLabel()"> 🤝 Log Mentoring Individu</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="jurnal_piket_naqib" onchange="updateDropdownLabel()"> 📝 Jurnal Piket Naqib</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="log_lapor_inisiatif" onchange="updateDropdownLabel()"> 🌟 Laporan Inisiatif & Pelanggaran</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="poin_manual" onchange="updateDropdownLabel()"> ⭐ Input Poin Manual</label>
+
+          <div class="optgroup-label">Konseling & Penanganan Kasus</div>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="laporan_penindakan" onchange="updateDropdownLabel()"> ✅ Laporan Penanganan/Penindakan Kasus</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="buku_kasus_konselor" onchange="updateDropdownLabel()"> 📚 Buku Rekam Jejak Konselor</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="pelanggaran_santri" onchange="updateDropdownLabel()"> ⚖️ Pelanggaran Santri (Legacy)</label>
+
+          <div class="optgroup-label">Asesmen & Evaluasi</div>
           <label class="custom-option"><input type="checkbox" class="node-cb" value="asesmen_mandiri_naqib" onchange="updateDropdownLabel()"> 🧘 Asesmen Mandiri Naqib</label>
           <label class="custom-option"><input type="checkbox" class="node-cb" value="asesmen_mandiri_guru" onchange="updateDropdownLabel()"> 🧘 Asesmen Mandiri Guru</label>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="asesmen_cahaya_santri" onchange="updateDropdownLabel()"> 📊 Asesmen CAHAYA Santri</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="asesmen_cahaya_santri" onchange="updateDropdownLabel()"> 📊 Asesmen CAHAYA Santri (Terbaru)</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="assesment_cahaya_santri" onchange="updateDropdownLabel()"> 📊 Asesmen CAHAYA Santri (Legacy)</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="assesment_cahaya_naqib" onchange="updateDropdownLabel()"> 🏠 Asesmen CAHAYA Naqib (Legacy)</label>
           <label class="custom-option"><input type="checkbox" class="node-cb" value="asesmen_kinerja_sdm" onchange="updateDropdownLabel()"> 👁️ Asesmen Kinerja SDM</label>
-          <label class="custom-option"><input type="checkbox" class="node-cb" value="assesment_triwulan_naqib" onchange="updateDropdownLabel()"> 📚 Asesmen Triwulan/Bulanan (Legacy)</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="assesment_triwulan_naqib" onchange="updateDropdownLabel()"> 📚 Asesmen Triwulan/Bulanan Lama</label>
+
+          <div class="optgroup-label">Kesehatan & UKS</div>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="jurnal_kesehatan" onchange="updateDropdownLabel()"> 🩺 Jurnal Kesehatan Harian</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="pemeriksaan_kesehatan" onchange="updateDropdownLabel()"> 🧑‍⚕️ Pemeriksaan Kesehatan Santri</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="izin_sakit_harian" onchange="updateDropdownLabel()"> 🛌 Izin Sakit Harian</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="stok_obat_uks" onchange="updateDropdownLabel()"> 💊 Stok Obat UKS</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="transaksi_stok_obat_uks" onchange="updateDropdownLabel()"> 🔄 Transaksi Stok Obat UKS</label>
+
+          <div class="optgroup-label">Sarpras, Keamanan & Kebersihan</div>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="jurnal_sarpras" onchange="updateDropdownLabel()"> 🛠️ Jurnal Sarana Prasarana</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="checklist_harian_sarpras" onchange="updateDropdownLabel()"> ☑️ Checklist Harian Sarpras</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="jurnal_keamanan_kebersihan" onchange="updateDropdownLabel()"> 🧹 Jurnal Keamanan & Kebersihan</label>
+
+          <div class="optgroup-label">Media, Chat & Informasi Wali</div>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="pengaturan_media" onchange="updateDropdownLabel()"> 📱 Media Sosial Beranda Wali</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="pesan_global" onchange="updateDropdownLabel()"> 💬 Pesan & Percakapan Global</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="pesan_meta" onchange="updateDropdownLabel()"> 🧩 Metadata Ruang Percakapan</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="pesan_dibaca" onchange="updateDropdownLabel()"> 👁️ Status Pesan Dibaca</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="notifikasi_wali" onchange="updateDropdownLabel()"> 🔔 Notifikasi Wali Santri</label>
+
+          <div class="optgroup-label">Pengaturan Sistem</div>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="pengaturan_absensi_guru" onchange="updateDropdownLabel()"> ⚙️ Pengaturan Absensi Guru</label>
+          <label class="custom-option"><input type="checkbox" class="node-cb" value="pengaturan_notifikasi_web" onchange="updateDropdownLabel()"> 🔔 Pengaturan Notifikasi Web</label>
         </div>
       </div>
     </div>
@@ -586,22 +632,58 @@
   let idSedangDiedit = "";
 
   const nodeLabels = {
-    "buku_kasus_konselor": "📚 Buku Konselor", // <--- UPDATE UTAMA DI SINI
-    "absensi_program_harian": "📋 Absensi Asrama",
-    "log_lapor_inisiatif": "🌟 Inisiatif/Kasus",
-    "pelanggaran_santri": "⚖️ Tabel Kasus",
-    "log_mentoring_naqib": "🤝 Mentoring",
-    "jurnal_piket_naqib": "📝 Piket Naqib",
-    "poin_manual": "⭐ Poin Manual",
+    "master_akademik": "🎓 Master Akademik",
+    "master_usrah": "👥 Master Usrah",
+    "master_program_harian": "🗓️ Master Program Harian",
+    "master_ruang_kelas": "🚪 Master Ruang Kelas",
+    "jadwal_piket_naqib": "🕒 Jadwal Piket Naqib",
+    "piket_naqib_saat_ini": "📍 Piket Naqib Aktif",
+    "absensi_guru": "📍 Absensi Guru",
+    "log_absensi_guru": "🧾 Log Absensi Guru",
     "absensi_pembelajaran": "👨‍🏫 Absensi KBM",
-    "setoran_tahfiz": "📖 Tahfiz",
-    "nilai_ujian_bulanan": "📝 Nilai Ujian",
+    "absensi_halqah": "🕌 Absensi Halqah",
+    "setoran_tahfiz": "📖 Setoran Tahfiz",
+    "nilai_ujian": "🧮 Nilai Ujian",
+    "nilai_ujian_bulanan": "📝 Nilai Ujian Bulanan",
+    "kalender_pendidikan/ta_2026_2027/events": "📆 Kalender Pendidikan",
+    "kalender_materi_pembelajaran/ta_2026_2027": "📚 Kalender Materi",
+    "guru_kits_materi/ta_2026_2027": "🗂️ Materi Guru Kits",
+    "guru_kits_hasil_ai/ta_2026_2027": "🤖 Hasil AI Guru Kits",
+    "absensi_program_harian": "📋 Absensi Asrama",
+    "log_mentoring_naqib": "🤝 Mentoring",
+    "jurnal_piket_naqib": "📝 Jurnal Piket Naqib",
+    "log_lapor_inisiatif": "🌟 Inisiatif/Pelanggaran",
+    "poin_manual": "⭐ Poin Manual",
+    "laporan_penindakan": "✅ Laporan Penanganan",
+    "buku_kasus_konselor": "📚 Buku Konselor",
+    "pelanggaran_santri": "⚖️ Pelanggaran Legacy",
     "asesmen_mandiri_naqib": "🧘 Asesmen Naqib",
     "asesmen_mandiri_guru": "🧘 Asesmen Guru",
-    "asesmen_cahaya_santri": "📊 Asesmen Santri",
+    "asesmen_cahaya_santri": "📊 Asesmen Santri Terbaru",
+    "assesment_cahaya_santri": "📊 Asesmen Santri Legacy",
+    "assesment_cahaya_naqib": "🏠 Asesmen Naqib Legacy",
     "asesmen_kinerja_sdm": "👁️ Asesmen SDM",
-    "assesment_triwulan_naqib": "📚 Asesmen Lama"
+    "assesment_triwulan_naqib": "📚 Asesmen Lama",
+    "jurnal_kesehatan": "🩺 Jurnal Kesehatan",
+    "pemeriksaan_kesehatan": "🧑‍⚕️ Pemeriksaan Kesehatan",
+    "izin_sakit_harian": "🛌 Izin Sakit",
+    "stok_obat_uks": "💊 Stok Obat UKS",
+    "transaksi_stok_obat_uks": "🔄 Transaksi Obat UKS",
+    "jurnal_sarpras": "🛠️ Jurnal Sarpras",
+    "checklist_harian_sarpras": "☑️ Checklist Sarpras",
+    "jurnal_keamanan_kebersihan": "🧹 Keamanan/Kebersihan",
+    "pengaturan_media": "📱 Media Wali",
+    "pesan_global": "💬 Pesan Global",
+    "pesan_meta": "🧩 Metadata Pesan",
+    "pesan_dibaca": "👁️ Status Baca Pesan",
+    "notifikasi_wali": "🔔 Notifikasi Wali",
+    "pengaturan_absensi_guru": "⚙️ Pengaturan Absensi Guru",
+    "pengaturan_notifikasi_web": "🔔 Pengaturan Notifikasi Web"
   };
+
+  function resolveNodePath(node) {
+    return node.includes('/') ? node : `cahaya_app/${node}`;
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     const end = new Date();
@@ -663,52 +745,119 @@
     renderTabel();
   };
 
-  function extractDateString(item) {
-    if(item.tanggal) return item.tanggal.substring(0,10);
-    if(item.tanggalMentoring) return item.tanggalMentoring.substring(0,10);
-    if(item.waktuSimpan) return item.waktuSimpan.substring(0,10);
-    if(item.waktu) return item.waktu.substring(0,10);
-    if(item.timestamp) return item.timestamp.substring(0,10); 
-    if(item.tglKonseling) return item.tglKonseling.substring(0,10); 
-    if(item.tanggalKejadian) return item.tanggalKejadian.substring(0,10);
-    if(item.waktuKonseling) return item.waktuKonseling.substring(0,10);
+  function normalizeDateValue(value) {
+    if(value === null || value === undefined || value === '') return '';
 
-    for(let key in item) {
-      if(typeof item[key] === 'string' && item[key].match(/^\d{4}-\d{2}-\d{2}/)) {
-         return item[key].substring(0,10);
+    if(typeof value === 'number') {
+      const millis = value > 100000000000 ? value : value * 1000;
+      const date = new Date(millis);
+      return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
+    }
+
+    const raw = String(value).trim();
+    const isoMatch = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+    if(isoMatch) return isoMatch[1];
+
+    const idMatch = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if(idMatch) {
+      return `${idMatch[3]}-${idMatch[2].padStart(2, '0')}-${idMatch[1].padStart(2, '0')}`;
+    }
+
+    const parsed = new Date(raw);
+    return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString().slice(0, 10);
+  }
+
+  function extractDateString(item) {
+    if(!item || typeof item !== 'object') return "1970-01-01";
+
+    const priorityKeys = [
+      'tanggal', 'date', 'tanggalInput', 'tanggal_input', 'tanggalSimpan',
+      'tanggalMentoring', 'tanggalKejadian', 'tanggalPemeriksaan',
+      'tanggalTransaksi', 'tanggalAbsensi', 'tglKonseling', 'waktuKonseling',
+      'waktuSimpan', 'waktu_input', 'waktuInput', 'waktuUpdate', 'waktu',
+      'timestamp', 'createdAt', 'updatedAt', 'created_at', 'updated_at'
+    ];
+
+    for(const key of priorityKeys) {
+      if(Object.prototype.hasOwnProperty.call(item, key)) {
+        const normalized = normalizeDateValue(item[key]);
+        if(normalized) return normalized;
       }
     }
-    return "1970-01-01"; 
+
+    for(const key in item) {
+      if(typeof item[key] === 'string' || typeof item[key] === 'number') {
+        const normalized = normalizeDateValue(item[key]);
+        if(normalized) return normalized;
+      }
+    }
+
+    return "1970-01-01";
+  }
+
+  function escapeHtml(value = '') {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function shortText(value, max = 48) {
+    const text = String(value ?? '').trim();
+    if(!text) return '';
+    return escapeHtml(text.length > max ? `${text.slice(0, max)}...` : text);
   }
 
   function generateSummary(item) {
-    let parts = [];
-    if(item.namaSantri) parts.push(`Santri: <b>${item.namaSantri}</b>`);
-    if(item.nama_santri) parts.push(`Santri: <b>${item.nama_santri}</b>`);
-    if(item.santri) parts.push(`Santri: <b>${item.santri}</b>`);
-    if(item.guru) parts.push(`Guru: ${item.guru}`);
-    if(item.usrah) parts.push(`Usrah: ${item.usrah}`);
-    if(item.naqib) parts.push(`Naqib: ${item.naqib}`);
-    if(item.namaNaqib) parts.push(`Naqib: ${item.namaNaqib}`);
-    if(item.pelapor) parts.push(`Pelapor: <b>${item.pelapor}</b>`);
-    if(item.konselorPenindak) parts.push(`Konselor: <b>${item.konselorPenindak}</b>`);
-    
-    if(item.namaPelanggaran) parts.push(`Kasus: ${item.namaPelanggaran}`);
-    if(item.kategoriAkhir) parts.push(`Status: <b style="color:var(--gold-dark);">${item.kategoriAkhir}</b>`);
-    if(item.perkembangan) parts.push(`Perkembangan: <b style="color:var(--gold-dark);">${item.perkembangan}</b>`);
-    if(item.tindakLanjut) parts.push(`TL: ${item.tindakLanjut.substring(0,30)}...`);
-    if(item.uraianLanjutan) parts.push(`Uraian: ${item.uraianLanjutan.substring(0,30)}...`);
+    if(Array.isArray(item)) {
+      return `<span>Daftar berisi <b>${item.length}</b> item</span>`;
+    }
 
-    if(item.keterangan) parts.push(`Ket: ${item.keterangan.substring(0,45)}...`);
-    if(item.program) parts.push(`Program: ${item.program}`);
-    if(item.tipe) parts.push(`Tipe: <span style="color:var(--gold-dark);">${item.tipe}</span>`);
-    if(item.poinDiberikan) parts.push(`Poin: ${item.poinDiberikan}`);
-    if(item.poin) parts.push(`Poin: ${item.poin}`);
-    if(item.dimensiFokus) parts.push(`Fokus: ${item.dimensiFokus}`);
-    if(item.skorSpiritual) parts.push(`Spi: ${item.skorSpiritual}`);
+    if(!item || typeof item !== 'object') {
+      return `<span>Nilai: <b>${shortText(item, 75) || '-'}</b></span>`;
+    }
 
-    if(parts.length === 0) return JSON.stringify(item).substring(0, 80) + '...';
-    return parts.map(p => `<span>${p}</span>`).join('');
+    const parts = [];
+    const used = new Set();
+    const addPart = (label, value, bold = false, max = 48) => {
+      if(value === undefined || value === null || value === '') return;
+      const cleanValue = String(value).trim();
+      if(!cleanValue || used.has(`${label}:${cleanValue}`)) return;
+      used.add(`${label}:${cleanValue}`);
+      const preview = shortText(cleanValue, max);
+      parts.push(`${label}: ${bold ? `<b>${preview}</b>` : preview}`);
+    };
+
+    addPart('Santri', item.namaSantri || item.nama_santri || item.santri || item.namaAnak, true);
+    addPart('Nama', item.nama || item.name || item.namaLengkap || item.displayName, true);
+    addPart('Guru', item.guru || item.namaGuru || item.teacher);
+    addPart('Petugas', item.petugas || item.namaPetugas || item.penanggungJawab);
+    addPart('Usrah', item.usrah || item.namaUsrah);
+    addPart('Kelas', item.kelas || item.namaKelas);
+    addPart('Naqib', item.naqib || item.namaNaqib);
+    addPart('Pelapor', item.pelapor, true);
+    addPart('Konselor', item.konselorPenindak || item.konselor, true);
+    addPart('Program', item.program || item.namaProgram);
+    addPart('Mapel', item.mapel || item.mataPelajaran);
+    addPart('Kasus', item.namaPelanggaran || item.jenisPelanggaran || item.kasus);
+    addPart('Status', item.kategoriAkhir || item.status || item.kehadiran, true);
+    addPart('Perkembangan', item.perkembangan, true);
+    addPart('Jenis', item.jenis || item.tipe || item.jenisTransaksi);
+    addPart('Poin', item.poinDiberikan ?? item.poin);
+    addPart('Nilai', item.nilai ?? item.skor ?? item.persentase);
+    addPart('Fokus', item.dimensiFokus || item.fokusPerbaikan);
+    addPart('Keterangan', item.keterangan || item.catatan || item.deskripsi, false, 60);
+    addPart('Tindak Lanjut', item.tindakLanjut || item.uraianLanjutan, false, 60);
+
+    if(parts.length === 0) {
+      const total = Object.keys(item).length;
+      const preview = shortText(JSON.stringify(item), 100);
+      return `<span>Struktur data: <b>${total}</b> field</span>${preview ? `<span>${preview}</span>` : ''}`;
+    }
+
+    return parts.slice(0, 8).map(part => `<span>${part}</span>`).join('');
   }
 
   window.tarikData = async function() {
@@ -727,7 +876,7 @@
       fetchedData = {}; 
       let tabelKosongAtauSalah = [];
 
-      const fetchPromises = selectedNodes.map(node => get(ref(db, `cahaya_app/${node}`)));
+      const fetchPromises = selectedNodes.map(node => get(ref(db, resolveNodePath(node))));
       const snapshots = await Promise.all(fetchPromises);
 
       snapshots.forEach((snap, index) => {
@@ -792,7 +941,7 @@
       html += `
         <tr id="row_${cId}">
           ${checkboxHtml}
-          <td><b style="color:var(--navy-dark);">${tgl}</b></td>
+          <td><b style="color:var(--navy-dark);">${tgl === "1970-01-01" ? "Data Tetap" : tgl}</b></td>
           <td>
             <div class="badge-node">${namaTabelVisual}</div>
             <div class="data-summary">${summary}</div>
@@ -841,7 +990,7 @@
 
     try {
       const fData = fetchedData[cId];
-      await remove(ref(db, `cahaya_app/${fData.node}/${fData.id}`));
+      await remove(ref(db, `${resolveNodePath(fData.node)}/${fData.id}`));
       delete fetchedData[cId];
       renderTabel();
     } catch(e) {
@@ -864,7 +1013,7 @@
     try {
       const deletePromises = selectedCompoundIds.map(cId => {
         const fData = fetchedData[cId];
-        return remove(ref(db, `cahaya_app/${fData.node}/${fData.id}`));
+        return remove(ref(db, `${resolveNodePath(fData.node)}/${fData.id}`));
       });
       await Promise.all(deletePromises);
 
@@ -889,19 +1038,28 @@
     formArea.innerHTML = '';
 
     for(let key in item) {
-      let val = item[key];
+      const val = item[key];
+      const fieldId = `edit_${key}`;
       let inputHtml = '';
 
       if(typeof val === 'object' && val !== null) {
-        let strVal = JSON.stringify(val, null, 2);
-        inputHtml = `<textarea id="edit_${key}" class="edit-input" data-type="object">${strVal}</textarea>`;
+        const strVal = escapeHtml(JSON.stringify(val, null, 2));
+        inputHtml = `<textarea id="${fieldId}" class="edit-input" data-type="object">${strVal}</textarea>`;
+      } else if(typeof val === 'boolean') {
+        inputHtml = `
+          <select id="${fieldId}" class="edit-input" data-type="boolean">
+            <option value="true" ${val ? 'selected' : ''}>true</option>
+            <option value="false" ${!val ? 'selected' : ''}>false</option>
+          </select>`;
+      } else if(typeof val === 'number') {
+        inputHtml = `<input type="number" step="any" id="${fieldId}" class="edit-input" data-type="number" value="${val}">`;
       } else {
-        inputHtml = `<input type="text" id="edit_${key}" class="edit-input" data-type="string" value="${val}">`;
+        inputHtml = `<input type="text" id="${fieldId}" class="edit-input" data-type="string" value="${escapeHtml(val ?? '')}">`;
       }
 
       formArea.innerHTML += `
         <div class="dynamic-form-row">
-          <label>Field: <b>${key}</b></label>
+          <label>Field: <b>${escapeHtml(key)}</b></label>
           ${inputHtml}
         </div>
       `;
@@ -918,7 +1076,7 @@
   window.simpanKoreksi = async function() {
     const fData = fetchedData[idSedangDiedit];
     const itemOriginal = fData.data;
-    let newData = {};
+    let newData = Array.isArray(itemOriginal) ? [] : {};
     let isError = false;
 
     for(let key in itemOriginal) {
@@ -928,12 +1086,16 @@
 
       if(type === 'object') {
         try {
-          val = JSON.parse(val); 
+          val = JSON.parse(val);
         } catch (e) {
           isError = true;
           alert(`❌ Format JSON pada field [${key}] tidak valid!\nPastikan tanda kutip, kurung siku [], atau kurung kurawal {} sudah benar.\n\nError: ` + e.message);
           break; 
         }
+      } else if(type === 'number') {
+        val = Number(val);
+      } else if(type === 'boolean') {
+        val = val === 'true';
       }
       newData[key] = val;
     }
@@ -944,7 +1106,7 @@
     document.getElementById('loadingOverlay').style.display = 'flex';
 
     try {
-      await update(ref(db, `cahaya_app/${fData.node}/${fData.id}`), newData);
+      await update(ref(db, `${resolveNodePath(fData.node)}/${fData.id}`), newData);
       fetchedData[idSedangDiedit].data = newData;
       
       alert("✅ Data berhasil dikoreksi!");
