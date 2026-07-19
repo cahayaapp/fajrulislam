@@ -685,13 +685,418 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
+
+    /* =========================================================
+       MODUL HASIL OBSERVASI
+       ========================================================= */
+
+    .observation-overview {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+
+    .observation-type-card {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #e2eaf5;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff, #f9fbff);
+    }
+
+    .observation-type-card span,
+    .observation-type-card strong,
+    .observation-type-card small {
+      display: block;
+    }
+
+    .observation-type-card span {
+      margin-bottom: 7px;
+      font-size: 1.05rem;
+    }
+
+    .observation-type-card strong {
+      overflow: hidden;
+      color: var(--dp-heading);
+      font-size: .72rem;
+      font-weight: 950;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .observation-type-card small {
+      margin-top: 4px;
+      color: var(--dp-muted);
+      font-size: .58rem;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .observation-toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(145px, .45fr) minmax(145px, .45fr) auto;
+      gap: 8px;
+      margin: 12px 0 10px;
+    }
+
+    .observation-control {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      color: var(--dp-heading);
+      font-size: .69rem;
+      font-weight: 800;
+      outline: none;
+      border: 1.5px solid #dce6f3;
+      border-radius: 11px;
+      background: #f8faff;
+    }
+
+    .observation-control:focus {
+      border-color: var(--dp-primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(40,120,255,.08);
+    }
+
+    .observation-count {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      color: #1768cb;
+      font-size: .63rem;
+      font-weight: 950;
+      border: 1px solid #cfe1ff;
+      border-radius: 11px;
+      background: #edf5ff;
+      white-space: nowrap;
+    }
+
+    .observation-table-wrap {
+      overflow: auto;
+      border: 1px solid #e1e9f5;
+      border-radius: 15px;
+      background: #fff;
+    }
+
+    .observation-table {
+      width: 100%;
+      min-width: 850px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .observation-table th {
+      padding: 11px 12px;
+      color: #5c6c87;
+      font-size: .56rem;
+      font-weight: 950;
+      letter-spacing: .3px;
+      text-align: left;
+      text-transform: uppercase;
+      border-bottom: 1px solid #e2eaf5;
+      background: linear-gradient(180deg, #f8fbff, #f3f7fd);
+    }
+
+    .observation-table td {
+      padding: 11px 12px;
+      color: #42516d;
+      font-size: .64rem;
+      font-weight: 700;
+      line-height: 1.45;
+      vertical-align: middle;
+      border-bottom: 1px solid #edf1f7;
+      background: #fff;
+    }
+
+    .observation-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .observation-table tbody tr:hover td {
+      background: #f8fbff;
+    }
+
+    .observation-main {
+      min-width: 180px;
+    }
+
+    .observation-main strong,
+    .observation-main span {
+      display: block;
+    }
+
+    .observation-main strong {
+      max-width: 245px;
+      overflow: hidden;
+      color: var(--dp-heading);
+      font-size: .68rem;
+      font-weight: 950;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .observation-main span {
+      max-width: 245px;
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--dp-muted);
+      font-size: .56rem;
+      font-weight: 700;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .observation-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 8px;
+      font-size: .53rem;
+      font-weight: 950;
+      border: 1px solid #d5e5fc;
+      border-radius: 999px;
+      white-space: nowrap;
+      background: #edf5ff;
+      color: #1768cb;
+    }
+
+    .observation-chip.good {
+      color: #0b7b59;
+      border-color: #cceee0;
+      background: #e9faf3;
+    }
+
+    .observation-chip.warning {
+      color: #ad6518;
+      border-color: #f5d6aa;
+      background: #fff6e9;
+    }
+
+    .observation-chip.danger {
+      color: #d74355;
+      border-color: #f4cbd1;
+      background: #fff0f2;
+    }
+
+    .observation-detail-btn {
+      min-height: 34px;
+      padding: 7px 10px;
+      color: #1768cb;
+      font-size: .58rem;
+      font-weight: 950;
+      cursor: pointer;
+      border: 1px solid #d1e2fb;
+      border-radius: 9px;
+      background: #edf5ff;
+    }
+
+    .observation-detail-btn:hover {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--dp-primary), var(--dp-cyan));
+    }
+
+    .observation-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: none;
+      place-items: center;
+      padding: 16px;
+      background: rgba(16, 31, 62, .62);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+    }
+
+    .observation-modal.open {
+      display: grid;
+    }
+
+    .observation-modal-card {
+      width: min(820px, 100%);
+      max-height: min(90vh, 900px);
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,.72);
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 30px 80px rgba(15,35,71,.30);
+    }
+
+    .observation-modal-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 17px;
+      border-bottom: 1px solid #e6edf7;
+      background: rgba(255,255,255,.97);
+      backdrop-filter: blur(14px);
+    }
+
+    .observation-modal-head h3 {
+      margin: 0;
+      color: var(--dp-heading);
+      font-size: .92rem;
+      font-weight: 950;
+    }
+
+    .observation-modal-close {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      color: #63728c;
+      cursor: pointer;
+      border: 1px solid #dfe7f2;
+      border-radius: 11px;
+      background: #f7faff;
+    }
+
+    .observation-modal-body {
+      padding: 17px;
+    }
+
+    .observation-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 9px;
+    }
+
+    .observation-detail-item {
+      min-width: 0;
+      padding: 11px 12px;
+      border: 1px solid #e4ebf5;
+      border-radius: 13px;
+      background: #fbfdff;
+    }
+
+    .observation-detail-item.full {
+      grid-column: 1 / -1;
+    }
+
+    .observation-detail-item span,
+    .observation-detail-item strong {
+      display: block;
+    }
+
+    .observation-detail-item span {
+      color: var(--dp-muted);
+      font-size: .54rem;
+      font-weight: 950;
+      letter-spacing: .45px;
+      text-transform: uppercase;
+    }
+
+    .observation-detail-item strong {
+      margin-top: 5px;
+      color: var(--dp-heading);
+      font-size: .68rem;
+      font-weight: 850;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    .observation-indicator-list {
+      display: grid;
+      gap: 7px;
+      margin-top: 13px;
+    }
+
+    .observation-indicator-item {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 10px;
+      border: 1px solid #e7edf6;
+      border-radius: 11px;
+      background: #fbfdff;
+    }
+
+    .observation-indicator-item strong {
+      color: var(--dp-heading);
+      font-size: .62rem;
+      font-weight: 850;
+      line-height: 1.4;
+    }
+
+    .observation-photo {
+      width: 100%;
+      max-height: 430px;
+      object-fit: contain;
+      margin-top: 13px;
+      border: 1px solid #e2eaf5;
+      border-radius: 14px;
+      background: #f2f5fa;
+    }
+
+    @media (max-width: 1080px) {
+      .observation-overview {
+        grid-template-columns: repeat(3, minmax(0,1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .observation-overview {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+
+      .observation-toolbar {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .observation-toolbar > :first-child {
+        grid-column: 1 / -1;
+      }
+
+      .observation-count {
+        width: 100%;
+      }
+
+      .observation-detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .observation-detail-item.full {
+        grid-column: auto;
+      }
+
+      .observation-modal {
+        padding: 8px;
+      }
+
+      .observation-modal-card {
+        border-radius: 18px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .observation-overview {
+        grid-template-columns: 1fr;
+      }
+
+      .observation-toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .observation-toolbar > :first-child {
+        grid-column: auto;
+      }
+    }
+
   </style>
 </head>
 <body>
   <div class="loading" id="loadingOverlay">
     <div class="loader">📊</div>
     <strong id="loadingTitle">Menyusun resume harian...</strong>
-    <span id="loadingMessage">Mengambil data pendidikan, pembinaan, kedisiplinan, kesehatan, dan operasional.</span>
+    <span id="loadingMessage">Mengambil data pendidikan, pembinaan, kedisiplinan, kesehatan, operasional, dan observasi lapangan.</span>
   </div>
 
   <main class="page">
@@ -1074,6 +1479,116 @@
       </div>
     </section>
 
+
+    <section class="module" id="observationModule">
+      <header class="module-head">
+        <div class="module-title">
+          <span class="module-icon">👁️</span>
+          <div>
+            <h2>Hasil Observasi Lapangan</h2>
+            <p>Resume observasi pembelajaran, pengasuhan, kebersihan, dapur, dan UKS sebagai bahan evaluasi pimpinan.</p>
+          </div>
+        </div>
+        <span class="module-status" id="observationStatus">Menunggu data</span>
+      </header>
+
+      <div class="module-body">
+        <div class="metric-grid">
+          <article class="metric-card accent">
+            <span class="metric-label">Observasi Hari Ini</span>
+            <strong class="metric-value" id="obsTotal">0</strong>
+            <span class="metric-detail" id="obsTotalDetail">Belum ada laporan</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Rata-rata Hasil</span>
+            <strong class="metric-value" id="obsAverage">—</strong>
+            <span class="metric-detail" id="obsAverageDetail">Belum ada nilai indikator</span>
+          </article>
+          <article class="metric-card warning">
+            <span class="metric-label">Perlu Perbaikan</span>
+            <strong class="metric-value" id="obsNeedImprovement">0</strong>
+            <span class="metric-detail" id="obsNeedImprovementDetail">Tidak ada temuan</span>
+          </article>
+          <article class="metric-card danger">
+            <span class="metric-label">Temuan Kritis</span>
+            <strong class="metric-value" id="obsCritical">0</strong>
+            <span class="metric-detail" id="obsCriticalDetail">Tidak ada temuan kritis</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Menunggu Validasi</span>
+            <strong class="metric-value" id="obsAwaitingValidation">0</strong>
+            <span class="metric-detail">Perlu diperiksa supervisor</span>
+          </article>
+          <article class="metric-card warning">
+            <span class="metric-label">Belum Ditindaklanjuti</span>
+            <strong class="metric-value" id="obsPendingFollowUp">0</strong>
+            <span class="metric-detail">Temuan belum dinyatakan selesai</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Indikator Terlemah</span>
+            <strong class="metric-value" id="obsWeakestIndicator">—</strong>
+            <span class="metric-detail" id="obsWeakestIndicatorDetail">Belum dapat dianalisis</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Pihak Paling Perlu Atensi</span>
+            <strong class="metric-value" id="obsTopRelated">—</strong>
+            <span class="metric-detail" id="obsTopRelatedDetail">Tidak ada temuan berulang</span>
+          </article>
+        </div>
+
+        <div class="observation-overview" id="observationTypeOverview"></div>
+
+        <div class="split">
+          <section class="subpanel">
+            <h3>Rata-rata Hasil per Jenis Observasi</h3>
+            <div class="bar-list" id="observationTypeBars"></div>
+          </section>
+          <section class="subpanel">
+            <h3>Temuan Prioritas</h3>
+            <div class="note-list" id="observationPriorityList"></div>
+          </section>
+        </div>
+
+        <div class="observation-toolbar">
+          <input class="observation-control" id="observationSearch" type="search" placeholder="Cari lokasi, program, guru, PIC, petugas..." oninput="renderObservationTable()">
+          <select class="observation-control" id="observationTypeFilter" onchange="renderObservationTable()">
+            <option value="">Semua jenis</option>
+            <option value="pembelajaran">Pembelajaran</option>
+            <option value="pengasuhan">Pengasuhan</option>
+            <option value="kebersihan">Kebersihan</option>
+            <option value="dapur">Dapur</option>
+            <option value="uks">UKS</option>
+          </select>
+          <select class="observation-control" id="observationStatusFilter" onchange="renderObservationTable()">
+            <option value="">Semua status</option>
+            <option value="Sangat Baik">Sangat Baik</option>
+            <option value="Baik">Baik</option>
+            <option value="Perlu Perbaikan">Perlu Perbaikan</option>
+            <option value="Kritis">Kritis</option>
+          </select>
+          <span class="observation-count" id="observationFilterCount">0 laporan</span>
+        </div>
+
+        <div class="observation-table-wrap">
+          <table class="observation-table">
+            <thead>
+              <tr>
+                <th>Jenis</th>
+                <th>Lokasi/Program</th>
+                <th>Pihak Terkait</th>
+                <th>Nilai</th>
+                <th>Status</th>
+                <th>Validasi</th>
+                <th>Tindak Lanjut</th>
+                <th>Detail</th>
+              </tr>
+            </thead>
+            <tbody id="observationTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section class="module">
       <header class="module-head">
         <div class="module-title">
@@ -1090,6 +1605,17 @@
       </div>
     </section>
   </main>
+
+
+  <div class="observation-modal" id="observationDetailModal" onclick="closeObservationDetail(event)">
+    <article class="observation-modal-card" onclick="event.stopPropagation()">
+      <header class="observation-modal-head">
+        <h3 id="observationDetailTitle">Detail Observasi</h3>
+        <button class="observation-modal-close" type="button" onclick="closeObservationDetail()">✕</button>
+      </header>
+      <div class="observation-modal-body" id="observationDetailBody"></div>
+    </article>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -1129,8 +1655,21 @@
       sarprasChecklist: "cahaya_app/checklist_harian_sarpras",
       securityJournal: "cahaya_app/jurnal_keamanan_kebersihan",
       currentDuty: "cahaya_app/piket_naqib_saat_ini",
-      masterUsrah: "cahaya_app/master_usrah"
+      masterUsrah: "cahaya_app/master_usrah",
+      observations: "observasi_lapangan"
     };
+
+
+
+    const OBSERVATION_TYPES = {
+      pembelajaran: { label: "Pembelajaran", icon: "📚" },
+      pengasuhan: { label: "Pengasuhan", icon: "🕌" },
+      kebersihan: { label: "Kebersihan", icon: "🧹" },
+      dapur: { label: "Dapur", icon: "🍲" },
+      uks: { label: "UKS", icon: "🩺" }
+    };
+
+    let currentObservationSummary = null;
 
     const TEACHER_NAMES = {
       MULTAZAM: "Abah Multazam",
@@ -1831,7 +2370,338 @@
       el("operationsStatus").textContent = moduleCountLabel(operations.sarprasJournals.length + operations.checklists.length + operations.securityJournals.length, "laporan");
     }
 
-    function renderAlerts(education, mentoring, discipline, health, operations) {
+
+    function observationEntries(dateValue) {
+      const source = rawData.observations && typeof rawData.observations === "object"
+        ? rawData.observations
+        : {};
+
+      return Object.entries(source)
+        .filter(([, item]) => item && typeof item === "object" && !Array.isArray(item))
+        .map(([id, item]) => ({ __id: id, ...item }))
+        .filter(item => recordDate(item) === dateValue)
+        .sort((a, b) => num(b.dibuatPada || b.timestamp) - num(a.dibuatPada || a.timestamp));
+    }
+
+    function observationIndicatorArray(record = {}) {
+      if (Array.isArray(record.indikator)) return record.indikator;
+      return objectValues(record.indikator);
+    }
+
+    function observationTypeMeta(type = "") {
+      return OBSERVATION_TYPES[type] || {
+        label: String(type || "Observasi").replace(/(^|\s)\S/g, value => value.toUpperCase()),
+        icon: "👁️"
+      };
+    }
+
+    function observationStatusClass(status = "") {
+      const normalized = normalizeText(status);
+      if (normalized === "sangat baik" || normalized === "baik") return "good";
+      if (normalized === "kritis") return "danger";
+      if (normalized.includes("perlu")) return "warning";
+      return "";
+    }
+
+    function observationFollowUpIsComplete(record = {}) {
+      const status = normalizeText(record.tindakLanjut?.status || record.statusTindakLanjut || "");
+      return ["selesai", "tuntas", "ditutup", "sudah ditindaklanjuti"].some(value => status.includes(value));
+    }
+
+    function observationValidationIsComplete(record = {}) {
+      const status = normalizeText(record.validasi?.status || record.statusValidasi || "");
+      return ["tervalidasi", "disetujui", "valid", "selesai"].some(value => status.includes(value));
+    }
+
+    function summarizeObservations(dateValue) {
+      const records = observationEntries(dateValue);
+      const scores = records.map(item => Number(item.persentase)).filter(Number.isFinite);
+      const critical = records.filter(item => normalizeText(item.status) === "kritis");
+      const needImprovement = records.filter(item => normalizeText(item.status) === "perlu perbaikan");
+      const awaitingValidation = records.filter(item => !observationValidationIsComplete(item));
+      const pendingFollowUp = records.filter(item =>
+        ["kritis", "perlu perbaikan"].includes(normalizeText(item.status)) &&
+        !observationFollowUpIsComplete(item)
+      );
+
+      const byType = {};
+      Object.keys(OBSERVATION_TYPES).forEach(type => {
+        const items = records.filter(item => normalizeText(item.jenis) === type);
+        const typeScores = items.map(item => Number(item.persentase)).filter(Number.isFinite);
+        byType[type] = {
+          items,
+          count: items.length,
+          average: average(typeScores),
+          critical: items.filter(item => normalizeText(item.status) === "kritis").length,
+          need: items.filter(item => normalizeText(item.status) === "perlu perbaikan").length
+        };
+      });
+
+      const indicatorMap = {};
+      records.forEach(record => {
+        observationIndicatorArray(record).forEach(indicator => {
+          const name = String(indicator.nama || indicator.label || "Indikator").trim();
+          const score = Number(indicator.nilai);
+          if (!name || !Number.isFinite(score)) return;
+          if (!indicatorMap[name]) indicatorMap[name] = [];
+          indicatorMap[name].push(score);
+        });
+      });
+
+      const weakIndicators = Object.entries(indicatorMap)
+        .map(([name, values]) => ({ name, score: average(values), count: values.length }))
+        .sort((a, b) => a.score - b.score || b.count - a.count);
+
+      const problematic = [...critical, ...needImprovement];
+      const relatedMap = {};
+      problematic.forEach(item => {
+        const name = String(item.pihakTerkait || item.dataUtama?.guru || item.dataUtama?.pic || item.dataUtama?.petugas || "").trim();
+        if (!name) return;
+        relatedMap[name] = (relatedMap[name] || 0) + 1;
+      });
+
+      const relatedRanking = Object.entries(relatedMap)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+      const priority = records
+        .filter(item =>
+          ["kritis", "perlu perbaikan"].includes(normalizeText(item.status)) ||
+          ["kritis", "mendesak"].includes(normalizeText(item.urgensi))
+        )
+        .sort((a, b) => {
+          const level = item => normalizeText(item.status) === "kritis" || normalizeText(item.urgensi) === "kritis" ? 3
+            : normalizeText(item.urgensi) === "mendesak" ? 2
+            : 1;
+          return level(b) - level(a) || num(b.dibuatPada || b.timestamp) - num(a.dibuatPada || a.timestamp);
+        });
+
+      return {
+        records,
+        averageScore: average(scores),
+        critical,
+        needImprovement,
+        awaitingValidation,
+        pendingFollowUp,
+        byType,
+        weakIndicators,
+        relatedRanking,
+        priority
+      };
+    }
+
+    function renderObservationModule(dateValue) {
+      const summary = summarizeObservations(dateValue);
+      currentObservationSummary = summary;
+
+      el("obsTotal").textContent = String(summary.records.length);
+      el("obsTotalDetail").textContent = summary.records.length
+        ? `${unique(summary.records.map(item => item.observer?.nama)).length} observer mengirim laporan`
+        : "Belum ada laporan";
+
+      el("obsAverage").textContent = percent(summary.averageScore);
+      el("obsAverageDetail").textContent = Number.isFinite(summary.averageScore)
+        ? "Rata-rata seluruh indikator"
+        : "Belum ada nilai indikator";
+
+      el("obsNeedImprovement").textContent = String(summary.needImprovement.length);
+      el("obsNeedImprovementDetail").textContent = summary.needImprovement.length
+        ? "Perlu masuk agenda perbaikan"
+        : "Tidak ada temuan";
+
+      el("obsCritical").textContent = String(summary.critical.length);
+      el("obsCriticalDetail").textContent = summary.critical.length
+        ? "Memerlukan perhatian segera"
+        : "Tidak ada temuan kritis";
+
+      el("obsAwaitingValidation").textContent = String(summary.awaitingValidation.length);
+      el("obsPendingFollowUp").textContent = String(summary.pendingFollowUp.length);
+
+      const weakest = summary.weakIndicators[0];
+      el("obsWeakestIndicator").textContent = weakest ? weakest.name : "—";
+      el("obsWeakestIndicatorDetail").textContent = weakest
+        ? `Rata-rata ${weakest.score.toFixed(1)} dari 4 • ${weakest.count} pengamatan`
+        : "Belum dapat dianalisis";
+
+      const topRelated = summary.relatedRanking[0];
+      el("obsTopRelated").textContent = topRelated ? topRelated.name : "—";
+      el("obsTopRelatedDetail").textContent = topRelated
+        ? `${topRelated.count} temuan perlu perbaikan/kritis`
+        : "Tidak ada temuan berulang";
+
+      el("observationStatus").textContent = moduleCountLabel(summary.records.length, "laporan");
+
+      el("observationTypeOverview").innerHTML = Object.entries(OBSERVATION_TYPES).map(([type, meta]) => {
+        const data = summary.byType[type];
+        const note = data.count
+          ? `${percent(data.average)} • ${data.need + data.critical} perlu atensi`
+          : "Belum ada laporan";
+        return `
+          <article class="observation-type-card">
+            <span>${meta.icon}</span>
+            <strong>${escapeHtml(meta.label)}</strong>
+            <small>${data.count} laporan • ${escapeHtml(note)}</small>
+          </article>
+        `;
+      }).join("");
+
+      renderBars("observationTypeBars", Object.entries(OBSERVATION_TYPES).map(([type, meta]) => ({
+        label: meta.label,
+        value: Number.isFinite(summary.byType[type].average) ? summary.byType[type].average : 0,
+        text: summary.byType[type].count ? percent(summary.byType[type].average) : "—"
+      })));
+
+      el("observationPriorityList").innerHTML = summary.priority.length
+        ? summary.priority.slice(0, 7).map(item => {
+            const meta = observationTypeMeta(item.jenis);
+            const title = item.lokasi || item.program || item.dataUtama?.kelas || item.dataUtama?.area || meta.label;
+            const finding = item.temuanPerbaikan || item.rekomendasi || "Temuan memerlukan pemeriksaan lebih lanjut.";
+            return `
+              <button type="button" class="note-item" style="width:100%;text-align:left;cursor:pointer" onclick="openObservationDetail('${encodeURIComponent(item.__id)}')">
+                <strong style="display:block;color:var(--dp-heading);margin-bottom:3px">${meta.icon} ${escapeHtml(title)} • ${escapeHtml(item.status || item.urgensi || "Atensi")}</strong>
+                ${escapeHtml(finding)}
+              </button>
+            `;
+          }).join("")
+        : '<div class="empty">Tidak ada temuan prioritas pada tanggal ini.</div>';
+
+      renderObservationTable();
+      return summary;
+    }
+
+    function renderObservationTable() {
+      const summary = currentObservationSummary || { records: [] };
+      const query = normalizeText(el("observationSearch")?.value || "");
+      const type = normalizeText(el("observationTypeFilter")?.value || "");
+      const status = normalizeText(el("observationStatusFilter")?.value || "");
+
+      const filtered = summary.records.filter(item => {
+        const haystack = normalizeText([
+          item.lokasi,
+          item.program,
+          item.pihakTerkait,
+          item.observer?.nama,
+          item.temuanPositif,
+          item.temuanPerbaikan,
+          item.kategoriMasalah,
+          JSON.stringify(item.dataUtama || {})
+        ].join(" "));
+
+        return (!query || haystack.includes(query))
+          && (!type || normalizeText(item.jenis) === type)
+          && (!status || normalizeText(item.status) === status);
+      });
+
+      el("observationFilterCount").textContent = `${filtered.length} laporan`;
+
+      el("observationTableBody").innerHTML = filtered.length
+        ? filtered.map(item => {
+            const meta = observationTypeMeta(item.jenis);
+            const mainTitle = item.lokasi || item.program || item.dataUtama?.kelas || item.dataUtama?.area || meta.label;
+            const subTitle = item.program && item.program !== mainTitle
+              ? item.program
+              : item.temuanPerbaikan || item.temuanPositif || "Tidak ada catatan ringkas";
+            const validation = item.validasi?.status || item.statusValidasi || "Menunggu Validasi";
+            const followUp = item.tindakLanjut?.status || item.statusTindakLanjut || "Belum Ditindaklanjuti";
+
+            return `
+              <tr>
+                <td><span class="observation-chip">${meta.icon} ${escapeHtml(meta.label)}</span></td>
+                <td>
+                  <div class="observation-main">
+                    <strong>${escapeHtml(mainTitle)}</strong>
+                    <span>${escapeHtml(subTitle)}</span>
+                  </div>
+                </td>
+                <td>${escapeHtml(item.pihakTerkait || "—")}</td>
+                <td><strong>${Number.isFinite(Number(item.persentase)) ? `${Math.round(Number(item.persentase))}%` : "—"}</strong></td>
+                <td><span class="observation-chip ${observationStatusClass(item.status)}">${escapeHtml(item.status || "—")}</span></td>
+                <td>${escapeHtml(validation)}</td>
+                <td>${escapeHtml(followUp)}</td>
+                <td><button type="button" class="observation-detail-btn" onclick="openObservationDetail('${encodeURIComponent(item.__id)}')">Lihat</button></td>
+              </tr>
+            `;
+          }).join("")
+        : '<tr><td colspan="8"><div class="empty">Tidak ada laporan observasi yang sesuai.</div></td></tr>';
+    }
+
+    function observationDetailItem(label, value, full = false) {
+      const safe = escapeHtml(String(value || "—")).replace(/\n/g, "<br>");
+      return `
+        <article class="observation-detail-item ${full ? "full" : ""}">
+          <span>${escapeHtml(label)}</span>
+          <strong>${safe}</strong>
+        </article>
+      `;
+    }
+
+    function openObservationDetail(encodedId) {
+      const id = decodeURIComponent(encodedId || "");
+      const record = currentObservationSummary?.records?.find(item => String(item.__id) === String(id));
+      if (!record) return;
+
+      const meta = observationTypeMeta(record.jenis);
+      const indicators = observationIndicatorArray(record);
+      const dataUtama = record.dataUtama && typeof record.dataUtama === "object" ? record.dataUtama : {};
+
+      el("observationDetailTitle").textContent = `${meta.icon} ${meta.label} • ${record.lokasi || record.program || "Detail"}`;
+
+      const customFields = Object.entries(dataUtama)
+        .filter(([, value]) => value !== "" && value !== null && value !== undefined)
+        .map(([key, value]) => observationDetailItem(
+          key.replace(/([A-Z])/g, " $1").replace(/(^|\s)\S/g, char => char.toUpperCase()),
+          value
+        ))
+        .join("");
+
+      el("observationDetailBody").innerHTML = `
+        <div class="observation-detail-grid">
+          ${observationDetailItem("Tanggal & Waktu", `${formatDateId(record.tanggal)} • ${record.waktu || "—"}`)}
+          ${observationDetailItem("Observer", record.observer?.nama || "—")}
+          ${observationDetailItem("Lokasi", record.lokasi || "—")}
+          ${observationDetailItem("Program/Objek", record.program || "—")}
+          ${observationDetailItem("Pihak Terkait", record.pihakTerkait || "—")}
+          ${observationDetailItem("Nilai", Number.isFinite(Number(record.persentase)) ? `${Math.round(Number(record.persentase))}%` : "—")}
+          ${observationDetailItem("Status", record.status || "—")}
+          ${observationDetailItem("Urgensi", record.urgensi || "Normal")}
+          ${observationDetailItem("Kategori Masalah", record.kategoriMasalah || "—")}
+          ${observationDetailItem("Validasi", record.validasi?.status || "Menunggu Validasi")}
+          ${observationDetailItem("Tindak Lanjut", record.tindakLanjut?.status || "Belum Ditindaklanjuti")}
+          ${customFields}
+          ${observationDetailItem("Temuan Positif", record.temuanPositif || "—", true)}
+          ${observationDetailItem("Temuan Perbaikan", record.temuanPerbaikan || "—", true)}
+          ${observationDetailItem("Rekomendasi Observer", record.rekomendasi || "—", true)}
+          ${observationDetailItem("Catatan Supervisor", record.validasi?.catatan || "—", true)}
+          ${observationDetailItem("Catatan Tindak Lanjut", record.tindakLanjut?.catatan || "—", true)}
+        </div>
+
+        <div style="margin-top:14px">
+          <h3 style="margin:0 0 8px;color:var(--dp-heading);font-size:.76rem">Hasil per Indikator</h3>
+          <div class="observation-indicator-list">
+            ${indicators.length ? indicators.map(indicator => `
+              <div class="observation-indicator-item">
+                <strong>${escapeHtml(indicator.nama || indicator.label || "Indikator")}</strong>
+                <span class="observation-chip ${Number(indicator.nilai) <= 1 ? "danger" : Number(indicator.nilai) <= 2 ? "warning" : "good"}">
+                  ${escapeHtml(indicator.label || `${indicator.nilai || "—"}/4`)}
+                </span>
+              </div>
+            `).join("") : '<div class="empty">Tidak ada rincian indikator.</div>'}
+          </div>
+        </div>
+
+        ${record.foto ? `<img class="observation-photo" src="${record.foto}" alt="Foto bukti observasi">` : ""}
+      `;
+
+      el("observationDetailModal").classList.add("open");
+    }
+
+    function closeObservationDetail(event) {
+      if (event && event.target !== event.currentTarget) return;
+      el("observationDetailModal").classList.remove("open");
+    }
+
+
+    function renderAlerts(education, mentoring, discipline, health, operations, observations) {
       const alerts = [];
       if (Number.isFinite(education.teacher.attendanceRate) && education.teacher.attendanceRate < 85) alerts.push(`Kehadiran guru baru ${Math.round(education.teacher.attendanceRate)}% dari jadwal hari ini.`);
       if (Number.isFinite(education.learning.studentAttendance) && education.learning.studentAttendance < 90) alerts.push(`Kehadiran santri pada KBM ${Math.round(education.learning.studentAttendance)}%.`);
@@ -1844,6 +2714,9 @@
       if (health.expiring.length) alerts.push(`${health.expiring.length} item obat kedaluwarsa atau mendekati kedaluwarsa.`);
       if (operations.major > 0) alerts.push(`${operations.major} objek sarpras mengalami kerusakan berat.`);
       if (!mentoring.journals.length) alerts.push("Jurnal pengawasan Naqib belum masuk untuk tanggal ini.");
+      if (observations.critical.length) alerts.push(`${observations.critical.length} temuan observasi berstatus KRITIS memerlukan keputusan atau tindak lanjut segera.`);
+      if (observations.needImprovement.length) alerts.push(`${observations.needImprovement.length} hasil observasi berstatus Perlu Perbaikan.`);
+      if (observations.pendingFollowUp.length) alerts.push(`${observations.pendingFollowUp.length} temuan observasi belum dinyatakan selesai ditindaklanjuti.`);
 
       const failedSources = Object.entries(loadErrors).filter(([, error]) => error);
       if (failedSources.length) alerts.push(`${failedSources.length} sumber Firebase gagal dibaca. Periksa koneksi atau aturan database.`);
@@ -1867,7 +2740,8 @@
         ["Jurnal Sarpras", flatRecords(rawData.sarprasJournal).filter(item => recordDate(item) === dateValue).length],
         ["Checklist Sarpras", flatRecords(rawData.sarprasChecklist).filter(item => recordDate(item) === dateValue).length],
         ["Keamanan & Kebersihan", flatRecords(rawData.securityJournal).filter(item => recordDate(item) === dateValue).length],
-        ["Tahfiz", flatRecords(rawData.tahfiz).filter(item => recordDate(item) === dateValue).length]
+        ["Tahfiz", flatRecords(rawData.tahfiz).filter(item => recordDate(item) === dateValue).length],
+        ["Observasi Lapangan", observationEntries(dateValue).length]
       ];
 
       el("dataQualityGrid").innerHTML = definitions.map(([label, count]) => `
@@ -1893,9 +2767,10 @@
       const discipline = renderDiscipline(dateValue);
       const health = renderHealth(dateValue);
       const operations = renderOperations(dateValue);
+      const observations = renderObservationModule(dateValue);
 
       renderStatuses(education, mentoring, discipline, health, operations);
-      renderAlerts(education, mentoring, discipline, health, operations);
+      renderAlerts(education, mentoring, discipline, health, operations, observations);
       renderDataQuality(dateValue);
     }
 
@@ -1909,6 +2784,12 @@
       el("loadingOverlay").style.opacity = "0";
       setTimeout(() => { el("loadingOverlay").style.display = "none"; }, 300);
     }
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && el("observationDetailModal")?.classList.contains("open")) {
+        closeObservationDetail();
+      }
+    });
 
     document.addEventListener("DOMContentLoaded", async () => {
       el("dashboardDate").value = localDateValue();
