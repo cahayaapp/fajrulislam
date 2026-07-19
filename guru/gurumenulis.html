@@ -870,6 +870,94 @@
     .import-status.success { color: #177151; }
     .import-status.error { color: #b43d4d; }
 
+    .upload-progress {
+      grid-column: 2 / -1;
+      display: none;
+      min-width: 0;
+      margin-top: 1px;
+      padding: 10px 11px;
+      border: 1px solid #d8e5f5;
+      border-radius: 12px;
+      background: rgba(255,255,255,.92);
+    }
+
+    .upload-progress.show { display: block; }
+
+    .upload-progress-head,
+    .upload-progress-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .upload-progress-head {
+      color: var(--gm-heading);
+      font-size: .61rem;
+      font-weight: 950;
+    }
+
+    .upload-progress-meta {
+      margin-top: 6px;
+      color: var(--gm-muted);
+      font-size: .53rem;
+      font-weight: 800;
+    }
+
+    .upload-progress-track {
+      height: 8px;
+      margin-top: 7px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e7eef8;
+    }
+
+    .upload-progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--gm-primary), var(--gm-cyan));
+      transition: width .18s ease;
+    }
+
+    .storage-summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 11px;
+      border: 1px solid #dbe6f3;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #ffffff, #f5f9ff);
+    }
+
+    .storage-summary-icon {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      display: grid;
+      place-items: center;
+      color: var(--gm-primary-dark);
+      font-size: .85rem;
+      border-radius: 10px;
+      background: #eaf3ff;
+    }
+
+    .storage-summary-copy { min-width: 0; }
+    .storage-summary-copy strong,
+    .storage-summary-copy span { display: block; }
+    .storage-summary-copy strong {
+      color: var(--gm-heading);
+      font-size: .61rem;
+      font-weight: 950;
+    }
+    .storage-summary-copy span {
+      margin-top: 2px;
+      color: var(--gm-muted);
+      font-size: .52rem;
+      font-weight: 750;
+      line-height: 1.4;
+    }
+
     .import-spinner {
       width: 14px;
       height: 14px;
@@ -1039,6 +1127,27 @@
       font-size: .61rem;
       font-weight: 700;
       line-height: 1.55;
+    }
+
+    .document-size-advisory {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 12px 0 0;
+      padding: 9px 10px;
+      color: #426184;
+      font-size: .57rem;
+      font-weight: 800;
+      line-height: 1.5;
+      border: 1px solid #d8e6f5;
+      border-radius: 12px;
+      background: #f7faff;
+    }
+
+    .document-size-advisory.warning {
+      color: #8a5a17;
+      border-color: #efd3a6;
+      background: #fff8ec;
     }
 
     .document-choice-note {
@@ -1486,10 +1595,21 @@
             <div class="import-icon">⇧</div>
             <div class="import-copy">
               <strong>Unggah tulisan dari PDF atau Word</strong>
-              <span>Setelah memilih file, tentukan apakah isinya ingin dimasukkan ke editor atau dokumen disimpan sebagai file asli.</span>
+              <span>Pilihan utama: masukkan isi ke editor agar lebih cepat dan hemat Storage. File asli maksimal 10 MB.</span>
             </div>
             <button class="btn btn-light" type="button" id="chooseFileBtn">📄 Pilih Dokumen</button>
             <div class="import-status" id="importStatus" aria-live="polite"></div>
+            <div class="upload-progress" id="uploadProgress" aria-live="polite">
+              <div class="upload-progress-head">
+                <span id="uploadProgressLabel">Mengunggah file asli</span>
+                <strong id="uploadProgressPercent">0%</strong>
+              </div>
+              <div class="upload-progress-track"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+              <div class="upload-progress-meta">
+                <span id="uploadProgressBytes">0 B dari 0 B</span>
+                <span id="uploadProgressEta">Menghitung waktu...</span>
+              </div>
+            </div>
           </section>
 
           <div class="editor-shell">
@@ -1573,6 +1693,13 @@
           <select class="control" id="filterAssignment">
             <option value="">Semua mapel & kelas</option>
           </select>
+          <div class="storage-summary" id="storageSummary">
+            <div class="storage-summary-icon">☁</div>
+            <div class="storage-summary-copy">
+              <strong id="storageUsageText">File asli: 0 B</strong>
+              <span id="storageUsageDetail">Belum ada dokumen yang memakai Firebase Storage.</span>
+            </div>
+          </div>
         </div>
 
         <div class="library-list" id="articleList">
@@ -1594,6 +1721,7 @@
         <h3 id="documentChoiceTitle">Bagaimana dokumen ingin digunakan?</h3>
         <p>Pilih cara pengolahan yang paling sesuai. Dokumen asli tidak akan diubah.</p>
         <div class="document-file-summary">📄 <span id="selectedDocumentName">Dokumen dipilih</span> <small id="selectedDocumentSize"></small></div>
+        <div class="document-size-advisory" id="documentSizeAdvisory"></div>
       </div>
       <div class="document-choice-body">
         <div class="document-choice-grid">
@@ -1606,7 +1734,7 @@
           <button class="document-option file-only" id="keepOriginalFileBtn" type="button">
             <span class="document-option-icon">📎</span>
             <strong>Simpan sebagai File Asli</strong>
-            <p>Dokumen diunggah sebagai lampiran tanpa menyalin isinya ke editor. Cocok untuk mempertahankan tata letak asli.</p>
+            <p>Dokumen diunggah sebagai lampiran tanpa menyalin isinya ke editor. Maksimal 10 MB; file di atas 5 MB sebaiknya dikompres.</p>
           </button>
         </div>
         <p class="document-choice-note">Anda tetap perlu mengisi judul, mapel/kelas, dan nomor pertemuan sebelum menyimpan tulisan.</p>
@@ -1673,6 +1801,8 @@
     const TAHUN_AJARAN_LABEL = "2026/2027";
     const TAHUN_AJARAN_KEY = "2026_2027";
     const WRITING_PATH = `guru_menulis/ta_${TAHUN_AJARAN_KEY}`;
+    const MAX_DOCUMENT_FILE_BYTES = 10 * 1024 * 1024;
+    const LARGE_FILE_WARNING_BYTES = 5 * 1024 * 1024;
 
     /* =========================================================
        2. DATA JADWAL — diselaraskan dengan Kalender Materi
@@ -1847,6 +1977,9 @@
     let currentReaderKey = "draft";
     let readerFontSize = 18;
     let readerLineHeight = 1.86;
+    let activeUploadTask = null;
+    let uploadProgressHideTimer = null;
+    let isSaving = false;
 
     const els = {
       teacherAvatar: document.getElementById("teacherAvatar"),
@@ -1866,10 +1999,17 @@
       documentFileInput: document.getElementById("documentFileInput"),
       chooseFileBtn: document.getElementById("chooseFileBtn"),
       importStatus: document.getElementById("importStatus"),
+      uploadProgress: document.getElementById("uploadProgress"),
+      uploadProgressLabel: document.getElementById("uploadProgressLabel"),
+      uploadProgressPercent: document.getElementById("uploadProgressPercent"),
+      uploadProgressBar: document.getElementById("uploadProgressBar"),
+      uploadProgressBytes: document.getElementById("uploadProgressBytes"),
+      uploadProgressEta: document.getElementById("uploadProgressEta"),
       documentChoiceModal: document.getElementById("documentChoiceModal"),
       closeDocumentChoice: document.getElementById("closeDocumentChoice"),
       selectedDocumentName: document.getElementById("selectedDocumentName"),
       selectedDocumentSize: document.getElementById("selectedDocumentSize"),
+      documentSizeAdvisory: document.getElementById("documentSizeAdvisory"),
       extractToEditorBtn: document.getElementById("extractToEditorBtn"),
       keepOriginalFileBtn: document.getElementById("keepOriginalFileBtn"),
       editorToolbar: document.getElementById("editorToolbar"),
@@ -1886,6 +2026,9 @@
       filterAssignment: document.getElementById("filterAssignment"),
       articleList: document.getElementById("articleList"),
       libraryFooter: document.getElementById("libraryFooter"),
+      storageSummary: document.getElementById("storageSummary"),
+      storageUsageText: document.getElementById("storageUsageText"),
+      storageUsageDetail: document.getElementById("storageUsageDetail"),
       previewModal: document.getElementById("previewModal"),
       closePreview: document.getElementById("closePreview"),
       previewPaper: document.getElementById("previewPaper"),
@@ -1970,6 +2113,23 @@
       return `${(size / (1024 * 1024)).toFixed(1)} MB`;
     }
 
+    function formatDuration(totalSeconds) {
+      const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+      if (seconds < 60) return `${seconds} detik`;
+      const minutes = Math.floor(seconds / 60);
+      const remainder = seconds % 60;
+      return remainder ? `${minutes} menit ${remainder} detik` : `${minutes} menit`;
+    }
+
+    function estimateUploadRange(bytes) {
+      const size = Number(bytes) || 0;
+      if (!size) return "kurang dari 1 detik";
+      const overhead = 1.18;
+      const fastSeconds = (size * 8 / 5_000_000) * overhead;
+      const slowSeconds = (size * 8 / 2_000_000) * overhead;
+      return `${formatDuration(fastSeconds)}–${formatDuration(slowSeconds)}`;
+    }
+
     function safeStorageFileName(name) {
       const cleaned = String(name || "dokumen")
         .normalize("NFD")
@@ -2030,6 +2190,21 @@
         button.disabled = false;
         button.innerHTML = button.dataset.originalText || button.innerHTML;
       }
+    }
+
+    function setSaveLock(locked) {
+      els.articleTitle.disabled = locked;
+      els.meetingNumber.disabled = locked;
+      els.assignmentSelect.disabled = locked || !getTeacherAssignments().length;
+      els.chooseFileBtn.disabled = locked;
+      els.newBtn.disabled = locked;
+      els.previewBtn.disabled = locked;
+      els.deleteCurrentBtn.disabled = locked || !currentArticleId;
+      els.articleEditor.setAttribute("contenteditable", locked ? "false" : "true");
+      els.articleEditor.setAttribute("aria-busy", locked ? "true" : "false");
+      els.editorToolbar.querySelectorAll("button, select").forEach(control => {
+        control.disabled = locked;
+      });
     }
 
     function readCurrentUser() {
@@ -2172,14 +2347,57 @@
         : "";
     }
 
+    function resetUploadProgress(immediate = false) {
+      if (uploadProgressHideTimer) clearTimeout(uploadProgressHideTimer);
+      const hide = () => {
+        els.uploadProgress.classList.remove("show");
+        els.uploadProgressBar.style.width = "0%";
+        els.uploadProgressPercent.textContent = "0%";
+        els.uploadProgressBytes.textContent = "0 B dari 0 B";
+        els.uploadProgressEta.textContent = "Menghitung waktu...";
+        els.uploadProgressLabel.textContent = "Mengunggah file asli";
+      };
+      if (immediate) hide();
+      else uploadProgressHideTimer = setTimeout(hide, 1400);
+    }
+
+    function updateUploadProgress({ percent = 0, transferred = 0, total = 0, speed = 0, eta = 0, label = "Mengunggah file asli" } = {}) {
+      const safePercent = Math.min(100, Math.max(0, Math.round(percent)));
+      els.uploadProgress.classList.add("show");
+      els.uploadProgressLabel.textContent = label;
+      els.uploadProgressPercent.textContent = `${safePercent}%`;
+      els.uploadProgressBar.style.width = `${safePercent}%`;
+      els.uploadProgressBytes.textContent = `${formatFileSize(transferred)} dari ${formatFileSize(total)}`;
+      if (safePercent >= 100) {
+        els.uploadProgressEta.textContent = "Upload selesai";
+      } else if (speed > 0 && Number.isFinite(eta)) {
+        els.uploadProgressEta.textContent = `${formatFileSize(speed)}/detik • sisa ± ${formatDuration(eta)}`;
+      } else {
+        els.uploadProgressEta.textContent = "Menghitung waktu...";
+      }
+    }
+
+    function renderStorageUsage() {
+      const storedFiles = articleCache.filter(item => {
+        const meta = item?.importMeta;
+        return Boolean(meta?.fileSize && (meta?.storagePath || meta?.downloadUrl));
+      });
+      const totalBytes = storedFiles.reduce((sum, item) => sum + (Number(item.importMeta?.fileSize) || 0), 0);
+      const averageBytes = storedFiles.length ? totalBytes / storedFiles.length : 0;
+      els.storageUsageText.textContent = `File asli: ${formatFileSize(totalBytes)}`;
+      els.storageUsageDetail.textContent = storedFiles.length
+        ? `${storedFiles.length} file tersimpan • rata-rata ${formatFileSize(averageBytes)} per file.`
+        : "Belum ada dokumen yang memakai Firebase Storage.";
+    }
+
     function validateDocumentFile(file) {
       if (!file) return { valid: false, message: "Dokumen belum dipilih." };
       const extension = String(file.name || "").split(".").pop().toLowerCase();
       const isPdf = file.type === "application/pdf" || extension === "pdf";
       const isWord = file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || extension === "docx";
       if (!isPdf && !isWord) return { valid: false, message: "Format belum didukung. Gunakan PDF atau Word berformat .docx." };
-      if (file.size > 25 * 1024 * 1024) return { valid: false, message: "Ukuran dokumen maksimal 25 MB." };
-      return { valid: true, isPdf, isWord, extension };
+      if (file.size > MAX_DOCUMENT_FILE_BYTES) return { valid: false, message: "Ukuran dokumen maksimal 10 MB. Kompres file terlebih dahulu lalu coba kembali." };
+      return { valid: true, isPdf, isWord, extension, isLarge: file.size > LARGE_FILE_WARNING_BYTES };
     }
 
     function openDocumentChoice(file) {
@@ -2192,14 +2410,21 @@
       }
       selectedDocumentFile = file;
       els.selectedDocumentName.textContent = file.name;
-      els.selectedDocumentSize.textContent = `• ${formatFileSize(file.size)}`;
+      els.selectedDocumentSize.textContent = `• ${formatFileSize(file.size)} • maks. 10 MB`;
+      const uploadEstimate = estimateUploadRange(file.size);
+      els.documentSizeAdvisory.className = `document-size-advisory ${validation.isLarge ? "warning" : ""}`.trim();
+      els.documentSizeAdvisory.innerHTML = validation.isLarge
+        ? `<span>⚠</span><span>File ini cukup besar. Jika disimpan sebagai file asli, perkiraan upload sekitar ${escapeHtml(uploadEstimate)} pada koneksi 2–5 Mbps. Pilihan “Masukkan Isi ke Editor” lebih cepat dan tidak memakai Firebase Storage.</span>`
+        : `<span>ℹ</span><span>Jika disimpan sebagai file asli, perkiraan upload sekitar ${escapeHtml(uploadEstimate)} pada koneksi 2–5 Mbps. Memasukkan isi ke editor tidak menyimpan file aslinya.</span>`;
       els.documentChoiceModal.classList.add("show");
       document.body.style.overflow = "hidden";
+      requestAnimationFrame(() => els.extractToEditorBtn.focus());
     }
 
     function closeDocumentChoice() {
       els.documentChoiceModal.classList.remove("show");
       selectedDocumentFile = null;
+      els.documentSizeAdvisory.textContent = "";
       els.documentFileInput.value = "";
       if (!els.previewModal.classList.contains("show")) document.body.style.overflow = "";
     }
@@ -2364,17 +2589,68 @@
         uploadPending: true
       };
       markUnsaved();
-      setImportStatus(`${file.name} siap disimpan sebagai file asli • ${formatFileSize(file.size)}. Klik “Simpan Tulisan” untuk mengunggahnya.`, "success");
+      const estimate = estimateUploadRange(file.size);
+      const largeNote = file.size > LARGE_FILE_WARNING_BYTES ? " File cukup besar; kompres PDF jika memungkinkan." : "";
+      setImportStatus(`${file.name} siap disimpan sebagai file asli • ${formatFileSize(file.size)} • estimasi upload ${estimate}.${largeNote} Klik “Simpan Tulisan” untuk mulai mengunggah.`, "success");
       showToast("Dokumen dipilih untuk disimpan sebagai file asli.", "success");
     }
 
     async function uploadPendingOriginalFile(articleId) {
       if (!pendingDocumentFile) return currentImportMeta;
       const file = pendingDocumentFile;
+      const validation = validateDocumentFile(file);
+      if (!validation.valid) throw new Error(validation.message);
+
       const storagePath = `guru_menulis_files/ta_${TAHUN_AJARAN_KEY}/${currentTeacherCode}/${articleId}/${Date.now()}_${safeStorageFileName(file.name)}`;
       const storageRef = storage.ref(storagePath);
-      setImportStatus(`Mengunggah ${file.name}...`, "normal", true);
-      const snapshot = await storageRef.put(file, { contentType: file.type || undefined });
+      const startedAt = Date.now();
+      setImportStatus(`Mengunggah ${file.name}. Jangan tutup halaman sampai proses selesai.`, "normal", true);
+      resetUploadProgress(true);
+      updateUploadProgress({ percent: 0, transferred: 0, total: file.size, label: `Mengunggah ${file.name}` });
+
+      const snapshot = await new Promise((resolve, reject) => {
+        activeUploadTask = storageRef.put(file, { contentType: file.type || undefined });
+        activeUploadTask.on(
+          "state_changed",
+          taskSnapshot => {
+            const transferred = taskSnapshot.bytesTransferred || 0;
+            const total = taskSnapshot.totalBytes || file.size || 1;
+            const percent = total ? (transferred / total) * 100 : 0;
+            const elapsedSeconds = Math.max((Date.now() - startedAt) / 1000, 0.25);
+            const speed = transferred / elapsedSeconds;
+            const eta = speed > 0 ? (total - transferred) / speed : 0;
+            updateUploadProgress({
+              percent,
+              transferred,
+              total,
+              speed,
+              eta,
+              label: taskSnapshot.state === "paused"
+                ? `Upload dijeda: ${file.name}`
+                : `Mengunggah ${file.name}`
+            });
+            els.saveBtn.textContent = `Mengunggah ${Math.round(percent)}%`;
+          },
+          error => {
+            activeUploadTask = null;
+            reject(error);
+          },
+          () => {
+            const completedSnapshot = activeUploadTask.snapshot;
+            activeUploadTask = null;
+            updateUploadProgress({
+              percent: 100,
+              transferred: file.size,
+              total: file.size,
+              label: `Upload ${file.name} selesai`
+            });
+            resolve(completedSnapshot);
+          }
+        );
+      });
+
+      setImportStatus("Upload selesai. Menyimpan data tulisan ke Firebase...", "normal", true);
+      els.saveBtn.textContent = "Menyimpan data...";
       const downloadUrl = await snapshot.ref.getDownloadURL();
       return {
         mode: "file_only",
@@ -2671,13 +2947,20 @@
     }
 
     async function saveArticle() {
+      if (isSaving) {
+        showToast("Proses penyimpanan masih berlangsung.");
+        return;
+      }
+
       const validated = validateForm();
       if (!validated.valid) {
         showToast(validated.message, "error");
         return;
       }
 
+      isSaving = true;
       setBusy(els.saveBtn, true);
+      setSaveLock(true);
       let uploadedMeta = null;
 
       try {
@@ -2720,6 +3003,7 @@
         updateEditorStats();
         if (currentImportMeta?.mode === "file_only") {
           setImportStatus(`${currentImportMeta.fileName} tersimpan sebagai file asli • ${formatFileSize(currentImportMeta.fileSize)}.`, "success");
+          resetUploadProgress();
         }
         showToast("Tulisan berhasil disimpan ke Firebase.", "success");
       } catch (error) {
@@ -2727,8 +3011,12 @@
         if (uploadedMeta?.storagePath) await deleteStorageAttachment(uploadedMeta);
         showToast(`Gagal menyimpan tulisan: ${error.message || "Periksa koneksi, Firebase Rules, dan Storage Rules."}`, "error");
         if (pendingDocumentFile) setImportStatus(`File belum tersimpan: ${pendingDocumentFile.name}. Silakan coba lagi.`, "error");
+        resetUploadProgress();
       } finally {
+        activeUploadTask = null;
+        isSaving = false;
         setBusy(els.saveBtn, false);
+        setSaveLock(false);
         els.importPanel.classList.remove("busy");
       }
     }
@@ -2767,6 +3055,7 @@
       });
 
       els.libraryFooter.textContent = `${articleCache.length} tulisan tersimpan${filtered.length !== articleCache.length ? ` • ${filtered.length} ditampilkan` : ""}`;
+      renderStorageUsage();
 
       if (!filtered.length) {
         els.articleList.innerHTML = `
@@ -2790,7 +3079,7 @@
             <div class="article-meta">
               <span class="meta-pill">${escapeHtml(item.subject || "Mapel")}</span>
               <span class="meta-pill">${escapeHtml(item.section || "Unit")} Kelas ${escapeHtml(item.kelas || "—")}</span>
-              <span class="meta-pill">${item.importMeta?.mode === "file_only" ? `📎 ${escapeHtml(String(item.importMeta.fileType || "file").toUpperCase())}` : `${escapeHtml(item.wordCount || 0)} kata`}</span>
+              <span class="meta-pill">${item.importMeta?.mode === "file_only" ? `📎 ${escapeHtml(String(item.importMeta.fileType || "file").toUpperCase())} • ${escapeHtml(formatFileSize(item.importMeta?.fileSize || 0))}` : `${escapeHtml(item.wordCount || 0)} kata`}</span>
             </div>
 
             <p class="article-excerpt">${escapeHtml(item.excerpt || item.contentText || (item.importMeta?.fileName ? `File asli: ${item.importMeta.fileName}` : ""))}</p>
@@ -2864,6 +3153,7 @@
       attachmentToRemove = null;
       currentImportMeta = null;
       setImportStatus();
+      resetUploadProgress(true);
       els.articleTitle.value = "";
       els.meetingNumber.value = "";
       els.articleEditor.innerHTML = "";
