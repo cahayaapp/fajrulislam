@@ -1603,13 +1603,19 @@
       .sidebar {
         width: min(300px, calc(100vw - 42px));
         height: 100%;
+        height: 100dvh;
         position: fixed;
         top: 0;
         bottom: 0;
         left: 0;
+        z-index: 10020;
         flex-basis: auto;
         box-shadow: 20px 0 55px rgba(20, 43, 85, .22);
         transform: translateX(-105%);
+      }
+
+      .mobile-menu-overlay {
+        z-index: 10010;
       }
 
       .sidebar.open {
@@ -1662,9 +1668,22 @@
         left: 0;
         z-index: 9980;
         pointer-events: none;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        transition: opacity .2s ease, visibility .2s ease, transform .24s ease;
       }
 
       .mobile-bottom-nav.ready { pointer-events: auto; }
+
+      /* Saat sidebar dibuka, pintasan disembunyikan sepenuhnya supaya
+         kartu pengguna dan tombol Keluar selalu dapat terlihat/ditekan. */
+      body.mobile-sidebar-open .mobile-bottom-nav {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none !important;
+        transform: translateY(110%);
+      }
 
       /* Chat mobile dipindahkan ke topbar, FAB tidak lagi menutup halaman. */
       .pengurus-fab-chat {
@@ -2444,8 +2463,13 @@
 
 
     function toggleSidebar() {
-      document.getElementById('mainSidebar').classList.toggle('open');
-      document.querySelector('.mobile-menu-overlay').classList.toggle('open');
+      const sidebar = document.getElementById('mainSidebar');
+      const overlay = document.querySelector('.mobile-menu-overlay');
+      const akanDibuka = !sidebar.classList.contains('open');
+
+      sidebar.classList.toggle('open', akanDibuka);
+      overlay.classList.toggle('open', akanDibuka);
+      document.body.classList.toggle('mobile-sidebar-open', akanDibuka);
     }
 
     function bolehAksesMenu(menuId) {
@@ -3002,7 +3026,10 @@
         document.getElementById('currentPageTitle').textContent = title;
       }
 
-      if (window.innerWidth <= 900) document.getElementById('mainSidebar').classList.remove('open');
+      if (window.innerWidth <= 900) {
+        document.getElementById('mainSidebar').classList.remove('open');
+        document.body.classList.remove('mobile-sidebar-open');
+      }
       document.querySelector('.mobile-menu-overlay').classList.remove('open');
     }
 
