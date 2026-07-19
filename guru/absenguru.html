@@ -495,37 +495,361 @@
       to { transform: scale(1.04); }
     }
 
+    .mobile-topbar {
+      display: none;
+    }
+
+    .result-close {
+      display: none;
+    }
+
     @media (max-width: 720px) {
+      html,
       body {
-        padding: 10px;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+
+      body {
+        padding: 6px;
+      }
+
+      .page {
+        width: 100%;
+        height: calc(var(--app-height, 100dvh) - 12px);
+        min-height: 0;
+        margin: 0;
       }
 
       .hero {
-        grid-template-columns: 1fr;
-        padding: 23px 18px;
-        border-radius: 22px;
-      }
-
-      .teacher-card {
-        min-width: 0;
+        display: none !important;
       }
 
       .panel {
-        padding: 16px 13px;
-        border-radius: 19px;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        padding: 8px;
+        overflow: hidden;
+        border-radius: 18px;
+        box-shadow: 0 12px 32px rgba(35,78,160,.14);
       }
 
-      .steps {
+      .mobile-topbar {
+        flex: 0 0 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 7px 10px 7px 12px;
+        margin-bottom: 7px;
+        color: #fff;
+        border-radius: 13px;
+        background:
+          radial-gradient(circle at 92% 10%, rgba(255,255,255,.2), transparent 30%),
+          linear-gradient(135deg, #176cf1, #2878ff 58%, #14bddc);
+        box-shadow: 0 7px 18px rgba(40,120,255,.2);
+      }
+
+      .mobile-topbar-copy {
+        min-width: 0;
+      }
+
+      .mobile-topbar strong {
+        display: block;
+        font-size: .78rem;
+        font-weight: 950;
+        line-height: 1.1;
+      }
+
+      .mobile-topbar span {
+        display: block;
+        max-width: 58vw;
+        margin-top: 3px;
+        overflow: hidden;
+        color: rgba(255,255,255,.82);
+        font-size: .55rem;
+        font-weight: 750;
+        line-height: 1.1;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .mobile-topbar-badge {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 8px;
+        font-size: .52rem;
+        font-weight: 900;
+        letter-spacing: .3px;
+        border: 1px solid rgba(255,255,255,.22);
+        border-radius: 999px;
+        background: rgba(255,255,255,.14);
+      }
+
+      .mobile-topbar-badge::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #9fffdc;
+        box-shadow: 0 0 0 3px rgba(159,255,220,.16);
+      }
+
+      .steps,
+      .notice,
+      .helper {
+        display: none !important;
+      }
+
+      .tabs {
+        flex: 0 0 40px;
+        height: 40px;
+        gap: 5px;
+        padding: 4px;
+        margin: 0 0 7px;
+        border-radius: 12px;
+      }
+
+      .tab {
+        min-height: 32px;
+        padding: 5px 8px;
+        font-size: .65rem;
+        border-radius: 9px;
+      }
+
+      .method.active {
+        min-height: 0;
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      #method-code.active {
+        justify-content: center;
+        padding: 8px 4px 18px;
+      }
+
+      #reader {
+        min-height: 0;
+        height: auto;
+        flex: 1 1 auto;
+        overflow: hidden;
+        border-radius: 14px;
+      }
+
+      #reader > div,
+      #reader__scan_region,
+      #reader__dashboard {
+        max-width: 100% !important;
+      }
+
+      #reader__scan_region {
+        height: 100% !important;
+        min-height: 0 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #reader video {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        object-fit: cover;
+        border-radius: 12px;
+      }
+
+      .camera-actions,
+      .action-row {
+        flex: 0 0 auto;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        margin-top: 7px;
+      }
+
+      .action-row {
         grid-template-columns: 1fr;
+      }
+
+      .button {
+        min-height: 38px;
+        padding: 7px 10px;
+        font-size: .64rem;
+        border-radius: 10px;
+      }
+
+      .input-label {
+        margin-bottom: 5px;
+        font-size: .64rem;
+      }
+
+      .input {
+        min-height: 46px;
+        padding: 10px 12px;
+        font-size: .82rem;
+        border-radius: 12px;
+      }
+
+      .result {
+        position: absolute;
+        inset: 59px 8px 8px;
+        z-index: 80;
+        min-height: 0;
+        margin: 0;
+        padding: 10px;
+        overflow: hidden;
+        border-radius: 15px;
+        box-shadow: 0 18px 42px rgba(21,35,71,.22);
+      }
+
+      .result.show {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .result-close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 2;
+        width: 29px;
+        height: 29px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        color: #536581;
+        font-size: 1rem;
+        font-weight: 950;
+        cursor: pointer;
+        border: 1px solid #dce6f4;
+        border-radius: 9px;
+        background: rgba(255,255,255,.9);
+      }
+
+      .result h3 {
+        flex: 0 0 auto;
+        margin: 0 34px 7px 0;
+        font-size: .79rem;
+        line-height: 1.25;
       }
 
       .detail-grid {
-        grid-template-columns: 1fr;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 5px;
       }
 
-      .camera-actions .button,
-      .action-row .button {
-        flex: 1;
+      .detail {
+        min-height: 39px;
+        padding: 6px 7px;
+        border-radius: 9px;
+      }
+
+      .detail small {
+        font-size: .44rem;
+        letter-spacing: .25px;
+      }
+
+      .detail strong {
+        margin-top: 2px;
+        font-size: .59rem;
+        line-height: 1.25;
+      }
+
+      .assignment-box {
+        flex: 0 0 auto;
+        margin-top: 7px;
+      }
+
+      .assignment-box select {
+        min-height: 40px;
+        padding: 7px 9px;
+        font-size: .64rem;
+        border-radius: 10px;
+      }
+
+      .confirm-panel {
+        flex: 0 0 auto;
+        margin-top: 7px;
+        padding: 8px;
+        border-radius: 11px;
+      }
+
+      .confirm-panel p {
+        margin: 0 0 7px;
+        font-size: .56rem;
+        line-height: 1.35;
+      }
+
+      .confirm-panel .button {
+        width: 100%;
+      }
+
+      #loading {
+        padding: 10px;
+      }
+
+      .loading-card {
+        width: min(290px, 90vw);
+        padding: 18px;
+        border-radius: 18px;
+      }
+
+      .loading-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 10px;
+        border-radius: 16px;
+      }
+    }
+
+    @media (max-width: 390px), (max-height: 680px) {
+      .mobile-topbar {
+        flex-basis: 40px;
+        min-height: 40px;
+        margin-bottom: 5px;
+      }
+
+      .tabs {
+        flex-basis: 36px;
+        height: 36px;
+        margin-bottom: 5px;
+      }
+
+      .tab {
+        min-height: 28px;
+      }
+
+      .result {
+        inset: 51px 6px 6px;
+        padding: 8px;
+      }
+
+      .detail {
+        min-height: 34px;
+        padding: 5px 6px;
+      }
+
+      .detail strong {
+        font-size: .55rem;
+      }
+
+      .confirm-panel p {
+        display: none;
       }
     }
   </style>
@@ -539,6 +863,32 @@
 </head>
 
 <body>
+  <script>
+    (function syncMobileViewportHeight() {
+      function applyHeight() {
+        var height = window.visualViewport
+          ? window.visualViewport.height
+          : window.innerHeight;
+
+        document.documentElement.style.setProperty(
+          "--app-height",
+          Math.round(height) + "px"
+        );
+      }
+
+      applyHeight();
+      window.addEventListener("resize", applyHeight, { passive: true });
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener(
+          "resize",
+          applyHeight,
+          { passive: true }
+        );
+      }
+    })();
+  </script>
+
   <div id="loading">
     <div class="loading-card">
       <div class="loading-icon">⌖</div>
@@ -569,6 +919,14 @@
     </header>
 
     <section class="panel">
+      <div class="mobile-topbar" aria-label="Identitas absensi guru">
+        <div class="mobile-topbar-copy">
+          <strong>Absensi Guru</strong>
+          <span id="mobileTeacherName">Memuat akun guru...</span>
+        </div>
+        <div class="mobile-topbar-badge">SIAP ABSEN</div>
+      </div>
+
       <div class="steps">
         <div class="step">
           <span>1</span>
@@ -662,6 +1020,13 @@
       </div>
 
       <section class="result" id="checkResult">
+        <button
+          type="button"
+          class="result-close"
+          id="closeResultButton"
+          aria-label="Tutup hasil pemeriksaan"
+        >×</button>
+
         <h3 id="resultTitle">Hasil Pemeriksaan</h3>
 
         <div class="detail-grid" id="resultDetails"></div>
@@ -1671,6 +2036,16 @@
       ).innerHTML = "";
     }
 
+    function hideResultPanel() {
+      const box =
+        document.getElementById(
+          "checkResult"
+        );
+
+      box.className = "result";
+      resetConfirmation();
+    }
+
     function geolocationErrorMessage(
       error
     ) {
@@ -2670,6 +3045,16 @@
       ).textContent =
         teacherName;
 
+      const mobileTeacherName =
+        document.getElementById(
+          "mobileTeacherName"
+        );
+
+      if (mobileTeacherName) {
+        mobileTeacherName.textContent =
+          teacherName;
+      }
+
       teacherCode =
         detectTeacherCode(
           profile
@@ -2840,6 +3225,13 @@
           );
         }
       }
+    );
+
+    document.getElementById(
+      "closeResultButton"
+    ).addEventListener(
+      "click",
+      hideResultPanel
     );
 
     document.getElementById(
