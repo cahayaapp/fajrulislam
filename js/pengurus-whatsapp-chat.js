@@ -234,10 +234,16 @@
   }
 
   function currentIsPrivileged() {
+    const roleCandidates = [
+      ...(Array.isArray(myRoles) ? myRoles : []),
+      ...rolesOf(pUserSafe || {}),
+      ...rolesOf(currentUserProfile())
+    ]
+      .map(normalizeRoleLocal)
+      .filter(Boolean);
+
     return isPrivilegedRoles(
-      Array.isArray(myRoles)
-        ? myRoles
-        : []
+      [...new Set(roleCandidates)]
     );
   }
 
@@ -1074,12 +1080,19 @@
   function unreadMessages(
     roomId
   ) {
-    const lastRead =
+    const parsedLastRead =
       new Date(
         readTimestamp(
           roomId
         )
       );
+
+    const lastReadTime =
+      Number.isNaN(
+        parsedLastRead.getTime()
+      )
+        ? 0
+        : parsedLastRead.getTime();
 
     return messageValues(
       state.rooms[
@@ -1095,13 +1108,53 @@
           return false;
         }
 
-        return (
+        const parsedMessageTime =
           new Date(
             message.waktu ||
             message.createdAt ||
             0
-          ) >
-          lastRead
+          );
+
+        const messageTime =
+          parsedMessageTime.getTime();
+
+        if (
+          !Number.isFinite(
+            messageTime
+          )
+        ) {
+          return false;
+        }
+
+        const hasSender =
+          Boolean(
+            message.senderUsername ||
+            message.pengirim ||
+            message.senderDisplay ||
+            message.senderUid ||
+            message.pengirimUid
+          );
+
+        const hasMessageContent =
+          Boolean(
+            String(
+              message.teks ||
+              ""
+            ).trim()
+          ) ||
+          message.dihapus === true ||
+          message.deleted === true;
+
+        if (
+          !hasSender ||
+          !hasMessageContent
+        ) {
+          return false;
+        }
+
+        return (
+          messageTime >
+          lastReadTime
         );
       });
   }
@@ -1357,7 +1410,7 @@
           (item, index) => `
             <article
               class="pw-broadcast-card"
-              onclick="openPengurusBroadcast(${index})"
+              onclick="openPengurusBroadcastById('${escJs(item.id)}')"
             >
               <div class="pw-broadcast-icon">
                 ${item.icon}
@@ -1471,7 +1524,7 @@
             return `
               <article
                 class="pw-contact-card"
-                onclick="openPengurusContact(${index})"
+                onclick="openPengurusContactById('${escJs(item.id)}')"
               >
                 ${avatarHtml(item)}
 
@@ -3323,6 +3376,75 @@
     });
   }
 
+
+  function openContactById(
+    contactId
+  ) {
+    const normalizedId =
+      String(contactId || "")
+        .toLowerCase();
+
+    const contact =
+      state.renderedContacts
+        .find(item =>
+          String(item.id || "")
+            .toLowerCase() ===
+          normalizedId
+        ) ||
+      contactItems()
+        .find(item =>
+          String(item.id || "")
+            .toLowerCase() ===
+          normalizedId
+        );
+
+    if (!contact) {
+      renderChatList();
+      return;
+    }
+
+    openConversation({
+      ...contact,
+      type:
+        "private",
+      roomId:
+        contact.roomId
+    });
+  }
+
+  function openBroadcastById(
+    broadcastId
+  ) {
+    const normalizedId =
+      String(broadcastId || "")
+        .toLowerCase();
+
+    const broadcast =
+      state.renderedBroadcasts
+        .find(item =>
+          String(item.id || "")
+            .toLowerCase() ===
+          normalizedId
+        ) ||
+      broadcastItems()
+        .find(item =>
+          String(item.id || "")
+            .toLowerCase() ===
+          normalizedId
+        );
+
+    if (!broadcast) {
+      renderChatList();
+      return;
+    }
+
+    openConversation({
+      ...broadcast,
+      type:
+        "broadcast"
+    });
+  }
+
   function startChatByLegacy(
     opponentActualLabel,
     opponentDisplay,
@@ -3704,42 +3826,63 @@
 
   function bootstrap() {
     let attempts = 0;
+    let timer = null;
 
-    const timer =
-      setInterval(() => {
-        attempts++;
+    const runtimeReady = () =>
+      typeof dbRT !== "undefined" &&
+      typeof bolehAksesMenu === "function" &&
+      typeof realUsername !== "undefined";
 
-        const ready =
-          typeof dbRT !==
-            "undefined" &&
-          typeof bolehAksesMenu ===
-            "function" &&
-          typeof realUsername !==
-            "undefined";
+    const usersReady = () =>
+      window.__cahayaChatUsersLoaded === true ||
+      (
+        Array.isArray(pListUsers) &&
+        pListUsers.length > 0
+      );
 
-        if (ready) {
-          clearInterval(timer);
+    const initialize = () => {
+      attempts += 1;
 
-          renderAccessNote();
-
-          if (
-            Array.isArray(
-              pListUsers
-            ) &&
-            pListUsers.length
-          ) {
-            buildContacts();
-            renderChatList();
-          }
-        }
-
-        if (
-          attempts >
-          80
-        ) {
+      if (!runtimeReady()) {
+        if (attempts > 160 && timer) {
           clearInterval(timer);
         }
-      }, 120);
+        return;
+      }
+
+      renderAccessNote();
+
+      if (usersReady()) {
+        buildContacts();
+        renderChatList();
+        installListeners();
+        updateChatBadge();
+
+        if (timer) {
+          clearInterval(timer);
+        }
+        return;
+      }
+
+      if (attempts > 160) {
+        buildContacts();
+        renderChatList();
+        installListeners();
+        updateChatBadge();
+
+        if (timer) {
+          clearInterval(timer);
+        }
+      }
+    };
+
+    window.addEventListener(
+      "cahaya:chat-users-ready",
+      initialize
+    );
+
+    initialize();
+    timer = setInterval(initialize, 120);
   }
 
   /* =======================================================
@@ -3783,8 +3926,14 @@
   window.openPengurusContact =
     openContactByIndex;
 
+  window.openPengurusContactById =
+    openContactById;
+
   window.openPengurusBroadcast =
     openBroadcastByIndex;
+
+  window.openPengurusBroadcastById =
+    openBroadcastById;
 
   window.startChat =
     startChatByLegacy;
@@ -3996,8 +4145,16 @@
     state
   };
 
-  document.addEventListener(
-    "DOMContentLoaded",
-    bootstrap
-  );
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      bootstrap,
+      { once: true }
+    );
+  } else {
+    bootstrap();
+  }
 })();
