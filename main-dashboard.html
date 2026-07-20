@@ -2805,20 +2805,43 @@
         await refreshUserProfileUI();
 
         if (bolehAksesMenu('menu-chat')) {
-          initChatFilter();
-        }
-if (bolehAksesMenu('menu-chat')) {
           try {
             const snap = await dbFS.collection('users').get();
             pListUsers = [];
             snap.forEach(doc => pListUsers.push(doc.data()));
           } catch (err) {
             console.error("Gagal memuat master user:", err);
+            pListUsers = Array.isArray(pListUsers) ? pListUsers : [];
           }
-        }
 
-        if (bolehAksesMenu('menu-chat')) {
-          listenToGlobalMessages();
+          /*
+           * Mesin chat lama tidak lagi memasang listener pesan sendiri.
+           * Badge, daftar percakapan, dan status baca dikelola sepenuhnya
+           * oleh js/pengurus-whatsapp-chat.js agar hanya ada satu sumber data.
+           */
+          window.__cahayaExternalChatEnabled = true;
+
+          window.dispatchEvent(
+            new CustomEvent(
+              'cahaya:chat-users-ready',
+              {
+                detail: {
+                  count: pListUsers.length
+                }
+              }
+            )
+          );
+
+          if (typeof window.initChatFilter === 'function') {
+            window.initChatFilter();
+          }
+
+          if (
+            typeof window.listenToGlobalMessagesAndNotifs ===
+              'function'
+          ) {
+            window.listenToGlobalMessagesAndNotifs();
+          }
         }
       } else {
         setCahayaLogoutLock(
@@ -3157,7 +3180,11 @@ if (bolehAksesMenu('menu-chat')) {
     }
 
     function listenToGlobalMessages() {
-      dbRT.ref('cahaya_app/pesan_global')
+            if (window.__cahayaExternalChatEnabled === true) {
+        return;
+      }
+
+dbRT.ref('cahaya_app/pesan_global')
         .off('value', processGlobalChatSnapshot);
 
       dbRT.ref('cahaya_app/pesan_global')
