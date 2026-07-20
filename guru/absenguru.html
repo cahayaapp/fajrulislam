@@ -860,29 +860,469 @@
       display: none !important;
     }
   </style>
+
+  <style id="cahaya-mobile-camera-visibility-fix">
+    /*
+      Menjaga tombol kamera selalu berada di dalam viewport pada HP pendek,
+      browser dengan toolbar dinamis, PWA, dan mode landscape.
+    */
+    @media (max-width: 720px) {
+      html,
+      body {
+        width: 100% !important;
+        height: var(--app-height, 100dvh) !important;
+        min-height: var(--app-height, 100dvh) !important;
+        max-height: var(--app-height, 100dvh) !important;
+        overflow: hidden !important;
+      }
+
+      body {
+        padding:
+          max(5px, env(safe-area-inset-top))
+          6px
+          max(5px, env(safe-area-inset-bottom)) !important;
+      }
+
+      .page {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+      }
+
+      .panel {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        display: grid !important;
+        grid-template-rows: auto auto minmax(0, 1fr) !important;
+        overflow: hidden !important;
+      }
+
+      .mobile-topbar,
+      .tabs {
+        min-height: 0 !important;
+      }
+
+      .method.active {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+      }
+
+      #method-scan.active {
+        display: grid !important;
+        grid-template-rows: minmax(0, 1fr) auto !important;
+        gap: 6px !important;
+      }
+
+      #reader {
+        grid-row: 1;
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+        contain: layout paint;
+      }
+
+      #reader > div {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+      }
+
+      #reader__scan_region {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        flex: 1 1 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+      }
+
+      #reader__dashboard {
+        display: none !important;
+      }
+
+      #reader video,
+      #reader canvas {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: cover !important;
+      }
+
+      #reader img {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: contain !important;
+      }
+
+      .camera-actions {
+        grid-row: 2;
+        position: relative;
+        z-index: 200;
+        width: 100%;
+        min-height: 38px;
+        flex: 0 0 auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: #ffffff;
+        border-radius: 10px;
+      }
+
+      .camera-actions .button {
+        width: 100%;
+        min-width: 0;
+        min-height: 38px !important;
+        padding: 7px 8px !important;
+      }
+
+      .result.show {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    @media (max-width: 720px) and (max-height: 620px) {
+      body {
+        padding:
+          max(3px, env(safe-area-inset-top))
+          4px
+          max(3px, env(safe-area-inset-bottom)) !important;
+      }
+
+      .panel {
+        padding: 6px !important;
+        border-radius: 14px !important;
+      }
+
+      .mobile-topbar {
+        flex-basis: 36px !important;
+        min-height: 36px !important;
+        height: 36px !important;
+        margin-bottom: 4px !important;
+        padding: 5px 8px !important;
+        border-radius: 10px !important;
+      }
+
+      .mobile-topbar span,
+      .mobile-topbar-badge {
+        display: none !important;
+      }
+
+      .tabs {
+        flex-basis: 34px !important;
+        min-height: 34px !important;
+        height: 34px !important;
+        margin-bottom: 4px !important;
+        padding: 3px !important;
+      }
+
+      .tab {
+        min-height: 28px !important;
+        padding: 4px 6px !important;
+      }
+
+      #method-scan.active {
+        gap: 4px !important;
+      }
+
+      .camera-actions,
+      .camera-actions .button {
+        min-height: 35px !important;
+      }
+
+      .camera-actions .button {
+        font-size: .59rem !important;
+        padding: 5px 6px !important;
+      }
+    }
+
+    /*
+      HP landscape umumnya memiliki lebar di atas 720px tetapi tinggi pendek.
+      Aturan ini memastikan tampilan tetap satu layar dan tombol tidak tenggelam.
+    */
+    @media (hover: none) and (pointer: coarse) and (max-height: 560px) {
+      html,
+      body {
+        width: 100% !important;
+        height: var(--app-height, 100dvh) !important;
+        min-height: var(--app-height, 100dvh) !important;
+        max-height: var(--app-height, 100dvh) !important;
+        overflow: hidden !important;
+      }
+
+      body {
+        padding:
+          max(3px, env(safe-area-inset-top))
+          4px
+          max(3px, env(safe-area-inset-bottom)) !important;
+      }
+
+      .page {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        margin: 0 !important;
+      }
+
+      .hero,
+      .steps,
+      .notice,
+      .helper {
+        display: none !important;
+      }
+
+      .panel {
+        position: relative;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        display: grid !important;
+        grid-template-rows: auto auto minmax(0, 1fr) !important;
+        margin: 0 !important;
+        padding: 5px !important;
+        overflow: hidden !important;
+        border-radius: 13px !important;
+      }
+
+      .mobile-topbar {
+        min-height: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        margin-bottom: 3px !important;
+        padding: 4px 8px !important;
+        border-radius: 9px !important;
+      }
+
+      .mobile-topbar span,
+      .mobile-topbar-badge {
+        display: none !important;
+      }
+
+      .tabs {
+        min-height: 31px !important;
+        height: 31px !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 4px !important;
+        margin: 0 0 3px !important;
+        padding: 3px !important;
+        border-radius: 9px !important;
+      }
+
+      .tab {
+        min-height: 25px !important;
+        padding: 3px 6px !important;
+        font-size: .58rem !important;
+        border-radius: 7px !important;
+      }
+
+      .method.active {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+      }
+
+      #method-scan.active {
+        display: grid !important;
+        grid-template-rows: minmax(0, 1fr) auto !important;
+        gap: 3px !important;
+      }
+
+      #reader,
+      #reader > div,
+      #reader__scan_region {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+      }
+
+      #reader > div {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      #reader__scan_region {
+        flex: 1 1 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+      #reader__dashboard {
+        display: none !important;
+      }
+
+      #reader video,
+      #reader canvas {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: cover !important;
+      }
+
+      .camera-actions {
+        position: relative;
+        z-index: 200;
+        width: 100%;
+        min-height: 32px !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 4px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff;
+      }
+
+      .camera-actions .button {
+        min-width: 0 !important;
+        min-height: 32px !important;
+        padding: 4px 6px !important;
+        font-size: .56rem !important;
+        border-radius: 8px !important;
+      }
+
+      #method-code.active {
+        display: flex !important;
+        justify-content: center !important;
+        padding: 4px !important;
+      }
+
+      .result {
+        inset: 39px 5px 5px !important;
+      }
+
+      .result.show {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+      }
+    }
+  </style>
+
 </head>
 
 <body>
   <script>
     (function syncMobileViewportHeight() {
-      function applyHeight() {
-        var height = window.visualViewport
-          ? window.visualViewport.height
-          : window.innerHeight;
+      var scheduledFrame = 0;
 
-        document.documentElement.style.setProperty(
-          "--app-height",
-          Math.round(height) + "px"
+      function readViewportHeight() {
+        var visualHeight =
+          window.visualViewport &&
+          Number(window.visualViewport.height);
+
+        var innerHeight =
+          Number(window.innerHeight);
+
+        return Math.max(
+          1,
+          Math.round(
+            visualHeight || innerHeight || 1
+          )
         );
       }
 
+      function applyHeight() {
+        scheduledFrame = 0;
+
+        document.documentElement.style.setProperty(
+          "--app-height",
+          readViewportHeight() + "px"
+        );
+      }
+
+      function scheduleHeightUpdate() {
+        if (scheduledFrame) {
+          cancelAnimationFrame(scheduledFrame);
+        }
+
+        scheduledFrame =
+          requestAnimationFrame(applyHeight);
+      }
+
       applyHeight();
-      window.addEventListener("resize", applyHeight, { passive: true });
+
+      window.addEventListener(
+        "resize",
+        scheduleHeightUpdate,
+        { passive: true }
+      );
+
+      window.addEventListener(
+        "orientationchange",
+        function () {
+          scheduleHeightUpdate();
+          setTimeout(applyHeight, 120);
+          setTimeout(applyHeight, 420);
+        },
+        { passive: true }
+      );
+
+      window.addEventListener(
+        "pageshow",
+        scheduleHeightUpdate,
+        { passive: true }
+      );
+
+      window.addEventListener(
+        "focus",
+        scheduleHeightUpdate,
+        { passive: true }
+      );
+
+      document.addEventListener(
+        "visibilitychange",
+        function () {
+          if (!document.hidden) {
+            scheduleHeightUpdate();
+          }
+        }
+      );
 
       if (window.visualViewport) {
         window.visualViewport.addEventListener(
           "resize",
-          applyHeight,
+          scheduleHeightUpdate,
+          { passive: true }
+        );
+
+        window.visualViewport.addEventListener(
+          "scroll",
+          scheduleHeightUpdate,
           { passive: true }
         );
       }
@@ -2513,6 +2953,33 @@
       ).disabled = true;
 
       try {
+        await new Promise(resolve => {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+          });
+        });
+
+        const readerElement =
+          document.getElementById("reader");
+
+        const readerRect =
+          readerElement.getBoundingClientRect();
+
+        const availableEdge =
+          Math.min(
+            Math.max(readerRect.width, 160),
+            Math.max(readerRect.height, 160)
+          );
+
+        const qrBoxSize =
+          Math.max(
+            120,
+            Math.min(
+              230,
+              Math.floor(availableEdge * 0.72)
+            )
+          );
+
         await qrScanner.start(
           {
             facingMode:
@@ -2521,10 +2988,9 @@
           {
             fps: 10,
             qrbox: {
-              width: 230,
-              height: 230
-            },
-            aspectRatio: 1
+              width: qrBoxSize,
+              height: qrBoxSize
+            }
           },
           async decodedText => {
             await stopScanner();
