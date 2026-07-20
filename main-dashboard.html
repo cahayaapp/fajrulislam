@@ -2137,11 +2137,16 @@
       const chatUnreadBadge = document.getElementById('chatUnreadBadge');
 
       if (chatUnreadBadge) {
-        const nilai = Number(chatUnreadBadge.textContent || 0);
+        const rawNilai = String(chatUnreadBadge.textContent || '0').trim();
+        const nilai = rawNilai.includes('+')
+          ? 100
+          : Math.max(0, parseInt(rawNilai, 10) || 0);
+
         if (mobileChatBadge) {
           mobileChatBadge.textContent = nilai > 99 ? '99+' : String(nilai);
           mobileChatBadge.style.display = nilai > 0 ? 'grid' : 'none';
         }
+
         if (topChatBadge) {
           topChatBadge.textContent = nilai > 99 ? '99+' : String(nilai);
           topChatBadge.style.display = nilai > 0 ? 'grid' : 'none';
@@ -2840,100 +2845,326 @@ if (bolehAksesMenu('menu-chat')) {
       document.getElementById('pChatRole').innerHTML = opts;
     }
 
-            function listenToGlobalMessages() {
-      dbRT.ref('cahaya_app/pesan_global').on('value', snap => {
-        const allRooms = snap.val() || {};
-        let unreadTotal = 0;
-        const myInboxData = [];
-        const meClean = namaSaya.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            const CHAT_UNREAD_VERSION = "v2";
 
-        if (isTopLevel && allRooms['room_broadcast_wali']) {
-          try {
-            const bMsgs = Object.values(allRooms['room_broadcast_wali']).filter(m => m && m.waktu);
-            if (bMsgs.length > 0) {
-              const lastMsg = bMsgs[bMsgs.length - 1];
-              myInboxData.push({
-                roomId: 'room_broadcast_wali',
-                opponentDisplay: '📢 PENGUMUMAN WALI',
-                opponentActualLabel: 'BROADCAST',
-                lastMsg,
-                isUnread: false
-              });
-            }
-          } catch (error) {
-            console.warn('Gagal membaca ruang broadcast:', error);
-          }
+    function cleanChatIdentity(value = "") {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+    }
+
+    function currentChatIdentityCandidates() {
+      const emailPrefix = String(pUserSafe?.email || "").split("@")[0];
+      const candidates = [
+        namaSaya,
+        realUsername,
+        pUserSafe?.username,
+        pUserSafe?.label,
+        pUserSafe?.nama,
+        pUserSafe?.namaTampilan,
+        pUserSafe?.displayName,
+        emailPrefix
+      ]
+        .map(cleanChatIdentity)
+        .filter(Boolean);
+
+      return new Set(candidates);
+    }
+
+    function chatRoomParticipants(roomId = "") {
+      if (!String(roomId).startsWith("chat_")) return [];
+      return String(roomId)
+        .replace(/^chat_/, "")
+        .split("_")
+        .map(cleanChatIdentity)
+        .filter(Boolean);
+    }
+
+    function roomBelongsToCurrentUser(roomId = "") {
+      const mine = currentChatIdentityCandidates();
+      return chatRoomParticipants(roomId).some(part => mine.has(part));
+    }
+
+    function chatMessageTimestamp(message = {}) {
+      const values = [
+        message.waktu,
+        message.waktuISO,
+        message.createdAt,
+        message.timestamp
+      ];
+
+      for (const value of values) {
+        if (value === null || value === undefined || value === "") continue;
+
+        if (typeof value === "number" && Number.isFinite(value)) {
+          return value < 1000000000000 ? value * 1000 : value;
         }
 
-        Object.keys(allRooms).forEach(roomId => {
-          try {
-            if (!roomId.includes(meClean) || roomId === 'room_broadcast_wali') return;
+        const parsed = Date.parse(String(value));
+        if (Number.isFinite(parsed)) return parsed;
+      }
 
-            const msgs = allRooms[roomId];
-            if (!msgs || typeof msgs !== 'object') return;
+      return 0;
+    }
 
-            const msgValues = Object.values(msgs).filter(m => m && m.waktu);
-            if (msgValues.length === 0) return;
+    function sortedChatMessages(messages = {}) {
+      return Object.entries(messages || {})
+        .map(([id, message]) => ({
+          id,
+          message,
+          time: chatMessageTimestamp(message)
+        }))
+        .filter(item => item.message && item.time > 0)
+        .sort((a, b) => a.time - b.time);
+    }
 
-            const lastMsg = msgValues[msgValues.length - 1];
-            let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim;
+    function isChatMessageMine(message = {}) {
+      const currentUid = String(pUserSafe?.uid || "");
+      const senderUid = String(
+        message.pengirimUid ||
+        message.uidPengirim ||
+        message.senderUid ||
+        ""
+      );
 
-            if (!opponentLabel) {
-              const roomParts = roomId.replace('chat_', '').split('_');
-              const oppClean = roomParts[0] === meClean ? roomParts[1] : roomParts[0];
-              const oppUser = pListUsers.find(u =>
-                (u.label || u.username || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === oppClean
-              );
+      if (currentUid && senderUid && currentUid === senderUid) {
+        return true;
+      }
 
-              if (oppUser) {
-                opponentLabel = oppUser.label || oppUser.username;
-              } else if (oppClean && oppClean.startsWith('abiummi')) {
-                const childName = oppClean.replace('abiummi', '');
-                opponentLabel = 'Abi Ummi ' + childName.charAt(0).toUpperCase() + childName.slice(1);
-              } else {
-                opponentLabel = oppClean || 'Tidak Diketahui';
-              }
-            }
+      const mine = currentChatIdentityCandidates();
+      const senderEmailPrefix = String(
+        message.emailPengirim || message.senderEmail || ""
+      ).split("@")[0];
 
-            const oppUser = pListUsers.find(u => (u.label || u.username) === opponentLabel);
-            const displayOpponent = oppUser && !opponentLabel.toLowerCase().includes('wali')
-              ? '@' + oppUser.username
-              : opponentLabel;
+      const senderCandidates = [
+        message.pengirimUsername,
+        message.usernamePengirim,
+        message.senderUsername,
+        message.pengirimKey,
+        senderEmailPrefix,
+        message.pengirim,
+        message.sender
+      ]
+        .map(cleanChatIdentity)
+        .filter(Boolean);
 
-            let isUnread = false;
-            if (lastMsg.pengirim !== namaSaya) {
-              const lastReadTime = localStorage.getItem('chat_read_' + roomId) || '0';
-              if (new Date(lastMsg.waktu) > new Date(lastReadTime)) {
-                unreadTotal += 1;
-                isUnread = true;
-              }
-            }
+      return senderCandidates.some(value => mine.has(value));
+    }
 
-            myInboxData.push({
-              roomId,
-              opponentDisplay: displayOpponent,
-              opponentActualLabel: opponentLabel,
-              lastMsg,
-              isUnread
-            });
-          } catch (error) {
-            console.warn('Gagal membaca ruang chat:', roomId, error);
-          }
-        });
+    function chatReadStorageKey(roomId) {
+      const accountKey = cleanChatIdentity(
+        realUsername || pUserSafe?.uid || namaSaya || "user"
+      ) || "user";
 
-        const badge = document.getElementById('chatUnreadBadge');
-        if (badge) {
-          badge.textContent = unreadTotal > 99 ? '99+' : String(unreadTotal);
-          badge.style.display = unreadTotal > 0 ? 'flex' : 'none';
-        }
+      return `chat_read_${CHAT_UNREAD_VERSION}_${accountKey}_${roomId}`;
+    }
 
-        const inbox = document.getElementById('viewInbox');
-        if (inbox && inbox.style.display !== 'none') {
-          renderInboxUI(myInboxData);
-        }
+    function getChatRoomReadTime(roomId) {
+      const values = [
+        localStorage.getItem(chatReadStorageKey(roomId)),
+        localStorage.getItem('chat_read_' + roomId)
+      ];
 
-        sinkronkanBadgePintasanMobile();
+      return values.reduce((latest, value) => {
+        const parsed = Date.parse(String(value || ""));
+        return Number.isFinite(parsed) ? Math.max(latest, parsed) : latest;
+      }, 0);
+    }
+
+    function markChatRoomRead(roomId, latestMessageTime = 0) {
+      if (!roomId) return;
+
+      const safeTime = Math.max(
+        Date.now(),
+        Number(latestMessageTime) || 0
+      );
+
+      const iso = new Date(safeTime).toISOString();
+      localStorage.setItem(chatReadStorageKey(roomId), iso);
+
+      // Tetap menulis kunci lama agar kompatibel dengan versi sebelumnya.
+      localStorage.setItem('chat_read_' + roomId, iso);
+    }
+
+    function resolveChatOpponent(roomId, messageEntries = []) {
+      const mine = currentChatIdentityCandidates();
+      const foreignMessage = messageEntries.find(
+        item => !isChatMessageMine(item.message)
+      );
+
+      let opponentLabel = String(
+        foreignMessage?.message?.pengirim ||
+        foreignMessage?.message?.sender ||
+        ""
+      ).trim();
+
+      const opponentPart = chatRoomParticipants(roomId)
+        .find(part => !mine.has(part)) || "";
+
+      const opponentUser = pListUsers.find(user => {
+        const values = [
+          user?.label,
+          user?.nama,
+          user?.namaTampilan,
+          user?.username,
+          String(user?.email || "").split("@")[0]
+        ]
+          .map(cleanChatIdentity)
+          .filter(Boolean);
+
+        return values.includes(opponentPart) ||
+          values.includes(cleanChatIdentity(opponentLabel));
       });
+
+      if (opponentUser) {
+        opponentLabel = opponentUser.label ||
+          opponentUser.nama ||
+          opponentUser.username ||
+          opponentLabel;
+      } else if (!opponentLabel && opponentPart.startsWith('abiummi')) {
+        const childName = opponentPart.replace('abiummi', '');
+        opponentLabel = 'Abi Ummi ' +
+          childName.charAt(0).toUpperCase() +
+          childName.slice(1);
+      } else if (!opponentLabel) {
+        opponentLabel = opponentPart || 'Tidak Diketahui';
+      }
+
+      const resolvedUser = pListUsers.find(user => {
+        const values = [user?.label, user?.nama, user?.username]
+          .map(cleanChatIdentity)
+          .filter(Boolean);
+        return values.includes(cleanChatIdentity(opponentLabel));
+      });
+
+      const displayOpponent = resolvedUser &&
+        !String(opponentLabel).toLowerCase().includes('wali')
+          ? '@' + resolvedUser.username
+          : opponentLabel;
+
+      return {
+        opponentLabel,
+        displayOpponent
+      };
+    }
+
+    function applyChatUnreadBadge(unreadTotal) {
+      const safeTotal = Math.max(0, Number(unreadTotal) || 0);
+      const badge = document.getElementById('chatUnreadBadge');
+
+      if (badge) {
+        badge.textContent = safeTotal > 99 ? '99+' : String(safeTotal);
+        badge.style.display = safeTotal > 0 ? 'flex' : 'none';
+      }
+
+      window.__cahayaChatUnreadTotal = safeTotal;
+      sinkronkanBadgePintasanMobile();
+    }
+
+    function processGlobalChatSnapshot(snap) {
+      const allRooms = snap?.val?.() || {};
+      let unreadTotal = 0;
+      const myInboxData = [];
+
+      if (isTopLevel && allRooms['room_broadcast_wali']) {
+        try {
+          const broadcastEntries = sortedChatMessages(
+            allRooms['room_broadcast_wali']
+          );
+
+          if (broadcastEntries.length > 0) {
+            const lastEntry = broadcastEntries[broadcastEntries.length - 1];
+            myInboxData.push({
+              roomId: 'room_broadcast_wali',
+              opponentDisplay: '📢 PENGUMUMAN WALI',
+              opponentActualLabel: 'BROADCAST',
+              lastMsg: lastEntry.message,
+              isUnread: false
+            });
+          }
+        } catch (error) {
+          console.warn('Gagal membaca ruang broadcast:', error);
+        }
+      }
+
+      Object.keys(allRooms).forEach(roomId => {
+        try {
+          if (
+            roomId === 'room_broadcast_wali' ||
+            !roomBelongsToCurrentUser(roomId)
+          ) {
+            return;
+          }
+
+          const messageEntries = sortedChatMessages(allRooms[roomId]);
+          if (!messageEntries.length) return;
+
+          const lastEntry = messageEntries[messageEntries.length - 1];
+          const lastMsg = lastEntry.message;
+          const opponent = resolveChatOpponent(roomId, messageEntries);
+
+          let isUnread = false;
+
+          if (!isChatMessageMine(lastMsg)) {
+            const lastReadTime = getChatRoomReadTime(roomId);
+
+            if (lastEntry.time > lastReadTime) {
+              unreadTotal += 1;
+              isUnread = true;
+            }
+          } else if (getChatRoomReadTime(roomId) < lastEntry.time) {
+            // Pesan terakhir dikirim sendiri, sehingga ruang tidak boleh
+            // tetap dianggap belum dibaca.
+            markChatRoomRead(roomId, lastEntry.time);
+          }
+
+          myInboxData.push({
+            roomId,
+            opponentDisplay: opponent.displayOpponent,
+            opponentActualLabel: opponent.opponentLabel,
+            lastMsg,
+            lastMessageTime: lastEntry.time,
+            isUnread
+          });
+        } catch (error) {
+          console.warn('Gagal membaca ruang chat:', roomId, error);
+        }
+      });
+
+      window.__cahayaChatInboxData = myInboxData;
+      applyChatUnreadBadge(unreadTotal);
+
+      const inbox = document.getElementById('viewInbox');
+      if (inbox && inbox.style.display !== 'none') {
+        renderInboxUI(myInboxData);
+      }
+    }
+
+    function refreshChatUnreadAndInbox() {
+      if (!bolehAksesMenu('menu-chat')) {
+        applyChatUnreadBadge(0);
+        return Promise.resolve();
+      }
+
+      return dbRT.ref('cahaya_app/pesan_global')
+        .once('value')
+        .then(processGlobalChatSnapshot)
+        .catch(error => {
+          console.warn('Gagal menyegarkan badge chat:', error);
+        });
+    }
+
+    function listenToGlobalMessages() {
+      dbRT.ref('cahaya_app/pesan_global')
+        .off('value', processGlobalChatSnapshot);
+
+      dbRT.ref('cahaya_app/pesan_global')
+        .on('value', processGlobalChatSnapshot, error => {
+          console.warn('Listener pesan global gagal:', error);
+          applyChatUnreadBadge(0);
+        });
     }
 
 
@@ -3000,7 +3231,17 @@ if (bolehAksesMenu('menu-chat')) {
       }
 
       if(confirm("Hapus seluruh riwayat obrolan ini?")) {
-        dbRT.ref(`cahaya_app/pesan_global/${roomId}`).remove();
+        dbRT.ref(`cahaya_app/pesan_global/${roomId}`)
+          .remove()
+          .then(() => {
+            localStorage.removeItem(chatReadStorageKey(roomId));
+            localStorage.removeItem('chat_read_' + roomId);
+            refreshChatUnreadAndInbox();
+          })
+          .catch(error => {
+            console.error('Obrolan gagal dihapus:', error);
+            alert('Obrolan belum berhasil dihapus.');
+          });
       }
     }
 
@@ -3044,7 +3285,7 @@ if (bolehAksesMenu('menu-chat')) {
       }
 
       if(type === 'inbox') {
-        dbRT.ref('cahaya_app/pesan_global').once('value');
+        refreshChatUnreadAndInbox();
       }
     }
 
@@ -3124,8 +3365,8 @@ if (bolehAksesMenu('menu-chat')) {
         document.getElementById('pChatInput').focus();
       }, 100);
 
-      localStorage.setItem('chat_read_' + roomId, new Date().toISOString());
-      dbRT.ref('cahaya_app/pesan_global').once('value');
+      markChatRoomRead(roomId);
+      refreshChatUnreadAndInbox();
 
       if(pChatListener) {
         dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
@@ -3137,33 +3378,58 @@ if (bolehAksesMenu('menu-chat')) {
         const body = document.getElementById('pChatBody');
         body.innerHTML = '';
 
-        const data = snap.val();
+        const messageEntries = sortedChatMessages(snap.val() || {});
 
-        if(!data) {
+        if (!messageEntries.length) {
           body.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:0.8rem; margin-top:20px;">Mulai percakapan.</div>';
+          markChatRoomRead(roomId);
+          refreshChatUnreadAndInbox();
           return;
         }
 
-        Object.keys(data).forEach(msgId => {
-          const m = data[msgId];
-          const isMe = m.pengirim === namaSaya;
-          const timeStr = new Date(m.waktu).toLocaleTimeString('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit'
-          });
+        messageEntries.forEach(({ id: msgId, message: m }) => {
+          const isMe = isChatMessageMine(m);
+          const timeValue = chatMessageTimestamp(m);
+          const timeStr = timeValue
+            ? new Date(timeValue).toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            : '--:--';
 
-          let senderDisplay = isMe ? "Anda" : opponentDisplay;
+          const senderDisplay = isMe ? "Anda" : opponentDisplay;
+          const safeText = String(m.teks || '');
+          const safeTextAttr = safeText
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/\r?\n/g, ' ');
 
-          let menuHtml = `<div id="menu_${msgId}" class="msg-options-menu">${isMe ? `<button onclick="editPesan('${roomId}', '${msgId}', '${m.teks.replace(/'/g, "\\'")}')">✏️ Edit</button><button class="btn-del" onclick="hapusPesan('${roomId}', '${msgId}')">🗑️ Hapus</button>` : `<button onclick="salinTeks('${m.teks.replace(/'/g, "\\'")}')">📋 Salin</button>`}</div>`;
+          const menuHtml = `<div id="menu_${msgId}" class="msg-options-menu">${
+            isMe
+              ? `<button onclick="editPesan('${roomId}', '${msgId}', '${safeTextAttr}')">✏️ Edit</button><button class="btn-del" onclick="hapusPesan('${roomId}', '${msgId}')">🗑️ Hapus</button>`
+              : `<button onclick="salinTeks('${safeTextAttr}')">📋 Salin</button>`
+          }</div>`;
+
+          const safeTextHtml = safeText
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/\n/g, '<br>');
 
           body.insertAdjacentHTML('beforeend', `
             <div class="p-chat-msg ${isMe ? 'p-msg-self' : 'p-msg-other'}" oncontextmenu="event.preventDefault(); showMsgOptions(event, '${msgId}')" onclick="showMsgOptions(event, '${msgId}')">
               <div class="p-msg-info">${senderDisplay} • ${timeStr} ${m.diedit ? '(diedit)' : ''}</div>
-              <div id="txt_${msgId}">${m.teks}</div>
+              <div id="txt_${msgId}">${safeTextHtml}</div>
               ${menuHtml}
             </div>
           `);
         });
+
+        const latestEntry = messageEntries[messageEntries.length - 1];
+        markChatRoomRead(roomId, latestEntry.time);
+        refreshChatUnreadAndInbox();
 
         body.scrollTo({
           top: body.scrollHeight,
@@ -3199,28 +3465,45 @@ if (bolehAksesMenu('menu-chat')) {
 
       if(!txt || !targetAktifLabel) return;
 
-      let rid = (targetAktifLabel === "BROADCAST_WALI" || targetAktifLabel === "BROADCAST")
+      const rid = (targetAktifLabel === "BROADCAST_WALI" || targetAktifLabel === "BROADCAST")
         ? "room_broadcast_wali"
         : pGetRoomId(namaSaya, targetAktifLabel);
+
+      const selesaiKirim = () => {
+        markChatRoomRead(rid);
+        refreshChatUnreadAndInbox();
+        inp.value = '';
+        inp.focus();
+      };
 
       if (editModeId) {
         dbRT.ref(`cahaya_app/pesan_global/${rid}/${editModeId}`).update({
           teks: txt,
-          diedit: true
-        });
+          diedit: true,
+          dieditPada: new Date().toISOString()
+        })
+          .then(selesaiKirim)
+          .catch(error => {
+            console.error('Pesan gagal diedit:', error);
+            alert('Pesan belum berhasil diedit. Silakan coba kembali.');
+          });
 
         editModeId = null;
       } else {
         dbRT.ref(`cahaya_app/pesan_global/${rid}`).push({
           teks: txt,
           pengirim: namaSaya,
+          pengirimUsername: realUsername || pUserSafe?.username || '',
+          pengirimUid: pUserSafe?.uid || '',
+          emailPengirim: pUserSafe?.email || '',
           waktu: new Date().toISOString()
-        });
+        })
+          .then(selesaiKirim)
+          .catch(error => {
+            console.error('Pesan gagal dikirim:', error);
+            alert('Pesan belum berhasil dikirim. Silakan coba kembali.');
+          });
       }
-
-      localStorage.setItem('chat_read_' + rid, new Date().toISOString());
-      inp.value = '';
-      inp.focus();
     }
 
     function editPesan(roomId, msgId, oldText) {
@@ -3232,7 +3515,13 @@ if (bolehAksesMenu('menu-chat')) {
 
     function hapusPesan(roomId, msgId) {
       if(confirm("Hapus pesan ini dari ruang obrolan?")) {
-        dbRT.ref(`cahaya_app/pesan_global/${roomId}`).remove();
+        dbRT.ref(`cahaya_app/pesan_global/${roomId}/${msgId}`)
+          .remove()
+          .then(() => refreshChatUnreadAndInbox())
+          .catch(error => {
+            console.error('Pesan gagal dihapus:', error);
+            alert('Pesan belum berhasil dihapus.');
+          });
       }
     }
 
