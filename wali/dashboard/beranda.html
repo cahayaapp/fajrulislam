@@ -286,6 +286,10 @@
     .kabar-name{font-size:.9rem;font-weight:1000}
     .kabar-time{font-size:.66rem;font-weight:750}
     .kabar-body{color:#3b4964;font-size:.86rem;font-weight:600;line-height:1.72}
+    .self-report-story p{margin:0 0 14px}
+    .self-report-story p:last-child{margin-bottom:0}
+    .self-report-reflection{padding:13px 15px;border:1px solid #dce8f8;border-left:4px solid var(--rg-blue);border-radius:13px;background:linear-gradient(135deg,#f5f9ff,#f8fcff)}
+    .self-report-followup{padding:11px 14px;border:1px solid #f1dfbd;border-radius:12px;background:#fff9ef}
     .interaction-bar{gap:8px}
     .btn-interact{padding:8px 11px;font-family:'Nunito',sans-serif;font-size:.73rem;font-weight:900}
     .media-card{overflow:hidden;border-color:#dce7f5}
@@ -1963,6 +1967,244 @@
     return events;
   }
 
+  /* =========================================================
+     NARASI PENINDAKAN DARI SUDUT PANDANG SANTRI
+     ========================================================= */
+  function bersihkanTeksCerita(value = "") {
+    return String(value || "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function escapeHTMLCerita(value = "") {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function escapeRegExpCerita(value = "") {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function hurufKecilAwal(value = "") {
+    const teks = String(value || "").trim();
+    if (!teks) return "";
+    return teks.charAt(0).toLocaleLowerCase("id-ID") + teks.slice(1);
+  }
+
+  function hurufBesarAwal(value = "") {
+    const teks = String(value || "").trim();
+    if (!teks) return "";
+    return teks.charAt(0).toLocaleUpperCase("id-ID") + teks.slice(1);
+  }
+
+  function akhiriKalimat(value = "") {
+    const teks = String(value || "").trim();
+    if (!teks) return "";
+    return /[.!?…]$/.test(teks) ? teks : `${teks}.`;
+  }
+
+  function namaSantriDalamEvent(ev = {}) {
+    const detail = ev.detail || {};
+    const kandidat = [
+      namaAnakUtuh,
+      namaPanggilan,
+      detail.santri,
+      detail.namaSantri,
+      detail.nama,
+      detail.student,
+      detail.first?.santri,
+      detail.first?.namaSantri
+    ];
+
+    const namaLengkap = kandidat
+      .map(item => bersihkanTeksCerita(item))
+      .filter(item => item && item.length > 1);
+
+    const potonganNama = namaLengkap.flatMap(item =>
+      item
+        .split(/[\s-]+/)
+        .map(part => part.trim())
+        .filter(part =>
+          part.length >= 4 &&
+          !/^(muhammad|mohammad|mochammad|abdullah|ahmad)$/i.test(part)
+        )
+    );
+
+    return [...new Set([...namaLengkap, ...potonganNama])]
+      .sort((a, b) => b.length - a.length);
+  }
+
+  function ubahKeSudutPandangAku(value = "", ev = {}, mode = "umum") {
+    let teks = bersihkanTeksCerita(value);
+    if (!teks) return "";
+
+    // Hilangkan pembuka administratif agar terasa sebagai pengakuan pribadi.
+    teks = teks
+      .replace(/^berdasarkan\s+hasil\s+tabayyun\s*[,;:-]?\s*/i, "")
+      .replace(/^hasil\s+tabayyun\s*[:;-]?\s*/i, "")
+      .replace(/^berdasarkan\s+hasil\s+klarifikasi\s*[,;:-]?\s*/i, "")
+      .replace(/^hasil\s+klarifikasi\s*[:;-]?\s*/i, "");
+
+    if (mode === "pembinaan") {
+      // Contoh: "Klarifikasi & Kesadaran Adab: Konselor ..."
+      teks = teks.replace(
+        /^[^.!?]{2,70}:\s*(?=(konselor|naqib|naqibah|petugas|pembina|guru|musyrif)\b)/i,
+        ""
+      );
+    }
+
+    namaSantriDalamEvent(ev).forEach(nama => {
+      const polaNama = escapeRegExpCerita(nama);
+      teks = teks
+        .replace(new RegExp(`\\bAnanda\\s+${polaNama}\\b`, "gi"), "aku")
+        .replace(new RegExp(`\\bSaudara\\s+${polaNama}\\b`, "gi"), "aku")
+        .replace(new RegExp(`\\b${polaNama}\\b`, "gi"), "aku");
+    });
+
+    teks = teks
+      .replace(/\bAnanda\b/gi, "aku")
+      .replace(/\bsantri\s+tersebut\b/gi, "aku")
+      .replace(/\byang\s+bersangkutan\b/gi, "aku")
+      .replace(/\bia\b/gi, "aku")
+      .replace(/\bdia\b/gi, "aku")
+
+      // Bentuk pronomina dan frasa yang paling sering muncul pada form penindakan.
+      .replace(/\bmengajak\s+aku\b/gi, "mengajakku")
+      .replace(/\bmendampingi\s+aku\b/gi, "mendampingiku")
+      .replace(/\bmengingatkan\s+aku\b/gi, "mengingatkanku")
+      .replace(/\bmenasihati\s+aku\b/gi, "menasihatiku")
+      .replace(/\bmenasehati\s+aku\b/gi, "menasihatiku")
+      .replace(/\bmeminta\s+kepada\s+aku\b/gi, "memintaku")
+      .replace(/\bmemberikan\s+arahan\s+kepada\s+aku\b/gi, "memberiku arahan")
+      .replace(/\bmemberikan\s+nasihat\s+kepada\s+aku\b/gi, "memberiku nasihat")
+      .replace(/\bkepada\s+aku\b/gi, "kepadaku")
+      .replace(/\buntuk\s+aku\b/gi, "untukku")
+
+      .replace(/\bkekhilafannya\b/gi, "kekhilafanku")
+      .replace(/\bkesalahannya\b/gi, "kesalahanku")
+      .replace(/\bkelalaiannya\b/gi, "kelalaianku")
+      .replace(/\bpelanggarannya\b/gi, "pelanggaranku")
+      .replace(/\bperbuatannya\b/gi, "perbuatanku")
+      .replace(/\bsikapnya\b/gi, "sikapku")
+      .replace(/\bperilakunya\b/gi, "perilakuku")
+      .replace(/\btindakannya\b/gi, "tindakanku")
+      .replace(/\bdirinya\b/gi, "diriku")
+      .replace(/\btanggung\s+jawabnya\b/gi, "tanggung jawabku")
+      .replace(/\bkewajibannya\b/gi, "kewajibanku")
+      .replace(/\bkomitmennya\b/gi, "komitmenku")
+
+      .replace(/\baku\s+mengakui\s+bahwa\s+aku\b/gi, "aku mengakui bahwa aku")
+      .replace(/\baku\s+aku\b/gi, "aku")
+      .replace(/\s+([,.;!?])/g, "$1")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return teks;
+  }
+
+  function normalisasiTindakLanjut(value = "", ev = {}) {
+    let teks = ubahKeSudutPandangAku(value, ev, "tindak-lanjut")
+      .replace(/\bpush\s*up\b/gi, "push-up")
+      .replace(/\b(\d+)\s*[xX]\b/g, "$1 kali")
+      .replace(/^tindak\s+lanjut\s*[:;-]?\s*/i, "")
+      .replace(/^konsekuensi\s+edukatif\s*[:;-]?\s*/i, "")
+      .trim();
+
+    if (!teks) return "";
+
+    if (/^aku\b/i.test(teks)) {
+      return akhiriKalimat(teks);
+    }
+
+    return akhiriKalimat(
+      `Sebagai tindak lanjut, aku menjalani konsekuensi edukatif berupa ${hurufKecilAwal(teks)}`
+    );
+  }
+
+  function susunNarasiPenindakanSantri(ev = {}) {
+    const namaKegiatan = bersihkanTeksCerita(ev.kegiatan)
+      .replace(/^catatan\s+tentang\s+/i, "")
+      .replace(/^catatan\s+/i, "")
+      .trim();
+
+    const deskripsiAwal = bersihkanTeksCerita(ev.deskripsi)
+      .replace(/^catatan\s+tentang\s+/i, "")
+      .replace(/^catatan\s+perbaikan\s+telah\s+ditindaklanjuti\.?$/i, "")
+      .trim();
+
+    let labelTanggal = "";
+    if (ev.tanggalKejadian) {
+      const parsedDate = new Date(`${ev.tanggalKejadian}T12:00:00`);
+      labelTanggal = Number.isNaN(parsedDate.getTime())
+        ? bersihkanTeksCerita(ev.tanggalKejadian)
+        : formatUI(parsedDate);
+    }
+
+    let pembuka = "Mak, Ayah, aku ingin menyampaikan dengan jujur bahwa";
+    if (labelTanggal) pembuka += ` pada ${labelTanggal}`;
+
+    if (deskripsiAwal) {
+      pembuka += ` aku mendapat catatan karena ${hurufKecilAwal(deskripsiAwal)}`;
+    } else if (namaKegiatan) {
+      pembuka += ` aku mendapat catatan tentang ${hurufKecilAwal(namaKegiatan)}`;
+    } else {
+      pembuka += " aku mendapat catatan perbaikan dari pesantren";
+    }
+    pembuka = akhiriKalimat(pembuka);
+
+    const hasilRaw = ubahKeSudutPandangAku(ev.hasilTabayyun, ev, "tabayyun");
+    let hasil = "";
+    if (hasilRaw) {
+      if (/^(setelah|dalam\s+proses)\b/i.test(hasilRaw)) {
+        hasil = akhiriKalimat(hurufBesarAwal(hasilRaw));
+      } else {
+        hasil = akhiriKalimat(
+          `Setelah menjalani proses tabayyun, ${hurufKecilAwal(hasilRaw)}`
+        );
+      }
+    } else {
+      hasil = "Setelah menjalani proses tabayyun, aku memahami kesalahanku dan menerima arahan untuk memperbaiki diri.";
+    }
+
+    const pembinaanRaw = ubahKeSudutPandangAku(ev.pembinaan, ev, "pembinaan");
+    let pembinaan = "";
+    if (pembinaanRaw) {
+      if (/^(konselor|naqib|naqibah|petugas|pembina|guru|musyrif|aku)\b/i.test(pembinaanRaw)) {
+        pembinaan = akhiriKalimat(pembinaanRaw);
+      } else {
+        pembinaan = akhiriKalimat(
+          `Dalam proses pembinaan, ${hurufKecilAwal(pembinaanRaw)}`
+        );
+      }
+    }
+
+    const tindakLanjut = normalisasiTindakLanjut(ev.tindakLanjut, ev);
+
+    const paragraf = [
+      `<p>${escapeHTMLCerita(pembuka)}</p>`,
+      `<p class="self-report-reflection">${escapeHTMLCerita(hasil)}</p>`
+    ];
+
+    if (pembinaan) {
+      paragraf.push(`<p>${escapeHTMLCerita(pembinaan)}</p>`);
+    }
+
+    if (tindakLanjut) {
+      paragraf.push(`<p class="self-report-followup">${escapeHTMLCerita(tindakLanjut)}</p>`);
+    }
+
+    paragraf.push(
+      `<p>Aku akan berusaha lebih sadar, tertib, dan tidak mengulangi kesalahan yang sama. Mohon doa dan bimbingan Mak dan Ayah agar aku semakin disiplin dan menjadi pribadi yang lebih baik. 🤲🏻</p>`
+    );
+
+    return `<div class="self-report-story">${paragraf.join("")}</div>`;
+  }
+
   // PENYEMPURNAAN DETEKSI GENDER (NAQIBAH / MU'ALLIMAH)
   function susunRedaksi(ev) {
     let k = (ev.kegiatan || "").toLowerCase(); 
@@ -1984,34 +2226,7 @@
     let pNaqib = pbbUsername ? ` bersama <b>${glrNaqib} ${pbbUsername}</b>` : "";
     
     if (ev.tipe === 'Pelanggaran') {
-        const namaKegiatan = ev.kegiatan
-          ? `<b>${ev.kegiatan}</b>`
-          : "<b>catatan perbaikan</b>";
-
-        let tanggalKejadian = "";
-
-        if (ev.tanggalKejadian) {
-            const parsedDate = new Date(`${ev.tanggalKejadian}T12:00:00`);
-            const labelDate = Number.isNaN(parsedDate.getTime())
-              ? ev.tanggalKejadian
-              : formatUI(parsedDate);
-
-            tanggalKejadian = ` yang terjadi pada ${labelDate}`;
-        }
-
-        const hasilTabayyun = ev.hasilTabayyun
-          ? `<br><br><b>Hasil tabayyun:</b> ${ev.hasilTabayyun}`
-          : "";
-
-        const pembinaan = ev.pembinaan
-          ? `<br><b>Pembinaan:</b> ${ev.pembinaan}`
-          : "";
-
-        const tindakLanjut = ev.tindakLanjut
-          ? `<br><b>Tindak lanjut:</b> ${ev.tindakLanjut}`
-          : "";
-
-        return `Mak Ayah, catatan tentang ${namaKegiatan}${tanggalKejadian} sudah ditindaklanjuti oleh petugas pesantren. Aku sudah melalui proses tabayyun dan pembinaan agar dapat memahami kesalahan serta memperbaiki diri.${hasilTabayyun}${pembinaan}${tindakLanjut}<br><br>Mohon doakan aku agar lebih jujur, disiplin, dan sungguh-sungguh menjadi pribadi yang lebih baik. 🤲🏻`;
+        return susunNarasiPenindakanSantri(ev);
     }
 
     if (ev.tipe === 'Tahfiz') { 
