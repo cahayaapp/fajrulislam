@@ -1107,12 +1107,8 @@
               key: 'pembelajaran'
           },
           {
-              path: 'cahaya_app/pelanggaran_santri',
-              key: 'pelanggaran'
-          },
-          {
-              path: 'cahaya_app/log_lapor_inisiatif',
-              key: 'laporanPelanggaran'
+              path: 'cahaya_app/laporan_penindakan',
+              key: 'penindakan'
           }
       ].forEach(source => {
           dbRT.ref(source.path).on(
@@ -1249,12 +1245,8 @@
               path: 'cahaya_app/absensi_pembelajaran'
           },
           {
-              key: 'pelanggaran',
-              path: 'cahaya_app/pelanggaran_santri'
-          },
-          {
-              key: 'laporanPelanggaran',
-              path: 'cahaya_app/log_lapor_inisiatif'
+              key: 'penindakan',
+              path: 'cahaya_app/laporan_penindakan'
           },
           {
               key: 'media',
@@ -1598,43 +1590,11 @@
               return;
           }
 
-          if (
-              [
-                  "terlambat",
-                  "alfa",
-                  "alpha",
-                  "bolos",
-                  "tidak hadir"
-              ].includes(status)
-          ) {
-              const statusPelanggaran =
-                  (
-                      status === "alpha" ||
-                      status === "tidak hadir"
-                  )
-                    ? "Alfa"
-                    : (
-                        status.charAt(0).toUpperCase() +
-                        status.slice(1)
-                      );
-
-              tambahEvent({
-                  id: buatEventId(
-                      tglDB,
-                      "Pelanggaran",
-                      `${statusPelanggaran}_${kegiatan}_${kunci}`
-                  ),
-                  tipe: "Pelanggaran",
-                  kegiatan,
-                  waktu,
-                  pembimbing,
-                  status: statusPelanggaran,
-                  sumber: isKBM
-                      ? "absensi_pembelajaran"
-                      : "absensi_program_harian",
-                  detail: rec
-              });
-          }
+          /*
+            Status alfa, terlambat, bolos, atau tidak hadir tetap menjadi
+            antrean kasus internal. Beranda wali baru menampilkannya setelah
+            petugas menyimpan laporan penindakan pada laporan_penindakan.
+          */
         });
     }
 
@@ -1762,11 +1722,9 @@
         );
     }
 
-    function prosesPelanggaranLangsung(
-        data,
-        sumber
-    ) {
-        const records = kumpulkanPelanggaran(data);
+    function prosesPenindakan(dataPenindakan) {
+        const records = kumpulkanPelanggaran(dataPenindakan);
+        const grouped = new Map();
 
         records.forEach((record, index) => {
             if (
@@ -1777,52 +1735,110 @@
                 return;
             }
 
-            if (tanggalRecord(record) !== tglDB) {
+            const tanggalPenindakan =
+                record.tanggalPublikasiWali ||
+                record.tanggalPenindakan ||
+                record.waktuPublikasiWali?.slice?.(0, 10) ||
+                record.waktuPenindakan?.slice?.(0, 10) ||
+                record.waktuKonseling?.slice?.(0, 10) ||
+                "";
+
+            if (tanggalPenindakan !== tglDB) {
                 return;
             }
 
-            const resolution = statusNormal(
-                record.statusPenanganan ||
-                record.statusKonseling ||
+            const statusAkhir = statusNormal(
                 record.status ||
+                record.statusPenanganan ||
+                record.statusPenindakan ||
                 ""
             );
 
+            const kategoriAkhir = statusNormal(
+                record.kategoriAkhir || ""
+            );
+
+            const statusPublikasi = statusNormal(
+                record.statusPublikasiWali || ""
+            );
+
+            const selesai =
+                statusAkhir === "selesai" ||
+                statusAkhir.includes("sudah ditindak") ||
+                statusAkhir.includes("sudah konseling");
+
+            if (!selesai) return;
+
             if (
-                resolution.includes("tidak terbukti") ||
-                resolution.includes("dihapus")
+                kategoriAkhir.includes("tidak terbukti") ||
+                record.tampilDiBerandaWali === false ||
+                statusPublikasi.includes("tidak diterbitkan") ||
+                statusPublikasi.includes("ditahan")
             ) {
                 return;
             }
 
-            if (
-                sumber === "log_lapor_inisiatif" &&
-                !String(record.tipe || "")
-                    .toLowerCase()
-                    .includes("pelanggaran")
-            ) {
-                return;
+            const groupKey = [
+                record.batchPenindakanId ||
+                    record.sumberCaseId ||
+                    `single_${index}`,
+                normalisasiNama(namaDariRecord(record)),
+                tanggalPenindakan
+            ].join("|");
+
+            if (!grouped.has(groupKey)) {
+                grouped.set(groupKey, {
+                    first: record,
+                    records: []
+                });
             }
 
-            const description =
-                record.keterangan ||
-                record.deskripsiAwal ||
-                record.uraian ||
-                record.catatan ||
-                record.namaPelanggaran ||
-                record.jenisPelanggaran ||
-                record.jenis ||
-                record.kategori ||
-                "Catatan kedisiplinan";
+            grouped.get(groupKey).records.push(record);
+        });
 
+        grouped.forEach((group, groupIndex) => {
+            const record = group.first;
+            const caseRecords = group.records;
+
+            const descriptions = [
+                ...new Set(
+                    caseRecords
+                        .map(item =>
+                            item.deskripsiAwal ||
+                            item.keterangan ||
+                            item.uraian ||
+                            item.catatan ||
+                            ""
+                        )
+                        .map(value => String(value).trim())
+                        .filter(Boolean)
+                )
+            ];
+
+            const kegiatanList = [
+                ...new Set(
+                    caseRecords.map(item =>
+                        tebakKegiatanPelanggaran(
+                            item,
+                            item.deskripsiAwal ||
+                            item.keterangan ||
+                            ""
+                        )
+                    )
+                )
+            ].filter(Boolean);
+
+            const kegiatan =
+                kegiatanList.length === 1
+                    ? kegiatanList[0]
+                    : `${caseRecords.length} catatan perbaikan`;
+
+            const combinedDescription = descriptions.join("; ");
             const rawStatus = statusNormal(
-                record.statusAbsensi ||
-                record.statusKehadiran ||
-                record.namaPelanggaran ||
-                record.jenisPelanggaran ||
-                record.jenis ||
-                record.kategori ||
-                description
+                combinedDescription ||
+                record.kategoriAkhir ||
+                record.kelompokKasus ||
+                ""
             );
 
             let status = "Pelanggaran";
@@ -1837,36 +1853,42 @@
                 status = "Alfa";
             }
 
-            const kegiatan = tebakKegiatanPelanggaran(
-                record,
-                description
-            );
-
             tambahEvent({
                 id: buatEventId(
                     tglDB,
                     "Pelanggaran",
-                    `${status}_${kegiatan}_${sumber}_${index}`
+                    `${record.batchPenindakanId || groupIndex}_${kegiatan}`
                 ),
                 tipe: "Pelanggaran",
                 kegiatan,
                 status,
-                detail: record,
-                deskripsi: description,
+                detail: {
+                    ...record,
+                    daftarKasus: caseRecords
+                },
+                deskripsi:
+                    combinedDescription ||
+                    record.uraianLanjutan ||
+                    "Catatan perbaikan telah ditindaklanjuti.",
+                hasilTabayyun: record.uraianLanjutan || "",
+                pembinaan: record.pembinaan || "",
+                tindakLanjut: record.tindakLanjut || "",
+                kategoriAkhir: record.kategoriAkhir || "",
+                tanggalKejadian:
+                    record.tanggalKejadian ||
+                    record.tanggal ||
+                    "",
                 waktu: ekstrakJam(
-                    record.waktuSimpan ||
-                    record.waktu ||
-                    record.waktuKejadian ||
-                    record.createdAt
+                    record.waktuPenindakan ||
+                    record.waktuKonseling ||
+                    record.waktuPublikasiWali
                 ),
                 pembimbing:
-                    record.pelapor ||
-                    record.naqibPendata ||
-                    record.namaPenginput ||
-                    record.guru ||
-                    record.naqib ||
+                    record.penindak ||
+                    record.konselorPenindak ||
+                    record.dicatatOleh ||
                     "",
-                sumber
+                sumber: "laporan_penindakan"
             });
         });
     }
@@ -1890,19 +1912,13 @@
         globalDB.tahfiz
     );
 
-    prosesPelanggaranLangsung(
-        globalDB.pelanggaran,
-        "pelanggaran_santri"
-    );
-
-    prosesPelanggaranLangsung(
-        globalDB.laporanPelanggaran,
-        "log_lapor_inisiatif"
+    prosesPenindakan(
+        globalDB.penindakan
     );
 
     /*
-      Hindari kartu ganda bila pelanggaran yang sama berasal dari
-      absensi dan juga dicatat pada path pelanggaran.
+      Data pelanggaran hanya berasal dari laporan penindakan yang selesai.
+      Absensi alfa/terlambat dan laporan awal tidak diterbitkan langsung.
     */
     const unique = new Map();
 
@@ -1956,29 +1972,34 @@
     let pNaqib = pbbUsername ? ` bersama <b>${glrNaqib} ${pbbUsername}</b>` : "";
     
     if (ev.tipe === 'Pelanggaran') {
-        const status = statusNormal(ev.status);
-
         const namaKegiatan = ev.kegiatan
           ? `<b>${ev.kegiatan}</b>`
-          : "<b>kegiatan pondok</b>";
+          : "<b>catatan perbaikan</b>";
 
-        if (
-            status === "alfa" ||
-            status === "alpha" ||
-            status === "bolos"
-        ) {
-            return `Mak Ayah, hari ini aku bolos ${namaKegiatan}. Maafkan aku ye. Doakan aku semoga bisa memperbaiki diri dan terus berproses menjadi anak kebanggaan Mak Ayah. 🤲🏻`;
+        let tanggalKejadian = "";
+
+        if (ev.tanggalKejadian) {
+            const parsedDate = new Date(`${ev.tanggalKejadian}T12:00:00`);
+            const labelDate = Number.isNaN(parsedDate.getTime())
+              ? ev.tanggalKejadian
+              : formatUI(parsedDate);
+
+            tanggalKejadian = ` yang terjadi pada ${labelDate}`;
         }
 
-        if (status === "terlambat") {
-            return `Mak Ayah, hari ini aku terlambat mengikuti ${namaKegiatan}. Maafkan aku ye. Doakan aku supaya lebih disiplin, bisa memperbaiki diri, dan terus berproses menjadi anak kebanggaan Mak Ayah. 🌱`;
-        }
-
-        const detail = ev.deskripsi
-          ? ` (${ev.deskripsi})`
+        const hasilTabayyun = ev.hasilTabayyun
+          ? `<br><br><b>Hasil tabayyun:</b> ${ev.hasilTabayyun}`
           : "";
 
-        return `Mak Ayah, hari ini aku mendapat catatan perbaikan tentang ${namaKegiatan}${detail}. Maafkan aku ye. Doakan aku agar jujur mengakui kesalahan, mau belajar, dan menjadi pribadi yang lebih baik. 🤲🏻`;
+        const pembinaan = ev.pembinaan
+          ? `<br><b>Pembinaan:</b> ${ev.pembinaan}`
+          : "";
+
+        const tindakLanjut = ev.tindakLanjut
+          ? `<br><b>Tindak lanjut:</b> ${ev.tindakLanjut}`
+          : "";
+
+        return `Mak Ayah, catatan tentang ${namaKegiatan}${tanggalKejadian} sudah ditindaklanjuti oleh petugas pesantren. Aku sudah melalui proses tabayyun dan pembinaan agar dapat memahami kesalahan serta memperbaiki diri.${hasilTabayyun}${pembinaan}${tindakLanjut}<br><br>Mohon doakan aku agar lebih jujur, disiplin, dan sungguh-sungguh menjadi pribadi yang lebih baik. 🤲🏻`;
     }
 
     if (ev.tipe === 'Tahfiz') { 
