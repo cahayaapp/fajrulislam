@@ -293,6 +293,10 @@
     .media-card iframe{background:#f7f9fc}
     .timeline-diagnostic{display:none;margin:0 0 14px;padding:11px 13px;color:#7a521b;font-size:.65rem;font-weight:800;line-height:1.5;border:1px solid #f3d8ad;border-radius:13px;background:#fff8ed}
     .timeline-diagnostic.show{display:block}
+    .history-date-divider{display:flex;align-items:center;gap:10px;margin:22px 2px 12px;color:#60708e;font-size:.7rem;font-weight:1000;letter-spacing:.45px;text-transform:uppercase}
+    .history-date-divider::before,.history-date-divider::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,#d9e4f3)}
+    .history-date-divider::after{background:linear-gradient(90deg,#d9e4f3,transparent)}
+    .history-date-divider span{flex:0 0 auto;padding:7px 12px;border:1px solid #dce7f5;border-radius:999px;background:#fff;box-shadow:0 5px 14px rgba(35,78,160,.06)}
     .positive-footer{color:#36506e;font-size:.82rem;font-weight:850;border-color:#dce9fb;background:linear-gradient(135deg,#f2f7ff,#f1fbff)}
     @media(max-width:768px){
       .app-container{padding:11px 9px 45px}.greeting-section{min-height:155px;padding:23px 19px;border-radius:22px}
@@ -337,7 +341,7 @@
     </div>
     <div class="timeline-diagnostic" id="timelineDiagnostic"></div>
     <div id="timelineContainer"></div>
-    <button id="btnLoadMore" class="btn-load-more" onclick="muatCeritaSebelumnya()" style="display: none;">Muat Cerita Sebelumnya 🕰️</button>
+    <button id="btnLoadMore" class="btn-load-more" onclick="muatCeritaSebelumnya()" style="display: none;">Muat Cerita Lebih Lama 🕰️</button>
   </div>
 
   <div id="footerMessage" class="fade-in" style="display: none;">
@@ -721,7 +725,9 @@
   } catch (error) {}
 
   let globalDB = {}; 
-  let currentDayOffset = 0; 
+  let currentDayOffset = 0;
+  const INITIAL_HISTORY_DAYS = 7;
+  const HISTORY_SEARCH_BATCH_DAYS = 14;
   let pListUsers = []; 
   let targetAktifLabel = ""; 
   let targetAktifDisplay = "";
@@ -1068,20 +1074,7 @@
 
       timelineRefreshTimer = setTimeout(() => {
           if (!initialTimelineReady) return;
-
-          const container = document.getElementById(
-              'timelineContainer'
-          );
-
-          if (container) container.innerHTML = "";
-
-          for (
-              let offset = 0;
-              offset <= currentDayOffset;
-              offset++
-          ) {
-              renderBlokCerita(offset);
-          }
+          renderRiwayatTerlihat(currentDayOffset);
       }, 250);
   }
 
@@ -1227,6 +1220,10 @@
 
       sourceWarnings = [];
 
+      /*
+        Sumber cerita reguler tetap dibaca langsung seperti sebelumnya.
+        Penambahan laporan_penindakan tidak menggantikan sumber kehadiran.
+      */
       const sourceDefinitions = [
           {
               key: 'halqah',
@@ -1277,7 +1274,8 @@
 
       initialTimelineReady = true;
 
-      renderBlokCerita(0);
+      currentDayOffset = INITIAL_HISTORY_DAYS - 1;
+      renderRiwayatTerlihat(currentDayOffset);
       listenInteraksiCerita();
       listenToGlobalMessages();
       pasangListenerTimeline();
@@ -1567,10 +1565,20 @@
               rec.jam ||
               "";
 
-          if (
-              status === "hadir" ||
-              status === "h"
-          ) {
+          /*
+            CERITA KEHADIRAN TETAP LANGSUNG TERBIT.
+            Filter penindakan hanya berlaku untuk status pelanggaran,
+            bukan untuk kehadiran program, KBM, halqah, atau tahfiz.
+          */
+          const statusHadirLangsung = [
+              "hadir",
+              "h",
+              "hadir tepat waktu",
+              "tepat waktu",
+              "masuk"
+          ].includes(status);
+
+          if (statusHadirLangsung) {
               tambahEvent({
                   id: idEventKompatibel(
                       tipeSumber,
@@ -1591,9 +1599,13 @@
           }
 
           /*
-            Status alfa, terlambat, bolos, atau tidak hadir tetap menjadi
-            antrean kasus internal. Beranda wali baru menampilkannya setelah
-            petugas menyimpan laporan penindakan pada laporan_penindakan.
+            HANYA STATUS PELANGGARAN YANG DITAHAN.
+            Alfa, terlambat, bolos, dan tidak hadir tidak dibuat menjadi
+            kartu cerita dari data absensi. Kartu pelanggaran baru muncul
+            setelah laporan penindakan disimpan oleh petugas.
+
+            Status hadir di atas tetap langsung menjadi cerita seperti
+            mekanisme lama dan tetap diperbarui melalui listener real-time.
           */
         });
     }
@@ -2031,7 +2043,10 @@
     return `Alhamdulillah, kegiatanku ${namaTampil} udah selesai dengan lancar. Doain aku selalu ya Abi Ummi. ✨`;
   }
 
-  function renderBlokCerita(offset) {
+  function renderBlokCerita(offset, options = {}) {
+    const clearContainer = options.clearContainer ?? (offset === 0);
+    const showEmptyToday = options.showEmptyToday ?? true;
+
     let targetDate = new Date(); 
     targetDate.setDate(targetDate.getDate() - offset);
     let tglDB = formatDB(targetDate);
@@ -2043,7 +2058,8 @@
 
     if (
         events.length === 0 &&
-        offset === 0
+        offset === 0 &&
+        showEmptyToday
     ) {
       const mediaQueue =
           susunAntreanMedia();
@@ -2085,7 +2101,11 @@
       let isHariIni = (offset === 0); 
       let labelTanggal = isHariIni ? "Hari Ini" : tglUI;
       
-      let htmlBlok = ``; 
+      let htmlBlok = `
+        <div class="history-date-divider">
+          <span>${labelTanggal}</span>
+        </div>
+      `; 
 
       let teksCounter = 0;
       let mediaCounter = 0;
@@ -2200,7 +2220,7 @@
           }
       }
 
-      if (offset === 0) container.innerHTML = '';
+      if (clearContainer) container.innerHTML = '';
       container.insertAdjacentHTML('beforeend', htmlBlok); 
       btnLoadMore.style.display = 'block'; 
       
@@ -2210,17 +2230,80 @@
     return false;
   }
 
+  function renderRiwayatTerlihat(maxOffset = INITIAL_HISTORY_DAYS - 1) {
+    const container = document.getElementById('timelineContainer');
+    const btnLoadMore = document.getElementById('btnLoadMore');
+
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    let foundAny = false;
+    let foundToday = false;
+
+    for (let offset = 0; offset <= maxOffset; offset++) {
+      const found = renderBlokCerita(offset, {
+        clearContainer: false,
+        showEmptyToday: false
+      });
+
+      if (offset === 0) foundToday = found;
+      if (found) foundAny = true;
+    }
+
+    /*
+      Media tetap tampil seperti sebelumnya. Bila hari ini belum memiliki
+      cerita, media ditempatkan di awal sebelum riwayat hari-hari sebelumnya.
+    */
+    if (!foundToday) {
+      const mediaHtml = susunAntreanMedia()
+        .map(media => renderKartuMedia(media))
+        .join('');
+
+      if (mediaHtml) {
+        container.insertAdjacentHTML('afterbegin', mediaHtml);
+      }
+    }
+
+    if (!foundAny) {
+      container.insertAdjacentHTML('afterbegin', `
+        <div style="
+          text-align:center;
+          padding:35px 22px;
+          color:#8190a9;
+          font-style:italic;
+          font-weight:700;
+          background:white;
+          border:1px solid #e2eaf6;
+          border-radius:22px;
+          box-shadow:var(--shadow-sm);
+          margin-bottom:16px;
+        ">
+          Belum ada cerita yang tercatat dalam ${maxOffset + 1} hari terakhir.
+        </div>
+      `);
+    }
+
+    if (btnLoadMore) {
+      btnLoadMore.style.display = 'block';
+      btnLoadMore.disabled = false;
+      btnLoadMore.innerHTML = 'Muat Cerita Lebih Lama 🕰️';
+    }
+
+    terapkanInteraksiKeUI();
+  }
+
   function muatCeritaSebelumnya() {
     const btn = document.getElementById('btnLoadMore'); 
     btn.innerHTML = "⏳ Menelusuri jejak langkah..."; btn.disabled = true;
-    let foundEvents = false; let limitPencarian = 7; 
+    let foundEvents = false; let limitPencarian = HISTORY_SEARCH_BATCH_DAYS; 
     let searchInterval = setInterval(() => {
        if(!foundEvents && limitPencarian > 0) {
           currentDayOffset++; limitPencarian--; 
           foundEvents = renderBlokCerita(currentDayOffset);
        } else {
           clearInterval(searchInterval);
-          if (foundEvents) { btn.innerHTML = "Muat Cerita Sebelumnya 🕰️"; btn.disabled = false; } 
+          if (foundEvents) { btn.innerHTML = "Muat Cerita Lebih Lama 🕰️"; btn.disabled = false; } 
           else { btn.innerHTML = "Telah mencapai akhir riwayat 🌿"; }
        }
     }, 50); 
