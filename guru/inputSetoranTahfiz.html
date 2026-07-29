@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>CAHAYA APP - Tahsin & Tahfiz</title>
+  <title>CAHAYA APP - Tahsin, Tahfiz & Muroja'ah</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
@@ -945,6 +945,11 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
 
     .mode-switch {
       display: grid !important;
@@ -1628,8 +1633,8 @@
     <section class="tfz-hero">
       <div>
         <div class="hero-label">📖 Modul Guru Al-Qur’an</div>
-        <h1>Tahsin & Tahfiz</h1>
-        <p>Catat setoran, evaluasi bacaan, dan pantau perkembangan hafalan santri dalam satu halaman.</p>
+        <h1>Tahsin, Tahfiz & Muroja’ah</h1>
+        <p>Catat talaqqi, setoran hafalan baru, dan pengulangan hafalan santri dalam satu halaman.</p>
       </div>
 
       <div class="hero-user">
@@ -1661,6 +1666,17 @@
             <option value="">-- Pilih Program --</option>
             <option value="Tahsin">Tahsin</option>
             <option value="Tahfiz">Tahfiz</option>
+            <option value="Murojaah">Muroja’ah</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="murojaahTypeGroup" style="display:none;">
+          <label for="tfzJenisMurojaah"><span class="label-icon">🔁</span>Jenis Muroja’ah</label>
+          <select class="form-control" id="tfzJenisMurojaah">
+            <option value="">-- Pilih Jenis --</option>
+            <option value="Harian">Muroja’ah Harian</option>
+            <option value="Pekanan">Muroja’ah Pekanan</option>
+            <option value="Bulanan">Muroja’ah Bulanan</option>
           </select>
         </div>
 
@@ -1937,6 +1953,11 @@
   window.updateKelas = () => {
     const program = document.getElementById('tfzProgram').value;
     const kelasSelect = document.getElementById('tfzKelas');
+    const murojaahTypeGroup = document.getElementById('murojaahTypeGroup');
+    const jenisMurojaahSelect = document.getElementById('tfzJenisMurojaah');
+    const isMurojaah = String(program).toLowerCase() === 'murojaah';
+    if (murojaahTypeGroup) murojaahTypeGroup.style.display = isMurojaah ? 'block' : 'none';
+    if (!isMurojaah && jenisMurojaahSelect) jenisMurojaahSelect.value = '';
 
     kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
     kelasSelect.disabled = true;
@@ -2052,10 +2073,15 @@
                 <button class="btn-tambah-surat" id="btn_tambah_${safeId}" onclick="tambahBarisSuratCard('${safeId}')">➕ Tambah Baris Surat</button>
               </div>
 
-              <div class="grid-2 tahfiz-only">
+              <div class="grid-3 tahfiz-only">
                 <div class="form-group">
                   <label>∑ Total Ayat</label>
                   <input type="number" class="form-control" id="ayat_${safeId}" readonly style="font-size:1.2rem; text-align:center; font-weight:bold; background:white;">
+                </div>
+                <div class="form-group">
+                  <label>▤ Jumlah Baris Mushaf</label>
+                  <input type="number" min="1" step="1" inputmode="numeric" required class="form-control" id="baris_${safeId}" placeholder="Diisi guru" style="font-size:1.2rem;text-align:center;font-weight:bold;background:#fffdf4;border-color:#e8c66a;">
+                  <small style="display:block;margin-top:5px;color:#8a6a18;font-weight:650;line-height:1.4;">Hitung manual sesuai baris yang benar-benar disetorkan.</small>
                 </div>
                 <div class="form-group">
                   <label>❌ Lahn Jali</label>
@@ -2118,17 +2144,19 @@
   };
 
   window.terapkanModeProgramCard = (safeId, program) => {
-    const isTahsin = String(program).toLowerCase() === 'tahsin';
+    const programLow = String(program).toLowerCase();
+    const isTahsin = programLow === 'tahsin';
+    const isMurojaah = programLow === 'murojaah';
     const card = document.getElementById(`card_${safeId}`);
     if (!card) return;
     card.querySelectorAll('.tahsin-only').forEach(el => el.style.display = isTahsin ? 'block' : 'none');
     card.querySelectorAll('.tahfiz-only').forEach(el => el.style.display = isTahsin ? 'none' : 'block');
     const title = document.getElementById(`form_title_${safeId}`);
     const historyTitle = card.querySelector('.riwayat-section h5');
-    if (title) title.textContent = isTahsin ? '✎ Form Talaqqi Bacaan' : '✎ Form Input Setoran Hafalan';
-    if (historyTitle) historyTitle.textContent = isTahsin ? 'Riwayat Talaqqi Bulan Ini' : 'Riwayat Setoran Bulan Ini';
+    if (title) title.textContent = isTahsin ? '✎ Form Talaqqi Bacaan' : isMurojaah ? '✎ Form Input Muroja’ah' : '✎ Form Input Setoran Hafalan';
+    if (historyTitle) historyTitle.textContent = isTahsin ? 'Riwayat Talaqqi Bulan Ini' : isMurojaah ? 'Riwayat Muroja’ah Bulan Ini' : 'Riwayat Setoran Bulan Ini';
     const btn = document.getElementById(`btn_simpan_${safeId}`);
-    if (btn) btn.innerHTML = isTahsin ? '💾 SIMPAN DATA TALAQQI' : '💾 SIMPAN DATA SETORAN';
+    if (btn) btn.innerHTML = isTahsin ? '💾 SIMPAN DATA TALAQQI' : isMurojaah ? '💾 SIMPAN DATA MUROJA’AH' : '💾 SIMPAN DATA SETORAN';
     if (isTahsin) hitungNilaiTahsin(safeId);
   };
 
@@ -2247,9 +2275,17 @@
     if (!btn || btn.disabled) return;
     const program = document.getElementById('tfzProgram').value;
     const isTahsin = program === 'Tahsin';
+    const isMurojaah = program === 'Murojaah';
+    const jenisMurojaah = isMurojaah ? document.getElementById('tfzJenisMurojaah')?.value : '';
+    if (isMurojaah && !jenisMurojaah) {
+      alert('Pilih jenis Muroja’ah: Harian, Pekanan, atau Bulanan.');
+      document.getElementById('tfzJenisMurojaah')?.focus();
+      return;
+    }
     try {
       let strSetoran = '';
       let detailData = {};
+      let barisMeta = {};
       if (isTahsin) {
         const idx = document.getElementById(`tahsin_surat_${safeId}`).value;
         const mulai = Number(document.getElementById(`tahsin_mulai_${safeId}`).value);
@@ -2291,6 +2327,22 @@
           if(sIdx !== '' && eIdx !== '' && lAyt) strSetoran = sIdx === eIdx ? `${window.daftarSurat[sIdx].nama} (1-${lAyt})` : `${window.daftarSurat[sIdx].nama} s/d ${window.daftarSurat[eIdx].nama} (Ayat ${lAyt})`;
         }
         if(!strSetoran) { alert(`Lengkapi data surat/ayat untuk ${nama}!`); return; }
+
+        const jumlahBaris = Number(document.getElementById(`baris_${safeId}`)?.value || 0);
+        if (!Number.isInteger(jumlahBaris) || jumlahBaris < 1) {
+          alert(`Isi jumlah baris Mushaf secara manual untuk ${nama}.`);
+          document.getElementById(`baris_${safeId}`)?.focus();
+          return;
+        }
+        barisMeta = {
+          baris: jumlahBaris,
+          barisManual: true,
+          barisPresisi: true,
+          metodeBaris: 'INPUT_MANUAL_GURU',
+          sumberBaris: 'Dihitung manual oleh guru saat setoran',
+          diinputBarisOleh: user?.label || user?.nama || user?.username || 'Guru Tahfiz',
+          waktuInputBaris: new Date().toISOString()
+        };
       }
       btn.innerHTML = '⏳ MENYIMPAN...'; btn.disabled = true;
       const editId = document.getElementById(`edit_id_${safeId}`).value;
@@ -2299,20 +2351,24 @@
       const ayat = isTahsin ? (Number(document.getElementById(`tahsin_selesai_${safeId}`).value) - Number(document.getElementById(`tahsin_mulai_${safeId}`).value) + 1) : document.getElementById(`ayat_${safeId}`).value;
       const payload = {
         tanggal: document.getElementById(`tgl_${safeId}`).value, program,
-        jenisInput: isTahsin ? 'talaqqi_bacaan' : 'setoran_hafalan',
+        jenisMurojaah: isMurojaah ? jenisMurojaah : null,
+        jenisInput: isTahsin ? 'talaqqi_bacaan' : (isMurojaah ? 'setoran_murojaah' : 'setoran_hafalan'),
         kelas: document.getElementById('tfzKelas').value, kelompok: document.getElementById('tfzKelas').value,
-        tahunAjaran:'2026/2027', guru:user?.label || user?.nama || user?.username || (isTahsin ? 'Guru Tahsin' : 'Guru Tahfiz'),
-        data:[{ nama, setoran:strSetoran, ayat, kesalahan:isTahsin ? '0' : (document.getElementById(`salah_${safeId}`).value || '0'), nilai, keterangan, ...detailData }],
+        tahunAjaran:'2026/2027', guru:user?.label || user?.nama || user?.username || (isTahsin ? 'Guru Tahsin' : (isMurojaah ? 'Guru Muroja’ah' : 'Guru Tahfiz')),
+        data:[{ nama, setoran:strSetoran, ayat, jenisMurojaah: isMurojaah ? jenisMurojaah : null, kesalahan:isTahsin ? '0' : (document.getElementById(`salah_${safeId}`).value || '0'), nilai, keterangan, ...(isTahsin ? {} : barisMeta), ...detailData }],
         waktuSimpan:new Date().toISOString()
       };
       if(editId){ await update(ref(db,`cahaya_app/setoran_tahfiz/${editId}`),payload); cacheSetoranTahfiz[editId]=payload; }
       else { const hasilPush=await push(ref(db,'cahaya_app/setoran_tahfiz'),payload); cacheSetoranTahfiz[hasilPush.key]=payload; }
       simpanCacheSetoran(cacheSetoranTahfiz); window.batalEditCard(safeId); await window.fetchRiwayatSantri(nama,safeId,cacheSetoranTahfiz);
-      if(window.showPageToast) window.showPageToast(editId ? (isTahsin?'Talaqqi diperbarui':'Setoran diperbarui') : (isTahsin?'Talaqqi tersimpan':'Setoran tersimpan'), `Data ${nama} berhasil disimpan.`);
+      if(window.showPageToast) window.showPageToast(
+        editId ? (isTahsin?'Talaqqi diperbarui':isMurojaah?'Muroja’ah diperbarui':'Setoran diperbarui') : (isTahsin?'Talaqqi tersimpan':isMurojaah?'Muroja’ah tersimpan':'Setoran tersimpan'),
+        `Data ${nama} berhasil disimpan${isTahsin ? '.' : ` dengan ${barisMeta.baris || 0} baris yang diisi manual oleh guru.`}`
+      );
       btn.innerHTML='✓ DATA TERSIMPAN';
-      setTimeout(()=>{ if(btn && !document.getElementById(`edit_id_${safeId}`).value) btn.innerHTML=isTahsin?'💾 SIMPAN DATA TALAQQI':'💾 SIMPAN DATA SETORAN'; },900);
+      setTimeout(()=>{ if(btn && !document.getElementById(`edit_id_${safeId}`).value) btn.innerHTML=isTahsin?'💾 SIMPAN DATA TALAQQI':isMurojaah?'💾 SIMPAN DATA MUROJA’AH':'💾 SIMPAN DATA SETORAN'; },900);
     } catch(err){ console.error(err); alert('Gagal menyimpan data: '+(err?.message || 'Terjadi kesalahan.')); }
-    finally { btn.disabled=false; if(btn.innerHTML.includes('MENYIMPAN')) btn.innerHTML=isTahsin?'💾 SIMPAN DATA TALAQQI':'💾 SIMPAN DATA SETORAN'; }
+    finally { btn.disabled=false; if(btn.innerHTML.includes('MENYIMPAN')) btn.innerHTML=isTahsin?'💾 SIMPAN DATA TALAQQI':isMurojaah?'💾 SIMPAN DATA MUROJA’AH':'💾 SIMPAN DATA SETORAN'; }
   };
 
   window.fetchRiwayatSantri = async (nama, safeId, preloadedData = null) => {
@@ -2355,14 +2411,19 @@
         const materiTerakhir = terakhir?.data?.[0]?.setoran || 'Belum ada';
         const perkembangan = rata >= 85 ? 'Sangat Baik' : rata >= 75 ? 'Baik' : rata >= 60 ? 'Perlu Diperkuat' : 'Perlu Bimbingan';
         resumeContainer.innerHTML = `<h5 style="margin:0 0 10px;color:var(--navy-dark);font-size:1.1rem;border-bottom:1px solid #eee;padding-bottom:10px;">📊 Perkembangan Tahsin</h5><div class="resume-grid"><div class="resume-box tahsin-resume"><h4>Total Talaqqi</h4><p>${semuaRiwayatSantri.length} <span>Pertemuan</span></p></div><div class="resume-box tahsin-resume"><h4>Materi Terakhir</h4><p>${escapeHtml(materiTerakhir)}</p></div><div class="resume-box tahsin-resume"><h4>Rata-rata</h4><p>${rata || '-'} <span>Nilai</span></p></div><div class="resume-box tahsin-resume"><h4>Perkembangan</h4><p>${perkembangan}</p></div></div>`;
+      } else if (programAktif === 'Murojaah') {
+        const totalBaris = semuaRiwayatSantri.reduce((sum, r) => sum + (Number(r.data?.[0]?.baris) || 0), 0);
+        const jumlahJenis = jenis => semuaRiwayatSantri.filter(r => String(r.jenisMurojaah || r.data?.[0]?.jenisMurojaah || '').toLowerCase() === jenis.toLowerCase()).length;
+        resumeContainer.innerHTML = `<h5 style="margin:0 0 10px;color:var(--navy-dark);font-size:1.1rem;border-bottom:1px solid #eee;padding-bottom:10px;">🔁 Rekap Muroja’ah</h5><div class="resume-grid"><div class="resume-box"><h4>Harian</h4><p>${jumlahJenis('Harian')} <span>Kali</span></p></div><div class="resume-box"><h4>Pekanan</h4><p>${jumlahJenis('Pekanan')} <span>Kali</span></p></div><div class="resume-box"><h4>Bulanan</h4><p>${jumlahJenis('Bulanan')} <span>Kali</span></p></div><div class="resume-box"><h4>Total Baris</h4><p>${totalBaris} <span>Baris</span></p></div></div>`;
       } else {
         let resResume = kalkulasiArrayPencapaian(pencapaianSemua);
-        resumeContainer.innerHTML = `<h5 style="margin:0 0 10px;color:var(--navy-dark);font-size:1.1rem;border-bottom:1px solid #eee;padding-bottom:10px;">📊 Total Capaian Hafalan</h5><div class="resume-grid"><div class="resume-box"><h4>Total Juz</h4><p>${resResume.juz} <span>Juz</span></p></div><div class="resume-box"><h4>Total Surat</h4><p>${resResume.surat} <span>Surat</span></p></div><div class="resume-box"><h4>Total Ayat</h4><p>${resResume.ayat} <span>Ayat</span></p></div><div class="resume-box"><h4>Total Baris</h4><p>${resResume.baris} <span>Baris</span></p></div></div>`;
+        const totalBarisManual = semuaRiwayatSantri.reduce((sum, r) => sum + (Number(r.data?.[0]?.baris) || 0), 0);
+        resumeContainer.innerHTML = `<h5 style="margin:0 0 10px;color:var(--navy-dark);font-size:1.1rem;border-bottom:1px solid #eee;padding-bottom:10px;">📊 Total Capaian Hafalan</h5><div class="resume-grid"><div class="resume-box"><h4>Total Juz</h4><p>${resResume.juz} <span>Juz</span></p></div><div class="resume-box"><h4>Total Surat</h4><p>${resResume.surat} <span>Surat</span></p></div><div class="resume-box"><h4>Total Ayat</h4><p>${resResume.ayat} <span>Ayat</span></p></div><div class="resume-box"><h4>Total Baris Tercatat</h4><p>${totalBarisManual} <span>Baris</span></p></div></div>`;
       }
 
       riwayatBulanIni.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
       
-      if(riwayatBulanIni.length > 0) badgeInfo.innerText = `${riwayatBulanIni.length} ${programAktif === 'Tahsin' ? 'Talaqqi' : 'Setoran'} Bulan Ini`;
+      if(riwayatBulanIni.length > 0) badgeInfo.innerText = `${riwayatBulanIni.length} ${programAktif === 'Tahsin' ? 'Talaqqi' : programAktif === 'Murojaah' ? 'Muroja’ah' : 'Setoran'} Bulan Ini`;
       else badgeInfo.innerText = "Belum Ada Setoran";
 
       if (riwayatBulanIni.length === 0) {
@@ -2390,8 +2451,10 @@
                 <span class="riwayat-tgl">${tglIndo}</span>
                 <span class="badge-riwayat" style="color:${bColor}; background:${bBg}; border-color:${bColor};">${dat.nilai}</span>
               </div>
-              <div class="riwayat-surat">${dat.setoran}</div>
-              <div class="riwayat-ayat">${programAktif === 'Tahsin' ? `${dat.nilaiAkhir ?? '-'} Nilai • ${escapeHtml(dat.hasil || 'Evaluasi Bacaan')}` : `${dat.ayat} Ayat`}</div>
+              <div class="riwayat-surat">${programAktif === 'Murojaah' ? `<span style="display:inline-block;margin-right:7px;padding:3px 8px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:.7rem;font-weight:800;">${escapeHtml(r.jenisMurojaah || dat.jenisMurojaah || 'Muroja’ah')}</span>` : ''}${dat.setoran}</div>
+              <div class="riwayat-ayat">${programAktif === 'Tahsin'
+                ? `${dat.nilaiAkhir ?? '-'} Nilai • ${escapeHtml(dat.hasil || 'Evaluasi Bacaan')}`
+                : `${dat.ayat} Ayat • ${Number(dat.baris) || 0} Baris${dat.barisManual === true ? ' (Manual Guru)' : dat.baris ? ' (Data Lama)' : ' (Belum Diisi)'}`}</div>
             </div>
             <div class="riwayat-actions">
               <button class="btn-icon btn-edit-icon" onclick="siapkanEditCard('${safeId}', '${dataString}')" title="Edit">✎</button>
@@ -2435,6 +2498,10 @@
       return;
     }
     document.getElementById(`tgl_${safeId}`).value = dataRow.tanggal;
+    if (dataRow.program === 'Murojaah') {
+      const jenisSelect = document.getElementById('tfzJenisMurojaah');
+      if (jenisSelect) jenisSelect.value = dataRow.jenisMurojaah || dat.jenisMurojaah || 'Harian';
+    }
     
     const findSuratIdx = (name) => {
       if(!window.daftarSurat) return "";
@@ -2472,6 +2539,7 @@
     }
 
     document.getElementById(`ayat_${safeId}`).value = dat.ayat;
+    document.getElementById(`baris_${safeId}`).value = Number(dat.baris) || "";
     document.getElementById(`salah_${safeId}`).value = dat.kesalahan === "0" ? "" : dat.kesalahan;
     
     let ketAsli = dat.keterangan || "";
@@ -2493,6 +2561,7 @@
     document.getElementById(`tgl_${safeId}`).value = new Date().toISOString().split('T')[0];
     
     document.getElementById(`salah_${safeId}`).value = "";
+    const barisInput = document.getElementById(`baris_${safeId}`); if (barisInput) barisInput.value = "";
     document.getElementById(`catatan_${safeId}`).value = "";
     document.getElementById(`chk_cahaya_${safeId}`).checked = false;
     ['tahsin_mulai','tahsin_selesai','tahsin_halaman','kesalahan_tahsin','catatan_tahsin'].forEach(id=>{ const el=document.getElementById(`${id}_${safeId}`); if(el) el.value=''; });

@@ -1931,11 +1931,40 @@
           ? masterPoinProgram[program]
           : 20;
 
+      const keySantri = value => String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+
+      let izinHariIni = {};
+      try {
+        const izinSnapshot = await get(
+          ref(db, `cahaya_app/izin_sakit_harian/${tanggal}`)
+        );
+        izinHariIni = izinSnapshot.exists() ? izinSnapshot.val() : {};
+      } catch (izinError) {
+        console.warn("Izin UKS tidak dapat dibaca:", izinError);
+      }
+
+      const izinByNama = new Map(
+        Object.values(izinHariIni || {})
+          .filter(item =>
+            item &&
+            item.statusAktif !== false &&
+            item.bolehTidakMengikutiPembelajaranHariIni === true
+          )
+          .map(item => [keySantri(item.namaSantri || item.namaSantriKey || ""), item])
+      );
+      let jumlahKoreksiUKS = 0;
+
       const dataAbsen = daftarSantriAktif.map((item, index) => {
-        const status =
+        const statusAwal =
           document.querySelector(
             `input[name="s_${index}"]:checked`
           )?.value || "Hadir";
+        const izinUKS = izinByNama.get(keySantri(item.nama));
+        const status = statusAwal === "Alfa" && izinUKS ? "Sakit" : statusAwal;
 
         let poinFinal = 0;
 
@@ -1947,10 +1976,19 @@
           poinFinal = -poinDasar;
         }
 
+        if (status !== statusAwal) jumlahKoreksiUKS += 1;
+
         return {
           nama: item.nama.toUpperCase().trim(),
           status,
           poin: poinFinal,
+          ...(status !== statusAwal ? {
+            statusAsal: statusAwal,
+            dikoreksiOtomatisUKS: true,
+            idPemeriksaanUKS: izinUKS?.idPemeriksaan || "",
+            keteranganKoreksiUKS: izinUKS?.keteranganGuru || "Alfa diubah menjadi Sakit berdasarkan izin UKS.",
+            waktuKoreksiUKS: new Date().toISOString()
+          } : {}),
 
           /*
             Field baru ini menjaga asal kelompok ketika
@@ -2012,7 +2050,9 @@
         tampilkanToast(
           "success",
           "Absensi berhasil disimpan",
-          `${program} untuk ${info.label} telah tersimpan.`
+          jumlahKoreksiUKS
+            ? `${program} untuk ${info.label} tersimpan. ${jumlahKoreksiUKS} Alfa otomatis diubah menjadi Sakit berdasarkan izin UKS.`
+            : `${program} untuk ${info.label} telah tersimpan.`
         );
 
         btn.innerHTML = "✓ Data Tersimpan";

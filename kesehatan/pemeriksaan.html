@@ -1853,8 +1853,101 @@
 
     function normalizedKey(value = "") {
       return String(value)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
         .replace(/[^a-z0-9]/g, "");
+    }
+
+    async function buildRetroactiveUksAttendanceCorrections({
+      tanggalIzin,
+      namaSantri,
+      idPemeriksaan,
+      waktuKoreksi
+    }) {
+      const correctionUpdates = {};
+      const correctedItems = [];
+      const targetKey = normalizedKey(namaSantri);
+
+      const sources = [
+        {
+          path: `${CAHAYA_PATH}/absensi_pembelajaran`,
+          jenis: "Pembelajaran",
+          labelField: "mapel"
+        },
+        {
+          path: `${CAHAYA_PATH}/absensi_program_harian`,
+          jenis: "Program Naqib",
+          labelField: "program"
+        }
+      ];
+
+      const snapshots = await Promise.all(
+        sources.map(source => get(ref(db, source.path)))
+      );
+
+      sources.forEach((source, sourceIndex) => {
+        const rootValue = snapshots[sourceIndex].exists()
+          ? snapshots[sourceIndex].val()
+          : {};
+
+        Object.entries(rootValue || {}).forEach(([recordId, record]) => {
+          if (String(record?.tanggal || "") !== String(tanggalIzin || "")) return;
+
+          const attendanceData = record?.data || {};
+          Object.entries(attendanceData).forEach(([itemKey, item]) => {
+            const status = String(item?.status || "").trim().toLowerCase();
+            if (normalizedKey(item?.nama || "") !== targetKey || status !== "alfa") return;
+
+            const itemPath = `${source.path}/${recordId}/data/${itemKey}`;
+            correctionUpdates[`${itemPath}/status`] = "Sakit";
+            correctionUpdates[`${itemPath}/poin`] = 0;
+            correctionUpdates[`${itemPath}/statusAsal`] = item?.status || "Alfa";
+            correctionUpdates[`${itemPath}/dikoreksiOtomatisUKS`] = true;
+            correctionUpdates[`${itemPath}/idPemeriksaanUKS`] = idPemeriksaan;
+            correctionUpdates[`${itemPath}/keteranganKoreksiUKS`] =
+              "Alfa diubah menjadi Sakit berdasarkan izin tidak belajar/tidak mengikuti kegiatan dari UKS pada hari yang sama.";
+            correctionUpdates[`${itemPath}/waktuKoreksiUKS`] = waktuKoreksi;
+            correctionUpdates[`${source.path}/${recordId}/koreksiUKSTerakhir`] = {
+              idPemeriksaan: idPemeriksaan,
+              namaSantri: namaSantri,
+              tanggalIzin: tanggalIzin,
+              waktuKoreksi: waktuKoreksi,
+              sistem: "AUTO_ALFA_KE_SAKIT_V1"
+            };
+
+            correctedItems.push({
+              sumber: source.jenis,
+              recordId,
+              itemKey,
+              kegiatan: record?.[source.labelField] || "",
+              kelasAtauUsrah: record?.kelas || record?.sub || record?.labelUsrah || record?.usrah || "",
+              statusSebelum: item?.status || "Alfa",
+              statusSesudah: "Sakit"
+            });
+          });
+        });
+      });
+
+      if (correctedItems.length) {
+        const auditKey = push(ref(db, `${CAHAYA_PATH}/koreksi_absensi_uks`)).key;
+        correctionUpdates[`${CAHAYA_PATH}/koreksi_absensi_uks/${auditKey}`] = {
+          idPemeriksaan,
+          namaSantri,
+          namaSantriKey: targetKey,
+          tanggalIzin,
+          waktuKoreksi,
+          jumlahKoreksi: correctedItems.length,
+          rincian: correctedItems,
+          sistem: "AUTO_ALFA_KE_SAKIT_V1"
+        };
+      }
+
+      return {
+        updates: correctionUpdates,
+        count: correctedItems.length,
+        items: correctedItems
+      };
     }
 
     function getUsrahNumber(value = "") {
@@ -3146,6 +3239,82 @@
           [`${DB_PATH}/${recordKey}`]: record
         };
 
+        /*
+          Izin keluar karena rujukan sakit hanya diajukan oleh UKS.
+          Data masuk ke antrean Pimpinan dan belum berlaku sebelum disetujui.
+        */
+        const dispositionDecision =
+          record.disposisi?.keputusan || "";
+
+        const requiresMedicalPermit = [
+          "Dirujuk ke Fasilitas Kesehatan",
+          "Dijemput Wali Santri"
+        ].includes(dispositionDecision);
+
+        let medicalPermitKey = "";
+
+        if (requiresMedicalPermit) {
+          medicalPermitKey = push(
+            ref(db, `${CAHAYA_PATH}/perizinan_santri`)
+          ).key;
+
+          updates[
+            `${CAHAYA_PATH}/perizinan_santri/${medicalPermitKey}`
+          ] = {
+            idIzin: medicalPermitKey,
+            idPemeriksaan: recordKey,
+            linkedPemeriksaanId: recordKey,
+
+            namaSantri: student,
+            namaSantriKey: studentKey,
+            kelas: selectedStudentMeta?.kelas || "",
+            usrah,
+            jenisKelamin:
+              selectedStudentMeta?.jenisKelamin ||
+              getGenderByUsrah(usrah),
+
+            jenisIzin: "Rujukan Medis",
+            sumberPengajuan: "UKS",
+            pengaju: petugas,
+            pengajuPeran: userRole(),
+
+            tanggalPengajuan: tanggal,
+            diajukanPada: nowIso,
+            tanggalMulai: tanggal,
+            rencanaKembali: `${tanggal}T20:00`,
+
+            tujuan:
+              record.disposisi?.tujuanRujukan ||
+              dispositionDecision,
+            tujuanRujukan:
+              record.disposisi?.tujuanRujukan || "",
+            pendamping:
+              record.disposisi?.pendamping || "",
+
+            alasan:
+              record.anamnesis?.keluhanUtama ||
+              "Rujukan berdasarkan pemeriksaan UKS.",
+            asesmenUKS:
+              record.asesmenDanPelayanan?.asesmen || "",
+            tindakanUKS:
+              record.asesmenDanPelayanan?.tindakan || "",
+            disposisiUKS: dispositionDecision,
+
+            status: "MENUNGGU_PIMPINAN",
+            sopVersi: "SOP_PERIZINAN_KHUSUS_2026",
+            suratDokter: null,
+            riwayatStatus: [
+              {
+                status: "MENUNGGU_PIMPINAN",
+                waktu: nowIso,
+                oleh: petugas,
+                catatan:
+                  "Pengajuan rujukan medis dibuat oleh UKS."
+              }
+            ]
+          };
+        }
+
         processedMedicines.forEach(medicine => {
           updates[
             `${STOCK_TRANSACTION_PATH}/${medicine.transactionId}`
@@ -3191,10 +3360,39 @@
           };
         });
 
+        let jumlahKoreksiAbsensiUKS = 0;
+        let koreksiAbsensiUKSError = "";
+
         if (permission) {
           updates[
             `${PERMISSION_PATH}/${permissionDate}/${studentKey}`
           ] = publicPermission;
+
+          try {
+            const correctionResult = await buildRetroactiveUksAttendanceCorrections({
+              tanggalIzin: permissionDate,
+              namaSantri: student,
+              idPemeriksaan: recordKey,
+              waktuKoreksi: nowIso
+            });
+            Object.assign(updates, correctionResult.updates);
+            jumlahKoreksiAbsensiUKS = correctionResult.count;
+          } catch (correctionError) {
+            koreksiAbsensiUKSError = correctionError?.message || String(correctionError);
+            console.warn("Koreksi retroaktif absensi UKS tertunda:", correctionError);
+            const auditKey = push(ref(db, `${CAHAYA_PATH}/koreksi_absensi_uks`)).key;
+            updates[`${CAHAYA_PATH}/koreksi_absensi_uks/${auditKey}`] = {
+              idPemeriksaan: recordKey,
+              namaSantri: student,
+              namaSantriKey: studentKey,
+              tanggalIzin: permissionDate,
+              waktuKoreksi: nowIso,
+              jumlahKoreksi: 0,
+              status: "TERTUNDA",
+              alasan: koreksiAbsensiUKSError,
+              sistem: "AUTO_ALFA_KE_SAKIT_V1"
+            };
+          }
         } else {
           updates[
             `${PERMISSION_PATH}/${tanggal}/${studentKey}`
@@ -3251,16 +3449,30 @@
           throw recordError;
         }
 
+        const infoKoreksiUKS = permission
+          ? (
+              jumlahKoreksiAbsensiUKS
+                ? ` ${jumlahKoreksiAbsensiUKS} absensi Alfa hari ini otomatis diubah menjadi Sakit.`
+                : (koreksiAbsensiUKSError
+                    ? " Izin sakit tersimpan; koreksi absensi lama akan dijaga pada input berikutnya."
+                    : " Tidak ditemukan absensi Alfa yang perlu dikoreksi.")
+            )
+          : "";
+
+        const infoPerizinanMedis = medicalPermitKey
+          ? " Pengajuan izin rujukan medis juga telah dikirim ke Pimpinan untuk mendapatkan persetujuan."
+          : "";
+
         showToast(
           "success",
           "Pemeriksaan dan stok berhasil disimpan",
-          medicineRequests.length
+          (medicineRequests.length
             ? `${medicineRequests.length} jenis obat tercatat dan stok berkurang otomatis.`
             : (
                 permission
                   ? "Santri juga dimasukkan ke daftar izin sakit di Beranda Guru."
                   : "Rekam pemeriksaan berhasil disimpan."
-              )
+              )) + infoKoreksiUKS + infoPerizinanMedis
         );
 
         button.innerHTML =

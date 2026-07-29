@@ -733,7 +733,9 @@
     .report-header {
       display: none !important;
     }
-  </style>
+  
+    .evidence-zone{display:block;border:1.5px dashed #bfd0e8;border-radius:18px;padding:14px;background:#f8fbff;cursor:pointer;transition:.2s}.evidence-zone:hover{border-color:#5d94dd;background:#f1f7ff}.evidence-zone input{display:none}.evidence-placeholder{display:flex;align-items:center;gap:10px;color:#6b7f9b;font-size:.74rem;font-weight:800}.evidence-placeholder span{font-size:1.45rem}.evidence-preview{display:none;width:100%;max-height:280px;object-fit:contain;border-radius:14px;border:1px solid #dce5f0;background:#fff}.evidence-actions{display:flex;gap:8px;margin-top:8px}.small-button{border:0;border-radius:10px;padding:8px 10px;background:#edf3fa;color:#526b89;font-size:.65rem;font-weight:900;cursor:pointer}
+</style>
 </head>
 
 <body>
@@ -863,6 +865,18 @@
         </div>
 
         <div class="form-group full">
+          <label class="form-label">📷 Bukti Foto <span style="font-weight:700;color:#8291a5;">(Opsional)</span></label>
+          <label class="evidence-zone">
+            <input id="lp_buktiFoto" type="file" accept="image/*" capture="environment" onchange="prosesBuktiFoto(event)">
+            <div class="evidence-placeholder" id="lp_buktiPlaceholder"><span>📸</span><div>Pilih atau ambil foto bukti. Gambar dikompres otomatis sebelum disimpan.</div></div>
+            <img class="evidence-preview" id="lp_buktiPreview" alt="Pratinjau bukti foto">
+          </label>
+          <div class="evidence-actions" id="lp_buktiActions" style="display:none;">
+            <button class="small-button" type="button" onclick="hapusBuktiFoto()">Hapus Foto</button>
+          </div>
+        </div>
+
+        <div class="form-group full">
           <label class="critical-option">
             <input
               type="checkbox"
@@ -925,6 +939,8 @@
     let currentUser = {};
     let namaPenginput = "Pengguna";
     let toastTimer = null;
+    let buktiFotoData = "";
+    let buktiFotoMeta = null;
 
     try {
       currentUser = JSON.parse(
@@ -1113,6 +1129,73 @@
       }
     });
 
+    function kompresFoto(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          const image = new Image();
+          image.onerror = reject;
+          image.onload = () => {
+            let width = image.width;
+            let height = image.height;
+            const maxSize = 1000;
+            if (Math.max(width, height) > maxSize) {
+              const ratio = maxSize / Math.max(width, height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", 0.62));
+          };
+          image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    window.prosesBuktiFoto = async function(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        tampilkanToast("error", "File tidak sesuai", "Pilih file gambar.");
+        event.target.value = "";
+        return;
+      }
+      try {
+        buktiFotoData = await kompresFoto(file);
+        buktiFotoMeta = {
+          namaFile: file.name,
+          tipeAsli: file.type,
+          ukuranAsli: file.size,
+          diprosesPada: new Date().toISOString()
+        };
+        const preview = document.getElementById("lp_buktiPreview");
+        preview.src = buktiFotoData;
+        preview.style.display = "block";
+        document.getElementById("lp_buktiPlaceholder").style.display = "none";
+        document.getElementById("lp_buktiActions").style.display = "flex";
+      } catch (error) {
+        console.error(error);
+        tampilkanToast("error", "Foto gagal diproses", "Coba pilih gambar lain.");
+      }
+    };
+
+    window.hapusBuktiFoto = function() {
+      buktiFotoData = "";
+      buktiFotoMeta = null;
+      const input = document.getElementById("lp_buktiFoto");
+      const preview = document.getElementById("lp_buktiPreview");
+      input.value = "";
+      preview.removeAttribute("src");
+      preview.style.display = "none";
+      document.getElementById("lp_buktiPlaceholder").style.display = "flex";
+      document.getElementById("lp_buktiActions").style.display = "none";
+    };
+
     window.updateCriticalState = function() {
       const kritis =
         document.getElementById("lp_kritis").checked;
@@ -1197,7 +1280,14 @@
 
         statusPenanganan: "Menunggu Konselor",
         naqibPendata: namaPenginput,
-        namaPenginput
+        namaPenginput,
+
+        buktiFoto: buktiFotoData
+          ? {
+              dataUrl: buktiFotoData,
+              ...buktiFotoMeta
+            }
+          : null
       };
 
       try {
@@ -1218,6 +1308,7 @@
         document.getElementById("lp_namaPelapor").value = "";
         document.getElementById("lp_keterangan").value = "";
         document.getElementById("lp_kritis").checked = false;
+        hapusBuktiFoto();
 
         document.querySelectorAll(
           'input[name="bidangPelanggaran"]'

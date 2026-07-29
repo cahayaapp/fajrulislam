@@ -1286,50 +1286,17 @@
   }
 
   function broadcastItems() {
-    return BROADCASTS
-      .filter(item => {
-        if (
-          currentIsPrivileged()
-        ) {
-          return true;
-        }
+    if (!currentIsPrivileged()) {
+      return [];
+    }
 
-        if (
-          item.audience ===
-          "wali"
-        ) {
-          return false;
-        }
-
-        return Boolean(
-          latestMessage(
-            item.roomId
-          )
-        );
-      })
-      .map(item => {
-        const latest =
-          latestMessage(
-            item.roomId
-          );
-
-        const unread =
-          unreadMessages(
-            item.roomId
-          );
-
-        return {
-          ...item,
-          latest,
-          unreadCount:
-            unread.length,
-          isUnread:
-            unread.length >
-            0,
-          canSend:
-            currentIsPrivileged()
-        };
-      });
+    return BROADCASTS.map(item => ({
+      ...item,
+      latest: null,
+      unreadCount: 0,
+      isUnread: false,
+      canSend: true
+    }));
   }
 
   function avatarHtml(
@@ -2455,6 +2422,22 @@
         .off();
     }
 
+    if (active.type === "broadcast") {
+      pChatListener = null;
+      state.rooms[active.roomId] = {};
+      document.getElementById("pwHeaderSubtitle").textContent =
+        "Broadcast pribadi • setiap penerima mendapat salinan di chat pribadinya";
+      document.getElementById("pChatBody").innerHTML = `
+        <div class="pw-empty">
+          <strong>📣 Mode Broadcast Pribadi</strong><br>
+          Pesan yang Anda kirim di sini akan disalin ke ruang chat pribadi setiap penerima.
+          Balasan penerima hanya masuk ke percakapan pribadinya dengan Anda.
+        </div>
+      `;
+      setTimeout(() => { if (canSend) input.focus(); }, 160);
+      return;
+    }
+
     pChatListener =
       active.roomId;
 
@@ -2516,10 +2499,6 @@
       savePrivateRoomMeta(
         active,
         active.roomId
-      );
-    } else {
-      saveBroadcastMeta(
-        active
       );
     }
 
@@ -2935,6 +2914,70 @@
       "none";
   }
 
+  function broadcastRecipients(audience) {
+    buildContacts();
+
+    return state.contacts.filter(contact => {
+      if (!contact || !contact.username) return false;
+      if (audience === "wali") return contact.isWali;
+      if (audience === "pengurus") return !contact.isWali;
+      return true;
+    });
+  }
+
+  async function sendBroadcastAsPrivate(active, text) {
+    const recipients = broadcastRecipients(active.audience);
+
+    if (!recipients.length) {
+      throw new Error("Tidak ada penerima broadcast yang sesuai.");
+    }
+
+    const now = new Date().toISOString();
+    const batchId = `broadcast_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+
+    await Promise.all(
+      recipients.map(async contact => {
+        const roomId = resolveRoomId(contact);
+        await savePrivateRoomMeta(contact, roomId);
+
+        const payload = {
+          teks: text,
+          pengirim: namaSaya,
+          senderDisplay: namaSaya,
+          senderUsername: realUsername,
+          senderRoles: Array.isArray(myRoles) ? myRoles : [],
+          recipientDisplay: contact.chatIdentity,
+          recipientUsername: contact.username,
+          recipientRoles: contact.roles,
+          roomId,
+          waktu: now,
+          isBroadcastCopy: true,
+          broadcastAudience: active.audience,
+          broadcastTitle: active.title,
+          broadcastBatchId: batchId
+        };
+
+        await dbRT
+          .ref(`cahaya_app/pesan_global/${roomId}`)
+          .push(payload);
+      })
+    );
+
+    await dbRT
+      .ref(`cahaya_app/broadcast_log/${batchId}`)
+      .set({
+        id: batchId,
+        judul: active.title || "Broadcast",
+        audience: active.audience || "semua",
+        senderUsername: realUsername,
+        senderDisplay: namaSaya,
+        jumlahPenerima: recipients.length,
+        waktu: now
+      });
+
+    return recipients.length;
+  }
+
   async function sendMessage() {
     const input =
       document.getElementById(
@@ -3002,62 +3045,36 @@
           .remove(
             "editing"
           );
+      } else if (state.active.type === "broadcast") {
+        const recipientCount = await sendBroadcastAsPrivate(state.active, text);
+        if (typeof showToast === "function") {
+          showToast(`Broadcast terkirim sebagai pesan pribadi ke ${recipientCount} akun.`);
+        }
       } else {
         const payload = {
-          teks:
-            text,
-          pengirim:
-            namaSaya,
-          senderDisplay:
-            namaSaya,
-          senderUsername:
-            realUsername,
-          senderRoles:
-            Array.isArray(myRoles)
-              ? myRoles
-              : [],
-          roomId:
-            state.active.roomId,
-          waktu:
-            new Date()
-              .toISOString()
+          teks: text,
+          pengirim: namaSaya,
+          senderDisplay: namaSaya,
+          senderUsername: realUsername,
+          senderRoles: Array.isArray(myRoles) ? myRoles : [],
+          roomId: state.active.roomId,
+          waktu: new Date().toISOString(),
+          recipientDisplay: state.active.chatIdentity,
+          recipientUsername: state.active.username,
+          recipientRoles: state.active.roles
         };
 
-        if (
-          state.active.type ===
-          "private"
-        ) {
-          payload.recipientDisplay =
-            state.active.chatIdentity;
-
-          payload.recipientUsername =
-            state.active.username;
-
-          payload.recipientRoles =
-            state.active.roles;
-        } else {
-          payload.recipientRole =
-            "broadcast";
-
-          payload.broadcastAudience =
-            state.active.audience;
-
-          payload.judul =
-            state.active.title;
-        }
-
         await dbRT
-          .ref(
-            `cahaya_app/pesan_global/${state.active.roomId}`
-          )
+          .ref(`cahaya_app/pesan_global/${state.active.roomId}`)
           .push(payload);
       }
 
-      await markRoomRead(
-        state.active.roomId,
-        new Date()
-          .toISOString()
-      );
+      if (state.active.type !== "broadcast") {
+        await markRoomRead(
+          state.active.roomId,
+          new Date().toISOString()
+        );
+      }
 
       input.value =
         "";

@@ -181,6 +181,11 @@
     .tc-flex-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .tc-rainbow-box { color: white; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; border: none; }
     .blok-tahfiz .tc-rainbow-box { background: linear-gradient(135deg, #0284c7, #3b82f6); }
+    .blok-murojaah { overflow:hidden; background:linear-gradient(135deg,#f7f3ff,#eef2ff); border:1px solid #ddd6fe; box-shadow:var(--shadow-float),var(--shadow-glow); }
+    .blok-murojaah .kb-header { background:linear-gradient(135deg,#6d4cc4,#8b5cf6); margin:-28px -24px 20px -24px; padding:20px 24px; border-radius:28px 28px 0 0; }
+    .blok-murojaah .kb-icon { background:rgba(255,255,255,.2); color:#fff; box-shadow:none; }
+    .blok-murojaah .kb-title { color:#fff !important; }
+    .murojaah-kind { display:inline-flex;padding:4px 8px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:.68rem;font-weight:900;margin-right:7px; }
     .blok-cahaya .tc-rainbow-box { background: linear-gradient(135deg, #ea580c, #f59e0b); }
     .tc-rainbow-box span { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; }
 
@@ -392,6 +397,15 @@
     <div class="tahfiz-list" id="tahfizListCahaya"></div>
   </div>
 
+  <div id="secMurojaah" class="kategori-blok blok-murojaah fade-in" style="display: none;">
+    <div class="kb-header">
+      <div class="kb-icon">🔁</div>
+      <h3 class="kb-title">Laporan Muroja’ah</h3>
+    </div>
+    <div class="resume-grid" id="murojaahResumeGrid"></div>
+    <div class="tahfiz-list" id="murojaahList"></div>
+  </div>
+
   <div class="kategori-blok blok-evaluasi fade-in" id="secEvaluasi" style="display: none;">
     <div class="kb-header">
       <div class="kb-icon">📝</div>
@@ -538,7 +552,7 @@
 
   const monthMapRev = { "01":"Januari", "02":"Februari", "03":"Maret", "04":"April", "05":"Mei", "06":"Juni", "07":"Juli", "08":"Agustus", "09":"September", "10":"Oktober", "11":"November", "12":"Desember" };
 
-  let globalExams = []; let globalTahfizReguler = []; let globalTahfizCahaya = []; let globalAsesmen = [];
+  let globalExams = []; let globalTahfizReguler = []; let globalTahfizCahaya = []; let globalMurojaah = []; let globalAsesmen = [];
   let currentMonthFilter = "Semua"; let activeStudentName = "";
 
   function namaCocok(value) {
@@ -663,11 +677,13 @@
                   namaCocok(d.nama)
                 );
             if(sRec) {
-                let merged = {...sRec, tanggal: rec.tanggal, guru: rec.guru || 'Guru'};
+                let merged = {...sRec, tanggal: rec.tanggal, guru: rec.guru || 'Guru', program: rec.program || '', jenisMurojaah: rec.jenisMurojaah || sRec.jenisMurojaah || ''};
                 let filterBulan = monthMapRev[merged.tanggal.split('-')[1]];
                 if (isAprilOrEarlyMay(merged.tanggal)) filterBulan = "April";
                 merged.filterBulan = filterBulan;
-                if ((merged.keterangan||"").toLowerCase().includes("terjemah")) globalTahfizCahaya.push(merged);
+                if (String(rec.program || '').toLowerCase() === 'murojaah' || rec.jenisInput === 'setoran_murojaah') globalMurojaah.push(merged);
+                else if (String(rec.program || '').toLowerCase() === 'tahsin' || rec.jenisInput === 'talaqqi_bacaan') { /* Talaqqi tidak masuk laporan hafalan */ }
+                else if ((merged.keterangan||"").toLowerCase().includes("terjemah")) globalTahfizCahaya.push(merged);
                 else globalTahfizReguler.push(merged);
             }
           }
@@ -715,6 +731,7 @@
     renderAsesmen(currentMonthFilter === "Semua" ? globalAsesmen : globalAsesmen.filter(a => a.filterBulan === currentMonthFilter));
     renderTahfizBlok('Reguler', globalTahfizReguler, 'secTahfizReguler', 'tahfizResumeGridReguler', 'tahfizListReguler');
     renderTahfizBlok('Cahaya', globalTahfizCahaya, 'secTahfizCahaya', 'tahfizResumeGridCahaya', 'tahfizListCahaya');
+    renderMurojaah();
     renderEvaluasi();
   }
 
@@ -790,6 +807,29 @@
           </div>
         </div>
       `;
+    }).join('');
+  }
+
+  function renderMurojaah() {
+    const sec = document.getElementById('secMurojaah');
+    const grid = document.getElementById('murojaahResumeGrid');
+    const list = document.getElementById('murojaahList');
+    const filtered = currentMonthFilter === "Semua" ? globalMurojaah : globalMurojaah.filter(r => r.filterBulan === currentMonthFilter);
+    if (!globalMurojaah.length) { sec.style.display = 'none'; return; }
+    sec.style.display = 'block';
+    const total = filtered.length;
+    const countKind = k => filtered.filter(r => String(r.jenisMurojaah || 'Harian').toLowerCase() === k.toLowerCase()).length;
+    const totalBaris = filtered.reduce((n,r)=>n+(Number(r.baris)||0),0);
+    grid.innerHTML = `
+      <div class="resume-box"><p>${countKind('Harian')}</p><h4>Harian</h4></div>
+      <div class="resume-box"><p>${countKind('Pekanan')}</p><h4>Pekanan</h4></div>
+      <div class="resume-box"><p>${countKind('Bulanan')}</p><h4>Bulanan</h4></div>
+      <div class="resume-box"><p>${totalBaris}</p><h4>Baris</h4></div>`;
+    if (!total) { list.innerHTML = `<div class="empty-state">Belum ada Muroja’ah pada bulan ini.</div>`; return; }
+    list.innerHTML = [...filtered].sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal)).map(r=>{
+      let bCls='badge-mumtaz'; if(String(r.nilai||'').includes('JAYYID')) bCls='badge-jayyid'; if(String(r.nilai||'').includes('MAQBUL')) bCls='badge-maqbul'; if(String(r.nilai||'').includes('BIMBINGAN')) bCls='badge-bimbingan';
+      const ket=(r.keterangan&&r.keterangan!=='-'&&String(r.keterangan).toLowerCase()!=='null')?`<div class="tc-ket">${r.keterangan}</div>`:'';
+      return `<div class="tahfiz-card"><div class="tc-top"><div class="tc-surat"><span class="murojaah-kind">${r.jenisMurojaah||'Harian'}</span>${r.setoran||'-'}</div><div class="tc-flex-wrap"><div class="tc-rainbow-box"><span>${Number(r.ayat)||0} Ayat • ${Number(r.baris)||0} Baris</span></div><div class="badge ${bCls}">${r.nilai||'-'}</div></div></div><div class="tc-bottom"><span class="tc-guru">Diperiksa oleh: ${formatGelarAkademik(r.guru)}</span>${ket}</div></div>`;
     }).join('');
   }
 
@@ -1392,11 +1432,13 @@
         .sort((a, b) => new Date(b.timestamp || b.tanggalAsesmen || 0) - new Date(a.timestamp || a.tanggalAsesmen || 0));
       const tahfizRegulerFiltered = dataSesuaiBulan(globalTahfizReguler);
       const tahfizCahayaFiltered = dataSesuaiBulan(globalTahfizCahaya);
+      const murojaahFiltered = dataSesuaiBulan(globalMurojaah).map(r=>({...r,setoran:`${r.jenisMurojaah||'Harian'} • ${r.setoran||'-'}`}));
       const ujianFiltered = dataSesuaiBulan(globalExams);
 
       y = gambarAsesmenPdf(doc, y, meta, asesmenFiltered[0] || null);
       y = gambarTahfizPdf(doc, y, meta, 2, "Tahfiz Reguler", tahfizRegulerFiltered);
       y = gambarTahfizPdf(doc, y, meta, 3, "Tahfiz CAHAYA", tahfizCahayaFiltered);
+      y = gambarTahfizPdf(doc, y, meta, 4, "Muroja’ah", murojaahFiltered);
       y = gambarUjianPdf(doc, y, meta, ujianFiltered);
       gambarPengesahanDigitalPdf(doc, y, meta);
 

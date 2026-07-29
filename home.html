@@ -1339,9 +1339,9 @@
 
         <article class="supervisor-card putri">
           <span class="supervisor-unit">Pengawasan Putri</span>
-          <strong class="supervisor-name">Naqibah Meilisa</strong>
+          <strong class="supervisor-name" id="putriSupervisorName">Memuat...</strong>
           <span class="supervisor-meta" id="putriSupervisorMeta">
-            Petugas pengawasan tetap Pondok Putri.
+            Membaca pembagian pengawas per program.
           </span>
         </article>
 
@@ -1466,6 +1466,7 @@
   let namaUserLogin = "";
   let calendarEvents = [];
   let calendarMode = "loading";
+  let onlineLessonScheduleRows = [];
 
   let healthPermissionUnsubscribe = null;
   let healthPermissionDateKey = "";
@@ -1581,6 +1582,8 @@
     jumat: "Jum'at",
     sabtu: "Sabtu"
   };
+
+  // Jadwal pengawas Putri dibaca dari Firebase: cahaya_app/jadwal_piket_naqib/putri.
 
   const DAYS_ID = [
     "Ahad",
@@ -2794,8 +2797,20 @@
     const dayNumber = now.getDay();
     const result = [];
 
-    SCHEDULE_SECTIONS
-      .forEach(section => {
+    if (onlineLessonScheduleRows.length) {
+      const grouped = new Map();
+      onlineLessonScheduleRows.filter(r=>r&&r.aktif!==false&&Number(r.hari)===dayNumber).forEach(r=>{
+        const unit=String(r.unit||"PUTRA").toLowerCase(),unitLabel=String(r.unit||"PUTRA").toUpperCase()==="PUTRI"?"Putri":"Putra";
+        const classNumber=String(r.nomorKelas||String(r.kelas||"").match(/\d+/)?.[0]||"");
+        const k=`${unit}|${classNumber}`;
+        if(!grouped.has(k))grouped.set(k,{unit,unitLabel,classNumber,classLabel:r.kelas||`Kelas ${classNumber} ${unitLabel}`,reasons:getClassBlockReasons(dateKey,classNumber),entries:[]});
+        const g=grouped.get(k);
+        if(!g.reasons.length)g.entries.push({subject:r.mapel||"Pelajaran",teacher:String(r.guruKode||"").toUpperCase(),scheduleStart:r.jamMulai||"",scheduleEnd:r.jamSelesai||""});
+      });
+      result.push(...grouped.values());
+    } else {
+      SCHEDULE_SECTIONS
+        .forEach(section => {
         Object
           .keys(section.schedule)
           .forEach(classNumber => {
@@ -2825,6 +2840,7 @@
             });
           });
       });
+    }
 
     return result;
   }
@@ -3315,29 +3331,23 @@
   }
 
   function mergeSupervisionSchedule(value = {}) {
+    const putraValue = value?.putra || value || {};
     const merged = {
-      ...cloneData(
-        DEFAULT_SUPERVISION_SCHEDULE
-      ),
-      ...value,
-
+      ...cloneData(DEFAULT_SUPERVISION_SCHEDULE),
+      ...putraValue,
       blok: {
-        ...cloneData(
-          DEFAULT_SUPERVISION_SCHEDULE.blok
-        ),
-        ...(value.blok || {})
+        ...cloneData(DEFAULT_SUPERVISION_SCHEDULE.blok),
+        ...(putraValue.blok || {})
       },
-
-      jadwal: {}
+      jadwal: {},
+      putri: value?.putri || { mode: "program", program: [], tanpaPiket: { aktif: false } },
+      versi: value?.versi || putraValue?.versi || ""
     };
 
-    Object.keys(
-      DEFAULT_SUPERVISION_SCHEDULE.jadwal
-    ).forEach(day => {
+    Object.keys(DEFAULT_SUPERVISION_SCHEDULE.jadwal).forEach(day => {
       merged.jadwal[day] = {
-        ...DEFAULT_SUPERVISION_SCHEDULE
-          .jadwal[day],
-        ...(value.jadwal?.[day] || {})
+        ...DEFAULT_SUPERVISION_SCHEDULE.jadwal[day],
+        ...(putraValue.jadwal?.[day] || {})
       };
     });
 
@@ -3634,6 +3644,102 @@
       .replace(":", ".");
   }
 
+  function getPutriProgramDuty(nowState) {
+    const putri = supervisionSchedule?.putri || {};
+    const programs = (Array.isArray(putri.program)
+      ? putri.program
+      : Object.values(putri.program || {}))
+      .filter(Boolean)
+      .sort((a, b) => Number(a.urutan || 0) - Number(b.urutan || 0));
+
+    if (!programs.length) {
+      return {
+        noDuty: true,
+        name: "Jadwal Putri Belum Diatur",
+        program: "Buka menu Jadwal Piket Naqib",
+        meta: "Muat template lalu simpan jadwal Putri ke Firebase."
+      };
+    }
+
+    const minuteNow = nowState.hour * 60 + nowState.minute;
+    const timeMinute = value => {
+      const match = String(value || "").match(/^(\d{1,2}):(\d{2})$/);
+      return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+    };
+    const getStart = p => timeMinute(p.mulai || String(p.waktu || "").split(/[–-]/)[0]);
+    const getEnd = p => timeMinute(p.selesai || String(p.waktu || "").split(/[–-]/)[1]);
+    const firstMonday = nowState.dayKey === "senin" && Number(String(nowState.dateKey || "").slice(-2)) <= 7;
+    const applies = p => {
+      const days = Array.isArray(p.hariAktif) ? p.hariAktif : [];
+      if (days.length && !days.includes(nowState.dayKey)) return false;
+      if (String(p.frekuensi || "").toLowerCase().includes("bulanan") && !firstMonday) return false;
+      return true;
+    };
+
+    const off = putri.tanpaPiket || {};
+    if (off.aktif) {
+      const startProgram = programs.find(p => String(p.id) === String(off.mulaiProgramId));
+      const endProgram = programs.find(p => String(p.id) === String(off.selesaiProgramId));
+      const offStart = getStart(startProgram);
+      const offEnd = getEnd(endProgram) ?? getStart(endProgram);
+      const noDuty =
+        (nowState.dayKey === off.mulaiHari && offStart !== null && minuteNow >= offStart) ||
+        (nowState.dayKey === off.selesaiHari && offEnd !== null && minuteNow < offEnd);
+      if (noDuty) {
+        return {
+          noDuty: true,
+          name: "Tidak Ada Piket Blok",
+          program: off.keterangan || "Masa tanpa piket Putri",
+          meta: "Sesuai jadwal pengawas Putri di Firebase."
+        };
+      }
+    }
+
+    const timed = programs.filter(p => applies(p) && getStart(p) !== null);
+    const activeRows = timed.filter(p => {
+      const start = getStart(p);
+      const end = getEnd(p);
+      return end !== null ? minuteNow >= start && minuteNow < end : minuteNow >= start;
+    });
+
+    if (activeRows.length) {
+      const start = Math.min(...activeRows.map(getStart));
+      const sameStart = timed.filter(p => getStart(p) === start && applies(p));
+      const primary = activeRows[activeRows.length - 1];
+      const names = [...new Set(activeRows.map(p => p.nama).filter(Boolean))];
+      const end = Math.max(...activeRows.map(p => getEnd(p) ?? start));
+      return {
+        noDuty: false,
+        name: `Naqibah ${primary.pengawas || "Belum Diatur"}`,
+        program: names.join(" & ") || primary.nama || "Program Putri",
+        meta: `${String(Math.floor(start / 60)).padStart(2, "0")}.${String(start % 60).padStart(2, "0")}–${String(Math.floor(end / 60)).padStart(2, "0")}.${String(end % 60).padStart(2, "0")} • Jadwal Firebase`
+      };
+    }
+
+    const next = timed.find(p => getStart(p) > minuteNow);
+    if (next) {
+      const start = getStart(next);
+      return {
+        noDuty: false,
+        name: `Naqibah ${next.pengawas || "Belum Diatur"}`,
+        program: `Berikutnya: ${next.nama || "Program Putri"}`,
+        meta: `Mulai ${String(Math.floor(start / 60)).padStart(2, "0")}.${String(start % 60).padStart(2, "0")} • Jadwal Firebase`
+      };
+    }
+
+    const tomorrowPrograms = programs.filter(p => {
+      const nextDay = SUPERVISION_DAY_ORDER[(SUPERVISION_DAY_ORDER.indexOf(nowState.dayKey) + 1) % 7];
+      return (p.hariAktif || []).includes(nextDay) && getStart(p) !== null;
+    });
+    const first = tomorrowPrograms[0] || timed[0] || programs[0];
+    return {
+      noDuty: false,
+      name: `Naqibah ${first?.pengawas || "Belum Diatur"}`,
+      program: `Berikutnya: ${first?.nama || "Program Putri"}`,
+      meta: "Jadwal berikutnya dibaca dari Firebase."
+    };
+  }
+
   function renderSupervisionPanel() {
     const active =
       getCurrentSupervisionDuty();
@@ -3670,11 +3776,18 @@
       `${active.block.label} • ` +
       `${timeRange}`;
 
+    const putriDuty =
+      getPutriProgramDuty(active.now);
+
+    document.getElementById(
+      "putriSupervisorName"
+    ).textContent =
+      putriDuty.name;
+
     document.getElementById(
       "putriSupervisorMeta"
     ).textContent =
-      `${active.block.label} • ` +
-      `${timeRange} • Pengawasan Putri`;
+      `${putriDuty.program} • ${putriDuty.meta}`;
 
     document.getElementById(
       "supervisionNow"
@@ -3777,6 +3890,14 @@
         online
       );
     }
+  }
+
+  function listenLessonSchedule() {
+    onValue(ref(database,"cahaya_app/jadwal_pelajaran"),snapshot=>{
+      const value=snapshot.val();
+      onlineLessonScheduleRows=Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}));
+      buildTodaySchedule();
+    },error=>{console.warn("Jadwal pelajaran Firebase belum terbaca; memakai jadwal bawaan.",error);onlineLessonScheduleRows=[];buildTodaySchedule()});
   }
 
   function listenCalendar() {
@@ -3915,6 +4036,7 @@
       );
 
       listenCalendar();
+      listenLessonSchedule();
       listenHealthPermissionsForToday();
       listenSupervisionSchedule();
 

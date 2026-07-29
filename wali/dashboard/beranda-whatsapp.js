@@ -989,22 +989,7 @@
           item.displayName
       }));
 
-    const broadcastDefinitions = [
-      {
-        roomId:
-          "room_broadcast_semua",
-
-        title:
-          "Pengumuman untuk Semua Pengguna"
-      },
-      {
-        roomId:
-          "room_broadcast_wali",
-
-        title:
-          "Pengumuman Wali Santri"
-      }
-    ];
+    const broadcastDefinitions = []; // broadcast baru diperlakukan sebagai pesan pribadi
 
     const unreadBroadcasts =
       broadcastDefinitions

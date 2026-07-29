@@ -194,14 +194,21 @@
   }
 
   function mediaQueue() {
-    const instagram = normalizedMedia.filter(item => item.type === "instagram");
-    const youtube = normalizedMedia.filter(item => item.type === "youtube");
+    // Pola feed wali: 2 status → 1 foto → 2 status → 1 video → berulang.
+    // Instagram post dianggap foto. YouTube dan Instagram Reel dianggap video.
+    const photos = normalizedMedia.filter(
+      item => item.type === "instagram" && item.kind !== "reel"
+    );
+    const videos = normalizedMedia.filter(
+      item => item.type === "youtube" || (item.type === "instagram" && item.kind === "reel")
+    );
     const queue = [];
-    const max = Math.max(instagram.length, youtube.length);
+    let photoIndex = 0;
+    let videoIndex = 0;
 
-    for (let index = 0; index < max; index++) {
-      if (instagram[index]) queue.push(instagram[index]);
-      if (youtube[index]) queue.push(youtube[index]);
+    while (photoIndex < photos.length || videoIndex < videos.length) {
+      if (photoIndex < photos.length) queue.push(photos[photoIndex++]);
+      if (videoIndex < videos.length) queue.push(videos[videoIndex++]);
     }
 
     return queue;

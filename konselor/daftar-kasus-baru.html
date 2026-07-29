@@ -2648,6 +2648,38 @@
       };
     }
 
+  function dedupePembelajaranTerakhir(source) {
+    const normal = value => String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+    const lokasi = record => {
+      const raw = record?.lokasiId ?? record?.kodeLokasi ?? record?.namaRuang ?? record?.ruang ?? record?.lokasi ?? record?.lokasiNama ?? record?.roomId ?? record?.kodeKelas ?? record?.kelas ?? "tanpa-lokasi";
+      return typeof raw === "object" ? JSON.stringify(raw) : raw;
+    };
+    const waktu = record => {
+      for (const value of [record?.waktuUpdate, record?.waktuSimpan, record?.waktuSubmit, record?.dibuatPada, record?.timestamp, record?.waktuTibaServer, record?.waktuTibaWIB]) {
+        if (typeof value === "number" && Number.isFinite(value)) return value;
+        const parsed = new Date(value || 0).getTime();
+        if (Number.isFinite(parsed) && parsed > 0) return parsed;
+      }
+      const date = String(record?.tanggal || record?.date || "").slice(0, 10);
+      const parsed = new Date(`${date}T12:00:00`).getTime();
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+    const map = new Map();
+    Object.entries(source || {}).forEach(([firebaseKey, record]) => {
+      if (!record || typeof record !== "object") return;
+      const fingerprint = [
+        String(record.tanggal || record.date || "").slice(0, 10),
+        record.kelas || record.kelasNama || record.sub || record.kelasKelompok || "",
+        record.mapel || record.mataPelajaran || record.subject || "",
+        lokasi(record)
+      ].map(normal).join("|");
+      const previous = map.get(fingerprint);
+      if (!previous || waktu(record) >= waktu(previous.record)) map.set(fingerprint, { firebaseKey, record });
+    });
+    return Object.fromEntries([...map.values()].map(item => [item.firebaseKey, item.record]));
+  }
+
+
     async function loadAllCases() {
       try {
         const snapshots = await Promise.all([
@@ -2776,9 +2808,10 @@
           });
         });
 
-        const learningAttendance = snapshots[4].exists()
+        const learningAttendanceRaw = snapshots[4].exists()
           ? snapshots[4].val()
           : {};
+        const learningAttendance = dedupePembelajaranTerakhir(learningAttendanceRaw);
 
         Object.entries(learningAttendance).forEach(([key, document]) => {
           if (!Array.isArray(document?.data)) return;
@@ -3102,6 +3135,12 @@
             <div class="case-description">
               ${escapeHtml(item.description)}
             </div>
+
+            ${
+              item.raw?.buktiFoto?.dataUrl
+                ? `<div class="case-evidence"><img src="${item.raw.buktiFoto.dataUrl}" alt="Bukti pelanggaran" onclick="window.open(this.src,'_blank')"><small>📷 Bukti foto terlampir — ketuk untuk membuka</small></div>`
+                : ""
+            }
 
             <div class="case-meta">
               <span class="case-badge">${escapeHtml(item.sourceBadge)}</span>
@@ -3886,7 +3925,8 @@
           const details = group.cases.map((item, caseIndex) => `
             <div style="margin-bottom:5px; line-height:1.4;">
               <b>${caseIndex + 1}.</b>
-              ${escapeHtml(item.description)}<br>
+              ${escapeHtml(item.description)}
+              ${item.raw?.buktiFoto?.dataUrl ? "<br><b>📷 Bukti foto terlampir</b>" : ""}<br>
               <small>
                 ${escapeHtml(item.category)} •
                 ${escapeHtml(item.date)} •
@@ -4222,7 +4262,9 @@
                 print-color-adjust: exact;
               }
             }
-          </style>
+          
+    .case-evidence{margin-top:9px;max-width:210px}.case-evidence img{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:12px;border:1px solid #dce5ef;cursor:pointer}.case-evidence small{display:block;margin-top:4px;color:#7e8fa5;font-size:.58rem;font-weight:800}
+</style>
         </head>
         <body>
           ${sections}

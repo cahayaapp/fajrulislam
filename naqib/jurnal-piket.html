@@ -1159,7 +1159,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label class="form-label" for="jpTanggal">📅 Tanggal</label>
-          <input type="date" class="form-control" id="jpTanggal">
+          <input type="date" class="form-control" id="jpTanggal" onchange="renderChecklist()">
         </div>
 
         <div class="form-group">
@@ -1168,6 +1168,14 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label" for="jpUnit">🏫 Unit Pengawasan</label>
+          <select class="form-control" id="jpUnit" onchange="handleUnitChange()">
+            <option value="Putra">Putra • Sistem Blok</option>
+            <option value="Putri">Putri • Per Program</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="blockGroup">
           <label class="form-label" for="jpBlok">⏱️ Blok Pengawasan</label>
           <select
             class="form-control block-select"
@@ -1274,6 +1282,8 @@
 
     const JADWAL_VERSION = "Jadwal Harian 24 Jam 2026/2027";
     const DB_PATH = "cahaya_app/jurnal_piket_naqib";
+    const SCHEDULE_PATH = "cahaya_app/jadwal_piket_naqib";
+    let scheduleData = {};
 
     const STATUS_CONFIG = {
       terlaksana: {
@@ -1306,7 +1316,7 @@
       - Koordinasi: guru, tutor, atau konselor menjadi pelaksana utama,
         sedangkan Naqib memastikan transisi dan ketertiban santri.
     */
-    const BLOCKS = {
+    let BLOCKS = {
       "Blok 1": {
         label: "Blok 1 — Pagi",
         range: "03.30–11.20",
@@ -1354,7 +1364,7 @@
           {
             id: "B1-05",
             no: 5,
-            waktu: "05.00–06.00",
+            waktu: "05.10–06.00",
             program: "Bahasa Arab",
             standar: "Memastikan perpindahan ke kelas tertib, kehadiran santri terkondisi, dan pembelajaran dapat dimulai sesuai waktu.",
             kategori: "Pembelajaran",
@@ -1780,8 +1790,73 @@
       `;
     }
 
+    function dayKeyFromDate(value) {
+      const days = ["ahad","senin","selasa","rabu","kamis","jumat","sabtu"];
+      const d = new Date(`${value}T12:00:00`);
+      return days[d.getDay()] || "senin";
+    }
+
+    function personMatches(a,b) {
+      const x=normalizedKey(a), y=normalizedKey(b);
+      return x && y && (x===y || x.includes(y) || y.includes(x));
+    }
+
+    function putriNoDuty(day, programId, programs) {
+      const off=scheduleData?.putri?.tanpaPiket;
+      if(!off?.aktif) return false;
+      const order=programs.map(p=>p.id), idx=order.indexOf(programId), start=order.indexOf(off.mulaiProgramId), end=order.indexOf(off.selesaiProgramId);
+      if(day===off.mulaiHari && idx>=start) return true;
+      if(day===off.selesaiHari && idx<=end) return true;
+      return false;
+    }
+
+    function buildPutriBlock() {
+      const date=document.getElementById("jpTanggal").value || localDateValue();
+      const day=dayKeyFromDate(date), person=document.getElementById("jpNama").value;
+      const all=[...(scheduleData?.putri?.program||[])].sort((a,b)=>(a.urutan||0)-(b.urutan||0)).filter(p=>{
+        if(!(p.hariAktif||[]).includes(day) || putriNoDuty(day,p.id,scheduleData?.putri?.program||[])) return false;
+        if(String(p.aturanKhusus||'').toLowerCase().includes('senin pertama')) return new Date(`${date}T12:00:00`).getDate()<=7;
+        return true;
+      });
+      const mine=all.filter(p=>personMatches(person,p.pengawas));
+      const selected=mine.length?mine:all;
+      BLOCKS["Jadwal Putri"]={label:`Jadwal Putri • ${day.charAt(0).toUpperCase()+day.slice(1)}`,range:"Per Program",tasks:selected.map((p,i)=>({id:`PUTRI-${p.id}`,no:i+1,waktu:(p.mulai&&p.selesai?`${p.mulai}–${p.selesai}`:(p.waktu||p.mulai||'-')),program:p.nama||'-',standar:`Memastikan ${p.nama||'program'} terlaksana tertib sesuai standar program dan mencatat kendala apa adanya.`,kategori:p.frekuensi||'Program Putri',peran:"Utama",penanggungJawab:p.pengawas||'-',pengawasTerjadwal:p.pengawas||'-',programId:p.id}))};
+      return {all,selected,day};
+    }
+
+    async function loadScheduleConfig(){
+      try{const snap=await get(ref(db,SCHEDULE_PATH));scheduleData=snap.exists()?snap.val():{};}catch(e){console.warn('Jadwal piket Firebase gagal dimuat',e);scheduleData={};}
+    }
+
+    function handleUnitChange(){
+      const unit=document.getElementById("jpUnit").value;
+      const blockGroup=document.getElementById("blockGroup");
+      if(unit==="Putri"){
+        blockGroup.style.display="none";
+        document.getElementById("jpBlok").value="";
+      }else{
+        blockGroup.style.display="grid";
+        document.getElementById("jpBlok").value=detectCurrentBlock();
+      }
+      renderChecklist();
+    }
+
     function renderChecklist() {
-      activeBlock = document.getElementById("jpBlok").value;
+      const unit=document.getElementById("jpUnit")?.value || "Putra";
+      if(unit==="Putri"){
+        const built=buildPutriBlock();
+        activeBlock="Jadwal Putri";
+        if(!scheduleData?.putri?.program?.length){
+          document.getElementById("taskList").innerHTML=`<div class="empty-state"><div class="empty-icon">☁️</div>Jadwal pengawas Putri belum tersedia di Firebase. Buka menu Jadwal Piket Naqib, muat template, lalu simpan ke Firebase.</div>`;
+          document.getElementById("journalFooter").style.display="none";
+          return;
+        }
+        if(!built.selected.length){
+          document.getElementById("taskList").innerHTML=`<div class="empty-state"><div class="empty-icon">🌙</div>Tidak ada piket program Putri pada tanggal ini sesuai jadwal Firebase.</div>`;
+          document.getElementById("journalFooter").style.display="none";
+          return;
+        }
+      }else activeBlock = document.getElementById("jpBlok").value;
 
       const list = document.getElementById("taskList");
       const footer = document.getElementById("journalFooter");
@@ -1861,6 +1936,7 @@
                 <span class="meta-badge">
                   PJ: ${escapeHtml(task.penanggungJawab)}
                 </span>
+                ${task.pengawasTerjadwal ? `<span class="meta-badge role-utama">Terjadwal: ${escapeHtml(task.pengawasTerjadwal)}</span>` : ''}
               </div>
             </div>
           </div>
@@ -2222,6 +2298,8 @@
           kategori: task.kategori,
           peranPengawasan: task.peran,
           penanggungJawab: task.penanggungJawab,
+          pengawasTerjadwal: task.pengawasTerjadwal || task.penanggungJawab,
+          programId: task.programId || task.id,
           statusKode: statusCode,
           status: status.label,
           skor: status.score,
@@ -2246,10 +2324,13 @@
           currentUser.username ||
           nama,
 
+        unitPengawasan: document.getElementById("jpUnit")?.value || "Putra",
+        jenisJadwal: (document.getElementById("jpUnit")?.value || "Putra") === "Putri" ? "program" : "blok",
+        petugasTerjadwal: [...new Set(block.tasks.map(t=>t.pengawasTerjadwal||t.penanggungJawab).filter(Boolean))].join(", "),
         blokPiket: activeBlock,
         labelBlok: block.label,
         rentangWaktu: block.range,
-        jadwalVersi: JADWAL_VERSION,
+        jadwalVersi: scheduleData?.versi || JADWAL_VERSION,
 
         waktuSubmit: now.toISOString(),
         waktuUpdate: now.toISOString(),
@@ -2335,21 +2416,20 @@
       }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("jpTanggal").value =
-        localDateValue();
-
+    document.addEventListener("DOMContentLoaded", async () => {
+      document.getElementById("jpTanggal").value = localDateValue();
       fillProfile();
-
-      const suggestedBlock = detectCurrentBlock();
-      document.getElementById("jpBlok").value =
-        suggestedBlock;
-
-      renderChecklist();
+      await loadScheduleConfig();
+      const person=document.getElementById("jpNama").value;
+      const isPutri=["fatimah","meilisa","melisa","alamanda"].some(n=>normalizedKey(person).includes(n));
+      document.getElementById("jpUnit").value=isPutri?"Putri":"Putra";
+      document.getElementById("jpBlok").value=detectCurrentBlock();
+      handleUnitChange();
       hideLoading();
     });
 
     window.renderChecklist = renderChecklist;
+    window.handleUnitChange = handleUnitChange;
     window.setTaskStatus = setTaskStatus;
     window.setTaskNote = setTaskNote;
     window.simpanJurnal = simpanJurnal;

@@ -2140,6 +2140,7 @@
        3. STATE & ELEMENT
        ========================================================= */
     let ASSIGNMENTS = [];
+    let onlineScheduleRows = [];
     let currentUser = {};
     let currentTeacherCode = "";
     let currentArticleId = "";
@@ -2440,6 +2441,17 @@
     }
 
     function buildAssignmentsFromSchedule() {
+      if (onlineScheduleRows.length) {
+        const grouped = new Map();
+        onlineScheduleRows.filter(r=>r&&r.aktif!==false).forEach(r=>{
+          const sectionId=String(r.unit||"PUTRA").toLowerCase(),section=String(r.unit||"PUTRA").toUpperCase()==="PUTRI"?"Putri":"Putra";
+          const kelas=String(r.nomorKelas||String(r.kelas||"").match(/\d+/)?.[0]||""),subject=r.mapel||"Pelajaran",teacher=String(r.guruKode||"").toUpperCase();
+          const k=`${sectionId}|${kelas}|${subject}|${teacher}`;
+          if(!grouped.has(k))grouped.set(k,{sectionId,section,kelas,subject,teacher,days:[]});
+          grouped.get(k).days.push(Number(r.hari));
+        });
+        return [...grouped.values()].map(item=>{const id=`${item.sectionId}|${item.kelas}|${slug(item.subject)}|${slug(item.teacher)}`;return {...item,id,key:slug(id),dayLabel:formatDays(item.days)}}).sort((a,b)=>`${a.section} ${a.kelas} ${a.subject}`.localeCompare(`${b.section} ${b.kelas} ${b.subject}`,"id"));
+      }
       const results = [];
 
       SCHEDULE_SECTIONS.forEach(section => {
@@ -3681,10 +3693,15 @@
     /* =========================================================
        10. INIT
        ========================================================= */
-    function init() {
+    async function init() {
       if (window.pdfjsLib) {
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       }
+      try {
+        const snap=await db.ref("cahaya_app/jadwal_pelajaran").once("value");
+        const value=snap.val();
+        onlineScheduleRows=Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}));
+      } catch(error){console.warn("Jadwal Firebase belum tersedia, memakai jadwal bawaan.",error)}
       ASSIGNMENTS = buildAssignmentsFromSchedule();
       currentUser = readCurrentUser();
       populateFallbackTeachers();

@@ -1513,6 +1513,7 @@
     let EVENTS = [];
     let calendarMode = "loading";
     let ASSIGNMENTS = [];
+    let onlineScheduleRows = [];
     let currentAssignment = null;
     let currentMeetings = [];
 
@@ -1724,6 +1725,26 @@
     }
 
     function buildAssignmentsFromSchedule() {
+      if (onlineScheduleRows.length) {
+        const grouped = new Map();
+        onlineScheduleRows.filter(r => r && r.aktif !== false).forEach((r, index) => {
+          const sectionId = String(r.unit || "PUTRA").toLowerCase();
+          const section = String(r.unit || "PUTRA").toUpperCase() === "PUTRI" ? "Putri" : "Putra";
+          const kelas = String(r.nomorKelas || String(r.kelas || "").match(/\d+/)?.[0] || "");
+          const subject = r.mapel || "Pelajaran";
+          const teacher = String(r.guruKode || "").toUpperCase();
+          const groupKey = `${sectionId}|${kelas}|${subject}|${teacher}`;
+          if (!grouped.has(groupKey)) grouped.set(groupKey,{sectionId,section,kelas,subject,teacher,days:[]});
+          grouped.get(groupKey).days.push(Number(r.hari));
+        });
+        return [...grouped.values()].map(item => ({
+          ...item,
+          id: `${item.sectionId}|${item.kelas}|${slug(item.subject)}|${slug(item.teacher)}`,
+          day: Math.min(...item.days),
+          dayLabel: formatDays(item.days)
+        }));
+      }
+
       return SCHEDULE_SECTIONS.flatMap(section => {
         return Object.keys(section.schedule).flatMap(kelas => {
           const grouped = new Map();
@@ -2033,6 +2054,11 @@
        ========================================================== */
 
     async function init() {
+      try {
+        const snap = await db.ref("cahaya_app/jadwal_pelajaran").once("value");
+        const value = snap.val();
+        onlineScheduleRows = Array.isArray(value) ? value.filter(Boolean) : Object.entries(value || {}).map(([id,row]) => ({id,...(row||{})}));
+      } catch (error) { console.warn("Jadwal Firebase belum tersedia, memakai jadwal bawaan.", error); }
       ASSIGNMENTS = buildAssignmentsFromSchedule();
 
       populateTeachers();

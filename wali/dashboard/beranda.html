@@ -1006,22 +1006,13 @@
       );
 
       for (let i = 0; i < max; i++) {
-          if (listInstagramIds.length) {
-              queue.push({
-                  type: "instagram",
-                  id: listInstagramIds[
-                      i % listInstagramIds.length
-                  ]
-              });
+          // Foto selalu mendapat giliran pertama, lalu video.
+          if (listInstagramIds[i]) {
+              queue.push({ type: "instagram", id: listInstagramIds[i] });
           }
 
-          if (listYoutubeIds.length) {
-              queue.push({
-                  type: "youtube",
-                  id: listYoutubeIds[
-                      i % listYoutubeIds.length
-                  ]
-              });
+          if (listYoutubeIds[i]) {
+              queue.push({ type: "youtube", id: listYoutubeIds[i] });
           }
       }
 
@@ -1470,6 +1461,38 @@
         );
     }
 
+
+    function dedupePembelajaranTerakhir(source) {
+    const normal = value => String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+    const lokasi = record => {
+      const raw = record?.lokasiId ?? record?.kodeLokasi ?? record?.namaRuang ?? record?.ruang ?? record?.lokasi ?? record?.lokasiNama ?? record?.roomId ?? record?.kodeKelas ?? record?.kelas ?? "tanpa-lokasi";
+      return typeof raw === "object" ? JSON.stringify(raw) : raw;
+    };
+    const waktu = record => {
+      for (const value of [record?.waktuUpdate, record?.waktuSimpan, record?.waktuSubmit, record?.dibuatPada, record?.timestamp, record?.waktuTibaServer, record?.waktuTibaWIB]) {
+        if (typeof value === "number" && Number.isFinite(value)) return value;
+        const parsed = new Date(value || 0).getTime();
+        if (Number.isFinite(parsed) && parsed > 0) return parsed;
+      }
+      const date = String(record?.tanggal || record?.date || "").slice(0, 10);
+      const parsed = new Date(`${date}T12:00:00`).getTime();
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+    const map = new Map();
+    Object.entries(source || {}).forEach(([firebaseKey, record]) => {
+      if (!record || typeof record !== "object") return;
+      const fingerprint = [
+        String(record.tanggal || record.date || "").slice(0, 10),
+        record.kelas || record.kelasNama || record.sub || record.kelasKelompok || "",
+        record.mapel || record.mataPelajaran || record.subject || "",
+        lokasi(record)
+      ].map(normal).join("|");
+      const previous = map.get(fingerprint);
+      if (!previous || waktu(record) >= waktu(previous.record)) map.set(fingerprint, { firebaseKey, record });
+    });
+    return Object.fromEntries([...map.values()].map(item => [item.firebaseKey, item.record]));
+  }
+
     function prosesKehadiran(
         dataSumber,
         tipeSumber
@@ -1594,6 +1617,11 @@
                   waktu,
                   pembimbing,
                   status: "Hadir",
+                  detail: isKBM ? {
+                      materi: sesi.catatan || sesi.materi || sesi.pokokMateri || sesi.topik || sesi.jurnalMengajar || "",
+                      kelas: sesi.kelas || sesi.sub || "",
+                      nilaiUlanganHarian: rec.nilaiUlanganHarian ?? null
+                  } : {},
                   sumber: isKBM
                       ? "absensi_pembelajaran"
                       : "absensi_program_harian"
@@ -1648,15 +1676,17 @@
               rec.ustadz ||
               "";
 
+          const isMurojaah = String(record.program || '').toLowerCase() === 'murojaah' || record.jenisInput === 'setoran_murojaah';
+          const jenisMurojaah = record.jenisMurojaah || rec.jenisMurojaah || 'Harian';
           tambahEvent({
               id: idEventKompatibel(
-                  "Tahfiz",
-                  "Setoran",
+                  isMurojaah ? "Murojaah" : "Tahfiz",
+                  isMurojaah ? jenisMurojaah : "Setoran",
                   key
               ),
-              tipe: "Tahfiz",
-              kegiatan: "Setoran Tahfiz",
-              detail: rec,
+              tipe: isMurojaah ? "Murojaah" : "Tahfiz",
+              kegiatan: isMurojaah ? `Muroja’ah ${jenisMurojaah}` : "Setoran Tahfiz",
+              detail: {...rec, jenisMurojaah},
               waktu: ekstrakJam(
                   record.waktuSimpan ||
                   record.waktu ||
@@ -1915,7 +1945,7 @@
     );
 
     prosesKehadiran(
-        globalDB.pembelajaran,
+        dedupePembelajaranTerakhir(globalDB.pembelajaran),
         "KBM"
     );
 
@@ -2231,7 +2261,22 @@
 
     if (ev.tipe === 'Tahfiz') { 
         let namaGuru = pbbUsername ? ` dibimbing <b>${glrGuru} ${pbbUsername}</b>` : "";
-        return `Alhamdulillah, aku baru aja selesai kelas tahfiz dan nyetor hafalan <b>${ev.detail.setoran || ev.detail.surat || "hafalanku"}</b>${namaGuru}. Doain aku terus ya Abi Ummi, biar gampang ingat dan jaga hafalan Al-Qur'an. 🤲🏻`; 
+        const jumlahAyat = Number(ev.detail?.ayat ?? ev.detail?.jumlahAyat ?? 0);
+        const jumlahBaris = Number(ev.detail?.baris ?? 0);
+        const capaian = [
+          jumlahAyat > 0 ? `<b>${jumlahAyat} ayat</b>` : "",
+          jumlahBaris > 0 ? `<b>${jumlahBaris} baris</b>` : ""
+        ].filter(Boolean).join(" dan ");
+        const teksCapaian = capaian ? `, sebanyak ${capaian},` : "";
+        return `Alhamdulillah, aku baru aja selesai kelas tahfiz dan nyetor hafalan <b>${ev.detail.setoran || ev.detail.surat || "hafalanku"}</b>${teksCapaian}${namaGuru}. Doain aku terus ya Abi Ummi, biar gampang ingat dan jaga hafalan Al-Qur'an. 🤲🏻`; 
+    }
+    if (ev.tipe === 'Murojaah') {
+        let namaGuru = pbbUsername ? ` bersama <b>${glrGuru} ${pbbUsername}</b>` : "";
+        const jumlahAyat = Number(ev.detail?.ayat ?? ev.detail?.jumlahAyat ?? 0);
+        const jumlahBaris = Number(ev.detail?.baris ?? 0);
+        const jenis = ev.detail?.jenisMurojaah || 'Harian';
+        const capaian = [jumlahAyat > 0 ? `<b>${jumlahAyat} ayat</b>` : "", jumlahBaris > 0 ? `<b>${jumlahBaris} baris</b>` : ""].filter(Boolean).join(" dan ");
+        return `Alhamdulillah, hari ini aku sudah menyelesaikan <b>Muroja’ah ${jenis}</b> untuk hafalan <b>${ev.detail?.setoran || ev.detail?.surat || 'Al-Qur’an'}</b>${capaian ? ` sebanyak ${capaian}` : ''}${namaGuru}. Semoga hafalanku semakin kuat dan terjaga ya, Abi Ummi. 🔁📖`;
     }
     
     if (k.includes('tahajjud') || k.includes('tahajud')) return `Alhamdulillah, di sepertiga malam ini aku udah selesai <b>Shalat Tahajjud</b> di pondok${pNaqib}. Pastinya aku selalu selipin doa buat kesehatan Abi dan Ummi. Aamiin. 🌙`;
@@ -2253,7 +2298,11 @@
     if (k.includes('piket') && k.includes('sore')) return `Sore tadi aku udah nyelesaiin <b>piket sore</b>. Asrama bersih, rasanya seneng banget. 🧽`;
     if (k.includes('upacara')) return `Hari ini aku ikut <b>upacara bendera</b> lho. Baris rapi bareng teman-teman, seru banget! 🇮🇩`;
     
-    if (ev.tipe === 'KBM') return `Alhamdulillah, aku baru aja ngikutin pelajaran ${namaTampil}${pTeks}. Doain ilmu yang aku dapat hari ini berkah dan bermanfaat ya! 📚`;
+    if (ev.tipe === 'KBM') {
+      const materi = String(ev.detail?.materi || "").trim();
+      const teksMateri = materi ? ` Materi yang kupelajari hari ini adalah <b>${escapeHTMLCerita(materi)}</b>.` : "";
+      return `Alhamdulillah, aku baru aja ngikutin pelajaran ${namaTampil}${pTeks}.${teksMateri} Doain ilmu yang aku dapat hari ini berkah dan bermanfaat ya! 📚`;
+    }
     
     return `Alhamdulillah, kegiatanku ${namaTampil} udah selesai dengan lancar. Doain aku selalu ya Abi Ummi. ✨`;
   }
@@ -2296,11 +2345,8 @@
         </div>
       `;
 
-      mediaQueue.forEach(media => {
-          emptyHtml +=
-              renderKartuMedia(
-                  media
-              );
+      mediaQueue.slice(0, 1).forEach(media => {
+          emptyHtml += renderKartuMedia(media);
       });
 
       container.innerHTML =
@@ -2342,6 +2388,9 @@
         if(ev.tipe === 'Tahfiz') {
           badgeClass = "badge-tahfiz";
           badgeText = "📖 TAHFIZ";
+        } else if(ev.tipe === 'Murojaah') {
+          badgeClass = "badge-tahfiz";
+          badgeText = "🔁 MUROJA’AH";
         } else if(ev.tipe === 'Pelanggaran') {
           badgeClass = "badge-pelanggaran";
           badgeText = "⚠️ PERBAIKAN DIRI";
@@ -2412,28 +2461,8 @@
         }
       });
 
-      /*
-        Satu media tetap disisipkan setiap dua status.
-        Seluruh media yang tersisa ditambahkan setelah status terakhir.
-      */
-      if (
-          offset === 0 &&
-          mediaQueue.length
-      ) {
-          while (
-              mediaCounter <
-              mediaQueue.length
-          ) {
-              htmlBlok +=
-                  renderKartuMedia(
-                      mediaQueue[
-                          mediaCounter
-                      ]
-                  );
-
-              mediaCounter++;
-          }
-      }
+      /* Media hanya disisipkan setelah setiap dua status.
+         Media yang belum mendapat pasangan status tidak ditumpuk di bagian bawah. */
 
       if (clearContainer) container.innerHTML = '';
       container.insertAdjacentHTML('beforeend', htmlBlok); 
@@ -2472,6 +2501,7 @@
     */
     if (!foundToday) {
       const mediaHtml = susunAntreanMedia()
+        .slice(0, 1)
         .map(media => renderKartuMedia(media))
         .join('');
 
@@ -2680,23 +2710,12 @@
         let latestMsgTxt = ""; let latestMsgSender = "";
         globalChatNotifs = []; 
 
-        if(allRooms['room_broadcast_wali']) {
-            try {
-                let bMsgs = Object.values(allRooms['room_broadcast_wali']);
-                if(bMsgs.length > 0) {
-                   let lastMsg = bMsgs[bMsgs.length - 1];
-                   if(lastMsg && lastMsg.waktu) {
-                       let isUnread = new Date(lastMsg.waktu) > new Date(localStorage.getItem('chat_read_room_broadcast_wali') || "0");
-                       if(isUnread) { unreadTotal++; latestMsgTxt = lastMsg.teks; latestMsgSender = "📢 PENGUMUMAN PUSAT"; }
-                       myInboxData.push({ roomId: 'room_broadcast_wali', opponentDisplay: '📢 PENGUMUMAN PUSAT', opponentActualLabel: 'BROADCAST', lastMsg: lastMsg, isUnread: isUnread });
-                   }
-                }
-            } catch(e) {}
-        }
+        // Broadcast WhatsApp-style kini diduplikasi ke room pribadi setiap wali.
+        // Room broadcast lama tidak lagi dimasukkan ke inbox.
 
         Object.keys(allRooms).forEach(roomId => {
            try {
-               if(roomId.includes(meClean) && roomId !== 'room_broadcast_wali') {
+               if(roomId.includes(meClean) && !roomId.startsWith('room_broadcast_')) {
                   let msgs = allRooms[roomId]; if(!msgs || typeof msgs !== 'object') return; 
                   let msgValues = Object.values(msgs).filter(m => m && m.waktu); if(msgValues.length === 0) return;
                   
@@ -2808,9 +2827,10 @@
 
   function startChat(opponentActualLabel, opponentDisplay, existingRoomId = null) {
       targetAktifLabel = opponentActualLabel; targetAktifDisplay = opponentDisplay; let roomId;
-      if (opponentActualLabel === "BROADCAST") {
-          roomId = "room_broadcast_wali"; document.getElementById('chatHeaderTitle').textContent = opponentDisplay;
-          document.getElementById('chatInput').disabled = true; document.getElementById('chatInput').placeholder = "Pengumuman Pusat...";
+      if (opponentActualLabel === "BROADCAST" || String(existingRoomId || "").startsWith("room_broadcast_")) {
+          switchChatTab('inbox');
+          alert("Broadcast sekarang masuk sebagai pesan pribadi. Silakan buka percakapan pengirim di inbox.");
+          return;
       } else {
           roomId = existingRoomId || getChatRoomId(sapaanPenuh, opponentActualLabel); 
           document.getElementById('chatHeaderTitle').textContent = opponentDisplay;

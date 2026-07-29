@@ -1718,6 +1718,18 @@
             <span class="nav-label">Informasi Penting</span>
             <span class="nav-arrow">›</span>
           </a>
+
+          <a class="nav-item" id="menu-riwayat-kesehatan-wali" data-menu-id="menu-riwayat-kesehatan-wali" data-page-url="riwayat-kesehatan.html" onclick="loadPage('riwayat-kesehatan.html', this)">
+            <span class="nav-icon">🩺</span>
+            <span class="nav-label">Riwayat Kesehatan</span>
+            <span class="nav-arrow">›</span>
+          </a>
+
+          <a class="nav-item" id="menu-perizinan-wali" data-menu-id="menu-perizinan-wali" data-page-url="perizinan.html" onclick="loadPage('perizinan.html', this)">
+            <span class="nav-icon">📝</span>
+            <span class="nav-label">Perizinan & Riwayat</span>
+            <span class="nav-arrow">›</span>
+          </a>
         </div>
 
         <div class="menu-access-empty" id="waliNoAccess" hidden>
@@ -1991,6 +2003,16 @@
       "menu-informasi-penting-wali": {
         url: "informasi-penting.html",
         title: "Informasi Penting"
+      },
+      "menu-riwayat-kesehatan-wali": {
+        url: "riwayat-kesehatan.html",
+        title: "Riwayat Kesehatan",
+        alwaysAllowed: true
+      },
+      "menu-perizinan-wali": {
+        url: "perizinan.html",
+        title: "Perizinan & Riwayat",
+        alwaysAllowed: true
       }
     };
 
@@ -2022,6 +2044,7 @@
     function isWaliMenuAllowed(menuId) {
       return Boolean(menuId) && (
         menuId === WALI_HOME_MENU_ID ||
+        WALI_MENU_CONFIG[menuId]?.alwaysAllowed === true ||
         authorizedWaliMenus.has(menuId)
       );
     }
@@ -2121,15 +2144,25 @@
       "menu-informasi-penting-wali": {
         icon: "📌",
         label: "Informasi"
+      },
+      "menu-riwayat-kesehatan-wali": {
+        icon: "🩺",
+        label: "Kesehatan"
+      },
+      "menu-perizinan-wali": {
+        icon: "📝",
+        label: "Perizinan"
       }
     };
 
     const WALI_MOBILE_SHORTCUT_ORDER = [
       "menu-beranda-wali",
+      "menu-riwayat-kesehatan-wali",
+      "menu-perizinan-wali",
       "menu-akademik-wali",
+      "menu-informasi-penting-wali",
       "menu-karakter-wali",
-      "menu-pembinaan-wali",
-      "menu-informasi-penting-wali"
+      "menu-pembinaan-wali"
     ];
 
     function getWaliMobileShortcutIds() {
@@ -2383,34 +2416,12 @@
           const inbox = [];
           let unreadTotal = 0;
 
-          const broadcastMessages = rooms.room_broadcast_wali;
-          if (broadcastMessages && typeof broadcastMessages === "object") {
-            const messages = Object.entries(broadcastMessages)
-              .map(([id, message]) => ({ id, ...(message || {}) }))
-              .filter(message => message.waktu)
-              .sort((a, b) => new Date(a.waktu) - new Date(b.waktu));
-
-            if (messages.length) {
-              const lastMessage = messages[messages.length - 1];
-              const lastRead = localStorage.getItem("chat_read_room_broadcast_wali") || "0";
-              const unread = new Date(lastMessage.waktu) > new Date(lastRead);
-
-              if (unread) unreadTotal += 1;
-
-              inbox.push({
-                roomId: "room_broadcast_wali",
-                actualName: "BROADCAST_WALI",
-                displayName: "Pengumuman Pesantren",
-                lastMessage,
-                unread,
-                broadcast: true
-              });
-            }
-          }
+          // Broadcast baru masuk sebagai salinan pesan pribadi.
+          // Room broadcast lama sengaja diabaikan agar balasan tidak pernah menjadi percakapan bersama.
 
           Object.entries(rooms).forEach(([roomId, rawMessages]) => {
             if (
-              roomId === "room_broadcast_wali" ||
+              roomId.startsWith("room_broadcast_") ||
               !roomId.includes(meClean) ||
               !rawMessages ||
               typeof rawMessages !== "object"

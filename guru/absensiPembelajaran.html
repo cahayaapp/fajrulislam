@@ -1772,6 +1772,7 @@
     ]
   };
 
+  let onlineScheduleRows = [];
   let masterDataAkademik = {
     kelas: {},
     guru: [],
@@ -2010,6 +2011,31 @@
   }
 
   function buildAssignmentsForDay(dayNumber) {
+    if (onlineScheduleRows.length) {
+      return onlineScheduleRows
+        .filter(row => row && row.aktif !== false && Number(row.hari) === Number(dayNumber))
+        .map((row,index) => {
+          const expectedClass = row.kelas || `Kelas ${row.nomorKelas || ""} ${String(row.unit || "").toUpperCase() === "PUTRI" ? "Putri" : "Putra"}`;
+          return {
+            id: String(row.id || [row.unit,row.kelas,row.hari,row.mapel,row.guruKode,row.sesi,index].join("|"))
+              .toLowerCase().replace(/[^a-z0-9|]+/g,"_"),
+            sectionId: String(row.unit || "").toLowerCase(),
+            section: String(row.unit || "").toUpperCase() === "PUTRI" ? "Putri" : "Putra",
+            classNumber: String(row.nomorKelas || String(row.kelas || "").match(/\d+/)?.[0] || ""),
+            className: findMasterClassName(expectedClass),
+            subject: row.mapel || "Pelajaran",
+            teacher: String(row.guruKode || "").trim().toUpperCase(),
+            dayNumber: Number(dayNumber),
+            dayLabel: row.hariLabel || DAYS_ID[dayNumber] || "Hari",
+            scheduleStart: row.jamMulai || "",
+            scheduleEnd: row.jamSelesai || "",
+            sessionLabel: row.sesi || "KBM",
+            source: "firebase"
+          };
+        })
+        .sort((a,b) => String(a.scheduleStart).localeCompare(String(b.scheduleStart)) || a.className.localeCompare(b.className));
+    }
+
     const assignments = [];
 
     SCHEDULE_SECTIONS.forEach(section => {
@@ -2500,13 +2526,21 @@
       );
 
     try {
-      const snapshot = await get(
-        ref(db, "cahaya_app/master_akademik")
-      );
+      const [snapshot, scheduleSnapshot] = await Promise.all([
+        get(ref(db, "cahaya_app/master_akademik")),
+        get(ref(db, "cahaya_app/jadwal_pelajaran"))
+      ]);
 
       const dataFirebase = snapshot.exists()
         ? snapshot.val()
         : {};
+
+      if (scheduleSnapshot.exists()) {
+        const value = scheduleSnapshot.val();
+        onlineScheduleRows = Array.isArray(value)
+          ? value.filter(Boolean)
+          : Object.entries(value || {}).map(([id,row]) => ({ id, ...(row || {}) }));
+      }
 
       masterDataAkademik = {
         ...dataFirebase,
@@ -2872,19 +2906,45 @@
     setSaveButtonLoading(true);
 
     try {
+      const izinSnapshot = await get(
+        ref(db, `cahaya_app/izin_sakit_harian/${tanggal}`)
+      );
+      const izinHariIni = izinSnapshot.exists() ? izinSnapshot.val() : {};
+      const izinByNama = new Map(
+        Object.values(izinHariIni || {})
+          .filter(item =>
+            item &&
+            item.statusAktif !== false &&
+            item.bolehTidakMengikutiPembelajaranHariIni === true
+          )
+          .map(item => [compactIdentity(item.namaSantri || item.namaSantriKey || ""), item])
+      );
+      let jumlahKoreksiUKS = 0;
+
       const hasil = barisSantri.map((row) => {
         const nama = row.dataset.nama;
         const statusDipilih = row.querySelector('input[type="radio"]:checked');
-        const status = statusDipilih ? statusDipilih.value : "Hadir";
+        const statusAwal = statusDipilih ? statusDipilih.value : "Hadir";
+        const izinUKS = izinByNama.get(compactIdentity(nama));
+        const status = statusAwal === "Alfa" && izinUKS ? "Sakit" : statusAwal;
         const nilaiRaw = row.querySelector(".daily-score-input")?.value.trim() || "";
         const nilaiUlanganHarian = nilaiRaw === "" ? null : Number(nilaiRaw);
+
+        if (status !== statusAwal) jumlahKoreksiUKS += 1;
 
         return {
           nama,
           status,
           poin: hitungPoin(status, mapel),
           nilaiUlanganHarian,
-          nilaiUlanganHarianDiisi: nilaiRaw !== ""
+          nilaiUlanganHarianDiisi: nilaiRaw !== "",
+          ...(status !== statusAwal ? {
+            statusAsal: statusAwal,
+            dikoreksiOtomatisUKS: true,
+            idPemeriksaanUKS: izinUKS?.idPemeriksaan || "",
+            keteranganKoreksiUKS: izinUKS?.keteranganGuru || "Alfa diubah menjadi Sakit berdasarkan izin UKS.",
+            waktuKoreksiUKS: new Date().toISOString()
+          } : {})
         };
       });
 
@@ -2924,7 +2984,7 @@
         unitPembelajaran: assignment.section,
         nomorKelasJadwal: assignment.classNumber,
         sumberJadwal:
-          "Kalender Materi/Jadwal Pelajaran 2026/2027",
+          onlineScheduleRows.length ? "Firebase • cahaya_app/jadwal_pelajaran" : "Jadwal bawaan 2026/2027",
 
         tahunAjaran: "2026/2027",
         jumlahSantri: hasil.length,
@@ -2941,7 +3001,9 @@
       );
 
       showToast(
-        "Absensi dan nilai ulangan harian berhasil disimpan.",
+        jumlahKoreksiUKS
+          ? `Absensi berhasil disimpan. ${jumlahKoreksiUKS} status Alfa otomatis diubah menjadi Sakit berdasarkan izin UKS.`
+          : "Absensi dan nilai ulangan harian berhasil disimpan.",
         "success",
         "Penyimpanan berhasil"
       );

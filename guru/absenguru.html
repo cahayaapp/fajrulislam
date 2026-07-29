@@ -1569,7 +1569,8 @@
       locations: "cahaya_app/pengaturan_absensi_guru/lokasi",
       rooms: "cahaya_app/master_ruang_kelas",
       attendance: "cahaya_app/absensi_guru",
-      attendanceLog: "cahaya_app/log_absensi_guru"
+      attendanceLog: "cahaya_app/log_absensi_guru",
+      schedule: "cahaya_app/jadwal_pelajaran"
     };
     
     const TIMEZONE = "Asia/Jakarta";
@@ -2112,7 +2113,7 @@
         {
           sessionKey: "bahasa-arab-pagi",
           sessionLabel: "Sesi Pagi",
-          start: "05:00",
+          start: "05:10",
           end: "06:00"
         }
       ],
@@ -2170,6 +2171,30 @@
     ) {
       const dayNumber =
         dateFromInput(dateValue).getDay();
+
+      if (onlineScheduleRows.length) {
+        return onlineScheduleRows
+          .filter(row => row && row.aktif !== false && Number(row.hari) === dayNumber)
+          .map((row, index) => ({
+            id: safeKey(row.id || [row.unit,row.kelas,row.hari,row.mapel,row.guruKode,row.sesi,index].join("-")),
+            sectionId: String(row.unit || "").toLowerCase(),
+            unit: String(row.unit || "").toUpperCase(),
+            section: String(row.unit || "").toUpperCase() === "PUTRI" ? "Putri" : "Putra",
+            classNumber: String(row.nomorKelas || String(row.kelas || "").match(/\d+/)?.[0] || ""),
+            className: row.kelas || `Kelas ${row.nomorKelas || ""} ${String(row.unit || "").toUpperCase() === "PUTRI" ? "Putri" : "Putra"}`,
+            subject: row.mapel || "Pelajaran",
+            teacher: String(row.guruKode || "").trim().toUpperCase(),
+            sessionKey: row.jenis || row.sesi || "regular",
+            sessionLabel: row.sesi || "KBM",
+            scheduleStart: row.jamMulai || "09:20",
+            scheduleEnd: row.jamSelesai || "11:20",
+            scheduleLabel: `${row.jamMulai || "09:20"}–${row.jamSelesai || "11:20"}`,
+            dayNumber,
+            dayLabel: DAYS_ID?.[dayNumber] || "Hari",
+            sumberJadwal: "Firebase"
+          }))
+          .sort((a,b) => String(a.scheduleStart).localeCompare(String(b.scheduleStart)) || a.className.localeCompare(b.className));
+      }
 
       const assignments = [];
 
@@ -2405,6 +2430,7 @@
 
     let profile = readActiveProfile();
     let teacherCode = "";
+    let onlineScheduleRows = [];
     let rooms = cloneData(DEFAULT_ROOMS);
     let locations =
       cloneData(DEFAULT_LOCATIONS);
@@ -3549,6 +3575,12 @@
                 db,
                 PATHS.rooms
               )
+            ),
+            get(
+              ref(
+                db,
+                PATHS.schedule
+              )
             )
           ]);
 
@@ -3566,7 +3598,8 @@
 
         const [
           locationSnapshot,
-          roomSnapshot
+          roomSnapshot,
+          scheduleSnapshot
         ] = await Promise.race([
           firebaseDataPromise,
           timeoutPromise
@@ -3588,6 +3621,13 @@
             ...rooms,
             ...roomSnapshot.val()
           };
+        }
+
+        if (scheduleSnapshot?.exists()) {
+          const value = scheduleSnapshot.val();
+          onlineScheduleRows = Array.isArray(value)
+            ? value.filter(Boolean)
+            : Object.entries(value || {}).map(([id,row]) => ({ id, ...(row || {}) }));
         }
 
         /*

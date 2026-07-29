@@ -912,6 +912,38 @@
     record?.tanggalKejadian ||
     "";
 
+
+  function dedupePembelajaranTerakhir(source) {
+    const normal = value => String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+    const lokasi = record => {
+      const raw = record?.lokasiId ?? record?.kodeLokasi ?? record?.namaRuang ?? record?.ruang ?? record?.lokasi ?? record?.lokasiNama ?? record?.roomId ?? record?.kodeKelas ?? record?.kelas ?? "tanpa-lokasi";
+      return typeof raw === "object" ? JSON.stringify(raw) : raw;
+    };
+    const waktu = record => {
+      for (const value of [record?.waktuUpdate, record?.waktuSimpan, record?.waktuSubmit, record?.dibuatPada, record?.timestamp, record?.waktuTibaServer, record?.waktuTibaWIB]) {
+        if (typeof value === "number" && Number.isFinite(value)) return value;
+        const parsed = new Date(value || 0).getTime();
+        if (Number.isFinite(parsed) && parsed > 0) return parsed;
+      }
+      const date = String(record?.tanggal || record?.date || "").slice(0, 10);
+      const parsed = new Date(`${date}T12:00:00`).getTime();
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+    const map = new Map();
+    Object.entries(source || {}).forEach(([firebaseKey, record]) => {
+      if (!record || typeof record !== "object") return;
+      const fingerprint = [
+        String(record.tanggal || record.date || "").slice(0, 10),
+        record.kelas || record.kelasNama || record.sub || record.kelasKelompok || "",
+        record.mapel || record.mataPelajaran || record.subject || "",
+        lokasi(record)
+      ].map(normal).join("|");
+      const previous = map.get(fingerprint);
+      if (!previous || waktu(record) >= waktu(previous.record)) map.set(fingerprint, { firebaseKey, record });
+    });
+    return Object.fromEntries([...map.values()].map(item => [item.firebaseKey, item.record]));
+  }
+
   const attendancePoint = item => safeNumber(
     item?.poin,
     item?.point,
@@ -1397,7 +1429,8 @@
         });
       });
 
-      const learningData = snapshots[3]?.exists() ? snapshots[3].val() || {} : {};
+      const learningDataRaw = snapshots[3]?.exists() ? snapshots[3].val() || {} : {};
+      const learningData = dedupePembelajaranTerakhir(learningDataRaw);
       Object.values(learningData).forEach(record => {
         const tgl = recordDate(record);
         const fb = getFilterBulan(tgl);
