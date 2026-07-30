@@ -2227,6 +2227,8 @@
           `cahaya_app/pesan_meta/${roomId}`
         )
         .update(payload);
+
+      await updateInboxIndex(contact, roomId);
     } catch (error) {
       console.warn(
         "Metadata ruang chat belum tersimpan:",
@@ -2234,6 +2236,36 @@
       );
     }
   }
+
+  async function updateInboxIndex(contact, roomId, message = null) {
+    if (!contact || !roomId) return;
+    const now = message?.waktu || new Date().toISOString();
+    const myKey = safeFirebaseKey(realUsername || namaSaya);
+    const peerKey = safeFirebaseKey(contact.username || contact.chatIdentity);
+    const myEntry = {
+      roomId,
+      peerUsername: contact.username || "",
+      peerLabel: contact.chatIdentity || contact.displayName || "Pengguna",
+      peerRoles: Array.isArray(contact.roles) ? contact.roles : [],
+      updatedAt: now
+    };
+    const peerEntry = {
+      roomId,
+      peerUsername: realUsername || "",
+      peerLabel: namaSaya,
+      peerRoles: Array.isArray(myRoles) ? myRoles : [],
+      updatedAt: now
+    };
+    if (message) {
+      myEntry.lastMessage = message;
+      peerEntry.lastMessage = message;
+    }
+    const updates = {};
+    updates[`cahaya_app/pesan_inbox/${myKey}/${roomId}`] = myEntry;
+    updates[`cahaya_app/pesan_inbox/${peerKey}/${roomId}`] = peerEntry;
+    try { await dbRT.ref().update(updates); } catch (error) { console.warn("Indeks inbox belum tersimpan:", error); }
+  }
+
 
   async function saveBroadcastMeta(
     broadcast
@@ -2445,6 +2477,7 @@
       .ref(
         `cahaya_app/pesan_global/${active.roomId}`
       )
+      .limitToLast(50)
       .on(
         "value",
         async snapshot => {
@@ -2957,9 +2990,8 @@
           broadcastBatchId: batchId
         };
 
-        await dbRT
-          .ref(`cahaya_app/pesan_global/${roomId}`)
-          .push(payload);
+        await dbRT.ref(`cahaya_app/pesan_global/${roomId}`).push(payload);
+        await updateInboxIndex(contact, roomId, payload);
       })
     );
 
@@ -3064,9 +3096,8 @@
           recipientRoles: state.active.roles
         };
 
-        await dbRT
-          .ref(`cahaya_app/pesan_global/${state.active.roomId}`)
-          .push(payload);
+        await dbRT.ref(`cahaya_app/pesan_global/${state.active.roomId}`).push(payload);
+        await updateInboxIndex(state.active, state.active.roomId, payload);
       }
 
       if (state.active.type !== "broadcast") {
@@ -3567,158 +3598,56 @@
   }
 
   function installListeners() {
-    if (
-      state.listenersInstalled
-    ) {
-      renderChatList();
-      return;
-    }
-
-    state.listenersInstalled =
-      true;
-
+    if (state.listenersInstalled) { renderChatList(); return; }
+    state.listenersInstalled = true;
     buildContacts();
 
-    dbRT
-      .ref(
-        "cahaya_app/pesan_meta"
-      )
-      .on(
-        "value",
-        snapshot => {
-          state.meta =
-            snapshot.val() ||
-            {};
+    dbRT.ref(`cahaya_app/pesan_dibaca/${safeFirebaseKey(realUsername)}`).on(
+      "value",
+      snapshot => {
+        state.readMap = snapshot.val() || {};
+        renderChatList();
+        updateChatBadge();
+        renderNotificationPanel(chatNotifications(), state.dbNotifications);
+      },
+      error => console.warn("Status baca belum dimuat:", error)
+    );
 
-          renderChatList();
-        },
-        error => {
-          console.warn(
-            "Metadata chat belum dimuat:",
-            error
-          );
-        }
-      );
+    dbRT.ref(`cahaya_app/pesan_inbox/${safeFirebaseKey(realUsername || namaSaya)}`).on(
+      "value",
+      snapshot => {
+        const index = snapshot.val() || {};
+        state.rooms = {};
+        state.meta = {};
+        Object.values(index).forEach(item => {
+          if (!item?.roomId) return;
+          state.meta[item.roomId] = { roomId:item.roomId, type:"private", inbox:item, updatedAt:item.updatedAt || "" };
+          if (item.lastMessage) state.rooms[item.roomId] = { __last:item.lastMessage };
+        });
+        buildContacts();
+        renderChatList();
+        updateChatBadge();
+        if (state.active) renderConversation();
+        maybeNotifyNewMessages();
+        renderNotificationPanel(chatNotifications(), state.dbNotifications);
+        lastUnreadCount = totalUnreadCount();
+      },
+      error => {
+        console.error("Inbox pesan belum dapat dimuat:", error);
+        const inbox = document.getElementById("viewInbox");
+        if (inbox) inbox.innerHTML = `<div class="pw-empty">Pesan belum dapat dimuat.<br>Periksa koneksi dan aturan Firebase.</div>`;
+      }
+    );
 
-    dbRT
-      .ref(
-        `cahaya_app/pesan_dibaca/${safeFirebaseKey(realUsername)}`
-      )
-      .on(
-        "value",
-        snapshot => {
-          state.readMap =
-            snapshot.val() ||
-            {};
-
-          renderChatList();
-          updateChatBadge();
-
-          renderNotificationPanel(
-            chatNotifications(),
-            state.dbNotifications
-          );
-        },
-        error => {
-          console.warn(
-            "Status baca belum dimuat:",
-            error
-          );
-        }
-      );
-
-    dbRT
-      .ref(
-        "cahaya_app/pesan_global"
-      )
-      .on(
-        "value",
-        snapshot => {
-          state.rooms =
-            snapshot.val() ||
-            {};
-
-          buildContacts();
-          renderChatList();
-          updateChatBadge();
-
-          if (
-            state.active
-          ) {
-            renderConversation();
-          }
-
-          maybeNotifyNewMessages();
-
-          renderNotificationPanel(
-            chatNotifications(),
-            state.dbNotifications
-          );
-
-          lastUnreadCount =
-            totalUnreadCount();
-        },
-        error => {
-          console.error(
-            "Pesan global belum dapat dimuat:",
-            error
-          );
-
-          const inbox =
-            document.getElementById(
-              "viewInbox"
-            );
-
-          if (inbox) {
-            inbox.innerHTML = `
-              <div class="pw-empty">
-                Pesan belum dapat dimuat.<br>
-                Periksa koneksi dan aturan Firebase.
-              </div>
-            `;
-          }
-        }
-      );
-
-    dbRT
-      .ref(
-        `cahaya_app/notifikasi_wali/${realUsername}`
-      )
-      .on(
-        "value",
-        snapshot => {
-          const value =
-            snapshot.val() ||
-            {};
-
-          state.dbNotifications =
-            Object.entries(value)
-              .map(
-                ([notifId, item]) => ({
-                  ...item,
-                  notifId,
-                  tipe:
-                    item.tipe ||
-                    "database"
-                })
-              )
-              .filter(item =>
-                item.dibaca !==
-                true
-              );
-
-          renderNotificationPanel(
-            chatNotifications(),
-            state.dbNotifications
-          );
-        },
-        error => {
-          console.warn(
-            "Notifikasi database belum dimuat:",
-            error
-          );
-        }
-      );
+    dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}`).limitToLast(100).on(
+      "value",
+      snapshot => {
+        const value = snapshot.val() || {};
+        state.dbNotifications = Object.entries(value).map(([notifId,item])=>({...item,notifId,tipe:item.tipe||"database"})).filter(item=>item.dibaca!==true);
+        renderNotificationPanel(chatNotifications(), state.dbNotifications);
+      },
+      error => console.warn("Notifikasi database belum dimuat:", error)
+    );
   }
 
   function toggleChat() {

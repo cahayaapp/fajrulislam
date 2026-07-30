@@ -291,7 +291,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
@@ -665,7 +665,9 @@
     };
 
     try {
-      await push(ref(db, "cahaya_app/asesmen_cahaya_santri"), payload);
+      const savedRef = await push(ref(db, "cahaya_app/asesmen_cahaya_santri"), payload);
+      const waliKey = String(santri||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+      if(waliKey && savedRef.key) await set(ref(db,`cahaya_app/wali_index/${waliKey}/asesmen/${savedRef.key}`),payload);
       alert(`✅ BERHASIL!\nLaporan Asesmen CAHAYA atas nama ${santri} telah tersimpan.`);
       window.scrollTo(0,0);
       setTimeout(() => location.reload(), 1000);

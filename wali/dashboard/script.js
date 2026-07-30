@@ -1033,18 +1033,35 @@
     return [value];
   }
 
-  async function readRTDB(database, path) {
+  async function readRTDB(database, path, options = {}) {
     try {
-      const snapshot =
-        await database
-          .ref(path)
-          .once("value");
+      const indexMap = {
+        "cahaya_app/asesmen_cahaya_santri":"asesmen",
+        "cahaya_app/setoran_tahfiz":"tahfiz",
+        "cahaya_app/nilai_ujian_bulanan":"nilai_bulanan",
+        "cahaya_app/absensi_program_harian":"program",
+        "cahaya_app/absensi_pembelajaran":"pembelajaran",
+        "cahaya_app/log_lapor_inisiatif":"laporan",
+        "cahaya_app/poin_manual":"poin_manual",
+        "cahaya_app/buku_kasus_konselor":"kasus_konselor",
+        "cahaya_app/laporan_penindakan":"penindakan"
+      };
+      const currentName = studentName();
+      const studentKey = normalizeName(currentName).replace(/[^a-z0-9]/g, "");
+      if (studentKey && indexMap[path]) {
+        const indexed = await database.ref(`cahaya_app/wali_index/${studentKey}/${indexMap[path]}`).once("value");
+        if (indexed.exists()) {
+          return { ok:true, snapshot:indexed, value:indexed.val(), indexed:true };
+        }
+      }
+      const snapshot = window.CahayaBandwidth
+        ? await window.CahayaBandwidth.readCompat(database, path, options)
+        : await database.ref(path).once("value");
 
       return {
         ok: true,
         snapshot,
-        value:
-          snapshot.val()
+        value: snapshot.val()
       };
     } catch (error) {
       console.warn(

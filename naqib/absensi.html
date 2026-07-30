@@ -1254,7 +1254,8 @@
       getDatabase,
       ref,
       push,
-      get
+      get,
+      update
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
@@ -2042,10 +2043,17 @@
       btn.disabled = true;
 
       try {
-        await push(
+        const savedRef = await push(
           ref(db, "cahaya_app/absensi_program_harian"),
           log
         );
+        const indexUpdates = {};
+        dataAbsen.forEach(item => {
+          const waliKey = String(item.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          if(!waliKey || !savedRef.key) return;
+          indexUpdates[`cahaya_app/wali_index/${waliKey}/program/${savedRef.key}`] = {...log,data:[item]};
+        });
+        if(Object.keys(indexUpdates).length) await update(ref(db),indexUpdates);
 
         tampilkanToast(
           "success",

@@ -87,7 +87,7 @@
   const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
   const adminName = user.label || user.username || "Admin";
 
-  dbRT.ref('cahaya_app/interaksi_cerita').on('value', snap => {
+  dbRT.ref('cahaya_app/interaksi_cerita').limitToLast(300).on('value', snap => {
       document.getElementById('loading').style.display = 'none';
       const container = document.getElementById('postsContainer');
       container.innerHTML = '';

@@ -37,6 +37,8 @@
     .role-sarpras { background: #f0fdfa; color: #0f766e; border: 1px solid #14b8a6; }
     .role-kesehatan { background: #ecfeff; color: #0e7490; border: 1px solid #67e8f9; }
     .role-observer { background: #eef2ff; color: #4338ca; border: 1px solid #a5b4fc; }
+    .role-keuangan { background:#eff6ff; color:#1d4ed8; border:1px solid #93c5fd; }
+    .role-kasir { background:#fff7ed; color:#c2410c; border:1px solid #fdba74; }
 
     /* Modal Form */
     .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.7); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; padding: 20px; animation: fadeIn 0.3s ease; }
@@ -405,6 +407,8 @@
           <option value="layanan">🧹 Tim Layanan & Kebersihan (PKL)</option>
           <option value="sarpras">🔧 Kepala Sarpras</option>
           <option value="kesehatan">🩺 Tim Kesehatan</option>
+          <option value="keuangan">💳 Administrasi Keuangan</option>
+          <option value="kasir">🏪 Kasir Kantin/Koperasi</option>
         </select>
       </div>
 
@@ -429,6 +433,7 @@
             <label class="check-label" style="background:#ffffff; border-color:#6ee7b7;"><input type="checkbox" class="cb-menu" value="menu-informasi-penting-wali"> 📌 Informasi Penting</label>
             <label class="check-label" style="background:#ffffff; border-color:#a5d8ff;"><input type="checkbox" class="cb-menu" value="menu-riwayat-kesehatan-wali"> 🩺 Riwayat Kesehatan</label>
             <label class="check-label" style="background:#ffffff; border-color:#c4b5fd;"><input type="checkbox" class="cb-menu" value="menu-perizinan-wali"> 📝 Perizinan & Riwayat</label>
+            <label class="check-label" style="background:#ffffff; border-color:#86efac;"><input type="checkbox" class="cb-menu" value="menu-keuangan-wali"> 💳 Keuangan Santri</label>
           </div>
         </div>
 
@@ -478,6 +483,14 @@
             <label class="check-label" style="border-color:#67e8f9;"><input type="checkbox" class="cb-menu" value="menu-pemeriksaan-kesehatan"> Pemeriksaan Kesehatan</label>
             <label class="check-label" style="border-color:#67e8f9;"><input type="checkbox" class="cb-menu" value="menu-perizinan-uks"> Perizinan Medis UKS</label>
             <label class="check-label" style="border-color:#67e8f9;"><input type="checkbox" class="cb-menu" value="menu-stok-obat"> Stok Obat UKS</label>
+          </div>
+        </div>
+
+        <div class="menu-section" id="sectionFinanceMenu" style="background:linear-gradient(135deg,#eff6ff,#f0fdfa); border-color:#93c5fd;">
+          <h4 style="color:#1557d5; border-bottom-color:#86efac;">💳 Keuangan & Kasir</h4>
+          <div class="checkbox-grid" style="margin-top:0;">
+            <label class="check-label" style="background:#fff;border-color:#93c5fd;"><input type="checkbox" class="cb-menu" value="menu-pusat-keuangan"> 💳 Pusat Keuangan</label>
+            <label class="check-label" style="background:#fff;border-color:#fdba74;"><input type="checkbox" class="cb-menu" value="menu-kasir"> 🏪 Kasir Kantin/Koperasi</label>
           </div>
         </div>
 
@@ -552,6 +565,7 @@
             <label class="check-label" style="background:#f0f9ff; border-color:#7dd3fc;"><input type="checkbox" class="cb-menu" value="menu-qr-kelas"> Master QR Kelas</label>
             <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-users"> Hak Akses User</label>
             <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-koreksi"> Pusat Koreksi Data</label>
+            <label class="check-label" style="background:#ecfeff; border-color:#67e8f9;"><input type="checkbox" class="cb-menu" value="menu-optimasi-bandwidth"> Optimasi Bandwidth</label>
           </div>
         </div>
       </div>
@@ -599,6 +613,8 @@
         <label class="check-label" style="border-color:#eab308; background:#fefefc;"><input type="checkbox" value="layanan" class="role-checkbox"> Tim Layanan (PKL)</label>
         <label class="check-label" style="border-color:#14b8a6; background:#f0fdfa;"><input type="checkbox" value="sarpras" class="role-checkbox"> Kepala Sarpras</label>
         <label class="check-label" style="border-color:#67e8f9; background:#ecfeff;"><input type="checkbox" value="kesehatan" class="role-checkbox"> Tim Kesehatan</label>
+        <label class="check-label" style="border-color:#93c5fd; background:#eff6ff;"><input type="checkbox" value="keuangan" class="role-checkbox"> Administrasi Keuangan</label>
+        <label class="check-label" style="border-color:#fdba74; background:#fff7ed;"><input type="checkbox" value="kasir" class="role-checkbox"> Kasir Kantin/Koperasi</label>
       </div>
 
       <button class="btn-cahaya btn-gold" id="btnSimpan" style="margin-top: 30px;" onclick="simpanDataUser()">💾 Simpan Akun Pengguna</button>
@@ -642,7 +658,10 @@
   ];
 
   const DEFAULT_ROLE_MENUS = {
-    observer: [...OBSERVER_MENU_IDS]
+    observer: [...OBSERVER_MENU_IDS],
+    keuangan: ['menu-home','menu-pusat-keuangan','menu-kasir','menu-chat','menu-profil'],
+    kasir: ['menu-home','menu-kasir','menu-chat','menu-profil'],
+    wali: ['menu-akademik-wali','menu-karakter-wali','menu-pembinaan-wali','menu-informasi-penting-wali','menu-riwayat-kesehatan-wali','menu-perizinan-wali','menu-keuangan-wali']
   };
 
   function daftarMenuOtorisasiTersedia(role = "") {

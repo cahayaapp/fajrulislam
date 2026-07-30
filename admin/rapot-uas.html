@@ -860,6 +860,7 @@
   }
 </style>
 
+  <script src="../js/cahaya-bandwidth.js"></script>
 </head>
 <body>
 
@@ -1040,7 +1041,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, get, onValue, push, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, get, onValue, push, update, query, orderByChild, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
@@ -2329,7 +2330,17 @@
 
   async function muatTahfizLatar() {
     try {
-      const snapshot = await get(ref(db, "cahaya_app/setoran_tahfiz"));
+      const tahunValue = String(el("tahunAkademik")?.value || "2025/2026");
+      const tahunAwal = Number((tahunValue.match(/\d{4}/) || ["2025"])[0]);
+      const mulai = `${tahunAwal}-07-01`;
+      const selesai = `${tahunAwal + 1}-07-02`;
+      const snapshot = await get(query(
+        ref(db, "cahaya_app/setoran_tahfiz"),
+        orderByChild("tanggal"),
+        startAt(mulai),
+        endAt(selesai),
+        limitToLast(2500)
+      ));
       semuaTahfiz = Object.entries(snapshot.val() || {}).map(([id, value]) => ({ id, ...value }));
 
       // Perbarui ringkasan tahfiz seluruh raport yang sedang ditampilkan.

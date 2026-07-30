@@ -408,6 +408,8 @@
           updatedAt:
             new Date().toISOString()
         });
+
+      await updateInboxIndex(contact, roomId);
     } catch (error) {
       console.warn(
         "Metadata chat belum tersimpan:",
@@ -415,6 +417,37 @@
       );
     }
   }
+
+  async function updateInboxIndex(contact, roomId, message = null) {
+    if (!contact || !roomId) return;
+    const now = message?.waktu || new Date().toISOString();
+    const myKey = safeKey(userNameAsli);
+    const peerKey = safeKey(contact.username || contact.actualLabel);
+    const baseForMe = {
+      roomId,
+      peerUsername: contact.username || "",
+      peerLabel: contact.actualLabel || contact.displayName || "Pengurus",
+      peerRole: contact.roleKey || "",
+      updatedAt: now
+    };
+    const baseForPeer = {
+      roomId,
+      peerUsername: userNameAsli,
+      peerLabel: sapaanPenuh,
+      peerRole: "wali",
+      namaAnak: namaAnakUtuh,
+      updatedAt: now
+    };
+    if (message) {
+      baseForMe.lastMessage = message;
+      baseForPeer.lastMessage = message;
+    }
+    const updates = {};
+    updates[`cahaya_app/pesan_inbox/${myKey}/${roomId}`] = baseForMe;
+    updates[`cahaya_app/pesan_inbox/${peerKey}/${roomId}`] = baseForPeer;
+    try { await dbRT.ref().update(updates); } catch (error) { console.warn("Indeks inbox belum tersimpan:", error); }
+  }
+
 
   function messageValues(messages) {
     return Object.entries(messages || {})
@@ -1206,36 +1239,23 @@
 
   function installChatListener() {
     buildContacts();
-
-    if (
-      chatRoomsListenerInstalled
-    ) {
-      return;
-    }
-
-    chatRoomsListenerInstalled =
-      true;
-
-    dbRT
-      .ref(
-        "cahaya_app/pesan_global"
-      )
-      .on(
-        "value",
-        snapshot => {
-          processRooms(
-            snapshot.val() || {},
-            true
-          );
-        },
-        error => {
-          console.warn(
-            "Pesan belum dapat dimuat:",
-            error
-          );
-          renderContactList();
-        }
-      );
+    if (chatRoomsListenerInstalled) return;
+    chatRoomsListenerInstalled = true;
+    dbRT.ref(`cahaya_app/pesan_inbox/${safeKey(userNameAsli)}`).on(
+      "value",
+      snapshot => {
+        const index = snapshot.val() || {};
+        const rooms = {};
+        Object.values(index).forEach(item => {
+          if (item?.roomId && item?.lastMessage) rooms[item.roomId] = { __last: item.lastMessage };
+        });
+        processRooms(rooms, true);
+      },
+      error => {
+        console.warn("Inbox pesan belum dapat dimuat:", error);
+        renderContactList();
+      }
+    );
   }
 
   function formatMessageDate(value) {
@@ -1528,6 +1548,7 @@
       .ref(
         `cahaya_app/pesan_global/${roomId}`
       )
+      .limitToLast(50)
       .on(
         "value",
         async snapshot => {
@@ -1679,28 +1700,20 @@
           "editing"
         );
       } else {
-        await dbRT
-          .ref(
-            `cahaya_app/pesan_global/${activeRoomId}`
-          )
-          .push({
-            teks: text,
-            pengirim: sapaanPenuh,
-            senderDisplay:
-              sapaanPenuh,
-            senderUsername:
-              userNameAsli,
-            recipientDisplay:
-              activeContact.actualLabel,
-            recipientUsername:
-              activeContact.username,
-            senderRole: "wali",
-            recipientRole:
-              activeContact.roleKey,
-            roomId: activeRoomId,
-            waktu:
-              new Date().toISOString()
-          });
+        const messagePayload = {
+          teks: text,
+          pengirim: sapaanPenuh,
+          senderDisplay: sapaanPenuh,
+          senderUsername: userNameAsli,
+          recipientDisplay: activeContact.actualLabel,
+          recipientUsername: activeContact.username,
+          senderRole: "wali",
+          recipientRole: activeContact.roleKey,
+          roomId: activeRoomId,
+          waktu: new Date().toISOString()
+        };
+        await dbRT.ref(`cahaya_app/pesan_global/${activeRoomId}`).push(messagePayload);
+        await updateInboxIndex(activeContact, activeRoomId, messagePayload);
       }
 
       await markRoomRead(

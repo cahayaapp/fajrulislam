@@ -1078,7 +1078,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, get, remove, set, query, orderByChild, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
@@ -1092,6 +1092,11 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+  async function pushIndexRecord(waliKey, recordId, data){
+    try{ await set(ref(db,`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordId}`),data); }
+    catch(error){ console.warn('Indeks wali nilai belum tersimpan:',error); }
+  }
+
 
   let masterDataAkademik = {};
   let activeStudentList = [];
@@ -1487,7 +1492,8 @@
     button.disabled = true;
 
     try {
-      const snapshot = await get(ref(db, "cahaya_app/nilai_ujian_bulanan"));
+      const monthKey = String(params.tanggal || "").slice(0,7);
+      const snapshot = await get(query(ref(db, "cahaya_app/nilai_ujian_bulanan"), orderByChild("tanggal_ujian"), startAt(`${monthKey}-01`), endAt(`${monthKey}-31`), limitToLast(1500)));
       const oldData = snapshot.val() || {};
       let count = 0;
 
@@ -1502,6 +1508,8 @@
             oldRecord?.mata_pelajaran === params.mapel
           ) {
             await remove(ref(db, `cahaya_app/nilai_ujian_bulanan/${key}`));
+            const oldWaliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+            if(oldWaliKey) await remove(ref(db,`cahaya_app/wali_index/${oldWaliKey}/nilai_bulanan/${key}`));
           }
         }
 
@@ -1527,7 +1535,9 @@
           finalData[`bobot_${component.id}_persen`] = component.bobot;
         });
 
-        await push(ref(db, "cahaya_app/nilai_ujian_bulanan"), finalData);
+        const savedRef = await push(ref(db, "cahaya_app/nilai_ujian_bulanan"), finalData);
+        const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+        if(waliKey && savedRef.key) await pushIndexRecord(waliKey, savedRef.key, finalData);
         count++;
       }
 

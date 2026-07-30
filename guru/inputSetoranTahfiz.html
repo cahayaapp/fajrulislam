@@ -1754,7 +1754,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, get, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, get, remove, update, query, orderByChild, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
@@ -1768,6 +1768,10 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+  function localDateKey(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
+  function shiftDate(date,days){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()+days);return localDateKey(d)}
+  function recentTahfizQuery(days=150){const end=localDateKey(),start=shiftDate(end,-Math.max(1,days-1));return query(ref(db,'cahaya_app/setoran_tahfiz'),orderByChild('tanggal'),startAt(start),endAt(end),limitToLast(1200));}
+
 
   // Aman bila halaman dibuka tanpa data login yang tersimpan.
   // Sebelumnya user=null dapat membuat proses tampak terus "MENYIMPAN..."
@@ -2016,7 +2020,7 @@
 
     let preloadedDb = {};
     try {
-      const snap = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
+      const snap = await get(recentTahfizQuery());
       preloadedDb = snap.exists() ? snap.val() : {};
       simpanCacheSetoran(preloadedDb);
     } catch(e) {
@@ -2358,8 +2362,11 @@
         data:[{ nama, setoran:strSetoran, ayat, jenisMurojaah: isMurojaah ? jenisMurojaah : null, kesalahan:isTahsin ? '0' : (document.getElementById(`salah_${safeId}`).value || '0'), nilai, keterangan, ...(isTahsin ? {} : barisMeta), ...detailData }],
         waktuSimpan:new Date().toISOString()
       };
+      let recordId = editId;
       if(editId){ await update(ref(db,`cahaya_app/setoran_tahfiz/${editId}`),payload); cacheSetoranTahfiz[editId]=payload; }
-      else { const hasilPush=await push(ref(db,'cahaya_app/setoran_tahfiz'),payload); cacheSetoranTahfiz[hasilPush.key]=payload; }
+      else { const hasilPush=await push(ref(db,'cahaya_app/setoran_tahfiz'),payload); recordId=hasilPush.key; cacheSetoranTahfiz[hasilPush.key]=payload; }
+      const waliKey = String(nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+      if(waliKey && recordId) await update(ref(db,`cahaya_app/wali_index/${waliKey}/tahfiz/${recordId}`),payload);
       simpanCacheSetoran(cacheSetoranTahfiz); window.batalEditCard(safeId); await window.fetchRiwayatSantri(nama,safeId,cacheSetoranTahfiz);
       if(window.showPageToast) window.showPageToast(
         editId ? (isTahsin?'Talaqqi diperbarui':isMurojaah?'Muroja’ah diperbarui':'Setoran diperbarui') : (isTahsin?'Talaqqi tersimpan':isMurojaah?'Muroja’ah tersimpan':'Setoran tersimpan'),
@@ -2383,7 +2390,7 @@
         if (cacheSetoranSiap) {
           dataObj = cacheSetoranTahfiz;
         } else {
-          const snapshot = await get(ref(db, 'cahaya_app/setoran_tahfiz'));
+          const snapshot = await get(recentTahfizQuery());
           dataObj = snapshot.exists() ? snapshot.val() : {};
           simpanCacheSetoran(dataObj);
         }
@@ -2585,6 +2592,8 @@
     if(confirm(`Hapus data setoran ini dari riwayat ${nama}?`)) {
       try {
         await remove(ref(db, `cahaya_app/setoran_tahfiz/${idNode}`));
+        const waliKey = String(nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+        if(waliKey) await remove(ref(db,`cahaya_app/wali_index/${waliKey}/tahfiz/${idNode}`));
         delete cacheSetoranTahfiz[idNode];
         simpanCacheSetoran(cacheSetoranTahfiz);
         window.fetchRiwayatSantri(nama, safeId, cacheSetoranTahfiz);

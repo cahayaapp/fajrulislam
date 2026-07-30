@@ -1674,6 +1674,7 @@
       display: none !important;
     }
 </style>
+  <script src="../js/cahaya-bandwidth.js"></script>
 </head>
 
 <body>
@@ -2229,7 +2230,12 @@
       ref,
       get,
       push,
-      update
+      update,
+      query,
+      orderByChild,
+      startAt,
+      endAt,
+      limitToLast
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
@@ -2682,13 +2688,18 @@
 
     async function loadAllCases() {
       try {
+        const today = new Date();
+        const endKey = new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        const startDate = new Date(`${endKey}T12:00:00`); startDate.setDate(startDate.getDate()-119);
+        const startKey = new Date(startDate.getTime()-startDate.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        const ranged = (path, field, limit=900) => get(query(ref(db,path),orderByChild(field),startAt(startKey),endAt(endKey),limitToLast(limit)));
         const snapshots = await Promise.all([
           get(ref(db, "cahaya_app/data_santri")),
           get(ref(db, "cahaya_app/master_usrah")),
-          get(ref(db, DB.reports)),
-          get(ref(db, DB.programAttendance)),
-          get(ref(db, DB.learningAttendance)),
-          get(ref(db, DB.actionReports))
+          ranged(DB.reports,"tanggal",700),
+          ranged(DB.programAttendance,"tanggal",1200),
+          ranged(DB.learningAttendance,"tanggal",900),
+          ranged(DB.actionReports,"tanggalPenindakan",700)
         ]);
 
         const masterStudentData = snapshots[0].exists()
@@ -4551,6 +4562,11 @@
         updates[`${DB.actionReports}/${reportKey}`] =
           reportRecord;
 
+        const waliIndexKey = String(item.student||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+        if (waliIndexKey) {
+          updates[`cahaya_app/wali_index/${waliIndexKey}/penindakan/${reportKey}`] = reportRecord;
+        }
+
         if (route === "KONSELOR") {
           const legacyKey =
             push(ref(db, DB.legacyCounselorBook)).key;
@@ -4648,7 +4664,7 @@
           const pointKey =
             push(ref(db, DB.manualPoints)).key;
 
-          updates[`${DB.manualPoints}/${pointKey}`] = {
+          const pointRecord = {
             waktu: nowIso,
             tanggal: actionDate,
             namaSantri: student,
@@ -4659,6 +4675,9 @@
             penindak: actionOfficer,
             dicatatOleh: recorder
           };
+          updates[`${DB.manualPoints}/${pointKey}`] = pointRecord;
+          const waliKey = String(student||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          if(waliKey) updates[`cahaya_app/wali_index/${waliKey}/poin_manual/${pointKey}`] = pointRecord;
         });
       }
 

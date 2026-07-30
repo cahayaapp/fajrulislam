@@ -920,7 +920,8 @@
       getDatabase,
       ref,
       get,
-      push
+      push,
+      set
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
@@ -1291,10 +1292,12 @@
       };
 
       try {
-        await push(
+        const savedRef = await push(
           ref(db, "cahaya_app/log_lapor_inisiatif"),
           payload
         );
+        const waliKey = String(payload.namaPelanggar||payload.namaSantri||payload.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+        if(waliKey && savedRef.key){const indexPayload={...payload,buktiFoto:payload.buktiFoto?{ada:true,nama:payload.buktiFoto.nama||''}:null};await set(ref(db,`cahaya_app/wali_index/${waliKey}/laporan/${savedRef.key}`),indexPayload);}
 
         tampilkanToast(
           "success",

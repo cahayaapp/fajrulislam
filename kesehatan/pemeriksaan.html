@@ -1743,7 +1743,11 @@
       get,
       push,
       update,
-      runTransaction
+      runTransaction,
+      query,
+      orderByChild,
+      equalTo,
+      limitToLast
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
@@ -1883,7 +1887,12 @@
       ];
 
       const snapshots = await Promise.all(
-        sources.map(source => get(ref(db, source.path)))
+        sources.map(source => get(query(
+          ref(db, source.path),
+          orderByChild("tanggal"),
+          equalTo(String(tanggalIzin || "")),
+          limitToLast(250)
+        )))
       );
 
       sources.forEach((source, sourceIndex) => {
@@ -3236,7 +3245,8 @@
         };
 
         const updates = {
-          [`${DB_PATH}/${recordKey}`]: record
+          [`${DB_PATH}/${recordKey}`]: record,
+          [`${CAHAYA_PATH}/wali_index/${studentKey}/kesehatan/${recordKey}`]: record
         };
 
         /*
@@ -3313,6 +3323,9 @@
               }
             ]
           };
+
+          updates[`${CAHAYA_PATH}/wali_index/${studentKey}/perizinan/${medicalPermitKey}`] = updates[`${CAHAYA_PATH}/perizinan_santri/${medicalPermitKey}`];
+          updates[`${CAHAYA_PATH}/perizinan_ringkas/${medicalPermitKey}`] = updates[`${CAHAYA_PATH}/perizinan_santri/${medicalPermitKey}`];
         }
 
         processedMedicines.forEach(medicine => {

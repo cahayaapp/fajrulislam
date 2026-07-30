@@ -1906,6 +1906,12 @@
         <a class="nav-item menu-akses" id="menu-stok-obat" style="display: none;" onclick="loadPage('kesehatan/stokobat.html', this)">💊 Stok Obat UKS</a>
       </div>
 
+      <div class="menu-group" id="group-keuangan">
+        <div class="group-label">Keuangan & Kasir</div>
+        <a class="nav-item menu-akses" id="menu-pusat-keuangan" style="display: none;" onclick="loadPage('keuangan/pusat-keuangan.html', this)">💳 Pusat Keuangan</a>
+        <a class="nav-item menu-akses" id="menu-kasir" style="display: none;" onclick="loadPage('keuangan/kasir.html', this)">🏪 Kasir Kantin/Koperasi</a>
+      </div>
+
       <div class="menu-group" id="group-observer">
         <div class="group-label">Tim Observer</div>
         <a class="nav-item menu-akses" id="menu-observer-pembelajaran" style="display: none;" onclick="loadPage('observer/pembelajaran.html', this)">📚 Observasi Pembelajaran</a>
@@ -1975,6 +1981,7 @@
         <a class="nav-item menu-akses" id="menu-qr-kelas" style="display: none;" onclick="loadPage('admin/qrkelas.html', this)">▦ Master QR Kelas</a>
         <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html', this)">🔐 Manajemen User</a>
         <a class="nav-item menu-akses" id="menu-koreksi" style="display: none;" onclick="loadPage('admin/settings.html', this)">🛠️ Pusat Koreksi Data</a>
+        <a class="nav-item menu-akses" id="menu-optimasi-bandwidth" style="display: none;" onclick="loadPage('admin/optimasi-bandwidth.html', this)">⚡ Optimasi Bandwidth</a>
         <a class="nav-item menu-akses" id="menu-profil" style="display: none;" onclick="loadPage('profil.html', this)">👤 Pengaturan Profil</a>
       </div>
     `;
@@ -2041,6 +2048,7 @@
       'menu-qr-kelas': { icon: '▦', label: 'QR Kelas' },
       'menu-users': { icon: '🔐', label: 'User' },
       'menu-koreksi': { icon: '🛠️', label: 'Koreksi' },
+      'menu-optimasi-bandwidth': { icon: '⚡', label: 'Optimasi' },
       'menu-profil': { icon: '👤', label: 'Profil' }
     };
 
@@ -2320,6 +2328,8 @@
         layanan: "Tim Layanan",
         sarpras: "Kepala Sarpras",
         kesehatan: "Tim Kesehatan",
+        keuangan: "Administrasi Keuangan",
+        kasir: "Kasir Kantin/Koperasi",
         wali: "Wali Santri"
       };
 
@@ -2672,6 +2682,9 @@
         tambahMenuPeran(['kesehatan'], 'menu-perizinan-uks');
         tambahMenuPeran(['sarpras'], 'menu-tindak-sarpras');
         tambahMenuPeran(['naqib'], 'menu-jadwal-piket');
+        tambahMenuPeran(['admin','direktur','wakil','yayasan','keuangan'], 'menu-pusat-keuangan');
+        tambahMenuPeran(['admin','direktur'], 'menu-optimasi-bandwidth');
+        tambahMenuPeran(['admin','direktur','wakil','keuangan','kasir'], 'menu-kasir');
         if (
           (myRoles.includes('guru') || gabunganMenu.includes('menu-tahfiz')) &&
           !gabunganMenu.includes('menu-laporan-murojaah')
@@ -2921,98 +2934,23 @@
       if (isTopLevel) {
         opts += `<option value="broadcast" style="font-weight:bold; color:#d97706;">📢 Broadcast Pengumuman</option>`;
         opts += `<option value="wali">👤 Wali Santri (Personal)</option>`;
-        opts += `<option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="supervisor">Supervisor</option><option value="konselor">Konselor</option><option value="naqib">Naqib</option><option value="guru">Guru</option><option value="kesehatan">Tim Kesehatan</option><option value="sarpras">Kepala Sarpras</option><option value="layanan">Tim Layanan</option><option value="cla">CLA</option>`;
+        opts += `<option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="supervisor">Supervisor</option><option value="konselor">Konselor</option><option value="naqib">Naqib</option><option value="guru">Guru</option><option value="kesehatan">Tim Kesehatan</option><option value="sarpras">Kepala Sarpras</option><option value="layanan">Tim Layanan</option><option value="keuangan">Administrasi Keuangan</option><option value="kasir">Kasir</option><option value="cla">CLA</option>`;
       } else if (isKonselor) {
-        opts += `<option value="wali">👤 Wali Santri (Personal)</option><option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="naqib">Naqib</option><option value="guru">Guru</option><option value="kesehatan">Tim Kesehatan</option><option value="sarpras">Kepala Sarpras</option><option value="layanan">Tim Layanan</option>`;
+        opts += `<option value="wali">👤 Wali Santri (Personal)</option><option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="naqib">Naqib</option><option value="guru">Guru</option><option value="kesehatan">Tim Kesehatan</option><option value="sarpras">Kepala Sarpras</option><option value="layanan">Tim Layanan</option><option value="keuangan">Administrasi Keuangan</option><option value="kasir">Kasir</option>`;
       } else {
-        opts += `<option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="supervisor">Supervisor</option><option value="konselor">Konselor</option><option value="naqib">Naqib</option><option value="guru">Guru</option><option value="kesehatan">Tim Kesehatan</option><option value="sarpras">Kepala Sarpras</option><option value="layanan">Tim Layanan</option><option value="cla">CLA</option>`;
+        opts += `<option value="direktur">Direktur</option><option value="wakil">Wakil Direktur</option><option value="admin">Admin / TU</option><option value="supervisor">Supervisor</option><option value="konselor">Konselor</option><option value="naqib">Naqib</option><option value="guru">Guru</option><option value="kesehatan">Tim Kesehatan</option><option value="sarpras">Kepala Sarpras</option><option value="layanan">Tim Layanan</option><option value="keuangan">Administrasi Keuangan</option><option value="kasir">Kasir</option><option value="cla">CLA</option>`;
       }
 
       document.getElementById('pChatRole').innerHTML = opts;
     }
-
-            function listenToGlobalMessages() {
-      dbRT.ref('cahaya_app/pesan_global').on('value', snap => {
-        const allRooms = snap.val() || {};
-        let unreadTotal = 0;
-        const myInboxData = [];
-        const meClean = namaSaya.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-
-        // Ruang broadcast bersama lama sengaja diabaikan. Broadcast baru dikirim sebagai salinan chat pribadi.
-
-        Object.keys(allRooms).forEach(roomId => {
-          try {
-            if (!roomId.includes(meClean) || roomId.startsWith('room_broadcast_')) return;
-
-            const msgs = allRooms[roomId];
-            if (!msgs || typeof msgs !== 'object') return;
-
-            const msgValues = Object.values(msgs).filter(m => m && m.waktu);
-            if (msgValues.length === 0) return;
-
-            const lastMsg = msgValues[msgValues.length - 1];
-            let opponentLabel = msgValues.find(m => m.pengirim && m.pengirim !== namaSaya)?.pengirim;
-
-            if (!opponentLabel) {
-              const roomParts = roomId.replace('chat_', '').split('_');
-              const oppClean = roomParts[0] === meClean ? roomParts[1] : roomParts[0];
-              const oppUser = pListUsers.find(u =>
-                (u.label || u.username || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === oppClean
-              );
-
-              if (oppUser) {
-                opponentLabel = oppUser.label || oppUser.username;
-              } else if (oppClean && oppClean.startsWith('abiummi')) {
-                const childName = oppClean.replace('abiummi', '');
-                opponentLabel = 'Abi Ummi ' + childName.charAt(0).toUpperCase() + childName.slice(1);
-              } else {
-                opponentLabel = oppClean || 'Tidak Diketahui';
-              }
-            }
-
-            const oppUser = pListUsers.find(u => (u.label || u.username) === opponentLabel);
-            const displayOpponent = oppUser && !opponentLabel.toLowerCase().includes('wali')
-              ? '@' + oppUser.username
-              : opponentLabel;
-
-            let isUnread = false;
-            if (lastMsg.pengirim !== namaSaya) {
-              const lastReadTime = localStorage.getItem('chat_read_' + roomId) || '0';
-              if (new Date(lastMsg.waktu) > new Date(lastReadTime)) {
-                unreadTotal += 1;
-                isUnread = true;
-              }
-            }
-
-            myInboxData.push({
-              roomId,
-              opponentDisplay: displayOpponent,
-              opponentActualLabel: opponentLabel,
-              lastMsg,
-              isUnread
-            });
-          } catch (error) {
-            console.warn('Gagal membaca ruang chat:', roomId, error);
-          }
-        });
-
-        const badge = document.getElementById('chatUnreadBadge');
-        if (badge) {
-          badge.textContent = unreadTotal > 99 ? '99+' : String(unreadTotal);
-          badge.style.display = unreadTotal > 0 ? 'flex' : 'none';
-        }
-
-        const inbox = document.getElementById('viewInbox');
-        if (inbox && inbox.style.display !== 'none') {
-          renderInboxUI(myInboxData);
-        }
-
-        sinkronkanBadgePintasanMobile();
-      });
+    function listenToGlobalMessages() {
+      // Listener root lama dinonaktifkan. Mesin WhatsApp baru membaca pesan_inbox per akun.
+      if (typeof window.listenToGlobalMessagesAndNotifs === 'function') {
+        window.listenToGlobalMessagesAndNotifs();
+      }
     }
 
-
-        function renderInboxUI(inboxData) {
+    function renderInboxUI(inboxData) {
       const container = document.getElementById('viewInbox');
       container.innerHTML = '';
 
@@ -3119,7 +3057,7 @@
       }
 
       if(type === 'inbox') {
-        dbRT.ref('cahaya_app/pesan_global').once('value');
+        // Indeks inbox digunakan; tidak membaca seluruh pesan_global.
       }
     }
 
@@ -3198,7 +3136,7 @@
       }, 100);
 
       localStorage.setItem('chat_read_' + roomId, new Date().toISOString());
-      dbRT.ref('cahaya_app/pesan_global').once('value');
+      // Indeks inbox digunakan; tidak membaca seluruh pesan_global.
 
       if(pChatListener) {
         dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
@@ -3206,7 +3144,7 @@
 
       pChatListener = roomId;
 
-      dbRT.ref(`cahaya_app/pesan_global/${roomId}`).on('value', snap => {
+      dbRT.ref(`cahaya_app/pesan_global/${roomId}`).limitToLast(50).on('value', snap => {
         const body = document.getElementById('pChatBody');
         body.innerHTML = '';
 
