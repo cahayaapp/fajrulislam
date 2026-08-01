@@ -1049,14 +1049,14 @@
       const currentName = studentName();
       const studentKey = normalizeName(currentName).replace(/[^a-z0-9]/g, "");
       if (studentKey && indexMap[path]) {
-        const indexed = await database.ref(`cahaya_app/wali_index/${studentKey}/${indexMap[path]}`).once("value");
+        const indexed = await database.ref(`cahaya_app/wali_index/${studentKey}/${indexMap[path]}`).limitToLast(Number(options.limit || 300)).once("value");
         if (indexed.exists()) {
           return { ok:true, snapshot:indexed, value:indexed.val(), indexed:true };
         }
       }
       const snapshot = window.CahayaBandwidth
         ? await window.CahayaBandwidth.readCompat(database, path, options)
-        : await database.ref(path).once("value");
+        : await database.ref(path).limitToLast(Number(options.limit || 300)).once("value");
 
       return {
         ok: true,

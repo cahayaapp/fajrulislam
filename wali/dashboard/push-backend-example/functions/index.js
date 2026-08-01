@@ -38,9 +38,11 @@ const {
 initializeApp();
 
 const DATABASE_INSTANCE =
-  "absensi-santri-fajrul-islam-default-rtdb";
+  process.env.CAHAYA_DATABASE_INSTANCE ||
+  "YOUR_PROJECT_ID-default-rtdb";
 
 const DATABASE_REGION =
+  process.env.CAHAYA_DATABASE_REGION ||
   "asia-southeast1";
 
 function clean(value = "") {

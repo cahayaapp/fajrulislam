@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Lapor Pelanggaran</title>
@@ -921,18 +926,11 @@
       ref,
       get,
       push,
-      set
+      set,
+      update
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
-      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
-      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-      projectId: "absensi-santri-fajrul-islam",
-      storageBucket: "absensi-santri-fajrul-islam.firebasestorage.app",
-      messagingSenderId: "739982369926",
-      appId: "1:739982369926:web:7e5375c3ddbaf0584cdd07"
-    };
+    const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -1283,21 +1281,44 @@
         naqibPendata: namaPenginput,
         namaPenginput,
 
-        buktiFoto: buktiFotoData
-          ? {
-              dataUrl: buktiFotoData,
-              ...buktiFotoMeta
-            }
-          : null
+        buktiFoto: null
       };
 
       try {
-        const savedRef = await push(
-          ref(db, "cahaya_app/log_lapor_inisiatif"),
-          payload
+        const savedRef = push(
+          ref(db, "cahaya_app/log_lapor_inisiatif")
         );
-        const waliKey = String(payload.namaPelanggar||payload.namaSantri||payload.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-        if(waliKey && savedRef.key){const indexPayload={...payload,buktiFoto:payload.buktiFoto?{ada:true,nama:payload.buktiFoto.nama||''}:null};await set(ref(db,`cahaya_app/wali_index/${waliKey}/laporan/${savedRef.key}`),indexPayload);}
+        const photoPath = buktiFotoData
+          ? `cahaya_app/bukti_pelanggaran/${savedRef.key}`
+          : "";
+        const evidenceMeta = buktiFotoData
+          ? {
+              ada: true,
+              path: photoPath,
+              nama: buktiFotoMeta?.nama || buktiFotoMeta?.name || "bukti-pelanggaran.jpg",
+              tipe: buktiFotoMeta?.tipe || buktiFotoMeta?.type || "image/jpeg",
+              ukuran: buktiFotoMeta?.ukuran || buktiFotoMeta?.size || 0
+            }
+          : null;
+        const finalPayload = {
+          ...payload,
+          buktiFoto: evidenceMeta
+        };
+        const waliKey = String(terlapor || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+        const updates = {
+          [`cahaya_app/log_lapor_inisiatif/${savedRef.key}`]: finalPayload
+        };
+        if (buktiFotoData) {
+          updates[photoPath] = {
+            dataUrl: buktiFotoData,
+            ...buktiFotoMeta,
+            dibuatPada: now.toISOString()
+          };
+        }
+        if (waliKey) {
+          updates[`cahaya_app/wali_index/${waliKey}/laporan/${savedRef.key}`] = finalPayload;
+        }
+        await update(ref(db), updates);
 
         tampilkanToast(
           "success",

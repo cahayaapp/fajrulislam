@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>e-Raport Santri - Pesantren Cahaya Fajrul Islam</title>
@@ -1041,14 +1046,9 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, get, onValue, push, update, query, orderByChild, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, get, push, update, query, orderByChild, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
-    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
-    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-    projectId: "absensi-santri-fajrul-islam"
-  };
+  const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
@@ -1583,7 +1583,7 @@
 
   async function tarikNilaiTerbaruDariPusat() {
     try {
-      const snapshot = await get(ref(db, NILAI_PATH));
+      const snapshot = await get(query(ref(db, NILAI_PATH), orderByChild("tanggal_ujian"), limitToLast(2500)));
       semuaNilai = Object.entries(snapshot.val() || {}).map(([id, value]) => ({ id, ...value }));
       jadwalkanPerbaruiRaportNilai();
     } catch (error) {
@@ -1593,32 +1593,22 @@
   }
 
   function mulaiPantauNilaiRealtime() {
+    // Mode hemat bandwidth: e-Raport tidak lagi memasang listener pada seluruh
+    // node nilai dan tidak menarik ulang data setiap 30 detik. Pembaruan hanya
+    // dilakukan saat halaman kembali aktif setelah jeda minimal lima menit.
     if (stopPantauNilai) return;
-
-    stopPantauNilai = onValue(ref(db, NILAI_PATH), snapshot => {
-      semuaNilai = Object.entries(snapshot.val() || {}).map(([id, value]) => ({ id, ...value }));
-
-      // Antrekan proses agar perubahan yang datang beruntun tidak saling menimpa.
-      antreanSinkronNilai = antreanSinkronNilai
-        .then(() => prosesPembaruanNilai())
-        .catch(error => {
-          console.warn("Sinkronisasi realtime nilai bermasalah:", error);
-          perbaruiStatusSinkron("Sinkronisasi nilai tertunda. Periksa koneksi.", "error");
-        });
-    }, error => {
-      console.warn("Listener realtime nilai terputus:", error);
-      perbaruiStatusSinkron("Sinkronisasi nilai terputus. Memakai pembaruan cadangan.", "error");
-    });
-
-    // Cadangan: saat tab kembali aktif atau koneksi sempat terputus, data ditarik ulang.
-    window.addEventListener("focus", tarikNilaiTerbaruDariPusat);
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) tarikNilaiTerbaruDariPusat();
-    });
-
-    if (!intervalCadanganNilai) {
-      intervalCadanganNilai = window.setInterval(tarikNilaiTerbaruDariPusat, 30000);
-    }
+    let terakhirTarik = Date.now();
+    const refreshTerbatas = () => {
+      if (document.hidden || Date.now() - terakhirTarik < 5 * 60 * 1000) return;
+      terakhirTarik = Date.now();
+      tarikNilaiTerbaruDariPusat();
+    };
+    window.addEventListener("focus", refreshTerbatas);
+    document.addEventListener("visibilitychange", refreshTerbatas);
+    stopPantauNilai = () => {
+      window.removeEventListener("focus", refreshTerbatas);
+      document.removeEventListener("visibilitychange", refreshTerbatas);
+    };
   }
 
 
@@ -2360,7 +2350,7 @@
       // Hanya data inti yang memengaruhi pembukaan halaman dimuat di tahap awal.
       const [masterSnap, nilaiSnap, asesmenSnap] = await Promise.all([
         get(ref(db, "cahaya_app/master_akademik")),
-        get(ref(db, NILAI_PATH)),
+        get(query(ref(db, NILAI_PATH), orderByChild("tanggal_ujian"), limitToLast(2500))),
         get(ref(db, "cahaya_app/asesmen_akhir_semester"))
       ]);
 

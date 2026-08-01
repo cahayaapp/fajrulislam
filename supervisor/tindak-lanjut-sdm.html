@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tindak Lanjut SDM • CAHAYA</title>
 <style>
@@ -38,8 +43,8 @@
 </div>
 <script type="module">
 import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {getDatabase,ref,push,set,onValue,remove} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-const cfg={apiKey:"AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",authDomain:"absensi-santri-fajrul-islam.firebaseapp.com",databaseURL:"https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",projectId:"absensi-santri-fajrul-islam"};
+import {getDatabase,ref,push,set,onValue,remove,query,limitToLast} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+const cfg = window.CAHAYA_CONFIG.firebase;
 const app=getApps().length?getApps()[0]:initializeApp(cfg),db=getDatabase(app),PATH="cahaya_app/tindak_lanjut_sdm";
 const $=id=>document.getElementById(id);let rows=[],editId="";
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -55,7 +60,7 @@ window.editRow=id=>{const r=rows.find(x=>x.id===id);if(!r)return;editId=id;const
 window.deleteRow=async id=>{if(confirm("Hapus catatan tindak lanjut ini?"))await remove(ref(db,`${PATH}/${id}`))};
 function clsStatus(s){return s==="Selesai"?"good":s==="Dalam Proses"?"warn":"info"}
 function render(){const q=$("search").value.toLowerCase().trim(),fs=$("filterStatus").value;const f=rows.filter(r=>(!q||`${r.namaSDM} ${r.peran} ${r.sumber}`.toLowerCase().includes(q))&&(!fs||r.status===fs));const done=rows.filter(r=>r.status==="Selesai").length,low=rows.filter(r=>Number(r.skor)<75).length;$("metrics").innerHTML=`<div class="metric"><small>Total</small><b>${rows.length}</b></div><div class="metric"><small>Selesai</small><b>${done}</b></div><div class="metric"><small>Proses</small><b>${rows.filter(r=>r.status==="Dalam Proses").length}</b></div><div class="metric"><small>Skor &lt;75</small><b>${low}</b></div>`;$("tbody").innerHTML=f.length?f.map(r=>`<tr><td>${esc(r.tanggal)}</td><td><span class="name">${esc(r.namaSDM)}</span><div class="small">${esc(r.peran)} • ${esc(r.sumber)}</div></td><td><span class="pill ${Number(r.skor)<75?'bad':Number(r.skor)>=90?'good':'warn'}">${esc(r.skor)}%</span></td><td>${esc(r.kategoriTindakLanjut)}</td><td>${esc(r.tindakan)}<div class="small">Target: ${esc(r.target||'—')}</div></td><td><span class="pill ${clsStatus(r.status)}">${esc(r.status)}</span></td><td><button class="row-btn" onclick="editRow('${esc(r.id)}')">Edit</button> <button class="row-btn" onclick="deleteRow('${esc(r.id)}')">Hapus</button></td></tr>`).join(""):`<tr><td colspan="7"><div class="empty">Belum ada tindak lanjut.</div></td></tr>`}
-onValue(ref(db,PATH),snap=>{rows=Object.entries(snap.val()||{}).map(([id,v])=>({id,...v})).sort((a,b)=>String(b.tanggal||"").localeCompare(String(a.tanggal||""))||String(b.waktuSimpan||"").localeCompare(String(a.waktuSimpan||"")));render()});
+onValue(query(ref(db,PATH),limitToLast(500)),snap=>{rows=Object.entries(snap.val()||{}).map(([id,v])=>({id,...v})).sort((a,b)=>String(b.tanggal||"").localeCompare(String(a.tanggal||""))||String(b.waktuSimpan||"").localeCompare(String(a.waktuSimpan||"")));render()});
 resetForm();
 const reportParams=new URLSearchParams(location.search);
 if(reportParams.has("nama")){

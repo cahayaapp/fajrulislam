@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../../config/tenant-config.js"></script>
+  <script src="../../config/master-data.js"></script>
+  <script src="../../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#2878ff" />
@@ -938,12 +943,7 @@ const ACADEMIC_MONTHS = [
       {year:2027,month:5,label:"Juni 2027"}
     ];
 
-    const firebaseConfig = {
-      apiKey:"AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
-      authDomain:"absensi-santri-fajrul-islam.firebaseapp.com",
-      databaseURL:"https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-      projectId:"absensi-santri-fajrul-islam"
-    };
+    const firebaseConfig = window.CAHAYA_CONFIG.firebase;
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const dbRT = firebase.database();
     const CALENDAR_PATH = "kalender_pendidikan/ta_2026_2027/events";
@@ -1125,23 +1125,25 @@ const ACADEMIC_MONTHS = [
       }).join("");
     }
 
-    function loadCalendar(){
-      dbRT.ref(CALENDAR_PATH).on("value",snapshot=>{
+    async function loadCalendar(){
+      try{
+        const snapshot=window.CahayaBandwidth
+          ? await window.CahayaBandwidth.readCompat(dbRT,CALENDAR_PATH,{ttl:60*60000,limit:500})
+          : await dbRT.ref(CALENDAR_PATH).limitToLast(500).once("value");
         const rawEvents=toEvents(snapshot.val());
         allImportantEvents=rawEvents.map(event=>{
           event._classification=classifyImportantEvent(event);
           return event;
         }).filter(event=>event._classification.important);
-
         els.calendarStatus.className="calendar-status online";
         els.calendarStatusText.textContent=`Kalender tersambung • ${allImportantEvents.length} agenda penting ditemukan`;
         renderMonth();
-      },error=>{
+      }catch(error){
         els.calendarStatus.className="calendar-status error";
         els.calendarStatusText.textContent="Kalender belum dapat dimuat. Periksa koneksi atau Firebase Rules.";
         els.importantAgendaList.innerHTML=`<div class="empty">Data kalender tidak dapat dibaca saat ini.</div>`;
         console.error(error);
-      });
+      }
     }
 
     function bindTabs(){

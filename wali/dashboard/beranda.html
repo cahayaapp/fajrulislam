@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../../config/tenant-config.js"></script>
+  <script src="../../config/master-data.js"></script>
+  <script src="../../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Beranda Wali - CAHAYA APP</title>
@@ -522,28 +527,7 @@
 
 <script>
   // 1. KONFIGURASI FIREBASE
-  const firebaseConfig = {
-    apiKey:
-      "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
-
-    authDomain:
-      "absensi-santri-fajrul-islam.firebaseapp.com",
-
-    databaseURL:
-      "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-
-    projectId:
-      "absensi-santri-fajrul-islam",
-
-    storageBucket:
-      "absensi-santri-fajrul-islam.firebasestorage.app",
-
-    messagingSenderId:
-      "739982369926",
-
-    appId:
-      "1:739982369926:web:7e5375c3ddbaf0584cdd07"
-  };
+  const firebaseConfig = window.CAHAYA_CONFIG.firebase;
   
   if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
   const dbRT = firebase.database(); 
@@ -874,7 +858,7 @@
           }
           const snapshot = window.CahayaBandwidth
               ? await window.CahayaBandwidth.readCompat(dbRT, path, timelineOptions[path] || {})
-              : await dbRT.ref(path).once('value');
+              : await dbRT.ref(path).limitToLast(Number(timelineOptions[path]?.limit || 250)).once('value');
           return { ok: true, value: snapshot.val() };
       } catch (error) {
           console.warn(`Sumber ${path} gagal dibaca:`, error);
@@ -2704,6 +2688,12 @@
   }
 
   function toggleChat() {
+    // Dalam Portal Wali terintegrasi, satu-satunya mesin chat berada di parent.
+    // Guard ini mencegah mesin legacy mengirim/membaca room dengan indeks lama.
+    if (window.parent && window.parent !== window && typeof window.parent.toggleWaliChat === 'function') {
+      window.parent.toggleWaliChat();
+      return;
+    }
     const cw = document.getElementById('chatWindow');
     if (cw.style.display === 'flex') { cw.style.display = 'none'; if(chatListener) dbRT.ref(`cahaya_app/pesan_global/${chatListener}`).off(); } 
     else { cw.style.display = 'flex'; switchChatTab('inbox'); }
@@ -2778,6 +2768,10 @@
   }
 
   function sendChatMessage() {
+      if (window.parent && window.parent !== window && typeof window.parent.toggleWaliChat === 'function') {
+          window.parent.toggleWaliChat();
+          return;
+      }
       const inp = document.getElementById('chatInput'); const txt = inp.value.trim(); if(!txt || !targetAktifLabel) return;
       const rid = getChatRoomId(sapaanPenuh, targetAktifLabel);
       
@@ -2807,7 +2801,7 @@
   function deleteSelectedMsg() {
       const rid = getChatRoomId(sapaanPenuh, targetAktifLabel);
       if(confirm("Apakah Anda yakin ingin menghapus pesan ini?")) {
-          dbRT.ref(`cahaya_app/pesan_global/${rid}/${selectedMsgId}`).remove();
+          dbRT.ref(`cahaya_app/pesan_global/${rid}/${selectedMsgId}`).update({teks:"",dihapus:true,deleted:true,deletedAt:new Date().toISOString(),deletedBy:sapaanPenuh});
           document.getElementById('actionSheetOverlay').style.display = 'none';
       }
   }

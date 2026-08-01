@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Jurnal Sarana & Prasarana</title>
@@ -1038,15 +1043,14 @@
       ref,
       get,
       push,
-      set
+      set,
+      query,
+      orderByChild,
+      equalTo,
+      limitToLast
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
-      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
-      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-      projectId: "absensi-santri-fajrul-islam"
-    };
+    const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -1607,7 +1611,14 @@
     }
 
     async function findExistingJournal(tanggal, nama) {
-      const snapshot = await get(ref(db, DB_PATH));
+      const snapshot = await get(
+        query(
+          ref(db, DB_PATH),
+          orderByChild("tanggal"),
+          equalTo(tanggal),
+          limitToLast(200)
+        )
+      );
 
       if (!snapshot.exists()) return null;
 

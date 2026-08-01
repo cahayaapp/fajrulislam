@@ -2237,8 +2237,8 @@
     }
   }
 
-  async function updateInboxIndex(contact, roomId, message = null) {
-    if (!contact || !roomId) return;
+  function buildInboxIndexUpdates(contact, roomId, message = null) {
+    if (!contact || !roomId) return {};
     const now = message?.waktu || new Date().toISOString();
     const myKey = safeFirebaseKey(realUsername || namaSaya);
     const peerKey = safeFirebaseKey(contact.username || contact.chatIdentity);
@@ -2247,25 +2247,29 @@
       peerUsername: contact.username || "",
       peerLabel: contact.chatIdentity || contact.displayName || "Pengguna",
       peerRoles: Array.isArray(contact.roles) ? contact.roles : [],
-      updatedAt: now
+      updatedAt: now,
+      ...(message ? { lastMessage: message } : {})
     };
     const peerEntry = {
       roomId,
       peerUsername: realUsername || "",
       peerLabel: namaSaya,
       peerRoles: Array.isArray(myRoles) ? myRoles : [],
-      updatedAt: now
+      updatedAt: now,
+      ...(message ? { lastMessage: message } : {})
     };
-    if (message) {
-      myEntry.lastMessage = message;
-      peerEntry.lastMessage = message;
-    }
-    const updates = {};
-    updates[`cahaya_app/pesan_inbox/${myKey}/${roomId}`] = myEntry;
-    updates[`cahaya_app/pesan_inbox/${peerKey}/${roomId}`] = peerEntry;
-    try { await dbRT.ref().update(updates); } catch (error) { console.warn("Indeks inbox belum tersimpan:", error); }
+    return {
+      [`cahaya_app/pesan_inbox/${myKey}/${roomId}`]: myEntry,
+      [`cahaya_app/pesan_inbox/${peerKey}/${roomId}`]: peerEntry
+    };
   }
 
+  async function updateInboxIndex(contact, roomId, message = null) {
+    const updates = buildInboxIndexUpdates(contact, roomId, message);
+    if (!Object.keys(updates).length) return;
+    try { await dbRT.ref().update(updates); }
+    catch (error) { console.warn("Indeks inbox belum tersimpan:", error); }
+  }
 
   async function saveBroadcastMeta(
     broadcast
@@ -2990,8 +2994,13 @@
           broadcastBatchId: batchId
         };
 
-        await dbRT.ref(`cahaya_app/pesan_global/${roomId}`).push(payload);
-        await updateInboxIndex(contact, roomId, payload);
+        const messageRef = dbRT.ref(`cahaya_app/pesan_global/${roomId}`).push();
+        payload.id = messageRef.key;
+        const updates = buildInboxIndexUpdates(contact, roomId, payload);
+        updates[`cahaya_app/pesan_global/${roomId}/${messageRef.key}`] = payload;
+        updates[`cahaya_app/pesan_meta/${roomId}/updatedAt`] = now;
+        updates[`cahaya_app/pesan_meta/${roomId}/type`] = "private";
+        await dbRT.ref().update(updates);
       })
     );
 
@@ -3096,8 +3105,13 @@
           recipientRoles: state.active.roles
         };
 
-        await dbRT.ref(`cahaya_app/pesan_global/${state.active.roomId}`).push(payload);
-        await updateInboxIndex(state.active, state.active.roomId, payload);
+        const messageRef = dbRT.ref(`cahaya_app/pesan_global/${state.active.roomId}`).push();
+        payload.id = messageRef.key;
+        const updates = buildInboxIndexUpdates(state.active, state.active.roomId, payload);
+        updates[`cahaya_app/pesan_global/${state.active.roomId}/${messageRef.key}`] = payload;
+        updates[`cahaya_app/pesan_meta/${state.active.roomId}/updatedAt`] = payload.waktu;
+        updates[`cahaya_app/pesan_meta/${state.active.roomId}/type`] = "private";
+        await dbRT.ref().update(updates);
       }
 
       if (state.active.type !== "broadcast") {
@@ -3613,21 +3627,28 @@
       error => console.warn("Status baca belum dimuat:", error)
     );
 
-    dbRT.ref(`cahaya_app/pesan_inbox/${safeFirebaseKey(realUsername || namaSaya)}`).on(
+    dbRT.ref(`cahaya_app/pesan_inbox/${safeFirebaseKey(realUsername || namaSaya)}`).limitToLast(100).on(
       "value",
       snapshot => {
         const index = snapshot.val() || {};
-        state.rooms = {};
+        const previousRooms = state.rooms || {};
+        const nextRooms = {};
         state.meta = {};
         Object.values(index).forEach(item => {
           if (!item?.roomId) return;
           state.meta[item.roomId] = { roomId:item.roomId, type:"private", inbox:item, updatedAt:item.updatedAt || "" };
-          if (item.lastMessage) state.rooms[item.roomId] = { __last:item.lastMessage };
+          const previous = previousRooms[item.roomId];
+          const hasLoadedConversation = previous && Object.keys(previous).some(key => key !== "__last");
+          if (hasLoadedConversation) nextRooms[item.roomId] = previous;
+          else if (item.lastMessage) nextRooms[item.roomId] = { __last:item.lastMessage };
         });
+        state.rooms = nextRooms;
         buildContacts();
         renderChatList();
         updateChatBadge();
-        if (state.active) renderConversation();
+        // Percakapan aktif dirender oleh listener ruang chat. Inbox tidak boleh
+        // menimpa 50 pesan yang sudah dimuat dengan satu lastMessage saja.
+        if (state.active?.type === "broadcast") renderConversation();
         maybeNotifyNewMessages();
         renderNotificationPanel(chatNotifications(), state.dbNotifications);
         lastUnreadCount = totalUnreadCount();

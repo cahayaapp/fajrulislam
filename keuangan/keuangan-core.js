@@ -1,12 +1,7 @@
 (function(global){
   'use strict';
 
-  const CFG = {
-    apiKey: 'AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI',
-    authDomain: 'absensi-santri-fajrul-islam.firebaseapp.com',
-    databaseURL: 'https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com',
-    projectId: 'absensi-santri-fajrul-islam'
-  };
+  const CFG = window.CAHAYA_CONFIG.firebase;
 
   const ROOT = 'cahaya_app/keuangan';
   const P = {

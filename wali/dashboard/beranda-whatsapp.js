@@ -1,3 +1,4 @@
+const IS_EMBEDDED_WALI_PORTAL = window.parent && window.parent !== window;
 /*
  * BERANDA PORTAL WALI
  * WhatsApp-style live chat, robust media, read notifications,
@@ -1241,7 +1242,7 @@
     buildContacts();
     if (chatRoomsListenerInstalled) return;
     chatRoomsListenerInstalled = true;
-    dbRT.ref(`cahaya_app/pesan_inbox/${safeKey(userNameAsli)}`).on(
+    dbRT.ref(`cahaya_app/pesan_inbox/${safeKey(userNameAsli)}`).limitToLast(100).on(
       "value",
       snapshot => {
         const index = snapshot.val() || {};
@@ -2808,15 +2809,18 @@
       ) {
         clearInterval(timer);
 
-        buildContacts();
-        listenReadReceipts();
+        if (!IS_EMBEDDED_WALI_PORTAL) {
+          buildContacts();
+          listenReadReceipts();
+          setTimeout(openFromUrl, 900);
+        } else {
+          const fab = document.getElementById("fabChat");
+          const win = document.getElementById("chatWindow");
+          if (fab) fab.style.display = "none";
+          if (win) win.style.display = "none";
+        }
         listenSystemNotifs();
         preparePush();
-
-        setTimeout(
-          openFromUrl,
-          900
-        );
       }
 
       if (attempts > 50) {
@@ -2897,6 +2901,10 @@
 
   window.toggleChat =
     function () {
+      if (IS_EMBEDDED_WALI_PORTAL) {
+        try { window.parent.toggleWaliChat?.(); } catch (_) {}
+        return;
+      }
       const chatWindow =
         document.getElementById(
           "chatWindow"

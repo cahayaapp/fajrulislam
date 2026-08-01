@@ -4,12 +4,7 @@
   const config = window.OBSERVER_PAGE_CONFIG;
   if (!config) throw new Error("OBSERVER_PAGE_CONFIG belum tersedia.");
 
-  const firebaseConfig = {
-    apiKey:"AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
-    authDomain:"absensi-santri-fajrul-islam.firebaseapp.com",
-    databaseURL:"https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-    projectId:"absensi-santri-fajrul-islam"
-  };
+  const firebaseConfig = window.CAHAYA_CONFIG.firebase;
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
   const DB_PATH = "observasi_lapangan";
@@ -133,7 +128,17 @@
     const observerId=currentUser.uid||currentUser.id||currentUser.username||observerName.toLowerCase().replace(/\s+/g,'-');
     const custom={}; config.fields.forEach(field=>custom[field.name]=data[field.name]??'');
     const payload={jenis:config.type,jenisLabel:config.title,tanggal:data.tanggal,waktu:data.waktu,timestamp:new Date(`${data.tanggal}T${data.waktu||'00:00'}`).getTime()||now,dibuatPada:now,observer:{id:observerId,nama:observerName,role:currentUser.role||'observer'},dataUtama:custom,lokasi:data.lokasi||data.area||data.kelas||data.unit||'',program:data.program||data.mataPelajaran||data.sesi||data.jenisLayanan||'',pihakTerkait:data.pihakTerkait||data.guru||data.pic||data.penanggungJawab||data.petugas||'',indikator:indicators,skor:score,skorMaksimal:indicators.length*4,persentase:Math.round(score/(indicators.length*4)*100),status:data.status,temuanPositif:String(data.temuanPositif||'').trim(),temuanPerbaikan:String(data.temuanPerbaikan||'').trim(),kategoriMasalah:data.kategoriMasalah||'',urgensi:data.urgensi||'Normal',rekomendasi:String(data.rekomendasi||'').trim(),foto:photoData||'',validasi:{status:'Menunggu Validasi',supervisor:'',catatan:''},tindakLanjut:{status:'Belum Ditindaklanjuti',catatan:'',tanggal:0}};
-    try{await db.ref(DB_PATH).push().set(payload);toast('✅','Observasi tersimpan','Laporan telah masuk ke Pusat Observasi.');resetForm();}
+    try{
+      const recordRef=db.ref(DB_PATH).push();
+      const recordId=recordRef.key;
+      const photoPath=photoData?`observasi_lapangan_foto/${recordId}`:'';
+      const mainPayload={...payload,foto:'',adaFoto:Boolean(photoData),fotoPath};
+      const updates={};
+      updates[`${DB_PATH}/${recordId}`]=mainPayload;
+      if(photoData)updates[photoPath]={data:photoData,createdAt:now,jenis:config.type};
+      await db.ref().update(updates);
+      toast('✅','Observasi tersimpan','Laporan telah masuk ke Pusat Observasi.');resetForm();
+    }
     catch(error){console.error(error);const offline=safeJSON(localStorage.getItem(offlineKey),[]);offline.push({...payload,id:`offline-${now}`,offline:true});localStorage.setItem(offlineKey,JSON.stringify(offline));toast('📦','Tersimpan sementara','Koneksi bermasalah. Data disimpan di perangkat.');resetForm();loadOffline();}
     finally{button.disabled=false;button.textContent='💾 Simpan Observasi';}
   }

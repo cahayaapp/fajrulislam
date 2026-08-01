@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Raport SDM • CAHAYA APP</title>
 <style>
@@ -32,7 +37,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script>
-const cfg={apiKey:"AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",authDomain:"absensi-santri-fajrul-islam.firebaseapp.com",databaseURL:"https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",projectId:"absensi-santri-fajrul-islam"};if(!firebase.apps.length)firebase.initializeApp(cfg);const rtdb=firebase.database(),firestore=firebase.firestore();
+const cfg = window.CAHAYA_CONFIG.firebase;if(!firebase.apps.length)firebase.initializeApp(cfg);const rtdb=firebase.database(),firestore=firebase.firestore();
 const PATHS={teacher:"cahaya_app/absensi_guru",teacherLog:"cahaya_app/log_absensi_guru",learning:"cahaya_app/absensi_pembelajaran",schedule:"cahaya_app/jadwal_pelajaran",naqibJournal:"cahaya_app/jurnal_piket_naqib",naqibSchedule:"cahaya_app/jadwal_piket_naqib",tahfiz:"cahaya_app/setoran_tahfiz",healthJournal:"cahaya_app/jurnal_kesehatan",healthExam:"cahaya_app/pemeriksaan_kesehatan",sarprasJournal:"cahaya_app/jurnal_sarpras",sarprasChecklist:"cahaya_app/checklist_harian_sarpras",cleanJournal:"cahaya_app/jurnal_keamanan_kebersihan",observer:"observasi_lapangan",actions:"cahaya_app/laporan_penindakan",followups:"cahaya_app/tindak_lanjut_sdm"};
 const ALIASES={MULTAZAM:["multazam","abah multazam","multazam zakaria"],RASYIDIN:["rasyidin","rosyidin","abi rasyidin","abi rosyidin"],NAQIEB:["naqieb","muhammad naqieb"],ZAKI:["zaki","zaky","muhammad zaki","muhammad zaky"],RAHIEL:["rahiel","mika rahiel","mika rahiel yusuf"],FAIQ:["faiq","muhammad faiq"],FALAH:["falah","al falah","muhammad al falah","m al falah"],FATIMAH:["fatimah"],MEILISA:["meilisa","melisa"],ALAMANDA:["alamanda"],HANIF:["hanif"],FAVIAN:["favian"],YONG:["yong","khaizuran"],KAMAL:["kamal"],DANDI:["dandi","abi dandi"]};
 let raw={},users=[],reports=[],mode="month",selectedKey="";const $=id=>document.getElementById(id);const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

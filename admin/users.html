@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Manajemen Pengguna & Otorisasi</title>
@@ -21,6 +26,10 @@
     .header-admin h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold-light); margin-bottom: 5px; }
     
     /* Warna Badge untuk Role */
+
+    .leadership-scope{display:none;margin-top:18px;padding:14px;border:1px solid #dbe7f6;border-radius:16px;background:linear-gradient(180deg,#f8fbff,#f4f8fd)}
+    .leadership-scope.show{display:block}.leadership-scope h4{margin:0 0 7px;color:#29486e}.leadership-scope p{margin:0 0 12px;color:#71829a;font-size:.72rem;line-height:1.5}.scope-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.scope-chip{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #dce7f4;border-radius:11px;background:white;font-size:.72rem;font-weight:800}.scope-chip input{accent-color:#2878ff}.scope-selects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:11px}@media(max-width:700px){.scope-grid,.scope-selects{grid-template-columns:1fr}}
+
     .role-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin: 2px; }
     .role-admin { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
     .role-direktur { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
@@ -566,6 +575,8 @@
             <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-users"> Hak Akses User</label>
             <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-koreksi"> Pusat Koreksi Data</label>
             <label class="check-label" style="background:#ecfeff; border-color:#67e8f9;"><input type="checkbox" class="cb-menu" value="menu-optimasi-bandwidth"> Optimasi Bandwidth</label>
+            <label class="check-label" style="background:#fff7ed; border-color:#fdba74;"><input type="checkbox" class="cb-menu" value="menu-perbaikan-chat"> Perbaikan & Pemulihan Chat</label>
+            <label class="check-label" style="background:#eef2ff; border-color:#a5b4fc;"><input type="checkbox" class="cb-menu" value="menu-setup-aplikasi"> Setup White-Label</label>
           </div>
         </div>
       </div>
@@ -617,6 +628,28 @@
         <label class="check-label" style="border-color:#fdba74; background:#fff7ed;"><input type="checkbox" value="kasir" class="role-checkbox"> Kasir Kantin/Koperasi</label>
       </div>
 
+      <section class="leadership-scope" id="leadershipScopeBox">
+        <h4>📊 Ruang Kontrol Pimpinan</h4>
+        <p>Pilih hanya bidang dan wilayah yang menjadi tanggung jawab akun ini. Dashboard Pimpinan tidak akan mengunduh bidang lain.</p>
+        <div class="scope-grid">
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="attendance"> Kehadiran Santri</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="academic"> Akademik & Guru</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="tahfiz"> Tahfiz & Muroja’ah</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="nurturing"> Pengasuhan & Naqib</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="health"> UKS & Kesehatan</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="counseling"> Pelanggaran & Konseling</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="facilities"> Sarpras, Kebersihan & Keamanan</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="observer"> Observasi</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="sdm"> Raport & Tindak Lanjut SDM</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="finance"> Keuangan</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="ranking"> Ranking Operasional</label>
+        </div>
+        <div class="scope-selects">
+          <div class="form-group"><label>Wilayah data</label><select class="form-control" id="scopeGender"><option value="all">Putra & Putri</option><option value="putra">Putra saja</option><option value="putri">Putri saja</option></select></div>
+          <div class="form-group"><label>Kewenangan</label><select class="form-control" id="scopeAuthority"><option value="view">Melihat</option><option value="followup">Melihat & Tindak Lanjut</option><option value="manage">Mengelola</option></select></div>
+        </div>
+      </section>
+
       <button class="btn-cahaya btn-gold" id="btnSimpan" style="margin-top: 30px;" onclick="simpanDataUser()">💾 Simpan Akun Pengguna</button>
     </div>
   </div>
@@ -627,11 +660,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
-    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
-    projectId: "absensi-santri-fajrul-islam"
-  };
+  const firebaseConfig = window.CAHAYA_CONFIG.firebase;
   
   if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
   const db = firebase.firestore();
@@ -781,11 +810,30 @@
     }).join('');
   }
 
+  const LEADERSHIP_ROLES = new Set(['admin','direktur','wakil','yayasan','supervisor','cla']);
+  const ALL_SCOPE_FIELDS = ['attendance','academic','tahfiz','nurturing','health','counseling','facilities','observer','sdm','finance','ranking'];
+  function selectedRoles(){ return [...document.querySelectorAll('.role-checkbox:checked')].map(cb=>cb.value); }
+  function toggleLeadershipScope(){
+    const show=selectedRoles().some(role=>LEADERSHIP_ROLES.has(role));
+    document.getElementById('leadershipScopeBox')?.classList.toggle('show',show);
+    if(show && !document.querySelector('.scope-field:checked')) document.querySelectorAll('.scope-field').forEach(cb=>cb.checked=true);
+  }
+  document.querySelectorAll('.role-checkbox').forEach(cb=>cb.addEventListener('change',toggleLeadershipScope));
+  function readLeadershipScope(){ return {fields:[...document.querySelectorAll('.scope-field:checked')].map(cb=>cb.value),gender:document.getElementById('scopeGender')?.value||'all',authority:document.getElementById('scopeAuthority')?.value||'view'}; }
+  function fillLeadershipScope(scope,roles=[]){
+    const leadership=roles.some(role=>LEADERSHIP_ROLES.has(role));
+    document.getElementById('leadershipScopeBox')?.classList.toggle('show',leadership);
+    const fields=Array.isArray(scope?.fields)&&scope.fields.length?scope.fields:(roles.includes('admin')||roles.includes('direktur')?ALL_SCOPE_FIELDS:[]);
+    document.querySelectorAll('.scope-field').forEach(cb=>cb.checked=fields.includes(cb.value));
+    document.getElementById('scopeGender').value=scope?.gender||'all';document.getElementById('scopeAuthority').value=scope?.authority||'view';
+  }
+
   window.bukaModalTambah = () => {
     isEditMode = false; document.getElementById('modalTitle').textContent = "Buat Pengguna Baru";
     document.getElementById('areaKredensial').style.display = 'block';
     document.getElementById('fUsername').value = ''; document.getElementById('fPassword').value = '';
     document.querySelectorAll('.role-checkbox').forEach(cb => cb.checked = (cb.value === 'guru'));
+    fillLeadershipScope(null,['guru']);
     document.getElementById('modalUser').style.display = 'flex';
   }
 
@@ -803,7 +851,7 @@
     document.querySelectorAll('.role-checkbox').forEach(cb => { 
       cb.checked = daftarAkses.includes(cb.value); 
     });
-    
+    fillLeadershipScope(u.leadershipScope, daftarAkses);
     document.getElementById('modalUser').style.display = 'flex';
   }
 
@@ -815,8 +863,10 @@
     const pass = document.getElementById('fPassword').value.trim();
     const akses = []; 
     document.querySelectorAll('.role-checkbox:checked').forEach(cb => akses.push(cb.value));
+    const leadershipScope = akses.some(role => LEADERSHIP_ROLES.has(role)) ? readLeadershipScope() : null;
 
     if(!uname || akses.length === 0) return alert("Lengkapi isian data!");
+    if(leadershipScope && !leadershipScope.fields.length) return alert("Pilih minimal satu bidang kontrol pimpinan.");
     const btn = document.getElementById('btnSimpan'); 
     btn.innerHTML = "⏳ MEMPROSES..."; btn.disabled = true;
 
@@ -825,9 +875,9 @@
         if(pass.length < 6) throw new Error("Sandi min 6 karakter!");
         await secondaryApp.auth().createUserWithEmailAndPassword(`${uname}@cahayaapp.id`, pass);
         await secondaryApp.auth().signOut();
-        await db.collection("users").doc(uname).set({ username: uname, label: label || uname, akses: akses });
+        await db.collection("users").doc(uname).set({ username: uname, label: label || uname, akses: akses, leadershipScope });
       } else {
-        await db.collection("users").doc(uname).update({ label: label || uname, akses: akses });
+        await db.collection("users").doc(uname).update({ label: label || uname, akses: akses, leadershipScope });
       }
       tutupModal(); 
       await muatUsers(); 

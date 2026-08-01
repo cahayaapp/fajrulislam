@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Supervisor Raport Bulanan</title>
@@ -981,14 +986,9 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, get, update, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
-    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
-    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-    projectId: "absensi-santri-fajrul-islam"
-  };
+  const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
@@ -1121,7 +1121,7 @@
     statusAkses.className = "status-pill status-ok";
     statusAkses.textContent = "Akses Supervisor aktif";
 
-    const snap = await get(ref(db, PATH_EVALUASI_BULANAN));
+    const snap = await get(query(ref(db, PATH_EVALUASI_BULANAN), limitToLast(1800)));
 
     if (snap.exists()) {
       semuaEvaluasi = Object.entries(snap.val()).map(([id, data]) => ({

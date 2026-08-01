@@ -11,28 +11,9 @@ importScripts(
   "https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"
 );
 
-firebase.initializeApp({
-  apiKey:
-    "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+importScripts("../../config/firebase-worker-config.js");
 
-  authDomain:
-    "absensi-santri-fajrul-islam.firebaseapp.com",
-
-  databaseURL:
-    "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-
-  projectId:
-    "absensi-santri-fajrul-islam",
-
-  storageBucket:
-    "absensi-santri-fajrul-islam.firebasestorage.app",
-
-  messagingSenderId:
-    "739982369926",
-
-  appId:
-    "1:739982369926:web:7e5375c3ddbaf0584cdd07"
-});
+firebase.initializeApp(self.CAHAYA_FIREBASE_CONFIG);
 
 const messaging =
   firebase.messaging();

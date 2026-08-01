@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Manajemen Kasus Harian</title>
@@ -2238,12 +2243,7 @@
       limitToLast
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
-      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
-      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-      projectId: "absensi-santri-fajrul-islam"
-    };
+    const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -2255,6 +2255,24 @@
       manualPoints: "cahaya_app/poin_manual",
       actionReports: "cahaya_app/laporan_penindakan",
       legacyCounselorBook: "cahaya_app/buku_kasus_konselor"
+    };
+
+    window.openViolationEvidence = async encodedPath => {
+      const target = window.open("about:blank", "_blank");
+      try {
+        const path = decodeURIComponent(encodedPath || "");
+        const snapshot = await get(ref(db, path));
+        const value = snapshot.val();
+        const url = typeof value === "string"
+          ? value
+          : value?.dataUrl || value?.data || "";
+        if (!url) throw new Error("Bukti foto tidak ditemukan.");
+        if (target) target.location.href = url;
+        else window.open(url, "_blank");
+      } catch (error) {
+        if (target) target.close();
+        alert(error.message || "Bukti foto belum dapat dibuka.");
+      }
     };
 
     const CATEGORY_ORDER = [
@@ -3150,7 +3168,9 @@
             ${
               item.raw?.buktiFoto?.dataUrl
                 ? `<div class="case-evidence"><img src="${item.raw.buktiFoto.dataUrl}" alt="Bukti pelanggaran" onclick="window.open(this.src,'_blank')"><small>📷 Bukti foto terlampir — ketuk untuk membuka</small></div>`
-                : ""
+                : item.raw?.buktiFoto?.path
+                  ? `<div class="case-evidence"><button type="button" class="btn btn-secondary" onclick="openViolationEvidence('${encodeURIComponent(item.raw.buktiFoto.path)}')">📷 Buka Bukti Foto</button><small>Foto dimuat hanya saat dibuka agar hemat bandwidth.</small></div>`
+                  : ""
             }
 
             <div class="case-meta">
@@ -3937,7 +3957,7 @@
             <div style="margin-bottom:5px; line-height:1.4;">
               <b>${caseIndex + 1}.</b>
               ${escapeHtml(item.description)}
-              ${item.raw?.buktiFoto?.dataUrl ? "<br><b>📷 Bukti foto terlampir</b>" : ""}<br>
+              ${item.raw?.buktiFoto?.dataUrl || item.raw?.buktiFoto?.path ? "<br><b>📷 Bukti foto terlampir</b>" : ""}<br>
               <small>
                 ${escapeHtml(item.category)} •
                 ${escapeHtml(item.date)} •

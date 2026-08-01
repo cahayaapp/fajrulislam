@@ -5,7 +5,7 @@
    CATATAN: Seluruh kelompok lama telah diganti menjadi Usrah 1–8.
    ======================================================== */
 
-export const dataAwalUsrah = {
+const dataAwalUsrahBawaan = {
   "Usrah 1": [
     "ARYA DIFA ALSYA",
     "K.A. M. ABDULLAH SHIDDIQ AGTSALI",
@@ -137,3 +137,4 @@ export const dataAwalUsrah = {
     "ASHIFA FITRI RAMADHONI"
   ]
 };
+export const dataAwalUsrah = window.CAHAYA_MASTER_DATA?.usrah || dataAwalUsrahBawaan;

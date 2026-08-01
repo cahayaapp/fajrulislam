@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../../config/tenant-config.js"></script>
+  <script src="../../config/master-data.js"></script>
+  <script src="../../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta
     name="viewport"
@@ -1621,6 +1626,49 @@
         font-size: .56rem;
       }
     }
+  
+    /* CHAT MOBILE FULL-SCREEN — input dan tombol tidak tertutup pintasan bawah */
+    body.wali-chat-open {
+      overflow: hidden;
+    }
+
+    @media (max-width: 900px) {
+      body.wali-chat-open .wali-mobile-bottom-nav {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: translateY(110%) !important;
+      }
+
+      body.wali-chat-open .main-content {
+        height: 100vh !important;
+        height: 100dvh !important;
+        flex-basis: 100vh !important;
+        flex-basis: 100dvh !important;
+      }
+
+      body.wali-chat-open .wali-chat-window {
+        width: 100vw !important;
+        max-width: none !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        inset: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      body.wali-chat-open .wali-chat-footer {
+        position: relative;
+        z-index: 3;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        background: #fff;
+      }
+    }
+
   </style>
 
   <link rel="stylesheet" href="style.css">
@@ -1951,7 +1999,7 @@
 
     <footer class="wali-chat-footer" id="waliChatFooter">
       <textarea id="waliChatInput" rows="1" placeholder="Ketik pesan" oninput="autoResizeWaliChatInput()" onkeydown="handleWaliChatEnter(event)"></textarea>
-      <button type="button" class="wali-chat-send" onclick="sendWaliChatMessage()" aria-label="Kirim pesan">➤</button>
+      <button type="button" class="wali-chat-send" id="waliChatSendButton" onclick="sendWaliChatMessage()" aria-label="Kirim pesan">➤</button>
     </footer>
   </section>
 
@@ -1962,12 +2010,7 @@
   <script src="script.js"></script>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
-      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
-      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-      projectId: "absensi-santri-fajrul-islam"
-    };
+    const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
     if (!firebase.apps.length) {
       firebase.initializeApp(
@@ -2328,13 +2371,14 @@
       );
     }
 
-    async function updateWaliInboxIndex(roomId, opponentName, message = null) {
-      if (!roomId || !opponentName) return;
+    function buildWaliInboxUpdates(roomId, opponentName, message = null) {
+      if (!roomId || !opponentName) return {};
       const account = portalState?.account || {};
       const myIdentity = getWaliChatIdentity();
       const myKey = getWaliChatIndexKey();
       const contact = waliChatContacts.find(item =>
-        cleanWaliChatIdentity(item.actualName) === cleanWaliChatIdentity(opponentName)
+        cleanWaliChatIdentity(item.actualName) === cleanWaliChatIdentity(opponentName) ||
+        cleanWaliChatIdentity(item.username) === cleanWaliChatIdentity(opponentName)
       );
       const peerKey = cleanWaliChatIdentity(contact?.username || opponentName);
       const updatedAt = message?.waktu || new Date().toISOString();
@@ -2355,6 +2399,12 @@
         updatedAt,
         ...(message ? { lastMessage: message } : {})
       };
+      return updates;
+    }
+
+    async function updateWaliInboxIndex(roomId, opponentName, message = null) {
+      const updates = buildWaliInboxUpdates(roomId, opponentName, message);
+      if (!Object.keys(updates).length) return;
       try {
         await dbRT.ref().update(updates);
       } catch (error) {
@@ -2517,9 +2567,11 @@
       if (isOpen) {
         closeWaliChatRoomListener();
         windowElement.style.display = "none";
+        document.body.classList.remove("wali-chat-open");
         return;
       }
 
+      document.body.classList.add("wali-chat-open");
       windowElement.style.display = "flex";
       showWaliChatList();
     }
@@ -2588,8 +2640,8 @@
               displayName: contact.displayName,
               preview: contact.roles.join(" • "),
               roomId: buildWaliChatRoomId(
-                getWaliChatIdentity(),
-                contact.actualName
+                portalState?.account?.username || getWaliChatIdentity(),
+                contact.username || contact.actualName
               ),
               unread: false,
               broadcast: false
@@ -2722,7 +2774,9 @@
               ${escapeWaliChatHTML(message.pengirim || "Pengurus")} •
               ${escapeWaliChatHTML(formatWaliChatTime(message.waktu))}
             </div>
-            ${escapeWaliChatHTML(message.teks || "")}
+            ${message.dihapus || message.deleted
+              ? '<em style="color:#8190a8">Pesan telah dihapus</em>'
+              : escapeWaliChatHTML(message.teks || "")}
           </div>
         `;
       }).join("");
@@ -2750,33 +2804,49 @@
       }
     }
 
-    function sendWaliChatMessage() {
-      const input =
-        document.getElementById("waliChatInput");
-
-      const text =
-        String(input.value || "").trim();
-
+    async function sendWaliChatMessage() {
+      const input = document.getElementById("waliChatInput");
+      const sendButton = document.getElementById("waliChatSendButton");
+      const text = String(input.value || "").trim();
       if (!text || !waliChatRoomId) return;
 
+      const account = portalState?.account || {};
+      const contact = waliChatContacts.find(item =>
+        cleanWaliChatIdentity(item.actualName) === cleanWaliChatIdentity(waliChatOpponent) ||
+        cleanWaliChatIdentity(item.username) === cleanWaliChatIdentity(waliChatOpponent)
+      );
+      const now = new Date().toISOString();
+      const messageRef = dbRT.ref(`cahaya_app/pesan_global/${waliChatRoomId}`).push();
       const message = {
+        id: messageRef.key,
         teks: text,
         pengirim: getWaliChatIdentity(),
-        waktu: new Date().toISOString()
+        senderDisplay: getWaliChatIdentity(),
+        senderUsername: account.username || "",
+        senderRoles: ["wali"],
+        recipientDisplay: contact?.displayName || waliChatOpponent,
+        recipientUsername: contact?.username || "",
+        recipientRoles: contact?.roles || [],
+        roomId: waliChatRoomId,
+        waktu: now
       };
+      const updates = buildWaliInboxUpdates(waliChatRoomId, waliChatOpponent, message);
+      updates[`cahaya_app/pesan_global/${waliChatRoomId}/${messageRef.key}`] = message;
+      updates[`cahaya_app/pesan_meta/${waliChatRoomId}/updatedAt`] = now;
+      updates[`cahaya_app/pesan_meta/${waliChatRoomId}/type`] = "private";
 
-      dbRT
-        .ref(`cahaya_app/pesan_global/${waliChatRoomId}`)
-        .push(message)
-        .then(() => updateWaliInboxIndex(waliChatRoomId, waliChatOpponent, message))
-        .catch(error => {
-          console.error("Pesan gagal dikirim:", error);
-          alert("Pesan gagal dikirim. Silakan coba lagi.");
-        });
-
-      input.value = "";
-      autoResizeWaliChatInput();
-      input.focus();
+      if (sendButton) sendButton.disabled = true;
+      try {
+        await dbRT.ref().update(updates);
+        input.value = "";
+        autoResizeWaliChatInput();
+        input.focus();
+      } catch (error) {
+        console.error("Pesan gagal dikirim:", error);
+        alert("Pesan gagal dikirim. Silakan coba lagi.");
+      } finally {
+        if (sendButton) sendButton.disabled = false;
+      }
     }
 
 

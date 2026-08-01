@@ -238,3 +238,11 @@ window.dataMapel = [
     "TAHSIN",
     "TAHFIZ"
 ];
+
+/* WHITE-LABEL OVERRIDE: satu file config/master-data.js */
+if (window.CAHAYA_MASTER_DATA) {
+  window.dataSantri = window.CAHAYA_MASTER_DATA.santriByClass || window.dataSantri || {};
+  window.dataKelas = window.dataSantri;
+  window.dataGuru = window.CAHAYA_MASTER_DATA.teachers || window.dataGuru || [];
+  window.dataMapel = window.CAHAYA_MASTER_DATA.subjects || window.dataMapel || [];
+}

@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Evaluasi Bulanan Mentor</title>
@@ -1136,14 +1141,9 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, get, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyB0Ez2a85ZwQLR28U-yHpVmM3o8NMxZoLI",
-    authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
-    databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
-    projectId: "absensi-santri-fajrul-islam"
-  };
+  const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
@@ -1349,8 +1349,8 @@
     try {
       const [snapUsrah, snapLog, snapEvaluasi] = await Promise.all([
         get(ref(db, PATH_MASTER_USRAH)),
-        get(ref(db, PATH_LOG_MENTORING)),
-        get(ref(db, PATH_EVALUASI_BULANAN))
+        get(query(ref(db, PATH_LOG_MENTORING), limitToLast(2500))),
+        get(query(ref(db, PATH_EVALUASI_BULANAN), limitToLast(1800)))
       ]);
 
       semuaLogMentoring = snapLog.exists()
@@ -1916,7 +1916,7 @@
   };
 
   async function refreshEvaluasiBulanan() {
-    const snap = await get(ref(db, PATH_EVALUASI_BULANAN));
+    const snap = await get(query(ref(db, PATH_EVALUASI_BULANAN), limitToLast(1800)));
     semuaEvaluasiBulanan = snap.exists()
       ? Object.entries(snap.val()).map(([id, data]) => ({ id, ...data }))
       : [];
