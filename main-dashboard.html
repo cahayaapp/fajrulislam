@@ -1994,8 +1994,6 @@
         <a class="nav-item menu-akses" id="menu-qr-kelas" style="display: none;" onclick="loadPage('admin/qrkelas.html', this)">▦ Master QR Kelas</a>
         <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html', this)">🔐 Manajemen User</a>
         <a class="nav-item menu-akses" id="menu-koreksi" style="display: none;" onclick="loadPage('admin/settings.html', this)">🛠️ Pusat Koreksi Data</a>
-        <a class="nav-item menu-akses" id="menu-optimasi-bandwidth" style="display: none;" onclick="loadPage('admin/optimasi-bandwidth.html', this)">⚡ Optimasi Bandwidth</a>
-        <a class="nav-item menu-akses" id="menu-perbaikan-chat" style="display: none;" onclick="loadPage('admin/perbaikan-chat.html', this)">🧰 Perbaikan & Pemulihan Chat</a>
         <a class="nav-item menu-akses" id="menu-setup-aplikasi" style="display: none;" onclick="loadPage('admin/setup-aplikasi.html', this)">🏷️ Setup White-Label</a>
         <a class="nav-item menu-akses" id="menu-profil" style="display: none;" onclick="loadPage('profil.html', this)">👤 Pengaturan Profil</a>
       </div>
@@ -2063,8 +2061,6 @@
       'menu-qr-kelas': { icon: '▦', label: 'QR Kelas' },
       'menu-users': { icon: '🔐', label: 'User' },
       'menu-koreksi': { icon: '🛠️', label: 'Koreksi' },
-      'menu-optimasi-bandwidth': { icon: '⚡', label: 'Optimasi' },
-      'menu-perbaikan-chat': { icon: '🧰', label: 'Perbaikan Chat' },
       'menu-setup-aplikasi': { icon: '🏷️', label: 'White-Label' },
       'menu-profil': { icon: '👤', label: 'Profil' }
     };
@@ -2290,6 +2286,7 @@
     }
 
     let pUserSafe = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
+    {const roles=(Array.isArray(pUserSafe.akses)?pUserSafe.akses:[pUserSafe.akses||pUserSafe.role].filter(Boolean)).map(r=>String(r||'').toLowerCase()),identity=[pUserSafe.cashierUnit,pUserSafe.unitKasir,pUserSafe.username,pUserSafe.label].filter(Boolean).join(' '),dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity),cashierOnly=roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','wali'].includes(r));if(dedicatedCashier||cashierOnly){const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';location.replace(`keuangan/kasir.html${unit?`?unit=${unit}`:''}`)}}
 
     let rawRoles = pUserSafe.akses || [];
     if(typeof rawRoles === 'string') rawRoles = [rawRoles];
@@ -2551,7 +2548,7 @@
       { key:'observer', label:'Observer', icon:'👁️', roles:['observer','admin','direktur','wakil','supervisor'], menus:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-dapur','menu-observer-uks'] },
       { key:'asesmen', label:'Pusat Asesmen', icon:'🧘', roles:['guru','naqib','supervisor','admin','direktur','wakil'], menus:['menu-asesmen-naqib','menu-asesmen-guru','menu-asesmen-santri','menu-asesmen-sdm'] },
       { key:'wali', label:'Akses Wali Santri', icon:'👪', roles:['wali','admin'], menus:['menu-beranda-wali','menu-laporan-wali','menu-admin-wali','menu-modul-wali'] },
-      { key:'sistem', label:'Administrasi Sistem', icon:'⚙️', roles:['admin','direktur'], menus:['menu-komentar','menu-media','menu-db-master','menu-jadwal','menu-qr-kelas','menu-users','menu-koreksi','menu-optimasi-bandwidth','menu-perbaikan-chat','menu-setup-aplikasi'] }
+      { key:'sistem', label:'Administrasi Sistem', icon:'⚙️', roles:['admin','direktur'], menus:['menu-komentar','menu-media','menu-db-master','menu-jadwal','menu-qr-kelas','menu-users','menu-koreksi','menu-setup-aplikasi'] }
     ];
 
     function organizeSidebarByRole() {
@@ -2742,8 +2739,6 @@
         tambahMenuPeran(['naqib'], 'menu-jadwal-piket');
         tambahMenuPeran(['admin','direktur','wakil','yayasan','keuangan'], 'menu-pusat-keuangan');
         tambahMenuPeran(['admin','direktur','wakil','yayasan','keuangan'], 'menu-pengaturan-keuangan');
-        tambahMenuPeran(['admin','direktur'], 'menu-optimasi-bandwidth');
-        tambahMenuPeran(['admin','direktur'], 'menu-perbaikan-chat');
         tambahMenuPeran(['admin','direktur'], 'menu-setup-aplikasi');
         tambahMenuPeran(['admin','direktur','wakil','keuangan','kasir'], 'menu-kasir');
         if (

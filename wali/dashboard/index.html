@@ -2227,7 +2227,7 @@
 
     function getWaliMobileShortcutIds() {
       return WALI_MOBILE_SHORTCUT_ORDER
-        .filter(isWaliMenuAllowed)
+        .filter(menuId => isWaliMenuAllowed(menuId) && document.getElementById(menuId)?.dataset.moduleDisabled !== "true")
         .slice(0, 5);
     }
 
@@ -2291,7 +2291,7 @@
     }
 
     function openWaliMobileShortcut(menuId) {
-      if (!isWaliMenuAllowed(menuId)) return;
+      if (!isWaliMenuAllowed(menuId) || document.getElementById(menuId)?.dataset.moduleDisabled === "true") return;
 
       const menu =
         document.getElementById(menuId);
@@ -2927,6 +2927,7 @@
         .some(key => window.CahayaConfig.financeAllowed(key, source));
       menu.style.display = available ? "" : "none";
       menu.dataset.moduleDisabled = available ? "false" : "true";
+      if (typeof renderWaliMobileShortcuts === "function") renderWaliMobileShortcuts();
     }
 
     function renderHeaderData(

@@ -10,12 +10,17 @@
     bills: `${ROOT}/tagihan`,
     payments: `${ROOT}/pembayaran`,
     ledger: `${ROOT}/mutasi`,
-    products: `${ROOT}/produk`,
-    sales: `${ROOT}/transaksi_kantin`,
+    canteen: `${ROOT}/kantin`,
+    productsLegacy: `${ROOT}/produk`,
+    salesLegacy: `${ROOT}/transaksi_kantin`,
     audit: `${ROOT}/audit`,
     settings: `${ROOT}/pengaturan`,
+    migrations: `${ROOT}/migrations`,
     classes: 'cahaya_app/master_akademik/kelas'
   };
+  const CASHIER_UNITS = ['putra','putri'];
+  const productPath = unit => `${P.canteen}/${normalizeCashierUnit(unit)}/produk`;
+  const salesPath = unit => `${P.canteen}/${normalizeCashierUnit(unit)}/transaksi`;
 
   function ensureFirebase(){
     if (!global.firebase) throw new Error('Firebase belum dimuat.');
@@ -41,7 +46,61 @@
   function detectGender(source){
     if(typeof source==='string')return normalizeGender(source);
     source=source||{};
-    return normalizeGender(source.jenisKelamin||source.gender||source.kelamin||source.kelas||source.className||source.namaKelas||'');
+    return normalizeGender(source.jenisKelamin||source.gender||source.kelamin||source.kelas||source.className||source.namaKelas||source.unitKasir||source.cashierUnit||'');
+  }
+  function normalizeCashierUnit(value){
+    const unit=normalizeGender(value);
+    return CASHIER_UNITS.includes(unit)?unit:'';
+  }
+  function currentUser(){return readJSON('cahayaCurrentUser');}
+  function userRoles(user=currentUser()){
+    const raw=Array.isArray(user?.akses)?user.akses:[user?.akses||user?.role].filter(Boolean);
+    return raw.map(x=>String(x||'').toLowerCase());
+  }
+  function explicitCashierUnit(source=currentUser()){
+    source=source||{};
+    const direct=normalizeCashierUnit(source.cashierUnit||source.unitKasir||source.unitKantin||source.wilayahKasir||'');
+    if(direct)return direct;
+    const identity=[source.username,source.email,source.label,source.nama].filter(Boolean).join(' ');
+    if(/kasir\s*putri|kasirputri|kantin\s*putri/i.test(identity))return 'putri';
+    if(/kasir\s*putra|kasirputra|kantin\s*putra/i.test(identity))return 'putra';
+    return '';
+  }
+  function isCashierOnly(user=currentUser()){
+    const roles=userRoles(user);
+    return roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan'].includes(r));
+  }
+  function resolveCashierUnit(requested='',user=currentUser()){
+    const locked=explicitCashierUnit(user);
+    if(isCashierOnly(user))return locked;
+    const req=normalizeCashierUnit(requested);
+    if(req)return req;
+    if(locked)return locked;
+    const scope=feature('walletCashier').scope;
+    return scope==='putra'||scope==='putri'?scope:'';
+  }
+  function assertCashierUnit(unit,student=null){
+    const normalized=normalizeCashierUnit(unit);
+    if(!normalized)throw new Error('Unit kasir belum ditentukan. Pilih Kantin Putra atau Kantin Putri.');
+    if(!cashierUnitAllowed(normalized)){
+      const scope=feature('walletCashier').scope;
+      throw new Error(`Kantin ${normalized==='putra'?'Putra':'Putri'} tidak diaktifkan. Cakupan aktif: ${scope==='all'?'Putra & Putri':scope==='putra'?'Putra saja':'Putri saja'}.`);
+    }
+    if(student){
+      const gender=detectGender(student);
+      if(gender&&gender!==normalized)throw new Error(`Santri ${gender==='putra'?'Putra':'Putri'} tidak dapat bertransaksi di Kantin ${normalized==='putra'?'Putra':'Putri'}.`);
+    }
+    return normalized;
+  }
+  function unitLabel(unit){return normalizeCashierUnit(unit)==='putri'?'Kantin Putri':'Kantin Putra';}
+  function cashierUnitsForScope(){
+    const f=feature('walletCashier');
+    if(!f.enabled)return [];
+    return f.scope==='all'?[...CASHIER_UNITS]:[f.scope];
+  }
+  function cashierUnitAllowed(unit){
+    const normalized=normalizeCashierUnit(unit),allowed=cashierUnitsForScope();
+    return Boolean(normalized)&&allowed.includes(normalized);
   }
   function feature(keyName){
     if(SETTINGS?.feature)return SETTINGS.feature(keyName);
@@ -91,12 +150,13 @@
     try { return JSON.parse(localStorage.getItem(k)||'{}'); } catch(e){ return {}; }
   }
   function actor(){
-    const u = readJSON('cahayaCurrentUser');
+    const u = currentUser();
     return {
       uid: u.uid || '',
       username: u.username || u.email?.split('@')[0] || 'sistem',
       nama: u.label || u.nama || u.username || 'Sistem CAHAYA',
-      roles: Array.isArray(u.akses) ? u.akses : [u.role].filter(Boolean)
+      roles: Array.isArray(u.akses) ? u.akses : [u.role].filter(Boolean),
+      cashierUnit: explicitCashierUnit(u)
     };
   }
   function waliProfile(){ return readJSON('cahayaWaliStudentProfile'); }
@@ -163,7 +223,9 @@
   function hashPin(pin,salt){ return sha256(`${salt}|${String(pin)}`); }
   function validPin(pin){ return /^\d{6}$/.test(String(pin||'')); }
 
-  async function loadStudents(featureKey=''){
+  async function loadStudents(featureKey='',options={}){
+    if(typeof options==='string')options={unit:options};
+    const unit=normalizeCashierUnit(options?.unit||'');
     let map={};
     try { const s=await db.ref(P.classes).once('value'); map=s.val()||{}; } catch(e){}
     if(!Object.keys(map).length && global.CAHAYA_MASTER_DATA?.santriByClass) map=global.CAHAYA_MASTER_DATA.santriByClass;
@@ -176,6 +238,7 @@
         const nama=obj.nama||obj.namaSantri||obj.label||'';
         if(!nama)return;
         const row={studentKey:key(nama),nama,kelas:obj.kelas||kelas,jenisKelamin:detectGender({...obj,kelas:obj.kelas||kelas}),nis:obj.nis||''};
+        if(unit&&row.jenisKelamin!==unit)return;
         if(!featureKey||featureAllowed(featureKey,row))rows.push(row);
       });
     });
@@ -316,27 +379,68 @@
     return after;
   }
 
-  async function upsertProduct(product,who=actor()){
+  let cashierMigrationPromise=null;
+  async function ensureCashierUnitMigration(){
+    if(cashierMigrationPromise)return cashierMigrationPromise;
+    cashierMigrationPromise=(async()=>{
+      const flagRef=db.ref(`${P.migrations}/cashier_units_v1`);
+      const flagSnap=await flagRef.once('value');
+      if(flagSnap.val()?.done)return flagSnap.val();
+      const [legacyProductSnap,legacySaleSnap,putraProductSnap,putriProductSnap,putraSaleSnap,putriSaleSnap]=await Promise.all([
+        db.ref(P.productsLegacy).once('value'),db.ref(P.salesLegacy).once('value'),
+        db.ref(productPath('putra')).once('value'),db.ref(productPath('putri')).once('value'),
+        db.ref(salesPath('putra')).once('value'),db.ref(salesPath('putri')).once('value')
+      ]);
+      const legacyProducts=legacyProductSnap.val()||{},legacySales=legacySaleSnap.val()||{};
+      const existingProducts={putra:putraProductSnap.val()||{},putri:putriProductSnap.val()||{}};
+      const existingSales={putra:putraSaleSnap.val()||{},putri:putriSaleSnap.val()||{}};
+      const updates={};let copiedProducts=0,copiedSales=0,unclassifiedSales=0;
+      Object.entries(legacyProducts).forEach(([id,row])=>{
+        CASHIER_UNITS.forEach(unit=>{
+          if(existingProducts[unit][id])return;
+          updates[`${productPath(unit)}/${id}`]={...(row||{}),id:(row||{}).id||id,unitKantin:unit,diperbaruiPada:isoNow(),migrasiDari:'keuangan/produk'};copiedProducts++;
+        });
+      });
+      Object.entries(legacySales).forEach(([id,row])=>{
+        const unit=normalizeCashierUnit((row||{}).unitKantin)||detectGender(row||{});
+        if(!unit){unclassifiedSales++;return;}
+        if(existingSales[unit][id])return;
+        updates[`${salesPath(unit)}/${id}`]={...(row||{}),id:(row||{}).id||id,unitKantin:unit,migrasiDari:'keuangan/transaksi_kantin'};copiedSales++;
+      });
+      if(Object.keys(updates).length)await db.ref().update(updates);
+      const result={done:true,version:'2026.08-cashier-unit-v1',completedAt:isoNow(),copiedProducts,copiedSales,unclassifiedSales};
+      await flagRef.set(result);
+      return result;
+    })().catch(error=>{cashierMigrationPromise=null;throw error});
+    return cashierMigrationPromise;
+  }
+
+  async function upsertProduct(product,who=actor(),unitArg=''){
     assertFeature('walletCashier');
+    const unit=assertCashierUnit(resolveCashierUnit(product?.unitKantin||unitArg));
     const id=product.id||key(product.nama)||uid('produk');
-    const old=(await db.ref(`${P.products}/${id}`).once('value')).val()||{};
-    const payload={id,nama:String(product.nama||old.nama||'').trim(),kategori:String(product.kategori||old.kategori||'Umum'),harga:number(product.harga),stok:product.stok===''||product.stok===null?number(old.stok):number(product.stok),stokTakTerbatas:Boolean(product.stokTakTerbatas),aktif:product.aktif!==false,dibuatPada:old.dibuatPada||isoNow(),diperbaruiPada:isoNow(),petugas:who};
+    const path=productPath(unit);
+    const old=(await db.ref(`${path}/${id}`).once('value')).val()||{};
+    const payload={id,unitKantin:unit,nama:String(product.nama||old.nama||'').trim(),kategori:String(product.kategori||old.kategori||'Umum'),harga:number(product.harga),stok:product.stok===''||product.stok===null?number(old.stok):number(product.stok),stokTakTerbatas:Boolean(product.stokTakTerbatas),aktif:product.aktif!==false,dibuatPada:old.dibuatPada||isoNow(),diperbaruiPada:isoNow(),petugas:who};
     if(!payload.nama) throw new Error('Nama barang wajib diisi.');
-    await db.ref(`${P.products}/${id}`).set(payload);
-    await audit('PRODUK_DISIMPAN',{id,nama:payload.nama,harga:payload.harga,stok:payload.stok},who);
+    await db.ref(`${path}/${id}`).set(payload);
+    await audit('PRODUK_DISIMPAN',{id,unitKantin:unit,nama:payload.nama,harga:payload.harga,stok:payload.stok},who);
     return payload;
   }
 
-  async function processSale({studentKey,items,pin,kasir=actor(),note=''}){
+  async function processSale({studentKey,items,pin,kasir=actor(),note='',unitKantin=''}){
     assertFeature('walletCashier');
-    const allowedAccount=await getAccount(studentKey); assertFeature('walletCashier',allowedAccount||{});
+    await ensureCashierUnitMigration();
+    const unit=assertCashierUnit(resolveCashierUnit(unitKantin,kasir));
+    const allowedAccount=await getAccount(studentKey); assertFeature('walletCashier',allowedAccount||{}); assertCashierUnit(unit,allowedAccount||{});
     if(!Array.isArray(items)||!items.length) throw new Error('Keranjang masih kosong.');
-    const total=items.reduce((s,i)=>s+number(i.harga)*number(i.qty),0);
+    const total=items.reduce((sum,item)=>sum+number(item.harga)*number(item.qty),0);
     if(total<=0) throw new Error('Total transaksi tidak valid.');
-    const productSnaps={};
+    const productsRoot=productPath(unit),salesRoot=salesPath(unit),productSnaps={};
     for(const item of items){
-      const ps=(await db.ref(`${P.products}/${item.id}`).once('value')).val();
-      if(!ps||ps.aktif===false) throw new Error(`Barang ${item.nama} sudah tidak tersedia.`);
+      const ps=(await db.ref(`${productsRoot}/${item.id}`).once('value')).val();
+      if(!ps||ps.aktif===false) throw new Error(`Barang ${item.nama} sudah tidak tersedia di ${unitLabel(unit)}.`);
+      if(normalizeCashierUnit(ps.unitKantin||unit)!==unit)throw new Error(`Barang ${item.nama} bukan stok ${unitLabel(unit)}.`);
       if(!ps.stokTakTerbatas&&number(ps.stok)<number(item.qty)) throw new Error(`Stok ${item.nama} tidak mencukupi.`);
       productSnaps[item.id]=ps;
     }
@@ -348,7 +452,7 @@
     const accountRef=db.ref(`${P.accounts}/${studentKey}`);
     let before=null,after=null;
     const tx=await accountRef.transaction(current=>{
-      if(!current||current.aktif===false) return;
+      if(!current||current.aktif===false||detectGender(current)!==unit) return;
       const spendingDate=current.tanggalPengeluaran===date?number(current.pengeluaranHariIni):0;
       const limit=number(current.limitHarian);
       if(number(current.saldoBelanja)<total) return;
@@ -359,27 +463,31 @@
     });
     if(!tx.committed||!after){
       const latest=(await accountRef.once('value')).val()||{};
+      if(detectGender(latest)&&detectGender(latest)!==unit)throw new Error(`Santri ini bukan anggota ${unitLabel(unit)}.`);
       const spent=latest.tanggalPengeluaran===date?number(latest.pengeluaranHariIni):0;
       if(number(latest.saldoBelanja)<total) throw new Error('Saldo belanja santri tidak mencukupi.');
       if(number(latest.limitHarian)>0&&spent+total>number(latest.limitHarian)) throw new Error('Transaksi melewati batas belanja harian.');
       throw new Error('Transaksi gagal diproses.');
     }
     const acc=tx.snapshot.val();
-    const payload={id:saleId,studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',jenisKelamin:detectGender(acc),items:items.map(i=>({id:i.id,nama:i.nama,harga:number(i.harga),qty:number(i.qty),subtotal:number(i.harga)*number(i.qty)})),total,saldoSebelum:before.saldoBelanja,saldoSesudah:after.saldoBelanja,tanggal:date,waktu:isoNow(),kasir,note,status:'BERHASIL'};
-    const updates={}; updates[`${P.sales}/${saleId}`]=payload;
-    for(const item of items){const ps=productSnaps[item.id]; if(!ps.stokTakTerbatas) updates[`${P.products}/${item.id}/stok`]=Math.max(0,number(ps.stok)-number(item.qty)); updates[`${P.products}/${item.id}/diperbaruiPada`]=isoNow();}
+    const payload={id:saleId,unitKantin:unit,studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',jenisKelamin:detectGender(acc),items:items.map(i=>({id:i.id,nama:i.nama,harga:number(i.harga),qty:number(i.qty),subtotal:number(i.harga)*number(i.qty)})),total,saldoSebelum:before.saldoBelanja,saldoSesudah:after.saldoBelanja,tanggal:date,waktu:isoNow(),kasir:{...kasir,cashierUnit:unit},note,status:'BERHASIL'};
+    const updates={}; updates[`${salesRoot}/${saleId}`]=payload;
+    for(const item of items){const ps=productSnaps[item.id]; if(!ps.stokTakTerbatas) updates[`${productsRoot}/${item.id}/stok`]=Math.max(0,number(ps.stok)-number(item.qty)); updates[`${productsRoot}/${item.id}/diperbaruiPada`]=isoNow();}
     const ledgerId=uid('mutasi');
-    updates[`${P.ledger}/${ledgerId}`]={id:ledgerId,studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',jenisKelamin:detectGender(acc),jenis:'BELANJA_KANTIN',kategori:'BELANJA',keterangan:`Belanja kantin/koperasi • ${items.map(i=>`${i.nama} x${i.qty}`).join(', ')}`,deltaTabungan:0,deltaBelanja:-total,saldoTabunganSebelum:number(acc.saldoTabungan),saldoTabunganSesudah:number(acc.saldoTabungan),saldoBelanjaSebelum:before.saldoBelanja,saldoBelanjaSesudah:after.saldoBelanja,referensi:saleId,actor:kasir,tanggal:date,waktu:isoNow()};
-    const auditId=uid('audit'); updates[`${P.audit}/${auditId}`]={id:auditId,action:'TRANSAKSI_KANTIN',data:{saleId,studentKey,total},actor:kasir,tanggal:date,waktu:isoNow()};
+    updates[`${P.ledger}/${ledgerId}`]={id:ledgerId,unitKantin:unit,studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',jenisKelamin:detectGender(acc),jenis:'BELANJA_KANTIN',kategori:'BELANJA',keterangan:`Belanja ${unitLabel(unit)} • ${items.map(i=>`${i.nama} x${i.qty}`).join(', ')}`,deltaTabungan:0,deltaBelanja:-total,saldoTabunganSebelum:number(acc.saldoTabungan),saldoTabunganSesudah:number(acc.saldoTabungan),saldoBelanjaSebelum:before.saldoBelanja,saldoBelanjaSesudah:after.saldoBelanja,referensi:saleId,actor:{...kasir,cashierUnit:unit},tanggal:date,waktu:isoNow()};
+    const auditId=uid('audit'); updates[`${P.audit}/${auditId}`]={id:auditId,action:'TRANSAKSI_KANTIN',data:{saleId,unitKantin:unit,studentKey,total},actor:{...kasir,cashierUnit:unit},tanggal:date,waktu:isoNow()};
     await db.ref().update(updates);
     return payload;
   }
 
-  async function cancelSale(saleId,reason,who=actor()){
+  async function cancelSale(saleId,reason,who=actor(),unitArg=''){
     assertFeature('walletCashier');
-    const saleRef=db.ref(`${P.sales}/${saleId}`); const snap=await saleRef.once('value'); const sale=snap.val();
-    if(!sale) throw new Error('Transaksi tidak ditemukan.');
-    assertFeature('walletCashier',sale);
+    await ensureCashierUnitMigration();
+    const unit=assertCashierUnit(resolveCashierUnit(unitArg,who));
+    const productsRoot=productPath(unit),salesRoot=salesPath(unit);
+    const saleRef=db.ref(`${salesRoot}/${saleId}`); const snap=await saleRef.once('value'); const sale=snap.val();
+    if(!sale) throw new Error(`Transaksi tidak ditemukan di ${unitLabel(unit)}.`);
+    assertCashierUnit(unit,sale); assertFeature('walletCashier',sale);
     if(sale.status==='DIBATALKAN') throw new Error('Transaksi sudah dibatalkan.');
     const date=localDate(); const accountRef=db.ref(`${P.accounts}/${sale.studentKey}`);
     const tx=await accountRef.transaction(current=>{
@@ -389,47 +497,73 @@
     });
     if(!tx.committed) throw new Error('Rekening santri tidak ditemukan.');
     const acc=tx.snapshot.val(); const updates={};
-    updates[`${P.sales}/${saleId}/status`]='DIBATALKAN'; updates[`${P.sales}/${saleId}/alasanPembatalan`]=reason||'Pembatalan oleh petugas'; updates[`${P.sales}/${saleId}/dibatalkanPada`]=isoNow(); updates[`${P.sales}/${saleId}/dibatalkanOleh`]=who;
-    for(const item of sale.items||[]){ const ps=(await db.ref(`${P.products}/${item.id}`).once('value')).val(); if(ps&&!ps.stokTakTerbatas)updates[`${P.products}/${item.id}/stok`]=number(ps.stok)+number(item.qty); }
-    const ledgerId=uid('mutasi'); updates[`${P.ledger}/${ledgerId}`]={id:ledgerId,studentKey:sale.studentKey,namaSantri:sale.namaSantri||'',kelas:sale.kelas||'',jenisKelamin:sale.jenisKelamin||detectGender(sale),jenis:'PEMBATALAN_BELANJA',kategori:'BELANJA',keterangan:`Pengembalian transaksi ${saleId}: ${reason||'-'}`,deltaTabungan:0,deltaBelanja:number(sale.total),saldoTabunganSebelum:number(acc.saldoTabungan),saldoTabunganSesudah:number(acc.saldoTabungan),saldoBelanjaSebelum:number(acc.saldoBelanja)-number(sale.total),saldoBelanjaSesudah:number(acc.saldoBelanja),referensi:saleId,actor:who,tanggal:date,waktu:isoNow()};
-    const auditId=uid('audit'); updates[`${P.audit}/${auditId}`]={id:auditId,action:'TRANSAKSI_DIBATALKAN',data:{saleId,reason,total:sale.total},actor:who,tanggal:date,waktu:isoNow()};
+    updates[`${salesRoot}/${saleId}/status`]='DIBATALKAN'; updates[`${salesRoot}/${saleId}/alasanPembatalan`]=reason||'Pembatalan oleh petugas'; updates[`${salesRoot}/${saleId}/dibatalkanPada`]=isoNow(); updates[`${salesRoot}/${saleId}/dibatalkanOleh`]=who;
+    for(const item of sale.items||[]){ const ps=(await db.ref(`${productsRoot}/${item.id}`).once('value')).val(); if(ps&&!ps.stokTakTerbatas)updates[`${productsRoot}/${item.id}/stok`]=number(ps.stok)+number(item.qty); }
+    const ledgerId=uid('mutasi'); updates[`${P.ledger}/${ledgerId}`]={id:ledgerId,unitKantin:unit,studentKey:sale.studentKey,namaSantri:sale.namaSantri||'',kelas:sale.kelas||'',jenisKelamin:sale.jenisKelamin||detectGender(sale),jenis:'PEMBATALAN_BELANJA',kategori:'BELANJA',keterangan:`Pengembalian transaksi ${unitLabel(unit)} ${saleId}: ${reason||'-'}`,deltaTabungan:0,deltaBelanja:number(sale.total),saldoTabunganSebelum:number(acc.saldoTabungan),saldoTabunganSesudah:number(acc.saldoTabungan),saldoBelanjaSebelum:number(acc.saldoBelanja)-number(sale.total),saldoBelanjaSesudah:number(acc.saldoBelanja),referensi:saleId,actor:who,tanggal:date,waktu:isoNow()};
+    const auditId=uid('audit'); updates[`${P.audit}/${auditId}`]={id:auditId,action:'TRANSAKSI_DIBATALKAN',data:{saleId,unitKantin:unit,reason,total:sale.total},actor:who,tanggal:date,waktu:isoNow()};
     await db.ref().update(updates); return true;
   }
 
   async function snapshot(path){ const s=await db.ref(path).once('value'); return s.val()||{}; }
+  async function snapshotRecent(path,child='waktu',limit=500){
+    let q=db.ref(path).orderByChild(child);
+    if(limit)q=q.limitToLast(limit);
+    const s=await q.once('value');return s.val()||{};
+  }
   async function queryByStudent(path,studentKey,limit=250){
     let q=db.ref(path).orderByChild('studentKey').equalTo(studentKey);
     if(limit)q=q.limitToLast(limit);
     const snap=await q.once('value');return vals(snap.val()||{});
   }
-  async function getCashierData(){
+  async function getCashierData(unitArg=''){
     assertFeature('walletCashier');
-    const [accounts,products]=await Promise.all([snapshot(P.accounts),snapshot(P.products)]);
-    return {accounts:vals(accounts),products:vals(products)};
+    await ensureCashierUnitMigration();
+    const unit=assertCashierUnit(resolveCashierUnit(unitArg));
+    const accountQuery=db.ref(P.accounts).orderByChild('jenisKelamin').equalTo(unit);
+    const [accountSnap,products]=await Promise.all([accountQuery.once('value'),snapshot(productPath(unit))]);
+    return {unitKantin:unit,accounts:vals(accountSnap.val()||{}).filter(a=>detectGender(a)===unit),products:vals(products).map(p=>({...p,unitKantin:unit}))};
   }
   async function getStudentFinanceData(studentKey,requested={}){
     const use={spp:requested.spp!==false&&featureEnabled('spp'),savings:requested.savings!==false&&featureEnabled('savings'),walletCashier:requested.walletCashier!==false&&featureEnabled('walletCashier')};
     const account=(use.savings||use.walletCashier)?await getAccount(studentKey):null;
     const source=account||requested.student||{};
     Object.keys(use).forEach(k=>{if(use[k]&&!featureAllowed(k,source))use[k]=false});
+    const unit=normalizeCashierUnit(detectGender(source));
+    if(use.walletCashier&&unit)await ensureCashierUnitMigration();
     const tasks=[];const keys=[];
     if(use.spp){keys.push('bills');tasks.push(queryByStudent(P.bills,studentKey,200));keys.push('payments');tasks.push(queryByStudent(P.payments,studentKey,250));}
     if(use.savings||use.walletCashier){keys.push('ledger');tasks.push(queryByStudent(P.ledger,studentKey,250));}
-    if(use.walletCashier){keys.push('sales');tasks.push(queryByStudent(P.sales,studentKey,150));}
-    const result={account,bills:[],payments:[],ledger:[],sales:[],features:use};
+    if(use.walletCashier&&unit){keys.push('sales');tasks.push(queryByStudent(salesPath(unit),studentKey,150));}
+    const result={account,bills:[],payments:[],ledger:[],sales:[],features:use,unitKantin:unit};
     const data=await Promise.all(tasks);keys.forEach((k,i)=>result[k]=data[i]);return result;
   }
   async function allData(requested={}){
     const use={spp:requested.spp!==false&&featureEnabled('spp'),savings:requested.savings!==false&&featureEnabled('savings'),walletCashier:requested.walletCashier!==false&&featureEnabled('walletCashier'),audit:requested.audit!==false};
-    const paths=[],keys=[];
-    if(use.savings||use.walletCashier){paths.push(P.accounts);keys.push('accounts');paths.push(P.ledger);keys.push('ledger');}
-    if(use.spp){paths.push(P.bills);keys.push('bills');paths.push(P.payments);keys.push('payments');}
-    if(use.walletCashier){paths.push(P.products);keys.push('products');paths.push(P.sales);keys.push('sales');}
-    if(use.audit&&Object.values(use).some(Boolean)){paths.push(P.audit);keys.push('audit');}
-    const result={accounts:[],bills:[],payments:[],ledger:[],products:[],sales:[],audit:[]};
-    const data=await Promise.all(paths.map(snapshot));keys.forEach((k,i)=>result[k]=vals(data[i]));return result;
+    const unit=use.walletCashier?assertCashierUnit(resolveCashierUnit(requested.cashierUnit)):'';
+    if(use.walletCashier)await ensureCashierUnitMigration();
+    const result={unitKantin:unit,accounts:[],bills:[],payments:[],ledger:[],products:[],sales:[],audit:[]};
+    const tasks=[],assign=[];
+    if(use.savings||use.walletCashier){
+      tasks.push(snapshot(P.accounts));assign.push('accounts');
+      tasks.push(snapshotRecent(P.ledger,'waktu',requested.ledgerLimit||700));assign.push('ledger');
+    }
+    if(use.spp){
+      tasks.push(snapshotRecent(P.bills,'periode',requested.billLimit||1800));assign.push('bills');
+      tasks.push(snapshotRecent(P.payments,'waktu',requested.paymentLimit||1000));assign.push('payments');
+    }
+    if(use.walletCashier){
+      tasks.push(snapshot(productPath(unit)));assign.push('products');
+      tasks.push(snapshotRecent(salesPath(unit),'waktu',requested.saleLimit||1000));assign.push('sales');
+    }
+    if(use.audit&&Object.values(use).some(Boolean)){
+      tasks.push(snapshotRecent(P.audit,'waktu',requested.auditLimit||500));assign.push('audit');
+    }
+    const data=await Promise.all(tasks);assign.forEach((k,i)=>result[k]=vals(data[i]));
+    if(use.walletCashier){result.products=result.products.map(x=>({...x,unitKantin:unit}));result.sales=result.sales.filter(x=>!x.unitKantin||normalizeCashierUnit(x.unitKantin)===unit).map(x=>({...x,unitKantin:unit}));}
+    return result;
   }
 
 
-  global.CahayaFinance={CFG,P,db,ready,esc,norm,key,vals,money,number,localDate,isoNow,dateLabel,uid,actor,waliProfile,waliStudentName,accountDefaults,hashPin,validPin,normalizeGender,detectGender,feature,featureEnabled,featureAllowed,activeFeatures,assertFeature,loadStudents,ensureAccount,initializeAccounts,getAccount,setPin,verifyPin,audit,addLedger,mutateBalances,createBill,recordPayment,upsertProduct,processSale,cancelSale,snapshot,queryByStudent,getCashierData,getStudentFinanceData,allData};
+
+  global.CahayaFinance={CFG,P,CASHIER_UNITS,db,ready,esc,norm,key,vals,money,number,localDate,isoNow,dateLabel,uid,actor,currentUser,userRoles,waliProfile,waliStudentName,accountDefaults,hashPin,validPin,normalizeGender,detectGender,normalizeCashierUnit,explicitCashierUnit,isCashierOnly,resolveCashierUnit,assertCashierUnit,unitLabel,cashierUnitsForScope,cashierUnitAllowed,productPath,salesPath,feature,featureEnabled,featureAllowed,activeFeatures,assertFeature,loadStudents,ensureAccount,initializeAccounts,getAccount,setPin,verifyPin,audit,addLedger,mutateBalances,createBill,recordPayment,ensureCashierUnitMigration,upsertProduct,processSale,cancelSale,snapshot,snapshotRecent,queryByStudent,getCashierData,getStudentFinanceData,allData};
 })(window);

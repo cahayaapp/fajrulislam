@@ -3214,6 +3214,19 @@
     let deferredInstallPrompt =
       null;
 
+
+    function getLoginTarget(user) {
+      const roles=(Array.isArray(user?.akses)?user.akses:[user?.akses||user?.role].filter(Boolean)).map(r=>String(r||'').toLowerCase());
+      const identity=[user.cashierUnit,user.unitKasir,user.username,user.email,user.label].filter(Boolean).join(' ');
+      const dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity);
+      const cashierOnly=roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','wali'].includes(r));
+      if(dedicatedCashier||cashierOnly){
+        const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';
+        return unit?`keuangan/kasir.html?unit=${unit}`:'keuangan/kasir.html';
+      }
+      return roles.includes('wali')?'wali/dashboard/index.html':'main-dashboard.html';
+    }
+
     function tampilkanLogin() {
       document.getElementById(
         "welcomeView"
@@ -3555,10 +3568,7 @@
           );
 
           setTimeout(() => {
-            window.location.href =
-              isWali
-                ? "wali/dashboard/index.html"
-                : "main-dashboard.html";
+            window.location.href = getLoginTarget(sessionPayload);
           }, 850);
         } catch (error) {
           console.error(
@@ -3667,10 +3677,7 @@
             .includes("wali");
 
         setTimeout(() => {
-          window.location.href =
-            isWali
-              ? "wali/dashboard/index.html"
-              : "main-dashboard.html";
+          window.location.href = getLoginTarget(user);
         }, 500);
       }
     );

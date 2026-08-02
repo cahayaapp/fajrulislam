@@ -1,14 +1,14 @@
 PENGATURAN MODUL KEUANGAN KHUSUS
 ================================
 
-Pengaturan SPP, Tabungan, serta Saldo Belanja/Kasir tidak lagi berada di Setup White-Label.
+Pengaturan SPP, Tabungan, serta Saldo Belanja/Kasir tidak berada di Setup White-Label. Seluruh pengaturan keuangan dikelola melalui modul khusus Keuangan.
 
-CARA MENGATUR
---------------
+CARA MENGATUR SUBMODUL
+----------------------
 1. Login sebagai Admin, Direktur, Wakil Direktur, Yayasan, atau Administrasi Keuangan.
 2. Buka kelompok menu Keuangan & Kasir.
 3. Pilih Pengaturan Keuangan.
-4. Aktifkan atau matikan:
+4. Aktifkan atau matikan secara terpisah:
    - SPP & Tagihan
    - Tabungan Santri
    - Saldo Belanja & Kasir
@@ -18,19 +18,51 @@ CARA MENGATUR
    - Putri saja
 6. Tekan Simpan Pengaturan Keuangan.
 
+PEMISAHAN KANTIN PUTRA DAN PUTRI
+--------------------------------
+Jika Saldo Belanja & Kasir diaktifkan untuk Putra dan Putri, sistem tetap memisahkan kedua kantin sebagai unit operasional yang berbeda:
+- Produk dan stok Kantin Putra tidak bercampur dengan Kantin Putri.
+- Transaksi Putra dan Putri tersimpan pada jalur yang berbeda.
+- Kasir Putra hanya melihat santri Putra.
+- Kasir Putri hanya melihat santri Putri.
+- Laporan pimpinan menampilkan hasil masing-masing unit secara terpisah.
+
+Akun kasir yang disarankan:
+- kasirputra  -> otomatis membuka Kantin Putra
+- kasirputri  -> otomatis membuka Kantin Putri
+
+Unit juga dapat ditetapkan melalui Manajemen User pada field Unit Kasir.
+
+PORTAL WALI
+-----------
+Menu Keuangan pada Portal Wali mengikuti cakupan setiap submodul dan jenis kelamin anak yang sedang dipilih.
+Contoh: jika fitur keuangan hanya aktif untuk Putri, wali santri Putri melihat menu Keuangan, sedangkan wali santri Putra tidak melihatnya. Untuk wali yang memiliki anak Putra dan Putri, menu mengikuti profil anak yang sedang aktif.
+
 LOKASI DATA
 -----------
-Konfigurasi disimpan pada Firebase:
+Konfigurasi modul:
 cahaya_app/keuangan/pengaturan_modul
+
+Produk dan stok:
+cahaya_app/keuangan/kantin/putra/produk
+cahaya_app/keuangan/kantin/putri/produk
+
+Transaksi:
+cahaya_app/keuangan/kantin/putra/transaksi
+cahaya_app/keuangan/kantin/putri/transaksi
+
+Rekening santri tetap terpusat:
+cahaya_app/keuangan/rekening_santri
 
 PERILAKU SISTEM
 ---------------
 - Fitur yang dimatikan tidak menghapus data lama.
 - Portal Wali hanya menampilkan layanan yang berlaku untuk anak tersebut.
-- Kasir hanya menampilkan santri sesuai cakupan aktif.
-- Dashboard Pimpinan hanya memuat data keuangan dari submodul aktif.
+- Kasir hanya memuat data unitnya, sehingga lebih aman dan hemat bandwidth.
+- Dashboard Pimpinan hanya memuat submodul dan unit yang aktif serta sesuai ruang kontrol akun.
 - Pusat Keuangan hanya membaca node yang diperlukan.
-- Pengaturan ini tidak ikut dalam tenant-config.js dan tidak menjadi bagian dari White-Label.
+- Produk/transaksi lama dimigrasikan otomatis satu kali tanpa menghapus data lama.
+- Pengaturan ini tidak menjadi bagian dari tenant-config.js dan tidak berada di menu White-Label.
 
 CATATAN
 -------
