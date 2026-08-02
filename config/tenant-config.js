@@ -1,7 +1,7 @@
 /* CAHAYA APP WHITE-LABEL — SATU-SATUNYA FILE IDENTITAS & FIREBASE */
 (function(){
   const defaults = {
-    version: "2026.08-white-label-v1",
+    version: "2026.08-white-label-v2-finance-scope",
     app: {
       name: "CAHAYA App",
       shortName: "CAHAYA",
@@ -61,6 +61,11 @@
       media: true,
       chat: true,
       pkl: true
+    },
+    financeFeatures: {
+      spp: { enabled: true, scope: "all" },
+      savings: { enabled: true, scope: "all" },
+      walletCashier: { enabled: true, scope: "all" }
     },
     bandwidth: {
       chatMessageLimit: 50,

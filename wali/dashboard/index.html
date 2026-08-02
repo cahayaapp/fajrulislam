@@ -2108,7 +2108,7 @@
       let firstAllowed = null;
 
       items.forEach(item => {
-        const allowed = isWaliMenuAllowed(item.dataset.menuId);
+        const allowed = isWaliMenuAllowed(item.dataset.menuId) && item.dataset.moduleDisabled !== "true";
         item.hidden = !allowed;
         item.classList.remove("active");
 
@@ -2915,6 +2915,19 @@
       return target.href;
     }
 
+    function applyFinanceMenuForStudent(profile = {}) {
+      const menu = document.getElementById("menu-keuangan-wali");
+      if (!menu || !window.CahayaConfig) return;
+      const source = {
+        ...profile,
+        kelas: profile.kelas || profile.namaKelas || profile.className || ""
+      };
+      const available = ["spp", "savings", "walletCashier"]
+        .some(key => window.CahayaConfig.financeAllowed(key, source));
+      menu.style.display = available ? "" : "none";
+      menu.dataset.moduleDisabled = available ? "false" : "true";
+    }
+
     function renderHeaderData(
       profile = {}
     ) {
@@ -2974,6 +2987,8 @@
         mobile.textContent =
           inisial;
       }
+
+      applyFinanceMenuForStudent(profile);
     }
 
     function sendProfileToFrame() {
@@ -3162,7 +3177,8 @@
           await loadWaliAuthorization();
         }
 
-        if (!isWaliMenuAllowed(menuId)) {
+        const requestedItem = document.querySelector(`[data-menu-id="${menuId}"]`);
+        if (!isWaliMenuAllowed(menuId) || requestedItem?.dataset.moduleDisabled === "true") {
           showNoAuthorizedFeature();
           return;
         }

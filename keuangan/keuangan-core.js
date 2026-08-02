@@ -1,7 +1,7 @@
 (function(global){
   'use strict';
 
-  const CFG = window.CAHAYA_CONFIG.firebase;
+  const CFG = (window.CAHAYA_CONFIG||{}).firebase||{};
 
   const ROOT = 'cahaya_app/keuangan';
   const P = {
@@ -24,6 +24,31 @@
   }
 
   const db = ensureFirebase();
+
+  const FEATURE_DEFAULTS={
+    spp:{enabled:(window.CAHAYA_CONFIG?.modules?.finance!==false),scope:'all'},
+    savings:{enabled:(window.CAHAYA_CONFIG?.modules?.finance!==false),scope:'all'},
+    walletCashier:{enabled:(window.CAHAYA_CONFIG?.modules?.finance!==false&&window.CAHAYA_CONFIG?.modules?.cashier!==false),scope:'all'}
+  };
+  function normalizeGender(value){
+    const v=String(value||'').trim().toLowerCase();
+    if(/putri|perempuan|wanita|female|akhwat/.test(v))return 'putri';
+    if(/putra|laki|pria|male|ikhwan/.test(v))return 'putra';
+    return '';
+  }
+  function detectGender(source){
+    if(typeof source==='string')return normalizeGender(source);
+    source=source||{};
+    return normalizeGender(source.jenisKelamin||source.gender||source.kelamin||source.kelas||source.className||source.namaKelas||'');
+  }
+  function feature(keyName){
+    const raw=window.CAHAYA_CONFIG?.financeFeatures?.[keyName]||FEATURE_DEFAULTS[keyName]||{enabled:false,scope:'all'};
+    return {enabled:raw.enabled!==false,scope:['all','putra','putri'].includes(raw.scope)?raw.scope:'all'};
+  }
+  function featureEnabled(keyName){return feature(keyName).enabled;}
+  function featureAllowed(keyName,source){const f=feature(keyName);if(!f.enabled)return false;if(f.scope==='all')return true;const g=detectGender(source);return Boolean(g)&&g===f.scope;}
+  function activeFeatures(){return {spp:feature('spp'),savings:feature('savings'),walletCashier:feature('walletCashier')};}
+  function assertFeature(keyName,source){if(!featureEnabled(keyName))throw new Error('Fitur ini tidak diaktifkan untuk aplikasi ini.');if(source&&!featureAllowed(keyName,source))throw new Error(`Fitur ini tidak diaktifkan untuk santri ${feature(keyName).scope==='putra'?'Putri':'Putra'}.`);}
 
   function esc(value){
     return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -80,6 +105,7 @@
       studentKey: student.studentKey || key(student.nama || student.namaSantri),
       namaSantri: student.nama || student.namaSantri || '',
       kelas: student.kelas || '',
+      jenisKelamin: detectGender(student),
       saldoTabungan: 0,
       saldoBelanja: 0,
       limitHarian: 50000,
@@ -133,14 +159,21 @@
   function hashPin(pin,salt){ return sha256(`${salt}|${String(pin)}`); }
   function validPin(pin){ return /^\d{6}$/.test(String(pin||'')); }
 
-  async function loadStudents(){
+  async function loadStudents(featureKey=''){
     let map={};
     try { const s=await db.ref(P.classes).once('value'); map=s.val()||{}; } catch(e){}
+    if(!Object.keys(map).length && global.CAHAYA_MASTER_DATA?.santriByClass) map=global.CAHAYA_MASTER_DATA.santriByClass;
     if(!Object.keys(map).length && global.dataSantri) map=global.dataSantri;
     const rows=[];
     Object.entries(map||{}).forEach(([kelas,list])=>{
-      const names=Array.isArray(list)?list:Object.values(list||{});
-      names.forEach(n=>{ const nama=typeof n==='string'?n:(n.nama||n.namaSantri||''); if(nama) rows.push({studentKey:key(nama),nama,kelas}); });
+      const entries=Array.isArray(list)?list:Object.values(list||{});
+      entries.forEach(n=>{
+        const obj=typeof n==='string'?{nama:n}:{...(n||{})};
+        const nama=obj.nama||obj.namaSantri||obj.label||'';
+        if(!nama)return;
+        const row={studentKey:key(nama),nama,kelas:obj.kelas||kelas,jenisKelamin:detectGender({...obj,kelas:obj.kelas||kelas}),nis:obj.nis||''};
+        if(!featureKey||featureAllowed(featureKey,row))rows.push(row);
+      });
     });
     return rows.sort((a,b)=>a.kelas.localeCompare(b.kelas,'id')||a.nama.localeCompare(b.nama,'id'));
   }
@@ -152,7 +185,7 @@
     if(!snap.exists()) await ref.set(accountDefaults({...student,studentKey:sk}));
     else {
       const cur=snap.val()||{};
-      const patch={studentKey:sk,namaSantri:student.nama||student.namaSantri||cur.namaSantri||'',kelas:student.kelas||cur.kelas||'',diperbaruiPada:isoNow()};
+      const patch={studentKey:sk,namaSantri:student.nama||student.namaSantri||cur.namaSantri||'',kelas:student.kelas||cur.kelas||'',jenisKelamin:detectGender(student)||cur.jenisKelamin||detectGender(cur),diperbaruiPada:isoNow()};
       await ref.update(patch);
     }
     return sk;
@@ -170,6 +203,7 @@
   }
 
   async function setPin(studentKey,pin,who=actor()){
+    const existing=await getAccount(studentKey); assertFeature('walletCashier',existing||{});
     if(!validPin(pin)) throw new Error('PIN harus terdiri dari 6 angka.');
     const salt=randomSalt();
     await db.ref(`${P.accounts}/${studentKey}`).update({pinSalt:salt,pinHash:hashPin(pin,salt),pinGagal:0,pinTerkunciSampai:0,diperbaruiPada:isoNow()});
@@ -177,9 +211,11 @@
   }
 
   async function verifyPin(studentKey,pin){
+    assertFeature('walletCashier');
     const ref=db.ref(`${P.accounts}/${studentKey}`);
     const snap=await ref.once('value'); const a=snap.val();
     if(!a) return {ok:false,message:'Rekening santri belum tersedia.'};
+    assertFeature('walletCashier',a);
     const now=Date.now();
     if(number(a.pinTerkunciSampai)>now) return {ok:false,locked:true,message:`PIN terkunci sementara sampai ${new Date(a.pinTerkunciSampai).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}.`};
     if(!a.pinHash||!a.pinSalt) return {ok:false,noPin:true,message:'PIN belanja belum diatur.'};
@@ -205,6 +241,10 @@
   }
 
   async function mutateBalances(studentKey, deltaTabungan, deltaBelanja, meta={}){
+    const account=await getAccount(studentKey);
+    const targetFeature=meta.feature||(number(deltaBelanja)!==0?'walletCashier':'savings');
+    assertFeature(targetFeature,account||{});
+    if(meta.jenis==='TRANSFER'||meta.kategori==='TRANSFER_INTERNAL')assertFeature('walletCashier',account||{});
     const ref=db.ref(`${P.accounts}/${studentKey}`);
     let before=null,after=null;
     const tx=await ref.transaction(current=>{
@@ -219,7 +259,7 @@
     const acc=tx.snapshot.val();
     const who=meta.actor||actor();
     const ledger=await addLedger({
-      studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',
+      studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',jenisKelamin:detectGender(acc),
       jenis:meta.jenis||'KOREKSI',kategori:meta.kategori||'SALDO',keterangan:meta.keterangan||'',
       deltaTabungan:number(deltaTabungan),deltaBelanja:number(deltaBelanja),
       saldoTabunganSebelum:before.tabungan,saldoTabunganSesudah:after.tabungan,
@@ -231,6 +271,7 @@
   }
 
   async function createBill(data){
+    assertFeature('spp',data);
     const sk=data.studentKey||key(data.namaSantri);
     const typeKey=key(data.jenisTagihan||'SPP');
     const period=String(data.periode||localDate().slice(0,7)).replace(/[^0-9-]/g,'');
@@ -239,7 +280,7 @@
     const current=(await db.ref(`${P.bills}/${id}`).once('value')).val()||{};
     const paid=number(current.dibayar);
     const payload={
-      id,studentKey:sk,namaSantri:data.namaSantri||current.namaSantri||'',kelas:data.kelas||current.kelas||'',
+      id,studentKey:sk,namaSantri:data.namaSantri||current.namaSantri||'',kelas:data.kelas||current.kelas||'',jenisKelamin:detectGender(data)||current.jenisKelamin||detectGender(current),
       jenisTagihan:data.jenisTagihan||'SPP',periode:period,nominal,jatuhTempo:data.jatuhTempo||'',
       dibayar:Math.min(paid,nominal),sisa:Math.max(0,nominal-Math.min(paid,nominal)),
       status:nominal-Math.min(paid,nominal)<=0?'LUNAS':paid>0?'SEBAGIAN':'BELUM_LUNAS',
@@ -251,8 +292,9 @@
   }
 
   async function recordPayment(billId,amount,method='Tunai',note='',who=actor()){
+    assertFeature('spp');
     amount=number(amount); if(amount<=0) throw new Error('Nominal pembayaran harus lebih dari nol.');
-    const ref=db.ref(`${P.bills}/${billId}`); let before=null,after=null;
+    const ref=db.ref(`${P.bills}/${billId}`); const existingBill=(await ref.once('value')).val(); if(!existingBill)throw new Error('Tagihan tidak ditemukan.'); assertFeature('spp',existingBill); let before=null,after=null;
     const tx=await ref.transaction(current=>{
       if(!current) return;
       before={...current};
@@ -265,12 +307,13 @@
     });
     if(!tx.committed||!after) throw new Error('Tagihan tidak ditemukan.');
     const id=uid('bayar');
-    await db.ref(`${P.payments}/${id}`).set({id,billId,studentKey:after.studentKey,namaSantri:after.namaSantri,kelas:after.kelas,jenisTagihan:after.jenisTagihan,periode:after.periode,nominal:Math.min(amount,number(before.sisa)),metode:method,catatan:note,tanggal:localDate(),waktu:isoNow(),petugas:who});
+    await db.ref(`${P.payments}/${id}`).set({id,billId,studentKey:after.studentKey,namaSantri:after.namaSantri,kelas:after.kelas,jenisKelamin:after.jenisKelamin||detectGender(after),jenisTagihan:after.jenisTagihan,periode:after.periode,nominal:Math.min(amount,number(before.sisa)),metode:method,catatan:note,tanggal:localDate(),waktu:isoNow(),petugas:who});
     await audit('PEMBAYARAN_DICATAT',{id,billId,nominal:Math.min(amount,number(before.sisa))},who);
     return after;
   }
 
   async function upsertProduct(product,who=actor()){
+    assertFeature('walletCashier');
     const id=product.id||key(product.nama)||uid('produk');
     const old=(await db.ref(`${P.products}/${id}`).once('value')).val()||{};
     const payload={id,nama:String(product.nama||old.nama||'').trim(),kategori:String(product.kategori||old.kategori||'Umum'),harga:number(product.harga),stok:product.stok===''||product.stok===null?number(old.stok):number(product.stok),stokTakTerbatas:Boolean(product.stokTakTerbatas),aktif:product.aktif!==false,dibuatPada:old.dibuatPada||isoNow(),diperbaruiPada:isoNow(),petugas:who};
@@ -281,6 +324,8 @@
   }
 
   async function processSale({studentKey,items,pin,kasir=actor(),note=''}){
+    assertFeature('walletCashier');
+    const allowedAccount=await getAccount(studentKey); assertFeature('walletCashier',allowedAccount||{});
     if(!Array.isArray(items)||!items.length) throw new Error('Keranjang masih kosong.');
     const total=items.reduce((s,i)=>s+number(i.harga)*number(i.qty),0);
     if(total<=0) throw new Error('Total transaksi tidak valid.');
@@ -316,19 +361,21 @@
       throw new Error('Transaksi gagal diproses.');
     }
     const acc=tx.snapshot.val();
-    const payload={id:saleId,studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',items:items.map(i=>({id:i.id,nama:i.nama,harga:number(i.harga),qty:number(i.qty),subtotal:number(i.harga)*number(i.qty)})),total,saldoSebelum:before.saldoBelanja,saldoSesudah:after.saldoBelanja,tanggal:date,waktu:isoNow(),kasir,note,status:'BERHASIL'};
+    const payload={id:saleId,studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',jenisKelamin:detectGender(acc),items:items.map(i=>({id:i.id,nama:i.nama,harga:number(i.harga),qty:number(i.qty),subtotal:number(i.harga)*number(i.qty)})),total,saldoSebelum:before.saldoBelanja,saldoSesudah:after.saldoBelanja,tanggal:date,waktu:isoNow(),kasir,note,status:'BERHASIL'};
     const updates={}; updates[`${P.sales}/${saleId}`]=payload;
     for(const item of items){const ps=productSnaps[item.id]; if(!ps.stokTakTerbatas) updates[`${P.products}/${item.id}/stok`]=Math.max(0,number(ps.stok)-number(item.qty)); updates[`${P.products}/${item.id}/diperbaruiPada`]=isoNow();}
     const ledgerId=uid('mutasi');
-    updates[`${P.ledger}/${ledgerId}`]={id:ledgerId,studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',jenis:'BELANJA_KANTIN',kategori:'BELANJA',keterangan:`Belanja kantin/koperasi • ${items.map(i=>`${i.nama} x${i.qty}`).join(', ')}`,deltaTabungan:0,deltaBelanja:-total,saldoTabunganSebelum:number(acc.saldoTabungan),saldoTabunganSesudah:number(acc.saldoTabungan),saldoBelanjaSebelum:before.saldoBelanja,saldoBelanjaSesudah:after.saldoBelanja,referensi:saleId,actor:kasir,tanggal:date,waktu:isoNow()};
+    updates[`${P.ledger}/${ledgerId}`]={id:ledgerId,studentKey,namaSantri:acc.namaSantri||'',kelas:acc.kelas||'',jenisKelamin:detectGender(acc),jenis:'BELANJA_KANTIN',kategori:'BELANJA',keterangan:`Belanja kantin/koperasi • ${items.map(i=>`${i.nama} x${i.qty}`).join(', ')}`,deltaTabungan:0,deltaBelanja:-total,saldoTabunganSebelum:number(acc.saldoTabungan),saldoTabunganSesudah:number(acc.saldoTabungan),saldoBelanjaSebelum:before.saldoBelanja,saldoBelanjaSesudah:after.saldoBelanja,referensi:saleId,actor:kasir,tanggal:date,waktu:isoNow()};
     const auditId=uid('audit'); updates[`${P.audit}/${auditId}`]={id:auditId,action:'TRANSAKSI_KANTIN',data:{saleId,studentKey,total},actor:kasir,tanggal:date,waktu:isoNow()};
     await db.ref().update(updates);
     return payload;
   }
 
   async function cancelSale(saleId,reason,who=actor()){
+    assertFeature('walletCashier');
     const saleRef=db.ref(`${P.sales}/${saleId}`); const snap=await saleRef.once('value'); const sale=snap.val();
     if(!sale) throw new Error('Transaksi tidak ditemukan.');
+    assertFeature('walletCashier',sale);
     if(sale.status==='DIBATALKAN') throw new Error('Transaksi sudah dibatalkan.');
     const date=localDate(); const accountRef=db.ref(`${P.accounts}/${sale.studentKey}`);
     const tx=await accountRef.transaction(current=>{
@@ -340,16 +387,45 @@
     const acc=tx.snapshot.val(); const updates={};
     updates[`${P.sales}/${saleId}/status`]='DIBATALKAN'; updates[`${P.sales}/${saleId}/alasanPembatalan`]=reason||'Pembatalan oleh petugas'; updates[`${P.sales}/${saleId}/dibatalkanPada`]=isoNow(); updates[`${P.sales}/${saleId}/dibatalkanOleh`]=who;
     for(const item of sale.items||[]){ const ps=(await db.ref(`${P.products}/${item.id}`).once('value')).val(); if(ps&&!ps.stokTakTerbatas)updates[`${P.products}/${item.id}/stok`]=number(ps.stok)+number(item.qty); }
-    const ledgerId=uid('mutasi'); updates[`${P.ledger}/${ledgerId}`]={id:ledgerId,studentKey:sale.studentKey,namaSantri:sale.namaSantri||'',kelas:sale.kelas||'',jenis:'PEMBATALAN_BELANJA',kategori:'BELANJA',keterangan:`Pengembalian transaksi ${saleId}: ${reason||'-'}`,deltaTabungan:0,deltaBelanja:number(sale.total),saldoTabunganSebelum:number(acc.saldoTabungan),saldoTabunganSesudah:number(acc.saldoTabungan),saldoBelanjaSebelum:number(acc.saldoBelanja)-number(sale.total),saldoBelanjaSesudah:number(acc.saldoBelanja),referensi:saleId,actor:who,tanggal:date,waktu:isoNow()};
+    const ledgerId=uid('mutasi'); updates[`${P.ledger}/${ledgerId}`]={id:ledgerId,studentKey:sale.studentKey,namaSantri:sale.namaSantri||'',kelas:sale.kelas||'',jenisKelamin:sale.jenisKelamin||detectGender(sale),jenis:'PEMBATALAN_BELANJA',kategori:'BELANJA',keterangan:`Pengembalian transaksi ${saleId}: ${reason||'-'}`,deltaTabungan:0,deltaBelanja:number(sale.total),saldoTabunganSebelum:number(acc.saldoTabungan),saldoTabunganSesudah:number(acc.saldoTabungan),saldoBelanjaSebelum:number(acc.saldoBelanja)-number(sale.total),saldoBelanjaSesudah:number(acc.saldoBelanja),referensi:saleId,actor:who,tanggal:date,waktu:isoNow()};
     const auditId=uid('audit'); updates[`${P.audit}/${auditId}`]={id:auditId,action:'TRANSAKSI_DIBATALKAN',data:{saleId,reason,total:sale.total},actor:who,tanggal:date,waktu:isoNow()};
     await db.ref().update(updates); return true;
   }
 
   async function snapshot(path){ const s=await db.ref(path).once('value'); return s.val()||{}; }
-  async function allData(){
-    const [accounts,bills,payments,ledger,products,sales,audit]=await Promise.all([P.accounts,P.bills,P.payments,P.ledger,P.products,P.sales,P.audit].map(snapshot));
-    return {accounts:vals(accounts),bills:vals(bills),payments:vals(payments),ledger:vals(ledger),products:vals(products),sales:vals(sales),audit:vals(audit)};
+  async function queryByStudent(path,studentKey,limit=250){
+    let q=db.ref(path).orderByChild('studentKey').equalTo(studentKey);
+    if(limit)q=q.limitToLast(limit);
+    const snap=await q.once('value');return vals(snap.val()||{});
+  }
+  async function getCashierData(){
+    assertFeature('walletCashier');
+    const [accounts,products]=await Promise.all([snapshot(P.accounts),snapshot(P.products)]);
+    return {accounts:vals(accounts),products:vals(products)};
+  }
+  async function getStudentFinanceData(studentKey,requested={}){
+    const use={spp:requested.spp!==false&&featureEnabled('spp'),savings:requested.savings!==false&&featureEnabled('savings'),walletCashier:requested.walletCashier!==false&&featureEnabled('walletCashier')};
+    const account=(use.savings||use.walletCashier)?await getAccount(studentKey):null;
+    const source=account||requested.student||{};
+    Object.keys(use).forEach(k=>{if(use[k]&&!featureAllowed(k,source))use[k]=false});
+    const tasks=[];const keys=[];
+    if(use.spp){keys.push('bills');tasks.push(queryByStudent(P.bills,studentKey,200));keys.push('payments');tasks.push(queryByStudent(P.payments,studentKey,250));}
+    if(use.savings||use.walletCashier){keys.push('ledger');tasks.push(queryByStudent(P.ledger,studentKey,250));}
+    if(use.walletCashier){keys.push('sales');tasks.push(queryByStudent(P.sales,studentKey,150));}
+    const result={account,bills:[],payments:[],ledger:[],sales:[],features:use};
+    const data=await Promise.all(tasks);keys.forEach((k,i)=>result[k]=data[i]);return result;
+  }
+  async function allData(requested={}){
+    const use={spp:requested.spp!==false&&featureEnabled('spp'),savings:requested.savings!==false&&featureEnabled('savings'),walletCashier:requested.walletCashier!==false&&featureEnabled('walletCashier'),audit:requested.audit!==false};
+    const paths=[],keys=[];
+    if(use.savings||use.walletCashier){paths.push(P.accounts);keys.push('accounts');paths.push(P.ledger);keys.push('ledger');}
+    if(use.spp){paths.push(P.bills);keys.push('bills');paths.push(P.payments);keys.push('payments');}
+    if(use.walletCashier){paths.push(P.products);keys.push('products');paths.push(P.sales);keys.push('sales');}
+    if(use.audit&&Object.values(use).some(Boolean)){paths.push(P.audit);keys.push('audit');}
+    const result={accounts:[],bills:[],payments:[],ledger:[],products:[],sales:[],audit:[]};
+    const data=await Promise.all(paths.map(snapshot));keys.forEach((k,i)=>result[k]=vals(data[i]));return result;
   }
 
-  global.CahayaFinance={CFG,P,db,esc,norm,key,vals,money,number,localDate,isoNow,dateLabel,uid,actor,waliProfile,waliStudentName,accountDefaults,hashPin,validPin,loadStudents,ensureAccount,initializeAccounts,getAccount,setPin,verifyPin,audit,addLedger,mutateBalances,createBill,recordPayment,upsertProduct,processSale,cancelSale,snapshot,allData};
+
+  global.CahayaFinance={CFG,P,db,esc,norm,key,vals,money,number,localDate,isoNow,dateLabel,uid,actor,waliProfile,waliStudentName,accountDefaults,hashPin,validPin,normalizeGender,detectGender,feature,featureEnabled,featureAllowed,activeFeatures,assertFeature,loadStudents,ensureAccount,initializeAccounts,getAccount,setPin,verifyPin,audit,addLedger,mutateBalances,createBill,recordPayment,upsertProduct,processSale,cancelSale,snapshot,queryByStudent,getCashierData,getStudentFinanceData,allData};
 })(window);

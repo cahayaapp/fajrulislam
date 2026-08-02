@@ -1,7 +1,8 @@
-/* Runtime branding dan aktivasi modul untuk seluruh halaman */
+/* Runtime branding, modul, dan cakupan White-Label untuk seluruh halaman */
 (function(){
   const C=window.CAHAYA_CONFIG||{};
   const app=C.app||{}, brand=C.branding||{}, theme=C.theme||{}, terms=C.terminology||{}, modules=C.modules||{};
+  const financeCfg=C.financeFeatures||{};
   const root=document.documentElement;
   const vars={
     '--cahaya-primary':theme.primary,'--cahaya-primary-dark':theme.primaryDark,
@@ -9,14 +10,50 @@
     '--cahaya-success':theme.success,'--cahaya-danger':theme.danger
   };
   Object.entries(vars).forEach(([k,v])=>v&&root.style.setProperty(k,v));
+
+  const normalizeGender=value=>{
+    const v=String(value||'').trim().toLowerCase();
+    if(/putri|perempuan|wanita|female|akhwat/.test(v))return 'putri';
+    if(/putra|laki|pria|male|ikhwan/.test(v))return 'putra';
+    return '';
+  };
+  const detectGender=source=>{
+    if(typeof source==='string')return normalizeGender(source);
+    source=source||{};
+    return normalizeGender(source.jenisKelamin||source.gender||source.kelamin||source.kelas||source.className||source.namaKelas||'');
+  };
+  const financeFeature=key=>{
+    const legacy={
+      spp:{enabled:modules.finance!==false,scope:'all'},
+      savings:{enabled:modules.finance!==false,scope:'all'},
+      walletCashier:{enabled:modules.finance!==false&&modules.cashier!==false,scope:'all'}
+    }[key]||{enabled:false,scope:'all'};
+    const row=financeCfg[key]||legacy;
+    return {enabled:row.enabled!==false,scope:['putra','putri','all'].includes(row.scope)?row.scope:'all'};
+  };
+  const financeAllowed=(key,source)=>{
+    const f=financeFeature(key);if(!f.enabled)return false;
+    if(f.scope==='all')return true;
+    const gender=detectGender(source);
+    return gender?gender===f.scope:false;
+  };
+  const anyFinance=()=>['spp','savings','walletCashier'].some(k=>financeFeature(k).enabled);
+
   window.CahayaConfig={
     config:C,
     app:key=>app[key],
     term:key=>terms[key]||key,
-    module:key=>modules[key]!==false,
+    module:key=>{
+      if(key==='finance')return anyFinance();
+      if(key==='cashier')return financeFeature('walletCashier').enabled;
+      return modules[key]!==false;
+    },
+    financeFeature,financeAllowed,detectGender,normalizeGender,anyFinance,
     asset(path=''){if(!path)return path;if(/^(https?:|data:|blob:|\/)/i.test(path))return path;const tag=document.currentScript||[...document.scripts].find(s=>/cahaya-config-runtime\.js/.test(s.src));const src=tag?.src||location.href;return new URL('../'+path,new URL(src)).href},
     firebase:()=>C.firebase||{}
   };
+  window.CahayaFinanceConfig={feature:financeFeature,allowed:financeAllowed,detectGender,anyEnabled:anyFinance};
+
   const exact=new Map([
     ['CAHAYA APP',String(app.name||'CAHAYA App').toUpperCase()],
     ['CAHAYA App',app.name||'CAHAYA App'],
@@ -58,12 +95,21 @@
     nurturing:['menu-absen-asrama','menu-disiplin','menu-mentoring','menu-gamifikasi','menu-jadwal-piket','menu-jurnal-piket','menu-usrah'],
     counseling:['menu-antrean-kasus','menu-buku-kasus','menu-evaluasi-kasus'],
     health:['menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan','menu-perizinan-uks','menu-stok-obat'],
-    permits:['menu-perizinan-santri'],finance:['menu-pusat-keuangan'],cashier:['menu-kasir'],
+    permits:['menu-perizinan-santri'],
+    finance:['menu-pusat-keuangan','menu-keuangan-wali'],
+    cashier:['menu-kasir'],
     facilities:['menu-jurnal-sarpras','menu-checklist-sarpras','menu-tindak-sarpras'],
     observer:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-dapur','menu-observer-uks','menu-laporan-observasi'],
     assessment:['menu-asesmen-naqib','menu-asesmen-guru','menu-asesmen-santri','menu-asesmen-sdm'],
     media:['menu-komentar','menu-media'],chat:['menu-chat'],pkl:['menu-jurnal-pkl']
   };
-  function applyModules(scope=document){Object.entries(menuModules).forEach(([mod,ids])=>{if(modules[mod]===false)ids.forEach(id=>{const el=scope.getElementById?.(id)||scope.querySelector?.('#'+id);if(el)el.dataset.moduleDisabled='true'})})}
+  function disableElement(el){if(!el)return;el.dataset.moduleDisabled='true';el.style.display='none';}
+  function applyModules(scope=document){
+    Object.entries(menuModules).forEach(([mod,ids])=>{
+      const enabled=mod==='finance'?anyFinance():mod==='cashier'?financeFeature('walletCashier').enabled:modules[mod]!==false;
+      if(!enabled)ids.forEach(id=>disableElement(scope.getElementById?.(id)||scope.querySelector?.('#'+id)));
+    });
+    scope.querySelectorAll?.('[data-finance-feature]').forEach(el=>{if(!financeFeature(el.dataset.financeFeature).enabled)disableElement(el)});
+  }
   document.addEventListener('DOMContentLoaded',()=>{applyBranding();applyModules();const ob=new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(node=>{if(node.nodeType===1){applyBranding(node);applyModules(node)}else if(node.nodeType===3)replaceTextNode(node)})));ob.observe(document.body,{childList:true,subtree:true});setTimeout(()=>ob.disconnect(),12000)});
 })();
