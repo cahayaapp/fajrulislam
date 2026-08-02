@@ -216,6 +216,7 @@ window.dataGuru = [
     "FAHMI",
     "KHAIZURAN",
     "RAHIEL",
+    "ZAKY",
     "FAIQ",
     "KAMAL",
     "MEILISA",

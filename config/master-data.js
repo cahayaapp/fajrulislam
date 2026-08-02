@@ -136,6 +136,7 @@ window.CAHAYA_MASTER_DATA = {
     "FAHMI",
     "KHAIZURAN",
     "RAHIEL",
+    "ZAKY",
     "FAIQ",
     "KAMAL",
     "MEILISA",
