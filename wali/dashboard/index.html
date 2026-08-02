@@ -3,6 +3,7 @@
 <head>
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../../config/tenant-config.js"></script>
+  <script src="../../keuangan/finance-settings.js"></script>
   <script src="../../config/master-data.js"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
 
@@ -3137,6 +3138,10 @@
         );
       }
 
+      if (window.CahayaFinanceSettings?.load) {
+        await window.CahayaFinanceSettings.load();
+      }
+
       renderHeaderData(
         portalState.student
       );
@@ -3355,6 +3360,10 @@
       }
     );
   
+
+    window.addEventListener("cahaya:finance-settings", () => {
+      if (portalState?.student) applyFinanceMenuForStudent(portalState.student);
+    });
 
     window.addEventListener(
       "pageshow",

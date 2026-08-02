@@ -25,11 +25,13 @@
 
   const db = ensureFirebase();
 
+  const SETTINGS = global.CahayaFinanceSettings || null;
   const FEATURE_DEFAULTS={
     spp:{enabled:(window.CAHAYA_CONFIG?.modules?.finance!==false),scope:'all'},
     savings:{enabled:(window.CAHAYA_CONFIG?.modules?.finance!==false),scope:'all'},
     walletCashier:{enabled:(window.CAHAYA_CONFIG?.modules?.finance!==false&&window.CAHAYA_CONFIG?.modules?.cashier!==false),scope:'all'}
   };
+  const settingsReady = SETTINGS?.load ? SETTINGS.load().catch(()=>SETTINGS.get()) : Promise.resolve(null);
   function normalizeGender(value){
     const v=String(value||'').trim().toLowerCase();
     if(/putri|perempuan|wanita|female|akhwat/.test(v))return 'putri';
@@ -42,9 +44,11 @@
     return normalizeGender(source.jenisKelamin||source.gender||source.kelamin||source.kelas||source.className||source.namaKelas||'');
   }
   function feature(keyName){
-    const raw=window.CAHAYA_CONFIG?.financeFeatures?.[keyName]||FEATURE_DEFAULTS[keyName]||{enabled:false,scope:'all'};
+    if(SETTINGS?.feature)return SETTINGS.feature(keyName);
+    const raw=FEATURE_DEFAULTS[keyName]||{enabled:false,scope:'all'};
     return {enabled:raw.enabled!==false,scope:['all','putra','putri'].includes(raw.scope)?raw.scope:'all'};
   }
+  async function ready(){await settingsReady;return activeFeatures();}
   function featureEnabled(keyName){return feature(keyName).enabled;}
   function featureAllowed(keyName,source){const f=feature(keyName);if(!f.enabled)return false;if(f.scope==='all')return true;const g=detectGender(source);return Boolean(g)&&g===f.scope;}
   function activeFeatures(){return {spp:feature('spp'),savings:feature('savings'),walletCashier:feature('walletCashier')};}
@@ -427,5 +431,5 @@
   }
 
 
-  global.CahayaFinance={CFG,P,db,esc,norm,key,vals,money,number,localDate,isoNow,dateLabel,uid,actor,waliProfile,waliStudentName,accountDefaults,hashPin,validPin,normalizeGender,detectGender,feature,featureEnabled,featureAllowed,activeFeatures,assertFeature,loadStudents,ensureAccount,initializeAccounts,getAccount,setPin,verifyPin,audit,addLedger,mutateBalances,createBill,recordPayment,upsertProduct,processSale,cancelSale,snapshot,queryByStudent,getCashierData,getStudentFinanceData,allData};
+  global.CahayaFinance={CFG,P,db,ready,esc,norm,key,vals,money,number,localDate,isoNow,dateLabel,uid,actor,waliProfile,waliStudentName,accountDefaults,hashPin,validPin,normalizeGender,detectGender,feature,featureEnabled,featureAllowed,activeFeatures,assertFeature,loadStudents,ensureAccount,initializeAccounts,getAccount,setPin,verifyPin,audit,addLedger,mutateBalances,createBill,recordPayment,upsertProduct,processSale,cancelSale,snapshot,queryByStudent,getCashierData,getStudentFinanceData,allData};
 })(window);

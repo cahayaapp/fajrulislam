@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pengaturan Modul Keuangan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900;1000&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--blue:#2677f5;--navy:#12264c;--cyan:#20bfd8;--green:#20ad7a;--amber:#f5b73a;--red:#f05f72;--bg:#f3f7fc;--line:#dce6f2;--muted:#718199}
+    *{box-sizing:border-box}body{margin:0;padding:18px;font-family:Nunito,sans-serif;background:radial-gradient(circle at 0 0,#daf7ff,transparent 28%),linear-gradient(180deg,#eef5ff,#f9fbfd);color:#263b59}.app{max-width:1120px;margin:auto}.hero{position:relative;overflow:hidden;padding:25px;border-radius:26px;color:#fff;background:linear-gradient(130deg,var(--navy),var(--blue) 58%,var(--cyan));box-shadow:0 22px 55px #245eaa28}.hero:after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;right:-100px;top:-150px;background:#ffffff12}.eyebrow{font-size:.65rem;font-weight:1000;letter-spacing:.15em;text-transform:uppercase;color:#bdeeff}.hero h1{position:relative;margin:8px 0 6px;font:800 clamp(1.45rem,3vw,2.15rem) 'Plus Jakarta Sans'}.hero p{position:relative;max-width:780px;margin:0;color:#e5f2ff;font-size:.82rem;line-height:1.6}.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:15px}.summary-card{padding:13px 14px;border-radius:16px;background:#ffffff16;border:1px solid #ffffff28}.summary-card small{display:block;font-size:.56rem;font-weight:1000;text-transform:uppercase;color:#d7ebff}.summary-card b{display:block;margin-top:5px;font-size:.82rem}.panel{margin-top:15px;padding:18px;border-radius:23px;border:1px solid var(--line);background:#fff;box-shadow:0 14px 35px #294f8510}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px}.panel-head h2{margin:0;color:#1e3658;font-size:1rem}.panel-head p{margin:5px 0 0;color:var(--muted);font-size:.7rem;line-height:1.5}.btn{border:0;border-radius:12px;padding:11px 14px;font-family:inherit;font-weight:1000;cursor:pointer;background:#edf4ff;color:#2868ba}.btn.primary{color:#fff;background:linear-gradient(135deg,var(--blue),var(--cyan));box-shadow:0 10px 22px #2878ff24}.btn:disabled{opacity:.6;cursor:wait}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.feature{position:relative;padding:16px;border:1px solid var(--line);border-radius:19px;background:linear-gradient(180deg,#fff,#f7faff);transition:.2s}.feature.off{opacity:.66;background:#f5f7fa}.feature-top{display:flex;gap:11px;align-items:flex-start}.icon{width:43px;height:43px;display:grid;place-items:center;border-radius:14px;font-size:21px;background:#eaf3ff}.feature h3{margin:1px 0 4px;color:#203858;font-size:.86rem}.feature p{margin:0;color:var(--muted);font-size:.64rem;line-height:1.45}.switch{margin-left:auto;position:relative;width:44px;height:24px;flex:none}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;inset:0;border-radius:999px;background:#cfd8e4;cursor:pointer;transition:.2s}.slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #0002;transition:.2s}.switch input:checked+.slider{background:linear-gradient(135deg,var(--green),var(--cyan))}.switch input:checked+.slider:before{transform:translateX(20px)}.scope{margin-top:15px;padding-top:13px;border-top:1px dashed #dbe5f0}.scope label{display:block;margin-bottom:6px;font-size:.59rem;font-weight:1000;text-transform:uppercase;color:#687a92}.scope select{width:100%;padding:11px;border:1px solid #d8e3f0;border-radius:12px;background:#fff;color:#2d4565;font:900 .72rem Nunito}.scope select:disabled{background:#edf1f5;color:#97a3b2}.note{margin-top:14px;padding:13px 14px;border-left:4px solid var(--amber);border-radius:12px;background:#fff8e8;color:#6d5a2c;font-size:.68rem;line-height:1.55}.status{display:none;margin-top:13px;padding:12px 14px;border-radius:13px;font-size:.7rem;font-weight:900}.status.show{display:block}.status.ok{background:#e9faf3;color:#117356}.status.err{background:#fff0f2;color:#b73f51}.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}.meta div{padding:11px;border-radius:12px;background:#f4f8fd;font-size:.65rem;color:#64768e}.meta b{display:block;color:#263e60;margin-top:3px}.locked{max-width:650px;margin:60px auto;padding:28px;text-align:center;border-radius:23px;background:#fff;border:1px solid var(--line)}
+    @media(max-width:800px){body{padding:10px}.cards,.summary{grid-template-columns:1fr}.panel-head{display:block}.panel-head .btn{margin-top:10px;width:100%}.meta{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="app" id="app" hidden>
+  <section class="hero">
+    <div class="eyebrow">Modul Operasional Keuangan</div>
+    <h1>Pengaturan Fitur Keuangan</h1>
+    <p>Aktifkan hanya layanan keuangan yang benar-benar digunakan. Setiap layanan dapat dibatasi untuk santri Putra, Putri, atau keduanya. Pengaturan ini tersimpan di Firebase dan tidak menjadi bagian dari Setup White-Label.</p>
+    <div class="summary" id="summary"></div>
+  </section>
+
+  <section class="panel">
+    <header class="panel-head">
+      <div><h2>Pilih Submodul dan Wilayah Layanan</h2><p>Menonaktifkan fitur tidak menghapus data lama. Sistem hanya menyembunyikan menu dan tidak memuat datanya.</p></div>
+      <button class="btn" id="refreshBtn" onclick="loadSettings(true)">↻ Muat Ulang</button>
+    </header>
+    <div class="cards">
+      <article class="feature" data-card="spp">
+        <div class="feature-top"><div class="icon">🧾</div><div><h3>SPP & Tagihan</h3><p>Tagihan bulanan, pembayaran, tunggakan, kuitansi, dan laporan SPP.</p></div><label class="switch"><input type="checkbox" id="sppEnabled"><span class="slider"></span></label></div>
+        <div class="scope"><label>Cakupan Layanan</label><select id="sppScope"><option value="all">Putra & Putri</option><option value="putra">Putra saja</option><option value="putri">Putri saja</option></select></div>
+      </article>
+      <article class="feature" data-card="savings">
+        <div class="feature-top"><div class="icon">🏦</div><div><h3>Tabungan Santri</h3><p>Setoran, penarikan, saldo tabungan, pemindahan saldo, dan riwayat mutasi.</p></div><label class="switch"><input type="checkbox" id="savingsEnabled"><span class="slider"></span></label></div>
+        <div class="scope"><label>Cakupan Layanan</label><select id="savingsScope"><option value="all">Putra & Putri</option><option value="putra">Putra saja</option><option value="putri">Putri saja</option></select></div>
+      </article>
+      <article class="feature" data-card="walletCashier">
+        <div class="feature-top"><div class="icon">🏪</div><div><h3>Saldo Belanja & Kasir</h3><p>Saldo belanja, PIN transaksi, limit harian, produk, stok, kantin, dan koperasi.</p></div><label class="switch"><input type="checkbox" id="walletCashierEnabled"><span class="slider"></span></label></div>
+        <div class="scope"><label>Cakupan Layanan</label><select id="walletCashierScope"><option value="all">Putra & Putri</option><option value="putra">Putra saja</option><option value="putri">Putri saja</option></select></div>
+      </article>
+    </div>
+    <div class="note"><b>Catatan:</b> Jika seluruh submodul dinonaktifkan, menu Pusat Keuangan dan Kasir otomatis tidak digunakan. Data lama tetap tersimpan dan akan muncul kembali saat fiturnya diaktifkan.</div>
+    <div class="meta"><div>Lokasi konfigurasi Firebase<b>cahaya_app/keuangan/pengaturan_modul</b></div><div>Pembaruan terakhir<b id="updatedMeta">Belum ada data</b></div></div>
+    <div class="status" id="status"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn primary" id="saveBtn" onclick="saveSettings()">Simpan Pengaturan Keuangan</button></div>
+  </section>
+</main>
+<section class="locked" id="locked" hidden><h2>Akses Dibatasi</h2><p>Pengaturan modul keuangan hanya dapat dibuka oleh Admin, Direktur, Wakil Direktur, atau Administrasi Keuangan.</p></section>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="finance-settings.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const labels={spp:'SPP & Tagihan',savings:'Tabungan',walletCashier:'Saldo & Kasir'};
+const scopeLabel=v=>v==='putra'?'Putra saja':v==='putri'?'Putri saja':'Putra & Putri';
+function roles(){try{const u=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}');return [...(Array.isArray(u.akses)?u.akses:[u.akses]),u.role,u.peran].filter(Boolean).map(x=>String(x).toLowerCase())}catch(_){return[]}}
+function canManage(){return roles().some(r=>['admin','direktur','wakil','yayasan','keuangan'].includes(r))}
+function setStatus(text,type='ok'){const el=$('status');el.textContent=text;el.className=`status show ${type}`}
+function collect(){return {spp:{enabled:$('sppEnabled').checked,scope:$('sppScope').value},savings:{enabled:$('savingsEnabled').checked,scope:$('savingsScope').value},walletCashier:{enabled:$('walletCashierEnabled').checked,scope:$('walletCashierScope').value}}}
+function render(data){['spp','savings','walletCashier'].forEach(key=>{$(`${key}Enabled`).checked=data[key]?.enabled!==false;$(`${key}Scope`).value=data[key]?.scope||'all';syncCard(key)});$('summary').innerHTML=['spp','savings','walletCashier'].map(key=>{const f=data[key]||{};return `<div class="summary-card"><small>${labels[key]}</small><b>${f.enabled!==false?scopeLabel(f.scope):'Nonaktif'}</b></div>`}).join('');$('updatedMeta').textContent=data.updatedAt?new Date(data.updatedAt).toLocaleString('id-ID'):'Menggunakan pengaturan awal'}
+function syncCard(key){const on=$(`${key}Enabled`).checked;$(`${key}Scope`).disabled=!on;document.querySelector(`[data-card="${key}"]`)?.classList.toggle('off',!on);renderPreview()}
+function renderPreview(){const d=collect();$('summary').innerHTML=Object.entries(d).map(([key,f])=>`<div class="summary-card"><small>${labels[key]}</small><b>${f.enabled?scopeLabel(f.scope):'Nonaktif'}</b></div>`).join('')}
+async function loadSettings(force=false){const btn=$('refreshBtn');btn.disabled=true;try{const data=await CahayaFinanceSettings.load({force});render(data);setStatus('Pengaturan keuangan berhasil dimuat.')}catch(e){setStatus(e.message,'err')}finally{btn.disabled=false}}
+async function saveSettings(){const btn=$('saveBtn');btn.disabled=true;btn.textContent='Menyimpan...';try{const data=await CahayaFinanceSettings.save(collect());render(data);setStatus('Pengaturan keuangan berhasil disimpan dan langsung menjadi konfigurasi aktif.')}catch(e){setStatus(e.message,'err')}finally{btn.disabled=false;btn.textContent='Simpan Pengaturan Keuangan'}}
+['spp','savings','walletCashier'].forEach(key=>{$(`${key}Enabled`).addEventListener('change',()=>syncCard(key));$(`${key}Scope`).addEventListener('change',renderPreview)});
+window.addEventListener('DOMContentLoaded',async()=>{if(!canManage()){$('locked').hidden=false;return}$('app').hidden=false;await loadSettings(true)});
+</script>
+</body>
+</html>

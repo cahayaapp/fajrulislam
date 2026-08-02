@@ -2,7 +2,6 @@
 (function(){
   const C=window.CAHAYA_CONFIG||{};
   const app=C.app||{}, brand=C.branding||{}, theme=C.theme||{}, terms=C.terminology||{}, modules=C.modules||{};
-  const financeCfg=C.financeFeatures||{};
   const root=document.documentElement;
   const vars={
     '--cahaya-primary':theme.primary,'--cahaya-primary-dark':theme.primaryDark,
@@ -23,21 +22,22 @@
     return normalizeGender(source.jenisKelamin||source.gender||source.kelamin||source.kelas||source.className||source.namaKelas||'');
   };
   const financeFeature=key=>{
+    if(window.CahayaFinanceSettings?.feature)return window.CahayaFinanceSettings.feature(key);
     const legacy={
       spp:{enabled:modules.finance!==false,scope:'all'},
       savings:{enabled:modules.finance!==false,scope:'all'},
       walletCashier:{enabled:modules.finance!==false&&modules.cashier!==false,scope:'all'}
     }[key]||{enabled:false,scope:'all'};
-    const row=financeCfg[key]||legacy;
-    return {enabled:row.enabled!==false,scope:['putra','putri','all'].includes(row.scope)?row.scope:'all'};
+    return {enabled:legacy.enabled!==false,scope:['putra','putri','all'].includes(legacy.scope)?legacy.scope:'all'};
   };
   const financeAllowed=(key,source)=>{
+    if(window.CahayaFinanceSettings?.allowed)return window.CahayaFinanceSettings.allowed(key,source);
     const f=financeFeature(key);if(!f.enabled)return false;
     if(f.scope==='all')return true;
     const gender=detectGender(source);
     return gender?gender===f.scope:false;
   };
-  const anyFinance=()=>['spp','savings','walletCashier'].some(k=>financeFeature(k).enabled);
+  const anyFinance=()=>window.CahayaFinanceSettings?.anyEnabled?window.CahayaFinanceSettings.anyEnabled():['spp','savings','walletCashier'].some(k=>financeFeature(k).enabled);
 
   window.CahayaConfig={
     config:C,
@@ -97,6 +97,7 @@
     health:['menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan','menu-perizinan-uks','menu-stok-obat'],
     permits:['menu-perizinan-santri'],
     finance:['menu-pusat-keuangan','menu-keuangan-wali'],
+    financeSettings:['menu-pengaturan-keuangan'],
     cashier:['menu-kasir'],
     facilities:['menu-jurnal-sarpras','menu-checklist-sarpras','menu-tindak-sarpras'],
     observer:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-dapur','menu-observer-uks','menu-laporan-observasi'],
@@ -106,10 +107,11 @@
   function disableElement(el){if(!el)return;el.dataset.moduleDisabled='true';el.style.display='none';}
   function applyModules(scope=document){
     Object.entries(menuModules).forEach(([mod,ids])=>{
-      const enabled=mod==='finance'?anyFinance():mod==='cashier'?financeFeature('walletCashier').enabled:modules[mod]!==false;
+      const enabled=mod==='finance'?anyFinance():mod==='financeSettings'?modules.finance!==false:mod==='cashier'?financeFeature('walletCashier').enabled:modules[mod]!==false;
       if(!enabled)ids.forEach(id=>disableElement(scope.getElementById?.(id)||scope.querySelector?.('#'+id)));
     });
     scope.querySelectorAll?.('[data-finance-feature]').forEach(el=>{if(!financeFeature(el.dataset.financeFeature).enabled)disableElement(el)});
   }
   document.addEventListener('DOMContentLoaded',()=>{applyBranding();applyModules();const ob=new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(node=>{if(node.nodeType===1){applyBranding(node);applyModules(node)}else if(node.nodeType===3)replaceTextNode(node)})));ob.observe(document.body,{childList:true,subtree:true});setTimeout(()=>ob.disconnect(),12000)});
+  window.addEventListener('cahaya:finance-settings',()=>applyModules(document));
 })();
