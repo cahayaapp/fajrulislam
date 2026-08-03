@@ -1554,6 +1554,7 @@
       get,
       set,
       push,
+      update,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -2279,6 +2280,84 @@
           );
         });
     }
+
+    function akunGuruMendukungAbsensiGabungan() {
+      return teacherCode === "MULTAZAM";
+    }
+
+    function attendanceGroupKey(item = {}) {
+      return [
+        compactIdentity(item.subject || ""),
+        String(item.scheduleStart || ""),
+        String(item.scheduleEnd || ""),
+        compactIdentity(item.sessionLabel || "")
+      ].join("|");
+    }
+
+    function combinedAssignmentsForTeacherAndRoom(
+      dateValue,
+      activeTeacherCode,
+      room
+    ) {
+      const roomAssignments = assignmentsForTeacherAndRoom(
+        dateValue,
+        activeTeacherCode,
+        room
+      );
+
+      if (!akunGuruMendukungAbsensiGabungan()) {
+        return roomAssignments.map(item => ({
+          ...item,
+          isCombined: false,
+          assignments: [item],
+          classNames: [item.className]
+        }));
+      }
+
+      const allTeacherAssignments = buildDailyAssignments(dateValue)
+        .filter(item => item.teacher === activeTeacherCode);
+      const seen = new Set();
+      const groups = [];
+
+      roomAssignments.forEach(base => {
+        const key = attendanceGroupKey(base);
+        if (seen.has(key)) return;
+        seen.add(key);
+
+        const members = allTeacherAssignments.filter(item => attendanceGroupKey(item) === key);
+        const classNames = [...new Set(members.map(item => item.className))];
+        const units = [...new Set(members.map(item => item.unit).filter(Boolean))];
+
+        if (members.length <= 1) {
+          groups.push({
+            ...base,
+            isCombined: false,
+            assignments: [base],
+            classNames: [base.className]
+          });
+          return;
+        }
+
+        groups.push({
+          ...base,
+          id: safeKey(`gabungan-${key}-${classNames.join("-")}`),
+          isCombined: true,
+          assignments: members,
+          classNames,
+          className: `Gabungan ${classNames.length} Kelas`,
+          unit: units.join(" & ") || base.unit
+        });
+      });
+
+      return groups;
+    }
+
+    function assignmentMembers(assignment) {
+      if (!assignment) return [];
+      return Array.isArray(assignment.assignments) && assignment.assignments.length
+        ? assignment.assignments
+        : [assignment];
+    }
     
     function safeKey(value = "") {
       const cleaned = normalizeIdentity(value)
@@ -2746,7 +2825,7 @@
           jakartaDateKey();
 
         const assignments =
-          assignmentsForTeacherAndRoom(
+          combinedAssignmentsForTeacherAndRoom(
             dateKey,
             teacherCode,
             room
@@ -2864,7 +2943,7 @@
                 ${escapeHtml(item.subject)} •
                 ${escapeHtml(item.sessionLabel)} •
                 ${escapeHtml(item.scheduleLabel)} •
-                ${escapeHtml(item.className)}
+                ${escapeHtml(item.isCombined ? item.classNames.join(" + ") : item.className)}
               </option>
             `)
             .join("");
@@ -2891,8 +2970,10 @@
           "confirmText"
         ).textContent =
           assignments.length > 1
-            ? "Terdapat beberapa sesi pada kelas ini. Pilih mapel dan jam yang sedang berlangsung."
-            : `Mapel dan ruang sudah sesuai. Jadwal ${assignments[0].scheduleLabel}. Tekan konfirmasi untuk mencatat waktu tiba.`;
+            ? "Terdapat beberapa sesi. Pilih mapel dan jam yang sedang berlangsung."
+            : assignments[0].isCombined
+              ? `${assignments[0].classNames.length} kelas diajar bersamaan. Satu konfirmasi akan mencatat kehadiran guru untuk seluruh kelas tersebut.`
+              : `Mapel dan ruang sudah sesuai. Jadwal ${assignments[0].scheduleLabel}. Tekan konfirmasi untuk mencatat waktu tiba.`;
       } catch (error) {
         console.error(
           "Lokasi gagal:",
@@ -3181,14 +3262,15 @@
     }
 
     async function confirmAttendance() {
-      const assignment =
-        selectedAssignment();
+      const assignment = selectedAssignment();
+      const members = assignmentMembers(assignment);
 
       if (
         !verifiedRoom ||
         !verifiedLocation ||
         !verifiedPosition ||
-        !assignment
+        !assignment ||
+        !members.length
       ) {
         showResult(
           "error",
@@ -3196,339 +3278,170 @@
           [
             {
               label: "Tindakan",
-              value:
-                "Periksa kembali kode kelas dan lokasi."
+              value: "Periksa kembali kode kelas dan lokasi."
             }
           ]
         );
         return;
       }
 
-      const button =
-        document.getElementById(
-          "confirmAttendanceButton"
-        );
-
+      const button = document.getElementById("confirmAttendanceButton");
       button.disabled = true;
-      button.textContent =
-        "⏳ Menyimpan Kehadiran...";
+      button.textContent = "⏳ Menyimpan Kehadiran...";
 
-      const dateKey =
-        jakartaDateKey();
-
-      const teacherKey =
-        safeKey(
-          profile.uid ||
-          profile.email ||
-          profile.username ||
-          teacherName
-        );
-
-      const attendanceRef =
-        ref(
-          db,
-          `${PATHS.attendance}/${dateKey}/${teacherKey}/${assignment.id}`
-        );
+      const dateKey = jakartaDateKey();
+      const teacherKey = safeKey(
+        profile.uid ||
+        profile.email ||
+        profile.username ||
+        teacherName
+      );
 
       try {
-        const existing =
-          await get(
-            attendanceRef
-          );
+        const attendanceRefs = members.map(item => ({
+          assignment: item,
+          reference: ref(db, `${PATHS.attendance}/${dateKey}/${teacherKey}/${item.id}`)
+        }));
 
-        if (existing.exists()) {
-          const value =
-            existing.val();
+        const existingSnapshots = await Promise.all(
+          attendanceRefs.map(item => get(item.reference))
+        );
 
+        const missing = attendanceRefs.filter((item, index) => !existingSnapshots[index].exists());
+        const existingValues = existingSnapshots
+          .filter(snapshot => snapshot.exists())
+          .map(snapshot => snapshot.val());
+
+        if (!missing.length) {
+          const firstValue = existingValues[0] || {};
           showResult(
             "success",
-            "Kehadiran Sudah Tercatat",
+            assignment.isCombined ? "Kehadiran Gabungan Sudah Tercatat" : "Kehadiran Sudah Tercatat",
             [
+              { label: "Guru", value: teacherName },
+              { label: "Mapel", value: assignment.subject },
               {
-                label: "Guru",
-                value: teacherName
+                label: assignment.isCombined ? "Kelas Gabungan" : "Kelas",
+                value: assignment.isCombined ? assignment.classNames.join(", ") : assignment.className
               },
-              {
-                label: "Mapel",
-                value:
-                  assignment.subject
-              },
-              {
-                label: "Ruang",
-                value:
-                  verifiedRoom.namaRuang
-              },
-              {
-                label: "Jadwal",
-                value:
-                  value.jadwalLabel ||
-                  assignment.scheduleLabel
-              },
-              {
-                label: "Waktu Tiba",
-                value:
-                  value.waktuTibaWIB ||
-                  "Sudah tersimpan"
-              },
-              {
-                label: "Status",
-                value:
-                  value.statusKehadiranLabel ||
-                  value.statusKehadiran ||
-                  "Sudah hadir"
-              }
+              { label: "Ruang Verifikasi", value: verifiedRoom.namaRuang },
+              { label: "Jadwal", value: firstValue.jadwalLabel || assignment.scheduleLabel },
+              { label: "Waktu Tiba", value: firstValue.waktuTibaWIB || "Sudah tersimpan" },
+              { label: "Status", value: firstValue.statusKehadiranLabel || firstValue.statusKehadiran || "Sudah hadir" }
             ]
           );
 
-          document.getElementById(
-            "assignmentBox"
-          ).classList.remove("show");
-
-          document.getElementById(
-            "confirmPanel"
-          ).classList.remove("show");
-
+          document.getElementById("assignmentBox").classList.remove("show");
+          document.getElementById("confirmPanel").classList.remove("show");
           return;
         }
 
-        const localTime =
-          jakartaTimeLabel();
+        const localTime = jakartaTimeLabel();
+        const attendanceResult = attendanceStatus(localTime, assignment.scheduleStart);
+        const batchUpdates = {};
+        const groupId = assignment.isCombined
+          ? safeKey(`gabungan-${dateKey}-${teacherKey}-${assignment.subject}-${assignment.scheduleStart}`)
+          : "";
 
-        const attendanceResult =
-          attendanceStatus(
-            localTime,
-            assignment.scheduleStart
-          );
-
-        const record = {
-          idAbsensi:
-            `${teacherKey}-${assignment.id}`,
-
-          tanggal: dateKey,
-          tanggalLabel:
-            formatDateIndonesia(
-              dateKey
-            ),
-
-          waktuTibaWIB: localTime,
-          waktuTibaServer:
-            serverTimestamp(),
-
-          guruUid:
-            profile.uid || "",
-
-          guruKey: teacherKey,
-          guruKodeKalender:
-            teacherCode,
-          namaGuru: teacherName,
-          emailGuru:
-            profile.email || "",
-
-          jadwalId:
-            assignment.id,
-          hariJadwal:
-            assignment.dayLabel,
-
-          sesiId:
-            assignment.sessionKey,
-          sesiLabel:
-            assignment.sessionLabel,
-          jadwalMulai:
-            assignment.scheduleStart,
-          jadwalSelesai:
-            assignment.scheduleEnd,
-          jadwalLabel:
-            assignment.scheduleLabel,
-
-          mapel:
-            assignment.subject,
-          kelas:
-            assignment.className,
-          nomorKelas:
-            assignment.classNumber,
-          unit:
-            assignment.unit,
-
-          ruangId:
-            verifiedRoom.id,
-          namaRuang:
-            verifiedRoom.namaRuang,
-          lokasiId:
-            verifiedRoom.lokasiId,
-          namaLokasi:
-            verifiedLocation.nama,
-
-          metodeAbsensi:
-            selectedMethod,
-          kodeKelas:
-            verifiedRoom.kodeKelas,
-          qrToken:
-            selectedMethod ===
-              "SCAN_QR"
-              ? verifiedRoom.qrToken
-              : "",
-
-          lokasiGuru: {
-            latitude:
-              verifiedPosition.latitude,
-            longitude:
-              verifiedPosition.longitude,
-            akurasiMeter:
-              verifiedPosition.accuracy,
-            jarakMeter:
-              verifiedPosition.distanceMeter,
-            radiusMaksimalMeter:
-              verifiedPosition.radiusExempt
+        missing.forEach(({ assignment: item }) => {
+          const record = {
+            idAbsensi: `${teacherKey}-${item.id}`,
+            tanggal: dateKey,
+            tanggalLabel: formatDateIndonesia(dateKey),
+            waktuTibaWIB: localTime,
+            waktuTibaServer: serverTimestamp(),
+            guruUid: profile.uid || "",
+            guruKey: teacherKey,
+            guruKodeKalender: teacherCode,
+            namaGuru: teacherName,
+            emailGuru: profile.email || "",
+            jadwalId: item.id,
+            hariJadwal: item.dayLabel,
+            sesiId: item.sessionKey,
+            sesiLabel: item.sessionLabel,
+            jadwalMulai: item.scheduleStart,
+            jadwalSelesai: item.scheduleEnd,
+            jadwalLabel: item.scheduleLabel,
+            mapel: item.subject,
+            kelas: item.className,
+            nomorKelas: item.classNumber,
+            unit: item.unit,
+            ruangId: verifiedRoom.id,
+            namaRuang: verifiedRoom.namaRuang,
+            lokasiId: verifiedRoom.lokasiId,
+            namaLokasi: verifiedLocation.nama,
+            metodeAbsensi: selectedMethod,
+            kodeKelas: verifiedRoom.kodeKelas,
+            qrToken: selectedMethod === "SCAN_QR" ? verifiedRoom.qrToken : "",
+            lokasiGuru: {
+              latitude: verifiedPosition.latitude,
+              longitude: verifiedPosition.longitude,
+              akurasiMeter: verifiedPosition.accuracy,
+              jarakMeter: verifiedPosition.distanceMeter,
+              radiusMaksimalMeter: verifiedPosition.radiusExempt
                 ? null
-                : (
-                    Number(
-                      verifiedLocation.radiusMeter
-                    ) || 700
-                  ),
-            validasiRadiusDiberlakukan:
-              !verifiedPosition.radiusExempt,
-            status:
-              verifiedPosition.status,
-            alasanPengecualian:
-              verifiedPosition.radiusExempt
-                ? (
-                    verifiedRoom.alasanBebasRadius ||
-                    "Kelas online."
-                  )
+                : (Number(verifiedLocation.radiusMeter) || 700),
+              validasiRadiusDiberlakukan: !verifiedPosition.radiusExempt,
+              status: verifiedPosition.status,
+              alasanPengecualian: verifiedPosition.radiusExempt
+                ? (verifiedRoom.alasanBebasRadius || "Kelas online.")
                 : ""
-          },
+            },
+            statusKehadiran: attendanceResult.status,
+            statusKehadiranLabel: attendanceResult.statusLabel,
+            keterlambatanMenit: attendanceResult.lateMinutes,
+            sumber: "ABSENSI_GURU_QR_LOKASI",
+            dibuatPada: serverTimestamp(),
+            versi: "Uji Coba 2026/2027",
+            absensiGabungan: Boolean(assignment.isCombined),
+            idAbsensiGabungan: groupId,
+            kelasGabungan: assignment.classNames,
+            jumlahKelasGabungan: members.length,
+            ruangVerifikasiGabungan: verifiedRoom.namaRuang
+          };
 
-          statusKehadiran:
-            attendanceResult.status,
-          statusKehadiranLabel:
-            attendanceResult.statusLabel,
-          keterlambatanMenit:
-            attendanceResult.lateMinutes,
-
-          sumber:
-            "ABSENSI_GURU_QR_LOKASI",
-
-          dibuatPada:
-            serverTimestamp(),
-
-          versi:
-            "Uji Coba 2026/2027"
-        };
-
-        await set(
-          attendanceRef,
-          record
-        );
-
-        const logRef =
-          push(
-            ref(
-              db,
-              PATHS.attendanceLog
-            )
-          );
-
-        await set(
-          logRef,
-          {
+          batchUpdates[`${PATHS.attendance}/${dateKey}/${teacherKey}/${item.id}`] = record;
+          const logRef = push(ref(db, PATHS.attendanceLog));
+          batchUpdates[`${PATHS.attendanceLog}/${logRef.key}`] = {
             ...record,
             idLog: logRef.key
-          }
-        );
+          };
+        });
 
-        const saved =
-          await get(
-            attendanceRef
-          );
-
-        const value =
-          saved.val() || record;
+        await update(ref(db), batchUpdates);
 
         showResult(
           "success",
-          "Absensi Berhasil Disimpan",
+          assignment.isCombined ? "Absensi Guru Gabungan Berhasil" : "Absensi Berhasil Disimpan",
           [
+            { label: "Guru", value: teacherName },
+            { label: "Mapel", value: assignment.subject },
             {
-              label: "Guru",
-              value: teacherName
+              label: assignment.isCombined ? "Kelas Tercatat" : "Kelas",
+              value: assignment.isCombined ? assignment.classNames.join(", ") : assignment.className
             },
-            {
-              label: "Mapel",
-              value:
-                assignment.subject
-            },
-            {
-              label: "Ruang",
-              value:
-                verifiedRoom.namaRuang
-            },
-            {
-              label: "Jadwal",
-              value:
-                assignment.scheduleLabel
-            },
-            {
-              label: "Waktu Tiba",
-              value:
-                value.waktuTibaWIB ||
-                localTime
-            },
-            {
-              label: "Status",
-              value:
-                attendanceResult.statusLabel
-            },
-            {
-              label: "Validasi Lokasi",
-              value:
-                verifiedPosition.radiusExempt
-                  ? "Tanpa radius — kelas online"
-                  : `${verifiedPosition.distanceMeter} meter`
-            },
-            {
-              label: "Metode",
-              value:
-                selectedMethod ===
-                  "SCAN_QR"
-                  ? "Scan QR"
-                  : "Kode Kelas"
-            }
+            { label: "Jumlah Kelas", value: String(missing.length) },
+            { label: "Ruang Verifikasi", value: verifiedRoom.namaRuang },
+            { label: "Jadwal", value: assignment.scheduleLabel },
+            { label: "Waktu Tiba", value: localTime },
+            { label: "Status", value: attendanceResult.statusLabel }
           ]
         );
 
-        document.getElementById(
-          "assignmentBox"
-        ).classList.remove("show");
-
-        document.getElementById(
-          "confirmPanel"
-        ).classList.remove("show");
-
-        document.getElementById(
-          "classCode"
-        ).value = "";
+        document.getElementById("assignmentBox").classList.remove("show");
+        document.getElementById("confirmPanel").classList.remove("show");
       } catch (error) {
-        console.error(
-          "Absensi gagal disimpan:",
-          error
-        );
-
+        console.error("Gagal menyimpan absensi guru:", error);
         showResult(
           "error",
-          "Absensi Gagal Disimpan",
+          "Absensi Guru Gagal Disimpan",
           [
-            {
-              label: "Pesan",
-              value:
-                error?.message ||
-                "Terjadi kesalahan Firebase."
-            }
+            { label: "Pesan", value: error?.message || "Terjadi kesalahan saat menyimpan data." }
           ]
         );
       } finally {
         button.disabled = false;
-        button.textContent =
-          "✓ Konfirmasi Kehadiran";
+        button.textContent = "✅ Konfirmasi Kehadiran";
       }
     }
 

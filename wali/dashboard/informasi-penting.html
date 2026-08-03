@@ -5,6 +5,7 @@
   <script src="../../config/tenant-config.js"></script>
   <script src="../../config/master-data.js"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
+  <script src="../../js/cahaya-bandwidth.js"></script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -121,7 +122,7 @@
       top:0;
       z-index:20;
       display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
+      grid-template-columns:repeat(6,minmax(0,1fr));
       gap:7px;
       margin:16px 0;
       padding:6px;
@@ -420,6 +421,36 @@
     }
 
 
+
+    .schedule-summary{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      margin-bottom:14px;padding:13px 14px;border:1px solid #dce7f6;border-radius:15px;
+      background:linear-gradient(135deg,#f7faff,#eef5ff);
+    }
+    .schedule-summary strong{display:block;color:var(--ink);font-size:.88rem;font-weight:1000}
+    .schedule-summary span{display:block;margin-top:3px;color:var(--muted);font-size:.7rem;font-weight:750;line-height:1.45}
+    .schedule-refresh{min-height:39px;padding:8px 12px;border:1px solid #d2e2fa;border-radius:11px;background:#fff;color:#1768d7;font-size:.68rem;font-weight:950}
+    .schedule-status{margin-bottom:14px;padding:11px 13px;border:1px solid #e1e9f4;border-radius:13px;background:#f8faff;color:#65758f;font-size:.7rem;font-weight:850;line-height:1.5}
+    .schedule-status.ok{color:#117257;border-color:#cfeee3;background:#effbf7}
+    .schedule-status.error{color:#b4404e;border-color:#ffd4da;background:#fff3f5}
+    .schedule-days{display:grid;gap:13px}
+    .schedule-day{overflow:hidden;border:1px solid #e1e9f5;border-radius:17px;background:#fff;box-shadow:0 6px 17px rgba(35,78,160,.045)}
+    .schedule-day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;background:linear-gradient(135deg,#edf5ff,#f7fbff);border-bottom:1px solid #e5edf8}
+    .schedule-day-head strong{color:#1768d7;font-size:.82rem;font-weight:1000}
+    .schedule-day-head span{color:#7b8aa4;font-size:.62rem;font-weight:850}
+    .schedule-list{display:grid}
+    .schedule-row{display:grid;grid-template-columns:105px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid #edf2f8}
+    .schedule-row:first-child{border-top:0}
+    .schedule-time{color:#1768d7;font-size:.76rem;font-weight:1000;white-space:nowrap}
+    .schedule-main{min-width:0}
+    .schedule-main b{display:block;color:var(--ink);font-size:.83rem;font-weight:1000;line-height:1.4}
+    .schedule-main small{display:block;margin-top:3px;color:var(--muted);font-size:.67rem;font-weight:750;line-height:1.42}
+    .schedule-chip{padding:6px 9px;border:1px solid #dce7f6;border-radius:999px;background:#f7faff;color:#536581;font-size:.58rem;font-weight:950;white-space:nowrap}
+    .program-toolbar{display:grid;grid-template-columns:minmax(190px,1fr) auto;gap:10px;align-items:end;margin-bottom:14px}
+    .program-toolbar label{display:block;margin-bottom:6px;color:#5b6b84;font-size:.68rem;font-weight:950}
+    .program-select{width:100%;min-height:44px;padding:9px 12px;border:1.5px solid #dce6f3;border-radius:12px;background:#f8faff;color:var(--ink);font-size:.8rem;font-weight:900}
+    .program-note{margin-top:14px;padding:12px 13px;border:1px solid #f1d6a7;border-radius:13px;background:#fff8eb;color:#77501d;font-size:.72rem;font-weight:800;line-height:1.55}
+
     @media(max-width:850px){
       .hero{grid-template-columns:1fr}
       .highlight-grid{grid-template-columns:1fr}
@@ -597,6 +628,36 @@
     }
     .rules-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
 
+
+    .schedule-summary{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      margin-bottom:14px;padding:13px 14px;border:1px solid #dce7f6;border-radius:15px;
+      background:linear-gradient(135deg,#f7faff,#eef5ff);
+    }
+    .schedule-summary strong{display:block;color:var(--ink);font-size:.88rem;font-weight:1000}
+    .schedule-summary span{display:block;margin-top:3px;color:var(--muted);font-size:.7rem;font-weight:750;line-height:1.45}
+    .schedule-refresh{min-height:39px;padding:8px 12px;border:1px solid #d2e2fa;border-radius:11px;background:#fff;color:#1768d7;font-size:.68rem;font-weight:950}
+    .schedule-status{margin-bottom:14px;padding:11px 13px;border:1px solid #e1e9f4;border-radius:13px;background:#f8faff;color:#65758f;font-size:.7rem;font-weight:850;line-height:1.5}
+    .schedule-status.ok{color:#117257;border-color:#cfeee3;background:#effbf7}
+    .schedule-status.error{color:#b4404e;border-color:#ffd4da;background:#fff3f5}
+    .schedule-days{display:grid;gap:13px}
+    .schedule-day{overflow:hidden;border:1px solid #e1e9f5;border-radius:17px;background:#fff;box-shadow:0 6px 17px rgba(35,78,160,.045)}
+    .schedule-day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;background:linear-gradient(135deg,#edf5ff,#f7fbff);border-bottom:1px solid #e5edf8}
+    .schedule-day-head strong{color:#1768d7;font-size:.82rem;font-weight:1000}
+    .schedule-day-head span{color:#7b8aa4;font-size:.62rem;font-weight:850}
+    .schedule-list{display:grid}
+    .schedule-row{display:grid;grid-template-columns:105px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid #edf2f8}
+    .schedule-row:first-child{border-top:0}
+    .schedule-time{color:#1768d7;font-size:.76rem;font-weight:1000;white-space:nowrap}
+    .schedule-main{min-width:0}
+    .schedule-main b{display:block;color:var(--ink);font-size:.83rem;font-weight:1000;line-height:1.4}
+    .schedule-main small{display:block;margin-top:3px;color:var(--muted);font-size:.67rem;font-weight:750;line-height:1.42}
+    .schedule-chip{padding:6px 9px;border:1px solid #dce7f6;border-radius:999px;background:#f7faff;color:#536581;font-size:.58rem;font-weight:950;white-space:nowrap}
+    .program-toolbar{display:grid;grid-template-columns:minmax(190px,1fr) auto;gap:10px;align-items:end;margin-bottom:14px}
+    .program-toolbar label{display:block;margin-bottom:6px;color:#5b6b84;font-size:.68rem;font-weight:950}
+    .program-select{width:100%;min-height:44px;padding:9px 12px;border:1.5px solid #dce6f3;border-radius:12px;background:#f8faff;color:var(--ink);font-size:.8rem;font-weight:900}
+    .program-note{margin-top:14px;padding:12px 13px;border:1px solid #f1d6a7;border-radius:13px;background:#fff8eb;color:#77501d;font-size:.72rem;font-weight:800;line-height:1.55}
+
     @media(max-width:850px){
       .rules-resource{grid-template-columns:180px minmax(0,1fr);gap:18px}
       .rules-cover,.rules-cover-fallback{min-height:230px}
@@ -656,6 +717,21 @@
       .duration-table td{font-size:.84rem;line-height:1.55;min-width:145px}
       .warning-box{padding:13px;font-size:.86rem;line-height:1.6}
 
+      .schedule-summary{align-items:flex-start;padding:12px;flex-wrap:wrap}
+      .schedule-summary strong{font-size:.95rem}
+      .schedule-summary span{font-size:.84rem}
+      .schedule-refresh{min-height:43px;font-size:.8rem}
+      .schedule-status{font-size:.84rem}
+      .schedule-row{grid-template-columns:82px minmax(0,1fr);gap:10px;padding:12px}
+      .schedule-time{font-size:.82rem}
+      .schedule-main b{font-size:.93rem}
+      .schedule-main small{font-size:.81rem}
+      .schedule-chip{grid-column:2;justify-self:start;font-size:.7rem}
+      .program-toolbar{grid-template-columns:1fr}
+      .program-toolbar label{font-size:.82rem}
+      .program-select{font-size:.9rem}
+      .program-note{font-size:.83rem}
+
       .rules-resource{grid-template-columns:1fr;gap:17px;padding:15px;border-radius:17px}
       .rules-cover{width:min(230px,72vw);min-height:285px;margin:0 auto}
       .rules-cover-fallback{min-height:285px}
@@ -693,14 +769,16 @@
         <span class="kicker">📌 Wali Santri</span>
         <h1>Informasi Penting</h1>
         <p>
-          Pusat informasi resmi bagi wali santri: agenda pendidikan yang perlu diketahui keluarga,
-          prosedur perizinan, ketentuan penitipan barang, serta Tata Tertib Pesantren.
+          Pusat informasi resmi bagi wali santri: agenda pendidikan, jadwal pembelajaran ananda,
+          program harian pesantren, prosedur perizinan, penitipan barang, serta Tata Tertib Pesantren.
         </p>
       </div>
 </header>
 
     <nav class="nav-tabs" aria-label="Menu Informasi Penting">
       <button class="tab-btn active" data-tab="kalender">📅 Kalender Wali</button>
+      <button class="tab-btn" data-tab="pembelajaran">📚 Jadwal Pembelajaran</button>
+      <button class="tab-btn" data-tab="program">🕌 Program Harian</button>
       <button class="tab-btn" data-tab="izin">📝 Perizinan Khusus</button>
       <button class="tab-btn" data-tab="barang">📦 Penitipan Barang</button>
       <button class="tab-btn" data-tab="disiplin">📘 Tata Tertib Pesantren</button>
@@ -739,6 +817,51 @@
           <div class="agenda-list" id="importantAgendaList">
             <div class="empty">Memuat agenda penting dari Kalender Pendidikan...</div>
           </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="tab-panel" id="tab-pembelajaran">
+      <article class="section-card">
+        <div class="section-head">
+          <div class="title-wrap">
+            <div class="section-icon">📚</div>
+            <div>
+              <h2>Jadwal Pembelajaran Ananda</h2>
+              <p>Jadwal hanya menampilkan kelas santri yang sedang dipilih pada Portal Wali.</p>
+            </div>
+          </div>
+        </div>
+        <div class="body-pad">
+          <div class="schedule-summary">
+            <div><strong id="learningClassLabel">Mendeteksi kelas ananda...</strong><span id="learningStudentLabel">Data jadwal dimuat saat tab ini dibuka agar lebih hemat bandwidth.</span></div>
+            <button class="schedule-refresh" type="button" id="refreshLearningSchedule">↻ Segarkan</button>
+          </div>
+          <div class="schedule-status" id="learningScheduleStatus">Jadwal belum dimuat.</div>
+          <div class="schedule-days" id="learningScheduleList"><div class="empty">Buka tab ini untuk memuat jadwal pembelajaran.</div></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="tab-panel" id="tab-program">
+      <article class="section-card">
+        <div class="section-head">
+          <div class="title-wrap">
+            <div class="section-icon">🕌</div>
+            <div>
+              <h2>Jadwal Program Harian</h2>
+              <p>Rangkaian program pesantren yang menjadi ritme kehidupan santri setiap hari.</p>
+            </div>
+          </div>
+        </div>
+        <div class="body-pad">
+          <div class="program-toolbar">
+            <div><label for="programDaySelect">Tampilkan Program Hari</label><select class="program-select" id="programDaySelect"></select></div>
+            <button class="schedule-refresh" type="button" id="refreshProgramSchedule">↻ Segarkan</button>
+          </div>
+          <div class="schedule-status" id="programScheduleStatus">Jadwal belum dimuat.</div>
+          <div class="schedule-days" id="programScheduleList"><div class="empty">Buka tab ini untuk memuat jadwal program harian.</div></div>
+          <div class="program-note">📌 Waktu dapat menyesuaikan azan, kondisi kegiatan pesantren, agenda khusus, dan arahan pengasuh. Perubahan terbaru akan mengikuti data jadwal yang tersimpan di aplikasi.</div>
         </div>
       </article>
     </section>
@@ -825,38 +948,48 @@
             <div class="section-icon">📦</div>
             <div>
               <h2>SOP Pengantaran & Penitipan Barang</h2>
-              <p>Ketentuan waktu, prosedur penyerahan, batas frekuensi, dan barang yang tidak boleh dikirim.</p>
+              <p>Dokumen SOP/ADM-PCFI/002/2026 • Terbit 22 Juli 2026 • Rev.01.</p>
             </div>
           </div>
           <div class="actions">
-            <button class="btn orange" type="button" onclick="downloadSopPdf('barang')">⬇️ PDF</button>
-            <a class="btn secondary" href="sop-penitipan-barang.docx" download>⬇️ DOCX</a>
+            <a class="btn orange" href="sop-penitipan-barang.pdf" download="SOP-Pengantaran-dan-Penitipan-Barang-PCFI-2026.pdf">⬇️ Unduh PDF Resmi</a>
+            <a class="btn secondary" href="sop-penitipan-barang.pdf" target="_blank" rel="noopener">↗️ Buka Dokumen</a>
           </div>
         </div>
 
         <div class="body-pad">
           <div class="highlight-grid">
-            <div class="highlight-card"><div class="ico">🕓</div><b>Senin-Sabtu</b><span>Pengantaran hanya diterima pukul 16.00-17.00 WIB.</span></div>
-            <div class="highlight-card"><div class="ico">3×</div><b>Maksimal 3 Kali</b><span>Batas penitipan adalah tiga kali dalam satu bulan di luar jadwal kunjungan.</span></div>
-            <div class="highlight-card"><div class="ico">🛡️</div><b>Melalui Pos Keamanan</b><span>Seluruh barang wajib dilaporkan dan dicatat di pos keamanan.</span></div>
+            <div class="highlight-card"><div class="ico">🕐</div><b>Senin-Ahad</b><span>Pengantaran dan penitipan diterima pukul 13.00-17.00 WIB.</span></div>
+            <div class="highlight-card"><div class="ico">3×</div><b>Maksimal 3 Kali</b><span>Maksimal tiga kali dalam sebulan atau satu kali per minggu, di luar kunjungan bulanan.</span></div>
+            <div class="highlight-card"><div class="ico">🛡️</div><b>Melalui Pos Keamanan</b><span>Barang wajib dilaporkan, dicatat, dan diperiksa sebelum diserahkan kepada santri.</span></div>
           </div>
 
           <div class="document-reader">
             <div class="doc-banner orange">
-              <h3>SOP PENGANTARAN & PENITIPAN BARANG</h3>
-              <p>Seluruh wali dan pihak yang mendapat amanah mengantar barang wajib mengikuti ketentuan berikut.</p>
+              <h3>SOP PENGANTARAN DAN PENITIPAN BARANG</h3>
+              <p>Pedoman resmi bagi wali santri, santri, petugas keamanan, dan Naqib/Pengasuh.</p>
             </div>
             <div class="doc-content">
-              <div class="number-list">
-                <div class="number-item"><div class="number-copy"><strong>Waktu penitipan:</strong> Senin–Sabtu pukul <span class="nowrap">16.00–17.00 WIB</span>. Di luar waktu tersebut barang tidak diterima.</div></div>
-                <div class="number-item">Cantumkan nama santri, kelas/asrama, dan daftar isi barang pada selembar catatan, lalu masukkan ke dalam kantong atau plastik titipan.</div>
-                <div class="number-item">Wali atau pihak pengantar wajib melapor dan mengisi buku penitipan barang di pos keamanan depan gerbang pesantren.</div>
-                <div class="number-item">Wali dilarang bertemu langsung dengan santri atau membawa kendaraan ke depan asrama, kecuali dalam kondisi mendesak dan telah memperoleh izin petugas keamanan.</div>
-                <div class="number-item">Penitipan barang dibatasi maksimal tiga kali dalam satu bulan, di luar waktu kunjungan bulanan.</div>
-                <div class="number-item">Pastikan paket tidak berisi barang atau makanan yang dilarang: HP, rokok/vape, novel/anime atau bacaan bertema cinta/dewasa, bumbu penyedap, mi instan, minuman instan, dan makanan terlalu pedas.</div>
-                <div class="number-item">Setelah barang diserahkan dan buku penitipan diisi, wali segera meninggalkan area pesantren.</div>
+              <div class="doc-section">
+                <h4>🎯 Tujuan</h4>
+                <p>Memberikan pedoman yang jelas mengenai tata cara pengantaran dan penitipan barang sehingga tercipta ketertiban administrasi, keamanan barang, serta disiplin kehidupan santri.</p>
               </div>
-              <div class="warning-box">📌 Penitipan barang bukan waktu kunjungan. Ketentuan ini dibuat agar distribusi barang tertib, aman, dan tidak mengganggu program santri.</div>
+              <div class="number-list">
+                <div class="number-item"><div class="number-copy"><strong>Waktu pelayanan:</strong> Senin-Ahad pukul <span class="nowrap">13.00-17.00 WIB</span>. Pengantaran di luar waktu tersebut tidak diterima.</div></div>
+                <div class="number-item"><div class="number-copy"><strong>Di luar jadwal hanya untuk keadaan mendesak:</strong> obat khusus berdasarkan resep dokter bagi santri dengan riwayat penyakit tertentu; seragam/pakaian wajib untuk agenda resmi; atau barang yang diminta langsung oleh pimpinan/pengasuh.</div></div>
+                <div class="number-item"><div class="number-copy"><strong>Di luar jadwal tidak dilayani</strong> untuk makanan favorit, camilan, uang saku, kue ulang tahun, makanan hajatan, pakaian tambahan, perlengkapan mandi, alat tulis, barang tertinggal, karena sedang melewati pesantren, atau karena tidak mengetahui jadwal.</div></div>
+                <div class="number-item">Wali yang mengikuti KMS dan membawa titipan wajib menyerahkannya saat tiba di pesantren, bukan ketika pulang setelah KMS.</div>
+                <div class="number-item">Tuliskan nama santri, kelas/asrama, serta daftar barang pada selembar kertas dan masukkan ke dalam kantong/plastik barang titipan.</div>
+                <div class="number-item">Wali atau pihak yang diberi amanah wajib melapor dan mengisi buku penitipan barang di pos keamanan depan gerbang pesantren.</div>
+                <div class="number-item">Petugas keamanan/Naqib yang piket akan memeriksa seluruh barang sebelum menerima dan menyerahkannya kepada santri.</div>
+                <div class="number-item">Wali dilarang bertemu atau berbincang langsung dengan santri dan dilarang membawa kendaraan ke depan asrama, kecuali keadaan mendesak serta telah mendapat izin petugas.</div>
+                <div class="number-item">Kesempatan mengantarkan barang maksimal tiga kali dalam satu bulan atau satu kali per minggu, di luar waktu kunjungan bulanan.</div>
+                <div class="number-item"><div class="number-copy"><strong>Barang terlarang:</strong> handphone/tab, smart watch, speaker Bluetooth, radio/MP3, rokok/vape/cerutu, bacaan berkonten dewasa, uang tunai besar, perhiasan/barang berharga, senjata tajam, kartu permainan, foto pemain bola/artis, petasan/bahan mudah terbakar, obat yang wajib resep, bumbu penyedap, mi instan, minuman tinggi gula/energi, makanan pedas, dan makanan berbau menyengat.</div></div>
+                <div class="number-item">Barang yang memuat isi terlarang tidak diterima dan dikembalikan kepada wali atau pihak yang mengantarkan.</div>
+                <div class="number-item">Setelah penitipan dan pengisian buku selesai, wali langsung meninggalkan area pesantren.</div>
+                <div class="number-item">Barang diserahkan kepada santri setelah selesai diperiksa dan dipastikan aman secara keseluruhan.</div>
+              </div>
+              <div class="warning-box">📌 Penitipan barang bukan waktu kunjungan. Mohon membaca PDF resmi untuk redaksi dan ketentuan lengkap.</div>
             </div>
           </div>
         </div>
@@ -947,6 +1080,15 @@ const ACADEMIC_MONTHS = [
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const dbRT = firebase.database();
     const CALENDAR_PATH = "kalender_pendidikan/ta_2026_2027/events";
+    const LEARNING_SCHEDULE_PATH = "cahaya_app/jadwal_pelajaran";
+    const DAILY_PROGRAM_PATH = "cahaya_app/jadwal_program_harian";
+    const SUPERVISOR_PROGRAM_PATH = "cahaya_app/jadwal_piket_naqib/putri/program";
+    const DAY_LABELS = {0:"Ahad",1:"Senin",2:"Selasa",3:"Rabu",4:"Kamis",5:"Jumat",6:"Sabtu"};
+    const DAY_KEYS = {0:"ahad",1:"senin",2:"selasa",3:"rabu",4:"kamis",5:"jumat",6:"sabtu"};
+    let learningScheduleLoaded=false;
+    let programScheduleLoaded=false;
+    let learningScheduleRows=[];
+    let dailyProgramRows=[];
 
     let allImportantEvents = [];
     let selectedMonthIndex = getInitialMonthIndex();
@@ -1146,6 +1288,205 @@ const ACADEMIC_MONTHS = [
       }
     }
 
+    function readLocalJson(key){
+      try{return JSON.parse(localStorage.getItem(key)||"{}")||{}}catch(_){return{}}
+    }
+
+    function normalizeText(value){
+      return String(value||"").trim().toLowerCase().replace(/\s+/g," ");
+    }
+
+    function getActiveStudentProfile(){
+      const direct=readLocalJson("cahayaWaliStudentProfile");
+      if(Object.keys(direct).length)return direct;
+      const current=readLocalJson("cahayaCurrentUser");
+      return current.santriAktif||current.student||current.profile||current;
+    }
+
+    function activeStudentName(profile=getActiveStudentProfile()){
+      return profile.namaAnak||profile.namaSantri||profile.label||profile.nama||"Ananda";
+    }
+
+    function detectStudentClass(profile=getActiveStudentProfile()){
+      const direct=profile.kelas||profile.namaKelas||profile.className||profile.rombel||"";
+      if(direct)return String(direct).trim();
+      const target=normalizeText(activeStudentName(profile));
+      const classes=window.CAHAYA_MASTER_DATA?.santriByClass||{};
+      for(const [className,names] of Object.entries(classes)){
+        if((names||[]).some(name=>normalizeText(name)===target))return className;
+      }
+      return "";
+    }
+
+    function detectStudentUnit(profile=getActiveStudentProfile()){
+      const raw=normalizeText(profile.jenisKelamin||profile.gender||profile.unit||detectStudentClass(profile));
+      return raw.includes("putri")||raw.includes("perempuan")||raw==="p"?"putri":"putra";
+    }
+
+    function valuesFromSnapshot(snapshot){
+      const value=snapshot?.val?snapshot.val():snapshot;
+      if(!value)return[];
+      if(Array.isArray(value))return value.filter(Boolean);
+      return Object.entries(value).map(([id,item])=>item&&typeof item==="object"?{id:item.id||id,...item}:{id,nama:id,poin:item});
+    }
+
+    async function cachedRead(path,options={}){
+      if(window.CahayaBandwidth){
+        return window.CahayaBandwidth.readCompat(dbRT,path,options);
+      }
+      let query=dbRT.ref(path);
+      if(options.orderByChild){
+        query=query.orderByChild(options.orderByChild);
+        if(options.equalTo!==undefined)query=query.equalTo(options.equalTo);
+      }
+      if(options.limit)query=query.limitToLast(options.limit);
+      return query.once("value");
+    }
+
+    function renderLearningSchedule(){
+      const list=document.getElementById("learningScheduleList");
+      const status=document.getElementById("learningScheduleStatus");
+      const profile=getActiveStudentProfile();
+      const className=detectStudentClass(profile);
+      document.getElementById("learningClassLabel").textContent=className||"Kelas ananda belum terdeteksi";
+      document.getElementById("learningStudentLabel").textContent=`Jadwal untuk ${activeStudentName(profile)}`;
+      const rows=learningScheduleRows
+        .filter(row=>row&&row.aktif!==false&&(!className||normalizeText(row.kelas)===normalizeText(className)))
+        .sort((a,b)=>(Number(a.hari)-Number(b.hari))||String(a.jamMulai||"").localeCompare(String(b.jamMulai||""))||Number(a.urutan||0)-Number(b.urutan||0));
+      if(!className){
+        status.className="schedule-status error";
+        status.textContent="Kelas ananda belum tersimpan pada profil wali. Silakan perbarui data santri di Manajemen User.";
+        list.innerHTML='<div class="empty">Jadwal tidak dapat difilter tanpa informasi kelas.</div>';
+        return;
+      }
+      if(!rows.length){
+        status.className="schedule-status error";
+        status.textContent=`Belum ditemukan jadwal aktif untuk ${className}.`;
+        list.innerHTML='<div class="empty">Jadwal pembelajaran belum tersedia untuk kelas ini.</div>';
+        return;
+      }
+      status.className="schedule-status ok";
+      status.textContent=`${rows.length} sesi pembelajaran • hanya data ${className}`;
+      const grouped={};
+      rows.forEach(row=>{const day=DAY_LABELS[Number(row.hari)]||row.hariLabel||"Hari";(grouped[day]??=[]).push(row)});
+      list.innerHTML=Object.entries(grouped).map(([day,items])=>`<section class="schedule-day"><div class="schedule-day-head"><strong>${escapeHtml(day)}</strong><span>${items.length} sesi</span></div><div class="schedule-list">${items.map(row=>`<div class="schedule-row"><div class="schedule-time">${escapeHtml(row.jamMulai||"-")} - ${escapeHtml(row.jamSelesai||"-")}</div><div class="schedule-main"><b>${escapeHtml(row.mapel||"Pembelajaran")}</b><small>${escapeHtml(row.guruKode||row.guru||"Guru belum ditetapkan")}${row.sesi?` • ${escapeHtml(row.sesi)}`:""}</small></div><span class="schedule-chip">${escapeHtml(row.jenis||"Jadwal")}</span></div>`).join("")}</div></section>`).join("");
+    }
+
+    async function loadBundledLearningFallback(){
+      const response=await fetch("../../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"force-cache"});
+      if(!response.ok)throw new Error("Template jadwal pembelajaran tidak tersedia");
+      const data=await response.json();
+      return Array.isArray(data)?data:valuesFromSnapshot(data);
+    }
+
+    async function loadLearningSchedule(force=false){
+      if(learningScheduleLoaded&&!force)return;
+      const status=document.getElementById("learningScheduleStatus");
+      status.className="schedule-status";
+      status.textContent="Memuat jadwal pembelajaran ananda...";
+      try{
+        const className=detectStudentClass();
+        const snapshot=await cachedRead(LEARNING_SCHEDULE_PATH,{ttl:6*60*60000,orderByChild:className?"kelas":undefined,equalTo:className||undefined,limit:300,noCache:force});
+        learningScheduleRows=valuesFromSnapshot(snapshot);
+        if(!learningScheduleRows.length)learningScheduleRows=await loadBundledLearningFallback();
+        learningScheduleLoaded=true;
+        renderLearningSchedule();
+      }catch(error){
+        try{
+          learningScheduleRows=await loadBundledLearningFallback();
+          learningScheduleLoaded=true;
+          renderLearningSchedule();
+          status.textContent += " • menampilkan jadwal bawaan aplikasi";
+        }catch(fallbackError){
+          status.className="schedule-status error";
+          status.textContent="Jadwal pembelajaran belum dapat dimuat. Periksa koneksi atau Firebase Rules.";
+          document.getElementById("learningScheduleList").innerHTML='<div class="empty">Data jadwal tidak dapat dibaca saat ini.</div>';
+          console.error(error,fallbackError);
+        }
+      }
+    }
+
+    function normalizeProgramRows(value,unit){
+      if(!value)return[];
+      let source=value;
+      if(source[unit])source=source[unit].program||source[unit].jadwal||source[unit];
+      if(source.program)source=source.program;
+      if(Array.isArray(source))return source.filter(Boolean);
+      return Object.entries(source).map(([id,item])=>item&&typeof item==="object"?{id:item.id||id,...item}:{id,nama:id,poin:item});
+    }
+
+    function renderProgramDayOptions(){
+      const select=document.getElementById("programDaySelect");
+      if(select.options.length)return;
+      const today=new Date().getDay();
+      select.innerHTML=Object.entries(DAY_LABELS).map(([num,label])=>`<option value="${num}" ${Number(num)===today?"selected":""}>${label}</option>`).join("");
+    }
+
+    function renderProgramSchedule(){
+      renderProgramDayOptions();
+      const dayNumber=Number(document.getElementById("programDaySelect").value);
+      const dayKey=DAY_KEYS[dayNumber];
+      const dayLabel=DAY_LABELS[dayNumber];
+      const list=document.getElementById("programScheduleList");
+      const status=document.getElementById("programScheduleStatus");
+      const rows=dailyProgramRows.filter(row=>{
+        if(row.aktif===false)return false;
+        const days=(row.hariAktif||row.hari||row.days||[]);
+        if(!days||!days.length)return true;
+        if(typeof days==="string")return normalizeText(days).includes(dayKey)||normalizeText(days).includes(normalizeText(dayLabel));
+        return days.map(normalizeText).some(day=>day===dayKey||day===normalizeText(dayLabel));
+      }).sort((a,b)=>Number(a.urutan||999)-Number(b.urutan||999)||String(a.mulai||a.waktu||"").localeCompare(String(b.mulai||b.waktu||"")));
+      if(!rows.length){
+        status.className="schedule-status error";
+        status.textContent=`Belum ada program yang tersimpan untuk ${dayLabel}.`;
+        list.innerHTML='<div class="empty">Jadwal program belum tersedia.</div>';
+        return;
+      }
+      status.className="schedule-status ok";
+      status.textContent=`${rows.length} program untuk hari ${dayLabel} • ${detectStudentUnit()==="putri"?"Santriwati":"Santri Putra"}`;
+      list.innerHTML=`<section class="schedule-day"><div class="schedule-day-head"><strong>${dayLabel}</strong><span>Program harian</span></div><div class="schedule-list">${rows.map(row=>{
+        const time=row.waktu||(row.mulai?(row.selesai?`${row.mulai} - ${row.selesai}`:row.mulai):"Seharian");
+        return `<div class="schedule-row"><div class="schedule-time">${escapeHtml(time||"-")}</div><div class="schedule-main"><b>${escapeHtml(row.nama||row.program||row.label||row.id||"Program Santri")}</b><small>${escapeHtml(row.frekuensi||row.keterangan||"Program pesantren")}</small></div><span class="schedule-chip">${escapeHtml((row.hariAktif||[]).length?"Terjadwal":"Harian")}</span></div>`;
+      }).join("")}</div></section>`;
+    }
+
+    async function loadBundledProgramFallback(){
+      const response=await fetch("../../data/jadwal-piket-pengawas-2026-2027.json",{cache:"force-cache"});
+      if(!response.ok)throw new Error("Template program tidak tersedia");
+      const data=await response.json();
+      const preferred=normalizeProgramRows(data,detectStudentUnit());
+      if(preferred.some(row=>row.mulai||row.waktu||row.selesai))return preferred;
+      return normalizeProgramRows(data,"putri");
+    }
+
+    async function loadProgramSchedule(force=false){
+      if(programScheduleLoaded&&!force)return;
+      renderProgramDayOptions();
+      const status=document.getElementById("programScheduleStatus");
+      status.className="schedule-status";
+      status.textContent="Memuat jadwal program harian...";
+      const unit=detectStudentUnit();
+      try{
+        let rows=[];
+        for(const path of [`${DAILY_PROGRAM_PATH}/${unit}`,DAILY_PROGRAM_PATH,SUPERVISOR_PROGRAM_PATH]){
+          try{
+            const snapshot=await cachedRead(path,{ttl:6*60*60000,limit:150,noCache:force});
+            rows=normalizeProgramRows(snapshot.val(),unit);
+            if(rows.some(row=>row.mulai||row.waktu||row.selesai))break;
+          }catch(_){rows=[]}
+        }
+        if(!rows.length||!rows.some(row=>row.mulai||row.waktu||row.selesai))rows=await loadBundledProgramFallback();
+        dailyProgramRows=rows;
+        programScheduleLoaded=true;
+        renderProgramSchedule();
+      }catch(error){
+        status.className="schedule-status error";
+        status.textContent="Jadwal program harian belum dapat dimuat.";
+        document.getElementById("programScheduleList").innerHTML='<div class="empty">Data program tidak dapat dibaca saat ini.</div>';
+        console.error(error);
+      }
+    }
+
     function bindTabs(){
       const buttons=[...document.querySelectorAll(".tab-btn")];
       const panels=[...document.querySelectorAll(".tab-panel")];
@@ -1162,7 +1503,8 @@ const ACADEMIC_MONTHS = [
           });
           panels.forEach(panel=>panel.classList.toggle("active",panel.id===`tab-${target}`));
           button.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
-          if(target==="disiplin"&&!pdfDoc)loadBookPdf().catch(()=>{});
+          if(target==="pembelajaran")loadLearningSchedule();
+          if(target==="program")loadProgramSchedule();
         });
         button.addEventListener("keydown",event=>{
           if(event.key!=="ArrowRight"&&event.key!=="ArrowLeft")return;
@@ -1186,6 +1528,11 @@ const ACADEMIC_MONTHS = [
     els.nextMonth.addEventListener("click",()=>{
       if(selectedMonthIndex<ACADEMIC_MONTHS.length-1){selectedMonthIndex++;renderMonth();}
     });
+
+    document.getElementById("refreshLearningSchedule")?.addEventListener("click",()=>loadLearningSchedule(true));
+    document.getElementById("refreshProgramSchedule")?.addEventListener("click",()=>loadProgramSchedule(true));
+    document.getElementById("programDaySelect")?.addEventListener("change",renderProgramSchedule);
+    renderProgramDayOptions();
 
     function pdfHeader(doc,titleLines,subtitle){
       const pageW=doc.internal.pageSize.getWidth();
@@ -1335,16 +1682,17 @@ const ACADEMIC_MONTHS = [
       },
       barang:{
         title:["SOP","PENITIPAN","BARANG"],
-        subtitle:"Pedoman Pengantaran dan Penitipan Barang Santri",
+        subtitle:"SOP/ADM-PCFI/002/2026 • 22 Juli 2026 • Rev.01",
         sections:[
           {heading:"Ketentuan Penitipan",items:[
-            "Pengantaran diterima Senin-Sabtu pukul 16.00-17.00 WIB. Di luar waktu tersebut tidak diterima.",
-            "Cantumkan nama santri, kelas/asrama, serta daftar isi barang pada catatan yang dimasukkan ke kantong atau plastik.",
-            "Pengantar wajib melapor dan mengisi buku penitipan di pos keamanan.",
-            "Wali dilarang bertemu langsung dengan santri atau membawa kendaraan ke depan asrama tanpa izin petugas.",
-            "Penitipan dibatasi maksimal tiga kali dalam satu bulan di luar waktu kunjungan.",
-            "Paket tidak boleh berisi HP, rokok/vape, bacaan bertema cinta/dewasa, penyedap, mi instan, minuman instan, atau makanan terlalu pedas.",
-            "Setelah penitipan selesai, wali segera meninggalkan area pesantren."
+            "Pengantaran dan penitipan diterima Senin-Ahad pukul 13.00-17.00 WIB.",
+            "Di luar jadwal hanya dilayani untuk obat khusus berdasarkan resep dokter, pakaian wajib agenda resmi, atau barang yang diminta pimpinan/pengasuh.",
+            "Paket wajib diberi catatan nama santri, kelas/asrama, dan daftar barang.",
+            "Pengantar wajib melapor, mengisi buku penitipan di pos keamanan, dan menyerahkan barang untuk diperiksa.",
+            "Wali tidak diperkenankan bertemu langsung dengan santri atau membawa kendaraan ke depan asrama tanpa izin.",
+            "Penitipan maksimal tiga kali dalam satu bulan atau satu kali per minggu di luar kunjungan bulanan.",
+            "Barang terlarang tidak diterima dan dikembalikan kepada pengantar.",
+            "Setelah penitipan selesai, wali langsung meninggalkan area pesantren."
           ]}
         ]
       }

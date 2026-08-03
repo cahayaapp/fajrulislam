@@ -66,7 +66,7 @@
     return opts;
   }
   function safeKey(s){return btoa(unescape(encodeURIComponent(s))).replace(/[^a-zA-Z0-9]/g,'').slice(0,120)}
-  function cacheKey(path,opts){return PREFIX+safeKey(VERSION+'|'+path+'|'+JSON.stringify({start:opts.start,end:opts.end,limit:opts.limit,orderBy:opts.dateField||opts.orderByChild||''}))}
+  function cacheKey(path,opts){return PREFIX+safeKey(VERSION+'|'+path+'|'+JSON.stringify({start:opts.start,end:opts.end,limit:opts.limit,orderBy:opts.dateField||opts.orderByChild||'',equalTo:opts.equalTo}))}
   function loadCache(key,ttl){try{const v=JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null');if(v&&Date.now()-v.t<(ttl||DEFAULT_TTL))return v.v}catch(e){}return undefined}
   function saveCache(key,value,ttl){try{const raw=JSON.stringify({t:Date.now(),v:value});if((ttl||0)>=60*60000)localStorage.setItem(key,raw);else sessionStorage.setItem(key,raw)}catch(e){}}
   function fakeSnapshot(value,key=null){return{key,val:()=>value,exists:()=>value!==null&&value!==undefined&&(typeof value!=='object'||Object.keys(value).length>0),forEach(cb){if(value&&typeof value==='object')Object.entries(value).forEach(([k,v])=>cb(fakeSnapshot(v,k)))}}}

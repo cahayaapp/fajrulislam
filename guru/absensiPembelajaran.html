@@ -1782,6 +1782,75 @@
   let selectedAssignment = null;
   let toastTimer = null;
 
+  function akunMendukungAbsensiGabungan() {
+    return teacherCodeAktif === "MULTAZAM";
+  }
+
+  function kunciSesiGabungan(item = {}) {
+    return [
+      compactIdentity(item.subject || ""),
+      String(item.scheduleStart || ""),
+      String(item.scheduleEnd || ""),
+      compactIdentity(item.sessionLabel || "")
+    ].join("|");
+  }
+
+  function kelompokkanJadwalGabungan(assignments = []) {
+    const normalized = assignments.map(item => ({
+      ...item,
+      isCombined: false,
+      assignments: [item],
+      classNames: [item.className]
+    }));
+
+    if (!akunMendukungAbsensiGabungan()) {
+      return normalized;
+    }
+
+    const groups = new Map();
+
+    normalized.forEach(item => {
+      const key = kunciSesiGabungan(item);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    });
+
+    return [...groups.entries()].map(([key, members]) => {
+      const first = members[0];
+      const classNames = [...new Set(members.map(item => item.className))];
+      const sections = [...new Set(members.map(item => item.section).filter(Boolean))];
+
+      if (members.length === 1) {
+        return first;
+      }
+
+      return {
+        ...first,
+        id: `gabungan|${key}|${classNames.map(compactIdentity).join("-")}`,
+        isCombined: true,
+        assignments: members,
+        classNames,
+        className: `Gabungan ${classNames.length} Kelas`,
+        section: sections.join(" & ") || first.section,
+        classNumber: members.map(item => item.classNumber).join(",")
+      };
+    });
+  }
+
+  function daftarJadwalTerpilih(assignment) {
+    if (!assignment) return [];
+    return Array.isArray(assignment.assignments) && assignment.assignments.length
+      ? assignment.assignments
+      : [assignment];
+  }
+
+  function labelKelasJadwal(assignment) {
+    if (!assignment) return "";
+    return assignment.isCombined
+      ? assignment.classNames.join(" + ")
+      : assignment.className;
+  }
+
   function tanggalLokalHariIni() {
     const sekarang = new Date();
     const tahun = sekarang.getFullYear();
@@ -2163,13 +2232,16 @@
       return;
     }
 
-    classSelect.value =
-      selectedAssignment.className;
+    const classLabel = labelKelasJadwal(selectedAssignment);
+    classSelect.innerHTML = "";
+    classSelect.add(new Option(classLabel, classLabel));
+    classSelect.value = classLabel;
 
     setScheduleHelper(
       `${selectedAssignment.dayLabel}: ` +
       `${selectedAssignment.subject} • ` +
-      `${selectedAssignment.className}`,
+      `${classLabel}` +
+      (selectedAssignment.isCombined ? " • Absensi gabungan otomatis" : ""),
       "ready"
     );
 
@@ -2245,18 +2317,18 @@
       return;
     }
 
-    dailyAssignments =
+    const rawAssignments =
       buildAssignmentsForDay(dayNumber)
         .filter(
           item =>
             item.teacher === teacherCodeAktif
         )
         .sort((a, b) => {
-          const classA =
-            URUTAN_KELAS.indexOf(a.className);
+          const startCompare = String(a.scheduleStart || "").localeCompare(String(b.scheduleStart || ""));
+          if (startCompare) return startCompare;
 
-          const classB =
-            URUTAN_KELAS.indexOf(b.className);
+          const classA = URUTAN_KELAS.indexOf(a.className);
+          const classB = URUTAN_KELAS.indexOf(b.className);
 
           if (classA !== classB) {
             if (classA === -1) return 1;
@@ -2264,11 +2336,10 @@
             return classA - classB;
           }
 
-          return a.subject.localeCompare(
-            b.subject,
-            "id"
-          );
+          return a.subject.localeCompare(b.subject, "id");
         });
+
+    dailyAssignments = kelompokkanJadwalGabungan(rawAssignments);
 
     if (!dailyAssignments.length) {
       scheduleSelect.innerHTML =
@@ -2295,8 +2366,12 @@
       `<option value="">${placeholder}</option>` +
       dailyAssignments
         .map(item => {
-          const label =
-            `${item.subject} • ${item.className}`;
+          const waktu = item.scheduleStart && item.scheduleEnd
+            ? ` • ${item.scheduleStart}–${item.scheduleEnd}`
+            : "";
+          const label = item.isCombined
+            ? `${item.subject} • Gabungan ${item.classNames.length} Kelas${waktu}`
+            : `${item.subject} • ${item.className}${waktu}`;
 
           return (
             `<option value="${item.id}">` +
@@ -2320,12 +2395,16 @@
       applySelectedSchedule();
     } else {
       setScheduleHelper(
-        `${dayLabel}: ditemukan ${dailyAssignments.length} jadwal. Pilih mapel/kelas yang sedang diajarkan.`,
+        akunMendukungAbsensiGabungan()
+          ? `${dayLabel}: sesi yang berlangsung pada waktu dan pelajaran yang sama otomatis digabung.`
+          : `${dayLabel}: ditemukan ${dailyAssignments.length} jadwal. Pilih mapel/kelas yang sedang diajarkan.`,
         "ready"
       );
 
       clearAttendanceForSchedule(
-        `Terdapat ${dailyAssignments.length} jadwal pada ${dayLabel}. Pilih salah satunya.`
+        akunMendukungAbsensiGabungan()
+          ? `Pilih sesi. Semua kelas yang diajar bersamaan akan tampil dalam satu daftar.`
+          : `Terdapat ${dailyAssignments.length} jadwal pada ${dayLabel}. Pilih salah satunya.`
       );
     }
   }
@@ -2445,7 +2524,7 @@
 
     if (assignment) {
       chip.textContent =
-        `${assignment.className} • ${assignment.subject}`;
+        `${labelKelasJadwal(assignment)} • ${assignment.subject}`;
       return;
     }
 
@@ -2626,13 +2705,8 @@
   }
 
   window.tampilkanSantri = function() {
-    const assignment =
-      selectedAssignment ||
-      getSelectedAssignment();
-
-    const kelas =
-      assignment?.className ||
-      document.getElementById("kbmKelas").value;
+    const assignment = selectedAssignment || getSelectedAssignment();
+    const assignments = daftarJadwalTerpilih(assignment);
     const listArea = document.getElementById("santriList");
     const jumlahSantri = document.getElementById("jumlahSantri");
     const btnMarkAll = document.getElementById("btnMarkAll");
@@ -2648,7 +2722,7 @@
     resetSummary();
     updateContextChip();
 
-    if (!kelas) {
+    if (!assignments.length) {
       listArea.innerHTML = emptyState(
         "🏫",
         "Pilih kelas terlebih dahulu",
@@ -2657,19 +2731,34 @@
       return;
     }
 
-    const daftarSantri = Array.isArray(
-      masterDataAkademik.kelas?.[kelas]
-    )
-      ? [...masterDataAkademik.kelas[kelas]]
-      : [];
+    const daftarSantri = [];
+    assignments.forEach(item => {
+      const santriKelas = Array.isArray(masterDataAkademik.kelas?.[item.className])
+        ? masterDataAkademik.kelas[item.className]
+        : [];
 
-    daftarSantri.sort((a, b) => a.localeCompare(b, "id"));
+      santriKelas.forEach(nama => {
+        daftarSantri.push({
+          nama,
+          kelas: item.className,
+          assignmentId: item.id,
+          assignment: item
+        });
+      });
+    });
+
+    daftarSantri.sort((a, b) => {
+      const classA = URUTAN_KELAS.indexOf(a.kelas);
+      const classB = URUTAN_KELAS.indexOf(b.kelas);
+      if (classA !== classB) return classA - classB;
+      return a.nama.localeCompare(b.nama, "id");
+    });
 
     if (!daftarSantri.length) {
       listArea.innerHTML = emptyState(
         "📭",
         "Kelas masih kosong",
-        "Belum ada santri yang tersimpan di kelas ini."
+        "Belum ada santri yang tersimpan di kelas terpilih."
       );
       return;
     }
@@ -2679,11 +2768,14 @@
     searchInput.disabled = false;
     btnClearSearch.disabled = false;
 
-    daftarSantri.forEach((nama, index) => {
+    daftarSantri.forEach((item, index) => {
+      const { nama, kelas, assignmentId } = item;
       const row = document.createElement("div");
       row.className = "santri-row row-hadir";
       row.dataset.nama = nama;
-      row.dataset.search = String(nama).toLowerCase();
+      row.dataset.kelas = kelas;
+      row.dataset.assignmentId = assignmentId;
+      row.dataset.search = `${nama} ${kelas}`.toLowerCase();
 
       const namaElement = document.createElement("div");
       namaElement.className = "santri-name";
@@ -2692,12 +2784,33 @@
       numberElement.className = "student-number";
       numberElement.textContent = String(index + 1).padStart(2, "0");
 
+      const nameWrap = document.createElement("span");
+      nameWrap.style.display = "flex";
+      nameWrap.style.flexDirection = "column";
+      nameWrap.style.gap = "4px";
+      nameWrap.style.minWidth = "0";
+
       const nameText = document.createElement("span");
       nameText.className = "student-name-text";
       nameText.textContent = nama.toLowerCase();
+      nameWrap.appendChild(nameText);
+
+      if (assignment?.isCombined) {
+        const classBadge = document.createElement("small");
+        classBadge.textContent = kelas;
+        classBadge.style.width = "max-content";
+        classBadge.style.maxWidth = "100%";
+        classBadge.style.padding = "3px 8px";
+        classBadge.style.borderRadius = "999px";
+        classBadge.style.background = "#e8f3ff";
+        classBadge.style.color = "#1769aa";
+        classBadge.style.fontWeight = "800";
+        classBadge.style.fontSize = "10px";
+        nameWrap.appendChild(classBadge);
+      }
 
       namaElement.appendChild(numberElement);
-      namaElement.appendChild(nameText);
+      namaElement.appendChild(nameWrap);
 
       const actionGroup = document.createElement("div");
       actionGroup.className = "action-group";
@@ -2721,13 +2834,10 @@
 
         const checkmark = document.createElement("span");
         checkmark.className = "checkmark";
-
         const symbol = document.createElement("span");
         symbol.className = "status-symbol";
-
         const labelText = document.createElement("span");
         labelText.textContent = status.label;
-
         checkmark.appendChild(symbol);
         checkmark.appendChild(labelText);
         label.appendChild(input);
@@ -2737,14 +2847,11 @@
 
       const scoreField = document.createElement("div");
       scoreField.className = "score-field";
-
       const scoreLabelMobile = document.createElement("span");
       scoreLabelMobile.className = "score-label-mobile";
       scoreLabelMobile.textContent = "Nilai Ulangan Harian";
-
       const scoreInputWrap = document.createElement("div");
       scoreInputWrap.className = "score-input-wrap";
-
       const scoreInput = document.createElement("input");
       scoreInput.type = "number";
       scoreInput.className = "daily-score-input";
@@ -2755,18 +2862,15 @@
       scoreInput.placeholder = "—";
       scoreInput.autocomplete = "off";
       scoreInput.setAttribute("aria-label", `Nilai Ulangan Harian ${nama}`);
-
       scoreInput.addEventListener("input", () => {
         const raw = scoreInput.value.trim();
         const nilai = Number(raw);
         const valid = raw === "" || (Number.isFinite(nilai) && nilai >= 0 && nilai <= 100);
         scoreInput.classList.toggle("is-invalid", !valid);
       });
-
       const scoreSuffix = document.createElement("span");
       scoreSuffix.className = "score-suffix";
       scoreSuffix.textContent = "/100";
-
       scoreInputWrap.appendChild(scoreInput);
       scoreInputWrap.appendChild(scoreSuffix);
       scoreField.appendChild(scoreLabelMobile);
@@ -2832,27 +2936,14 @@
   }
 
   window.simpanKehadiran = async function() {
-    const tanggal =
-      document.getElementById("kbmTanggal").value;
+    const tanggal = document.getElementById("kbmTanggal").value;
+    const assignment = selectedAssignment || getSelectedAssignment();
+    const assignments = daftarJadwalTerpilih(assignment);
+    const mapel = assignment?.subject || "";
+    const catatan = document.getElementById("kbmCatatan").value.trim();
+    const barisSantri = [...document.querySelectorAll(".santri-row")];
 
-    const assignment =
-      selectedAssignment ||
-      getSelectedAssignment();
-
-    const kelas =
-      assignment?.className || "";
-
-    const mapel =
-      assignment?.subject || "";
-
-    const catatan =
-      document.getElementById("kbmCatatan").value.trim();
-
-    const barisSantri = [
-      ...document.querySelectorAll(".santri-row")
-    ];
-
-    if (!tanggal || !assignment || !kelas || !mapel) {
+    if (!tanggal || !assignment || !assignments.length || !mapel) {
       showToast(
         "Pilih jadwal mengajar yang tersedia untuk tanggal tersebut.",
         "error",
@@ -2873,12 +2964,10 @@
     const barisNilaiTidakValid = barisSantri.filter((row) => {
       const inputNilai = row.querySelector(".daily-score-input");
       const raw = inputNilai?.value.trim() || "";
-
       if (raw === "") {
         inputNilai?.classList.remove("is-invalid");
         return false;
       }
-
       const nilai = Number(raw);
       const tidakValid = !Number.isFinite(nilai) || nilai < 0 || nilai > 100;
       inputNilai?.classList.toggle("is-invalid", tidakValid);
@@ -2889,13 +2978,11 @@
       const barisPertama = barisNilaiTidakValid[0];
       const namaSantri = barisPertama.dataset.nama || "santri";
       const inputPertama = barisPertama.querySelector(".daily-score-input");
-
       showToast(
         `Nilai ${namaSantri} harus berada antara 0 sampai 100.`,
         "error",
         "Nilai belum valid"
       );
-
       barisPertama.scrollIntoView({ behavior: "smooth", block: "center" });
       setTimeout(() => inputPertama?.focus(), 350);
       return;
@@ -2904,34 +2991,31 @@
     setSaveButtonLoading(true);
 
     try {
-      const izinSnapshot = await get(
-        ref(db, `cahaya_app/izin_sakit_harian/${tanggal}`)
-      );
+      const izinSnapshot = await get(ref(db, `cahaya_app/izin_sakit_harian/${tanggal}`));
       const izinHariIni = izinSnapshot.exists() ? izinSnapshot.val() : {};
       const izinByNama = new Map(
         Object.values(izinHariIni || {})
-          .filter(item =>
-            item &&
-            item.statusAktif !== false &&
-            item.bolehTidakMengikutiPembelajaranHariIni === true
-          )
+          .filter(item => item && item.statusAktif !== false && item.bolehTidakMengikutiPembelajaranHariIni === true)
           .map(item => [compactIdentity(item.namaSantri || item.namaSantriKey || ""), item])
       );
-      let jumlahKoreksiUKS = 0;
 
-      const hasil = barisSantri.map((row) => {
+      let jumlahKoreksiUKS = 0;
+      const hasilSemua = barisSantri.map((row) => {
         const nama = row.dataset.nama;
+        const kelas = row.dataset.kelas;
+        const assignmentId = row.dataset.assignmentId;
         const statusDipilih = row.querySelector('input[type="radio"]:checked');
         const statusAwal = statusDipilih ? statusDipilih.value : "Hadir";
         const izinUKS = izinByNama.get(compactIdentity(nama));
         const status = statusAwal === "Alfa" && izinUKS ? "Sakit" : statusAwal;
         const nilaiRaw = row.querySelector(".daily-score-input")?.value.trim() || "";
         const nilaiUlanganHarian = nilaiRaw === "" ? null : Number(nilaiRaw);
-
         if (status !== statusAwal) jumlahKoreksiUKS += 1;
 
         return {
           nama,
+          kelas,
+          assignmentId,
           status,
           poin: hitungPoin(status, mapel),
           nilaiUlanganHarian,
@@ -2946,74 +3030,86 @@
         };
       });
 
-      const nilaiTerisi = hasil
-        .map((item) => item.nilaiUlanganHarian)
-        .filter((nilai) => Number.isFinite(nilai));
+      const kelasGabungan = assignments.map(item => item.className);
+      const groupId = assignment.isCombined
+        ? `gabungan-${tanggal}-${compactIdentity(mapel)}-${String(assignment.scheduleStart || "").replace(":", "")}`
+        : "";
+      const batchUpdates = {};
 
-      const rataRataNilaiUlanganHarian = nilaiTerisi.length
-        ? Number(
-            (
-              nilaiTerisi.reduce((total, nilai) => total + nilai, 0) /
-              nilaiTerisi.length
-            ).toFixed(2)
-          )
-        : null;
+      assignments.forEach(itemAssignment => {
+        const hasil = hasilSemua
+          .filter(item => item.assignmentId === itemAssignment.id || item.kelas === itemAssignment.className)
+          .map(({ kelas, assignmentId, ...item }) => item);
 
-      const payload = {
-        tanggal,
-        kelas,
+        const nilaiTerisi = hasil
+          .map(item => item.nilaiUlanganHarian)
+          .filter(nilai => Number.isFinite(nilai));
+        const rataRataNilaiUlanganHarian = nilaiTerisi.length
+          ? Number((nilaiTerisi.reduce((total, nilai) => total + nilai, 0) / nilaiTerisi.length).toFixed(2))
+          : null;
 
-        /*
-          Field "sub" dipertahankan agar laporan lama
-          yang masih membaca data.sub tetap dapat bekerja.
-        */
-        sub: kelas,
+        const payload = {
+          tanggal,
+          kelas: itemAssignment.className,
+          sub: itemAssignment.className,
+          mapel: itemAssignment.subject,
+          catatan,
+          guru: namaGuruAktif(),
+          guruKodeKalender: teacherCodeAktif,
+          guruUid: user?.uid || "",
+          jadwalId: itemAssignment.id,
+          hariJadwal: itemAssignment.dayLabel,
+          nomorHariJadwal: itemAssignment.dayNumber,
+          unitPembelajaran: itemAssignment.section,
+          nomorKelasJadwal: itemAssignment.classNumber,
+          sumberJadwal: onlineScheduleRows.length
+            ? "Firebase • cahaya_app/jadwal_pelajaran"
+            : "Jadwal bawaan 2026/2027",
+          tahunAjaran: "2026/2027",
+          jumlahSantri: hasil.length,
+          adaNilaiUlanganHarian: nilaiTerisi.length > 0,
+          jumlahNilaiUlanganHarian: nilaiTerisi.length,
+          rataRataNilaiUlanganHarian,
+          data: hasil,
+          waktuSimpan: new Date().toISOString(),
+          absensiGabungan: Boolean(assignment.isCombined),
+          idAbsensiGabungan: groupId,
+          kelasGabungan,
+          jumlahKelasGabungan: assignments.length
+        };
 
-        mapel,
-        catatan,
+        const savedRef = push(ref(db, "cahaya_app/absensi_pembelajaran"));
+        batchUpdates[`cahaya_app/absensi_pembelajaran/${savedRef.key}`] = payload;
 
-        guru: namaGuruAktif(),
-        guruKodeKalender: teacherCodeAktif,
-        guruUid: user?.uid || "",
-
-        jadwalId: assignment.id,
-        hariJadwal: assignment.dayLabel,
-        nomorHariJadwal: assignment.dayNumber,
-        unitPembelajaran: assignment.section,
-        nomorKelasJadwal: assignment.classNumber,
-        sumberJadwal:
-          onlineScheduleRows.length ? "Firebase • cahaya_app/jadwal_pelajaran" : "Jadwal bawaan 2026/2027",
-
-        tahunAjaran: "2026/2027",
-        jumlahSantri: hasil.length,
-        adaNilaiUlanganHarian: nilaiTerisi.length > 0,
-        jumlahNilaiUlanganHarian: nilaiTerisi.length,
-        rataRataNilaiUlanganHarian,
-        data: hasil,
-        waktuSimpan: new Date().toISOString()
-      };
-
-      const savedRef = await push(
-        ref(db, "cahaya_app/absensi_pembelajaran"),
-        payload
-      );
-      const indexUpdates = {};
-      hasil.forEach(item => {
-        const waliKey = String(item.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-        if(!waliKey || !savedRef.key) return;
-        indexUpdates[`cahaya_app/wali_index/${waliKey}/pembelajaran/${savedRef.key}`] = {...payload,data:[item]};
+        hasil.forEach(item => {
+          const waliKey = String(item.nama || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+          if (!waliKey || !savedRef.key) return;
+          batchUpdates[`cahaya_app/wali_index/${waliKey}/pembelajaran/${savedRef.key}`] = {
+            ...payload,
+            data: [item]
+          };
+        });
       });
-      if(Object.keys(indexUpdates).length) await update(ref(db),indexUpdates);
+
+      await update(ref(db), batchUpdates);
+
+      const suksesGabungan = assignment.isCombined
+        ? `${assignments.length} kelas dan ${hasilSemua.length} santri berhasil disimpan sekaligus.`
+        : "Absensi dan nilai ulangan harian berhasil disimpan.";
 
       showToast(
         jumlahKoreksiUKS
-          ? `Absensi berhasil disimpan. ${jumlahKoreksiUKS} status Alfa otomatis diubah menjadi Sakit berdasarkan izin UKS.`
-          : "Absensi dan nilai ulangan harian berhasil disimpan.",
+          ? `${suksesGabungan} ${jumlahKoreksiUKS} status Alfa otomatis diubah menjadi Sakit berdasarkan izin UKS.`
+          : suksesGabungan,
         "success",
-        "Penyimpanan berhasil"
+        assignment.isCombined ? "Absensi gabungan berhasil" : "Penyimpanan berhasil"
       );
 
-      setTimeout(() => location.reload(), 900);
+      setTimeout(() => location.reload(), 1100);
     } catch (error) {
       console.error("Gagal menyimpan absensi:", error);
       showToast(
