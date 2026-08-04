@@ -2008,7 +2008,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js?v=20260804-v15"></script>
 
   <script>
     const firebaseConfig = window.CAHAYA_CONFIG.firebase;
@@ -2443,59 +2443,37 @@
 
     async function initializeWaliChat() {
       try {
-        const snapshot =
-          await db.collection("users").get();
-
-        const meClean =
-          cleanWaliChatIdentity(getWaliChatIdentity());
-
-        waliChatContacts = [];
-
-        snapshot.forEach(doc => {
-          const user = doc.data() || {};
-          const roles = Array.isArray(user.akses)
-            ? user.akses.map(role => String(role).toLowerCase())
-            : [];
-
-          if (!roles.some(role => WALI_CHAT_ALLOWED_ROLES.has(role))) {
-            return;
-          }
-
-          const actualName =
-            user.label ||
-            user.nama ||
-            user.username ||
-            doc.id;
-
-          if (
-            !actualName ||
-            cleanWaliChatIdentity(actualName) === meClean
-          ) {
-            return;
-          }
-
-          waliChatContacts.push({
+        const meClean = cleanWaliChatIdentity(getWaliChatIdentity());
+        const cacheKey = 'cahaya_wali_chat_directory_v2';
+        let directory = [];
+        try {
+          const cached = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+          if (cached.savedAt && Date.now() - cached.savedAt < 12 * 60 * 60 * 1000 && Array.isArray(cached.rows)) directory = cached.rows;
+        } catch (_) {}
+        if (!directory.length) {
+          const snapshot = await dbRT.ref('cahaya_app/direktori_chat_wali').limitToLast(120).once('value');
+          directory = Object.values(snapshot.val() || {});
+          try { localStorage.setItem(cacheKey, JSON.stringify({savedAt:Date.now(),rows:directory})); } catch (_) {}
+        }
+        waliChatContacts = directory.map(user => {
+          const roles = Array.isArray(user.akses) ? user.akses.map(role => String(role).toLowerCase()) : [];
+          const actualName = user.label || user.nama || user.username || '';
+          return {
             actualName,
-            displayName:
-              user.label ||
-              user.nama ||
-              (user.username ? `@${user.username}` : doc.id),
-            username: user.username || doc.id,
+            displayName:user.label || user.nama || (user.username ? `@${user.username}` : actualName),
+            username:user.username || '',
             roles,
-            photo:
-              user.fotoProfil ||
-              user.foto ||
-              ""
-          });
-        });
-
-        waliChatContacts.sort((a, b) =>
-          a.displayName.localeCompare(b.displayName, "id")
-        );
-
+            photo:user.fotoProfil || user.foto || ''
+          };
+        }).filter(item => item.actualName && item.roles.some(role => WALI_CHAT_ALLOWED_ROLES.has(role)) && cleanWaliChatIdentity(item.actualName) !== meClean)
+          .sort((a,b)=>a.displayName.localeCompare(b.displayName,'id'));
+        renderWaliChatContacts();
         listenToWaliChatRooms();
       } catch (error) {
-        console.error("Live Chat Wali gagal disiapkan:", error);
+        console.warn('Direktori chat wali belum dapat dimuat:', error);
+        waliChatContacts = [];
+        renderWaliChatContacts();
+        listenToWaliChatRooms();
       }
     }
 

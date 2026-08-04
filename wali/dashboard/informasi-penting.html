@@ -1270,8 +1270,8 @@ const ACADEMIC_MONTHS = [
     async function loadCalendar(){
       try{
         const snapshot=window.CahayaBandwidth
-          ? await window.CahayaBandwidth.readCompat(dbRT,CALENDAR_PATH,{ttl:60*60000,limit:500})
-          : await dbRT.ref(CALENDAR_PATH).limitToLast(500).once("value");
+          ? await window.CahayaBandwidth.readCompat(dbRT,CALENDAR_PATH,{ttl:6*60*60000,limit:180})
+          : await dbRT.ref(CALENDAR_PATH).limitToLast(180).once("value");
         const rawEvents=toEvents(snapshot.val());
         allImportantEvents=rawEvents.map(event=>{
           event._classification=classifyImportantEvent(event);

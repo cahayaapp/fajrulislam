@@ -1141,7 +1141,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, get, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, get, set, update, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
@@ -1151,6 +1151,14 @@
   const PATH_MASTER_USRAH = "cahaya_app/master_usrah";
   const PATH_LOG_MENTORING = "cahaya_app/log_mentoring_naqib";
   const PATH_EVALUASI_BULANAN = "cahaya_app/evaluasi_bulanan_naqib";
+
+  function waliIndexKeys(nama){
+    const legacy = String(nama || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const canonical = String(nama || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      .replace(/\bm\.?(?=\s|$)|\b(?:mhd|muh|mohd)\.?(?=\s|$)|\b(?:mohammad|mohamad)\b/g, "muhammad")
+      .replace(/[^a-z0-9]/g, "");
+    return [...new Set([legacy, canonical].filter(Boolean))];
+  }
 
   const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
 
@@ -1889,7 +1897,13 @@
     if (dataLama.supervisorUpdatedAt) payload.supervisorUpdatedAt = dataLama.supervisorUpdatedAt;
 
     try {
-      await set(ref(db, `${PATH_EVALUASI_BULANAN}/${evaluasiKeySaatIni}`), payload);
+      const updates = {
+        [`${PATH_EVALUASI_BULANAN}/${evaluasiKeySaatIni}`]: payload
+      };
+      waliIndexKeys(payload.namaSantri).forEach(key => {
+        updates[`cahaya_app/wali_index/${key}/evaluasi_bulanan/${evaluasiKeySaatIni}`] = payload;
+      });
+      await update(ref(db), updates);
 
       dataEvaluasiTersimpanSaatIni = payload;
 

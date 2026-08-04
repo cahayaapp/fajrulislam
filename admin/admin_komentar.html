@@ -81,115 +81,66 @@
 
 <script>
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
-  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   const dbRT = firebase.database();
-
   const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
-  const adminName = user.label || user.username || "Admin";
+  const adminName = user.label || user.username || 'Admin';
+  let commentRows = {};
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const replies = raw => !raw ? [] : Array.isArray(raw) ? raw.filter(Boolean) : (raw.teks ? [raw] : Object.values(raw).filter(Boolean));
 
-  dbRT.ref('cahaya_app/interaksi_cerita').limitToLast(300).on('value', snap => {
+  dbRT.ref('cahaya_app/interaksi_komentar_admin').limitToLast(300).on('value', snap => {
       document.getElementById('loading').style.display = 'none';
       const container = document.getElementById('postsContainer');
-      container.innerHTML = '';
-      
-      const data = snap.val() || {};
-      const listEvents = Object.keys(data).reverse(); 
-
-      let hasComments = false;
-
-      listEvents.forEach(eventId => {
-          const item = data[eventId];
-          if (!item.komentar) return; 
-          
-          hasComments = true;
-          const postInfo = item.post_info ? item.post_info.teks : "Teks postingan tidak tersedia.";
-          
-          let htmlComments = '';
-          Object.keys(item.komentar).forEach(kId => {
-              const k = item.komentar[kId];
-              const dTime = new Date(k.waktu).toLocaleString('id-ID');
-              
-              // Render Thread Balasan Berkali-kali
-              let replyHtml = '';
-              if (k.balasan) {
-                  Object.keys(k.balasan).forEach(bId => {
-                      const b = k.balasan[bId];
-                      replyHtml += `<div class="reply-box"><b>${b.pengirim}</b>: ${b.teks}</div>`;
-                  });
-              }
-
-              htmlComments += `
-                  <div class="comment-item">
-                      <div class="comment-header">
-                          <div class="comment-author">${k.pengirim} <span class="comment-time">${dTime}</span></div>
-                          <button class="btn-delete" onclick="hapusKomen('${eventId}', '${kId}')">Hapus</button>
-                      </div>
-                      <div class="comment-body">${k.teks}</div>
-                      ${replyHtml}
-                      <div class="reply-input-area">
-                          <input type="text" id="inp_${eventId}_${kId}" placeholder="Tulis balasan sebagai @${adminName}...">
-                          <button onclick="balasKomen('${eventId}', '${kId}')">Balas</button>
-                      </div>
-                  </div>
-              `;
-          });
-
-          container.insertAdjacentHTML('beforeend', `
-              <div class="post-card">
-                  <div class="post-text">
-                      <p>Postingan Terkait:</p>${postInfo}
-                  </div>
-                  <div>${htmlComments}</div>
-              </div>
-          `);
-      });
-
-      if (!hasComments) {
-          container.innerHTML = '<div style="text-align:center; color:#94a3b8; font-style:italic;">Belum ada interaksi komentar.</div>';
+      commentRows = snap.val() || {};
+      const rows = Object.entries(commentRows).map(([commentId,item])=>({commentId,...(item||{})})).sort((a,b)=>new Date(b.waktu||0)-new Date(a.waktu||0));
+      if (!rows.length) {
+          container.innerHTML = '<div style="text-align:center;color:#94a3b8;font-style:italic;">Belum ada interaksi komentar.</div>';
+          return;
       }
+      const groups = {};
+      rows.forEach(row => {
+          const groupKey = `${row.studentKey||'santri'}|${row.eventId||'post'}`;
+          (groups[groupKey] ??= {postText:row.postText||'Teks postingan tidak tersedia.', rows:[]}).rows.push(row);
+      });
+      container.innerHTML = Object.values(groups).map(group => {
+          const htmlComments = group.rows.map(k => {
+              const dTime = new Date(k.waktu||0).toLocaleString('id-ID');
+              const replyHtml = replies(k.balasan).map(b=>`<div class="reply-box"><b>${esc(b.pengirim||'Pesantren')}</b>: ${esc(b.teks||'')}</div>`).join('');
+              return `<div class="comment-item"><div class="comment-header"><div class="comment-author">${esc(k.pengirim||'Wali Santri')} <span class="comment-time">${esc(dTime)}</span></div><button class="btn-delete" onclick="hapusKomen('${k.commentId}')">Hapus</button></div><div class="comment-body">${esc(k.teks||'')}</div>${replyHtml}<div class="reply-input-area"><input type="text" id="inp_${k.commentId}" placeholder="Tulis balasan sebagai @${esc(adminName)}..."><button onclick="balasKomen('${k.commentId}')">Balas</button></div></div>`;
+          }).join('');
+          return `<div class="post-card"><div class="post-text"><p>Postingan Terkait:</p>${esc(group.postText)}</div><div>${htmlComments}</div></div>`;
+      }).join('');
   });
 
-  // FUNGSI BALAS & KIRIM NOTIFIKASI
-  function balasKomen(eventId, commentId) {
-      const inp = document.getElementById(`inp_${eventId}_${commentId}`);
-      const teksBalasan = inp.value.trim();
-      if (!teksBalasan) return;
-
-      dbRT.ref(`cahaya_app/interaksi_cerita/${eventId}/komentar/${commentId}/balasan`).push({
-          teks: teksBalasan,
-          pengirim: "@" + adminName,
-          waktu: new Date().toISOString()
-      }).then(() => {
-          alert("✅ Balasan terkirim!");
-          dbRT.ref(`cahaya_app/interaksi_cerita/${eventId}/komentar/${commentId}`).once('value', snap => {
-              const dataKomen = snap.val();
-              if (dataKomen && dataKomen.username) {
-                  dbRT.ref(`cahaya_app/notifikasi_wali/${dataKomen.username}`).push({
-                      title: "Komentar Anda Dibalas",
-                      desc: `@${adminName}: ${teksBalasan}`,
-                      waktu: new Date().toISOString(),
-                      tipe: "komentar",
-                      eventId: eventId,
-                      dibaca: false
-                  });
-              }
-          });
-      }).catch(err => { alert("Gagal membalas: " + err.message); });
+  async function balasKomen(commentId) {
+      const item = commentRows[commentId];
+      const inp = document.getElementById(`inp_${commentId}`);
+      const teksBalasan = inp?.value.trim();
+      if (!item || !teksBalasan) return;
+      const sourcePath = item.sourcePath || `cahaya_app/interaksi_cerita_wali/${item.studentKey}/${item.eventId}`;
+      const replyId = dbRT.ref(`${sourcePath}/komentar/${commentId}/balasan`).push().key;
+      const payload = {teks:teksBalasan,pengirim:'@'+adminName,username:user.username||adminName,waktu:new Date().toISOString()};
+      const updates = {};
+      updates[`${sourcePath}/komentar/${commentId}/balasan/${replyId}`] = payload;
+      updates[`cahaya_app/interaksi_komentar_admin/${commentId}/balasan/${replyId}`] = payload;
+      if (item.username) {
+          const notifId = dbRT.ref(`cahaya_app/notifikasi_wali/${item.username}`).push().key;
+          updates[`cahaya_app/notifikasi_wali/${item.username}/${notifId}`] = {title:'Komentar Anda Dibalas',desc:`@${adminName}: ${teksBalasan}`,waktu:new Date().toISOString(),tipe:'komentar',eventId:item.eventId,dibaca:false};
+      }
+      try { await dbRT.ref().update(updates); if(inp) inp.value=''; }
+      catch(err){ alert('Gagal membalas: '+err.message); }
   }
 
-  // FUNGSI HAPUS KOMENTAR
-  function hapusKomen(eventId, commentId) {
-      const konfirmasi = confirm("⚠️ Apakah Anda yakin ingin menghapus komentar ini beserta seluruh balasannya?");
-      if (konfirmasi) {
-          dbRT.ref(`cahaya_app/interaksi_cerita/${eventId}/komentar/${commentId}`).remove()
-              .then(() => {
-                  // UI akan otomatis ter-update karena kita menggunakan event listener .on('value') di atas
-                  console.log("Komentar berhasil dihapus.");
-              })
-              .catch(err => {
-                  alert("❌ Gagal menghapus komentar: " + err.message);
-              });
-      }
+  async function hapusKomen(commentId) {
+      const item = commentRows[commentId];
+      if (!item || !confirm('Hapus komentar ini beserta seluruh balasannya?')) return;
+      const sourcePath = item.sourcePath || `cahaya_app/interaksi_cerita_wali/${item.studentKey}/${item.eventId}`;
+      const updates = {};
+      updates[`${sourcePath}/komentar/${commentId}`] = null;
+      updates[`cahaya_app/interaksi_komentar_admin/${commentId}`] = null;
+      try { await dbRT.ref().update(updates); }
+      catch(err){ alert('Gagal menghapus komentar: '+err.message); }
   }
 </script>
 </body>

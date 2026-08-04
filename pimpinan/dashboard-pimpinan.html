@@ -103,7 +103,7 @@
     <section class="hero">
       <div class="hero-row">
         <div class="brand"><div class="brand-icon">✦</div><div><h1>CAHAYA Command Center</h1><p>Pilih tab bidang yang ingin ditinjau. Data laporan baru diunduh setelah tab tersebut dibuka.</p></div></div>
-        <div class="hero-actions"><button class="btn light" onclick="location.href='perizinan-santri.html'">🛡️ Perizinan Santri</button><button class="btn light" onclick="location.href='../supervisor/raport-sdm.html'">👥 Raport SDM</button><button class="btn light" id="refreshBtn" onclick="loadAll()" disabled>↻ Segarkan Tab Aktif</button><button class="btn primary" onclick="exportAll()">⬇ Export Semua</button></div>
+        <div class="hero-actions"><button class="btn light" onclick="location.href='perizinan-santri.html'">🛡️ Perizinan Santri</button><button class="btn light" onclick="location.href='../supervisor/raport-sdm.html'">👥 Raport SDM</button><button class="btn light" id="refreshBtn" onclick="loadAll()" disabled>↻ Segarkan Tab Aktif</button><button class="btn primary" onclick="exportAll()">⬇ Export Data Termuat</button></div>
       </div>
     </section>
 
@@ -219,7 +219,7 @@
         <div class="report-choice">
           <div class="report-choice-field">
             <label for="rankingType">Data ranking yang ditampilkan</label>
-            <select id="rankingType" onchange="renderRankings()">
+            <select id="rankingType" onchange="changeRankingType(this.value)">
               <optgroup label="Kedisiplinan SDM">
                 <option value="teacher">Kedisiplinan Guru</option>
                 <option value="naqib">Kedisiplinan Naqib</option>
@@ -274,7 +274,19 @@
     pelanggaran:["reports","learning","program"],"jurnal-operasional":["healthJournal","sarprasJournal","cleanSecurityJournal"],
     "tindak-sarpras":["sarprasChecklist","sarprasActions"],observasi:["observer"],penindakan:["actions"],
     "tindak-lanjut-sdm":["followups"],keuangan:financeSectionKeys(),
-    ranking:["teacherAttendance","teacherLog","learning","program","reports","classSchedule","journals","naqibSchedule","tahfiz","monthlyScores"]
+    ranking:[]
+  };
+  const RANKING_DATA={
+    teacher:["teacherAttendance","teacherLog","learning","classSchedule"],
+    naqib:["journals","naqibSchedule"],
+    "tahfiz-student":["tahfiz"],
+    "tahfiz-surah":["tahfiz"],
+    "score-student":["learning","monthlyScores"],
+    "discipline-student":["learning","program"],
+    "discipline-usrah":["learning","program"],
+    "low-discipline":["learning","program"],
+    "low-score":["learning","monthlyScores"],
+    "low-tahfiz":["tahfiz"]
   };
 
   const CURRENT_USER=(()=>{try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')||{}}catch(_){return{}}})();
@@ -378,12 +390,15 @@
   const COMMAND_QUERY={
     teacherAttendance:{dateField:"tanggal",limit:300},teacherLog:{dateField:"tanggal",limit:500},learning:{dateField:"tanggal",limit:700},program:{dateField:"tanggal",limit:900},health:{dateField:"tanggalPemeriksaan",limit:500},tahfiz:{dateField:"tanggal",limit:900},journals:{dateField:"tanggal",limit:500,ttl:30000},reports:{dateField:"tanggal",limit:600},actions:{dateField:"tanggalPenindakan",limit:600},monthlyScores:{dateField:"tanggal_ujian",limit:1200},healthJournal:{dateField:"tanggal",limit:250},sarprasJournal:{dateField:"tanggal",limit:250},cleanSecurityJournal:{dateField:"tanggal",limit:250},observer:{dateField:"tanggal",limit:350},followups:{dateField:"tanggal",limit:350},sarprasChecklist:{dateField:"tanggal",limit:350},sarprasActions:{dateField:"tanggalTindakan",limit:350},financePayments:{dateField:"tanggal",limit:600},financeSalesPutra:{dateField:"tanggal",limit:600},financeSalesPutri:{dateField:"tanggal",limit:600}
   };
-  async function commandRead(name,path,noCache=false){if(!db)throw new Error("Firebase belum termuat. Periksa koneksi lalu muat ulang Command Center.");const cfg=COMMAND_QUERY[name]||{};if(window.CahayaBandwidth)return window.CahayaBandwidth.readCompat(db,path,{...cfg,start:cfg.dateField?range.start:undefined,end:cfg.dateField?range.end:undefined,ttl:cfg.ttl||5*60000,noCache});return db.ref(path).once("value")}
+  async function commandRead(name,path,noCache=false){if(!db)throw new Error("Firebase belum termuat. Periksa koneksi lalu muat ulang Command Center.");const cfg=COMMAND_QUERY[name]||{};if(window.CahayaBandwidth)return window.CahayaBandwidth.readCompat(db,path,{...cfg,start:cfg.dateField?range.start:undefined,end:cfg.dateField?range.end:undefined,ttl:cfg.ttl||5*60000,noCache});let q=db.ref(path);if(cfg.dateField)q=q.orderByChild(cfg.dateField).startAt(range.start).endAt(range.end);if(cfg.limit)q=q.limitToLast(Number(cfg.limit));return q.once("value")}
   function sectionLabel(id){return document.querySelector(`#${id} h2`)?.textContent?.trim()||id}
   function updateSectionState(id,state,message=""){const el=document.getElementById(id);if(!el)return;el.dataset.loadState=state;const btn=el.querySelector('.load-section-btn'),panel=el.querySelector('.section-load-panel');if(btn){btn.disabled=state==='loading';btn.textContent=state==='loading'?'⏳ Memuat':state==='loaded'?'↻ Muat Ulang':'⬇ Muat Data'}if(panel){const title=state==='loading'?`Mengambil ${sectionLabel(id)}...`:`Data ${sectionLabel(id)} belum dimuat`;const desc=message||(state==='loading'?'Hanya data pada periode yang dipilih yang sedang diambil.':'Tekan tombol Muat Data. Bagian lain tidak ikut diunduh.');panel.innerHTML=`<div class="load-inner">${state==='loading'?'<div class="mini-spinner"></div>':'<div class="load-icon">📦</div>'}<strong>${esc(title)}</strong><p>${esc(desc)}</p>${state==='idle'?`<button class="btn green" onclick="loadSection('${id}')">Muat ${esc(sectionLabel(id))}</button>`:''}</div>`}}
   function installSectionLoaders(){Object.keys(SECTION_DATA).filter(id=>allowedSections.has(id)).forEach(id=>{const el=document.getElementById(id);if(!el)return;el.dataset.loadState='idle';el.classList.remove('command-active');const body=el.querySelector('.section-body');if(body&&!body.querySelector('.section-load-panel'))body.insertAdjacentHTML('afterbegin','<div class="section-load-panel"></div>');const actions=el.querySelector('.section-actions');if(actions&&!actions.querySelector('.load-section-btn'))actions.insertAdjacentHTML('afterbegin',`<button class="btn load-section-btn" onclick="loadSection('${id}',true)">↻ Muat Ulang</button>`);updateSectionState(id,'idle')});document.querySelectorAll('.nav-chip[href^="#"]').forEach(a=>a.addEventListener('click',event=>{event.preventDefault();const id=a.getAttribute('href').slice(1);if(SECTION_DATA[id])activateCommandTab(id)}))}
   async function activateCommandTab(id,force=false){if(!SECTION_DATA[id]||!allowedSections.has(id))return;activeSectionId=id;document.getElementById('commandWelcome')?.setAttribute('hidden','');document.querySelectorAll('.section').forEach(el=>el.classList.toggle('command-active',el.id===id));document.querySelectorAll('.nav-chip[href^="#"]').forEach(tab=>tab.classList.toggle('active',tab.getAttribute('href')===`#${id}`));const refresh=document.getElementById('refreshBtn');if(refresh)refresh.disabled=false;history.replaceState(null,'',`#${id}`);await loadSection(id,force);document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}window.activateCommandTab=activateCommandTab;
-  async function loadSection(id,force=false){if(!SECTION_DATA[id]||!allowedSections.has(id))return;if(loadingSections.has(id))return;if(loadedSections.has(id)&&!force){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});return}loadingSections.add(id);updateSectionState(id,'loading');try{await Promise.all(SECTION_DATA[id].map(async n=>{const p=PATHS[n];if(!p)return;try{const snap=await commandRead(n,p,force);raw[n]=filterDataByScope(snap.val()||{})}catch(e){console.error(p,e);raw[n]={}}}));loadedSections.add(id);updateSectionState(id,'loaded');$("syncText").textContent=`Sinkron ${new Intl.DateTimeFormat("id-ID",{hour:"2-digit",minute:"2-digit"}).format(new Date())}`;renderAll()}catch(e){console.error(e);updateSectionState(id,'idle','Gagal memuat data. Periksa koneksi lalu coba kembali.')}finally{loadingSections.delete(id)}}window.loadSection=loadSection;
+  function rankingDependencies(type=document.getElementById('rankingType')?.value||'teacher'){return RANKING_DATA[type]||RANKING_DATA.teacher}
+  function sectionDataNames(id){return id==='ranking'?rankingDependencies():SECTION_DATA[id]||[]}
+  async function loadSection(id,force=false){if(!SECTION_DATA[id]||!allowedSections.has(id))return;if(loadingSections.has(id))return;const dataNames=sectionDataNames(id),hasMissing=dataNames.some(n=>!Object.prototype.hasOwnProperty.call(raw,n));if(loadedSections.has(id)&&!force&&!hasMissing){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});return}loadingSections.add(id);updateSectionState(id,'loading');try{await Promise.all(dataNames.map(async n=>{if(!force&&Object.prototype.hasOwnProperty.call(raw,n))return;const p=PATHS[n];if(!p)return;try{const snap=await commandRead(n,p,force);raw[n]=filterDataByScope(snap.val()||{})}catch(e){console.error(p,e);raw[n]={}}}));loadedSections.add(id);updateSectionState(id,'loaded');$("syncText").textContent=`Sinkron ${new Intl.DateTimeFormat("id-ID",{hour:"2-digit",minute:"2-digit"}).format(new Date())}`;renderAll()}catch(e){console.error(e);updateSectionState(id,'idle','Gagal memuat data. Periksa koneksi lalu coba kembali.')}finally{loadingSections.delete(id)}}window.loadSection=loadSection;
+  async function changeRankingType(){const note=$("rankingChoiceNote");if(note)note.textContent='Memuat data ranking yang dipilih saja...';await loadSection('ranking',false);renderRankings()}window.changeRankingType=changeRankingType;
   async function reloadLoadedSections(){const active=activeSectionId;raw={};loadedSections.clear();Object.keys(SECTION_DATA).forEach(id=>updateSectionState(id,'idle'));renderAll();if(active&&allowedSections.has(active))await loadSection(active,true)}
   async function loadAll(){const b=$("refreshBtn");if(!activeSectionId){alert('Pilih salah satu tab laporan terlebih dahulu.');return}if(b){b.disabled=true;b.textContent="⏳ Memuat"}try{await loadSection(activeSectionId,true)}finally{if(b){b.disabled=false;b.textContent="↻ Segarkan Tab Aktif"}$("loading").style.display="none"}}window.loadAll=loadAll;
 
@@ -617,7 +632,27 @@
   function makeStyledSheet(title,rows){const clean=(rows&&rows.length?rows:[{Keterangan:"Tidak ada data pada periode terpilih"}]).map(r=>flatten(r)),headers=[...new Set(clean.flatMap(r=>Object.keys(r)))],aoa=[[`CAHAYA COMMAND CENTER • ${title}`],[`Periode: ${fmtDate(range.start)} – ${fmtDate(range.end)}`],[],headers,...clean.map(r=>headers.map(h=>r[h]??""))],ws=XLSX.utils.aoa_to_sheet(aoa),last=Math.max(0,headers.length-1),border={top:{style:"thin",color:{rgb:"E5EAF2"}},bottom:{style:"thin",color:{rgb:"E5EAF2"}},left:{style:"thin",color:{rgb:"E5EAF2"}},right:{style:"thin",color:{rgb:"E5EAF2"}}};ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:last}},{s:{r:1,c:0},e:{r:1,c:last}}];for(let c=0;c<=last;c++){const a=XLSX.utils.encode_cell({r:0,c}),b=XLSX.utils.encode_cell({r:1,c}),h=XLSX.utils.encode_cell({r:3,c});if(ws[a])ws[a].s={fill:{fgColor:{rgb:"173B6C"}},font:{bold:true,color:{rgb:"FFFFFF"},sz:15},alignment:{vertical:"center",horizontal:"left"}};if(ws[b])ws[b].s={fill:{fgColor:{rgb:"EAF2FF"}},font:{bold:true,color:{rgb:"365B84"}},alignment:{vertical:"center"}};if(ws[h])ws[h].s={fill:{fgColor:{rgb:"DDEBFF"}},font:{bold:true,color:{rgb:"23466B"}},alignment:{wrapText:true,vertical:"center"},border}}for(let r=4;r<aoa.length;r++)for(let c=0;c<=last;c++){const cell=ws[XLSX.utils.encode_cell({r,c})];if(cell)cell.s={font:{color:{rgb:"344B66"},sz:10},alignment:{vertical:"top",wrapText:true},border,fill:r%2===0?{fgColor:{rgb:"FBFDFF"}}:{fgColor:{rgb:"FFFFFF"}}}}ws['!rows']=[{hpt:27},{hpt:20},{hpt:8},{hpt:24}];ws['!cols']=headers.map(h=>({wch:Math.min(42,Math.max(12,String(h).length+3,...clean.slice(0,80).map(r=>String(r[h]??"").length+2)))}));ws['!autofilter']={ref:`A4:${XLSX.utils.encode_col(last)}${aoa.length}`};return ws}
   function appendSheets(wb,type){exportRows(type).forEach(s=>{let name=safeSheet(s.name),base=name,n=2;while(wb.SheetNames.includes(name))name=safeSheet(`${base.slice(0,27)} ${n++}`);XLSX.utils.book_append_sheet(wb,makeStyledSheet(s.name,s.rows),name)})}
   async function exportSection(type){if(!window.XLSX)return alert("Library Excel belum termuat.");const id=EXPORT_SECTION[type];if(id)await loadSection(id);const wb=XLSX.utils.book_new();appendSheets(wb,type);XLSX.writeFile(wb,`CAHAYA-${type}-${range.start}-${range.end}.xlsx`)}window.exportSection=exportSection;
-  async function exportAll(){if(!window.XLSX)return alert("Library Excel belum termuat.");if(!confirm("Export Semua akan memuat seluruh bidang pada periode ini dan memakai bandwidth lebih besar. Lanjutkan?"))return;for(const id of Object.keys(SECTION_DATA).filter(id=>allowedSections.has(id)))await loadSection(id);const wb=XLSX.utils.book_new(),summary=[{Indikator:"Kehadiran Santri",Nilai:pct(model.attendance.classRows.length?model.attendance.classRows.filter(r=>present(r.status)).length/model.attendance.classRows.length*100:NaN)},{Indikator:"Pemeriksaan UKS",Nilai:model.health.rows.length},{Indikator:"Kehadiran Guru",Nilai:pct(avg(model.teachers.rows.map(r=>r.attendance)))},{Indikator:"Setoran Tahfiz",Nilai:model.tahfiz.rawRows.length},{Indikator:"Muroja’ah",Nilai:model.murojaah.rawRows.length},{Indikator:"Temuan Sarpras Belum Ditindak",Nilai:model.sarprasActions.open},{Indikator:"Disiplin Jurnal Naqib",Nilai:pct(model.naqib.slots.length?model.naqib.slots.filter(s=>s.same).length/model.naqib.slots.length*100:NaN)},{Indikator:"Laporan Penindakan",Nilai:model.actions.rows.length},{Indikator:"Tindak Lanjut SDM",Nilai:model.followups.rows.length},{Indikator:"Sisa Tagihan Keuangan",Nilai:financeRows('financeBills').reduce((s,b)=>s+num(b.sisa),0)}];XLSX.utils.book_append_sheet(wb,makeStyledSheet("Ringkasan Pimpinan",summary),"Ringkasan Pimpinan");['attendance','health','teacher','tahfiz','murojaah','naqib','score','violation','opsjournal','sarprasaction','observer','actions','followup','finance','ranking'].filter(t=>allowedSections.has(EXPORT_SECTION[t])).forEach(t=>appendSheets(wb,t));XLSX.writeFile(wb,`CAHAYA-Command-Center-${range.start}-${range.end}.xlsx`)}window.exportAll=exportAll;
+  async function exportAll(){
+    if(!window.XLSX)return alert("Library Excel belum termuat.");
+    const exportTypes=['attendance','health','teacher','tahfiz','murojaah','naqib','score','violation','opsjournal','sarprasaction','observer','actions','followup','finance','ranking']
+      .filter(type=>{const sectionId=EXPORT_SECTION[type];return sectionId&&allowedSections.has(sectionId)&&loadedSections.has(sectionId)});
+    if(!exportTypes.length)return alert("Belum ada data yang dimuat. Buka dan muat minimal satu tab terlebih dahulu.");
+    const summary=[];
+    if(loadedSections.has('kehadiran'))summary.push({Indikator:"Kehadiran Santri",Nilai:pct(model.attendance.classRows.length?model.attendance.classRows.filter(r=>present(r.status)).length/model.attendance.classRows.length*100:NaN)});
+    if(loadedSections.has('uks'))summary.push({Indikator:"Pemeriksaan UKS",Nilai:model.health.rows.length});
+    if(loadedSections.has('guru'))summary.push({Indikator:"Kehadiran Guru",Nilai:pct(avg(model.teachers.rows.map(r=>r.attendance)))});
+    if(loadedSections.has('tahfiz'))summary.push({Indikator:"Setoran Tahfiz",Nilai:model.tahfiz.rawRows.length});
+    if(loadedSections.has('murojaah'))summary.push({Indikator:"Muroja’ah",Nilai:model.murojaah.rawRows.length});
+    if(loadedSections.has('tindak-sarpras'))summary.push({Indikator:"Temuan Sarpras Belum Ditindak",Nilai:model.sarprasActions.open});
+    if(loadedSections.has('naqib'))summary.push({Indikator:"Disiplin Jurnal Naqib",Nilai:pct(model.naqib.slots.length?model.naqib.slots.filter(s=>s.same).length/model.naqib.slots.length*100:NaN)});
+    if(loadedSections.has('penindakan'))summary.push({Indikator:"Laporan Penindakan",Nilai:model.actions.rows.length});
+    if(loadedSections.has('tindak-lanjut-sdm'))summary.push({Indikator:"Tindak Lanjut SDM",Nilai:model.followups.rows.length});
+    if(loadedSections.has('keuangan'))summary.push({Indikator:"Sisa Tagihan Keuangan",Nilai:financeRows('financeBills').reduce((s,b)=>s+num(b.sisa),0)});
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,makeStyledSheet("Ringkasan Data Termuat",summary),"Ringkasan Termuat");
+    exportTypes.forEach(type=>appendSheets(wb,type));
+    XLSX.writeFile(wb,`CAHAYA-Data-Termuat-${range.start}-${range.end}.xlsx`)
+  }window.exportAll=exportAll;
   document.addEventListener("DOMContentLoaded",async()=>{
     const loading=$("loading");
     try{

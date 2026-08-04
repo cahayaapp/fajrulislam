@@ -995,6 +995,25 @@
 
   const PATH_EVALUASI_BULANAN = "cahaya_app/evaluasi_bulanan_naqib";
 
+  function waliIndexKeys(nama){
+    const legacy = String(nama || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const canonical = String(nama || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      .replace(/\bm\.?(?=\s|$)|\b(?:mhd|muh|mohd)\.?(?=\s|$)|\b(?:mohammad|mohamad)\b/g, "muhammad")
+      .replace(/[^a-z0-9]/g, "");
+    return [...new Set([legacy, canonical].filter(Boolean))];
+  }
+
+  async function updateEvaluasiDenganIndeks(id, namaSantri, payload){
+    const updates = {};
+    Object.entries(payload || {}).forEach(([field, value]) => {
+      updates[`${PATH_EVALUASI_BULANAN}/${id}/${field}`] = value;
+      waliIndexKeys(namaSantri).forEach(key => {
+        updates[`cahaya_app/wali_index/${key}/evaluasi_bulanan/${id}/${field}`] = value;
+      });
+    });
+    await update(ref(db), updates);
+  }
+
   const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
 
   let namaLogin =
@@ -1379,7 +1398,7 @@
     };
 
     try {
-      await update(ref(db, `${PATH_EVALUASI_BULANAN}/${selectedRaport.id}`), payload);
+      await updateEvaluasiDenganIndeks(selectedRaport.id, selectedRaport.namaSantri, payload);
 
       Object.assign(selectedRaport, payload);
 
@@ -1455,7 +1474,7 @@
     }
 
     try {
-      await update(ref(db, `${PATH_EVALUASI_BULANAN}/${selectedRaport.id}`), payload);
+      await updateEvaluasiDenganIndeks(selectedRaport.id, selectedRaport.namaSantri, payload);
 
       Object.assign(selectedRaport, payload);
 
