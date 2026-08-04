@@ -92,7 +92,7 @@
   const menuModules={
     academic:['menu-absen-guru','menu-absen-kbm','menu-guru-menulis','menu-prauas','menu-input-soal-uas','menu-nilai','menu-raport','menu-halqah','menu-monitoring-absen-guru'],
     tahfiz:['menu-tahfiz','menu-laporan-murojaah','menu-buku-tahfiz'],
-    nurturing:['menu-absen-asrama','menu-disiplin','menu-mentoring','menu-gamifikasi','menu-jadwal-piket','menu-jurnal-piket','menu-usrah'],
+    nurturing:['menu-absen-asrama','menu-skor-usrah','menu-disiplin','menu-mentoring','menu-gamifikasi','menu-jadwal-piket','menu-jurnal-piket','menu-usrah'],
     counseling:['menu-antrean-kasus','menu-buku-kasus','menu-evaluasi-kasus'],
     health:['menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan','menu-perizinan-uks','menu-stok-obat'],
     permits:['menu-perizinan-santri'],
@@ -100,7 +100,7 @@
     financeSettings:['menu-pengaturan-keuangan'],
     cashier:['menu-kasir'],
     facilities:['menu-jurnal-sarpras','menu-checklist-sarpras','menu-tindak-sarpras'],
-    observer:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-dapur','menu-observer-uks','menu-laporan-observasi'],
+    observer:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-sarpras','menu-observer-dapur','menu-observer-uks','menu-laporan-observasi'],
     assessment:['menu-asesmen-naqib','menu-asesmen-guru','menu-asesmen-santri','menu-asesmen-sdm'],
     media:['menu-komentar','menu-media'],chat:['menu-chat'],pkl:['menu-jurnal-pkl']
   };

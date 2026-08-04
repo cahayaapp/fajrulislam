@@ -312,6 +312,126 @@
       line-height: 1.45;
     }
 
+
+    /* PILIH BANYAK SANTRI */
+    .student-picker {
+      overflow: hidden;
+      border: 1.5px solid #dfe7f3;
+      border-radius: 15px;
+      background: #f8faff;
+      transition: .2s ease;
+    }
+    .student-picker:focus-within {
+      border-color: var(--lp-primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(40,120,255,.10);
+    }
+    .student-picker-top {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 9px;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #e5ebf4;
+    }
+    .student-search {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 12px;
+      color: var(--lp-text);
+      font-size: .8rem;
+      font-weight: 750;
+      outline: none;
+      border: 1px solid #dfe7f3;
+      border-radius: 11px;
+      background: #ffffff;
+    }
+    .student-count {
+      min-width: 96px;
+      padding: 9px 11px;
+      color: #1768d7;
+      font-size: .7rem;
+      font-weight: 950;
+      text-align: center;
+      border: 1px solid #d4e4fb;
+      border-radius: 11px;
+      background: #edf5ff;
+      white-space: nowrap;
+    }
+    .student-options {
+      display: grid;
+      grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 7px;
+      max-height: 245px;
+      overflow: auto;
+      padding: 10px;
+    }
+    .student-option {
+      position: relative;
+      min-width: 0;
+      cursor: pointer;
+    }
+    .student-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .student-option span {
+      min-height: 43px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      color: #52627d;
+      font-size: .7rem;
+      font-weight: 850;
+      line-height: 1.35;
+      border: 1px solid #e1e8f2;
+      border-radius: 11px;
+      background: #ffffff;
+      transition: .16s ease;
+    }
+    .student-option span::before {
+      content: "";
+      width: 17px;
+      height: 17px;
+      flex: 0 0 17px;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-size: .62rem;
+      font-weight: 1000;
+      border: 1.5px solid #bfcde0;
+      border-radius: 5px;
+      background: #ffffff;
+    }
+    .student-option input:checked + span {
+      color: #1768d7;
+      border-color: #aecdff;
+      background: #edf5ff;
+      box-shadow: 0 5px 14px rgba(40,120,255,.10);
+    }
+    .student-option input:checked + span::before {
+      content: "✓";
+      border-color: var(--lp-primary);
+      background: var(--lp-primary);
+    }
+    .student-picker-empty {
+      grid-column: 1/-1;
+      padding: 18px;
+      color: var(--lp-muted);
+      font-size: .74rem;
+      font-weight: 750;
+      text-align: center;
+    }
+    .student-selected-note {
+      padding: 0 11px 10px;
+      color: var(--lp-muted);
+      font-size: .66rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
     /* BIDANG */
     .field-options {
       display: grid;
@@ -686,6 +806,7 @@
       .form-group.full {
         grid-column: auto;
       }
+      .student-options { grid-template-columns: repeat(2,minmax(0,1fr)); max-height: 285px; }
 
       .field-options {
         grid-template-columns: 1fr;
@@ -791,13 +912,20 @@
       </div>
 
       <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label" for="lp_namaPelanggar">
-            👤 Santri Terlapor
+        <div class="form-group full">
+          <label class="form-label" for="lp_searchSantri">
+            👥 Santri Terlapor <span style="color:#71809e;font-weight:750;">(dapat memilih beberapa santri)</span>
           </label>
-          <select class="form-control" id="lp_namaPelanggar">
-            <option value="">-- Pilih Santri --</option>
-          </select>
+          <div class="student-picker">
+            <div class="student-picker-top">
+              <input class="student-search" id="lp_searchSantri" type="search" placeholder="Cari nama santri..." autocomplete="off">
+              <div class="student-count" id="lp_selectedCount">0 dipilih</div>
+            </div>
+            <div class="student-options" id="lp_studentOptions">
+              <div class="student-picker-empty">Memuat daftar santri...</div>
+            </div>
+            <div class="student-selected-note" id="lp_selectedNote">Pilih satu atau beberapa santri yang terlibat dalam kejadian yang sama.</div>
+          </div>
         </div>
 
         <div class="form-group">
@@ -940,6 +1068,8 @@
     let toastTimer = null;
     let buktiFotoData = "";
     let buktiFotoMeta = null;
+    let daftarSantriMaster = [];
+    const santriTerpilih = new Set();
 
     try {
       currentUser = JSON.parse(
@@ -988,6 +1118,53 @@
       }
 
       return [];
+    }
+
+    function renderPilihanSantri(filter = "") {
+      const root = document.getElementById("lp_studentOptions");
+      if (!root) return;
+      const query = String(filter || "").trim().toLowerCase();
+      const rows = daftarSantriMaster.filter(nama =>
+        nama.toLowerCase().includes(query)
+      );
+      root.innerHTML = rows.length
+        ? rows.map(nama => `
+            <label class="student-option">
+              <input type="checkbox" value="${escapeHtml(nama)}" ${santriTerpilih.has(nama) ? "checked" : ""}>
+              <span>${escapeHtml(nama)}</span>
+            </label>
+          `).join("")
+        : '<div class="student-picker-empty">Nama santri tidak ditemukan.</div>';
+      root.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.addEventListener("change", () => {
+          if (input.checked) santriTerpilih.add(input.value);
+          else santriTerpilih.delete(input.value);
+          updatePilihanSantri();
+        });
+      });
+      updatePilihanSantri();
+    }
+
+    function updatePilihanSantri() {
+      const count = document.getElementById("lp_selectedCount");
+      const note = document.getElementById("lp_selectedNote");
+      const total = santriTerpilih.size;
+      if (count) count.textContent = `${total} dipilih`;
+      if (note) {
+        const names = [...santriTerpilih];
+        note.textContent = total
+          ? `${total} santri: ${names.slice(0, 4).join(", ")}${total > 4 ? `, dan ${total - 4} lainnya` : ""}.`
+          : "Pilih satu atau beberapa santri yang terlibat dalam kejadian yang sama.";
+      }
+      const button = document.getElementById("btnLapor");
+      if (button && !button.disabled) updateCriticalState();
+    }
+
+    function resetPilihanSantri() {
+      santriTerpilih.clear();
+      const search = document.getElementById("lp_searchSantri");
+      if (search) search.value = "";
+      renderPilihanSantri();
     }
 
     function isiProfil() {
@@ -1107,17 +1284,20 @@
           a.localeCompare(b, "id")
         );
 
-        const terlapor =
-          document.getElementById("lp_namaPelanggar");
+        daftarSantriMaster = daftarSantri;
 
         const pelapor =
           document.getElementById("lp_namaPelapor");
 
         daftarSantri.forEach(nama => {
-          terlapor.add(new Option(nama, nama));
           pelapor.add(new Option(nama, nama));
         });
 
+        const search = document.getElementById("lp_searchSantri");
+        search?.addEventListener("input", event => {
+          renderPilihanSantri(event.target.value);
+        });
+        renderPilihanSantri();
         sembunyikanLoading();
       } catch (error) {
         console.error("Gagal memuat daftar santri:", error);
@@ -1207,143 +1387,136 @@
         kritis
       );
 
+      const count = santriTerpilih.size;
       button.innerHTML = kritis
-        ? "⚠️ Kirim Laporan KRITIS"
-        : "📢 Kirim Laporan";
+        ? `⚠️ Kirim ${count || ""} Laporan KRITIS`.replace("  ", " ")
+        : count > 1
+          ? `📢 Kirim Laporan untuk ${count} Santri`
+          : "📢 Kirim Laporan";
     };
 
     window.kirimLaporan = async function() {
-      const terlapor =
-        document.getElementById("lp_namaPelanggar").value;
+      const terlaporList = [...santriTerpilih];
+      const pelapor = document.getElementById("lp_namaPelapor").value;
+      const bidang = bidangTerpilih();
+      const keterangan = document.getElementById("lp_keterangan").value.trim();
+      const kritis = document.getElementById("lp_kritis").checked;
 
-      const pelapor =
-        document.getElementById("lp_namaPelapor").value;
-
-      const bidang =
-        bidangTerpilih();
-
-      const keterangan =
-        document.getElementById("lp_keterangan")
-          .value
-          .trim();
-
-      const kritis =
-        document.getElementById("lp_kritis").checked;
-
-      if (!terlapor || !pelapor || !bidang || !keterangan) {
+      if (!terlaporList.length || !pelapor || !bidang || !keterangan) {
         tampilkanToast(
           "error",
           "Laporan belum lengkap",
-          "Lengkapi santri, sumber laporan, bidang, dan kronologi."
+          "Pilih minimal satu santri, sumber laporan, bidang, dan tuliskan kronologi."
         );
         return;
       }
 
       if (
-        terlapor === pelapor &&
-        !pelapor.startsWith("Laporan Langsung")
+        !pelapor.startsWith("Laporan Langsung") &&
+        terlaporList.includes(pelapor)
       ) {
         tampilkanToast(
           "error",
           "Identitas perlu diperiksa",
-          "Santri terlapor dan pelapor tidak boleh sama."
+          "Sumber laporan tidak boleh menjadi salah satu santri terlapor."
         );
         return;
       }
 
-      const button =
-        document.getElementById("btnLapor");
-
+      const button = document.getElementById("btnLapor");
       button.disabled = true;
-      button.innerHTML = "⏳ Mengirim...";
+      button.innerHTML = `⏳ Mengirim ${terlaporList.length} laporan...`;
 
       const now = new Date();
+      const groupRef = push(ref(db, "cahaya_app/log_lapor_inisiatif"));
+      const groupId = groupRef.key;
+      const photoPath = buktiFotoData
+        ? `cahaya_app/bukti_pelanggaran/${groupId}`
+        : "";
+      const evidenceMeta = buktiFotoData
+        ? {
+            ada: true,
+            path: photoPath,
+            nama: buktiFotoMeta?.namaFile || buktiFotoMeta?.nama || "bukti-pelanggaran.jpg",
+            tipe: buktiFotoMeta?.tipeAsli || buktiFotoMeta?.tipe || "image/jpeg",
+            ukuran: buktiFotoMeta?.ukuranAsli || buktiFotoMeta?.ukuran || 0
+          }
+        : null;
 
-      const payload = {
+      const commonPayload = {
         waktu: now.toISOString(),
         tanggal: now.toISOString().slice(0, 10),
-
-        dilaporkan: terlapor,
-        santri: terlapor,
         pelapor,
-
         bidangPelanggaran: bidang,
         kategori: bidang,
-
         keterangan,
         tipe: "Lapor Pelanggaran",
-
         kritis,
         kategoriKhusus: kritis ? "KRITIS" : "",
         prioritas: kritis ? "KRITIS" : "NORMAL",
-
         statusPenanganan: "Menunggu Konselor",
         naqibPendata: namaPenginput,
         namaPenginput,
-
-        buktiFoto: null
+        buktiFoto: evidenceMeta,
+        laporanKelompok: terlaporList.length > 1,
+        grupLaporanId: groupId,
+        jumlahTerlapor: terlaporList.length,
+        daftarTerlapor: terlaporList
       };
 
       try {
-        const savedRef = push(
-          ref(db, "cahaya_app/log_lapor_inisiatif")
-        );
-        const photoPath = buktiFotoData
-          ? `cahaya_app/bukti_pelanggaran/${savedRef.key}`
-          : "";
-        const evidenceMeta = buktiFotoData
-          ? {
-              ada: true,
-              path: photoPath,
-              nama: buktiFotoMeta?.nama || buktiFotoMeta?.name || "bukti-pelanggaran.jpg",
-              tipe: buktiFotoMeta?.tipe || buktiFotoMeta?.type || "image/jpeg",
-              ukuran: buktiFotoMeta?.ukuran || buktiFotoMeta?.size || 0
-            }
-          : null;
-        const finalPayload = {
-          ...payload,
-          buktiFoto: evidenceMeta
-        };
-        const waliKey = String(terlapor || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-        const updates = {
-          [`cahaya_app/log_lapor_inisiatif/${savedRef.key}`]: finalPayload
-        };
+        const updates = {};
+        const ids = [];
+
+        terlaporList.forEach(terlapor => {
+          const savedRef = push(ref(db, "cahaya_app/log_lapor_inisiatif"));
+          const id = savedRef.key;
+          ids.push(id);
+          const finalPayload = {
+            ...commonPayload,
+            dilaporkan: terlapor,
+            santri: terlapor,
+            idLaporan: id
+          };
+          updates[`cahaya_app/log_lapor_inisiatif/${id}`] = finalPayload;
+          const waliKey = String(terlapor || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+          if (waliKey) {
+            updates[`cahaya_app/wali_index/${waliKey}/laporan/${id}`] = finalPayload;
+          }
+        });
+
         if (buktiFotoData) {
           updates[photoPath] = {
             dataUrl: buktiFotoData,
             ...buktiFotoMeta,
-            dibuatPada: now.toISOString()
+            dibuatPada: now.toISOString(),
+            grupLaporanId: groupId
           };
         }
-        if (waliKey) {
-          updates[`cahaya_app/wali_index/${waliKey}/laporan/${savedRef.key}`] = finalPayload;
-        }
+
         await update(ref(db), updates);
 
         tampilkanToast(
           "success",
-          kritis
-            ? "Laporan KRITIS terkirim"
-            : "Laporan terkirim",
-          "Data telah masuk ke antrean Konselor."
+          kritis ? "Laporan KRITIS terkirim" : "Laporan terkirim",
+          `${terlaporList.length} laporan santri telah masuk ke antrean Konselor.`
         );
 
-        document.getElementById("lp_namaPelanggar").value = "";
+        resetPilihanSantri();
         document.getElementById("lp_namaPelapor").value = "";
         document.getElementById("lp_keterangan").value = "";
         document.getElementById("lp_kritis").checked = false;
         hapusBuktiFoto();
-
-        document.querySelectorAll(
-          'input[name="bidangPelanggaran"]'
-        ).forEach(input => {
+        document.querySelectorAll('input[name="bidangPelanggaran"]').forEach(input => {
           input.checked = false;
         });
-
         updateCriticalState();
       } catch (error) {
         console.error("Gagal mengirim laporan:", error);
-
         tampilkanToast(
           "error",
           "Gagal mengirim laporan",
@@ -1351,12 +1524,8 @@
         );
       } finally {
         button.disabled = false;
-
-        if (button.innerHTML.includes("Mengirim")) {
-          updateCriticalState();
-        }
+        updateCriticalState();
       }
-    };
-  </script>
+    };  </script>
 </body>
 </html>

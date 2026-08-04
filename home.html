@@ -1247,6 +1247,20 @@ body{background:linear-gradient(180deg,#f7fbff 0,#f3f7fc 58%,#fff 100%)!importan
 h1,h2,h3,.title{letter-spacing:-.025em!important}.section-title{color:var(--rg-ink)!important}
 button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.primary,.btn-primary{background:linear-gradient(135deg,var(--rg-blue),var(--rg-cyan))!important}
 @media(max-width:780px){body{background:#f5f9fd!important}.dashboard-container,.home-container,.container{padding:10px!important}.hero,.hero-section,.welcome-card{border-radius:20px!important;padding:20px!important}.card,.widget,.panel,.stat-card,.menu-card,.schedule-card{border-radius:17px!important;box-shadow:0 7px 20px rgba(28,67,115,.06)!important}}
+
+/* Penyempurnaan tata letak laptop: ruang terpakai merata dan panel sejajar. */
+@media (min-width: 1101px) {
+  .cahaya-container{max-width:1440px;padding:22px 28px 38px}
+  .home-hero{min-height:258px;padding:32px 38px;margin-bottom:16px}
+  .home-hero h1{font-size:clamp(2rem,3.2vw,2.85rem)}
+  .home-hero p{max-width:760px;line-height:1.62}
+  .widget-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+  .widget{min-height:118px;padding:16px 17px}
+  .operational-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:stretch;margin-bottom:16px}
+  .operational-grid>.home-panel{height:100%}
+  .supervision-body{height:calc(100% - 1px);display:grid;align-content:start}
+  .home-dashboard-grid{grid-template-columns:minmax(0,1.42fr) minmax(360px,.78fr);gap:14px}
+}
 </style>
 </head>
 
@@ -1261,10 +1275,16 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
       </div>
 
       <h1 id="greetingName">Ahlan...</h1>
-   
+      <p class="hero-subtitle">Satu ruang kerja untuk pembelajaran, pengasuhan, pelayanan, dan pemantauan santri yang lebih tertata.</p>
+
+      <div class="hero-foot">
         <div class="hero-foot-item">
           <span class="hero-foot-icon">✦</span>
           <span>Kerja bermakna • Data tertata • Santri terjaga</span>
+        </div>
+        <div class="hero-foot-item">
+          <span class="hero-foot-icon">◷</span>
+          <span id="heroDate">Memuat tanggal...</span>
         </div>
       </div>
     </div>
@@ -1301,7 +1321,23 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
       </div>
     </article>
 
-    
+    <article class="widget calendar-widget">
+      <div class="widget-icon">🗓</div>
+      <div class="widget-copy">
+        <h3>Hari & Tanggal</h3>
+        <div class="value" id="homeDayName">Memuat...</div>
+        <div class="sub-text" id="homeDateShort">Menyiapkan kalender hari ini.</div>
+      </div>
+    </article>
+
+    <article class="widget academic-widget">
+      <div class="widget-icon">🎓</div>
+      <div class="widget-copy">
+        <h3>Periode Akademik</h3>
+        <div class="value">2026/2027</div>
+        <div class="sub-text">Semester Ganjil • Ruang kerja aktif</div>
+      </div>
+    </article>
   </section>
 
   <section class="operational-grid" aria-label="Informasi operasional hari ini">
@@ -2375,6 +2411,10 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
     if (heroDate) {
       heroDate.textContent = tanggalLengkap;
     }
+    const homeDayName = document.getElementById("homeDayName");
+    const homeDateShort = document.getElementById("homeDateShort");
+    if (homeDayName) homeDayName.textContent = new Intl.DateTimeFormat("id-ID", { weekday: "long" }).format(now);
+    if (homeDateShort) homeDateShort.textContent = new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(now);
   }
 
   function pad(value) {

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#2878ff">
+  <title>Observasi Sarpras | CAHAYA APP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900;1000&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="observer.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+  <div id="observerApp"></div>
+  <script>
+    window.OBSERVER_PAGE_CONFIG = {
+      type: "sarpras",
+      title: "Observasi Sarpras",
+      shortTitle: "Sarpras",
+      icon: "🛠️",
+      subtitle: "Pengamatan fungsi, keamanan, kelayakan, kerusakan, dan tindak lanjut sarana prasarana pesantren.",
+      formDescription: "Pilih fasilitas atau area yang diperiksa, kemudian nilai kondisi aktual dan kebutuhan tindak lanjutnya.",
+      fields: [
+        {name:"tanggal",label:"Tanggal",type:"date",required:true},
+        {name:"waktu",label:"Waktu",type:"time",required:true},
+        {name:"area",label:"Area / Unit",type:"select",required:true,placeholder:"Pilih area",options:["Asrama Putra","Asrama Putri","Masjid","Ruang Kelas","Kantor","UKS","Dapur","Ruang Makan","Perpustakaan","Aula","Kamar Mandi","Tempat Wudu","Gudang","Halaman","Pos Keamanan","Pusdiklat","Lainnya"]},
+        {name:"lokasi",label:"Detail Lokasi",placeholder:"Contoh: Kamar mandi blok 2, kelas 4 putra",required:true},
+        {name:"fasilitas",label:"Fasilitas yang Diamati",placeholder:"Contoh: kran air, pintu, kipas, lampu, meja",required:true},
+        {name:"penanggungJawab",label:"PIC / Penanggung Jawab",placeholder:"Nama petugas atau divisi terkait"}
+      ],
+      indicators: [
+        ["Fungsi fasilitas","Fasilitas berfungsi sesuai tujuan dan dapat digunakan dengan baik."],
+        ["Keamanan penggunaan","Tidak terdapat risiko listrik, benda tajam, licin, roboh, bocor, atau bahaya lainnya."],
+        ["Kondisi fisik","Tidak terdapat kerusakan, retak, karat, aus, pecah, atau bagian yang hilang."],
+        ["Kebersihan fasilitas","Fasilitas bersih, tidak berdebu, berlumut, berbau, atau menjadi sumber penyakit."],
+        ["Kerapian instalasi","Kabel, pipa, selang, rak, dan komponen lain terpasang rapi serta terlindungi."],
+        ["Ketersediaan kebutuhan","Jumlah dan kapasitas fasilitas mencukupi kebutuhan pengguna."],
+        ["Kemudahan akses","Fasilitas mudah dijangkau dan tidak terhalang barang atau aktivitas lain."],
+        ["Pemeliharaan rutin","Pemeriksaan dan perawatan berkala telah dilakukan secara tertib."],
+        ["Pencatatan kerusakan","Temuan kerusakan tercatat dengan jelas dan dapat ditindaklanjuti."],
+        ["Kecepatan tindak lanjut","Kerusakan atau kebutuhan perbaikan ditangani sesuai tingkat urgensinya."]
+      ],
+      problemCategories: ["Kerusakan Ringan","Kerusakan Berat","Kelistrikan","Air dan Sanitasi","Bangunan","Perabot","Peralatan","Keamanan Fasilitas","Kekurangan Sarana","Pemeliharaan","Lainnya"]
+    };
+  </script>
+  <script src="observer-common.js"></script>
+</body>
+</html>
