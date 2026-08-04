@@ -960,7 +960,7 @@
         <div class="body-pad">
           <div class="highlight-grid">
             <div class="highlight-card"><div class="ico">🕐</div><b>Senin-Ahad</b><span>Pengantaran dan penitipan diterima pukul 13.00-17.00 WIB.</span></div>
-            <div class="highlight-card"><div class="ico">3×</div><b>Maksimal 3 Kali</b><span>Maksimal tiga kali dalam sebulan atau satu kali per minggu, di luar kunjungan bulanan.</span></div>
+            <div class="highlight-card"><div class="ico">1×</div><b>Maksimal 1 Kali/Pekan</b><span>Penitipan barang maksimal satu kali dalam satu pekan, di luar waktu kunjungan bulanan.</span></div>
             <div class="highlight-card"><div class="ico">🛡️</div><b>Melalui Pos Keamanan</b><span>Barang wajib dilaporkan, dicatat, dan diperiksa sebelum diserahkan kepada santri.</span></div>
           </div>
 
@@ -983,7 +983,7 @@
                 <div class="number-item">Wali atau pihak yang diberi amanah wajib melapor dan mengisi buku penitipan barang di pos keamanan depan gerbang pesantren.</div>
                 <div class="number-item">Petugas keamanan/Naqib yang piket akan memeriksa seluruh barang sebelum menerima dan menyerahkannya kepada santri.</div>
                 <div class="number-item">Wali dilarang bertemu atau berbincang langsung dengan santri dan dilarang membawa kendaraan ke depan asrama, kecuali keadaan mendesak serta telah mendapat izin petugas.</div>
-                <div class="number-item">Kesempatan mengantarkan barang maksimal tiga kali dalam satu bulan atau satu kali per minggu, di luar waktu kunjungan bulanan.</div>
+                <div class="number-item">Kesempatan mengantarkan barang maksimal satu kali dalam satu pekan, di luar waktu kunjungan bulanan.</div>
                 <div class="number-item"><div class="number-copy"><strong>Barang terlarang:</strong> handphone/tab, smart watch, speaker Bluetooth, radio/MP3, rokok/vape/cerutu, bacaan berkonten dewasa, uang tunai besar, perhiasan/barang berharga, senjata tajam, kartu permainan, foto pemain bola/artis, petasan/bahan mudah terbakar, obat yang wajib resep, bumbu penyedap, mi instan, minuman tinggi gula/energi, makanan pedas, dan makanan berbau menyengat.</div></div>
                 <div class="number-item">Barang yang memuat isi terlarang tidak diterima dan dikembalikan kepada wali atau pihak yang mengantarkan.</div>
                 <div class="number-item">Setelah penitipan dan pengisian buku selesai, wali langsung meninggalkan area pesantren.</div>
@@ -1318,6 +1318,24 @@ const ACADEMIC_MONTHS = [
       return "";
     }
 
+    function normalizedStudentKey(value){
+      return String(value||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+    }
+
+    function detectStudentPkbmClass(profile=getActiveStudentProfile()){
+      const direct=profile.kelasPkbm||profile.pkbmClass||profile.kelasPKBM||"";
+      if(direct)return String(direct).trim();
+      const name=activeStudentName(profile);
+      const key=normalizedStudentKey(name);
+      const directMap=window.CAHAYA_MASTER_DATA?.pkbmClassByStudent||{};
+      if(directMap[key])return directMap[key];
+      const classes=window.CAHAYA_MASTER_DATA?.pkbmSantriByClass||{};
+      for(const [className,names] of Object.entries(classes)){
+        if((names||[]).some(item=>normalizedStudentKey(item)===key))return className;
+      }
+      return "";
+    }
+
     function detectStudentUnit(profile=getActiveStudentProfile()){
       const raw=normalizeText(profile.jenisKelamin||profile.gender||profile.unit||detectStudentClass(profile));
       return raw.includes("putri")||raw.includes("perempuan")||raw==="p"?"putri":"putra";
@@ -1347,29 +1365,34 @@ const ACADEMIC_MONTHS = [
       const list=document.getElementById("learningScheduleList");
       const status=document.getElementById("learningScheduleStatus");
       const profile=getActiveStudentProfile();
-      const className=detectStudentClass(profile);
-      document.getElementById("learningClassLabel").textContent=className||"Kelas ananda belum terdeteksi";
-      document.getElementById("learningStudentLabel").textContent=`Jadwal untuk ${activeStudentName(profile)}`;
+      const pondokClass=detectStudentClass(profile);
+      const pkbmClass=detectStudentPkbmClass(profile);
+      const classNames=[pondokClass,pkbmClass].filter(Boolean);
+      document.getElementById("learningClassLabel").textContent=classNames.length?classNames.join(" • "):"Kelas ananda belum terdeteksi";
+      document.getElementById("learningStudentLabel").textContent=`Jadwal pesantren, PKBM, dan ekstrakurikuler untuk ${activeStudentName(profile)}`;
+      const allowed=new Set(classNames.map(normalizeText));
       const rows=learningScheduleRows
-        .filter(row=>row&&row.aktif!==false&&(!className||normalizeText(row.kelas)===normalizeText(className)))
-        .sort((a,b)=>(Number(a.hari)-Number(b.hari))||String(a.jamMulai||"").localeCompare(String(b.jamMulai||""))||Number(a.urutan||0)-Number(b.urutan||0));
-      if(!className){
+        .filter(row=>row&&row.aktif!==false&&allowed.has(normalizeText(row.kelas)))
+        .sort((a,b)=>(Number(a.hari)-Number(b.hari))||String(a.jamMulai||"99:99").localeCompare(String(b.jamMulai||"99:99"))||Number(a.urutan||0)-Number(b.urutan||0));
+      if(!classNames.length){
         status.className="schedule-status error";
-        status.textContent="Kelas ananda belum tersimpan pada profil wali. Silakan perbarui data santri di Manajemen User.";
+        status.textContent="Kelas ananda belum tersimpan pada profil atau data master.";
         list.innerHTML='<div class="empty">Jadwal tidak dapat difilter tanpa informasi kelas.</div>';
         return;
       }
       if(!rows.length){
         status.className="schedule-status error";
-        status.textContent=`Belum ditemukan jadwal aktif untuk ${className}.`;
+        status.textContent=`Belum ditemukan jadwal aktif untuk ${classNames.join(" dan ")}.`;
         list.innerHTML='<div class="empty">Jadwal pembelajaran belum tersedia untuk kelas ini.</div>';
         return;
       }
       status.className="schedule-status ok";
-      status.textContent=`${rows.length} sesi pembelajaran • hanya data ${className}`;
+      status.textContent=`${rows.length} kegiatan • ${pondokClass||"Kelas pesantren belum terdeteksi"}${pkbmClass?` • ${pkbmClass}`:""}`;
       const grouped={};
       rows.forEach(row=>{const day=DAY_LABELS[Number(row.hari)]||row.hariLabel||"Hari";(grouped[day]??=[]).push(row)});
-      list.innerHTML=Object.entries(grouped).map(([day,items])=>`<section class="schedule-day"><div class="schedule-day-head"><strong>${escapeHtml(day)}</strong><span>${items.length} sesi</span></div><div class="schedule-list">${items.map(row=>`<div class="schedule-row"><div class="schedule-time">${escapeHtml(row.jamMulai||"-")} - ${escapeHtml(row.jamSelesai||"-")}</div><div class="schedule-main"><b>${escapeHtml(row.mapel||"Pembelajaran")}</b><small>${escapeHtml(row.guruKode||row.guru||"Guru belum ditetapkan")}${row.sesi?` • ${escapeHtml(row.sesi)}`:""}</small></div><span class="schedule-chip">${escapeHtml(row.jenis||"Jadwal")}</span></div>`).join("")}</div></section>`).join("");
+      const sourceLabel=row=>row.jenis==="pkbm"?"PKBM":row.jenis==="ekskul"?"Ekskul":"Pesantren";
+      const teacherLabel=row=>row.jenis==="ekskul"?"Program pesantren":(row.guruNama||row.guruKode||row.guru||"Guru belum ditetapkan");
+      list.innerHTML=Object.entries(grouped).map(([day,items])=>`<section class="schedule-day"><div class="schedule-day-head"><strong>${escapeHtml(day)}</strong><span>${items.length} kegiatan</span></div><div class="schedule-list">${items.map(row=>`<div class="schedule-row"><div class="schedule-time">${escapeHtml(row.waktuLabel||(row.jamMulai?`${row.jamMulai} - ${row.jamSelesai||""}`:"Terjadwal"))}</div><div class="schedule-main"><b>${escapeHtml(row.mapel||"Pembelajaran")}</b><small>${escapeHtml(teacherLabel(row))}${row.kelas?` • ${escapeHtml(row.kelas)}`:""}</small></div><span class="schedule-chip">${escapeHtml(sourceLabel(row))}</span></div>`).join("")}</div></section>`).join("");
     }
 
     async function loadBundledLearningFallback(){
@@ -1385,21 +1408,33 @@ const ACADEMIC_MONTHS = [
       status.className="schedule-status";
       status.textContent="Memuat jadwal pembelajaran ananda...";
       try{
-        const className=detectStudentClass();
-        const snapshot=await cachedRead(LEARNING_SCHEDULE_PATH,{ttl:6*60*60000,orderByChild:className?"kelas":undefined,equalTo:className||undefined,limit:300,noCache:force});
-        learningScheduleRows=valuesFromSnapshot(snapshot);
-        if(!learningScheduleRows.length)learningScheduleRows=await loadBundledLearningFallback();
+        const classNames=[detectStudentClass(),detectStudentPkbmClass()].filter(Boolean);
+        const all=[];
+        for(const className of classNames){
+          try{
+            const snapshot=await cachedRead(LEARNING_SCHEDULE_PATH,{ttl:6*60*60000,orderByChild:"kelas",equalTo:className,limit:350,noCache:force});
+            all.push(...valuesFromSnapshot(snapshot));
+          }catch(error){console.warn("Jadwal kelas gagal dibaca",className,error)}
+        }
+        learningScheduleRows=[...new Map(all.map(row=>[row.id||`${row.kelas}-${row.hari}-${row.mapel}-${row.jamMulai}`,row])).values()];
+        if(!learningScheduleRows.length){
+          const fallback=await loadBundledLearningFallback();
+          const allowed=new Set(classNames.map(normalizeText));
+          learningScheduleRows=fallback.filter(row=>allowed.has(normalizeText(row.kelas)));
+        }
         learningScheduleLoaded=true;
         renderLearningSchedule();
       }catch(error){
         try{
-          learningScheduleRows=await loadBundledLearningFallback();
+          const fallback=await loadBundledLearningFallback();
+          const allowed=new Set([detectStudentClass(),detectStudentPkbmClass()].filter(Boolean).map(normalizeText));
+          learningScheduleRows=fallback.filter(row=>allowed.has(normalizeText(row.kelas)));
           learningScheduleLoaded=true;
           renderLearningSchedule();
           status.textContent += " • menampilkan jadwal bawaan aplikasi";
         }catch(fallbackError){
           status.className="schedule-status error";
-          status.textContent="Jadwal pembelajaran belum dapat dimuat. Periksa koneksi atau Firebase Rules.";
+          status.textContent="Jadwal pembelajaran belum dapat dimuat.";
           document.getElementById("learningScheduleList").innerHTML='<div class="empty">Data jadwal tidak dapat dibaca saat ini.</div>';
           console.error(error,fallbackError);
         }
@@ -1690,7 +1725,7 @@ const ACADEMIC_MONTHS = [
             "Paket wajib diberi catatan nama santri, kelas/asrama, dan daftar barang.",
             "Pengantar wajib melapor, mengisi buku penitipan di pos keamanan, dan menyerahkan barang untuk diperiksa.",
             "Wali tidak diperkenankan bertemu langsung dengan santri atau membawa kendaraan ke depan asrama tanpa izin.",
-            "Penitipan maksimal tiga kali dalam satu bulan atau satu kali per minggu di luar kunjungan bulanan.",
+            "Penitipan maksimal satu kali dalam satu pekan di luar kunjungan bulanan.",
             "Barang terlarang tidak diterima dan dikembalikan kepada pengantar.",
             "Setelah penitipan selesai, wali langsung meninggalkan area pesantren."
           ]}

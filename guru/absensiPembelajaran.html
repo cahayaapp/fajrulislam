@@ -1767,7 +1767,19 @@
     ],
     HANIF: [
       "hanif"
-    ]
+    ],
+    AHMAD_IMBRON: ["ahmad imbron", "ahmadimbron", "imbron"],
+    ANDRIYANI: ["andriyani", "andriyani kusuma dayanti"],
+    CAPPRY: ["cappry", "cappry yoda pratama"],
+    DELLA: ["della", "della gustia"],
+    EDWIN: ["edwin", "edwin romeo"],
+    EVITA: ["evita", "evita hardyanti"],
+    FENNY: ["fenny", "fenny ayu anggraeni"],
+    LAILA: ["laila", "laila nuzlini"],
+    MANDA: ["manda", "manda saputra"],
+    MARYANA: ["maryana"],
+    NURUL_FADLILAH: ["nurul fadlilah", "nurulfadlilah"],
+    SHAFIRA: ["shafira", "shafira ramadanty"]
   };
 
   let onlineScheduleRows = [];
@@ -1919,6 +1931,8 @@
   }
 
   function detectTeacherCode() {
+    const directCode=String(user?.teacherCode||user?.guruKode||"").trim().toUpperCase();
+    if(directCode)return directCode;
     const candidates = kandidatIdentitasGuru();
 
     let bestMatch = {
@@ -2080,14 +2094,14 @@
   function buildAssignmentsForDay(dayNumber) {
     if (onlineScheduleRows.length) {
       return onlineScheduleRows
-        .filter(row => row && row.aktif !== false && Number(row.hari) === Number(dayNumber))
+        .filter(row => row && row.aktif !== false && row.jenis !== "ekskul" && Number(row.hari) === Number(dayNumber))
         .map((row,index) => {
-          const expectedClass = row.kelas || `Kelas ${row.nomorKelas || ""} ${String(row.unit || "").toUpperCase() === "PUTRI" ? "Putri" : "Putra"}`;
+          const expectedClass = row.kelas || `Kelas ${row.nomorKelas || ""} ${String(row.unit || "").toUpperCase().includes("PUTRI") ? "Putri" : "Putra"}`;
           return {
             id: String(row.id || [row.unit,row.kelas,row.hari,row.mapel,row.guruKode,row.sesi,index].join("|"))
               .toLowerCase().replace(/[^a-z0-9|]+/g,"_"),
             sectionId: String(row.unit || "").toLowerCase(),
-            section: String(row.unit || "").toUpperCase() === "PUTRI" ? "Putri" : "Putra",
+            section: String(row.unit || "").toUpperCase().includes("PUTRI") ? "Putri" : "Putra",
             classNumber: String(row.nomorKelas || String(row.kelas || "").match(/\d+/)?.[0] || ""),
             className: findMasterClassName(expectedClass),
             subject: row.mapel || "Pelajaran",
@@ -2301,7 +2315,7 @@
       return;
     }
 
-    if (dayNumber === 0 || dayNumber === 6) {
+    if (dayNumber === 0) {
       scheduleSelect.innerHTML =
         `<option value="">Tidak ada jadwal KBM pada ${dayLabel}</option>`;
 
@@ -2615,13 +2629,25 @@
       if (scheduleSnapshot.exists()) {
         const value = scheduleSnapshot.val();
         onlineScheduleRows = Array.isArray(value)
-          ? value.filter(Boolean)
-          : Object.entries(value || {}).map(([id,row]) => ({ id, ...(row || {}) }));
+          ? value.filter(Boolean).map(row=>{
+            const copy={...(row||{})};
+            if(["Kelas 3 Putra","Kelas 4 Putra","Kelas 5 Putra"].includes(copy.kelas)&&String(copy.mapel||"").trim().toLowerCase()==="bahasa arab"&&String(copy.guruKode||"").trim().toUpperCase()==="MULTAZAM"){
+              copy.jamMulai="05:10";copy.jamSelesai="06:00";copy.sesi=copy.sesi||"Sesi Pagi";
+            }
+            return copy;
+          })
+          : Object.entries(value || {}).map(([id,row]) => ({ id, ...(row || {}) })).map(row=>{
+            const copy={...(row||{})};
+            if(["Kelas 3 Putra","Kelas 4 Putra","Kelas 5 Putra"].includes(copy.kelas)&&String(copy.mapel||"").trim().toLowerCase()==="bahasa arab"&&String(copy.guruKode||"").trim().toUpperCase()==="MULTAZAM"){
+              copy.jamMulai="05:10";copy.jamSelesai="06:00";copy.sesi=copy.sesi||"Sesi Pagi";
+            }
+            return copy;
+          });
       }
 
       masterDataAkademik = {
         ...dataFirebase,
-        kelas: ambilStrukturKelas(dataFirebase),
+        kelas: { ...(window.CAHAYA_MASTER_DATA?.santriByClass||{}), ...ambilStrukturKelas(dataFirebase) },
         guru: Array.isArray(dataFirebase.guru)
           ? dataFirebase.guru
           : [],

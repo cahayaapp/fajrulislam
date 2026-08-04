@@ -1869,6 +1869,7 @@
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
         <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view', this)">🗓️ Kalender Pendidikan</a>
       </div>
 
       <div class="menu-group">
@@ -2001,6 +2002,7 @@
 
     const mobileShortcutMeta = {
       'menu-home': { icon: '🏠', label: 'Beranda' },
+      'menu-kalender-pendidikan': { icon: '🗓️', label: 'Kalender' },
       'menu-chat': { icon: '💬', label: 'Chat', badge: 'chat' },
       'menu-beranda-wali': { icon: '✨', label: 'Linimasa' },
       'menu-laporan-wali': { icon: '📊', label: 'Laporan' },
@@ -2534,7 +2536,7 @@
 
 
     const ROLE_SIDEBAR_GROUPS = [
-      { key:'umum', label:'Umum', icon:'✦', menus:['menu-home','menu-chat','menu-profil'] },
+      { key:'umum', label:'Umum', icon:'✦', menus:['menu-home','menu-kalender-pendidikan','menu-chat','menu-profil'] },
       { key:'pimpinan', label:'Pimpinan & Pengambilan Keputusan', icon:'📊', roles:['admin','direktur','wakil','yayasan'], menus:['menu-dashboard-pimpinan','menu-laporan-observasi','menu-perizinan-santri'] },
       { key:'supervisor', label:'Supervisor & Pembinaan SDM', icon:'🎯', roles:['admin','direktur','wakil','yayasan','supervisor','cla'], menus:['menu-kontrol-harian','menu-kontrol-pekanan','menu-raport-bulanan','menu-raport-semester','menu-monitoring-absen-guru','menu-raport-sdm','menu-tindak-lanjut-sdm'] },
       { key:'guru', label:'Guru / Akademik', icon:'👨‍🏫', roles:['guru','admin','direktur','wakil'], menus:['menu-absen-guru','menu-absen-kbm','menu-guru-menulis','menu-prauas','menu-input-soal-uas','menu-nilai','menu-raport','menu-halqah'] },
@@ -2741,11 +2743,26 @@
         tambahMenuPeran(['admin','direktur','wakil','yayasan','keuangan'], 'menu-pengaturan-keuangan');
         tambahMenuPeran(['admin','direktur'], 'menu-setup-aplikasi');
         tambahMenuPeran(['admin','direktur','wakil','keuangan','kasir'], 'menu-kasir');
+        if (!myRoles.includes('wali') && !gabunganMenu.includes('menu-kalender-pendidikan')) gabunganMenu.push('menu-kalender-pendidikan');
         if (
           (myRoles.includes('guru') || gabunganMenu.includes('menu-tahfiz')) &&
           !gabunganMenu.includes('menu-laporan-murojaah')
         ) {
           gabunganMenu.push('menu-laporan-murojaah');
+        }
+
+        // Akun khusus seperti guru PKBM dapat dibatasi hanya ke menu tertentu.
+        const allowedMenusUser = Array.isArray(pUserSafe.allowedMenus)
+          ? pUserSafe.allowedMenus.filter(Boolean)
+          : [];
+        if (allowedMenusUser.length) {
+          const whitelist = new Set(allowedMenusUser);
+          for (let i = gabunganMenu.length - 1; i >= 0; i--) {
+            if (!whitelist.has(gabunganMenu[i])) gabunganMenu.splice(i, 1);
+          }
+          allowedMenusUser.forEach(menuId => {
+            if (!gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
+          });
         }
 
         const menuIdsYangTersedia = new Set(

@@ -890,7 +890,10 @@
       .day-cell { min-height: 105px; padding: 6px; }
       .event { font-size: 7.5px; padding: 4px 5px; }
     }
-  </style>
+  
+    .weekly-schedule-card{margin-top:18px;padding:22px;border:1px solid #dbeafe;border-radius:24px;background:linear-gradient(145deg,#fff,#f4f9ff);box-shadow:0 14px 34px rgba(32,85,150,.08)}
+    .weekly-schedule-card h3{margin:0;color:#163a68}.weekly-schedule-card p{margin:6px 0 16px;color:#718198;font-size:.82rem}.weekly-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.weekly-chip{border:1px solid #cfe0f6;background:#fff;color:#285f9b;border-radius:999px;padding:8px 13px;font-weight:800;cursor:pointer}.weekly-chip.active{background:linear-gradient(135deg,#2478ef,#18b9d2);color:#fff;border-color:transparent}.weekly-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}.weekly-item{display:grid;grid-template-columns:78px 1fr auto;gap:10px;align-items:center;padding:12px;border:1px solid #e3ebf5;border-radius:16px;background:#fff}.weekly-time{font-weight:900;color:#216fc6;font-size:.78rem}.weekly-item b{display:block;color:#1d3352}.weekly-item small{display:block;color:#7b889b;margin-top:3px}.weekly-type{font-size:.66rem;font-weight:900;padding:5px 8px;border-radius:999px;background:#eef6ff;color:#316ca8}.read-only-note{margin:0 0 14px;padding:10px 14px;border-radius:14px;background:#eaf7ff;color:#155f96;font-size:.78rem;font-weight:750}
+</style>
 </head>
 
 <body>
@@ -1012,6 +1015,14 @@
         </section>
       </aside>
     </main>
+
+    <section class="weekly-schedule-card" id="weeklyScheduleCard">
+      <div class="read-only-note" id="readOnlyNote" style="display:none">Mode pengurus: kalender ditampilkan untuk dibaca. Perubahan agenda hanya melalui akun pengelola.</div>
+      <h3>Jadwal Mingguan PKBM & Ekstrakurikuler</h3>
+      <p>Data baru dimuat ketika hari dipilih agar tetap hemat kuota Firebase.</p>
+      <div class="weekly-toolbar" id="weeklyDayButtons"></div>
+      <div class="weekly-grid" id="weeklyScheduleList"><div class="empty">Pilih hari untuk melihat jadwal.</div></div>
+    </section>
   </div>
 
   <div class="modal" id="eventModal" aria-hidden="true">
@@ -1118,6 +1129,7 @@
     const ACADEMIC_START = new Date(2026, 6, 1);  // 1 Juli 2026
     const ACADEMIC_END = new Date(2027, 5, 30);   // 30 Juni 2027
     const TODAY = new Date();
+    const READ_ONLY = new URLSearchParams(location.search).get("mode") === "view";
 
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
@@ -1555,13 +1567,14 @@
         <div class="detail-row"><b>Sumber</b><span>${event.source === "otomatis" ? "Agenda rutin otomatis — dapat disesuaikan" : event.generatedId ? "Agenda otomatis yang telah disesuaikan" : "Kalender Pendidikan Firebase"}</span></div>
       `;
 
-      els.eventModalActions.innerHTML = `
+      els.eventModalActions.innerHTML = READ_ONLY ? '<button class="btn secondary" type="button" onclick="document.getElementById(\'eventModal\').classList.remove(\'show\')">Tutup</button>' : `
         <button class="btn ghost-danger" type="button" id="deleteEventBtn">Hapus Agenda</button>
         <button class="btn" type="button" id="editEventBtn">Edit / Pindah Tanggal</button>
       `;
-
-      document.getElementById("editEventBtn").addEventListener("click", () => openEditModal(event));
-      document.getElementById("deleteEventBtn").addEventListener("click", () => deleteEvent(event));
+      if(!READ_ONLY){
+        document.getElementById("editEventBtn")?.addEventListener("click", () => openEditModal(event));
+        document.getElementById("deleteEventBtn")?.addEventListener("click", () => deleteEvent(event));
+      }
 
       els.eventModal.classList.add("show");
       els.eventModal.setAttribute("aria-hidden", "false");
@@ -1838,6 +1851,31 @@
         else closeModal();
       }
     });
+
+
+    let weeklyScheduleCache=null;
+    async function loadWeeklySchedule(dayNumber){
+      const list=document.getElementById("weeklyScheduleList");
+      list.innerHTML='<div class="empty">Memuat jadwal...</div>';
+      try{
+        if(!weeklyScheduleCache){
+          const response=await fetch("data/jadwal-pelajaran-awal-2026-2027.json",{cache:"force-cache"});
+          if(!response.ok)throw new Error("Jadwal bawaan tidak tersedia");
+          weeklyScheduleCache=await response.json();
+        }
+        const items=(weeklyScheduleCache||[]).filter(row=>row.aktif!==false&&Number(row.hari)===Number(dayNumber)&&["pkbm","ekskul"].includes(row.jenis));
+        list.innerHTML=items.length?items.sort((a,b)=>String(a.jamMulai||"99:99").localeCompare(String(b.jamMulai||"99:99"))||String(a.kelas).localeCompare(String(b.kelas))).map(row=>`<article class="weekly-item"><div class="weekly-time">${row.waktuLabel||(row.jamMulai?`${row.jamMulai}–${row.jamSelesai}`:"Terjadwal")}</div><div><b>${row.mapel}</b><small>${row.kelas}${row.guruKode&&row.jenis==="pkbm"?` • ${row.guruKode}`:""}</small></div><span class="weekly-type">${row.jenis==="pkbm"?"PKBM":"Ekskul"}</span></article>`).join(""):'<div class="empty">Tidak ada jadwal PKBM atau ekstrakurikuler pada hari ini.</div>';
+      }catch(error){list.innerHTML=`<div class="empty">Jadwal belum dapat dimuat: ${error.message}</div>`}
+    }
+    function setupWeeklySchedule(){
+      const labels={1:"Senin",2:"Selasa",3:"Rabu",4:"Kamis",5:"Jumat",6:"Sabtu"};
+      const box=document.getElementById("weeklyDayButtons");
+      box.innerHTML=Object.entries(labels).map(([n,label])=>`<button class="weekly-chip" data-day="${n}">${label}</button>`).join("");
+      box.addEventListener("click",event=>{const button=event.target.closest(".weekly-chip");if(!button)return;box.querySelectorAll(".weekly-chip").forEach(item=>item.classList.toggle("active",item===button));loadWeeklySchedule(Number(button.dataset.day));});
+      const today=new Date().getDay();(box.querySelector(`[data-day="${today>=1&&today<=6?today:5}"]`)||box.querySelector('[data-day="5"]')).click();
+      if(READ_ONLY){document.getElementById("readOnlyNote").style.display="block";document.getElementById("editModal").style.display="none";}
+    }
+    setupWeeklySchedule();
 
     loadCalendar();
   </script>
