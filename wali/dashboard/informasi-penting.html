@@ -1121,44 +1121,102 @@ const ACADEMIC_MONTHS = [
     }
 
     function parseLocalDate(value){
-      if(!value)return null;
+      if(value===null||value===undefined||value==="")return null;
+      if(value instanceof Date)return Number.isNaN(value.getTime())?null:value;
+      if(typeof value==="object"){
+        if(typeof value.toDate==="function"){
+          const converted=value.toDate();
+          return converted instanceof Date&&!Number.isNaN(converted.getTime())?converted:null;
+        }
+        const seconds=value.seconds??value._seconds;
+        if(Number.isFinite(Number(seconds))){
+          const d=new Date(Number(seconds)*1000);
+          return Number.isNaN(d.getTime())?null:d;
+        }
+        return parseLocalDate(value.date??value.tanggal??value.value??value.timestamp??value.milliseconds);
+      }
+      if(typeof value==="number"||/^\d{10,13}$/.test(String(value).trim())){
+        const raw=Number(value);
+        const millis=raw<100000000000?raw*1000:raw;
+        const d=new Date(millis);
+        return Number.isNaN(d.getTime())?null:d;
+      }
       const text=String(value).trim();
-      const match=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      let match=text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T\s].*)?$/);
       if(match){
         const d=new Date(Number(match[1]),Number(match[2])-1,Number(match[3]));
+        return Number.isNaN(d.getTime())?null:d;
+      }
+      match=text.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+      if(match){
+        const d=new Date(Number(match[3]),Number(match[2])-1,Number(match[1]));
+        return Number.isNaN(d.getTime())?null:d;
+      }
+      const monthNames={januari:0,februari:1,maret:2,april:3,mei:4,juni:5,juli:6,agustus:7,september:8,oktober:9,november:10,desember:11};
+      match=text.toLowerCase().match(/^(\d{1,2})\s+(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\s+(\d{4})$/);
+      if(match){
+        const d=new Date(Number(match[3]),monthNames[match[2]],Number(match[1]));
         return Number.isNaN(d.getTime())?null:d;
       }
       const d=new Date(text);
       return Number.isNaN(d.getTime())?null:d;
     }
 
+    function dateFromEventKey(value){
+      const text=String(value||"");
+      const match=text.match(/(?:^|[^0-9])(20\d{2})[-_/.](\d{1,2})[-_/.](\d{1,2})(?:[^0-9]|$)/);
+      if(!match)return"";
+      return `${match[1]}-${String(match[2]).padStart(2,"0")}-${String(match[3]).padStart(2,"0")}`;
+    }
+
     function isoDate(date){
       return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
     }
 
-    function normalizeEvent(raw={},id=""){
-      const date=raw.date||raw.tanggal||"";
-      const startDate=raw.startDate||raw.start||raw.mulai||date;
-      const endDate=raw.endDate||raw.end||raw.selesai||startDate;
-      const title=raw.title||raw.nama||raw.name||"Agenda Kalender";
+    function normalizeEvent(raw={},id="",inheritedDate=""){
+      const source=raw&&typeof raw==="object"?raw:{title:String(raw||"")};
+      const keyDate=dateFromEventKey(id)||inheritedDate;
+      const date=source.date||source.tanggal||source.tanggalKegiatan||source.eventDate||source.dateKey||keyDate||"";
+      const startDate=source.startDate||source.start||source.mulai||source.tanggalMulai||source.start_date||date;
+      const endDate=source.endDate||source.end||source.selesai||source.tanggalSelesai||source.end_date||startDate;
+      const title=source.title||source.judul||source.namaKegiatan||source.nama||source.name||source.agenda||"Agenda Kalender";
       return {
-        id:raw.id||id,
+        id:source.id||id,
         title,
-        type:String(raw.type||raw.jenis||"").toLowerCase(),
+        type:String(source.type||source.jenis||source.kategori||"").toLowerCase(),
         date:date||startDate,
         startDate,
         endDate,
-        description:raw.description||raw.keterangan||raw.note||"",
-        effectMode:String(raw.effectMode||raw.dampak||"none").toLowerCase(),
-        affectedClasses:Array.isArray(raw.affectedClasses)?raw.affectedClasses:[],
-        deleted:raw.deleted===true
+        description:source.description||source.deskripsi||source.keterangan||source.note||source.catatan||"",
+        effectMode:String(source.effectMode||source.dampak||"none").toLowerCase(),
+        affectedClasses:Array.isArray(source.affectedClasses)?source.affectedClasses:[],
+        deleted:source.deleted===true
       };
     }
 
-    function toEvents(value){
-      if(!value)return[];
-      if(Array.isArray(value))return value.filter(Boolean).map((item,index)=>normalizeEvent(item,String(index)));
-      return Object.entries(value).map(([id,item])=>normalizeEvent(item||{},id));
+    function looksLikeEvent(item){
+      if(!item||typeof item!=="object"||Array.isArray(item))return false;
+      return ["date","tanggal","tanggalKegiatan","eventDate","dateKey","startDate","start","mulai","tanggalMulai","title","judul","namaKegiatan","nama","name","agenda","type","jenis","kategori"].some(key=>Object.prototype.hasOwnProperty.call(item,key));
+    }
+
+    function toEvents(value,parentKey="",inheritedDate=""){
+      if(value===null||value===undefined)return[];
+      const parentDate=dateFromEventKey(parentKey)||inheritedDate;
+      if(Array.isArray(value)){
+        return value.flatMap((item,index)=>{
+          if(item===null||item===undefined)return[];
+          if(typeof item!=="object"||looksLikeEvent(item))return[normalizeEvent(item,`${parentKey}-${index}`,parentDate)];
+          return toEvents(item,`${parentKey}-${index}`,parentDate);
+        });
+      }
+      if(typeof value!=="object")return[normalizeEvent(value,parentKey,parentDate)];
+      if(looksLikeEvent(value))return[normalizeEvent(value,parentKey,parentDate)];
+      return Object.entries(value).flatMap(([id,item])=>{
+        const childDate=dateFromEventKey(id)||parentDate;
+        if(item===null||item===undefined)return[];
+        if(typeof item!=="object"||looksLikeEvent(item))return[normalizeEvent(item,id,childDate)];
+        return toEvents(item,id,childDate);
+      });
     }
 
     function classifyImportantEvent(event){
@@ -1286,7 +1344,8 @@ const ACADEMIC_MONTHS = [
       }).join("");
     }
 
-    const CALENDAR_CACHE_VERSION="20260804-calendar3";
+    const CALENDAR_CACHE_VERSION="20260804-calendar4-date-normalization";
+    const BUNDLED_CALENDAR_PATH="../../data/kalender-pendidikan-2026-2027.json";
     const CALENDAR_PATHS=[
       CALENDAR_PATH,
       "cahaya_app/kalender_pendidikan/ta_2026_2027/events",
@@ -1294,10 +1353,31 @@ const ACADEMIC_MONTHS = [
     ];
 
     async function readCalendarPath(path,force=false){
+      // Kalender satu tahun harus dibaca utuh. limitToLast memotong agenda bulan-bulan awal
+      // karena urutan key Firebase tidak selalu sama dengan urutan tanggal.
       if(window.CahayaBandwidth){
-        return window.CahayaBandwidth.readCompat(dbRT,path,{ttl:60*60000,limit:180,noCache:force});
+        return window.CahayaBandwidth.readCompat(dbRT,path,{ttl:6*60*60000,noCache:force});
       }
-      return dbRT.ref(path).limitToLast(180).once("value");
+      return dbRT.ref(path).once("value");
+    }
+
+    async function loadBundledCalendar(){
+      const response=await fetch(BUNDLED_CALENDAR_PATH,{cache:"force-cache"});
+      if(!response.ok)throw new Error("Kalender bawaan tidak tersedia");
+      const data=await response.json();
+      return toEvents(data).filter(event=>parseLocalDate(event.startDate||event.date)&&!event.deleted);
+    }
+
+    function dedupeCalendarEvents(events){
+      const map=new Map();
+      events.forEach(event=>{
+        const start=parseLocalDate(event.startDate||event.date);
+        if(!start)return;
+        const dateKey=isoDate(start);
+        const key=`${dateKey}|${String(event.title||"").trim().toLowerCase()}`;
+        if(!map.has(key))map.set(key,event);
+      });
+      return [...map.values()];
     }
 
     async function loadCalendar(force=false){
@@ -1324,16 +1404,28 @@ const ACADEMIC_MONTHS = [
           }
         }
 
+        const validOnlineEvents=rawEvents.filter(event=>parseLocalDate(event.startDate||event.date));
+        const invalidDateCount=Math.max(0,rawEvents.length-validOnlineEvents.length);
+        let bundledEvents=[];
+        if(!validOnlineEvents.length){
+          try{bundledEvents=await loadBundledCalendar()}catch(error){console.warn(error)}
+        }
+        const effectiveEvents=dedupeCalendarEvents(validOnlineEvents.length?validOnlineEvents:bundledEvents);
+
         sessionStorage.setItem("cahayaCalendarCacheVersion",CALENDAR_CACHE_VERSION);
-        allImportantEvents=rawEvents.map(event=>{
+        allImportantEvents=effectiveEvents.map(event=>{
           event._classification=classifyImportantEvent(event);
           return event;
         }).filter(event=>event._classification.important);
 
         els.calendarStatus.className="calendar-status online";
-        if(rawEvents.length){
-          els.calendarStatusText.textContent=`Kalender tersambung • ${allImportantEvents.length} dari ${rawEvents.length} agenda ditampilkan`;
+        if(validOnlineEvents.length){
+          els.calendarStatusText.textContent=`Kalender tersambung • ${allImportantEvents.length} agenda bertanggal ditampilkan${invalidDateCount?` • ${invalidDateCount} data tanpa tanggal dilewati`:""}`;
           if(activePath!==CALENDAR_PATH) console.warn("Kalender memakai jalur cadangan:",activePath);
+        }else if(bundledEvents.length){
+          els.calendarStatusText.textContent=`Kalender bawaan aktif • ${allImportantEvents.length} agenda ditampilkan • data online belum memiliki format tanggal yang terbaca`;
+        }else if(rawEvents.length){
+          els.calendarStatusText.textContent=`Kalender tersambung, tetapi ${rawEvents.length} data belum memiliki tanggal yang dapat dibaca.`;
         }else{
           els.calendarStatusText.textContent="Kalender tersambung, tetapi belum ada agenda yang tersimpan.";
         }
