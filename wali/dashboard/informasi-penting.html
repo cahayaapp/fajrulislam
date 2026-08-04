@@ -313,6 +313,7 @@
     .type-ujian{color:#ce751f;background:#fff3e6;border:1px solid #ffe0bf}
     .type-hari-besar{color:#0d8060;background:#eafaf4;border:1px solid #cdeee1}
     .type-acara-wali{color:#1768d7;background:#edf5ff;border:1px solid #d6e7ff}
+    .type-kegiatan{color:#315b9b;background:#eef4ff;border:1px solid #d9e5f7}
     .empty{
       padding:28px 18px;
       color:var(--muted);
@@ -795,6 +796,7 @@
             </div>
           </div>
           <div class="actions">
+            <button class="btn secondary" type="button" id="refreshCalendar">↻ Segarkan Kalender</button>
             <button class="btn" type="button" id="downloadCalendarPdf">⬇️ Download PDF</button>
           </div>
         </div>
@@ -1102,7 +1104,8 @@ const ACADEMIC_MONTHS = [
       importantAgendaList:document.getElementById("importantAgendaList"),
       calendarStatus:document.getElementById("calendarStatus"),
       calendarStatusText:document.getElementById("calendarStatusText"),
-      downloadCalendarPdf:document.getElementById("downloadCalendarPdf")
+      downloadCalendarPdf:document.getElementById("downloadCalendarPdf"),
+      refreshCalendar:document.getElementById("refreshCalendar")
     };
 
     function escapeHtml(value){
@@ -1145,7 +1148,10 @@ const ACADEMIC_MONTHS = [
         date:date||startDate,
         startDate,
         endDate,
-        description:raw.description||raw.keterangan||raw.note||""
+        description:raw.description||raw.keterangan||raw.note||"",
+        effectMode:String(raw.effectMode||raw.dampak||"none").toLowerCase(),
+        affectedClasses:Array.isArray(raw.affectedClasses)?raw.affectedClasses:[],
+        deleted:raw.deleted===true
       };
     }
 
@@ -1156,36 +1162,49 @@ const ACADEMIC_MONTHS = [
     }
 
     function classifyImportantEvent(event){
+      if(event.deleted) return {important:false};
       const text=`${event.title} ${event.type} ${event.description}`.toLowerCase();
 
       const excluded=[
-        "forum guru","mengajar guru","kbm","pembelajaran rutin","materi pertemuan",
-        "rapat guru","piket","halaqah rutin","mentoring rutin","absensi"
+        "forum guru","mengajar guru","rapat guru","rapat pengurus","piket",
+        "kbm rutin","pembelajaran rutin","materi pertemuan","halaqah rutin",
+        "mentoring rutin","absensi","jadwal guru","supervisi internal"
       ];
       const strongParent=[
         "penjengukan","kunjungan santri","kunjungan wali","wali santri","orang tua",
-        "family gathering","parenting","pertemuan wali","temu wali","silaturahmi wali",
-        "milad pesantren","wisuda","haflah","akhirussanah","graduation",
-        "pembagian rapor","pengambilan rapor","daftar ulang","kedatangan santri","kembali ke pondok"
+        "family gathering","family day","parenting","pertemuan wali","temu wali",
+        "silaturahmi wali","pembagian rapor","pengambilan rapor","daftar ulang",
+        "kedatangan santri","kembali ke pondok","kembali ke pesantren"
       ];
       const holidays=[
         "libur","kepulangan","pulang santri","cuti bersama","idul fitri","idul adha",
-        "maulid","isra mi'raj","tahun baru hijriah","hari santri","hari kemerdekaan",
-        "natal","tahun baru","hari besar"
+        "maulid","isra mi'raj","isra mikraj","tahun baru hijriah","hari santri",
+        "hari kemerdekaan","natal","tahun baru","hari besar"
       ];
       const exams=[
-        "ujian","uas","uts","pas","pat","asesmen","sumatif","triwulan","tes akhir",
-        "evaluasi semester"
+        "ujian","uas","uts","pas","pat","asesmen","sumatif","triwulan",
+        "tes akhir","evaluasi semester","rapor","raport"
+      ];
+      const majorActivities=[
+        "milad pesantren","wisuda","haflah","akhirussanah","graduation","matsama",
+        "masa ta'aruf","masa taaruf","penerimaan santri","pembukaan tahun ajaran",
+        "penutupan tahun ajaran","tasmi","tasmi'","khataman","musabaqah","lomba",
+        "camp","kemah","rihlah","study tour","bakti sosial","acara pesantren"
       ];
 
       if(strongParent.some(k=>text.includes(k))) return {important:true,category:"acara-wali",label:"Agenda Wali"};
       if(holidays.some(k=>text.includes(k))||event.type.includes("libur")||event.type.includes("hari-besar")) return {important:true,category:"libur",label:"Libur / Hari Besar"};
       if(exams.some(k=>text.includes(k))||event.type.includes("ujian")||event.type.includes("rapor")) return {important:true,category:"ujian",label:"Ujian / Evaluasi"};
       if(text.includes("penjengukan")||text.includes("kunjungan")) return {important:true,category:"kunjungan",label:"Penjengukan"};
+      if(majorActivities.some(k=>text.includes(k))) return {important:true,category:"kegiatan",label:"Agenda Pesantren"};
       if(excluded.some(k=>text.includes(k))) return {important:false};
-      return {important:false};
-    }
 
+      // Agenda yang memengaruhi KBM/kelas harus tetap diketahui wali.
+      if(event.effectMode&&event.effectMode!=="none") return {important:true,category:"kegiatan",label:"Agenda Pesantren"};
+
+      // Semua agenda kalender resmi yang tidak bersifat rutin/internal tetap ditampilkan.
+      return {important:true,category:"kegiatan",label:"Agenda Pesantren"};
+    }
     function eventMonthKeys(event){
       const start=parseLocalDate(event.startDate||event.date);
       const end=parseLocalDate(event.endDate||event.startDate||event.date)||start;
@@ -1267,27 +1286,70 @@ const ACADEMIC_MONTHS = [
       }).join("");
     }
 
-    async function loadCalendar(){
+    const CALENDAR_CACHE_VERSION="20260804-calendar3";
+    const CALENDAR_PATHS=[
+      CALENDAR_PATH,
+      "cahaya_app/kalender_pendidikan/ta_2026_2027/events",
+      "kalender_pendidikan/events"
+    ];
+
+    async function readCalendarPath(path,force=false){
+      if(window.CahayaBandwidth){
+        return window.CahayaBandwidth.readCompat(dbRT,path,{ttl:60*60000,limit:180,noCache:force});
+      }
+      return dbRT.ref(path).limitToLast(180).once("value");
+    }
+
+    async function loadCalendar(force=false){
+      const firstLoadAfterUpdate=sessionStorage.getItem("cahayaCalendarCacheVersion")!==CALENDAR_CACHE_VERSION;
+      const bypassCache=force||firstLoadAfterUpdate;
+      if(els.refreshCalendar){
+        els.refreshCalendar.disabled=true;
+        els.refreshCalendar.textContent="Memuat…";
+      }
+      els.calendarStatus.className="calendar-status";
+      els.calendarStatusText.textContent="Menghubungkan kalender pendidikan...";
+
       try{
-        const snapshot=window.CahayaBandwidth
-          ? await window.CahayaBandwidth.readCompat(dbRT,CALENDAR_PATH,{ttl:6*60*60000,limit:180})
-          : await dbRT.ref(CALENDAR_PATH).limitToLast(180).once("value");
-        const rawEvents=toEvents(snapshot.val());
+        let rawEvents=[];
+        let activePath=CALENDAR_PATH;
+
+        for(const path of CALENDAR_PATHS){
+          const snapshot=await readCalendarPath(path,bypassCache);
+          const candidates=toEvents(snapshot.val()).filter(event=>!event.deleted);
+          if(candidates.length){
+            rawEvents=candidates;
+            activePath=path;
+            break;
+          }
+        }
+
+        sessionStorage.setItem("cahayaCalendarCacheVersion",CALENDAR_CACHE_VERSION);
         allImportantEvents=rawEvents.map(event=>{
           event._classification=classifyImportantEvent(event);
           return event;
         }).filter(event=>event._classification.important);
+
         els.calendarStatus.className="calendar-status online";
-        els.calendarStatusText.textContent=`Kalender tersambung • ${allImportantEvents.length} agenda penting ditemukan`;
+        if(rawEvents.length){
+          els.calendarStatusText.textContent=`Kalender tersambung • ${allImportantEvents.length} dari ${rawEvents.length} agenda ditampilkan`;
+          if(activePath!==CALENDAR_PATH) console.warn("Kalender memakai jalur cadangan:",activePath);
+        }else{
+          els.calendarStatusText.textContent="Kalender tersambung, tetapi belum ada agenda yang tersimpan.";
+        }
         renderMonth();
       }catch(error){
         els.calendarStatus.className="calendar-status error";
-        els.calendarStatusText.textContent="Kalender belum dapat dimuat. Periksa koneksi atau Firebase Rules.";
+        els.calendarStatusText.textContent="Kalender belum dapat dimuat. Tekan Segarkan Kalender untuk mencoba kembali.";
         els.importantAgendaList.innerHTML=`<div class="empty">Data kalender tidak dapat dibaca saat ini.</div>`;
         console.error(error);
+      }finally{
+        if(els.refreshCalendar){
+          els.refreshCalendar.disabled=false;
+          els.refreshCalendar.textContent="↻ Segarkan Kalender";
+        }
       }
     }
-
     function readLocalJson(key){
       try{return JSON.parse(localStorage.getItem(key)||"{}")||{}}catch(_){return{}}
     }
@@ -1552,6 +1614,8 @@ const ACADEMIC_MONTHS = [
       document.querySelector(".nav-tabs")?.setAttribute("role","tablist");
       panels.forEach(panel=>panel.setAttribute("role","tabpanel"));
     }
+
+    els.refreshCalendar?.addEventListener("click",()=>loadCalendar(true));
 
     els.monthSelect.addEventListener("change",()=>{
       selectedMonthIndex=Number(els.monthSelect.value);
