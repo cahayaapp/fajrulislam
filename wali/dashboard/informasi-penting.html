@@ -1549,20 +1549,42 @@ const ACADEMIC_MONTHS = [
       list.innerHTML=Object.entries(grouped).map(([day,items])=>`<section class="schedule-day"><div class="schedule-day-head"><strong>${escapeHtml(day)}</strong><span>${items.length} kegiatan</span></div><div class="schedule-list">${items.map(row=>`<div class="schedule-row"><div class="schedule-time">${escapeHtml(row.waktuLabel||(row.jamMulai?`${row.jamMulai} - ${row.jamSelesai||""}`:"Terjadwal"))}</div><div class="schedule-main"><b>${escapeHtml(row.mapel||"Pembelajaran")}</b><small>${escapeHtml(teacherLabel(row))}${row.kelas?` • ${escapeHtml(row.kelas)}`:""}</small></div><span class="schedule-chip">${escapeHtml(sourceLabel(row))}</span></div>`).join("")}</div></section>`).join("");
     }
 
-    async function loadBundledLearningFallback(){
-      const response=await fetch("../../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"force-cache"});
+    async function loadBundledLearningFallback(force=false){
+      const response=await fetch("../../data/jadwal-pelajaran-awal-2026-2027.json",{cache:force?"no-store":"force-cache"});
       if(!response.ok)throw new Error("Template jadwal pembelajaran tidak tersedia");
       const data=await response.json();
       return Array.isArray(data)?data:valuesFromSnapshot(data);
+    }
+
+    function learningRowKey(row={}){
+      return row.id||[
+        normalizeText(row.kelas),
+        row.hari??row.hariLabel??"",
+        normalizeText(row.mapel),
+        row.jamMulai||row.waktuLabel||"",
+        normalizeText(row.jenis)
+      ].join("|");
+    }
+
+    function mergeLearningRows(firebaseRows=[],bundledRows=[],classNames=[]){
+      const allowed=new Set(classNames.map(normalizeText));
+      const matches=row=>row&&row.aktif!==false&&allowed.has(normalizeText(row.kelas));
+      const merged=new Map();
+
+      // Jadwal bawaan menjamin program ekstrakurikuler tetap tampil walaupun
+      // Firebase sebelumnya hanya pernah disinkronkan untuk jadwal PKBM.
+      bundledRows.filter(matches).forEach(row=>merged.set(learningRowKey(row),row));
+      firebaseRows.filter(matches).forEach(row=>merged.set(learningRowKey(row),row));
+      return [...merged.values()];
     }
 
     async function loadLearningSchedule(force=false){
       if(learningScheduleLoaded&&!force)return;
       const status=document.getElementById("learningScheduleStatus");
       status.className="schedule-status";
-      status.textContent="Memuat jadwal pembelajaran ananda...";
+      status.textContent="Memuat jadwal pembelajaran, PKBM, dan ekstrakurikuler...";
+      const classNames=[detectStudentClass(),detectStudentPkbmClass()].filter(Boolean);
       try{
-        const classNames=[detectStudentClass(),detectStudentPkbmClass()].filter(Boolean);
         const all=[];
         for(const className of classNames){
           try{
@@ -1570,19 +1592,18 @@ const ACADEMIC_MONTHS = [
             all.push(...valuesFromSnapshot(snapshot));
           }catch(error){console.warn("Jadwal kelas gagal dibaca",className,error)}
         }
-        learningScheduleRows=[...new Map(all.map(row=>[row.id||`${row.kelas}-${row.hari}-${row.mapel}-${row.jamMulai}`,row])).values()];
-        if(!learningScheduleRows.length){
-          const fallback=await loadBundledLearningFallback();
-          const allowed=new Set(classNames.map(normalizeText));
-          learningScheduleRows=fallback.filter(row=>allowed.has(normalizeText(row.kelas)));
-        }
+
+        let bundled=[];
+        try{bundled=await loadBundledLearningFallback(force)}
+        catch(error){console.warn("Jadwal bawaan tidak dapat dibaca",error)}
+
+        learningScheduleRows=mergeLearningRows(all,bundled,classNames);
         learningScheduleLoaded=true;
         renderLearningSchedule();
       }catch(error){
         try{
-          const fallback=await loadBundledLearningFallback();
-          const allowed=new Set([detectStudentClass(),detectStudentPkbmClass()].filter(Boolean).map(normalizeText));
-          learningScheduleRows=fallback.filter(row=>allowed.has(normalizeText(row.kelas)));
+          const fallback=await loadBundledLearningFallback(true);
+          learningScheduleRows=mergeLearningRows([],fallback,classNames);
           learningScheduleLoaded=true;
           renderLearningSchedule();
           status.textContent += " • menampilkan jadwal bawaan aplikasi";
