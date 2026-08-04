@@ -960,11 +960,7 @@
         <div class="body-pad">
           <div class="highlight-grid">
             <div class="highlight-card"><div class="ico">🕐</div><b>Senin-Ahad</b><span>Pengantaran dan penitipan diterima pukul 13.00-17.00 WIB.</span></div>
-
-            <div class="highlight-card"><div class="ico">1×</div><b>Maksimal 1 Kali/Pekan</b><span>Penitipan barang maksimal satu kali dalam satu pekan, di luar waktu kunjungan bulanan.</span></div>
-
-            <div class="highlight-card"><div class="ico">3×</div><b>Maksimal 1 Kali</b><span>Maksimal satu kali dalam sepekan.</span></div>
-
+            <div class="highlight-card" id="weeklyDepositLimitCard"><div class="ico">1×</div><b>Maksimal 1 Kali/Pekan</b><span>Penitipan barang maksimal satu kali dalam satu pekan, di luar waktu kunjungan bulanan.</span></div>
             <div class="highlight-card"><div class="ico">🛡️</div><b>Melalui Pos Keamanan</b><span>Barang wajib dilaporkan, dicatat, dan diperiksa sebelum diserahkan kepada santri.</span></div>
           </div>
 
@@ -1783,6 +1779,26 @@ const ACADEMIC_MONTHS = [
     }
     window.downloadSopPdf=downloadSopPdf;
 
+    function removeLegacyDepositLimitDuplicate(){
+      const keep=document.getElementById("weeklyDepositLimitCard");
+      const cards=[...document.querySelectorAll("#tab-barang .highlight-grid .highlight-card")];
+      cards.forEach(card=>{
+        if(card===keep)return;
+        const text=(card.textContent||"").toLowerCase();
+        const icon=(card.querySelector(".ico")?.textContent||"").trim().toLowerCase();
+        if(icon==="3×"||icon==="3x"||text.includes("maksimal 1 kali")||text.includes("maksimal satu kali"))card.remove();
+      });
+      if(keep){
+        const icon=keep.querySelector(".ico");
+        const title=keep.querySelector("b");
+        const description=keep.querySelector("span");
+        if(icon)icon.textContent="1×";
+        if(title)title.textContent="Maksimal 1 Kali/Pekan";
+        if(description)description.textContent="Penitipan barang maksimal satu kali dalam satu pekan, di luar waktu kunjungan bulanan.";
+      }
+    }
+
+    removeLegacyDepositLimitDuplicate();
     bindTabs();
     populateMonths();
     renderMonth();

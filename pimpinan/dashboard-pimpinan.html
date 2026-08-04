@@ -10,7 +10,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CAHAYA Command Center Pimpinan</title>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <style>
     :root{
       --bg:#f5f7fb;--card:#fff;--ink:#18243a;--muted:#718096;--line:#e5eaf2;
@@ -70,6 +70,28 @@
 </head>
 <body>
   <div class="loading" id="loading"><div class="loading-card"><div class="spinner"></div><strong>Menyiapkan Command Center...</strong><span>Menyiapkan tab sesuai ruang kontrol Anda.</span></div></div>
+  <script>
+    (function(){
+      function releaseCommandCenter(message){
+        const loading=document.getElementById('loading');
+        if(loading) loading.style.display='none';
+        const welcome=document.getElementById('commandWelcome');
+        if(message&&welcome){
+          welcome.removeAttribute('hidden');
+          welcome.innerHTML='<div class="welcome-icon">⚠️</div><strong>Command Center tetap dapat dibuka</strong><p>'+message+'</p><button class="btn primary" onclick="location.reload()">↻ Muat Ulang</button>';
+        }
+      }
+      window.__cahayaCommandBootTimer=setTimeout(function(){
+        releaseCommandCenter('Proses persiapan melewati batas waktu. Silakan muat ulang; halaman tidak lagi dikunci oleh layar loading.');
+      },8000);
+      window.addEventListener('error',function(event){
+        releaseCommandCenter('Sebagian komponen gagal dimuat: '+String(event.message||'kesalahan tidak diketahui')+'.');
+      });
+      window.addEventListener('unhandledrejection',function(event){
+        releaseCommandCenter('Sebagian komponen gagal dimuat. Silakan muat ulang halaman.');
+      });
+    })();
+  </script>
   <main class="app">
     <section class="hero">
       <div class="hero-row">
@@ -184,9 +206,12 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script>
-  const firebaseConfig = window.CAHAYA_CONFIG.firebase;
-  if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  const db=firebase.database();
+  const firebaseConfig = window.CAHAYA_CONFIG?.firebase || null;
+  let db = null;
+  if(window.firebase?.database && firebaseConfig){
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    db=firebase.database();
+  }
   const PATHS={
     teacherAttendance:"cahaya_app/absensi_guru",teacherLog:"cahaya_app/log_absensi_guru",learning:"cahaya_app/absensi_pembelajaran",program:"cahaya_app/absensi_program_harian",health:"cahaya_app/pemeriksaan_kesehatan",tahfiz:"cahaya_app/setoran_tahfiz",journals:"cahaya_app/jurnal_piket_naqib",naqibSchedule:"cahaya_app/jadwal_piket_naqib",reports:"cahaya_app/log_lapor_inisiatif",actions:"cahaya_app/laporan_penindakan",monthlyScores:"cahaya_app/nilai_ujian_bulanan",
     healthJournal:"cahaya_app/jurnal_kesehatan",sarprasJournal:"cahaya_app/jurnal_sarpras",cleanSecurityJournal:"cahaya_app/jurnal_keamanan_kebersihan",observer:"observasi_lapangan",followups:"cahaya_app/tindak_lanjut_sdm",classSchedule:"cahaya_app/jadwal_pelajaran",sarprasChecklist:"cahaya_app/checklist_harian_sarpras",sarprasActions:"cahaya_app/tindak_lanjut_sarpras",financeAccounts:"cahaya_app/keuangan/rekening_santri",financeBills:"cahaya_app/keuangan/tagihan",financePayments:"cahaya_app/keuangan/pembayaran",financeSalesPutra:"cahaya_app/keuangan/kantin/putra/transaksi",financeSalesPutri:"cahaya_app/keuangan/kantin/putri/transaksi"
@@ -218,7 +243,8 @@
   const scopeGender=['putra','putri'].includes(String(leadershipScope.gender||'').toLowerCase())?String(leadershipScope.gender).toLowerCase():'all';
   SECTION_DATA.keuangan=financeSectionKeys(scopeGender);
   const masterClasses=window.CAHAYA_MASTER_DATA?.santriByClass||{};
-  const studentGenderMap=new Map();Object.entries(masterClasses).forEach(([cls,names])=>(Array.isArray(names)?names:Object.values(names||{})).forEach(item=>{const obj=typeof item==='string'?{nama:item}:{...(item||{})},name=obj.nama||obj.namaSantri||obj.label||'';if(name)studentGenderMap.set(key(name),/putri|perempuan/i.test(obj.jenisKelamin||cls)?'putri':/putra|laki/i.test(obj.jenisKelamin||cls)?'putra':'')}));
+  function normalizeLookupKey(value){return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[^a-z0-9]/g,'')}
+  const studentGenderMap=new Map();Object.entries(masterClasses).forEach(([cls,names])=>(Array.isArray(names)?names:Object.values(names||{})).forEach(item=>{const obj=typeof item==='string'?{nama:item}:{...(item||{})},name=obj.nama||obj.namaSantri||obj.label||'';if(name)studentGenderMap.set(normalizeLookupKey(name),/putri|perempuan/i.test(obj.jenisKelamin||cls)?'putri':/putra|laki/i.test(obj.jenisKelamin||cls)?'putra':'')}));
   function recordGender(record){if(!record||typeof record!=='object')return'';const candidates=[record.unitKantin,record.unit,record.jenisKelamin,record.gender,record.kelas,record.namaKelas,record.className,record.identitasSantri?.kelas,record.identitas?.kelas,record.santri?.kelas].filter(Boolean).join(' ');if(/putri|perempuan|female/i.test(candidates))return'putri';if(/putra|laki|male/i.test(candidates))return'putra';const names=[record.namaSantri,record.nama,record.santri,record.identitasSantri?.namaSantri,record.identitas?.namaSantri,record.studentName].filter(Boolean);for(const name of names){const g=studentGenderMap.get(key(name));if(g)return g}return''}
   function filterDataByScope(data){if(scopeGender==='all'||!data||typeof data!=='object')return data;const out=Array.isArray(data)?[]:{};Object.entries(data).forEach(([k,v])=>{const g=recordGender(v);if(!g||g===scopeGender){if(Array.isArray(out))out.push(v);else out[k]=v}});return out}
   function applyLeadershipScopeUI(){if(!ANY_FINANCE_FEATURE)allowedSections.delete('keuangan');ALL_SECTION_IDS.forEach(id=>{const el=document.getElementById(id);if(el&&!allowedSections.has(id))el.remove()});document.querySelectorAll('.nav-chip[href^="#"]').forEach(tab=>{const id=tab.getAttribute('href').slice(1);if(!allowedSections.has(id))tab.remove()});document.querySelectorAll('.hero-actions button').forEach(btn=>{const text=btn.textContent||'';if(/Perizinan/i.test(text)&&!scopeFields.includes('health')&&!scopeFields.includes('counseling'))btn.style.display='none';if(/Raport SDM/i.test(text)&&!scopeFields.includes('sdm'))btn.style.display='none'});const scopeText=document.createElement('div');scopeText.className='scope-note';scopeText.style.cssText='margin-top:9px;font-size:.6rem;font-weight:800;color:#dcecff';scopeText.textContent=`Ruang kontrol: ${scopeFields.join(', ')} • Wilayah: ${scopeGender==='all'?'Putra & Putri':scopeGender==='putra'?'Putra':'Putri'}`;document.querySelector('.hero .brand>div:last-child')?.appendChild(scopeText)}
@@ -279,7 +305,7 @@
   ];
   const DAY_KEYS=["ahad","senin","selasa","rabu","kamis","jumat","sabtu"], DAY_LABELS=["Ahad","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
   let raw={},range={start:"",end:""},model={};
-  const $=id=>document.getElementById(id),norm=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase().replace(/\s+/g," "),key=v=>norm(v).replace(/[^a-z0-9]/g,""),num=v=>{const n=Number(v);return Number.isFinite(n)?n:0},avg=a=>{const v=a.filter(Number.isFinite);return v.length?v.reduce((x,y)=>x+y,0)/v.length:NaN},clamp=v=>Math.max(0,Math.min(100,v)),esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  const $=id=>document.getElementById(id),norm=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase().replace(/\s+/g," "),key=v=>normalizeLookupKey(v),num=v=>{const n=Number(v);return Number.isFinite(n)?n:0},avg=a=>{const v=a.filter(Number.isFinite);return v.length?v.reduce((x,y)=>x+y,0)/v.length:NaN},clamp=v=>Math.max(0,Math.min(100,v)),esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   function localDate(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
   function parseDate(v){return new Date(`${v}T12:00:00`)} function addDays(v,n){const d=parseDate(v);d.setDate(d.getDate()+n);return localDate(d)} function dateList(a,b){const x=[];for(let d=a;d<=b;d=addDays(d,1))x.push(d);return x}
   function fmtDate(v){if(!v)return"—";return new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"short",year:"numeric"}).format(parseDate(v))} function pct(v){return Number.isFinite(v)?`${Math.round(v)}%`:"—"}
@@ -303,7 +329,7 @@
   const COMMAND_QUERY={
     teacherAttendance:{dateField:"tanggal",limit:300},teacherLog:{dateField:"tanggal",limit:500},learning:{dateField:"tanggal",limit:700},program:{dateField:"tanggal",limit:900},health:{dateField:"tanggalPemeriksaan",limit:500},tahfiz:{dateField:"tanggal",limit:900},journals:{dateField:"tanggal",limit:300},reports:{dateField:"tanggal",limit:600},actions:{dateField:"tanggalPenindakan",limit:600},monthlyScores:{dateField:"tanggal_ujian",limit:1200},healthJournal:{dateField:"tanggal",limit:250},sarprasJournal:{dateField:"tanggal",limit:250},cleanSecurityJournal:{dateField:"tanggal",limit:250},observer:{dateField:"tanggal",limit:350},followups:{dateField:"tanggal",limit:350},sarprasChecklist:{dateField:"tanggal",limit:350},sarprasActions:{dateField:"tanggalTindakan",limit:350},financePayments:{dateField:"tanggal",limit:600},financeSalesPutra:{dateField:"tanggal",limit:600},financeSalesPutri:{dateField:"tanggal",limit:600}
   };
-  async function commandRead(name,path){const cfg=COMMAND_QUERY[name]||{};if(window.CahayaBandwidth)return window.CahayaBandwidth.readCompat(db,path,{...cfg,start:cfg.dateField?range.start:undefined,end:cfg.dateField?range.end:undefined,ttl:5*60000});return db.ref(path).once("value")}
+  async function commandRead(name,path){if(!db)throw new Error("Firebase belum termuat. Periksa koneksi lalu muat ulang Command Center.");const cfg=COMMAND_QUERY[name]||{};if(window.CahayaBandwidth)return window.CahayaBandwidth.readCompat(db,path,{...cfg,start:cfg.dateField?range.start:undefined,end:cfg.dateField?range.end:undefined,ttl:5*60000});return db.ref(path).once("value")}
   function sectionLabel(id){return document.querySelector(`#${id} h2`)?.textContent?.trim()||id}
   function updateSectionState(id,state,message=""){const el=document.getElementById(id);if(!el)return;el.dataset.loadState=state;const btn=el.querySelector('.load-section-btn'),panel=el.querySelector('.section-load-panel');if(btn){btn.disabled=state==='loading';btn.textContent=state==='loading'?'⏳ Memuat':state==='loaded'?'↻ Muat Ulang':'⬇ Muat Data'}if(panel){const title=state==='loading'?`Mengambil ${sectionLabel(id)}...`:`Data ${sectionLabel(id)} belum dimuat`;const desc=message||(state==='loading'?'Hanya data pada periode yang dipilih yang sedang diambil.':'Tekan tombol Muat Data. Bagian lain tidak ikut diunduh.');panel.innerHTML=`<div class="load-inner">${state==='loading'?'<div class="mini-spinner"></div>':'<div class="load-icon">📦</div>'}<strong>${esc(title)}</strong><p>${esc(desc)}</p>${state==='idle'?`<button class="btn green" onclick="loadSection('${id}')">Muat ${esc(sectionLabel(id))}</button>`:''}</div>`}}
   function installSectionLoaders(){Object.keys(SECTION_DATA).filter(id=>allowedSections.has(id)).forEach(id=>{const el=document.getElementById(id);if(!el)return;el.dataset.loadState='idle';el.classList.remove('command-active');const body=el.querySelector('.section-body');if(body&&!body.querySelector('.section-load-panel'))body.insertAdjacentHTML('afterbegin','<div class="section-load-panel"></div>');const actions=el.querySelector('.section-actions');if(actions&&!actions.querySelector('.load-section-btn'))actions.insertAdjacentHTML('afterbegin',`<button class="btn load-section-btn" onclick="loadSection('${id}',true)">↻ Muat Ulang</button>`);updateSectionState(id,'idle')});document.querySelectorAll('.nav-chip[href^="#"]').forEach(a=>a.addEventListener('click',event=>{event.preventDefault();const id=a.getAttribute('href').slice(1);if(SECTION_DATA[id])activateCommandTab(id)}))}
@@ -520,6 +546,8 @@
       }
       if($("syncText"))$("syncText").textContent="Terjadi gangguan saat memuat konfigurasi";
     }finally{
+      if(window.__cahayaCommandBootTimer)clearTimeout(window.__cahayaCommandBootTimer);
+      window.__cahayaCommandBooted=true;
       if(loading)loading.style.display="none";
     }
   });
