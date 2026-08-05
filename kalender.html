@@ -893,6 +893,81 @@
   
     .weekly-schedule-card{margin-top:18px;padding:22px;border:1px solid #dbeafe;border-radius:24px;background:linear-gradient(145deg,#fff,#f4f9ff);box-shadow:0 14px 34px rgba(32,85,150,.08)}
     .weekly-schedule-card h3{margin:0;color:#163a68}.weekly-schedule-card p{margin:6px 0 16px;color:#718198;font-size:.82rem}.weekly-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.weekly-chip{border:1px solid #cfe0f6;background:#fff;color:#285f9b;border-radius:999px;padding:8px 13px;font-weight:800;cursor:pointer}.weekly-chip.active{background:linear-gradient(135deg,#2478ef,#18b9d2);color:#fff;border-color:transparent}.weekly-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}.weekly-item{display:grid;grid-template-columns:78px 1fr auto;gap:10px;align-items:center;padding:12px;border:1px solid #e3ebf5;border-radius:16px;background:#fff}.weekly-time{font-weight:900;color:#216fc6;font-size:.78rem}.weekly-item b{display:block;color:#1d3352}.weekly-item small{display:block;color:#7b889b;margin-top:3px}.weekly-type{font-size:.66rem;font-weight:900;padding:5px 8px;border-radius:999px;background:#eef6ff;color:#316ca8}.read-only-note{margin:0 0 14px;padding:10px 14px;border-radius:14px;background:#eaf7ff;color:#155f96;font-size:.78rem;font-weight:750}
+
+    /* =========================================================
+       V19 — KALENDER MOBILE FIX
+       Tidak ada lagi lebar minimum/geser horizontal pada ponsel.
+       Kalender berubah menjadi kartu tanggal vertikal yang tetap
+       menampilkan seluruh tanggal dan agenda bulan aktif.
+       ========================================================= */
+    .mobile-day-name{display:none}
+
+    @media (max-width:780px){
+      body{overflow-x:hidden}
+      .app{width:100%;max-width:100%;overflow-x:hidden}
+      .card,.layout,.calendar-scroll,.calendar-inner{width:100%;max-width:100%;min-width:0}
+      .calendar-scroll{overflow:visible;-webkit-overflow-scrolling:auto}
+      .calendar-inner{min-width:0}
+      .weekdays{display:none}
+      .calendar-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:10px;
+        padding:12px;
+        background:#f8fbf9;
+      }
+      .day-cell,
+      .day-cell:nth-child(7n){
+        min-width:0;
+        min-height:112px;
+        border:1px solid var(--line);
+        border-radius:16px;
+        padding:10px;
+        overflow:hidden;
+        box-shadow:0 5px 14px rgba(22,32,51,.045);
+      }
+      .day-cell.outside{display:none}
+      .day-top{align-items:flex-start;margin-bottom:7px}
+      .day-heading{display:flex;align-items:center;gap:8px;min-width:0}
+      .mobile-day-name{
+        display:block;
+        min-width:0;
+        color:#667085;
+        font-size:10px;
+        font-weight:950;
+        line-height:1.25;
+        text-transform:uppercase;
+        letter-spacing:.055em;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .event-count{flex:0 0 auto;white-space:nowrap}
+      .event{font-size:10px;line-height:1.35;padding:7px 8px;-webkit-line-clamp:3}
+      .more-events{font-size:10px;padding:5px 2px}
+      .weekly-schedule-card{padding:15px;border-radius:19px}
+      .weekly-grid{grid-template-columns:1fr}
+      .weekly-item{grid-template-columns:68px minmax(0,1fr);gap:9px;padding:11px}
+      .weekly-type{grid-column:2;justify-self:start}
+    }
+
+    @media (max-width:520px){
+      .calendar-grid{grid-template-columns:1fr;gap:9px;padding:10px}
+      .day-cell,
+      .day-cell:nth-child(7n){min-height:0;padding:11px 12px}
+      .day-number{width:31px;height:31px;font-size:13px}
+      .mobile-day-name{font-size:10.5px}
+      .event{font-size:11px;-webkit-line-clamp:unset;display:block}
+      .calendar-head{padding:16px 14px}
+      .filters{padding:11px 14px}
+      .nav-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+      .nav-actions .btn{width:100%;min-width:0}
+      .weekly-item{grid-template-columns:62px minmax(0,1fr)}
+    }
+
+    @media (max-width:360px){
+      .nav-actions{grid-template-columns:1fr}
+      .summary-grid{grid-template-columns:1fr}
+    }
 </style>
 </head>
 
@@ -1452,7 +1527,10 @@
         cells.push(`
           <div class="day-cell ${isCurrentMonth ? "" : "outside"} ${date.getDay() === 0 ? "sunday" : ""} ${isToday ? "today" : ""} ${isForumDay ? "forum-day" : ""}">
             <div class="day-top">
-              <span class="day-number">${date.getDate()}</span>
+              <div class="day-heading">
+                <span class="day-number">${date.getDate()}</span>
+                <span class="mobile-day-name">${date.toLocaleDateString("id-ID", { weekday: "long", month: "short" })}</span>
+              </div>
               ${dayEvents.length ? `<span class="event-count">${dayEvents.length} agenda</span>` : ""}
             </div>
             <div class="events">
