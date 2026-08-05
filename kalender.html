@@ -1056,11 +1056,11 @@
 
 
 
-    <main class="layout">
-      <section class="card">
+    <main class="agenda-only-layout">
+      <section class="card agenda-toolbar-card">
         <div class="calendar-head">
           <div class="month-title">
-            <span>Kalender Bulanan</span>
+            <span>Agenda Bulanan</span>
             <h2 id="monthTitle">Juli 2026</h2>
           </div>
 
@@ -1084,68 +1084,29 @@
             <option value="kegiatan">Kegiatan Lain</option>
           </select>
         </div>
+      </section>
 
-        <div class="calendar-scroll">
-          <div class="calendar-inner">
-            <div class="weekdays">
-              <div class="weekday">Ahad</div>
-              <div class="weekday">Senin</div>
-              <div class="weekday">Selasa</div>
-              <div class="weekday">Rabu</div>
-              <div class="weekday">Kamis</div>
-              <div class="weekday">Jumat</div>
-              <div class="weekday">Sabtu</div>
-            </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-          </div>
+      <section class="card agenda-summary-card">
+        <div class="side-head">
+          <h3>Ringkasan Bulan</h3>
+          <p id="summaryCaption">Ringkasan agenda pada bulan yang sedang ditampilkan.</p>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-box"><span>Total Agenda</span><strong id="totalEvents">0</strong></div>
+          <div class="summary-box"><span>Hari Beragenda</span><strong id="activeDays">0</strong></div>
+          <div class="summary-box"><span>Agenda Forum</span><strong id="forumEvents">0</strong></div>
+          <div class="summary-box"><span>Sumber Data</span><strong id="sourceCount">0</strong></div>
         </div>
       </section>
 
-      <aside class="side">
-        <section class="card">
-          <div class="side-head">
-            <h3>Ringkasan Bulan</h3>
-            <p id="summaryCaption">Ringkasan agenda pada bulan yang sedang ditampilkan.</p>
-          </div>
-          <div class="summary-grid">
-            <div class="summary-box"><span>Total Agenda</span><strong id="totalEvents">0</strong></div>
-            <div class="summary-box"><span>Hari Beragenda</span><strong id="activeDays">0</strong></div>
-            <div class="summary-box"><span>Agenda Forum</span><strong id="forumEvents">0</strong></div>
-            <div class="summary-box"><span>Sumber Data</span><strong id="sourceCount">0</strong></div>
-          </div>
-        </section>
-
-        <section class="card">
-          <div class="side-head">
-            <h3>Daftar Agenda</h3>
-            <p>Urutan agenda dalam bulan yang sedang ditampilkan.</p>
-          </div>
-          <div class="agenda-list" id="agendaList"></div>
-        </section>
-
-        <section class="card">
-          <div class="side-head">
-            <h3>Keterangan Warna</h3>
-          </div>
-          <div class="legend">
-            <div class="legend-item"><span class="legend-dot"></span> KBM dan agenda umum</div>
-            <div class="legend-item"><span class="legend-dot kegiatan"></span> Kegiatan pesantren</div>
-            <div class="legend-item"><span class="legend-dot ujian"></span> Ujian dan pembagian rapor</div>
-            <div class="legend-item"><span class="legend-dot pkbm"></span> Agenda PKBM</div>
-            <div class="legend-item"><span class="legend-dot libur"></span> Libur dan hari besar</div>
-            <div class="legend-item"><span class="legend-dot forum"></span> Forum Guru Mengajar Guru</div>
-          </div>
-        </section>
-      </aside>
+      <section class="card agenda-list-card">
+        <div class="side-head">
+          <h3>Daftar Agenda</h3>
+          <p>Agenda tersusun berdasarkan tanggal. Klik agenda untuk melihat keterangan lengkap.</p>
+        </div>
+        <div class="agenda-list" id="agendaList"></div>
+      </section>
     </main>
-
-    <section class="weekly-schedule-card" id="weeklyScheduleCard">
-      <div class="read-only-note" id="readOnlyNote" style="display:none">Mode pengurus: kalender ditampilkan untuk dibaca. Perubahan agenda hanya melalui akun pengelola.</div>
-      <h3>Jadwal Mingguan PKBM & Ekstrakurikuler</h3>
-      <p>Data baru dimuat ketika hari dipilih agar tetap hemat kuota Firebase.</p>
-      <div class="weekly-toolbar" id="weeklyDayButtons"></div>
-      <div class="weekly-grid" id="weeklyScheduleList"><div class="empty">Pilih hari untuk melihat jadwal.</div></div>
-    </section>
   </div>
 
   <div class="modal" id="eventModal" aria-hidden="true">
@@ -1272,7 +1233,6 @@
       syncPill: document.getElementById("syncPill"),
       syncText: document.getElementById("syncText"),
       monthTitle: document.getElementById("monthTitle"),
-      calendarGrid: document.getElementById("calendarGrid"),
       agendaList: document.getElementById("agendaList"),
       totalEvents: document.getElementById("totalEvents"),
       activeDays: document.getElementById("activeDays"),
@@ -1550,61 +1510,6 @@
     function renderCalendar() {
       els.monthTitle.textContent = monthLabel(currentView);
       document.title = `${monthLabel(currentView)} | Kalender Pendidikan Pesantren Cahaya`;
-
-      const firstDay = startOfMonth(currentView);
-      const lastDay = endOfMonth(currentView);
-      const gridStart = new Date(firstDay);
-      gridStart.setDate(firstDay.getDate() - firstDay.getDay());
-
-      const gridEnd = new Date(lastDay);
-      gridEnd.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
-
-      const cells = [];
-      const cursor = new Date(gridStart);
-
-      while (cursor <= gridEnd) {
-        const date = new Date(cursor);
-        const key = isoDate(date);
-        const dayEvents = eventsOnDate(key);
-        const isCurrentMonth = date.getMonth() === currentView.getMonth() && date.getFullYear() === currentView.getFullYear();
-        const isToday = key === isoDate(TODAY);
-        const isForumDay = dayEvents.some(event => event.type === "forum-guru");
-        const visibleEvents = dayEvents.slice(0, 3);
-        const remaining = dayEvents.length - visibleEvents.length;
-
-        cells.push(`
-          <div class="day-cell ${isCurrentMonth ? "" : "outside"} ${dayEvents.length ? "has-events" : "no-events"} ${date.getDay() === 0 ? "sunday" : ""} ${isToday ? "today" : ""} ${isForumDay ? "forum-day" : ""}">
-            <div class="day-top">
-              <div class="day-heading">
-                <span class="day-number">${date.getDate()}</span>
-                <span class="mobile-day-name">${date.toLocaleDateString("id-ID", { weekday: "long", month: "short" })}</span>
-              </div>
-              ${dayEvents.length ? `<span class="event-count">${dayEvents.length} agenda</span>` : ""}
-            </div>
-            <div class="events">
-              ${visibleEvents.map(event => `
-                <button
-                  class="event type-${escapeHtml(event.type)}"
-                  type="button"
-                  data-event-id="${escapeHtml(event.id)}"
-                  title="${escapeHtml(event.title)}"
-                >${escapeHtml(event.title)}</button>
-              `).join("")}
-              ${remaining > 0 ? `<button class="more-events" type="button" data-date="${key}">+${remaining} agenda lainnya</button>` : ""}
-            </div>
-          </div>
-        `);
-
-        cursor.setDate(cursor.getDate() + 1);
-      }
-
-      const agendaDaysThisMonth = eventsInMonth(currentView).length;
-      els.calendarGrid.innerHTML = cells.join("") + (
-        agendaDaysThisMonth
-          ? ""
-          : `<div class="calendar-empty-mobile">Belum ada agenda pada bulan ini.</div>`
-      );
-      bindCalendarActions();
       renderMonthSummary();
       updateNavButtons();
     }
@@ -1654,22 +1559,30 @@
 
       els.agendaList.innerHTML = monthEvents.map(event => {
         const date = parseLocalDate(event.date || event.startDate);
+        const endDate = parseLocalDate(event.endDate || event.startDate || event.date) || date;
         const day = date ? date.getDate() : "—";
         const month = date ? shortMonth(date) : "—";
+        const rangeText = date && endDate && isoDate(date) !== isoDate(endDate)
+          ? `${fullDateLabel(date)} – ${fullDateLabel(endDate)}`
+          : fullDateLabel(date);
+        const description = String(event.description || "").trim();
 
         return `
-          <div class="agenda-item">
+          <button class="agenda-item" type="button" data-event-id="${escapeHtml(event.id)}" aria-label="Buka detail ${escapeHtml(event.title)}">
             <div class="agenda-date">
               <strong>${day}</strong>
               <span>${escapeHtml(month)}</span>
             </div>
             <div class="agenda-content">
               <strong>${escapeHtml(event.title)}</strong>
-              <span>${escapeHtml(typeLabel(event.type))}</span>
+              <span class="agenda-range-text">${escapeHtml(rangeText)}</span>
+              ${description ? `<span class="agenda-description">${escapeHtml(description)}</span>` : ""}
             </div>
-          </div>
+            <span class="agenda-type-chip">${escapeHtml(typeLabel(event.type))}</span>
+          </button>
         `;
       }).join("");
+      bindCalendarActions();
     }
 
     function updateNavButtons() {
@@ -1983,30 +1896,6 @@
       }
     });
 
-
-    let weeklyScheduleCache=null;
-    async function loadWeeklySchedule(dayNumber){
-      const list=document.getElementById("weeklyScheduleList");
-      list.innerHTML='<div class="empty">Memuat jadwal...</div>';
-      try{
-        if(!weeklyScheduleCache){
-          const response=await fetch("data/jadwal-pelajaran-awal-2026-2027.json",{cache:"force-cache"});
-          if(!response.ok)throw new Error("Jadwal bawaan tidak tersedia");
-          weeklyScheduleCache=await response.json();
-        }
-        const items=(weeklyScheduleCache||[]).filter(row=>row.aktif!==false&&Number(row.hari)===Number(dayNumber)&&["pkbm","ekskul"].includes(row.jenis));
-        list.innerHTML=items.length?items.sort((a,b)=>String(a.jamMulai||"99:99").localeCompare(String(b.jamMulai||"99:99"))||String(a.kelas).localeCompare(String(b.kelas))).map(row=>`<article class="weekly-item"><div class="weekly-time">${row.waktuLabel||(row.jamMulai?`${row.jamMulai}–${row.jamSelesai}`:"Terjadwal")}</div><div><b>${row.mapel}</b><small>${row.kelas}${row.guruKode&&row.jenis==="pkbm"?` • ${row.guruKode}`:""}</small></div><span class="weekly-type">${row.jenis==="pkbm"?"PKBM":"Ekskul"}</span></article>`).join(""):'<div class="empty">Tidak ada jadwal PKBM atau ekstrakurikuler pada hari ini.</div>';
-      }catch(error){list.innerHTML=`<div class="empty">Jadwal belum dapat dimuat: ${error.message}</div>`}
-    }
-    function setupWeeklySchedule(){
-      const labels={1:"Senin",2:"Selasa",3:"Rabu",4:"Kamis",5:"Jumat",6:"Sabtu"};
-      const box=document.getElementById("weeklyDayButtons");
-      box.innerHTML=Object.entries(labels).map(([n,label])=>`<button class="weekly-chip" data-day="${n}">${label}</button>`).join("");
-      box.addEventListener("click",event=>{const button=event.target.closest(".weekly-chip");if(!button)return;box.querySelectorAll(".weekly-chip").forEach(item=>item.classList.toggle("active",item===button));loadWeeklySchedule(Number(button.dataset.day));});
-      const today=new Date().getDay();(box.querySelector(`[data-day="${today>=1&&today<=6?today:5}"]`)||box.querySelector('[data-day="5"]')).click();
-      if(READ_ONLY){document.getElementById("readOnlyNote").style.display="block";document.getElementById("editModal").style.display="none";}
-    }
-    setupWeeklySchedule();
 
     loadCalendar();
   </script>

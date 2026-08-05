@@ -2109,11 +2109,15 @@
                 <div class="program-note">Tahsin dicatat sebagai talaqqi bacaan. Nilai menunjukkan kualitas bacaan, bukan jumlah hafalan.</div>
                 <div class="tahsin-form-grid">
                   <div class="form-group"><label>Jenis Talaqqi</label><select class="form-control" id="jenis_talaqqi_${safeId}"><option>Talaqqi Baru</option><option>Pengulangan</option><option>Perbaikan Bacaan</option><option>Ujian Kenaikan Level</option></select></div>
-                  <div class="form-group"><label>Surat</label><select class="form-control" id="tahsin_surat_${safeId}">${window.opsiSuratHTML}</select></div>
-                  <div class="form-group"><label>Ayat Mulai</label><input type="number" min="1" class="form-control" id="tahsin_mulai_${safeId}" placeholder="1"></div>
-                  <div class="form-group"><label>Ayat Selesai</label><input type="number" min="1" class="form-control" id="tahsin_selesai_${safeId}" placeholder="7"></div>
+                  <div class="form-group"><label>Total Ayat Talaqqi</label><input type="number" class="form-control" id="tahsin_total_ayat_${safeId}" readonly placeholder="0"></div>
                 </div>
-                <div class="form-group"><label>Halaman Mushaf <span style="font-weight:600;color:var(--tfz-muted)">(opsional)</span></label><input type="number" min="1" max="604" class="form-control" id="tahsin_halaman_${safeId}" placeholder="Contoh: 12"></div>
+                <div class="form-group">
+                  <label>Surat dan Rentang Ayat</label>
+                  <div id="tahsin_wadah_surat_${safeId}"></div>
+                  <button class="btn-tambah-surat" type="button" id="tahsin_btn_tambah_${safeId}" onclick="tambahBarisTahsinCard('${safeId}')">➕ Tambah Surat Talaqqi</button>
+                  <small style="display:block;margin-top:-6px;color:var(--tfz-muted);font-weight:650;line-height:1.45;">Dapat memasukkan beberapa surat dalam satu kali talaqqi, seperti pada input Tahfiz.</small>
+                </div>
+                <div class="form-group"><label>Halaman Mushaf <span style="font-weight:600;color:var(--tfz-muted)">(opsional)</span></label><input type="text" class="form-control" id="tahsin_halaman_${safeId}" placeholder="Contoh: 12 atau 12–14"></div>
                 <div class="tahsin-score-grid">
                   ${[['makhraj','Makharijul Huruf'],['sifat','Sifatul Huruf'],['tajwid','Penerapan Tajwid'],['lancar','Kelancaran & Fashahah']].map(([k,l])=>`<div class="score-box"><label>${l}</label><select class="form-control tahsin-score" id="${k}_${safeId}" onchange="hitungNilaiTahsin('${safeId}')"><option value="4">4 — Sangat Baik</option><option value="3" selected>3 — Baik</option><option value="2">2 — Perlu Perbaikan</option><option value="1">1 — Bimbingan Intensif</option></select></div>`).join('')}
                 </div>
@@ -2140,6 +2144,7 @@
       const safeId = nama.replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
       setModeCard('tunggal', safeId);
       terapkanModeProgramCard(safeId, prog);
+      siapkanBarisTahsinAwal(safeId);
       fetchRiwayatSantri(nama, safeId, preloadedDb);
     });
   };
@@ -2158,7 +2163,76 @@
     if (historyTitle) historyTitle.textContent = isTahsin ? 'Riwayat Talaqqi Bulan Ini' : isMurojaah ? 'Riwayat Muroja’ah Bulan Ini' : 'Riwayat Setoran Bulan Ini';
     const btn = document.getElementById(`btn_simpan_${safeId}`);
     if (btn) btn.innerHTML = isTahsin ? '💾 SIMPAN DATA TALAQQI' : isMurojaah ? '💾 SIMPAN DATA MUROJA’AH' : '💾 SIMPAN DATA SETORAN';
-    if (isTahsin) hitungNilaiTahsin(safeId);
+    if (isTahsin) {
+      siapkanBarisTahsinAwal(safeId);
+      hitungTotalAyatTahsinCard(safeId);
+      hitungNilaiTahsin(safeId);
+    }
+  };
+
+  window.siapkanBarisTahsinAwal = (safeId) => {
+    const wadah = document.getElementById(`tahsin_wadah_surat_${safeId}`);
+    if (wadah && !wadah.children.length) tambahBarisTahsinCard(safeId);
+  };
+
+  window.tambahBarisTahsinCard = (safeId, valMulai = "", valSampai = "", valSurat = "") => {
+    const wadah = document.getElementById(`tahsin_wadah_surat_${safeId}`);
+    if (!wadah) return;
+    const rowId = `tahsin_row_${Date.now()}_${Math.random().toString(36).slice(2,9)}`;
+    wadah.insertAdjacentHTML('beforeend', `
+      <div class="surat-row tahsin-row-${safeId}" id="${rowId}">
+        <div class="col-surat"><label>Surat</label><select class="form-control tahsin-sel-surat" onchange="hitungTotalAyatTahsinCard('${safeId}')">${window.opsiSuratHTML}</select></div>
+        <div class="col-ayat"><label>Dari</label><input type="number" min="1" class="form-control tahsin-inp-mulai" value="${escapeHtml(valMulai)}" placeholder="Ayat" oninput="hitungTotalAyatTahsinCard('${safeId}')"></div>
+        <div class="col-ayat"><label>Sampai</label><input type="number" min="1" class="form-control tahsin-inp-sampai" value="${escapeHtml(valSampai)}" placeholder="Ayat" oninput="hitungTotalAyatTahsinCard('${safeId}')"></div>
+        <button class="btn-hapus" type="button" onclick="hapusBarisTahsinCard('${safeId}','${rowId}')">Hapus Baris</button>
+      </div>
+    `);
+    if (valSurat !== "") wadah.querySelector(`#${rowId} .tahsin-sel-surat`).value = String(valSurat);
+    hitungTotalAyatTahsinCard(safeId);
+  };
+
+  window.hapusBarisTahsinCard = (safeId, rowId) => {
+    const wadah = document.getElementById(`tahsin_wadah_surat_${safeId}`);
+    const row = document.getElementById(rowId);
+    if (row) row.remove();
+    if (wadah && !wadah.children.length) tambahBarisTahsinCard(safeId);
+    hitungTotalAyatTahsinCard(safeId);
+  };
+
+  window.hitungTotalAyatTahsinCard = (safeId) => {
+    let total = 0;
+    document.querySelectorAll(`.tahsin-row-${safeId}`).forEach(row => {
+      const mulai = Number(row.querySelector('.tahsin-inp-mulai')?.value || 0);
+      const selesai = Number(row.querySelector('.tahsin-inp-sampai')?.value || 0);
+      if (mulai > 0 && selesai >= mulai) total += selesai - mulai + 1;
+    });
+    const output = document.getElementById(`tahsin_total_ayat_${safeId}`);
+    if (output) output.value = total || "";
+    return total;
+  };
+
+  window.ambilMateriTahsinCard = (safeId) => {
+    const materiList = [];
+    const rows = [...document.querySelectorAll(`.tahsin-row-${safeId}`)];
+    for (const row of rows) {
+      const idxRaw = row.querySelector('.tahsin-sel-surat')?.value ?? '';
+      const mulai = Number(row.querySelector('.tahsin-inp-mulai')?.value || 0);
+      const selesai = Number(row.querySelector('.tahsin-inp-sampai')?.value || 0);
+      const kosong = idxRaw === '' && !mulai && !selesai;
+      if (kosong) continue;
+      if (idxRaw === '' || !mulai || !selesai || selesai < mulai) {
+        throw new Error('Lengkapi surat serta ayat mulai dan selesai pada setiap baris talaqqi.');
+      }
+      const idx = Number(idxRaw);
+      const surat = window.daftarSurat?.[idx];
+      if (!surat) throw new Error('Surat talaqqi tidak dikenali.');
+      if (mulai > surat.ayat || selesai > surat.ayat) {
+        throw new Error(`Rentang ayat Surat ${surat.nama} melebihi jumlah ayat surat tersebut.`);
+      }
+      materiList.push({ surat: surat.nama, ayatMulai: mulai, ayatSelesai: selesai });
+    }
+    if (!materiList.length) throw new Error('Tambahkan minimal satu surat dan rentang ayat talaqqi.');
+    return materiList;
   };
 
   window.hitungNilaiTahsin = (safeId) => {
@@ -2288,15 +2362,16 @@
       let detailData = {};
       let barisMeta = {};
       if (isTahsin) {
-        const idx = document.getElementById(`tahsin_surat_${safeId}`).value;
-        const mulai = Number(document.getElementById(`tahsin_mulai_${safeId}`).value);
-        const selesai = Number(document.getElementById(`tahsin_selesai_${safeId}`).value);
-        if (idx === '' || !mulai || !selesai || selesai < mulai) {
-          alert(`Lengkapi surat dan rentang ayat talaqqi untuk ${nama}.`); return;
+        let materiList;
+        try {
+          materiList = ambilMateriTahsinCard(safeId);
+        } catch (validationError) {
+          alert(`${validationError.message}\n\nSantri: ${nama}`);
+          return;
         }
-        const surat = window.daftarSurat[idx];
-        if (selesai > surat.ayat) { alert(`Ayat terakhir melebihi jumlah ayat Surat ${surat.nama}.`); return; }
-        strSetoran = `${surat.nama} (${mulai}-${selesai})`;
+        const halaman = String(document.getElementById(`tahsin_halaman_${safeId}`).value || '').trim() || null;
+        const totalAyatTahsin = materiList.reduce((sum, item) => sum + item.ayatSelesai - item.ayatMulai + 1, 0);
+        strSetoran = materiList.map(item => `${item.surat} (${item.ayatMulai}-${item.ayatSelesai})`).join(', ');
         hitungNilaiTahsin(safeId);
         const penilaian = {
           makhraj: Number(document.getElementById(`makhraj_${safeId}`).value),
@@ -2307,7 +2382,9 @@
         detailData = {
           jenisInput: 'talaqqi_bacaan',
           jenisTalaqqi: document.getElementById(`jenis_talaqqi_${safeId}`).value,
-          materi: { surat: surat.nama, ayatMulai: mulai, ayatSelesai: selesai, halaman: Number(document.getElementById(`tahsin_halaman_${safeId}`).value) || null },
+          materi: { ...materiList[0], halaman },
+          materiList: materiList.map((item, index) => ({ ...item, halaman: index === 0 ? halaman : null })),
+          totalAyat: totalAyatTahsin,
           penilaian,
           nilaiAkhir: Number(document.getElementById(`nilai_tahsin_${safeId}`).value),
           predikat: document.getElementById(`predikat_tahsin_${safeId}`).value,
@@ -2349,7 +2426,7 @@
       const editId = document.getElementById(`edit_id_${safeId}`).value;
       const nilai = isTahsin ? document.getElementById(`predikat_tahsin_${safeId}`).value : document.getElementById(`predikat_${safeId}`).value;
       const keterangan = isTahsin ? document.getElementById(`catatan_tahsin_${safeId}`).value : document.getElementById(`catatan_${safeId}`).value;
-      const ayat = isTahsin ? (Number(document.getElementById(`tahsin_selesai_${safeId}`).value) - Number(document.getElementById(`tahsin_mulai_${safeId}`).value) + 1) : document.getElementById(`ayat_${safeId}`).value;
+      const ayat = isTahsin ? Number(detailData.totalAyat || hitungTotalAyatTahsinCard(safeId) || 0) : document.getElementById(`ayat_${safeId}`).value;
       const payload = {
         tanggal: document.getElementById(`tgl_${safeId}`).value, program,
         jenisMurojaah: isMurojaah ? jenisMurojaah : null,
@@ -2482,11 +2559,16 @@
     if ((dataRow.program === 'Tahsin' || dataRow.jenisInput === 'talaqqi_bacaan') && dat.materi) {
       terapkanModeProgramCard(safeId, 'Tahsin');
       document.getElementById(`tgl_${safeId}`).value = dataRow.tanggal;
-      const idx = window.daftarSurat.findIndex(s => s.nama === dat.materi.surat);
-      document.getElementById(`tahsin_surat_${safeId}`).value = idx;
-      document.getElementById(`tahsin_mulai_${safeId}`).value = dat.materi.ayatMulai || '';
-      document.getElementById(`tahsin_selesai_${safeId}`).value = dat.materi.ayatSelesai || '';
-      document.getElementById(`tahsin_halaman_${safeId}`).value = dat.materi.halaman || '';
+      const wadahTahsin = document.getElementById(`tahsin_wadah_surat_${safeId}`);
+      if (wadahTahsin) wadahTahsin.innerHTML = '';
+      const materiTahsin = Array.isArray(dat.materiList) && dat.materiList.length ? dat.materiList : [dat.materi];
+      materiTahsin.filter(Boolean).forEach(item => {
+        const idx = window.daftarSurat.findIndex(s => s.nama === item.surat);
+        tambahBarisTahsinCard(safeId, item.ayatMulai || '', item.ayatSelesai || '', idx >= 0 ? idx : '');
+      });
+      siapkanBarisTahsinAwal(safeId);
+      hitungTotalAyatTahsinCard(safeId);
+      document.getElementById(`tahsin_halaman_${safeId}`).value = dat.materi?.halaman || dat.materiList?.find(item=>item?.halaman)?.halaman || '';
       document.getElementById(`jenis_talaqqi_${safeId}`).value = dat.jenisTalaqqi || 'Talaqqi Baru';
       document.getElementById(`makhraj_${safeId}`).value = dat.penilaian?.makhraj || 3;
       document.getElementById(`sifat_${safeId}`).value = dat.penilaian?.sifatHuruf || 3;
@@ -2568,11 +2650,13 @@
     const barisInput = document.getElementById(`baris_${safeId}`); if (barisInput) barisInput.value = "";
     document.getElementById(`catatan_${safeId}`).value = "";
     document.getElementById(`chk_cahaya_${safeId}`).checked = false;
-    ['tahsin_mulai','tahsin_selesai','tahsin_halaman','kesalahan_tahsin','catatan_tahsin'].forEach(id=>{ const el=document.getElementById(`${id}_${safeId}`); if(el) el.value=''; });
+    ['tahsin_halaman','kesalahan_tahsin','catatan_tahsin'].forEach(id=>{ const el=document.getElementById(`${id}_${safeId}`); if(el) el.value=''; });
+    const tahsinWadah=document.getElementById(`tahsin_wadah_surat_${safeId}`); if(tahsinWadah) tahsinWadah.innerHTML='';
+    siapkanBarisTahsinAwal(safeId);
+    hitungTotalAyatTahsinCard(safeId);
     ['makhraj','sifat','tajwid','lancar'].forEach(id=>{ const el=document.getElementById(`${id}_${safeId}`); if(el) el.value='3'; });
     const hasil=document.getElementById(`hasil_tahsin_${safeId}`); if(hasil) hasil.value='Lulus dengan Perbaikan';
     const jenis=document.getElementById(`jenis_talaqqi_${safeId}`); if(jenis) jenis.value='Talaqqi Baru';
-    const surat=document.getElementById(`tahsin_surat_${safeId}`); if(surat) surat.value='';
     setModeCard('tunggal', safeId);
     terapkanModeProgramCard(safeId, document.getElementById('tfzProgram').value);
     hitungPredikatCard(safeId);
