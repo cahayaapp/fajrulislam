@@ -1261,6 +1261,58 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
   .supervision-body{height:calc(100% - 1px);display:grid;align-content:start}
   .home-dashboard-grid{grid-template-columns:minmax(0,1.42fr) minmax(360px,.78fr);gap:14px}
 }
+
+
+/* =========================================================
+   V20 — BERANDA SUPER PREMIUM RESPONSIF
+   ========================================================= */
+.hero-mini-sep{opacity:.55;margin:0 2px}
+.inline-retry{margin-left:8px;padding:7px 10px;border:1px solid #cfe0f7;border-radius:10px;background:#fff;color:#1768d7;font-weight:900;cursor:pointer}
+#supervisionSource{cursor:pointer}
+.home-hero{
+  min-height:250px;
+  background:
+    radial-gradient(circle at 82% 16%,rgba(255,255,255,.23),transparent 26%),
+    linear-gradient(125deg,#1557d5 0%,#2878ff 52%,#19c6e6 112%)!important;
+  border:1px solid rgba(255,255,255,.28)!important;
+  box-shadow:0 24px 55px rgba(40,120,255,.24)!important;
+}
+.home-hero::before{content:"";position:absolute;inset:auto -72px -135px auto;width:250px;height:250px;border:38px solid rgba(255,255,255,.08);border-radius:50%;pointer-events:none}
+.operational-grid{margin-top:16px}
+.home-panel{border:1px solid #dfe8f6!important;background:rgba(255,255,255,.98)!important;box-shadow:0 14px 34px rgba(35,78,160,.08)!important}
+.health-panel{background:radial-gradient(circle at 96% 0%,rgba(41,197,141,.10),transparent 28%),#fff!important}
+.supervision-panel{background:radial-gradient(circle at 96% 0%,rgba(118,103,245,.10),transparent 28%),#fff!important}
+.schedule-panel{background:radial-gradient(circle at 98% 0%,rgba(40,120,255,.09),transparent 29%),#fff!important}
+.agenda-panel{background:radial-gradient(circle at 98% 0%,rgba(25,198,230,.10),transparent 29%),#fff!important}
+.home-panel-head{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(248,251,255,.93))}
+.supervisor-card,.health-permission-item,.lesson-row,.agenda-item{border-color:#e1eaf6!important;box-shadow:0 6px 18px rgba(35,78,160,.045)}
+
+@media(min-width:1101px){
+  .cahaya-container{max-width:1500px;padding:24px 30px 42px}
+  .home-hero{min-height:270px;padding:38px 42px;margin-bottom:0}
+  .operational-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:16px;margin-bottom:16px}
+  .home-dashboard-grid{grid-template-columns:minmax(0,1.55fr) minmax(360px,.75fr);gap:16px}
+  .home-panel{border-radius:24px!important}
+}
+@media(max-width:1100px){
+  .operational-grid,.home-dashboard-grid{grid-template-columns:1fr!important}
+}
+@media(max-width:650px){
+  .cahaya-container{padding:9px 9px 30px}
+  .home-hero{min-height:0;padding:23px 18px;border-radius:22px!important}
+  .hero-visual{display:none}
+  .home-hero h1{font-size:1.78rem;line-height:1.08}
+  .home-hero p{font-size:.91rem;line-height:1.58}
+  .hero-topline{gap:7px;flex-wrap:wrap}
+  .hero-foot{display:grid;gap:8px}
+  .hero-foot-item{font-size:.74rem;line-height:1.4}
+  .operational-grid{margin-top:12px;gap:12px}
+  .home-dashboard-grid{gap:12px}
+  .home-panel{border-radius:19px!important;overflow:hidden}
+  .home-panel-head{padding:17px 14px 14px}
+  .health-permission-list,.supervision-body,.schedule-list,.agenda-body{max-width:100%;overflow:hidden}
+}
+
 </style>
 </head>
 
@@ -1284,7 +1336,7 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
         </div>
         <div class="hero-foot-item">
           <span class="hero-foot-icon">◷</span>
-          <span id="heroDate">Memuat tanggal...</span>
+          <span id="heroClock">00:00 WIB</span><span class="hero-mini-sep">•</span><span id="heroDate">Memuat tanggal...</span>
         </div>
       </div>
     </div>
@@ -1298,46 +1350,6 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
         <div class="hero-core">C</div>
       </div>
     </div>
-  </section>
-
-  <section class="widget-grid" aria-label="Ringkasan beranda">
-    <article class="widget clock-widget">
-      <div class="widget-icon">◷</div>
-      <div class="widget-copy">
-        <h3>Waktu Sistem</h3>
-        <div class="value" id="clock">00:00:00</div>
-        <div class="sub-text" id="date">Memuat tanggal...</div>
-      </div>
-    </article>
-
-    
-
-    <article class="widget agenda-widget">
-      <div class="widget-icon">▦</div>
-      <div class="widget-copy">
-        <h3>Aktivitas Hari Ini</h3>
-        <div class="value" id="todayAgendaCount">0 Agenda</div>
-        <div class="sub-text" id="todayLessonCount">0 sesi pelajaran efektif.</div>
-      </div>
-    </article>
-
-    <article class="widget calendar-widget">
-      <div class="widget-icon">🗓</div>
-      <div class="widget-copy">
-        <h3>Hari & Tanggal</h3>
-        <div class="value" id="homeDayName">Memuat...</div>
-        <div class="sub-text" id="homeDateShort">Menyiapkan kalender hari ini.</div>
-      </div>
-    </article>
-
-    <article class="widget academic-widget">
-      <div class="widget-icon">🎓</div>
-      <div class="widget-copy">
-        <h3>Periode Akademik</h3>
-        <div class="value">2026/2027</div>
-        <div class="sub-text">Semester Ganjil • Ruang kerja aktif</div>
-      </div>
-    </article>
   </section>
 
   <section class="operational-grid" aria-label="Informasi operasional hari ini">
@@ -1496,6 +1508,7 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
   import {
     getDatabase,
     ref,
+    get,
     onValue
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -1524,6 +1537,7 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
     wakil: "Wakil Direktur",
     supervisor: "Supervisor",
     yayasan: "Ketua Yayasan",
+    "kepala-sekolah": "Kepala Sekolah",
     guru: "Guru",
     naqib: "Naqib",
     konselor: "Konselor",
@@ -2377,44 +2391,32 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
 
   function updateClock() {
     const sekarang = new Date();
+    const jam = sekarang.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    });
+    const tanggalLengkap = sekarang.toLocaleDateString("id-ID", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
 
-    document.getElementById(
-      "clock"
-    ).textContent = sekarang.toLocaleTimeString(
-      "id-ID",
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false
-      }
-    );
-
-    const tanggalLengkap = sekarang.toLocaleDateString(
-      "id-ID",
-      {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-      }
-    );
-
-    document.getElementById(
-      "date"
-    ).textContent = tanggalLengkap;
-
-    const heroDate = document.getElementById(
-      "heroDate"
-    );
-
-    if (heroDate) {
-      heroDate.textContent = tanggalLengkap;
-    }
+    const clock = document.getElementById("clock");
+    const date = document.getElementById("date");
+    const heroClock = document.getElementById("heroClock");
+    const heroDate = document.getElementById("heroDate");
     const homeDayName = document.getElementById("homeDayName");
     const homeDateShort = document.getElementById("homeDateShort");
-    if (homeDayName) homeDayName.textContent = new Intl.DateTimeFormat("id-ID", { weekday: "long" }).format(now);
-    if (homeDateShort) homeDateShort.textContent = new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(now);
+
+    if (clock) clock.textContent = jam;
+    if (date) date.textContent = tanggalLengkap;
+    if (heroClock) heroClock.textContent = `${jam.slice(0,5)} WIB`;
+    if (heroDate) heroDate.textContent = tanggalLengkap;
+    if (homeDayName) homeDayName.textContent = new Intl.DateTimeFormat("id-ID", { weekday: "long" }).format(sekarang);
+    if (homeDateShort) homeDateShort.textContent = new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(sekarang);
   }
 
   function pad(value) {
@@ -2961,10 +2963,8 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
           0
         );
 
-      document.getElementById(
-        "todayLessonCount"
-      ).textContent =
-        `${lessonCount} sesi pelajaran efektif.`;
+      const todayLessonCount = document.getElementById("todayLessonCount");
+      if (todayLessonCount) todayLessonCount.textContent = `${lessonCount} sesi pelajaran efektif.`;
 
       const banner =
         document.getElementById(
@@ -3131,10 +3131,8 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
         )
         .slice(0, 7);
 
-    document.getElementById(
-      "todayAgendaCount"
-    ).textContent =
-      `${todayEvents.length} Agenda`;
+    const todayAgendaCount = document.getElementById("todayAgendaCount");
+    if (todayAgendaCount) todayAgendaCount.textContent = `${todayEvents.length} Agenda`;
 
     document.getElementById(
       "todayAgenda"
@@ -3304,71 +3302,44 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
         .join("");
   }
 
-  function listenHealthPermissionsForToday() {
-    const dateKey =
-      getJakartaState().dateKey;
-
-    if (
-      healthPermissionDateKey === dateKey &&
-      healthPermissionUnsubscribe
-    ) {
-      return;
-    }
-
-    if (
-      typeof healthPermissionUnsubscribe ===
-      "function"
-    ) {
-      healthPermissionUnsubscribe();
-    }
-
+  async function loadHealthPermissionsForToday(force = false) {
+    const dateKey = getJakartaState().dateKey;
+    if (!force && healthPermissionDateKey === dateKey && Number.isFinite(healthPermissionUnsubscribe) && Date.now() - healthPermissionUnsubscribe < 5 * 60 * 1000) return;
     healthPermissionDateKey = dateKey;
 
-    document.getElementById(
-      "healthPermissionCount"
-    ).textContent = "Memuat...";
+    const count = document.getElementById("healthPermissionCount");
+    const list = document.getElementById("healthPermissionList");
+    if (count) count.textContent = "Memuat...";
+    if (list) list.innerHTML = `<div class="home-empty" style="padding:22px"><div class="empty-visual">⏳</div>Memuat izin kesehatan ${escapeHtml(dateKey)}...</div>`;
 
-    document.getElementById(
-      "healthPermissionList"
-    ).innerHTML = `
-      <div class="home-empty" style="padding:22px;">
-        <div class="empty-visual">⏳</div>
-        Memuat izin kesehatan tanggal
-        ${escapeHtml(dateKey)}...
-      </div>
-    `;
-
-    healthPermissionUnsubscribe =
-      onValue(
-        ref(
-          database,
-          `${HEALTH_PERMISSION_PATH}/${dateKey}`
-        ),
-        snapshot => {
-          renderHealthPermissions(
-            snapshot.val()
-          );
-        },
-        error => {
-          console.error(
-            "Izin kesehatan gagal dimuat:",
-            error
-          );
-
-          document.getElementById(
-            "healthPermissionCount"
-          ).textContent = "Gagal Dimuat";
-
-          document.getElementById(
-            "healthPermissionList"
-          ).innerHTML = `
-            <div class="home-empty" style="padding:22px;">
-              <div class="empty-visual">!</div>
-              Data izin kesehatan belum dapat dibaca dari Firebase.
-            </div>
-          `;
+    const cacheKey = `cahaya_home_health_${dateKey}`;
+    if (!force) {
+      try {
+        const cache = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
+        if (cache && Date.now() - cache.time < 5 * 60 * 1000) {
+          healthPermissionUnsubscribe = Date.now();
+          renderHealthPermissions(cache.value);
+          return;
         }
-      );
+      } catch (_) {}
+    }
+
+    try {
+      const snapshot = await Promise.race([
+        get(ref(database, `${HEALTH_PERMISSION_PATH}/${dateKey}`)),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000))
+      ]);
+      const value = snapshot?.val?.() || null;
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ time: Date.now(), value })); } catch (_) {}
+      healthPermissionUnsubscribe = Date.now();
+      renderHealthPermissions(value);
+    } catch (error) {
+      console.error("Izin kesehatan gagal dimuat:", error);
+      healthPermissionUnsubscribe = null;
+      if (count) count.textContent = "Belum Terbaca";
+      if (list) list.innerHTML = `<div class="home-empty" style="padding:22px"><div class="empty-visual">!</div>Data izin kesehatan belum dapat dibaca. <button class="inline-retry" id="retryHealthHome" type="button">Coba Lagi</button></div>`;
+      document.getElementById("retryHealthHome")?.addEventListener("click", () => loadHealthPermissionsForToday(true));
+    }
   }
 
   function cloneData(value) {
@@ -3857,50 +3828,40 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
         : "Jadwal Bawaan";
   }
 
-  function listenSupervisionSchedule() {
-    onValue(
-      ref(
-        database,
-        SUPERVISION_SCHEDULE_PATH
-      ),
-      snapshot => {
-        if (snapshot.exists()) {
-          supervisionSchedule =
-            mergeSupervisionSchedule(
-              snapshot.val()
-            );
-
-          supervisionSourceMode =
-            "firebase";
-        } else {
-          supervisionSchedule =
-            cloneData(
-              DEFAULT_SUPERVISION_SCHEDULE
-            );
-
-          supervisionSourceMode =
-            "fallback";
+  async function loadSupervisionSchedule(force = false) {
+    const cacheKey = "cahaya_home_supervision_v20";
+    if (!force) {
+      try {
+        const cache = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
+        if (cache && Date.now() - cache.time < 10 * 60 * 1000) {
+          supervisionSchedule = mergeSupervisionSchedule(cache.value || {});
+          supervisionSourceMode = cache.value ? "firebase" : "fallback";
+          renderSupervisionPanel();
+          return;
         }
+      } catch (_) {}
+    }
 
-        renderSupervisionPanel();
-      },
-      error => {
-        console.error(
-          "Jadwal pengawasan gagal dimuat:",
-          error
-        );
-
-        supervisionSchedule =
-          cloneData(
-            DEFAULT_SUPERVISION_SCHEDULE
-          );
-
-        supervisionSourceMode =
-          "fallback";
-
-        renderSupervisionPanel();
-      }
-    );
+    const source = document.getElementById("supervisionSource");
+    if (source) source.textContent = "Menyinkronkan";
+    try {
+      const snapshot = await Promise.race([
+        get(ref(database, SUPERVISION_SCHEDULE_PATH)),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000))
+      ]);
+      const value = snapshot?.exists?.() ? snapshot.val() : null;
+      supervisionSchedule = value ? mergeSupervisionSchedule(value) : cloneData(DEFAULT_SUPERVISION_SCHEDULE);
+      supervisionSourceMode = value ? "firebase" : "fallback";
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ time: Date.now(), value })); } catch (_) {}
+      renderSupervisionPanel();
+    } catch (error) {
+      console.error("Jadwal pengawasan gagal dimuat:", error);
+      supervisionSchedule = cloneData(DEFAULT_SUPERVISION_SCHEDULE);
+      supervisionSourceMode = "fallback";
+      renderSupervisionPanel();
+      if (source) source.textContent = "Jadwal Bawaan • Coba Lagi";
+      source?.addEventListener("click", () => loadSupervisionSchedule(true), { once: true });
+    }
   }
 
   function setCalendarMode(mode) {
@@ -4084,15 +4045,15 @@ button,.btn,.action-btn{border-radius:13px!important;font-weight:800!important}.
 
       listenCalendar();
       listenLessonSchedule();
-      listenHealthPermissionsForToday();
-      listenSupervisionSchedule();
+      loadHealthPermissionsForToday();
+      loadSupervisionSchedule();
 
       setInterval(
         () => {
-          listenHealthPermissionsForToday();
-          renderSupervisionPanel();
+          loadHealthPermissionsForToday();
+          loadSupervisionSchedule();
         },
-        60 * 1000
+        5 * 60 * 1000
       );
     }
   );

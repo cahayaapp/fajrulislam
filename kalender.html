@@ -8,7 +8,7 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f6b4f" />
+  <meta name="theme-color" content="#2878ff" />
   <title>Kalender Pendidikan 2026/2027 | Pesantren Cahaya Fajrul Islam</title>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -968,6 +968,54 @@
       .nav-actions{grid-template-columns:1fr}
       .summary-grid{grid-template-columns:1fr}
     }
+
+
+    /* =========================================================
+       V20 — TEMA CAHAYA + MOBILE AGENDA-ONLY
+       ========================================================= */
+    :root{
+      --green:#2878ff;
+      --green-dark:#1557d5;
+      --green-soft:#edf5ff;
+      --gold:#19c6e6;
+      --gold-soft:#eafcff;
+      --bg:#f4f8ff;
+      --line:#e1eaf7;
+      --ink:#152347;
+      --muted:#71809e;
+      --shadow:0 18px 55px rgba(40,120,255,.11);
+      --shadow-soft:0 8px 24px rgba(35,78,160,.08);
+    }
+    body{
+      background:
+        radial-gradient(circle at 0% 0%,rgba(25,198,230,.14),transparent 27%),
+        radial-gradient(circle at 100% 0%,rgba(118,103,245,.12),transparent 27%),
+        linear-gradient(180deg,#f3f7ff,#fbfdff);
+    }
+    .logo-wrap{border-color:rgba(40,120,255,.22);background:linear-gradient(145deg,#1557d5,#2878ff 58%,#19c6e6)}
+    .hero{border-color:rgba(40,120,255,.16);background:radial-gradient(circle at 92% 5%,rgba(25,198,230,.15),transparent 28%),linear-gradient(135deg,#fff,#f5f9ff)}
+    .hero::after{border-color:rgba(40,120,255,.08)}
+    .eyebrow,.month-title,.today .day-number{color:#2878ff}
+    h1,.year-card strong{color:#152347}
+    .today .day-number{color:#fff;background:linear-gradient(135deg,#2878ff,#19c6e6)}
+    .btn.primary,.weekly-chip.active{background:linear-gradient(135deg,#2878ff,#19c6e6)}
+    .calendar-card,.side-card,.weekly-schedule-card{border-color:#dce7f6;background:rgba(255,255,255,.97);box-shadow:0 14px 36px rgba(35,78,160,.08)}
+    .day-cell.today{background:linear-gradient(145deg,#fff,#edf7ff);box-shadow:inset 0 0 0 2px rgba(40,120,255,.34)}
+    .calendar-empty-mobile{display:none;padding:22px;border:1px dashed #cbd9ed;border-radius:16px;background:#fff;color:#71809e;text-align:center;font-size:13px;font-weight:800}
+
+    @media(max-width:780px){
+      /* Pada HP hanya tanggal yang memiliki agenda yang ditampilkan. */
+      .day-cell.no-events{display:none!important}
+      .calendar-grid{grid-template-columns:1fr;gap:10px;background:transparent}
+      .day-cell.has-events{min-height:0;background:#fff;border:1px solid #dce7f6;box-shadow:0 9px 22px rgba(35,78,160,.07)}
+      .calendar-empty-mobile{display:block;grid-column:1/-1}
+      .hero{background:linear-gradient(145deg,#176cf1,#2878ff 58%,#19c6e6);color:#fff;border:0}
+      .hero h1,.hero p:not(.eyebrow),.hero .eyebrow{color:#fff}
+      .hero p:not(.eyebrow){color:rgba(255,255,255,.88)}
+      .year-card{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25);box-shadow:none}
+      .year-card span,.year-card strong,.year-card small{color:#fff}
+    }
+
 </style>
 </head>
 
@@ -1525,7 +1573,7 @@
         const remaining = dayEvents.length - visibleEvents.length;
 
         cells.push(`
-          <div class="day-cell ${isCurrentMonth ? "" : "outside"} ${date.getDay() === 0 ? "sunday" : ""} ${isToday ? "today" : ""} ${isForumDay ? "forum-day" : ""}">
+          <div class="day-cell ${isCurrentMonth ? "" : "outside"} ${dayEvents.length ? "has-events" : "no-events"} ${date.getDay() === 0 ? "sunday" : ""} ${isToday ? "today" : ""} ${isForumDay ? "forum-day" : ""}">
             <div class="day-top">
               <div class="day-heading">
                 <span class="day-number">${date.getDate()}</span>
@@ -1550,7 +1598,12 @@
         cursor.setDate(cursor.getDate() + 1);
       }
 
-      els.calendarGrid.innerHTML = cells.join("");
+      const agendaDaysThisMonth = eventsInMonth(currentView).length;
+      els.calendarGrid.innerHTML = cells.join("") + (
+        agendaDaysThisMonth
+          ? ""
+          : `<div class="calendar-empty-mobile">Belum ada agenda pada bulan ini.</div>`
+      );
       bindCalendarActions();
       renderMonthSummary();
       updateNavButtons();

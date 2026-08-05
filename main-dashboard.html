@@ -1868,8 +1868,8 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=20260804-layout2', this)">🏠 Beranda Dashboard</a>
-        <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=19', this)">🗓️ Kalender Pendidikan</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=20', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=20', this)">🗓️ Kalender Pendidikan</a>
       </div>
 
 
@@ -1878,6 +1878,7 @@
         <a class="nav-item menu-akses" id="menu-dashboard-pimpinan" style="display: none;" onclick="loadPage('pimpinan/dashboard-pimpinan.html?v=20260804-cc3', this)">📊 Dashboard Pimpinan</a>
         <a class="nav-item menu-akses" id="menu-laporan-observasi" style="display: none;" onclick="loadPage('pimpinan/dashboard-pimpinan.html?v=20260804-cc3#observasi', this)">👁️ Laporan Observasi</a>
         <a class="nav-item menu-akses" id="menu-perizinan-santri" style="display: none;" onclick="loadPage('pimpinan/perizinan-santri.html', this)">🛡️ Perizinan Santri</a>
+        <a class="nav-item menu-akses" id="menu-rekap-kepala-sekolah" style="display: none;" onclick="loadPage('pimpinan/rekap-kepala-sekolah.html?v=20', this)">🏫 Rekap Kepala Sekolah</a>
       </div>
 
       <div class="menu-group">
@@ -1983,6 +1984,7 @@
       'menu-dashboard-pimpinan': { icon: '📊', label: 'Pimpinan' },
       'menu-laporan-observasi': { icon: '👁️', label: 'Observasi' },
       'menu-perizinan-santri': { icon: '🛡️', label: 'Perizinan' },
+      'menu-rekap-kepala-sekolah': { icon: '🏫', label: 'Rekap Sekolah' },
       'menu-raport-bulanan': { icon: '📈', label: 'KPI Bulanan' },
       'menu-monitoring-absen-guru': { icon: '🧭', label: 'Monitor Guru' },
       'menu-raport-sdm': { icon: '👥', label: 'Raport SDM' },
@@ -2033,9 +2035,10 @@
       direktur: ['menu-dashboard-pimpinan','menu-laporan-observasi','menu-perizinan-santri','menu-raport-sdm','menu-tindak-lanjut-sdm','menu-raport-bulanan','menu-profil','menu-home'],
       wakil: ['menu-dashboard-pimpinan','menu-laporan-observasi','menu-perizinan-santri','menu-raport-sdm','menu-tindak-lanjut-sdm','menu-raport-bulanan','menu-profil','menu-home'],
       yayasan: ['menu-dashboard-pimpinan','menu-laporan-observasi','menu-perizinan-santri','menu-raport-sdm','menu-raport-bulanan','menu-profil','menu-home'],
+      'kepala-sekolah': ['menu-home','menu-rekap-kepala-sekolah','menu-kalender-pendidikan','menu-monitoring-absen-guru','menu-profil'],
       supervisor: ['menu-laporan-observasi','menu-perizinan-santri','menu-raport-sdm','menu-tindak-lanjut-sdm','menu-raport-bulanan','menu-monitoring-absen-guru','menu-profil','menu-home'],
       observer: ['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-sarpras','menu-observer-dapur','menu-observer-uks'],
-      guru: ['menu-home','menu-absen-guru','menu-absen-kbm','menu-nilai','menu-tahfiz','menu-laporan-murojaah','menu-profil'],
+      guru: ['menu-home','menu-kalender-pendidikan','menu-absen-guru','menu-absen-kbm','menu-nilai','menu-tahfiz','menu-laporan-murojaah','menu-profil'],
       naqib: ['menu-home','menu-jadwal-piket','menu-absen-asrama','menu-skor-usrah','menu-disiplin','menu-jurnal-piket','menu-gamifikasi','menu-profil'],
       konselor: ['menu-home','menu-antrean-kasus','menu-profil'],
       cla: ['menu-home','menu-raport-bulanan','menu-asesmen-santri','menu-profil'],
@@ -2045,7 +2048,7 @@
       wali: ['menu-profil']
     };
 
-    const mobileRoleOrder = ['admin','direktur','wakil','yayasan','supervisor','observer','konselor','naqib','guru','cla','kesehatan','sarpras','layanan','wali'];
+    const mobileRoleOrder = ['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor','observer','konselor','naqib','guru','cla','kesehatan','sarpras','layanan','wali'];
 
     function getMobileShortcutFallbackMeta(menuId) {
       const menu = document.getElementById(menuId);
@@ -2249,7 +2252,7 @@
     }
 
     let pUserSafe = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
-    {const roles=(Array.isArray(pUserSafe.akses)?pUserSafe.akses:[pUserSafe.akses||pUserSafe.role].filter(Boolean)).map(r=>String(r||'').toLowerCase()),identity=[pUserSafe.cashierUnit,pUserSafe.unitKasir,pUserSafe.username,pUserSafe.label].filter(Boolean).join(' '),dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity),cashierOnly=roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','wali'].includes(r));if(dedicatedCashier||cashierOnly){const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';location.replace(`keuangan/kasir.html${unit?`?unit=${unit}`:''}`)}}
+    {const roles=(Array.isArray(pUserSafe.akses)?pUserSafe.akses:[pUserSafe.akses||pUserSafe.role].filter(Boolean)).map(r=>String(r||'').toLowerCase()),identity=[pUserSafe.cashierUnit,pUserSafe.unitKasir,pUserSafe.username,pUserSafe.label].filter(Boolean).join(' '),dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity),cashierOnly=roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','kepala-sekolah','wali'].includes(r));if(dedicatedCashier||cashierOnly){const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';location.replace(`keuangan/kasir.html${unit?`?unit=${unit}`:''}`)}}
 
     let rawRoles = pUserSafe.akses || [];
     if(typeof rawRoles === 'string') rawRoles = [rawRoles];
@@ -2263,6 +2266,9 @@
         "wakil_direktur": "wakil",
         "wadir": "wakil",
         "ketua yayasan": "yayasan",
+        "kepala sekolah": "kepala-sekolah",
+        "kepala_sekolah": "kepala-sekolah",
+        "kepsek": "kepala-sekolah",
         "center of learning & achievement": "cla",
         "center of learning and achievement": "cla",
         "kepala sarpras": "sarpras",
@@ -2298,6 +2304,7 @@
         supervisor: "Supervisor",
         observer: "Tim Observer",
         yayasan: "Ketua Yayasan",
+        "kepala-sekolah": "Kepala Sekolah",
         guru: "Guru",
         naqib: "Naqib",
         konselor: "Konselor",
@@ -2485,15 +2492,17 @@
         .find(menu => ambilUrlDariMenu(menu) === url) || null;
     }
 
-    const DEFAULT_ROLE_MENUS = {};
+    const DEFAULT_ROLE_MENUS = {
+      "kepala-sekolah": ["menu-home","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-profil"]
+    };
 
 
     const ROLE_SIDEBAR_GROUPS = [
       { key:'umum', label:'Umum', icon:'✦', menus:['menu-home','menu-kalender-pendidikan','menu-chat','menu-profil'] },
-      { key:'pimpinan', label:'Pimpinan & Pengambilan Keputusan', icon:'📊', roles:['admin','direktur','wakil','yayasan'], menus:['menu-dashboard-pimpinan','menu-laporan-observasi','menu-perizinan-santri'] },
-      { key:'supervisor', label:'Supervisor & Pembinaan SDM', icon:'🎯', roles:['admin','direktur','wakil','yayasan','supervisor','cla'], menus:['menu-raport-bulanan','menu-monitoring-absen-guru','menu-raport-sdm','menu-tindak-lanjut-sdm'] },
-      { key:'guru', label:'Guru / Akademik', icon:'👨‍🏫', roles:['guru','admin','direktur','wakil'], menus:['menu-absen-guru','menu-absen-kbm','menu-guru-menulis','menu-nilai'] },
-      { key:'tahfiz', label:'Tahsin, Tahfiz & Muroja’ah', icon:'📖', roles:['guru','admin','direktur','wakil'], menus:['menu-tahfiz','menu-laporan-murojaah'] },
+      { key:'pimpinan', label:'Pimpinan & Pengambilan Keputusan', icon:'📊', roles:['admin','direktur','wakil','yayasan','kepala-sekolah'], menus:['menu-dashboard-pimpinan','menu-laporan-observasi','menu-perizinan-santri','menu-rekap-kepala-sekolah'] },
+      { key:'supervisor', label:'Supervisor & Pembinaan SDM', icon:'🎯', roles:['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor','cla'], menus:['menu-raport-bulanan','menu-monitoring-absen-guru','menu-raport-sdm','menu-tindak-lanjut-sdm'] },
+      { key:'guru', label:'Guru / Akademik', icon:'👨‍🏫', roles:['guru','kepala-sekolah','admin','direktur','wakil'], menus:['menu-absen-guru','menu-absen-kbm','menu-guru-menulis','menu-nilai'] },
+      { key:'tahfiz', label:'Tahsin, Tahfiz & Muroja’ah', icon:'📖', roles:['guru','kepala-sekolah','admin','direktur','wakil'], menus:['menu-tahfiz','menu-laporan-murojaah'] },
       { key:'naqib', label:'Naqib / Pengasuhan', icon:'🕌', roles:['naqib','admin','direktur','wakil'], menus:['menu-absen-asrama','menu-skor-usrah','menu-disiplin','menu-gamifikasi','menu-jadwal-piket','menu-jurnal-piket','menu-usrah'] },
       { key:'konselor', label:'Konselor', icon:'🤝', roles:['konselor','admin','direktur','wakil'], menus:['menu-antrean-kasus'] },
       { key:'kesehatan', label:'Kesehatan / UKS', icon:'🩺', roles:['kesehatan','admin','direktur','wakil'], menus:['menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan','menu-perizinan-uks','menu-stok-obat'] },
@@ -2589,6 +2598,18 @@
       tampilkanHalamanTanpaAkses();
     }
 
+    function isPkbmTeacherProfile(profile = {}) {
+      const identity = [profile.username, profile.email, profile.label, profile.nama]
+        .filter(Boolean).join(" ").toLowerCase();
+      const teachers = window.CAHAYA_MASTER_DATA?.pkbmTeachers || [];
+      const username = String(profile.username || "").toLowerCase().trim();
+      return teachers.some(item => {
+        const tokens = [item.username, item.code, item.name, ...(item.aliases || [])]
+          .filter(Boolean).map(value => String(value).toLowerCase());
+        return tokens.some(token => token && (identity.includes(token) || (username && token.includes(username))));
+      });
+    }
+
     async function refreshUserProfileUI() {
       try {
         authorizationReady = false;
@@ -2655,8 +2676,15 @@
           });
         });
 
-        // RBAC ketat: daftar di bawah berasal hanya dari menu yang dicentang
-        // pada setiap role akun. Tidak ada menu tambahan otomatis berdasarkan jabatan.
+        // Guru PKBM wajib memperoleh kalender pendidikan sebagai alat operasional.
+        // Identitasnya dicocokkan dengan master guru PKBM resmi.
+        const akunGuruPkbm = isPkbmTeacherProfile(pUserSafe);
+        if (akunGuruPkbm && !gabunganMenu.includes("menu-kalender-pendidikan")) {
+          gabunganMenu.push("menu-kalender-pendidikan");
+        }
+
+        // RBAC tetap ketat untuk menu lain. Akun khusus dapat dibatasi
+        // melalui allowedMenus, dengan kalender tetap dipertahankan untuk guru PKBM.
 
         // Akun khusus seperti guru PKBM dapat dibatasi hanya ke menu tertentu.
         const allowedMenusUser = Array.isArray(pUserSafe.allowedMenus)
@@ -2664,6 +2692,7 @@
           : [];
         if (allowedMenusUser.length) {
           const whitelist = new Set(allowedMenusUser);
+          if (akunGuruPkbm) whitelist.add("menu-kalender-pendidikan");
           for (let i = gabunganMenu.length - 1; i >= 0; i--) {
             if (!whitelist.has(gabunganMenu[i])) gabunganMenu.splice(i, 1);
           }

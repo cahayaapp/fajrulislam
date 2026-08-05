@@ -34,6 +34,7 @@
     .role-admin { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
     .role-direktur { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
     .role-guru { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+    .role-kepala-sekolah { background:#edf5ff; color:#1557d5; border:1px solid #93c5fd; }
     .role-naqib { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
     .role-konselor { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
     .role-wakil { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
@@ -403,6 +404,7 @@
         <select class="form-control" id="selectRoleMenu" onchange="renderChecklistMenu()">
           <option value="wali">👪 Wali Santri</option>
           <option value="guru">👨‍🏫 Guru (Akademik)</option>
+          <option value="kepala-sekolah">🏫 Kepala Sekolah</option>
           <option value="naqib">👳‍♂️ Naqib (Asrama)</option>
           <option value="konselor">🛡️ Konselor Kesantrian</option>
           <option value="cla">🎓 Center of Learning & Achievement</option>
@@ -452,6 +454,7 @@
             <label class="check-label" style="background:#ffffff; border-color:#f3c86f;"><input type="checkbox" class="cb-menu" value="menu-dashboard-pimpinan"> 📊 Dashboard Pimpinan</label>
             <label class="check-label" style="background:#ffffff; border-color:#d9c7ff;"><input type="checkbox" class="cb-menu" value="menu-laporan-observasi"> 👁️ Laporan Observasi</label>
             <label class="check-label" style="background:#ffffff; border-color:#93c5fd;"><input type="checkbox" class="cb-menu" value="menu-perizinan-santri"> 🛡️ Perizinan Santri</label>
+            <label class="check-label" style="background:#ffffff; border-color:#60a5fa;"><input type="checkbox" class="cb-menu" value="menu-rekap-kepala-sekolah"> 🏫 Rekap Kepala Sekolah</label>
           </div>
         </div>
 
@@ -590,6 +593,7 @@
       <div class="checkbox-grid">
         <label class="check-label"><input type="checkbox" value="wali" class="role-checkbox"> Wali Santri</label>
         <label class="check-label"><input type="checkbox" value="guru" class="role-checkbox" checked> Guru</label>
+        <label class="check-label" style="border-color:#93c5fd;background:#edf5ff"><input type="checkbox" value="kepala-sekolah" class="role-checkbox"> Kepala Sekolah</label>
         <label class="check-label"><input type="checkbox" value="naqib" class="role-checkbox"> Naqib</label>
         <label class="check-label"><input type="checkbox" value="konselor" class="role-checkbox"> Konselor</label>
         <label class="check-label"><input type="checkbox" value="cla" class="role-checkbox"> Center of Learning (CLA)</label>
@@ -671,7 +675,9 @@
     "menu-observer-uks"
   ];
 
-  const DEFAULT_ROLE_MENUS = {};
+  const DEFAULT_ROLE_MENUS = {
+    "kepala-sekolah": ["menu-home","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-profil"]
+  };
 
   function daftarMenuOtorisasiTersedia(role = "") {
     let roots = [document];
@@ -791,7 +797,7 @@
     }).join('');
   }
 
-  const LEADERSHIP_ROLES = new Set(['admin','direktur','wakil','yayasan','supervisor','cla']);
+  const LEADERSHIP_ROLES = new Set(['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor','cla']);
   const ALL_SCOPE_FIELDS = ['attendance','academic','tahfiz','nurturing','health','counseling','facilities','observer','sdm','finance','ranking'];
   function selectedRoles(){ return [...document.querySelectorAll('.role-checkbox:checked')].map(cb=>cb.value); }
   function toggleLeadershipScope(){
