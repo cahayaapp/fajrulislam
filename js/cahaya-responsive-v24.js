@@ -1,3 +1,4 @@
+/* CAHAYA BUILD 20260817-v26 — responsive helper, no data queries */
 (function(){
   'use strict';
   const MOBILE = () => window.matchMedia('(max-width:900px)').matches;

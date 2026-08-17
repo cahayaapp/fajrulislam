@@ -1664,7 +1664,8 @@
 </style>
 
 
-  <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=24" />
+  <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=26" />
+  <meta name="cahaya-build" content="20260817-v26">
 </head>
 <body class="cahaya-shell-page">
 
@@ -1967,8 +1968,8 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=24', this)">🏠 Beranda Dashboard</a>
-        <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=24', this)">🗓️ Kalender Pendidikan</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=26', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=26', this)">🗓️ Kalender Pendidikan</a>
       </div>
 
 
@@ -2034,7 +2035,7 @@
 
         <a class="nav-item menu-akses" id="menu-guru-menulis" style="display: none;" onclick="loadPage('guru/gurumenulis.html', this)">✍️ Guru Menulis</a>
 
-        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html?v=24', this)">📖 Tahsin, Tahfiz & Muroja’ah</a>
+        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html?v=26', this)">📖 Tahsin, Tahfiz & Muroja’ah</a>
         <a class="nav-item menu-akses" id="menu-laporan-murojaah" style="display: none;" onclick="loadPage('guru/laporan-murojaah.html', this)">🔁 Laporan Muroja’ah</a>
 
         <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html', this)">📝 Input Nilai Bulanan</a>
@@ -2653,21 +2654,13 @@
     function tampilkanHalamanTanpaAkses() {
       const frame = document.getElementById('contentFrame');
       frame.removeAttribute('src');
-      frame.srcdoc = `
-        <!DOCTYPE html>
-        <html lang="id">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width,initial-scale=1">
-          <style>
-            body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;font-family:Arial,sans-serif;color:#0f172a;padding:24px;box-sizing:border-box}
-            .box{max-width:560px;background:white;border:1px solid #e2e8f0;border-radius:18px;padding:30px;text-align:center;box-shadow:0 12px 35px rgba(15,23,42,.08)}
-            .icon{font-size:42px;margin-bottom:12px} h2{margin:0 0 10px} p{color:#64748b;line-height:1.65;margin:0}
-          </style>
-        </head>
-        <body><div class="box"><div class="icon">🔒</div><h2>Belum Ada Menu yang Diotorisasi</h2><p>Administrator perlu mencentang minimal satu menu untuk role akun ini melalui halaman Manajemen Pengguna.</p></div>
-</body>
-        </html>`;
+      frame.srcdoc = [
+        '<!DOCTYPE html>',
+        '<html lang="id"><head><meta charset="UTF-8">',
+        '<meta name="viewport" content="width=device-width,initial-scale=1">',
+        '<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;font-family:Arial,sans-serif;color:#0f172a;padding:24px;box-sizing:border-box}.box{max-width:560px;background:white;border:1px solid #e2e8f0;border-radius:18px;padding:30px;text-align:center;box-shadow:0 12px 35px rgba(15,23,42,.08)}.icon{font-size:42px;margin-bottom:12px}h2{margin:0 0 10px}p{color:#64748b;line-height:1.65;margin:0}</style>',
+        '</head><body><div class="box"><div class="icon">🔒</div><h2>Belum Ada Menu yang Diotorisasi</h2><p>Administrator perlu mencentang minimal satu menu untuk role akun ini melalui halaman Manajemen Pengguna.</p></div></body></html>'
+      ].join('');
 
       document.getElementById('currentPageTitle').textContent = "Akses Belum Diberikan";
     }
@@ -3038,7 +3031,7 @@
     /* Chat legacy dihapus. Seluruh chat pengurus memakai js/pengurus-whatsapp-chat.js
        agar pesan tidak ditimpa, room tidak terhapus, dan inbox tetap sinkron. */
   </script>
-  <script src="js/pengurus-whatsapp-chat.js"></script>
+  <script src="js/pengurus-whatsapp-chat.js?v=26"></script>
 
   <script>
     window.addEventListener(
@@ -3055,6 +3048,6 @@
       }
     );
   </script>
-  <script src="js/cahaya-responsive-v24.js?v=25" defer></script>
+  <script src="js/cahaya-responsive-v24.js?v=26" defer></script>
 </body>
 </html>
