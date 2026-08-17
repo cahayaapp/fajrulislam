@@ -16,6 +16,8 @@
     @media(max-width:650px){.app{padding:9px 9px 30px}.hero{grid-template-columns:1fr;padding:23px 18px;border-radius:22px}.hero-note{min-width:0}.toolbar{grid-template-columns:1fr}.status{justify-self:stretch}.metrics{grid-template-columns:1fr 1fr;gap:9px}.metric{min-height:125px;padding:15px;border-radius:18px}.metric b{font-size:1.38rem}.panel{border-radius:19px}.panel-head{padding:17px 14px 13px}.panel-body{padding:11px}.row{grid-template-columns:minmax(0,1fr) 82px;gap:9px}.row .progress{grid-column:1/-1;grid-row:2}.value{grid-column:2;grid-row:1}.row small{font-size:.7rem}}
     @media(max-width:390px){.metrics{grid-template-columns:1fr}.hero h1{font-size:1.75rem}}
   </style>
+
+  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=24" />
 </head>
 <body>
 <main class="app">
@@ -60,4 +62,6 @@ function render(result){$("studentAvg").textContent=fmt(result.studentAvg);$("st
 async function load(force=false){const month=$("monthFilter").value;$("status").className="status";$("status").textContent="Memuat data bulan terpilih...";$("refreshBtn").disabled=true;try{const data=await fetchMonth(month,force);const result=calculate(data,month);render(result);$("status").className="status ok";$("status").textContent=`Selesai • ${data.student.length+data.teacher.length} catatan termuat`}catch(e){console.error(e);$("status").className="status error";$("status").textContent="Data gagal dimuat. Periksa koneksi dan indeks Firebase.";$("classRows").innerHTML='<div class="empty">Rekap belum dapat dibaca.</div>';$("teacherRows").innerHTML='<div class="empty">Rekap belum dapat dibaca.</div>'}finally{$("refreshBtn").disabled=false}}
 initMonths();$("monthFilter").addEventListener("change",()=>load(false));$("refreshBtn").addEventListener("click",()=>load(true));load(false);
 </script>
+
+  <script src="../js/cahaya-responsive-v24.js?v=24" defer></script>
 </body></html>

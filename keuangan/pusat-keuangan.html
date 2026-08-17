@@ -11,6 +11,8 @@
   <style>
     .feature-strip{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.feature-pill{padding:8px 11px;border-radius:999px;background:#eaf4ff;color:#2765aa;font-size:.7rem;font-weight:900}.feature-pill.off{background:#f1f3f6;color:#8995a8}.scope-chip{font-size:.62rem;opacity:.78}.fin-hidden{display:none!important}.student-gender{display:inline-flex;margin-top:4px;padding:3px 7px;border-radius:999px;background:#eff6ff;color:#4272ad;font-size:.58rem;font-weight:900}.scope-note{padding:9px 11px;border-radius:11px;background:#eef8ff;color:#28658f;font-size:.68rem;font-weight:800}.fin-empty-page{max-width:760px;margin:60px auto;padding:30px;text-align:center;border:1px solid #dae6f4;border-radius:24px;background:#fff;box-shadow:0 18px 44px #2e5c9414}.fin-empty-page h2{color:#24446d}
   </style>
+
+  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=24" />
 </head>
 <body>
 <main class="fin-app" id="financeApp">
@@ -101,5 +103,7 @@ function renderAudit(){const q=F.norm($('auditSearch').value);const merged=[...s
 function exportCurrent(){let rows=[],name=currentTab;if(currentTab==='bills')rows=filterFeature('spp',state.bills);else if(currentTab==='savings')rows=filterFeature('savings',state.accounts).map(a=>({namaSantri:a.namaSantri,kelas:a.kelas,jenisKelamin:a.jenisKelamin,saldoTabungan:a.saldoTabungan}));else if(currentTab==='wallet')rows=filterFeature('walletCashier',state.accounts).map(a=>({namaSantri:a.namaSantri,kelas:a.kelas,jenisKelamin:a.jenisKelamin,saldoBelanja:a.saldoBelanja,limitHarian:a.limitHarian,pin:a.pinHash?'Sudah Diatur':'Belum',status:a.aktif===false?'Nonaktif':'Aktif'}));else if(currentTab==='products')rows=state.products;else if(currentTab==='sales')rows=filterFeature('walletCashier',state.sales).map(s=>({...s,items:(s.items||[]).map(i=>`${i.nama} x${i.qty}`).join(' | ')}));else if(currentTab==='audit')rows=state.audit;else{if(featureOn('savings'))rows.push({indikator:'Total Tabungan',nilai:filterFeature('savings',state.accounts).reduce((s,a)=>s+F.number(a.saldoTabungan),0)});if(featureOn('walletCashier'))rows.push({indikator:'Total Saldo Belanja',nilai:filterFeature('walletCashier',state.accounts).reduce((s,a)=>s+F.number(a.saldoBelanja),0)});if(featureOn('spp'))rows.push({indikator:'Sisa Tagihan',nilai:filterFeature('spp',state.bills).reduce((s,b)=>s+F.number(b.sisa),0)})}if(!rows.length)return alert('Tidak ada data untuk diekspor.');const headers=[...new Set(rows.flatMap(r=>Object.keys(r).filter(k=>typeof r[k]!=='object')))],csv=[headers.join(','),...rows.map(r=>headers.map(h=>`"${String(r[h]??'').replace(/"/g,'""')}"`).join(','))].join('\n'),blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Keuangan-${name}-${cashierUnit}-${F.localDate()}.csv`;a.click();URL.revokeObjectURL(a.href)}
 window.addEventListener('DOMContentLoaded',async()=>{await F.ready();features=F.activeFeatures();const units=F.cashierUnitsForScope();cashierUnit=units[0]||'putra';if($('cashierUnitSelect')){[...$('cashierUnitSelect').options].forEach(o=>o.hidden=!units.includes(o.value));$('cashierUnitSelect').value=cashierUnit;$('cashierUnitSelect').disabled=units.length<=1}if(applyFeatureUI())loadAll()});
 </script>
+
+  <script src="../js/cahaya-responsive-v24.js?v=24" defer></script>
 </body>
 </html>
