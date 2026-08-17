@@ -857,7 +857,17 @@
         display: none;
       }
     }
-  </style>
+  
+    .quick-class-picker{margin:0 0 18px;padding:16px 17px;border:1px solid #dce7f6;border-radius:18px;background:linear-gradient(180deg,#ffffff,#f7faff);box-shadow:0 8px 22px rgba(35,78,160,.06)}
+    .quick-class-picker-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:11px}
+    .quick-class-picker-head strong{display:block;color:#152347;font-size:.92rem;font-weight:1000;line-height:1.35}
+    .quick-class-picker-head span{display:block;margin-top:3px;color:#71809e;font-size:.72rem;font-weight:750;line-height:1.45}
+    .quick-class-picker-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}
+    .quick-class-picker select{width:100%;min-height:46px;padding:10px 12px;border:1.5px solid #dce6f3;border-radius:13px;background:#fff;color:#152347;font-size:.82rem;font-weight:900;outline:none}
+    .quick-class-picker select:focus{border-color:#2878ff;box-shadow:0 0 0 4px rgba(40,120,255,.09)}
+    .quick-class-picker .button{white-space:nowrap}
+    @media(max-width:650px){.quick-class-picker{padding:14px}.quick-class-picker-row{grid-template-columns:1fr}.quick-class-picker .button{width:100%}}
+</style>
 
   <!-- Tampilan minimal: header internal dan ringkasan disembunyikan tanpa mengubah sistem -->
   <style id="cahaya-minimal-cleanup">
@@ -1251,7 +1261,7 @@
 </style>
 
 
-  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=24" />
+  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=34" />
 </head>
 
 <body>
@@ -1361,12 +1371,11 @@
   <main class="page">
     <header class="hero">
       <div class="hero-copy">
-        <span class="hero-label">CAHAYA APP • Uji Coba</span>
+        <span class="hero-label">CAHAYA APP • Absensi Guru</span>
         <h1>Absen Kehadiran Guru</h1>
         <p>
-          Scan QR atau masukkan kode yang ditempel di ruang kelas.
-          Kehadiran hanya dapat dikonfirmasi dari zona Pondok Putra
-          atau Pondok Putri yang sesuai.
+          Pilih kelas, scan QR, atau masukkan kode ruang.
+          Lokasi tetap diperiksa agar absensi tercatat sesuai zona pembelajaran.
         </p>
       </div>
 
@@ -1386,10 +1395,28 @@
         <div class="mobile-topbar-badge">SIAP ABSEN</div>
       </div>
 
+      <section class="quick-class-picker" aria-label="Pilih kelas tanpa scan QR">
+        <div class="quick-class-picker-head">
+          <div>
+            <strong>Pilih Kelas Langsung</strong>
+            <span>Gunakan pilihan ini jika QR belum sempat dipindai. Lokasi perangkat tetap diperiksa.</span>
+          </div>
+        </div>
+        <div class="quick-class-picker-row">
+          <div>
+            <label class="input-label" for="directClassSelect">Kelas / Ruang</label>
+            <select id="directClassSelect">
+              <option value="">Memuat kelas yang tersedia...</option>
+            </select>
+          </div>
+          <button type="button" class="button button-primary" id="useDirectClassButton">Lanjutkan</button>
+        </div>
+      </section>
+
       <div class="steps">
         <div class="step">
           <span>1</span>
-          <strong>Scan QR atau masukkan kode kelas</strong>
+          <strong>Pilih kelas, scan QR, atau masukkan kode</strong>
         </div>
 
         <div class="step">
@@ -3486,9 +3513,14 @@
             statusKehadiran: attendanceResult.status,
             statusKehadiranLabel: attendanceResult.statusLabel,
             keterlambatanMenit: attendanceResult.lateMinutes,
-            sumber: "ABSENSI_GURU_QR_LOKASI",
+            sumber: selectedMethod === "PILIH_KELAS"
+              ? "ABSENSI_GURU_PILIH_KELAS_LOKASI"
+              : "ABSENSI_GURU_QR_LOKASI",
+            validasiKelas: selectedMethod === "PILIH_KELAS"
+              ? "PILIH_MANUAL"
+              : (selectedMethod === "SCAN_QR" ? "QR" : "KODE_KELAS"),
             dibuatPada: serverTimestamp(),
-            versi: "Uji Coba 2026/2027",
+            versi: "2026/2027",
             absensiGabungan: Boolean(assignment.isCombined),
             idAbsensiGabungan: groupId,
             kelasGabungan: assignment.classNames,
@@ -3539,6 +3571,58 @@
         button.disabled = false;
         button.textContent = "✅ Konfirmasi Kehadiran";
       }
+    }
+
+    function populateDirectClassSelect() {
+      const select = document.getElementById("directClassSelect");
+      if (!select) return;
+
+      const dateKey = jakartaDateKey();
+      const activeRooms = Object.values(rooms || {})
+        .filter(room => room && room.aktif !== false)
+        .map(room => {
+          const assignments = teacherCode
+            ? combinedAssignmentsForTeacherAndRoom(dateKey, teacherCode, room)
+            : [];
+          return { room, assignments };
+        })
+        .sort((a, b) => {
+          const aHas = a.assignments.length ? 0 : 1;
+          const bHas = b.assignments.length ? 0 : 1;
+          if (aHas !== bHas) return aHas - bHas;
+          return String(a.room.kelas || a.room.namaRuang || "").localeCompare(
+            String(b.room.kelas || b.room.namaRuang || ""),
+            "id"
+          );
+        });
+
+      const unique = [];
+      const seen = new Set();
+      activeRooms.forEach(item => {
+        const room = item.room;
+        const key = String(room.id || room.kodeKelas || room.qrToken || room.namaRuang || "");
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        unique.push(item);
+      });
+
+      select.innerHTML = '<option value="">Pilih kelas / ruang...</option>' +
+        unique.map(item => {
+          const room = item.room;
+          const label = room.kelas || room.namaRuang || room.kodeKelas || room.id;
+          const marker = item.assignments.length ? ' • jadwal Anda' : '';
+          return `<option value="${escapeHtml(String(room.id || room.kodeKelas || room.qrToken || ''))}">${escapeHtml(label + marker)}</option>`;
+        }).join('');
+    }
+
+    function directSelectedRoom() {
+      const select = document.getElementById("directClassSelect");
+      const value = String(select?.value || "").trim();
+      if (!value) return null;
+      return Object.values(rooms || {}).find(room =>
+        room && room.aktif !== false &&
+        [room.id, room.kodeKelas, room.qrToken].some(item => String(item || "").trim() === value)
+      ) || null;
     }
 
     async function loadData() {
@@ -3669,6 +3753,7 @@
           error
         );
       } finally {
+        populateDirectClassSelect();
         showLoading(false);
       }
     }
@@ -3707,6 +3792,19 @@
           }
         );
       });
+
+    document.getElementById("useDirectClassButton")?.addEventListener("click", async () => {
+      const room = directSelectedRoom();
+      if (!room) {
+        showResult("error", "Pilih Kelas Terlebih Dahulu", [
+          { label: "Tindakan", value: "Pilih kelas atau ruang dari daftar, lalu tekan Lanjutkan." }
+        ]);
+        return;
+      }
+      await stopScanner();
+      const credential = room.kodeKelas || room.qrToken || room.id;
+      processCredential(credential, "PILIH_KELAS");
+    });
 
     document.getElementById(
       "startCameraButton"
