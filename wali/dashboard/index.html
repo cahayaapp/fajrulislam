@@ -1670,7 +1670,27 @@
       }
     }
 
-  </style>
+  
+
+    /* =========================================================
+       V22 — WALI MOBILE APP SHELL
+       ========================================================= */
+    @media (max-width:900px){
+      :root{--mobile-bottom-nav-height:78px}
+      .main-content{background:linear-gradient(180deg,#f3f8ff,#fbfdff)}
+      .mobile-header{min-height:76px;padding:10px 12px;border-bottom:0;background:radial-gradient(circle at 88% 0,rgba(255,255,255,.12),transparent 28%),linear-gradient(125deg,#075e54,#087a70 55%,#0a8e83);box-shadow:0 12px 32px rgba(6,78,72,.18)}
+      .menu-toggle-btn,.wali-chat-top-button,#mobileAvatar{color:#fff!important;border-color:rgba(255,255,255,.18)!important;background:rgba(255,255,255,.12)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 18px rgba(0,50,55,.12)!important}
+      .mobile-brand{justify-content:flex-start;color:#fff;font-size:.93rem;font-weight:1000;letter-spacing:-.1px}
+      .mobile-brand::after{content:'Wali Santri';display:block;position:absolute;margin-top:26px;margin-left:38px;color:rgba(255,255,255,.70);font-size:.56rem;font-weight:900;letter-spacing:.6px}
+      .mobile-brand img{filter:brightness(0) invert(1);width:31px;height:31px}
+      .workspace{padding:0!important}
+      .frame-shell{border:0!important;border-radius:0!important;box-shadow:none!important;background:#f4f8ff!important}
+      .app-footer{display:none!important}
+      .wali-mobile-bottom-nav-inner{border-radius:22px 22px 0 0;background:rgba(255,255,255,.975);box-shadow:0 -14px 36px rgba(31,65,128,.12)}
+      .wali-mobile-shortcut-btn.active{color:#08766c;background:linear-gradient(180deg,#eaf9f6,#f4fbff)}
+      .wali-mobile-shortcut-btn.active::before{background:linear-gradient(90deg,#08766c,#19c6e6);width:29px}
+    }
+</style>
 
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.webmanifest">
@@ -1692,6 +1712,38 @@
       backdrop-filter: blur(10px);
     }
   </style>
+<style id="cahaya-v23-wali-shell-fresh">
+/* V23 — fresh parent mobile shell; presentation only. */
+@media(max-width:900px){
+  :root{--mobile-bottom-nav-height:82px}
+  body{background:radial-gradient(circle at 6% 0,rgba(25,198,230,.12),transparent 26%),#f6f9fd!important}
+  .main-content{background:transparent!important}
+  .top-nav{
+    min-height:72px!important;padding:9px 11px!important;border-radius:0 0 26px 26px!important;border-bottom:0!important;
+    background:radial-gradient(circle at 12% 0,rgba(255,255,255,.15),transparent 30%),linear-gradient(118deg,#06645d,#08796f 45%,#0a8f87 78%,#0a9fc2 125%)!important;
+    box-shadow:0 14px 34px rgba(6,92,88,.16)!important
+  }
+  .menu-btn,.top-action-btn,.student-avatar,.student-badge{border-color:rgba(255,255,255,.17)!important}
+  .menu-btn,.top-action-btn{border-radius:15px!important;background:rgba(255,255,255,.11)!important;color:#fff!important;box-shadow:inset 0 1px rgba(255,255,255,.15),0 7px 18px rgba(0,56,54,.10)!important}
+  .page-kicker{display:none!important}.app-title-header,#currentPageTitle{color:#fff!important}
+  .page-heading::after{content:none!important}
+  .student-badge{background:rgba(255,255,255,.12)!important;backdrop-filter:blur(14px);color:#fff!important;border-radius:18px!important}
+  .student-badge strong,.student-badge span{color:#fff!important}
+  .wali-mobile-bottom-nav{padding:0 8px 6px!important}
+  .wali-mobile-bottom-nav-inner{
+    height:72px!important;padding:7px 7px calc(7px + env(safe-area-inset-bottom))!important;
+    border:1px solid rgba(219,229,241,.82)!important;border-radius:25px!important;background:rgba(255,255,255,.93)!important;
+    box-shadow:0 13px 34px rgba(31,65,128,.14)!important;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)
+  }
+  .wali-mobile-shortcut-btn{min-height:57px!important;border-radius:18px!important;transition:transform .16s ease,background .18s ease!important}
+  .wali-mobile-shortcut-btn:active{transform:scale(.92)!important}
+  .wali-mobile-shortcut-btn.active{background:linear-gradient(180deg,#e9faf6,#edf8ff)!important;color:#08756c!important;box-shadow:inset 0 0 0 1px rgba(8,117,108,.06)}
+  .wali-mobile-shortcut-btn.active::before{display:none!important}
+  .sidebar{width:min(326px,calc(100vw - 38px))!important;border-radius:0 28px 28px 0!important;box-shadow:24px 0 60px rgba(15,41,71,.18)!important}
+}
+@media(max-width:420px){.wali-mobile-bottom-nav{padding-right:6px!important;padding-left:6px!important}.wali-mobile-shortcut-label{font-size:.55rem!important}.student-badge{min-width:0!important;max-width:150px!important}}
+</style>
+
 </head>
 
 <body class="portal-shell">
@@ -2034,7 +2086,7 @@
 
     const WALI_MENU_CONFIG = {
       "menu-beranda-wali": {
-        url: "beranda.html",
+        url: "beranda.html?v=22",
         title: "Beranda Wali",
         alwaysAllowed: true
       },
@@ -2170,7 +2222,7 @@
         document.getElementById(WALI_HOME_MENU_ID);
 
       await loadPage(
-        "beranda.html",
+        "beranda.html?v=22",
         homeMenu
       );
     }
@@ -2213,12 +2265,12 @@
 
     const WALI_MOBILE_SHORTCUT_ORDER = [
       "menu-beranda-wali",
-      "menu-riwayat-kesehatan-wali",
-      "menu-perizinan-wali",
       "menu-akademik-wali",
-      "menu-keuangan-wali",
-      "menu-informasi-penting-wali",
       "menu-karakter-wali",
+      "menu-informasi-penting-wali",
+      "menu-perizinan-wali",
+      "menu-riwayat-kesehatan-wali",
+      "menu-keuangan-wali",
       "menu-pembinaan-wali"
     ];
 
@@ -3133,7 +3185,7 @@
       currentPortalPage =
         url ||
         currentPortalPage ||
-        "beranda.html";
+        "beranda.html?v=22";
 
       const frame =
         document.getElementById(
