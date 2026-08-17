@@ -1,304 +1,264 @@
 /* =========================================================
-   CAHAYA APP V29 — BEYOND EXPERIENCE
-   Visual language inspired by modern Indonesian mobile-banking UI:
-   colorful teal/gold gradient, white floating cards, icon-first menus,
-   spacious sections, mobile-native bottom navigation.
-   VISUAL ONLY — no Firebase/query/cache logic changed.
+   CAHAYA APP V31 — UNIFIED BEYOND ONE-LAYER EXPERIENCE
+   Visual-only system. Firebase/query/cache/RBAC logic untouched.
+   Goals:
+   - one-layer pages, fewer nested boxes
+   - balanced typography
+   - consistent teal + warm gold visual language
+   - mobile-native bottom navigation with line icons
+   - no horizontal scrolling
    ========================================================= */
 :root{
-  --b29-teal-950:#075f5b;
-  --b29-teal-900:#087a73;
-  --b29-teal-800:#0b948a;
-  --b29-teal-700:#12aaa0;
-  --b29-teal-500:#28c8ba;
-  --b29-cyan:#5edbe1;
-  --b29-gold:#f2b83b;
-  --b29-gold-2:#ffd45f;
-  --b29-orange:#f28b36;
-  --b29-pink:#ec5d87;
-  --b29-purple:#7459cf;
-  --b29-blue:#2e83ea;
-  --b29-green:#2aaa77;
-  --b29-ink:#202735;
-  --b29-text:#4d586b;
-  --b29-muted:#8a94a5;
-  --b29-line:#edf0f4;
-  --b29-bg:#f5f6f8;
-  --b29-card:#ffffff;
-  --b29-shadow:0 8px 24px rgba(34,42,62,.07);
-  --b29-shadow-lg:0 22px 56px rgba(7,104,97,.16);
-  --b29-r:22px;
-  --b29-r-lg:30px;
+  --b31-teal-950:#075f5b;
+  --b31-teal-900:#087a73;
+  --b31-teal-800:#0b948a;
+  --b31-teal-700:#12aaa0;
+  --b31-teal-500:#28c8ba;
+  --b31-teal-100:#e8f7f4;
+  --b31-gold:#e4ad2e;
+  --b31-gold-2:#f6cb55;
+  --b31-gold-soft:#fff7df;
+  --b31-orange:#ef8a35;
+  --b31-red:#db5d65;
+  --b31-blue:#2d80dc;
+  --b31-purple:#735cc7;
+  --b31-green:#2b9b6d;
+  --b31-ink:#202736;
+  --b31-text:#4f5b6c;
+  --b31-muted:#87919f;
+  --b31-line:#eceff2;
+  --b31-line-strong:#e0e5e9;
+  --b31-bg:#fbfbfa;
+  --b31-white:#fff;
+  --b31-r-sm:12px;
+  --b31-r:16px;
+  --b31-r-lg:22px;
+  --b31-shadow-soft:0 3px 12px rgba(30,39,55,.035);
 }
-html.cahaya-beyond-v29-root{max-width:100%;overflow-x:hidden;background:var(--b29-bg)!important}
+html.cahaya-beyond-v29-root{max-width:100%;overflow-x:hidden;background:var(--b31-bg)!important}
 body.cahaya-beyond-v29{
-  max-width:100vw!important;overflow-x:hidden!important;color:var(--b29-text)!important;
+  max-width:100vw!important;overflow-x:hidden!important;margin:0!important;color:var(--b31-text)!important;
   font-family:"Nunito","Plus Jakarta Sans",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  font-size:14px!important;line-height:1.5!important;
   background:
-    radial-gradient(circle at 100% 0%,rgba(255,214,95,.22),transparent 25%),
-    radial-gradient(circle at 0% 12%,rgba(40,200,186,.15),transparent 24%),
-    linear-gradient(180deg,#fbfbfa 0%,#f5f6f8 100%)!important;
+    radial-gradient(circle at 100% 0%,rgba(246,203,85,.10),transparent 24%),
+    radial-gradient(circle at 0% 12%,rgba(40,200,186,.08),transparent 22%),
+    var(--b31-bg)!important;
+  -webkit-font-smoothing:antialiased;
 }
 body.cahaya-beyond-v29 *,body.cahaya-beyond-v29 *::before,body.cahaya-beyond-v29 *::after{box-sizing:border-box}
-body.cahaya-beyond-v29 img,body.cahaya-beyond-v29 svg,body.cahaya-beyond-v29 canvas,body.cahaya-beyond-v29 video{max-width:100%;height:auto}
-body.cahaya-beyond-v29 h1,body.cahaya-beyond-v29 h2,body.cahaya-beyond-v29 h3,body.cahaya-beyond-v29 h4,body.cahaya-beyond-v29 h5,body.cahaya-beyond-v29 h6,
-body.cahaya-beyond-v29 .title,body.cahaya-beyond-v29 .page-title,body.cahaya-beyond-v29 .section-title{color:var(--b29-ink)!important;letter-spacing:-.025em}
-body.cahaya-beyond-v29 .muted,body.cahaya-beyond-v29 .text-muted,body.cahaya-beyond-v29 .subtitle,body.cahaya-beyond-v29 .description,body.cahaya-beyond-v29 .desc,body.cahaya-beyond-v29 .hint{color:var(--b29-muted)!important}
+body.cahaya-beyond-v29 img,body.cahaya-beyond-v29 svg,body.cahaya-beyond-v29 canvas,body.cahaya-beyond-v29 video,body.cahaya-beyond-v29 iframe{max-width:100%;height:auto}
 
-/* ---------- SHELL / HEADER ---------- */
-body.cahaya-beyond-v29 .sidebar,
-body.cahaya-beyond-v29 .side-nav,
-body.cahaya-beyond-v29 .drawer,
-body.cahaya-beyond-v29 .nav-panel{
-  background:#fff!important;border-right:1px solid var(--b29-line)!important;box-shadow:none!important
+/* ---------- TYPOGRAPHY AUDIT ---------- */
+body.cahaya-beyond-v29 h1,body.cahaya-beyond-v29 .page-title{font-size:clamp(1.55rem,2.7vw,2.15rem)!important;line-height:1.12!important;font-weight:950!important;letter-spacing:-.035em!important;color:var(--b31-ink)!important}
+body.cahaya-beyond-v29 h2,body.cahaya-beyond-v29 .section-title{font-size:clamp(1.16rem,2vw,1.42rem)!important;line-height:1.2!important;font-weight:950!important;letter-spacing:-.025em!important;color:var(--b31-ink)!important}
+body.cahaya-beyond-v29 h3{font-size:1.06rem!important;line-height:1.28!important;font-weight:900!important;color:var(--b31-ink)!important}
+body.cahaya-beyond-v29 h4{font-size:.96rem!important;line-height:1.3!important;font-weight:900!important;color:var(--b31-ink)!important}
+body.cahaya-beyond-v29 h5,body.cahaya-beyond-v29 h6{font-size:.88rem!important;line-height:1.35!important;font-weight:900!important;color:var(--b31-ink)!important}
+body.cahaya-beyond-v29 p,body.cahaya-beyond-v29 li,body.cahaya-beyond-v29 .description,body.cahaya-beyond-v29 .desc{font-size:.84rem!important;line-height:1.58!important}
+body.cahaya-beyond-v29 small,body.cahaya-beyond-v29 .small,body.cahaya-beyond-v29 .hint,body.cahaya-beyond-v29 .meta,body.cahaya-beyond-v29 .subtitle,body.cahaya-beyond-v29 .text-muted,body.cahaya-beyond-v29 .muted{font-size:.72rem!important;line-height:1.45!important;color:var(--b31-muted)!important}
+body.cahaya-beyond-v29 label{font-size:.76rem!important;font-weight:850!important;color:#5d697b!important}
+body.cahaya-beyond-v29 strong,body.cahaya-beyond-v29 b{letter-spacing:-.01em}
+
+/* ---------- APP SHELL ---------- */
+body.cahaya-beyond-v29 .sidebar,body.cahaya-beyond-v29 .side-nav,body.cahaya-beyond-v29 .drawer,body.cahaya-beyond-v29 .nav-panel{
+  background:#fff!important;border-right:1px solid var(--b31-line)!important;box-shadow:none!important
 }
-body.cahaya-beyond-v29 .sidebar .brand,
-body.cahaya-beyond-v29 .sidebar-brand,
-body.cahaya-beyond-v29 .brand-card{background:transparent!important;box-shadow:none!important;border:none!important}
-body.cahaya-beyond-v29 .topbar,
-body.cahaya-beyond-v29 .top-nav,
-body.cahaya-beyond-v29 .workspace-header,
-body.cahaya-beyond-v29 .page-header,
-body.cahaya-beyond-v29 .app-header{
-  background:rgba(255,255,255,.95)!important;border-bottom:1px solid var(--b29-line)!important;backdrop-filter:blur(16px)!important;box-shadow:0 4px 18px rgba(33,43,64,.04)!important
+body.cahaya-beyond-v29 .sidebar .brand,body.cahaya-beyond-v29 .sidebar-brand,body.cahaya-beyond-v29 .brand-card{background:transparent!important;box-shadow:none!important;border:0!important}
+body.cahaya-beyond-v29 .topbar,body.cahaya-beyond-v29 .top-nav,body.cahaya-beyond-v29 .workspace-header,body.cahaya-beyond-v29 .page-header,body.cahaya-beyond-v29 .app-header{
+  background:rgba(255,255,255,.96)!important;border-bottom:1px solid var(--b31-line)!important;box-shadow:none!important;backdrop-filter:blur(14px)!important
 }
-body.cahaya-beyond-v29 .nav-item,
-body.cahaya-beyond-v29 .menu-item,
-body.cahaya-beyond-v29 .nav-link,
-body.cahaya-beyond-v29 .sidebar a,
-body.cahaya-beyond-v29 .sidebar button{border-radius:16px!important;color:#596477!important}
-body.cahaya-beyond-v29 .nav-item.active,
-body.cahaya-beyond-v29 .menu-item.active,
-body.cahaya-beyond-v29 .nav-link.active,
-body.cahaya-beyond-v29 .sidebar a.active,
-body.cahaya-beyond-v29 .sidebar button.active{
-  color:#fff!important;background:linear-gradient(135deg,var(--b29-teal-900),var(--b29-teal-700))!important;box-shadow:0 10px 24px rgba(11,148,138,.19)!important
+body.cahaya-beyond-v29 .nav-item,body.cahaya-beyond-v29 .menu-item,body.cahaya-beyond-v29 .nav-link,body.cahaya-beyond-v29 .sidebar a,body.cahaya-beyond-v29 .sidebar button{
+  border-radius:12px!important;color:#5c6675!important;font-size:.76rem!important;font-weight:850!important;box-shadow:none!important
+}
+body.cahaya-beyond-v29 .nav-item.active,body.cahaya-beyond-v29 .menu-item.active,body.cahaya-beyond-v29 .nav-link.active,body.cahaya-beyond-v29 .sidebar a.active,body.cahaya-beyond-v29 .sidebar button.active{
+  color:var(--b31-teal-900)!important;background:#eef8f6!important;box-shadow:none!important;border-left:3px solid var(--b31-gold)!important
+}
+body.cahaya-beyond-v29 .group-label,body.cahaya-beyond-v29 .menu-group-title{
+  font-size:.64rem!important;letter-spacing:.065em!important;font-weight:950!important;color:#7f8997!important;background:transparent!important;border-bottom:1px solid #f1f3f5!important
 }
 
-/* ---------- BYOND-LIKE HERO / ACCOUNT PANEL ---------- */
-body.cahaya-beyond-v29 .hero,
-body.cahaya-beyond-v29 .hero-banner,
-body.cahaya-beyond-v29 .hero-card,
-body.cahaya-beyond-v29 .greeting-section,
-body.cahaya-beyond-v29 .welcome-banner,
-body.cahaya-beyond-v29 .header-banner,
-body.cahaya-beyond-v29 .h24-hero{
-  position:relative!important;isolation:isolate!important;overflow:hidden!important;border:0!important;
-  border-radius:var(--b29-r-lg)!important;color:#fff!important;
+/* ---------- BYOND-LIKE HERO: ONE STRONG SURFACE ---------- */
+body.cahaya-beyond-v29 .hero,body.cahaya-beyond-v29 .hero-banner,body.cahaya-beyond-v29 .hero-card,body.cahaya-beyond-v29 .greeting-section,body.cahaya-beyond-v29 .welcome-banner,body.cahaya-beyond-v29 .header-banner,body.cahaya-beyond-v29 .h24-hero{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;border:0!important;border-radius:var(--b31-r-lg)!important;color:#fff!important;
   background:
-    radial-gradient(circle at 88% 12%,rgba(255,255,255,.22),transparent 25%),
-    linear-gradient(145deg,#079186 0%,#12afa4 42%,#e7b83e 118%)!important;
-  box-shadow:var(--b29-shadow-lg)!important
+    radial-gradient(circle at 88% 10%,rgba(255,255,255,.18),transparent 25%),
+    linear-gradient(145deg,#07867d 0%,#12a99e 52%,#ddb140 118%)!important;
+  box-shadow:none!important
 }
-body.cahaya-beyond-v29 .hero::after,
-body.cahaya-beyond-v29 .hero-banner::after,
-body.cahaya-beyond-v29 .hero-card::after,
-body.cahaya-beyond-v29 .greeting-section::after,
-body.cahaya-beyond-v29 .welcome-banner::after,
-body.cahaya-beyond-v29 .h24-hero::after{
-  content:""!important;position:absolute!important;z-index:-1!important;right:-80px!important;bottom:-110px!important;width:260px!important;height:260px!important;border-radius:48% 52% 42% 58%!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,210,83,.14))!important;transform:rotate(-12deg)!important
+body.cahaya-beyond-v29 .hero::after,body.cahaya-beyond-v29 .hero-banner::after,body.cahaya-beyond-v29 .hero-card::after,body.cahaya-beyond-v29 .greeting-section::after,body.cahaya-beyond-v29 .welcome-banner::after,body.cahaya-beyond-v29 .h24-hero::after{
+  content:""!important;position:absolute!important;z-index:-1!important;right:-62px!important;bottom:-112px!important;width:240px!important;height:240px!important;border-radius:48% 52% 42% 58%!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(246,203,85,.12))!important;transform:rotate(-12deg)!important
 }
-body.cahaya-beyond-v29 .hero h1,body.cahaya-beyond-v29 .hero h2,body.cahaya-beyond-v29 .hero h3,body.cahaya-beyond-v29 .hero p,
-body.cahaya-beyond-v29 .hero-banner h1,body.cahaya-beyond-v29 .hero-banner h2,body.cahaya-beyond-v29 .hero-banner p,
-body.cahaya-beyond-v29 .hero-card h1,body.cahaya-beyond-v29 .hero-card h2,body.cahaya-beyond-v29 .hero-card p,
-body.cahaya-beyond-v29 .greeting-section h1,body.cahaya-beyond-v29 .greeting-section h2,body.cahaya-beyond-v29 .greeting-section p,
-body.cahaya-beyond-v29 .h24-hero h1,body.cahaya-beyond-v29 .h24-hero p{color:#fff!important}
+body.cahaya-beyond-v29 .hero h1,body.cahaya-beyond-v29 .hero h2,body.cahaya-beyond-v29 .hero h3,body.cahaya-beyond-v29 .hero p,body.cahaya-beyond-v29 .hero-banner *,body.cahaya-beyond-v29 .hero-card *,body.cahaya-beyond-v29 .greeting-section *,body.cahaya-beyond-v29 .welcome-banner *,body.cahaya-beyond-v29 .h24-hero *{color:#fff!important}
 
-/* ---------- WHITE FLOATING CARDS ---------- */
-body.cahaya-beyond-v29 .card,
+/* ---------- ONE-LAYER STRUCTURE: REMOVE EXCESS CONTAINERS ---------- */
 body.cahaya-beyond-v29 .section-card,
 body.cahaya-beyond-v29 .panel,
 body.cahaya-beyond-v29 .widget,
 body.cahaya-beyond-v29 .content-card,
 body.cahaya-beyond-v29 .info-card,
 body.cahaya-beyond-v29 .summary-card,
-body.cahaya-beyond-v29 .stat-card,
-body.cahaya-beyond-v29 .metric-card,
 body.cahaya-beyond-v29 .table-card,
 body.cahaya-beyond-v29 .document-reader,
+body.cahaya-beyond-v29 .rules-resource,
+body.cahaya-beyond-v29 .h24-section,
+body.cahaya-beyond-v29 .h24-group,
+body.cahaya-beyond-v29 .box{
+  background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important
+}
+body.cahaya-beyond-v29 .section-card,body.cahaya-beyond-v29 .panel,body.cahaya-beyond-v29 .widget,body.cahaya-beyond-v29 .content-card,body.cahaya-beyond-v29 .table-card{
+  border-bottom:1px solid var(--b31-line)!important;padding-bottom:16px!important;margin-bottom:18px!important
+}
+body.cahaya-beyond-v29 .section-card:last-child,body.cahaya-beyond-v29 .panel:last-child,body.cahaya-beyond-v29 .widget:last-child{border-bottom:0!important}
+body.cahaya-beyond-v29 .section-head,body.cahaya-beyond-v29 .section-header,body.cahaya-beyond-v29 .card-header,body.cahaya-beyond-v29 .panel-header{
+  background:transparent!important;border:0!important;border-bottom:1px solid var(--b31-line)!important;box-shadow:none!important;padding-left:0!important;padding-right:0!important
+}
+
+/* True content units may remain subtle cards, but never heavy */
+body.cahaya-beyond-v29 .card,
+body.cahaya-beyond-v29 .stat-card,
+body.cahaya-beyond-v29 .metric-card,
 body.cahaya-beyond-v29 .agenda-item,
 body.cahaya-beyond-v29 .highlight-card,
 body.cahaya-beyond-v29 .permit-card,
-body.cahaya-beyond-v29 .rules-resource,
 body.cahaya-beyond-v29 .schedule-day,
-body.cahaya-beyond-v29 .h24-section,
-body.cahaya-beyond-v29 .h24-group,
 body.cahaya-beyond-v29 .module-card,
-body.cahaya-beyond-v29 .box,
 body.cahaya-beyond-v29 .tile,
 body.cahaya-beyond-v29 .kpi-card{
-  background:#fff!important;border:1px solid rgba(235,239,244,.95)!important;border-radius:var(--b29-r)!important;box-shadow:var(--b29-shadow)!important
+  background:#fff!important;border:1px solid var(--b31-line)!important;border-radius:var(--b31-r)!important;box-shadow:none!important
 }
-body.cahaya-beyond-v29 .section-head,
-body.cahaya-beyond-v29 .section-header,
-body.cahaya-beyond-v29 .card-header,
-body.cahaya-beyond-v29 .panel-header{
-  background:#fff!important;border-bottom:1px solid var(--b29-line)!important
+body.cahaya-beyond-v29 .agenda-item:hover,body.cahaya-beyond-v29 .module-card:hover,body.cahaya-beyond-v29 .tile:hover{border-color:#dfe8e5!important}
+
+/* Icons: no circular bubbles, calm teal + gold sparkle */
+body.cahaya-beyond-v29 .section-icon,body.cahaya-beyond-v29 .feature-icon,body.cahaya-beyond-v29 .quick-icon,body.cahaya-beyond-v29 .stat-icon,body.cahaya-beyond-v29 .h24-icon,body.cahaya-beyond-v29 .icon-bubble{
+  position:relative!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:var(--b31-teal-800)!important
 }
-body.cahaya-beyond-v29 .section-icon,
-body.cahaya-beyond-v29 .feature-icon,
-body.cahaya-beyond-v29 .quick-icon,
-body.cahaya-beyond-v29 .stat-icon,
-body.cahaya-beyond-v29 .h24-icon{
-  border-radius:999px!important;border:0!important;background:#e7faf7!important;color:var(--b29-teal-900)!important;box-shadow:none!important
+body.cahaya-beyond-v29 .section-icon::after,body.cahaya-beyond-v29 .feature-icon::after,body.cahaya-beyond-v29 .quick-icon::after,body.cahaya-beyond-v29 .h24-icon::after{
+  content:"";position:absolute;right:-1px;top:-1px;width:8px;height:8px;background:linear-gradient(135deg,var(--b31-gold-2),var(--b31-gold));
+  clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);filter:drop-shadow(0 1px 2px rgba(190,133,7,.18))
 }
 
-/* ---------- COLORFUL ICON SHORTCUTS ---------- */
-body.cahaya-beyond-v29 .shortcut-grid,
-body.cahaya-beyond-v29 .quick-grid,
-body.cahaya-beyond-v29 .feature-grid,
-body.cahaya-beyond-v29 .apps-grid,
-body.cahaya-beyond-v29 .dashboard-grid,
-body.cahaya-beyond-v29 .h24-grid{display:grid!important;min-width:0!important;gap:12px!important}
-body.cahaya-beyond-v29 .shortcut-grid>* ,
-body.cahaya-beyond-v29 .quick-grid>* ,
-body.cahaya-beyond-v29 .feature-grid>* ,
-body.cahaya-beyond-v29 .apps-grid>* ,
-body.cahaya-beyond-v29 .dashboard-grid>*{
-  min-width:0!important;background:#fff!important;border:0!important;border-radius:18px!important;box-shadow:0 4px 14px rgba(34,42,62,.055)!important
+/* ---------- MENU / SHORTCUT GRIDS ---------- */
+body.cahaya-beyond-v29 .shortcut-grid,body.cahaya-beyond-v29 .quick-grid,body.cahaya-beyond-v29 .feature-grid,body.cahaya-beyond-v29 .apps-grid,body.cahaya-beyond-v29 .dashboard-grid,body.cahaya-beyond-v29 .h24-grid{
+  display:grid!important;min-width:0!important;gap:10px!important
+}
+body.cahaya-beyond-v29 .shortcut-grid>*,body.cahaya-beyond-v29 .quick-grid>*,body.cahaya-beyond-v29 .feature-grid>*,body.cahaya-beyond-v29 .apps-grid>*,body.cahaya-beyond-v29 .dashboard-grid>*{
+  min-width:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important
 }
 body.cahaya-beyond-v29 .h24-menu{
-  min-width:0!important;min-height:96px!important;padding:10px 7px!important;border:0!important;background:transparent!important;box-shadow:none!important;
-  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;text-align:center!important
+  min-width:0!important;min-height:88px!important;padding:8px 4px!important;border:0!important;background:transparent!important;box-shadow:none!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:6px!important;text-align:center!important
 }
-body.cahaya-beyond-v29 .h24-menu:hover{transform:translateY(-2px)!important;box-shadow:none!important}
-body.cahaya-beyond-v29 .h24-menu .h24-icon{
-  width:54px!important;height:54px!important;flex:0 0 54px!important;border-radius:50%!important;font-size:1.25rem!important;
-  background:var(--tone-bg,#e5faf7)!important;color:var(--tone,#0a8e84)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.62)!important
-}
+body.cahaya-beyond-v29 .h24-menu:hover{background:#f7fbfa!important;border-radius:14px!important;transform:translateY(-1px)!important}
+body.cahaya-beyond-v29 .h24-menu .h24-icon{width:44px!important;height:44px!important;flex:0 0 44px!important;background:transparent!important;color:var(--b31-teal-800)!important;font-size:1.18rem!important}
 body.cahaya-beyond-v29 .h24-menu-copy{width:100%!important;text-align:center!important}
-body.cahaya-beyond-v29 .h24-menu b{font-size:.76rem!important;line-height:1.2!important;color:#2b3442!important;font-weight:950!important}
+body.cahaya-beyond-v29 .h24-menu b{font-size:.72rem!important;line-height:1.22!important;color:#303846!important;font-weight:900!important}
 body.cahaya-beyond-v29 .h24-menu small,body.cahaya-beyond-v29 .h24-arrow{display:none!important}
-body.cahaya-beyond-v29 .h24-grid .h24-menu:nth-child(6n+1) .h24-icon{background:#dff8f4!important;color:#078e83!important}
-body.cahaya-beyond-v29 .h24-grid .h24-menu:nth-child(6n+2) .h24-icon{background:#fff0c9!important;color:#d39712!important}
-body.cahaya-beyond-v29 .h24-grid .h24-menu:nth-child(6n+3) .h24-icon{background:#dff6fb!important;color:#198aa8!important}
-body.cahaya-beyond-v29 .h24-grid .h24-menu:nth-child(6n+4) .h24-icon{background:#fae2eb!important;color:#c74670!important}
-body.cahaya-beyond-v29 .h24-grid .h24-menu:nth-child(6n+5) .h24-icon{background:#ece7fb!important;color:#6548c6!important}
-body.cahaya-beyond-v29 .h24-grid .h24-menu:nth-child(6n+6) .h24-icon{background:#e4f5e8!important;color:#2a985a!important}
 
-/* ---------- HOME PAGE: BYOND-STYLE ---------- */
-body.cahaya-beyond-v29 .home24{width:min(1160px,100%)!important;padding:18px 22px 40px!important}
-body.cahaya-beyond-v29 .home24 .h24-hero{min-height:190px!important;padding:28px 30px 50px!important}
-body.cahaya-beyond-v29 .home24 .h24-kicker{border:0!important;background:rgba(255,255,255,.17)!important;color:#fff!important;text-transform:none!important;letter-spacing:0!important}
-body.cahaya-beyond-v29 .home24 .h24-meta{gap:7px!important}
-body.cahaya-beyond-v29 .home24 .h24-chip{background:rgba(255,255,255,.94)!important;color:var(--b29-teal-950)!important;border:0!important;box-shadow:0 6px 16px rgba(8,87,82,.08)!important}
-body.cahaya-beyond-v29 .home24 .h24-section{
-  position:relative!important;z-index:2!important;margin-top:-25px!important;padding:18px 18px 22px!important;border-radius:28px!important;background:#fff!important;border:0!important;box-shadow:0 16px 40px rgba(36,46,66,.08)!important
-}
-body.cahaya-beyond-v29 .home24 .h24-section-head{align-items:center!important;margin-bottom:12px!important}
-body.cahaya-beyond-v29 .home24 .h24-section-head h2{font-size:1.08rem!important;color:#202735!important}
-body.cahaya-beyond-v29 .home24 .h24-section-head p{font-size:.7rem!important;color:#9199a8!important}
-body.cahaya-beyond-v29 .home24 .h24-count{background:transparent!important;border:0!important;color:#d59516!important;font-weight:1000!important}
-body.cahaya-beyond-v29 .home24 .h24-groups{gap:10px!important}
-body.cahaya-beyond-v29 .home24 .h24-group{padding:12px 4px 8px!important;border:0!important;border-top:1px solid #f0f2f5!important;border-radius:0!important;background:#fff!important;box-shadow:none!important}
-body.cahaya-beyond-v29 .home24 .h24-group:first-child{border-top:0!important}
-body.cahaya-beyond-v29 .home24 .h24-group-title{margin:0 6px 10px!important;font-size:.72rem!important;text-transform:none!important;letter-spacing:0!important;color:#333b48!important}
-body.cahaya-beyond-v29 .home24 .h24-group-title span:first-child{width:28px!important;height:28px!important;border-radius:9px!important;background:#f4f7f7!important}
-body.cahaya-beyond-v29 .home24 .h24-note{border:0!important;background:#f7faf9!important;color:#7f8998!important;border-radius:16px!important}
-body.cahaya-beyond-v29 .home24 .h24-note-icon{background:#e8f8f5!important;border-radius:50%!important;color:var(--b29-teal-900)!important}
-
-/* ---------- FORMS / BUTTONS / TABS ---------- */
+/* ---------- BUTTONS / FORMS ---------- */
 body.cahaya-beyond-v29 button,body.cahaya-beyond-v29 .btn,body.cahaya-beyond-v29 a.btn{
-  font:inherit;min-height:44px;border-radius:15px!important;font-weight:900!important;transition:transform .16s ease,box-shadow .16s ease!important
+  font-size:.78rem!important;line-height:1.25!important;min-height:42px!important;border-radius:13px!important;font-weight:900!important;box-shadow:none!important;transition:transform .14s ease,background .14s ease,border-color .14s ease!important
 }
-body.cahaya-beyond-v29 button:active,body.cahaya-beyond-v29 .btn:active,body.cahaya-beyond-v29 a.btn:active{transform:scale(.975)}
-body.cahaya-beyond-v29 .btn.primary,body.cahaya-beyond-v29 .btn-primary,body.cahaya-beyond-v29 button.primary,
-body.cahaya-beyond-v29 .tab-btn.active,body.cahaya-beyond-v29 .month-nav.active{
-  background:linear-gradient(135deg,var(--b29-teal-800),var(--b29-teal-500))!important;color:#fff!important;border-color:transparent!important;box-shadow:0 8px 18px rgba(11,148,138,.20)!important
+body.cahaya-beyond-v29 button:active,body.cahaya-beyond-v29 .btn:active,body.cahaya-beyond-v29 a.btn:active{transform:scale(.978)}
+body.cahaya-beyond-v29 .btn.primary,body.cahaya-beyond-v29 .btn-primary,body.cahaya-beyond-v29 button.primary{
+  background:linear-gradient(135deg,var(--b31-teal-800),var(--b31-teal-500))!important;color:#fff!important;border-color:transparent!important
 }
 body.cahaya-beyond-v29 .btn.secondary,body.cahaya-beyond-v29 .btn-secondary,body.cahaya-beyond-v29 button.secondary,body.cahaya-beyond-v29 .btn.light{
-  background:#fff!important;color:var(--b29-teal-900)!important;border:1px solid #d9e8e6!important;box-shadow:none!important
+  background:#fff!important;color:var(--b31-teal-900)!important;border:1px solid #dfe8e6!important
 }
-body.cahaya-beyond-v29 .btn.orange,body.cahaya-beyond-v29 .btn.warning{background:linear-gradient(135deg,#e6a626,#ffc84d)!important;color:#fff!important;border:0!important}
-body.cahaya-beyond-v29 input,body.cahaya-beyond-v29 select,body.cahaya-beyond-v29 textarea,body.cahaya-beyond-v29 .form-control,
-body.cahaya-beyond-v29 .month-select,body.cahaya-beyond-v29 .program-select{
-  width:100%;max-width:100%;background:#fff!important;color:var(--b29-ink)!important;border:1px solid #e2e6eb!important;border-radius:15px!important;min-height:46px;padding:11px 13px!important;box-shadow:0 3px 10px rgba(35,45,65,.025)!important
+body.cahaya-beyond-v29 .btn.orange,body.cahaya-beyond-v29 .btn.warning{background:linear-gradient(135deg,#dba124,#f6c94e)!important;color:#fff!important;border:0!important}
+body.cahaya-beyond-v29 input,body.cahaya-beyond-v29 select,body.cahaya-beyond-v29 textarea,body.cahaya-beyond-v29 .form-control,body.cahaya-beyond-v29 .month-select,body.cahaya-beyond-v29 .program-select{
+  width:100%;max-width:100%;background:#fff!important;color:var(--b31-ink)!important;border:1px solid #dfe4e8!important;border-radius:13px!important;min-height:44px!important;padding:10px 12px!important;font-size:.8rem!important;box-shadow:none!important
 }
-body.cahaya-beyond-v29 input:focus,body.cahaya-beyond-v29 select:focus,body.cahaya-beyond-v29 textarea:focus{outline:none!important;border-color:#39c4b7!important;box-shadow:0 0 0 4px rgba(40,200,186,.11)!important}
-body.cahaya-beyond-v29 .badge,body.cahaya-beyond-v29 .pill,body.cahaya-beyond-v29 .tag,body.cahaya-beyond-v29 .chip,
-body.cahaya-beyond-v29 .type-chip,body.cahaya-beyond-v29 .status-chip,body.cahaya-beyond-v29 .status-badge{
-  border-radius:999px!important;background:#e8f7f4!important;color:var(--b29-teal-900)!important;border:0!important;font-weight:900!important
+body.cahaya-beyond-v29 textarea{line-height:1.5!important}
+body.cahaya-beyond-v29 input:focus,body.cahaya-beyond-v29 select:focus,body.cahaya-beyond-v29 textarea:focus{outline:none!important;border-color:#39bcae!important;box-shadow:0 0 0 3px rgba(40,200,186,.10)!important}
+
+/* ---------- TABS / CHIPS ---------- */
+body.cahaya-beyond-v29 .tabs,body.cahaya-beyond-v29 .nav-tabs{
+  background:transparent!important;border:0!important;border-bottom:1px solid var(--b31-line)!important;box-shadow:none!important;border-radius:0!important;padding:0!important
 }
-body.cahaya-beyond-v29 .tabs,body.cahaya-beyond-v29 .nav-tabs{background:#fff!important;border:0!important;box-shadow:var(--b29-shadow)!important;border-radius:18px!important}
-body.cahaya-beyond-v29 .tab-btn{background:transparent!important;color:#7b8493!important;box-shadow:none!important}
-body.cahaya-beyond-v29 .tab-btn.active{color:#fff!important}
+body.cahaya-beyond-v29 .tab-btn{position:relative;background:transparent!important;color:#818997!important;box-shadow:none!important;border:0!important;border-radius:0!important;font-size:.76rem!important;min-height:42px!important}
+body.cahaya-beyond-v29 .tab-btn.active{background:transparent!important;color:var(--b31-teal-900)!important;box-shadow:none!important}
+body.cahaya-beyond-v29 .tab-btn.active::after{content:"";position:absolute;left:18%;right:18%;bottom:-1px;height:3px;border-radius:999px;background:linear-gradient(90deg,var(--b31-teal-700),var(--b31-gold))}
+body.cahaya-beyond-v29 .badge,body.cahaya-beyond-v29 .pill,body.cahaya-beyond-v29 .tag,body.cahaya-beyond-v29 .chip,body.cahaya-beyond-v29 .type-chip,body.cahaya-beyond-v29 .status-chip,body.cahaya-beyond-v29 .status-badge{
+  border-radius:999px!important;background:#edf8f6!important;color:var(--b31-teal-900)!important;border:0!important;font-size:.65rem!important;font-weight:900!important;padding:.36rem .58rem!important
+}
 
 /* ---------- TABLES ---------- */
-body.cahaya-beyond-v29 .table-responsive,body.cahaya-beyond-v29 .table-wrap,body.cahaya-beyond-v29 .responsive-table{max-width:100%!important}
-body.cahaya-beyond-v29 table{width:100%!important;max-width:100%!important;border-collapse:separate!important;border-spacing:0!important;background:#fff!important;border:1px solid var(--b29-line)!important;border-radius:18px!important;overflow:hidden!important}
-body.cahaya-beyond-v29 th{background:#f7faf9!important;color:#586371!important;font-size:.72rem!important;text-transform:uppercase;font-weight:1000!important}
-body.cahaya-beyond-v29 th,body.cahaya-beyond-v29 td{padding:11px 12px!important;border-bottom:1px solid #f0f2f5!important;vertical-align:top!important;overflow-wrap:anywhere}
+body.cahaya-beyond-v29 .table-responsive,body.cahaya-beyond-v29 .table-wrap,body.cahaya-beyond-v29 .responsive-table{max-width:100%!important;overflow-x:visible!important}
+body.cahaya-beyond-v29 table{width:100%!important;max-width:100%!important;border-collapse:separate!important;border-spacing:0!important;background:transparent!important;border:0!important;border-radius:0!important;overflow:hidden!important;font-size:.76rem!important}
+body.cahaya-beyond-v29 th{background:#f7f9f8!important;color:#65707d!important;font-size:.67rem!important;text-transform:uppercase!important;font-weight:950!important;letter-spacing:.025em!important}
+body.cahaya-beyond-v29 th,body.cahaya-beyond-v29 td{padding:10px 11px!important;border-bottom:1px solid var(--b31-line)!important;vertical-align:top!important;overflow-wrap:anywhere!important}
+body.cahaya-beyond-v29 td{font-size:.76rem!important;color:#515c6d!important}
 body.cahaya-beyond-v29 tr:last-child td{border-bottom:0!important}
 
-/* ---------- BOTTOM NAV: BYOND-LIKE ---------- */
-body.cahaya-beyond-v29 .mobile-bottom-nav,body.cahaya-beyond-v29 .bottom-nav,body.cahaya-beyond-v29 .bottom-navigation{
+/* ---------- BOTTOM NAV: FLAT BYOND-STYLE ---------- */
+body.cahaya-beyond-v29 .mobile-bottom-nav,body.cahaya-beyond-v29 .wali-mobile-bottom-nav,body.cahaya-beyond-v29 .bottom-nav,body.cahaya-beyond-v29 .bottom-navigation{
   background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important
 }
-body.cahaya-beyond-v29 .mobile-bottom-nav-inner,
-body.cahaya-beyond-v29 .bottom-nav-inner{
-  background:rgba(255,255,255,.98)!important;border-top:1px solid #eef0f3!important;box-shadow:0 -10px 28px rgba(31,39,55,.08)!important;border-radius:24px 24px 0 0!important
+body.cahaya-beyond-v29 .mobile-bottom-nav-inner,body.cahaya-beyond-v29 .wali-mobile-bottom-nav-inner,body.cahaya-beyond-v29 .bottom-nav-inner{
+  background:rgba(255,255,255,.985)!important;border-top:1px solid var(--b31-line)!important;box-shadow:0 -5px 18px rgba(28,37,52,.055)!important;border-radius:0!important;padding-top:7px!important
 }
-body.cahaya-beyond-v29 .mobile-shortcut-btn{color:#9ba2ad!important;background:transparent!important;border:0!important;border-radius:16px!important;box-shadow:none!important}
-body.cahaya-beyond-v29 .mobile-shortcut-btn.active{color:var(--b29-teal-800)!important;background:transparent!important;box-shadow:none!important}
-body.cahaya-beyond-v29 .mobile-shortcut-btn.active::before{display:none!important}
-body.cahaya-beyond-v29 .mobile-shortcut-icon{font-size:1.2rem!important}
-body.cahaya-beyond-v29 .mobile-shortcut-label{font-size:.58rem!important;font-weight:900!important}
+body.cahaya-beyond-v29 .mobile-shortcut-btn,body.cahaya-beyond-v29 .wali-mobile-shortcut-btn{
+  position:relative!important;color:#9ba2ac!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;min-height:58px!important;gap:3px!important
+}
+body.cahaya-beyond-v29 .mobile-shortcut-btn.active,body.cahaya-beyond-v29 .wali-mobile-shortcut-btn.active{color:var(--b31-teal-800)!important;background:transparent!important;box-shadow:none!important}
+body.cahaya-beyond-v29 .mobile-shortcut-btn.active::before,body.cahaya-beyond-v29 .wali-mobile-shortcut-btn.active::before{display:none!important}
+body.cahaya-beyond-v29 .mobile-shortcut-icon,body.cahaya-beyond-v29 .wali-mobile-shortcut-icon{
+  position:relative!important;width:26px!important;height:26px!important;display:grid!important;place-items:center!important;font-size:0!important;line-height:1!important;color:currentColor!important
+}
+body.cahaya-beyond-v29 .mobile-shortcut-icon svg,body.cahaya-beyond-v29 .wali-mobile-shortcut-icon svg{width:23px!important;height:23px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.85!important;stroke-linecap:round!important;stroke-linejoin:round!important;overflow:visible!important}
+body.cahaya-beyond-v29 .mobile-shortcut-btn.active .mobile-shortcut-icon::after,body.cahaya-beyond-v29 .wali-mobile-shortcut-btn.active .wali-mobile-shortcut-icon::after{
+  content:"";position:absolute;right:-2px;top:-2px;width:7px;height:7px;background:linear-gradient(135deg,var(--b31-gold-2),var(--b31-gold));clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%)
+}
+body.cahaya-beyond-v29 .mobile-shortcut-label,body.cahaya-beyond-v29 .wali-mobile-shortcut-label{font-size:.59rem!important;font-weight:850!important;line-height:1.1!important;letter-spacing:0!important}
+body.cahaya-beyond-v29 .mobile-shortcut-badge{font-size:.55rem!important}
 
 /* ---------- RESPONSIVE ---------- */
 @media(max-width:900px){
-  body.cahaya-beyond-v29 .app,body.cahaya-beyond-v29 .page,body.cahaya-beyond-v29 .container,body.cahaya-beyond-v29 .app-container,
-  body.cahaya-beyond-v29 .main-content,body.cahaya-beyond-v29 .workspace,body.cahaya-beyond-v29 .content{
+  body.cahaya-beyond-v29{font-size:14px!important}
+  body.cahaya-beyond-v29 .app,body.cahaya-beyond-v29 .page,body.cahaya-beyond-v29 .container,body.cahaya-beyond-v29 .app-container,body.cahaya-beyond-v29 .main-content,body.cahaya-beyond-v29 .workspace,body.cahaya-beyond-v29 .content{
     width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important;padding-left:12px!important;padding-right:12px!important
   }
-  body.cahaya-beyond-v29 .hero,body.cahaya-beyond-v29 .hero-banner,body.cahaya-beyond-v29 .hero-card,body.cahaya-beyond-v29 .greeting-section,
-  body.cahaya-beyond-v29 .welcome-banner,body.cahaya-beyond-v29 .h24-hero{border-radius:24px!important;padding:20px 17px!important}
-  body.cahaya-beyond-v29 .h24-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important}
+  body.cahaya-beyond-v29 .hero,body.cahaya-beyond-v29 .hero-banner,body.cahaya-beyond-v29 .hero-card,body.cahaya-beyond-v29 .greeting-section,body.cahaya-beyond-v29 .welcome-banner,body.cahaya-beyond-v29 .h24-hero{border-radius:20px!important;padding:18px 16px!important}
+  body.cahaya-beyond-v29 .top-nav{background:linear-gradient(135deg,#07867d 0%,#11a89e 60%,#d6ac3d 130%)!important;color:#fff!important;border:0!important;box-shadow:none!important}
+  body.cahaya-beyond-v29 .top-nav *,body.cahaya-beyond-v29 .top-nav .app-title-header,body.cahaya-beyond-v29 .top-nav #currentPageTitle{color:#fff!important}
   body.cahaya-beyond-v29 .shortcut-grid,body.cahaya-beyond-v29 .quick-grid,body.cahaya-beyond-v29 .feature-grid,body.cahaya-beyond-v29 .apps-grid,body.cahaya-beyond-v29 .dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   body.cahaya-beyond-v29 .highlight-grid,body.cahaya-beyond-v29 .permit-grid{grid-template-columns:1fr!important}
   body.cahaya-beyond-v29 .agenda-item{grid-template-columns:58px minmax(0,1fr)!important}
   body.cahaya-beyond-v29 .type-chip{grid-column:2;justify-self:start}
   body.cahaya-beyond-v29 .schedule-row{grid-template-columns:82px minmax(0,1fr)!important}
   body.cahaya-beyond-v29 .schedule-chip{grid-column:2;justify-self:start}
-  body.cahaya-beyond-v29 .top-nav{
-    background:linear-gradient(135deg,#078f84 0%,#10a99e 58%,#ddb143 125%)!important;color:#fff!important;border:0!important;box-shadow:none!important
-  }
-  body.cahaya-beyond-v29 .top-nav *,body.cahaya-beyond-v29 .top-nav .app-title-header,body.cahaya-beyond-v29 .top-nav #currentPageTitle{color:#fff!important}
-  body.cahaya-beyond-v29 .home24{padding:8px 9px 28px!important}
-  body.cahaya-beyond-v29 .home24 .h24-hero{min-height:176px!important;padding:19px 16px 44px!important;border-radius:0 0 30px 30px!important;margin:-8px -9px 0!important;width:calc(100% + 18px)!important}
-  body.cahaya-beyond-v29 .home24 .h24-brandmark{display:none!important}
-  body.cahaya-beyond-v29 .home24 .h24-section{margin-top:-28px!important;padding:15px 10px 20px!important;border-radius:28px!important}
-  body.cahaya-beyond-v29 .home24 .h24-section-head{padding:0 7px!important}
-  body.cahaya-beyond-v29 .home24 .h24-group{padding:12px 0 7px!important}
-  body.cahaya-beyond-v29 .home24 .h24-group-title{margin-left:8px!important}
-  body.cahaya-beyond-v29 .home24 .h24-menu{min-height:90px!important;padding:8px 2px!important}
-  body.cahaya-beyond-v29 .home24 .h24-menu .h24-icon{width:48px!important;height:48px!important;flex-basis:48px!important;font-size:1.12rem!important}
-  body.cahaya-beyond-v29 .home24 .h24-menu b{font-size:.65rem!important;line-height:1.16!important}
 }
 @media(max-width:760px){
   html.cahaya-beyond-v29-root,body.cahaya-beyond-v29{max-width:100vw!important;overflow-x:hidden!important}
-  body.cahaya-beyond-v29 .nav-tabs,body.cahaya-beyond-v29 .tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;overflow:visible!important;white-space:normal!important}
+  body.cahaya-beyond-v29 h1,body.cahaya-beyond-v29 .page-title{font-size:1.48rem!important}
+  body.cahaya-beyond-v29 h2,body.cahaya-beyond-v29 .section-title{font-size:1.14rem!important}
+  body.cahaya-beyond-v29 h3{font-size:1rem!important}
+  body.cahaya-beyond-v29 p,body.cahaya-beyond-v29 li{font-size:.82rem!important}
+  body.cahaya-beyond-v29 .nav-tabs,body.cahaya-beyond-v29 .tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:0!important;overflow:visible!important;white-space:normal!important}
   body.cahaya-beyond-v29 .tab-btn{min-width:0!important;width:100%!important;white-space:normal!important}
   body.cahaya-beyond-v29 table.c28-stackable thead{display:none!important}
   body.cahaya-beyond-v29 table.c28-stackable,body.cahaya-beyond-v29 table.c28-stackable tbody,body.cahaya-beyond-v29 table.c28-stackable tr,body.cahaya-beyond-v29 table.c28-stackable td{display:block!important;width:100%!important}
   body.cahaya-beyond-v29 table.c28-stackable{border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
-  body.cahaya-beyond-v29 table.c28-stackable tr{margin:0 0 11px!important;padding:7px 0!important;border:1px solid var(--b29-line)!important;border-radius:18px!important;background:#fff!important;box-shadow:var(--b29-shadow)!important}
-  body.cahaya-beyond-v29 table.c28-stackable td{position:relative!important;padding:9px 13px 9px 45%!important;min-height:42px!important;border:0!important;border-bottom:1px dashed #f0f2f5!important;text-align:left!important}
+  body.cahaya-beyond-v29 table.c28-stackable tr{margin:0 0 8px!important;padding:4px 0!important;border:0!important;border-bottom:1px solid var(--b31-line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+  body.cahaya-beyond-v29 table.c28-stackable td{position:relative!important;padding:8px 10px 8px 43%!important;min-height:40px!important;border:0!important;border-bottom:1px dashed #eff1f3!important;text-align:left!important;font-size:.76rem!important}
   body.cahaya-beyond-v29 table.c28-stackable td:last-child{border-bottom:0!important}
-  body.cahaya-beyond-v29 table.c28-stackable td::before{content:attr(data-label);position:absolute;left:13px;top:9px;width:38%;font-size:.68rem;font-weight:1000;color:#4a5564;text-transform:uppercase;line-height:1.35}
+  body.cahaya-beyond-v29 table.c28-stackable td::before{content:attr(data-label);position:absolute;left:10px;top:8px;width:36%;font-size:.64rem!important;font-weight:950;color:#65707c;text-transform:uppercase;line-height:1.35}
 }
 @media(max-width:560px){
-  body.cahaya-beyond-v29{font-size:15px}
-  body.cahaya-beyond-v29 .h24-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
-  body.cahaya-beyond-v29 .shortcut-grid,body.cahaya-beyond-v29 .quick-grid,body.cahaya-beyond-v29 .feature-grid,body.cahaya-beyond-v29 .apps-grid,body.cahaya-beyond-v29 .dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
-  body.cahaya-beyond-v29 .actions,body.cahaya-beyond-v29 .toolbar,body.cahaya-beyond-v29 .hero-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
-  body.cahaya-beyond-v29 .actions>* ,body.cahaya-beyond-v29 .toolbar>* ,body.cahaya-beyond-v29 .hero-actions>*{flex:1 1 130px;min-width:0!important}
-  body.cahaya-beyond-v29 .card,body.cahaya-beyond-v29 .section-card,body.cahaya-beyond-v29 .panel,body.cahaya-beyond-v29 .widget,
-  body.cahaya-beyond-v29 .content-card,body.cahaya-beyond-v29 .h24-section,body.cahaya-beyond-v29 .h24-group{border-radius:18px!important}
-  body.cahaya-beyond-v29 .hero,body.cahaya-beyond-v29 .hero-banner,body.cahaya-beyond-v29 .hero-card,body.cahaya-beyond-v29 .greeting-section{border-radius:22px!important}
+  body.cahaya-beyond-v29 .actions,body.cahaya-beyond-v29 .toolbar,body.cahaya-beyond-v29 .hero-actions{display:flex!important;flex-wrap:wrap!important;gap:7px!important}
+  body.cahaya-beyond-v29 .actions>*,body.cahaya-beyond-v29 .toolbar>*,body.cahaya-beyond-v29 .hero-actions>*{flex:1 1 124px;min-width:0!important}
+  body.cahaya-beyond-v29 button,body.cahaya-beyond-v29 .btn,body.cahaya-beyond-v29 a.btn{font-size:.75rem!important;min-height:41px!important}
+  body.cahaya-beyond-v29 input,body.cahaya-beyond-v29 select,body.cahaya-beyond-v29 textarea{font-size:.79rem!important}
 }
 @media(max-width:380px){
-  body.cahaya-beyond-v29 .h24-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-  body.cahaya-beyond-v29 table.c28-stackable td{padding-left:43%!important}body.cahaya-beyond-v29 table.c28-stackable td::before{width:35%!important}
+  body.cahaya-beyond-v29 table.c28-stackable td{padding-left:41%!important}body.cahaya-beyond-v29 table.c28-stackable td::before{width:33%!important}
+}
+@media print{
+  body.cahaya-beyond-v29{background:#fff!important;color:#111!important;font-size:12px!important}
+  body.cahaya-beyond-v29 .mobile-bottom-nav,body.cahaya-beyond-v29 .wali-mobile-bottom-nav,body.cahaya-beyond-v29 .sidebar,body.cahaya-beyond-v29 .top-nav{display:none!important}
+  body.cahaya-beyond-v29 .card,body.cahaya-beyond-v29 .section-card,body.cahaya-beyond-v29 .panel,body.cahaya-beyond-v29 .widget{box-shadow:none!important;background:#fff!important}
 }
 @media(prefers-reduced-motion:reduce){body.cahaya-beyond-v29 *,body.cahaya-beyond-v29 *::before,body.cahaya-beyond-v29 *::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
