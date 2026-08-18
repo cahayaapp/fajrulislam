@@ -53,16 +53,36 @@
     .h24-role-copy{min-width:0;flex:1}.h24-role-copy b{display:block;color:#17284a;font-size:.79rem;font-weight:1000;line-height:1.25}.h24-role-copy span{display:block;margin-top:3px;color:#7a8aa4;font-size:.64rem;font-weight:750;line-height:1.35}
     .h24-role-arrow{flex:0 0 auto;color:#f2b632;font-size:1.15rem;font-weight:1000}
     @media(max-width:720px){.h24-role-cards{grid-template-columns:1fr}.h24-role-card{padding:13px 14px}.h24-role-icon{width:40px;height:40px;flex-basis:40px}}
+
+    /* V36 — gold greeting, operational summary, modal, gentle motion */
+    .h24-hero{color:#102a56;background:radial-gradient(circle at 88% 8%,rgba(255,255,255,.32),transparent 27%),linear-gradient(125deg,#f2b632 0%,#f7c94d 56%,#ffe08a 100%);border-color:rgba(174,126,8,.16);box-shadow:0 18px 44px rgba(174,126,8,.17)}
+    .h24-hero::before{border-color:rgba(21,87,213,.10)}
+    .h24-hero h1{color:#102a56}
+    .h24-hadith{max-width:760px;margin:10px 0 0;color:#29456f!important;font-size:.82rem!important;font-weight:800!important;font-style:italic;line-height:1.6}
+    .h24-chip{color:#123160;background:rgba(255,255,255,.48);border-color:rgba(21,87,213,.12)}
+    .h24-brandmark{background:rgba(255,255,255,.38);border-color:rgba(255,255,255,.55);box-shadow:0 14px 30px rgba(174,126,8,.12)}
+    .h24-menu{position:relative;overflow:hidden;will-change:transform;transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s ease,border-color .18s ease,background .18s ease}
+    .h24-menu::before{content:"";position:absolute;inset:50% auto auto 50%;width:10px;height:10px;border-radius:50%;pointer-events:none;background:rgba(40,120,255,.10);opacity:0;transform:translate(-50%,-50%) scale(1)}
+    .h24-menu.is-opening{transform:translateY(1px) scale(.965);background:#f7faff;border-color:#dce9fb;box-shadow:0 4px 10px rgba(40,120,255,.07)}
+    .h24-menu.is-opening::before{animation:h24Ripple .36s ease-out}
+    @keyframes h24Ripple{0%{opacity:.35;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(22)}}
+    .h24-role-card.is-static{cursor:default}.h24-role-card.is-static:hover{transform:none}
+    .h24-modal[hidden]{display:none!important}.h24-modal{position:fixed;z-index:2000;inset:0;display:grid;place-items:center;padding:18px}.h24-modal-backdrop{position:absolute;inset:0;background:rgba(11,27,52,.44);backdrop-filter:blur(5px)}
+    .h24-modal-card{width:min(430px,100%);max-height:min(72vh,620px);position:relative;overflow:hidden;border:1px solid #dbe7f7;border-radius:24px;background:#fff;box-shadow:0 28px 70px rgba(14,45,93,.24);animation:h24ModalIn .2s ease both}
+    @keyframes h24ModalIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+    .h24-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 18px 14px;border-bottom:1px solid #edf2f8;background:linear-gradient(180deg,#fff,#fbfdff)}.h24-modal-head small{display:block;color:#b27e08;font-size:.6rem;font-weight:1000;letter-spacing:.9px}.h24-modal-head h3{margin:3px 0 0;color:#142b52;font-size:1.05rem;font-weight:1000}
+    .h24-modal-close{width:36px;height:36px;display:grid;place-items:center;cursor:pointer;border:1px solid #dfe8f5;border-radius:12px;background:#fff;color:#385275;font-size:1.35rem}.h24-modal-body{max-height:52vh;overflow:auto;padding:12px 16px 18px}.h24-health-name{display:flex;align-items:center;gap:11px;padding:11px 4px;border-bottom:1px solid #edf2f7}.h24-health-name:last-child{border-bottom:0}.h24-health-name span{width:27px;height:27px;display:grid;place-items:center;border-radius:9px;background:#edf5ff;color:#1557d5;font-size:.68rem;font-weight:1000}.h24-health-name b{color:#17284a;font-size:.79rem;font-weight:950}.h24-modal-empty{padding:22px 10px;text-align:center;color:#71809a;font-size:.78rem;font-weight:800}
+    @media(max-width:720px){.h24-hadith{font-size:.76rem!important}.h24-modal{align-items:end;padding:0}.h24-modal-card{width:100%;max-height:76vh;border-radius:24px 24px 0 0}}
 </style>
-  <meta name="cahaya-build" content="20260818-v34">
-  <link rel="stylesheet" href="css/cahaya-blue-gold-v35.css?v=35">
+  <meta name="cahaya-build" content="20260818-v36">
+  <link rel="stylesheet" href="css/cahaya-blue-gold-v35.css?v=36">
 </head>
 <body>
   <main class="home24">
     <section class="h24-hero">
       <div>
-        <span class="h24-kicker" id="roleKicker">CAHAYA APP</span>
         <h1 id="greeting">Ahlan, Sahabat Cahaya</h1>
+        <p class="h24-hadith">“Allah mencintai hamba jika melakukan sesuatu secara profesional (itqan).”</p>
         <div class="h24-meta"><span class="h24-chip" id="roleChip">Memuat peran...</span></div>
       </div>
       <div class="h24-brandmark"><img src="assets/logofi.png" alt="CAHAYA APP" /></div>
@@ -70,7 +90,7 @@
 
 
     <section class="h24-role-wrap" id="roleCardsSection" hidden>
-      <div class="h24-role-head"><h2 id="roleCardsTitle">Ringkasan Cepat</h2><span>Prioritas sesuai peran</span></div>
+      <div class="h24-role-head"><h2 id="roleCardsTitle">Ringkasan Cepat</h2></div>
       <div class="h24-role-cards" id="roleCards"></div>
     </section>
 
@@ -82,6 +102,20 @@
     </section>
   </main>
 
+  <div class="h24-modal" id="healthRestModal" hidden aria-hidden="true">
+    <div class="h24-modal-backdrop" onclick="closeHealthRestModal()"></div>
+    <section class="h24-modal-card" role="dialog" aria-modal="true" aria-labelledby="healthRestTitle">
+      <div class="h24-modal-head">
+        <div>
+          <small>IZIN ISTIRAHAT HARI INI</small>
+          <h3 id="healthRestTitle">Santri Sakit</h3>
+        </div>
+        <button type="button" class="h24-modal-close" onclick="closeHealthRestModal()" aria-label="Tutup">×</button>
+      </div>
+      <div class="h24-modal-body" id="healthRestList"></div>
+    </section>
+  </div>
+
   <script>
   (function(){
     'use strict';
@@ -90,7 +124,7 @@
     function profile(){const a=safeJson('cahayaCurrentUser');const b=safeJson('cahayaUser');return Object.keys(a).length?a:b}
     function roles(p){let r=p.roles??p.role??p.jabatan??p.akses??[];if(!Array.isArray(r))r=[r];return r.map(x=>String(x||'').trim().toLowerCase()).filter(Boolean)}
     function nameOf(p){return p.nama||p.name||p.namaLengkap||p.displayName||p.username||'Sahabat Cahaya'}
-    function setProfile(){const p=profile(),r=roles(p);document.getElementById('greeting').textContent=`Ahlan, ${nameOf(p)}`;document.getElementById('roleChip').textContent=(r.length?r.map(x=>ROLE_LABEL[x]||x).join(' • '):'Akun CAHAYA');document.getElementById('roleKicker').textContent=r.includes('wali')?'Portal Wali Santri':'CAHAYA APP'}
+    function setProfile(){const p=profile(),r=roles(p);document.getElementById('greeting').textContent=`Ahlan, ${nameOf(p)}`;document.getElementById('roleChip').textContent=(r.length?r.map(x=>ROLE_LABEL[x]||x).join(' • '):'Akun CAHAYA')}
     function cleanText(el){const clone=el.cloneNode(true);clone.querySelectorAll('.role-group-count,.nav-arrow').forEach(x=>x.remove());return String(clone.textContent||'').trim().replace(/\s+/g,' ')}
     function stripLeadingIcon(text){return String(text||'').replace(/^[^\p{L}\p{N}]{1,5}\s*/u,'').trim()||'Menu'}
     function isVisible(el){if(!el||el.hidden)return false;const w=window.parent&&window.parent!==window?window.parent:window;const s=w.getComputedStyle(el);return s.display!=='none'&&s.visibility!=='hidden'}
@@ -140,11 +174,11 @@
     }
 
     const ROLE_CARD_CONFIG={
-      leadership:{title:'Prioritas Pimpinan',roles:['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor'],cards:[
-        {label:'Permohonan Izin',desc:'Tinjau perizinan santri',targets:['menu-perizinan-santri'],type:'shield'},
-        {label:'Santri Sakit',desc:'Buka catatan kesehatan',targets:['menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan'],type:'health'},
-        {label:'Petugas Piket',desc:'Lihat pengawasan hari ini',targets:['menu-jurnal-piket','menu-jadwal-piket'],type:'calendar'},
-        {label:'Monitoring Guru',desc:'Pantau kehadiran guru',targets:['menu-monitoring-absen-guru'],type:'chart'}
+      leadership:{title:'Ringkasan Pimpinan',roles:['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor'],cards:[
+        {key:'permit',label:'Permohonan Izin',targets:['menu-perizinan-santri'],type:'shield'},
+        {key:'health',label:'Santri Sakit',targets:['menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan'],type:'health'},
+        {key:'duty',label:'Petugas Piket',targets:['menu-jurnal-piket','menu-jadwal-piket'],type:'calendar'},
+        {key:'monitor',label:'Monitoring Guru',desc:'Pantau kehadiran guru',targets:['menu-monitoring-absen-guru'],type:'chart'}
       ]},
       naqib:{title:'Prioritas Naqib',roles:['naqib'],cards:[
         {label:'Absensi Program',desc:'Catat kehadiran santri',targets:['menu-absen-asrama'],type:'check'},
@@ -157,7 +191,7 @@
         {label:'Kalender Pendidikan',desc:'Lihat agenda akademik',targets:['menu-kalender-pendidikan'],type:'calendar'}
       ]},
       kesehatan:{title:'Prioritas Kesehatan',roles:['kesehatan'],cards:[
-        {label:'Santri Sakit',desc:'Buka jurnal kesehatan',targets:['menu-jurnal-kesehatan'],type:'health'},
+        {key:'health',label:'Santri Sakit',targets:['menu-jurnal-kesehatan'],type:'health'},
         {label:'Pemeriksaan',desc:'Catat pemeriksaan santri',targets:['menu-pemeriksaan-kesehatan'],type:'health'},
         {label:'Izin Medis',desc:'Kelola perizinan UKS',targets:['menu-perizinan-uks'],type:'shield'}
       ]},
@@ -180,14 +214,102 @@
     function parentMenu(id){try{return window.parent&&window.parent!==window?window.parent.document.getElementById(id):null}catch(_){return null}}
     function firstAuthorizedTarget(targets){for(const id of (targets||[])){const el=parentMenu(id);if(el&&isVisible(el))return id}return''}
     function roleCardGroup(currentRoles){const groups=Object.values(ROLE_CARD_CONFIG);return groups.find(g=>g.roles.some(r=>currentRoles.includes(r)))||null}
-    function renderRoleCards(){
-      const p=profile(),currentRoles=roles(p),group=roleCardGroup(currentRoles),section=document.getElementById('roleCardsSection'),box=document.getElementById('roleCards');
+    function objectValues(value){return value&&typeof value==='object'?Object.values(value):[]}
+    function jakartaParts(){
+      const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit',weekday:'long',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+      const out={};parts.forEach(p=>{if(p.type!=='literal')out[p.type]=p.value});
+      const dayMap={Sunday:'ahad',Monday:'senin',Tuesday:'selasa',Wednesday:'rabu',Thursday:'kamis',Friday:'jumat',Saturday:'sabtu'};
+      return {date:`${out.year}-${out.month}-${out.day}`,day:dayMap[out.weekday]||'senin',minutes:(Number(out.hour)||0)*60+(Number(out.minute)||0)};
+    }
+    function timeMinutes(v){const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?(Number(m[1])*60+Number(m[2])):null}
+    function inRange(now,start,end){const s=timeMinutes(start),e=timeMinutes(end);if(s===null)return false;if(e===null)return now>=s;if(e>=s)return now>=s&&now<e;return now>=s||now<e}
+    function currentPutraDuty(schedule,ctx){
+      const putra=schedule?.putra||(schedule?.jadwal||schedule?.blok?schedule:{}),blocks=putra?.blok||{},keys=['blok1','blok2','blok3'];
+      let blockKey=keys.find(k=>inRange(ctx.minutes,blocks[k]?.mulai,blocks[k]?.selesai));
+      if(!blockKey)blockKey=ctx.minutes>=210&&ctx.minutes<680?'blok1':ctx.minutes>=680&&ctx.minutes<1070?'blok2':'blok3';
+      const duty=putra?.jadwal?.[ctx.day]?.[blockKey]||'';
+      return {name:String(duty||'').trim()||'Belum dijadwalkan',block:blockKey};
+    }
+    function putriOff(day,programId,programs,off){
+      if(!off?.aktif)return false;const order=programs.map(p=>p.id),idx=order.indexOf(programId),s=order.indexOf(off.mulaiProgramId),e=order.indexOf(off.selesaiProgramId);
+      if(idx<0)return false;if(day===off.mulaiHari&&s>=0&&idx>=s)return true;if(day===off.selesaiHari&&e>=0&&idx<=e)return true;return false;
+    }
+    function currentPutriDuty(schedule,ctx){
+      const programs=[...(schedule?.putri?.program||[])].sort((a,b)=>(a.urutan||0)-(b.urutan||0)),off=schedule?.putri?.tanpaPiket;
+      const active=programs.filter(p=>{
+        const days=Array.isArray(p.hariAktif)&&p.hariAktif.length?p.hariAktif:['senin','selasa','rabu','kamis','jumat','sabtu','ahad'];
+        if(!days.includes(ctx.day)||putriOff(ctx.day,p.id,programs,off))return false;
+        const special=String(p.aturanKhusus||'').toLowerCase();if(special.includes('senin pertama')&&Number(ctx.date.slice(-2))>7)return false;
+        const start=p.mulai||String(p.waktu||'').split(/[–-]/)[0],end=p.selesai||String(p.waktu||'').split(/[–-]/)[1];
+        if(!start)return true;return inRange(ctx.minutes,start,end);
+      });
+      const names=[...new Set(active.map(p=>String(p.pengawas||'').trim()).filter(Boolean))];
+      return {name:names.join(', ')||'Tidak ada piket saat ini',programs:active.map(p=>p.nama||'Program')};
+    }
+    function latestHealthRestNames(raw,today){
+      const latest=new Map();objectValues(raw).forEach(r=>{
+        if(!r||typeof r!=='object')return;const name=r.identitasSantri?.namaSantri||r.identitas?.namaSantri||r.namaSantri||'';if(!name)return;
+        const key=String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+        const stamp=String(r.waktuSimpan||r.dibuatPada||`${r.tanggalPemeriksaan||''}T${r.waktuPemeriksaan||'00:00'}`);
+        const prev=latest.get(key);if(!prev||stamp>prev.stamp)latest.set(key,{name:String(name).trim(),stamp,record:r});
+      });
+      return [...latest.values()].filter(x=>x.record?.izinPembelajaran?.bolehTidakMengikutiPembelajaranHariIni===true&&(!x.record?.izinPembelajaran?.tanggalIzin||x.record.izinPembelajaran.tanggalIzin===today)).map(x=>x.name).sort((a,b)=>a.localeCompare(b,'id'));
+    }
+    let operationalSummaryPromise=null;
+    async function loadOperationalSummary(){
+      try{
+        const p=window.parent&&window.parent!==window?window.parent:window;
+        const cached=p.__cahayaHomeOpsCacheV36;if(cached&&Date.now()-cached.at<90*1000)return cached.data;
+        if(operationalSummaryPromise)return operationalSummaryPromise;
+        const fb=p.firebase;if(!fb||typeof fb.database!=='function')return null;
+        const db=fb.database(),ctx=jakartaParts();
+        operationalSummaryPromise=Promise.all([
+          db.ref('cahaya_app/jadwal_piket_naqib').once('value'),
+          db.ref('cahaya_app/perizinan_ringkas').orderByChild('status').equalTo('MENUNGGU_PIMPINAN').once('value'),
+          db.ref('cahaya_app/pemeriksaan_kesehatan').orderByChild('tanggalPemeriksaan').equalTo(ctx.date).once('value')
+        ]).then(([scheduleSnap,permitSnap,healthSnap])=>{
+          const schedule=scheduleSnap.val()||{},healthNames=latestHealthRestNames(healthSnap.val()||{},ctx.date),data={
+            pendingCount:objectValues(permitSnap.val()||{}).length,
+            healthNames,
+            duty:{putra:currentPutraDuty(schedule,ctx),putri:currentPutriDuty(schedule,ctx)}
+          };
+          p.__cahayaHomeOpsCacheV36={at:Date.now(),data};return data;
+        }).catch(err=>{console.warn('Ringkasan operasional beranda belum dapat dimuat:',err);return null}).finally(()=>{operationalSummaryPromise=null});
+        return operationalSummaryPromise;
+      }catch(err){console.warn('Ringkasan operasional beranda gagal:',err);return null}
+    }
+    let currentHealthRestNames=[];
+    window.closeHealthRestModal=function(){const modal=document.getElementById('healthRestModal');if(modal){modal.hidden=true;modal.setAttribute('aria-hidden','true')}};
+    window.openHealthRestModal=function(){
+      const modal=document.getElementById('healthRestModal'),list=document.getElementById('healthRestList');if(!modal||!list)return;
+      list.innerHTML=currentHealthRestNames.length?currentHealthRestNames.map((n,i)=>`<div class="h24-health-name"><span>${i+1}</span><b>${escapeHtml(n)}</b></div>`).join(''):'<div class="h24-modal-empty">Tidak ada santri yang mendapat izin istirahat hari ini.</div>';
+      modal.hidden=false;modal.setAttribute('aria-hidden','false');
+    };
+    function roleCardMarkup(c){
+      const target=c.target||'',onclick=c.action==='healthModal'?'openHealthRestModal()':target?`openHome24Menu('${escapeHtml(target)}')`:'';
+      return `<button class="h24-role-card${onclick?'':' is-static'}" type="button" ${onclick?`onclick="${onclick}"`:''}><span class="h24-role-icon">${iconSvg(c.type)}</span><span class="h24-role-copy"><b>${escapeHtml(c.label)}</b><span>${escapeHtml(c.desc||'')}</span></span>${onclick?'<span class="h24-role-arrow">›</span>':''}</button>`;
+    }
+    let roleRenderToken=0;
+    async function renderRoleCards(){
+      const token=++roleRenderToken,p=profile(),currentRoles=roles(p),group=roleCardGroup(currentRoles),section=document.getElementById('roleCardsSection'),box=document.getElementById('roleCards');
       if(!section||!box||!group){if(section)section.hidden=true;return}
-      const available=group.cards.map(c=>({...c,target:firstAuthorizedTarget(c.targets)})).filter(c=>c.target).slice(0,3);
-      if(!available.length){section.hidden=true;return}
-      document.getElementById('roleCardsTitle').textContent=group.title;
-      box.innerHTML=available.map(c=>`<button class="h24-role-card" type="button" onclick="openHome24Menu('${escapeHtml(c.target)}')"><span class="h24-role-icon">${iconSvg(c.type)}</span><span class="h24-role-copy"><b>${escapeHtml(c.label)}</b><span>${escapeHtml(c.desc)}</span></span><span class="h24-role-arrow">›</span></button>`).join('');
-      section.hidden=false;
+      let available=[];
+      const isLeadership=group===ROLE_CARD_CONFIG.leadership,isHealthRole=group===ROLE_CARD_CONFIG.kesehatan;
+      if(isLeadership||isHealthRole){
+        const ops=await loadOperationalSummary();if(token!==roleRenderToken)return;
+        currentHealthRestNames=ops?.healthNames||[];
+        for(const c of group.cards){
+          const target=firstAuthorizedTarget(c.targets),base={...c,target};
+          if(c.key==='permit'){if((ops?.pendingCount||0)>0)available.push({...base,desc:`${ops.pendingCount} permohonan belum ditindaklanjuti.`});continue}
+          if(c.key==='health'){if(currentHealthRestNames.length>0)available.push({...base,action:'healthModal',desc:`${currentHealthRestNames.length} orang mendapat izin istirahat.`});continue}
+          if(c.key==='duty'){const putra=ops?.duty?.putra?.name||'Belum tersedia',putri=ops?.duty?.putri?.name||'Belum tersedia';available.push({...base,desc:`Putra: ${putra} • Putri: ${putri}`});continue}
+          if(target)available.push(base);
+        }
+      }else{
+        available=group.cards.map(c=>({...c,target:firstAuthorizedTarget(c.targets)})).filter(c=>c.target);
+      }
+      available=available.slice(0,3);if(!available.length){section.hidden=true;return}
+      document.getElementById('roleCardsTitle').textContent=group.title;box.innerHTML=available.map(roleCardMarkup).join('');section.hidden=false;
     }
 
     const DASHBOARD_EXCLUDED=new Set([
@@ -213,12 +335,17 @@
     window.openHome24Menu=function(id){
       try{if(window.parent&&window.parent!==window){if(typeof window.parent.openAuthorizedMenu==='function'){window.parent.openAuthorizedMenu(id);return}const el=window.parent.document.getElementById(id);if(el){el.click();return}}}catch(_){ }
     };
+    window.animateAndOpenHome24=function(button,id){
+      if(!button||button.dataset.opening==='1')return;button.dataset.opening='1';button.classList.add('is-opening');
+      window.setTimeout(()=>openHome24Menu(id),135);window.setTimeout(()=>{button.classList.remove('is-opening');delete button.dataset.opening},420);
+    };
     function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
     function render(){
       const items=collect();const root=document.getElementById('menuGrid');
       if(!items.length){root.innerHTML='<div class="h24-empty">Belum ada menu yang tersedia untuk akun ini.</div>';return}
-      root.innerHTML=items.map(item=>`<button class="h24-menu" type="button" onclick="openHome24Menu('${escapeHtml(item.id)}')"><span class="h24-icon">${iconSvg(item.type)}</span><b>${escapeHtml(item.label)}</b></button>`).join('')
+      root.innerHTML=items.map(item=>`<button class="h24-menu" type="button" onclick="animateAndOpenHome24(this,'${escapeHtml(item.id)}')"><span class="h24-icon">${iconSvg(item.type)}</span><b>${escapeHtml(item.label)}</b></button>`).join('')
     }
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHealthRestModal()});
     setProfile();render();renderRoleCards();
     try{if(window.parent&&window.parent!==window){const nav=window.parent.document.querySelector('#dynamicMenu');if(nav)new MutationObserver(()=>{render();renderRoleCards()}).observe(nav,{subtree:true,attributes:true,attributeFilter:['style','hidden','class'],childList:true})}}catch(_){ }
     setTimeout(()=>{render();renderRoleCards()},250);setTimeout(()=>{render();renderRoleCards()},850);setTimeout(()=>{render();renderRoleCards()},1800);
