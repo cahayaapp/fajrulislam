@@ -138,11 +138,47 @@
 
   function normalizeProgramKey(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
 
+  function program24hCatalog(){
+    const rows=Array.isArray(window.CAHAYA_PROGRAM_HARIAN_24JAM)?window.CAHAYA_PROGRAM_HARIAN_24JAM:[];
+    return rows.map((item,index)=>({
+      name:String(item.program||item.nama||'').trim(),
+      source:'24h',
+      urutan:Number(item.no||index+1),
+      waktu:item.waktu||'',
+      standar:item.standar||'',
+      kategori:item.kategori||'',
+      peran:item.peran||'',
+      penanggungJawab:item.penanggungJawab||''
+    })).filter(item=>item.name);
+  }
+
   function mergeProgramCatalog(scheduleRaw,masterRaw){
     const map=new Map();
-    flattenProgramSchedule(scheduleRaw).forEach(item=>map.set(normalizeProgramKey(item.name),item));
+    program24hCatalog().forEach(item=>map.set(normalizeProgramKey(item.name),item));
+    flattenProgramSchedule(scheduleRaw).forEach(item=>{const key=normalizeProgramKey(item.name);if(!map.has(key))map.set(key,item);});
     flattenProgramMaster(masterRaw).forEach(item=>{const key=normalizeProgramKey(item.name);if(!map.has(key))map.set(key,item);});
     return [...map.values()];
+  }
+
+  function renderProgram24hHelper(select){
+    const rows=program24hCatalog();
+    if(!rows.length||!select)return;
+    let helper=document.getElementById('obsProgram24hHelper');
+    if(!helper){
+      helper=document.createElement('div');
+      helper.id='obsProgram24hHelper';
+      helper.className='obs-program-helper';
+      helper.style.cssText='margin-top:8px;padding:10px 12px;border:1px solid #dfe8f7;background:#f7faff;border-radius:12px;color:#53657d;font-size:.74rem;line-height:1.5;display:none';
+      select.insertAdjacentElement('afterend',helper);
+    }
+    const update=()=>{
+      const item=rows.find(x=>normalizeProgramKey(x.name)===normalizeProgramKey(select.value));
+      if(!item){helper.style.display='none';helper.innerHTML='';return;}
+      helper.style.display='block';
+      helper.innerHTML=`<strong style="color:#1f4f9b">${esc(item.waktu||'')}</strong> • ${esc(item.kategori||'Program Harian')}<br><span>${esc(item.standar||'')}</span>${item.penanggungJawab?`<br><small>PIC standar: ${esc(item.penanggungJawab)}</small>`:''}`;
+    };
+    if(!select.dataset.helper24hBound){select.addEventListener('change',update);select.dataset.helper24hBound='1';}
+    update();
   }
 
   async function hydrateProgramMaster(){
@@ -162,11 +198,14 @@
       if(!programs.length) return;
       const placeholder=select.querySelector('option[value=""]')?.textContent || 'Pilih program';
       select.innerHTML=`<option value="">${esc(placeholder)}</option>`;
+      const daily24=programs.filter(item=>item.source==='24h');
       const scheduled=programs.filter(item=>item.source==='schedule');
-      const masterOnly=programs.filter(item=>item.source!=='schedule');
-      if(scheduled.length){const og=document.createElement('optgroup');og.label='Jadwal Harian';scheduled.forEach(item=>og.appendChild(new Option(item.name,item.name)));select.appendChild(og);}
+      const masterOnly=programs.filter(item=>!['24h','schedule'].includes(item.source));
+      if(daily24.length){const og=document.createElement('optgroup');og.label='Program Harian 24 Jam';daily24.sort((a,b)=>a.urutan-b.urutan).forEach(item=>og.appendChild(new Option(`${item.waktu?item.waktu+' • ':''}${item.name}`,item.name)));select.appendChild(og);}
+      if(scheduled.length){const og=document.createElement('optgroup');og.label='Jadwal Operasional';scheduled.forEach(item=>og.appendChild(new Option(item.name,item.name)));select.appendChild(og);}
       if(masterOnly.length){const og=document.createElement('optgroup');og.label='Program Absensi Harian';masterOnly.sort((a,b)=>a.name.localeCompare(b.name,'id')).forEach(item=>og.appendChild(new Option(item.name,item.name)));select.appendChild(og);}
-      select.dataset.programMaster='jadwal+absensi';
+      select.dataset.programMaster='24jam+jadwal+absensi';
+      renderProgram24hHelper(select);
     }catch(error){
       console.warn('Daftar program Pengasuhan belum dapat disinkronkan; menggunakan pilihan bawaan.',error);
     }
@@ -220,7 +259,8 @@
     const custom={}; config.fields.forEach(field=>custom[field.name]=data[field.name]??'');
     const persentase=Math.round(score/(indicators.length*4)*100);
     const status=effectiveStatus;
-    const payload={jenis:config.type,jenisLabel:config.title,tanggal:data.tanggal,waktu:data.waktu,timestamp:new Date(`${data.tanggal}T${data.waktu||'00:00'}`).getTime()||now,dibuatPada:now,observer:{id:observerId,nama:observerName,role:currentUser.role||'observer'},dataUtama:custom,lokasi:data.lokasi||data.area||data.kelas||data.unit||'',program:data.program||data.mataPelajaran||data.sesi||data.jenisLayanan||'',pihakTerkait:data.pihakTerkait||data.guru||data.pic||data.penanggungJawab||data.petugas||'',indikator:indicators,skor:score,skorMaksimal:indicators.length*4,persentase,status,mutuProgram:isProgramQuality?{kategori:status,persentase,sumber:'indikator-observasi'}:null,mutuPembelajaran:(isProgramQuality&&config.type==='pembelajaran')?{kategori:status,persentase,sumber:'indikator-observasi'}:null,temuanPositif:String(data.temuanPositif||'').trim(),temuanPerbaikan:String(data.temuanPerbaikan||'').trim(),kategoriMasalah:data.kategoriMasalah||'',urgensi:data.urgensi||'Normal',rekomendasi:String(data.rekomendasi||'').trim(),foto:photoData||'',validasi:{status:'Menunggu Validasi',supervisor:'',catatan:''},tindakLanjut:{status:'Belum Ditindaklanjuti',catatan:'',tanggal:0}};
+    const program24Meta=program24hCatalog().find(item=>normalizeProgramKey(item.name)===normalizeProgramKey(data.program||''))||null;
+    const payload={jenis:config.type,jenisLabel:config.title,tanggal:data.tanggal,waktu:data.waktu,timestamp:new Date(`${data.tanggal}T${data.waktu||'00:00'}`).getTime()||now,dibuatPada:now,observer:{id:observerId,nama:observerName,role:currentUser.role||'observer'},dataUtama:custom,lokasi:data.lokasi||data.area||data.kelas||data.unit||'',program:data.program||data.mataPelajaran||data.sesi||data.jenisLayanan||'',program24Jam:program24Meta?{waktu:program24Meta.waktu,standar:program24Meta.standar,kategori:program24Meta.kategori,peran:program24Meta.peran,penanggungJawab:program24Meta.penanggungJawab}:null,pihakTerkait:data.pihakTerkait||data.guru||data.pic||data.penanggungJawab||data.petugas||'',indikator:indicators,skor:score,skorMaksimal:indicators.length*4,persentase,status,mutuProgram:isProgramQuality?{kategori:status,persentase,sumber:'indikator-observasi'}:null,mutuPembelajaran:(isProgramQuality&&config.type==='pembelajaran')?{kategori:status,persentase,sumber:'indikator-observasi'}:null,temuanPositif:String(data.temuanPositif||'').trim(),temuanPerbaikan:String(data.temuanPerbaikan||'').trim(),kategoriMasalah:data.kategoriMasalah||'',urgensi:data.urgensi||'Normal',rekomendasi:String(data.rekomendasi||'').trim(),foto:photoData||'',validasi:{status:'Menunggu Validasi',supervisor:'',catatan:''},tindakLanjut:{status:'Belum Ditindaklanjuti',catatan:'',tanggal:0}};
     try{
       const recordRef=db.ref(DB_PATH).push();
       const recordId=recordRef.key;

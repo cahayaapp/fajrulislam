@@ -1678,6 +1678,9 @@
     .summary-grid {
       display: none !important;
     }
+    /* V45 Surat Peringatan */
+    .sp-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.sp-form-card{display:none;margin-top:16px;padding:18px;border:1px solid #e4e9f2;border-radius:18px;background:linear-gradient(145deg,#fff,#f8fbff)}.sp-form-card.show{display:block}.sp-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sp-form-grid .wide{grid-column:1/-1}.sp-primary{border:0;border-radius:12px;padding:10px 14px;background:#2467d1;color:white;font-weight:800}.sp-secondary{border:1px solid #dfe5ef;border-radius:12px;padding:10px 14px;background:white;color:#25334a;font-weight:800}.sp-history{display:grid;gap:10px;margin-top:16px}.sp-history-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;border:1px solid #e5e9f0;border-radius:16px;padding:14px;background:#fff}.sp-history-card.sp2{border-color:#efc5cb;background:#fff9fa}.sp-badge{display:inline-flex;padding:5px 8px;border-radius:999px;background:#fff3d4;color:#8b6100;font-size:.72rem;font-weight:900}.sp2 .sp-badge{background:#ffe7eb;color:#bb3348}.sp-history-card h3{margin:7px 0 4px;font-size:.94rem}.sp-history-card p{margin:0;color:#66748a;font-size:.8rem;line-height:1.5}.sp-date{text-align:right;color:#778398;font-size:.74rem;font-weight:800}.sp-photo-link{display:inline-flex;margin-top:7px;color:#2467d1;font-size:.76rem;font-weight:850;text-decoration:none}
+    @media(max-width:700px){.sp-form-grid{grid-template-columns:1fr}.sp-form-grid .wide{grid-column:auto}.sp-history-card{grid-template-columns:1fr}.sp-date{text-align:left}}
 </style>
   <script src="../js/cahaya-bandwidth.js"></script>
 
@@ -1754,6 +1757,9 @@
       </button>
       <button class="case-tab" data-tab="history" onclick="switchTab('history', this)">
         📚 Penindakan
+      </button>
+      <button class="case-tab" data-tab="sp" onclick="switchTab('sp', this)">
+        ⚠️ Surat Peringatan
       </button>
     </nav>
 
@@ -2228,6 +2234,25 @@
         </div>
       </div>
     </section>
+  
+    <section id="tab-sp" class="tab-panel">
+      <div class="case-panel">
+        <div class="panel-heading sp-toolbar">
+          <div><h2>Surat Peringatan Santri</h2><p>Catat SP 1 atau SP 2 sebagai bagian dari pembinaan dan pemantauan kasus.</p></div>
+          <button class="sp-primary" type="button" onclick="toggleSpForm(true)">+ Berikan SP</button>
+        </div>
+        <div class="sp-form-card" id="spFormCard">
+          <div class="sp-form-grid">
+            <div class="form-group"><label class="form-label" for="spStudent">Nama Santri</label><select class="form-control" id="spStudent"><option value="">Pilih santri</option></select></div>
+            <div class="form-group"><label class="form-label" for="spType">Jenis SP</label><select class="form-control" id="spType"><option value="1">SP 1</option><option value="2">SP 2</option></select></div>
+            <div class="form-group wide"><label class="form-label" for="spDescription">Deskripsi Pelanggaran</label><textarea class="form-control" id="spDescription" rows="4" placeholder="Jelaskan pelanggaran yang menjadi dasar pemberian SP..."></textarea></div>
+            <div class="form-group wide"><label class="form-label" for="spPhoto">Foto SP</label><input class="form-control" type="file" id="spPhoto" accept="image/*"></div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:13px"><button class="sp-secondary" type="button" onclick="toggleSpForm(false)">Batal</button><button class="sp-primary" id="saveSpButton" type="button" onclick="saveStudentWarning()">Simpan SP</button></div>
+        </div>
+        <div class="sp-history" id="spHistory"><div class="empty-state"><div class="empty-icon">⏳</div>Memuat Surat Peringatan...</div></div>
+      </div>
+    </section>
   </main>
 
   <script type="module">
@@ -2256,7 +2281,9 @@
       learningAttendance: "cahaya_app/absensi_pembelajaran",
       manualPoints: "cahaya_app/poin_manual",
       actionReports: "cahaya_app/laporan_penindakan",
-      legacyCounselorBook: "cahaya_app/buku_kasus_konselor"
+      legacyCounselorBook: "cahaya_app/buku_kasus_konselor",
+      warnings: "cahaya_app/surat_peringatan_santri",
+      warningPhotos: "cahaya_app/foto_sp_santri"
     };
 
     window.openViolationEvidence = async encodedPath => {
@@ -2314,6 +2341,8 @@
     let selectedActionIds = [];
     let studentUsrahMap = new Map();
     let validStudents = null;
+    let studentDisplayNames = [];
+    let warningRows = [];
     let toastTimer = null;
 
     try {
@@ -2528,6 +2557,7 @@
       });
 
       const names = new Set();
+      const displayNames = new Map();
 
       function deepScan(value) {
         if (!value || typeof value !== "object") return;
@@ -2537,6 +2567,7 @@
           value.nama.trim()
         ) {
           names.add(normalizeText(value.nama));
+          if (!displayNames.has(normalizeText(value.nama))) displayNames.set(normalizeText(value.nama), value.nama.trim());
         }
 
         Object.values(value).forEach(child => {
@@ -2549,6 +2580,8 @@
       deepScan(masterStudentData);
 
       validStudents = names.size ? names : null;
+      studentDisplayNames = [...displayNames.values()].sort((a,b)=>a.localeCompare(b,'id'));
+      renderSpStudentOptions();
     }
 
     function isValidStudent(name) {
@@ -3373,6 +3406,10 @@
 
       if (tabName === "history") {
         renderActionHistory();
+      }
+
+      if (tabName === "sp") {
+        loadWarnings();
       }
     }
 
@@ -4297,6 +4334,7 @@
             }
           
     .case-evidence{margin-top:9px;max-width:210px}.case-evidence img{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:12px;border:1px solid #dce5ef;cursor:pointer}.case-evidence small{display:block;margin-top:4px;color:#7e8fa5;font-size:.58rem;font-weight:800}
+
 </style>
         </head>
         <body>
@@ -4733,6 +4771,107 @@
       }
     }
 
+
+    function renderSpStudentOptions() {
+      const select = document.getElementById("spStudent");
+      if (!select) return;
+      const current = select.value;
+      select.innerHTML = '<option value="">Pilih santri</option>' + studentDisplayNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
+      if ([...select.options].some(o => o.value === current)) select.value = current;
+    }
+
+    function toggleSpForm(show) {
+      const card = document.getElementById("spFormCard");
+      if (!card) return;
+      card.classList.toggle("show", Boolean(show));
+      if (!show) {
+        document.getElementById("spStudent").value = "";
+        document.getElementById("spType").value = "1";
+        document.getElementById("spDescription").value = "";
+        document.getElementById("spPhoto").value = "";
+      }
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve,reject)=>{
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Foto SP gagal dibaca."));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => resolve(reader.result);
+          img.onload = () => {
+            try {
+              const max = 1400;
+              const scale = Math.min(1, max / Math.max(img.width || 1, img.height || 1));
+              const canvas = document.createElement("canvas");
+              canvas.width = Math.max(1, Math.round(img.width * scale));
+              canvas.height = Math.max(1, Math.round(img.height * scale));
+              canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+              resolve(canvas.toDataURL("image/jpeg",0.78));
+            } catch { resolve(reader.result); }
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function saveStudentWarning() {
+      const button = document.getElementById("saveSpButton");
+      const namaSantri = document.getElementById("spStudent").value.trim();
+      const jenisSP = Number(document.getElementById("spType").value || 1);
+      const deskripsiPelanggaran = document.getElementById("spDescription").value.trim();
+      const file = document.getElementById("spPhoto").files?.[0] || null;
+      if (!namaSantri) return showToast("warning", "Data belum lengkap", "Pilih nama santri terlebih dahulu.");
+      if (!deskripsiPelanggaran) return showToast("warning", "Data belum lengkap", "Deskripsi pelanggaran wajib diisi.");
+      if (![1,2].includes(jenisSP)) return showToast("warning", "Jenis SP", "Jenis SP tidak valid.");
+      button.disabled = true; button.textContent = "Menyimpan...";
+      try {
+        const created = push(ref(db, DB.warnings));
+        const idSP = created.key;
+        let fotoPath = "";
+        if (file) {
+          const dataUrl = await fileToDataUrl(file);
+          fotoPath = `${DB.warningPhotos}/${idSP}`;
+          await update(ref(db, fotoPath), {dataUrl, namaFile:file.name||"foto-sp", mime:file.type||"image/jpeg", dibuatPada:Date.now()});
+        }
+        const usrah = studentUsrahMap.get(normalizeText(namaSantri)) || "Belum Terpetakan";
+        await update(created, {
+          idSP, tanggal: localDate(), namaSantri, namaSantriKey: normalizeText(namaSantri), usrah,
+          deskripsiPelanggaran, jenisSP, status:"AKTIF", adaFoto:Boolean(file), fotoPath,
+          diberikanOleh: currentUser?.nama || currentUser?.name || currentUser?.email || "Konselor",
+          dibuatPada: Date.now()
+        });
+        showToast("success", "Surat Peringatan tersimpan", `SP ${jenisSP} untuk ${namaSantri} berhasil disimpan.`);
+        toggleSpForm(false);
+        await loadWarnings();
+      } catch (error) {
+        console.error(error); showToast("error", "Gagal menyimpan SP", error.message || "SP belum dapat disimpan.");
+      } finally { button.disabled = false; button.textContent = "Simpan SP"; }
+    }
+
+    async function openSpPhoto(idSP) {
+      const target = window.open("about:blank","_blank");
+      try {
+        const snap = await get(ref(db, `${DB.warningPhotos}/${idSP}`));
+        const url = snap.val()?.dataUrl || "";
+        if (!url) throw new Error("Foto SP tidak tersedia.");
+        if (target) target.location.href = url; else window.open(url,"_blank");
+      } catch (error) { if (target) target.close(); showToast("error", "Foto SP", error.message || "Foto SP gagal dibuka."); }
+    }
+
+    async function loadWarnings() {
+      const root = document.getElementById("spHistory");
+      if (!root) return;
+      root.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Memuat Surat Peringatan...</div>';
+      try {
+        const snap = await get(query(ref(db, DB.warnings), orderByChild("dibuatPada"), limitToLast(300)));
+        warningRows = snap.exists() ? Object.entries(snap.val()||{}).map(([id,v])=>({id,...(v||{})})) : [];
+        warningRows.sort((a,b)=>(Number(b.dibuatPada)||0)-(Number(a.dibuatPada)||0));
+        root.innerHTML = warningRows.length ? warningRows.map(w=>`<article class="sp-history-card ${Number(w.jenisSP)===2?'sp2':''}"><div><span class="sp-badge">SP ${Number(w.jenisSP)||1}</span><h3>${escapeHtml(w.namaSantri||'Santri')}</h3><p>${escapeHtml(w.deskripsiPelanggaran||'')}</p><p style="margin-top:6px">Usrah: ${escapeHtml(w.usrah||'-')} • Diberikan oleh: ${escapeHtml(w.diberikanOleh||'-')}</p>${w.adaFoto?`<button type="button" class="sp-photo-link" style="border:0;background:transparent;padding:0" onclick="openSpPhoto('${w.idSP||w.id}')">Lihat foto SP ↗</button>`:''}</div><div class="sp-date">${escapeHtml(w.tanggal||'-')}<br>${escapeHtml(w.status||'AKTIF')}</div></article>`).join("") : '<div class="empty-state"><div class="empty-icon">⚠️</div>Belum ada Surat Peringatan.</div>';
+      } catch (error) { console.error(error); root.innerHTML='<div class="empty-state">Data SP belum dapat dimuat.</div>'; }
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
       fillProfile();
 
@@ -4766,6 +4905,10 @@
     window.printCases = printCases;
     window.deleteCase = deleteCase;
     window.saveActionReport = saveActionReport;
+    window.toggleSpForm = toggleSpForm;
+    window.saveStudentWarning = saveStudentWarning;
+    window.loadWarnings = loadWarnings;
+    window.openSpPhoto = openSpPhoto;
   </script>
   <script src="../js/cahaya-responsive-v24.js?v=37" defer></script>
 </body>
