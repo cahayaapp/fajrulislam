@@ -2008,7 +2008,7 @@ const IS_EMBEDDED_WALI_PORTAL = window.parent && window.parent !== window;
             style="
               width:100%;
               text-align:left;
-              border:1px solid rgba(237,245,255,.96);
+              border:1px solid rgba(224,232,244,.96);
             "
           >
             <div class="notif-icon-dash ${iconClass}">

@@ -23,9 +23,9 @@
     theme: {
       primary: "#2878ff",
       primaryDark: "#1557d5",
-      secondary: "#2878ff",
+      secondary: "#f2b632",
       accent: "#f2b632",
-      success: "#2878ff",
+      success: "#29c58d",
       danger: "#ff5f70"
     },
     terminology: {
