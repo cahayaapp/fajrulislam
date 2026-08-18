@@ -900,9 +900,9 @@
 <main class="page-shell">
   <section class="exam-hero">
     <div class="hero-copy">
-      <div class="hero-kicker">📊 Evaluasi Bulanan 2026/2027</div>
-      <h1>Input Nilai Ujian Bulanan</h1>
-      <p>Atur komponen penilaian, masukkan nilai santri, lalu simpan hasil evaluasi ke laporan bulanan.</p>
+      <div class="hero-kicker">📊 Evaluasi Akademik 2026/2027</div>
+      <h1>Input Nilai Ujian</h1>
+      <p>Catat hasil ujian harian maupun bulanan dengan standar KKM yang jelas.</p>
     </div>
 
     <div class="hero-user">
@@ -938,7 +938,20 @@
       </div>
 
       <div class="form-group">
-        <label for="bulanUjian">🗓️ Periode Raport</label>
+        <label for="jenisUjian">🧭 Jenis Ujian</label>
+        <select class="form-control period-highlight" id="jenisUjian" onchange="syncJenisUjian()">
+          <option value="Harian">Ujian Harian</option>
+          <option value="Bulanan" selected>Ujian Bulanan</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="kkmUjian">🎯 KKM</label>
+        <input type="number" class="form-control" id="kkmUjian" min="1" max="100" step="1" value="70" inputmode="numeric" />
+      </div>
+
+      <div class="form-group" id="bulanUjianGroup">
+        <label for="bulanUjian">🗓️ Bulan Ujian</label>
         <select class="form-control period-highlight" id="bulanUjian">
           <option value="Januari">Januari</option>
           <option value="Februari">Februari</option>
@@ -1076,8 +1089,8 @@
     </div>
 
     <div class="save-area">
-      <button class="save-button" id="btnSimpan" onclick="simpanNilaiBulanan()">
-        ☁️ Simpan Nilai Ujian Bulanan
+      <button class="save-button" id="btnSimpan" onclick="simpanNilaiUjian()">
+        ☁️ Simpan Nilai Ujian
       </button>
     </div>
   </section>
@@ -1166,7 +1179,17 @@
     document.getElementById("bulanUjian").value = months[currentMonth];
     document.getElementById("activeTeacherName").textContent = getActiveUserName();
     document.getElementById("activeTeacherRole").textContent = getRoleLabel();
+    syncJenisUjian();
   }
+
+  window.syncJenisUjian = function() {
+    const jenis = document.getElementById("jenisUjian")?.value || "Bulanan";
+    const monthly = jenis === "Bulanan";
+    const group = document.getElementById("bulanUjianGroup");
+    if (group) group.style.display = monthly ? "block" : "none";
+    const button = document.getElementById("btnSimpan");
+    if (button) button.innerHTML = monthly ? "☁️ Simpan Nilai Ujian Bulanan" : "☁️ Simpan Nilai Ujian Harian";
+  };
 
   function normalizeArray(value) {
     if (Array.isArray(value)) return value.filter(Boolean).map(String);
@@ -1443,7 +1466,7 @@
       .find(input => !validateScore(input));
   }
 
-  window.simpanNilaiBulanan = async function() {
+  window.simpanNilaiUjian = async function() {
     const button = document.getElementById("btnSimpan");
     const activeComponents = getKomponenAktif();
     const totalWeight = activeComponents.reduce((sum, item) => sum + item.bobot, 0);
@@ -1461,7 +1484,11 @@
       return;
     }
 
+    const jenis = document.getElementById("jenisUjian").value || "Bulanan";
+    const kkm = Number(document.getElementById("kkmUjian").value);
     const params = {
+      jenis,
+      kkm,
       tahun: document.getElementById("tahunAkademik").value,
       semester: document.getElementById("semester").value,
       bulan: document.getElementById("bulanUjian").value,
@@ -1472,16 +1499,19 @@
       tanggal: document.getElementById("tanggalUjian").value
     };
 
-    if (!params.tahun || !params.semester || !params.bulan || !params.kelas || !params.mapel || !params.guru || !params.materi || !params.tanggal) {
-      showToast("error", "Data belum lengkap", "Lengkapi periode, kelas, mata pelajaran, guru, tanggal, dan materi ujian.");
+    if (!Number.isFinite(kkm) || kkm < 1 || kkm > 100) {
+      showToast("error", "KKM tidak valid", "KKM harus berada pada rentang 1 sampai 100.");
+      document.getElementById("kkmUjian").focus();
+      return;
+    }
+
+    if (!params.tahun || !params.semester || !params.kelas || !params.mapel || !params.guru || !params.materi || !params.tanggal || (jenis === "Bulanan" && !params.bulan)) {
+      showToast("error", "Data belum lengkap", "Lengkapi periode, kelas, mata pelajaran, guru, tanggal, materi ujian, dan KKM.");
       return;
     }
 
     const rows = [...document.querySelectorAll("#nilaiSantriBody tr[data-nama]")];
-    const rowsToSave = rows.filter(row =>
-      [...row.querySelectorAll(".input-dinamis")].some(input => input.value !== "")
-    );
-
+    const rowsToSave = rows.filter(row => [...row.querySelectorAll(".input-dinamis")].some(input => input.value !== ""));
     if (!rowsToSave.length) {
       showToast("error", "Belum ada nilai", "Isi minimal satu nilai santri sebelum menyimpan.");
       return;
@@ -1491,28 +1521,36 @@
     button.disabled = true;
 
     try {
-      const monthKey = String(params.tanggal || "").slice(0,7);
-      const snapshot = await get(query(ref(db, "cahaya_app/nilai_ujian_bulanan"), orderByChild("tanggal_ujian"), startAt(`${monthKey}-01`), endAt(`${monthKey}-31`), limitToLast(1500)));
+      const monthly = jenis === "Bulanan";
+      const dbPath = monthly ? "cahaya_app/nilai_ujian_bulanan" : "cahaya_app/nilai_ujian";
+      const dateField = monthly ? "tanggal_ujian" : "tanggal";
+      const rangeStart = monthly ? `${String(params.tanggal).slice(0,7)}-01` : params.tanggal;
+      const rangeEnd = monthly ? `${String(params.tanggal).slice(0,7)}-31` : params.tanggal;
+      const snapshot = await get(query(ref(db, dbPath), orderByChild(dateField), startAt(rangeStart), endAt(rangeEnd), limitToLast(1500)));
       const oldData = snapshot.val() || {};
       let count = 0;
 
       for (const row of rowsToSave) {
         const studentName = row.dataset.nama;
-
         for (const [key, oldRecord] of Object.entries(oldData)) {
-          if (
-            oldRecord?.nama_santri === studentName &&
-            oldRecord?.tahun_akademik === params.tahun &&
-            oldRecord?.bulan === params.bulan &&
-            oldRecord?.mata_pelajaran === params.mapel
-          ) {
-            await remove(ref(db, `cahaya_app/nilai_ujian_bulanan/${key}`));
-            const oldWaliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-            if(oldWaliKey) await remove(ref(db,`cahaya_app/wali_index/${oldWaliKey}/nilai_bulanan/${key}`));
+          const sameStudent = String(oldRecord?.nama_santri || oldRecord?.namaSantri || oldRecord?.nama || "") === studentName;
+          const sameSubject = String(oldRecord?.mata_pelajaran || oldRecord?.mataPelajaran || oldRecord?.mapel || "") === params.mapel;
+          const samePeriod = monthly
+            ? oldRecord?.tahun_akademik === params.tahun && oldRecord?.bulan === params.bulan
+            : String(oldRecord?.tanggal || oldRecord?.tanggal_ujian || "") === params.tanggal;
+          if (sameStudent && sameSubject && samePeriod) {
+            await remove(ref(db, `${dbPath}/${key}`));
+            if (monthly) {
+              const oldWaliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+              if(oldWaliKey) await remove(ref(db,`cahaya_app/wali_index/${oldWaliKey}/nilai_bulanan/${key}`));
+            }
           }
         }
 
+        const total = Number(row.querySelector(".total-pill").textContent) || 0;
         const finalData = {
+          jenis_ujian: jenis,
+          kkm: params.kkm,
           tahun_akademik: params.tahun,
           semester: params.semester,
           bulan: params.bulan,
@@ -1521,8 +1559,10 @@
           mata_pelajaran: params.mapel,
           materi_ujian: params.materi,
           guru_penguji: params.guru,
+          tanggal: params.tanggal,
           tanggal_ujian: params.tanggal,
-          nilai_total: Number(row.querySelector(".total-pill").textContent) || 0,
+          nilai: total,
+          nilai_total: total,
           komponen_aktif: activeComponents.map(component => component.nama),
           tahunAjaran: params.tahun,
           timestamp: new Date().toISOString()
@@ -1534,13 +1574,15 @@
           finalData[`bobot_${component.id}_persen`] = component.bobot;
         });
 
-        const savedRef = await push(ref(db, "cahaya_app/nilai_ujian_bulanan"), finalData);
-        const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-        if(waliKey && savedRef.key) await pushIndexRecord(waliKey, savedRef.key, finalData);
+        const savedRef = await push(ref(db, dbPath), finalData);
+        if (monthly) {
+          const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          if(waliKey && savedRef.key) await pushIndexRecord(waliKey, savedRef.key, finalData);
+        }
         count++;
       }
 
-      showToast("success", "Nilai berhasil disimpan", `${count} data santri telah tersimpan ke Firebase.`);
+      showToast("success", "Nilai berhasil disimpan", `${count} data ujian ${jenis.toLowerCase()} telah tersimpan.`);
       setTimeout(() => location.reload(), 1200);
     } catch (error) {
       console.error("Gagal menyimpan nilai:", error);
@@ -1548,7 +1590,7 @@
       button.disabled = false;
     } finally {
       if (document.body.contains(button)) {
-        button.innerHTML = "☁️ Simpan Nilai Ujian Bulanan";
+        syncJenisUjian();
         const total = getKomponenAktif().reduce((sum, item) => sum + item.bobot, 0);
         button.disabled = !isWeightValid(total);
       }
@@ -1556,6 +1598,6 @@
   };
 </script>
 
-  <script src="../js/cahaya-responsive-v24.js?v=37" defer></script>
+  <script src="../js/cahaya-responsive-v24.js?v=42" defer></script>
 </body>
 </html>

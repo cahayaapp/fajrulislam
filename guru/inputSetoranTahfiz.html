@@ -1769,7 +1769,7 @@
   const db = getDatabase(app);
   function localDateKey(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
   function shiftDate(date,days){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()+days);return localDateKey(d)}
-  function recentTahfizQuery(days=150){const end=localDateKey(),start=shiftDate(end,-Math.max(1,days-1));return query(ref(db,'cahaya_app/setoran_tahfiz'),orderByChild('tanggal'),startAt(start),endAt(end),limitToLast(1200));}
+  function recentTahfizQuery(days=180){const end=localDateKey(),start=shiftDate(end,-Math.max(1,days-1));return query(ref(db,'cahaya_app/setoran_tahfiz'),orderByChild('tanggal'),startAt(start),endAt(end),limitToLast(1200));}
 
 
   // Aman bila halaman dibuka tanpa data login yang tersimpan.
@@ -1798,6 +1798,55 @@
   let cacheSetoranTahfiz = {};
   let cacheSetoranSiap = false;
   let indexSetoranPerSantri = {};
+  let cacheTargetTahfiz = {};
+  let cacheTargetSiap = false;
+  let cacheJadwalQuran = [];
+  let cacheKalenderQuran = [];
+  const riwayatAllCache = {};
+
+  const normalizeStudentKey = (value='') => String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const objectValues = value => Array.isArray(value) ? value.filter(Boolean) : Object.values(value || {}).filter(Boolean);
+  const getTargetRecord = nama => cacheTargetTahfiz[normalizeStudentKey(nama)] || {};
+  const getTargetBaris = nama => Number(getTargetRecord(nama).targetBarisHarian || getTargetRecord(nama).targetBaris || 0) || 0;
+
+  async function ensureTahfizMeta(){
+    if(cacheTargetSiap) return;
+    const [targetResult, jadwalResult, kalenderResult] = await Promise.allSettled([
+      get(ref(db,'cahaya_app/target_tahfiz')),
+      get(ref(db,'cahaya_app/jadwal_pelajaran')),
+      get(ref(db,'kalender_pendidikan/ta_2026_2027/events'))
+    ]);
+    if(targetResult.status==='fulfilled' && targetResult.value.exists()) cacheTargetTahfiz=targetResult.value.val()||{};
+    if(jadwalResult.status==='fulfilled' && jadwalResult.value.exists()) cacheJadwalQuran=objectValues(jadwalResult.value.val());
+    if(kalenderResult.status==='fulfilled' && kalenderResult.value.exists()) cacheKalenderQuran=objectValues(kalenderResult.value.val());
+    if(!cacheKalenderQuran.length){
+      try{const r=await fetch('../data/kalender-pendidikan-2026-2027.json',{cache:'force-cache'});if(r.ok)cacheKalenderQuran=objectValues(await r.json());}catch(_){}
+    }
+    cacheTargetSiap=true;
+  }
+
+  function currentMonthBounds(){
+    const now=new Date(); const y=now.getFullYear(),m=now.getMonth();
+    const start=localDateKey(new Date(y,m,1,12)); const end=localDateKey(new Date(y,m+1,0,12));
+    return {start,end};
+  }
+  function calendarBlocks(date,kelas=''){
+    return cacheKalenderQuran.some(ev=>{
+      if(!ev||ev.deleted)return false; const start=ev.startDate||ev.date,end=ev.endDate||start;
+      if(!start||date<start||date>end)return false;
+      const txt=String((ev.title||'')+' '+(ev.type||'')).toLowerCase();
+      if(ev.effectMode==='all'||ev.type==='libur'||txt.includes('libur'))return true;
+      if(ev.effectMode==='classes'&&kelas){const arr=Array.isArray(ev.affectedClasses)?ev.affectedClasses:Object.values(ev.affectedClasses||{});return arr.some(c=>String(c).toLowerCase()===String(kelas).toLowerCase());}
+      return false;
+    });
+  }
+  function countEffectiveQuranDays(kelas=''){
+    const qRows=cacheJadwalQuran.filter(r=>r&&r.aktif!==false&&/qur|quran|qur’an|qur'an|tahfiz/i.test(String(r.mapel||r.namaMapel||'')));
+    if(!qRows.length)return 0;
+    const {start,end}=currentMonthBounds(); let d=new Date(start+'T12:00:00'),e=new Date(end+'T12:00:00'),count=0;
+    while(d<=e){const key=localDateKey(d),day=d.getDay();if(qRows.some(r=>Number(r.hari)===day&&(!r.kelas||!kelas||String(r.kelas).toLowerCase()===String(kelas).toLowerCase())&&!calendarBlocks(key,kelas)))count++;d.setDate(d.getDate()+1);}
+    return count;
+  }
 
   const cardColors = [
     { bg: '#E3F2FD', border: '#64B5F6' }, { bg: '#E8F5E9', border: '#81C784' },
@@ -2019,6 +2068,7 @@
 
     let preloadedDb = {};
     try {
+      await ensureTahfizMeta();
       const snap = await get(recentTahfizQuery());
       preloadedDb = snap.exists() ? snap.val() : {};
       simpanCacheSetoran(preloadedDb);
@@ -2034,6 +2084,8 @@
       const theme = cardColors[i % cardColors.length];
       const safeId = nama.replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
       const namaHtml = escapeHtml(nama);
+      const targetBarisHarian = getTargetBaris(nama);
+      const hariEfektifQuran = countEffectiveQuranDays(kelas);
 
       const cardHtml = `
         <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal">
@@ -2051,10 +2103,11 @@
             <div id="resume_container_${safeId}"></div>
 
             <div class="riwayat-section">
-              <h5>Riwayat Setoran Bulan Ini</h5>
-              <div class="riwayat-list" id="riwayat_body_${safeId}">
-                <div style="text-align:center; padding:15px; color:#999; font-size:0.85rem;">Memuat riwayat...</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                <h5 style="margin:0;">Riwayat Setoran</h5>
+                <button type="button" class="btn-workspace" data-nama="${namaHtml}" onclick="toggleRiwayatSantri(this,'${safeId}')" style="width:auto;padding:9px 14px;">Lihat daftar setoran</button>
               </div>
+              <div class="riwayat-list" id="riwayat_body_${safeId}" style="display:none;margin-top:12px;"></div>
             </div>
 
             <div class="input-section">
@@ -2074,6 +2127,12 @@
 
                 <div id="wadah_surat_${safeId}"></div>
                 <button class="btn-tambah-surat" id="btn_tambah_${safeId}" onclick="tambahBarisSuratCard('${safeId}')">➕ Tambah Baris Surat</button>
+              </div>
+
+              <div class="form-group target-tahfiz-only">
+                <label>🎯 Target Baris / Hari</label>
+                <input type="number" min="1" step="1" inputmode="numeric" class="form-control" id="target_baris_${safeId}" value="${targetBarisHarian || ''}" placeholder="Contoh: 15" oninput="updateTargetTahfizInfo('${safeId}')" style="font-weight:800;background:#f8fbff;border-color:#9fc1ee;">
+                <small id="target_info_${safeId}" style="display:block;margin-top:6px;color:var(--text-muted);font-weight:650;line-height:1.45;">${hariEfektifQuran ? `Bulan ini ${hariEfektifQuran} hari aktif Al-Qur’an${targetBarisHarian ? ` • target ${targetBarisHarian * hariEfektifQuran} baris` : ''}.` : 'Hari aktif Al-Qur’an akan mengikuti jadwal dan kalender pendidikan.'}</small>
               </div>
 
               <div class="grid-3 tahfiz-only">
@@ -2148,7 +2207,14 @@
       terapkanModeProgramCard(safeId, prog);
       siapkanBarisTahsinAwal(safeId);
       fetchRiwayatSantri(nama, safeId, preloadedDb);
+      updateTargetTahfizInfo(safeId);
     });
+  };
+
+  window.updateTargetTahfizInfo = (safeId) => {
+    const input=document.getElementById(`target_baris_${safeId}`), info=document.getElementById(`target_info_${safeId}`);
+    if(!input||!info)return; const days=countEffectiveQuranDays(document.getElementById('tfzKelas')?.value||''); const target=Number(input.value)||0;
+    info.textContent=days ? `Bulan ini ${days} hari aktif Al-Qur’an${target>0 ? ` • target ${target*days} baris.` : '.'}` : 'Hari aktif Al-Qur’an akan mengikuti jadwal dan kalender pendidikan.';
   };
 
   window.terapkanModeProgramCard = (safeId, program) => {
@@ -2159,10 +2225,11 @@
     if (!card) return;
     card.querySelectorAll('.tahsin-only').forEach(el => el.style.display = isTahsin ? 'block' : 'none');
     card.querySelectorAll('.tahfiz-only').forEach(el => el.style.display = isTahsin ? 'none' : 'block');
+    card.querySelectorAll('.target-tahfiz-only').forEach(el => el.style.display = (!isTahsin && !isMurojaah) ? 'block' : 'none');
     const title = document.getElementById(`form_title_${safeId}`);
     const historyTitle = card.querySelector('.riwayat-section h5');
     if (title) title.textContent = isTahsin ? '✎ Form Talaqqi Bacaan' : isMurojaah ? '✎ Form Input Muroja’ah' : '✎ Form Input Setoran Hafalan';
-    if (historyTitle) historyTitle.textContent = isTahsin ? 'Riwayat Talaqqi Bulan Ini' : isMurojaah ? 'Riwayat Muroja’ah Bulan Ini' : 'Riwayat Setoran Bulan Ini';
+    if (historyTitle) historyTitle.textContent = isTahsin ? 'Riwayat Talaqqi' : isMurojaah ? 'Riwayat Muroja’ah' : 'Riwayat Setoran';
     const btn = document.getElementById(`btn_simpan_${safeId}`);
     if (btn) btn.innerHTML = isTahsin ? '💾 SIMPAN DATA TALAQQI' : isMurojaah ? '💾 SIMPAN DATA MUROJA’AH' : '💾 SIMPAN DATA SETORAN';
     if (isTahsin) {
@@ -2359,6 +2426,12 @@
       document.getElementById('tfzJenisMurojaah')?.focus();
       return;
     }
+    const targetBarisHarian = program === 'Tahfiz' ? Number(document.getElementById(`target_baris_${safeId}`)?.value || 0) : 0;
+    if (program === 'Tahfiz' && (!Number.isInteger(targetBarisHarian) || targetBarisHarian < 1)) {
+      alert(`Tetapkan target baris per hari untuk ${nama}.`);
+      document.getElementById(`target_baris_${safeId}`)?.focus();
+      return;
+    }
     try {
       let strSetoran = '';
       let detailData = {};
@@ -2435,14 +2508,22 @@
         jenisInput: isTahsin ? 'talaqqi_bacaan' : (isMurojaah ? 'setoran_murojaah' : 'setoran_hafalan'),
         kelas: document.getElementById('tfzKelas').value, kelompok: document.getElementById('tfzKelas').value,
         tahunAjaran:'2026/2027', guru:user?.label || user?.nama || user?.username || (isTahsin ? 'Guru Tahsin' : (isMurojaah ? 'Guru Muroja’ah' : 'Guru Tahfiz')),
-        data:[{ nama, setoran:strSetoran, ayat, jenisMurojaah: isMurojaah ? jenisMurojaah : null, kesalahan:isTahsin ? '0' : (document.getElementById(`salah_${safeId}`).value || '0'), nilai, keterangan, ...(isTahsin ? {} : barisMeta), ...detailData }],
+        targetBarisHarian: program === 'Tahfiz' ? targetBarisHarian : null,
+        data:[{ nama, setoran:strSetoran, ayat, targetBarisHarian: program === 'Tahfiz' ? targetBarisHarian : null, jenisMurojaah: isMurojaah ? jenisMurojaah : null, kesalahan:isTahsin ? '0' : (document.getElementById(`salah_${safeId}`).value || '0'), nilai, keterangan, ...(isTahsin ? {} : barisMeta), ...detailData }],
         waktuSimpan:new Date().toISOString()
       };
+      if(program === 'Tahfiz'){
+        const targetKey=normalizeStudentKey(nama);
+        const targetPayload={nama,namaSantri:nama,kelas:document.getElementById('tfzKelas').value,targetBarisHarian,tahunAjaran:'2026/2027',diubahOleh:user?.label||user?.nama||user?.username||'Guru Tahfiz',updatedAt:new Date().toISOString()};
+        await update(ref(db,`cahaya_app/target_tahfiz/${targetKey}`),targetPayload);
+        cacheTargetTahfiz[targetKey]=targetPayload;
+      }
       let recordId = editId;
       if(editId){ await update(ref(db,`cahaya_app/setoran_tahfiz/${editId}`),payload); cacheSetoranTahfiz[editId]=payload; }
       else { const hasilPush=await push(ref(db,'cahaya_app/setoran_tahfiz'),payload); recordId=hasilPush.key; cacheSetoranTahfiz[hasilPush.key]=payload; }
-      const waliKey = String(nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+      const waliKey = normalizeStudentKey(nama);
       if(waliKey && recordId) await update(ref(db,`cahaya_app/wali_index/${waliKey}/tahfiz/${recordId}`),payload);
+      if(waliKey) delete riwayatAllCache[waliKey];
       simpanCacheSetoran(cacheSetoranTahfiz); window.batalEditCard(safeId); await window.fetchRiwayatSantri(nama,safeId,cacheSetoranTahfiz);
       if(window.showPageToast) window.showPageToast(
         editId ? (isTahsin?'Talaqqi diperbarui':isMurojaah?'Muroja’ah diperbarui':'Setoran diperbarui') : (isTahsin?'Talaqqi tersimpan':isMurojaah?'Muroja’ah tersimpan':'Setoran tersimpan'),
@@ -2505,51 +2586,39 @@
       }
 
       riwayatBulanIni.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-      
       if(riwayatBulanIni.length > 0) badgeInfo.innerText = `${riwayatBulanIni.length} ${programAktif === 'Tahsin' ? 'Talaqqi' : programAktif === 'Murojaah' ? 'Muroja’ah' : 'Setoran'} Bulan Ini`;
       else badgeInfo.innerText = "Belum Ada Setoran";
-
-      if (riwayatBulanIni.length === 0) {
-        listBody.innerHTML = '<div style="text-align:center; padding:15px; color:#999; font-size:0.85rem;">Belum ada riwayat di bulan ini.</div>';
-        return;
-      }
-
-      listBody.innerHTML = riwayatBulanIni.map((r) => {
-        const dat = r.data[0];
-        const tglArr = r.tanggal.split('-');
-        const tglIndo = `${tglArr[2]}/${tglArr[1]}`;
-
-        let bColor = '#059669', bBg = '#ecfdf5'; 
-        if(dat.nilai.includes("JAYYID")) { bColor = '#0284c7'; bBg = '#f0f9ff'; }
-        if(dat.nilai.includes("MAQBUL")) { bColor = '#d97706'; bBg = '#fffbeb'; }
-        if(dat.nilai.includes("BIMBINGAN")) { bColor = '#dc2626'; bBg = '#fef2f2'; }
-        
-        const dataString = encodeURIComponent(JSON.stringify(r));
-        const namaHtml = escapeHtml(nama);
-
-        return `
-          <div class="riwayat-item">
-            <div class="riwayat-info">
-              <div class="riwayat-top">
-                <span class="riwayat-tgl">${tglIndo}</span>
-                <span class="badge-riwayat" style="color:${bColor}; background:${bBg}; border-color:${bColor};">${dat.nilai}</span>
-              </div>
-              <div class="riwayat-surat">${programAktif === 'Murojaah' ? `<span style="display:inline-block;margin-right:7px;padding:3px 8px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:.7rem;font-weight:800;">${escapeHtml(r.jenisMurojaah || dat.jenisMurojaah || 'Muroja’ah')}</span>` : ''}${dat.setoran}</div>
-              <div class="riwayat-ayat">${programAktif === 'Tahsin'
-                ? `${dat.nilaiAkhir ?? '-'} Nilai • ${escapeHtml(dat.hasil || 'Evaluasi Bacaan')}`
-                : `${dat.ayat} Ayat • ${Number(dat.baris) || 0} Baris${dat.barisManual === true ? ' (Manual Guru)' : dat.baris ? ' (Data Lama)' : ' (Belum Diisi)'}`}</div>
-            </div>
-            <div class="riwayat-actions">
-              <button class="btn-icon btn-edit-icon" onclick="siapkanEditCard('${safeId}', '${dataString}')" title="Edit">✎</button>
-              <button class="btn-icon btn-hapus-icon" data-nama="${namaHtml}" onclick="hapusSetoranDariTombol(this, '${r.id}', '${safeId}')" title="Hapus">✕</button>
-            </div>
-          </div>
-        `;
-      }).join('');
+      // Daftar riwayat sengaja tidak dibuka otomatis agar form tetap ringkas.
+      if(listBody && listBody.style.display !== 'block') listBody.innerHTML = '';
 
     } catch (e) {
       listBody.innerHTML = `<div style="text-align:center; color:red; padding:15px; font-size:0.85rem;">Gagal memuat: ${e.message}</div>`;
     }
+  };
+
+  const monthLabel = key => { const [y,m]=String(key||'').split('-'); const names=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']; return `${names[Number(m)-1]||m} ${y}`; };
+  function renderRiwayatItem(r,nama,safeId,programAktif){
+    const dat=Array.isArray(r.data)?(r.data[0]||{}):(Object.values(r.data||{})[0]||{}); const tgl=String(r.tanggal||''); const parts=tgl.split('-'); const tglIndo=parts.length===3?`${parts[2]}/${parts[1]}/${parts[0]}`:tgl;
+    let bColor='#166534',bBg='#f0fdf4'; const nilai=String(dat.nilai||'-'); if(nilai.includes('JAYYID')){bColor='#1d4ed8';bBg='#eff6ff'} if(nilai.includes('MAQBUL')){bColor='#a16207';bBg='#fffbeb'} if(nilai.includes('BIMBINGAN')){bColor='#b91c1c';bBg='#fef2f2'};
+    const dataString=encodeURIComponent(JSON.stringify(r)); const namaHtml=escapeHtml(nama);
+    return `<div class="riwayat-item"><div class="riwayat-info"><div class="riwayat-top"><span class="riwayat-tgl">${tglIndo}</span><span class="badge-riwayat" style="color:${bColor};background:${bBg};border-color:${bColor};">${escapeHtml(nilai)}</span></div><div class="riwayat-surat">${programAktif==='Murojaah'?`<span style="display:inline-block;margin-right:7px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:.7rem;font-weight:800;">${escapeHtml(r.jenisMurojaah||dat.jenisMurojaah||'Muroja’ah')}</span>`:''}${escapeHtml(dat.setoran||'-')}</div><div class="riwayat-ayat">${programAktif==='Tahsin'?`${dat.nilaiAkhir??'-'} Nilai • ${escapeHtml(dat.hasil||'Evaluasi Bacaan')}`:`${Number(dat.ayat)||0} Ayat • ${Number(dat.baris)||0} Baris`}</div></div><div class="riwayat-actions"><button class="btn-icon btn-edit-icon" onclick="siapkanEditCard('${safeId}','${dataString}')" title="Edit">✎</button><button class="btn-icon btn-hapus-icon" data-nama="${namaHtml}" onclick="hapusSetoranDariTombol(this,'${r.id}','${safeId}')" title="Hapus">✕</button></div></div>`;
+  }
+  window.toggleRiwayatSantri = async (button,safeId) => {
+    const body=document.getElementById(`riwayat_body_${safeId}`); if(!body)return; const nama=button.dataset.nama||'';
+    if(body.style.display==='block'){body.style.display='none';button.textContent='Lihat daftar setoran';return;}
+    body.style.display='block';button.textContent='Tutup daftar setoran';body.innerHTML='<div style="text-align:center;padding:16px;color:#777;">Memuat seluruh riwayat...</div>';
+    try{
+      const key=normalizeStudentKey(nama); let rows=riwayatAllCache[key];
+      if(!rows){
+        let obj={}; const snap=await get(ref(db,`cahaya_app/wali_index/${key}/tahfiz`)); if(snap.exists())obj=snap.val()||{};
+        if(!Object.keys(obj).length){Object.entries(cacheSetoranTahfiz).forEach(([id,r])=>{if(normalizeStudentKey(r?.data?.[0]?.nama)===key)obj[id]=r})}
+        rows=Object.entries(obj).map(([id,r])=>({id,...r})); riwayatAllCache[key]=rows;
+      }
+      const program=document.getElementById('tfzProgram').value; rows=rows.filter(r=>!r.program||r.program===program).sort((a,b)=>String(b.tanggal||'').localeCompare(String(a.tanggal||'')));
+      if(!rows.length){body.innerHTML='<div style="text-align:center;padding:16px;color:#888;">Belum ada riwayat setoran.</div>';return;}
+      const grouped={}; rows.forEach(r=>{const mk=String(r.tanggal||'').slice(0,7)||'Tanpa Tanggal';(grouped[mk]||(grouped[mk]=[])).push(r)});
+      body.innerHTML=Object.entries(grouped).sort((a,b)=>b[0].localeCompare(a[0])).map(([mk,list])=>`<div style="margin:10px 0 18px;"><div style="font-size:.8rem;font-weight:900;color:#1d4ed8;text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;">${monthLabel(mk)} • ${list.length} setoran</div>${list.map(r=>renderRiwayatItem(r,nama,safeId,program)).join('')}</div>`).join('');
+    }catch(e){body.innerHTML=`<div style="text-align:center;padding:16px;color:#b91c1c;">Gagal memuat riwayat: ${escapeHtml(e.message||'Kesalahan koneksi')}</div>`;}
   };
 
   window.siapkanEditCard = (safeId, dataEncoded) => {
@@ -2628,6 +2697,8 @@
 
     document.getElementById(`ayat_${safeId}`).value = dat.ayat;
     document.getElementById(`baris_${safeId}`).value = Number(dat.baris) || "";
+    const targetInput=document.getElementById(`target_baris_${safeId}`); if(targetInput && !targetInput.value && Number(dat.targetBarisHarian||dataRow.targetBarisHarian)>0) targetInput.value=Number(dat.targetBarisHarian||dataRow.targetBarisHarian);
+    updateTargetTahfizInfo(safeId);
     document.getElementById(`salah_${safeId}`).value = dat.kesalahan === "0" ? "" : dat.kesalahan;
     
     let ketAsli = dat.keterangan || "";
@@ -2675,8 +2746,9 @@
     if(confirm(`Hapus data setoran ini dari riwayat ${nama}?`)) {
       try {
         await remove(ref(db, `cahaya_app/setoran_tahfiz/${idNode}`));
-        const waliKey = String(nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+        const waliKey = normalizeStudentKey(nama);
         if(waliKey) await remove(ref(db,`cahaya_app/wali_index/${waliKey}/tahfiz/${idNode}`));
+        if(waliKey) delete riwayatAllCache[waliKey];
         delete cacheSetoranTahfiz[idNode];
         simpanCacheSetoran(cacheSetoranTahfiz);
         window.fetchRiwayatSantri(nama, safeId, cacheSetoranTahfiz);
@@ -2875,6 +2947,6 @@
 </script>
 
 
-  <script src="../js/cahaya-responsive-v24.js?v=37" defer></script>
+  <script src="../js/cahaya-responsive-v24.js?v=42" defer></script>
 </body>
 </html>

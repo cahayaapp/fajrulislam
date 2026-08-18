@@ -18,6 +18,7 @@
   const fmtDate = value => { if (!value) return "-"; const d=new Date(`${value}T00:00:00`); return Number.isNaN(d.getTime())?value:d.toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"}); };
   const statusClass = status => status==="Sangat Baik"?"obs-sangat":status==="Baik"?"obs-baik":status==="Cukup"?"obs-cukup":(["Perlu Perbaikan","Perlu Peningkatan"].includes(status)?"obs-perlu":"obs-kritis");
   const isProgramQuality = Boolean(config.qualityMode);
+  const qualityLabel = config.qualityLabel || 'Mutu Program';
   const qualityCategory = percentage => percentage>=90?"Sangat Baik":percentage>=75?"Baik":percentage>=60?"Cukup":"Perlu Peningkatan";
 
   function loadUser(){
@@ -58,7 +59,7 @@
                       <label class="obs-status-option"><input type="radio" name="status" value="Perlu Perbaikan"><span class="obs-status-card"><span>⚠️</span>Perlu Perbaikan</span></label>
                       <label class="obs-status-option"><input type="radio" name="status" value="Kritis"><span class="obs-status-card"><span>🚨</span>Kritis</span></label>
                     </div></div>`;
-    return `<div class="obs-field full"><label class="obs-label">Mutu Program</label><input type="hidden" name="status" id="autoQualityStatus"><div class="obs-quality-auto" id="autoQualityBox"><div><span class="obs-quality-label">Dihitung otomatis dari indikator</span><strong id="autoQualityLabel">Belum Dinilai</strong></div><b id="autoQualityScore">–</b></div></div>`;
+    return `<div class="obs-field full"><label class="obs-label">${esc(qualityLabel)}</label><input type="hidden" name="status" id="autoQualityStatus"><div class="obs-quality-auto" id="autoQualityBox"><div><span class="obs-quality-label">Dihitung otomatis dari indikator</span><strong id="autoQualityLabel">Belum Dinilai</strong></div><b id="autoQualityScore">–</b></div></div>`;
   }
 
   function render(){
@@ -77,7 +78,7 @@
               <div class="obs-card-body">
                 <form id="observerForm">
                   <div class="obs-form-grid">${config.fields.map(fieldHTML).join('')}</div>
-                  <div class="obs-indicator-shell"><div class="obs-indicator-head"><strong>Indikator Pengamatan</strong><span>${isProgramQuality?'Nilai seluruh indikator. Mutu program dihitung otomatis.':'Seluruh indikator wajib dinilai.'}</span></div><div>${config.indicators.map(indicatorHTML).join('')}</div></div>
+                  <div class="obs-indicator-shell"><div class="obs-indicator-head"><strong>Indikator Pengamatan</strong><span>${isProgramQuality?`Nilai seluruh indikator. ${qualityLabel} dihitung otomatis.`:'Seluruh indikator wajib dinilai.'}</span></div><div>${config.indicators.map(indicatorHTML).join('')}</div></div>
                   <div class="obs-form-grid" style="margin-top:14px">
                     ${qualityStatusHTML()}
                     <div class="obs-field full"><label class="obs-label">Temuan Positif</label><textarea class="obs-textarea" name="temuanPositif" placeholder="Tuliskan hal baik yang perlu dipertahankan atau dicontoh."></textarea></div>
@@ -150,7 +151,7 @@
     const custom={}; config.fields.forEach(field=>custom[field.name]=data[field.name]??'');
     const persentase=Math.round(score/(indicators.length*4)*100);
     const status=effectiveStatus;
-    const payload={jenis:config.type,jenisLabel:config.title,tanggal:data.tanggal,waktu:data.waktu,timestamp:new Date(`${data.tanggal}T${data.waktu||'00:00'}`).getTime()||now,dibuatPada:now,observer:{id:observerId,nama:observerName,role:currentUser.role||'observer'},dataUtama:custom,lokasi:data.lokasi||data.area||data.kelas||data.unit||'',program:data.program||data.mataPelajaran||data.sesi||data.jenisLayanan||'',pihakTerkait:data.pihakTerkait||data.guru||data.pic||data.penanggungJawab||data.petugas||'',indikator:indicators,skor:score,skorMaksimal:indicators.length*4,persentase,status,mutuProgram:isProgramQuality?{kategori:status,persentase,sumber:'indikator-observasi'}:null,temuanPositif:String(data.temuanPositif||'').trim(),temuanPerbaikan:String(data.temuanPerbaikan||'').trim(),kategoriMasalah:data.kategoriMasalah||'',urgensi:data.urgensi||'Normal',rekomendasi:String(data.rekomendasi||'').trim(),foto:photoData||'',validasi:{status:'Menunggu Validasi',supervisor:'',catatan:''},tindakLanjut:{status:'Belum Ditindaklanjuti',catatan:'',tanggal:0}};
+    const payload={jenis:config.type,jenisLabel:config.title,tanggal:data.tanggal,waktu:data.waktu,timestamp:new Date(`${data.tanggal}T${data.waktu||'00:00'}`).getTime()||now,dibuatPada:now,observer:{id:observerId,nama:observerName,role:currentUser.role||'observer'},dataUtama:custom,lokasi:data.lokasi||data.area||data.kelas||data.unit||'',program:data.program||data.mataPelajaran||data.sesi||data.jenisLayanan||'',pihakTerkait:data.pihakTerkait||data.guru||data.pic||data.penanggungJawab||data.petugas||'',indikator:indicators,skor:score,skorMaksimal:indicators.length*4,persentase,status,mutuProgram:isProgramQuality?{kategori:status,persentase,sumber:'indikator-observasi'}:null,mutuPembelajaran:(isProgramQuality&&config.type==='pembelajaran')?{kategori:status,persentase,sumber:'indikator-observasi'}:null,temuanPositif:String(data.temuanPositif||'').trim(),temuanPerbaikan:String(data.temuanPerbaikan||'').trim(),kategoriMasalah:data.kategoriMasalah||'',urgensi:data.urgensi||'Normal',rekomendasi:String(data.rekomendasi||'').trim(),foto:photoData||'',validasi:{status:'Menunggu Validasi',supervisor:'',catatan:''},tindakLanjut:{status:'Belum Ditindaklanjuti',catatan:'',tanggal:0}};
     try{
       const recordRef=db.ref(DB_PATH).push();
       const recordId=recordRef.key;
