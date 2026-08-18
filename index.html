@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#075EEA">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="cahaya-build" content="20260818-v38">
+  <meta name="cahaya-build" content="20260818-v39">
 
   <title>CAHAYA APP — Pesantren Cahaya Fajrul Islam</title>
   <link rel="icon" type="image/png" href="assets/logofi.png">
@@ -340,6 +340,143 @@
     @media (prefers-reduced-motion:reduce){
       *{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
     }
+
+
+    /* =========================================================
+       V39 — FIXED VIEWPORT LOGIN
+       Satu layar, tanpa scroll; logo tetap di bagian atas mobile.
+       ========================================================= */
+    html,body{height:100%;min-height:0;overflow:hidden!important}
+    body{overscroll-behavior:none}
+    .page{height:100dvh;min-height:0;overflow:hidden}
+    .visual,.auth-side{height:100dvh;min-height:0;overflow:hidden}
+    .visual{justify-content:flex-start}
+    .visual-main{margin:auto 0;padding:28px 0}
+    .visual h1{margin-top:0}
+    .auth-side{align-items:center}
+    .auth-card{max-height:calc(100dvh - 48px);overflow:hidden}
+    .mobile-brand{display:none!important}
+
+    @media (max-width:980px){
+      .page{
+        height:100dvh;
+        min-height:0;
+        overflow:hidden;
+        display:grid;
+        grid-template-columns:1fr;
+        grid-template-rows:34% 66%;
+      }
+      .visual{
+        height:100%;
+        min-height:0;
+        padding:calc(14px + env(safe-area-inset-top)) 18px 48px;
+        border-radius:0 0 30px 30px;
+        justify-content:flex-start;
+      }
+      .visual .brand{
+        display:flex!important;
+        flex:0 0 auto;
+        gap:11px;
+      }
+      .brand-mark{
+        width:48px;height:48px;flex-basis:48px;
+        padding:5px;border-radius:15px;
+        box-shadow:0 10px 24px rgba(2,31,96,.18);
+      }
+      .brand-copy strong{font-size:1rem}
+      .brand-copy span{font-size:.55rem;letter-spacing:.045em;margin-top:1px}
+      .visual-main{
+        margin:auto 0 0;
+        padding:12px 0 0;
+        max-width:none;
+      }
+      .visual h1{
+        margin:0;
+        max-width:520px;
+        font-size:clamp(2rem,8.9vw,3.65rem);
+        line-height:1.02;
+        letter-spacing:-.05em;
+      }
+      .eyebrow,.visual-desc,.feature-row{display:none!important}
+      .auth-side{
+        height:100%;
+        min-height:0;
+        margin:0;
+        padding:0 14px calc(10px + env(safe-area-inset-bottom));
+        place-items:start center;
+        background:transparent;
+        overflow:visible;
+      }
+      .auth-wrap{
+        width:min(100%,560px);
+        transform:translateY(-32px);
+      }
+      .auth-card{
+        max-height:none;
+        padding:22px 20px 19px;
+        border-radius:25px;
+        box-shadow:0 18px 46px rgba(17,55,115,.14);
+      }
+      .auth-kicker{font-size:.67rem}
+      .auth-title{margin-top:9px;font-size:clamp(1.75rem,6.8vw,2.25rem)}
+      .login-form{margin-top:18px;gap:13px}
+      .form-group{gap:6px}
+      label{font-size:.73rem}
+      .form-control{height:49px;font-size:.86rem;border-radius:14px}
+      .submit-btn{min-height:50px;border-radius:14px;font-size:.9rem}
+      .auth-foot{margin-top:12px}
+      .copyright{margin-top:10px;font-size:.61rem}
+    }
+
+    @media (max-width:560px){
+      .page{grid-template-rows:32% 68%}
+      .visual{padding-left:16px;padding-right:16px;padding-bottom:44px}
+      .brand-mark{width:44px;height:44px;flex-basis:44px;border-radius:14px}
+      .brand-copy strong{font-size:.94rem}
+      .brand-copy span{font-size:.5rem}
+      .visual h1{font-size:clamp(1.78rem,9.4vw,2.7rem)}
+      .auth-side{padding-left:10px;padding-right:10px}
+      .auth-wrap{transform:translateY(-28px)}
+      .auth-card{padding:19px 16px 16px;border-radius:22px}
+      .auth-title{font-size:1.72rem}
+      .login-form{margin-top:15px;gap:11px}
+      .form-control{height:47px;padding-left:44px}
+      .submit-btn{min-height:48px}
+      .auth-foot{margin-top:10px}
+    }
+
+    @media (max-height:700px){
+      .page{grid-template-rows:29% 71%}
+      .visual{padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:36px}
+      .brand-mark{width:40px;height:40px;flex-basis:40px}
+      .brand-copy strong{font-size:.88rem}.brand-copy span{font-size:.46rem}
+      .visual h1{font-size:clamp(1.55rem,7.7vw,2.3rem)}
+      .auth-wrap{transform:translateY(-24px)}
+      .auth-card{padding:16px 15px 14px}
+      .auth-kicker{font-size:.61rem}.auth-title{font-size:1.48rem;margin-top:6px}
+      .login-form{margin-top:11px;gap:9px}
+      .form-group{gap:4px} label{font-size:.68rem}
+      .form-control{height:43px;font-size:.8rem}
+      .toggle-password{width:39px;height:39px}
+      .submit-btn{min-height:44px;font-size:.84rem}
+      .auth-foot{margin-top:7px}.secure-note{font-size:.64rem}.copyright{margin-top:6px;font-size:.56rem}
+    }
+
+    @media (min-width:981px) and (max-height:720px){
+      .visual{padding:26px 38px}
+      .brand-mark{width:54px;height:54px;flex-basis:54px}
+      .brand-copy strong{font-size:1.15rem}
+      .visual-main{padding:18px 0}
+      .visual h1{font-size:clamp(2.4rem,4.5vw,4.25rem)}
+      .feature-row{gap:7px}.feature{padding:7px 10px;font-size:.68rem}
+      .auth-side{padding:20px 34px}
+      .auth-card{padding:26px 30px}
+      .auth-title{font-size:2rem}
+      .login-form{margin-top:19px;gap:13px}
+      .form-control{height:49px}.submit-btn{min-height:50px}
+      .auth-foot{margin-top:12px}.copyright{margin-top:10px}
+    }
+
   </style>
 </head>
 <body>
@@ -361,9 +498,7 @@
       </div>
 
       <div class="visual-main">
-        <div class="eyebrow"><span class="eyebrow-dot"></span> Ekosistem Digital Pesantren</div>
-        <h1>Satu akses untuk seluruh <span class="gold">CAHAYA.</span></h1>
-        <p class="visual-desc">Masuk dengan akun Anda dan sistem akan langsung membuka ruang kerja sesuai peran serta kewenangan yang telah diberikan.</p>
+        <h1>Bersama Bangun <span class="gold">Generasi Cahaya</span></h1>
       </div>
 
       <div class="feature-row" aria-hidden="true">
@@ -384,15 +519,9 @@
 
     <section class="auth-side">
       <div class="auth-wrap">
-        <div class="mobile-brand">
-          <img src="assets/logofi.png" alt="Logo CAHAYA">
-          <strong>CAHAYA APP</strong>
-        </div>
-
         <section class="auth-card">
           <div class="auth-kicker">Selamat Datang</div>
           <h2 class="auth-title">Masuk ke CAHAYA APP</h2>
-          <p class="auth-desc">Gunakan username dan kata sandi akun CAHAYA Anda.</p>
 
           <form class="login-form" id="loginForm">
             <div id="errorMsg">Username atau kata sandi tidak valid.</div>
@@ -468,8 +597,8 @@
         return unit ? `keuangan/kasir.html?unit=${unit}` : 'keuangan/kasir.html';
       }
       return roles.includes('wali')
-        ? 'wali/dashboard/index.html?v=20260818-v38'
-        : 'main-dashboard.html?v=20260818-v38';
+        ? 'wali/dashboard/index.html?v=20260818-v39'
+        : 'main-dashboard.html?v=20260818-v39';
     }
 
     function resetEyeIcon() {
