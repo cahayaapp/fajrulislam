@@ -67,7 +67,9 @@
     .chart-controls{display:flex;gap:6px;flex-wrap:wrap}.chart-controls button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 9px;font-size:.52rem;font-weight:850}.chart-controls button.active{background:var(--blue);color:#fff;border-color:var(--blue)}.bar-chart{display:grid;grid-template-columns:repeat(auto-fit,minmax(34px,1fr));align-items:end;gap:7px;height:180px;padding-top:14px}.bar-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}.bar-col i{display:block;width:100%;max-width:30px;min-height:3px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#4f83e4,#2467d1)}.bar-col b{font-size:.48rem}.bar-col span{font-size:.43rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44px}
     .sp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sp-box{border-radius:15px;padding:12px;background:#fff8e8;border:1px solid #f4dfad}.sp-box.sp2{background:#fff0f2;border-color:#efc5cb}.sp-box strong{display:block;font-size:.68rem}.sp-box span{font-size:.54rem;color:var(--muted)}
     @media(max-width:850px){.operational-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-grid{grid-template-columns:1fr}.bar-chart{height:150px}.sp-grid{grid-template-columns:1fr}}
-  </style>
+  
+    .division-btn.report-card{background:linear-gradient(145deg,#fffaf0,#fff2c7);border:1px solid #f1d888}.division-btn.report-card .division-icon{background:linear-gradient(135deg,#f2b632,#ffd96b);color:#4e3900}.division-btn.report-card .division-tag{background:#1557d5;color:#fff}.division-btn.report-card:hover{box-shadow:0 14px 34px rgba(180,133,16,.18)}
+</style>
 </head>
 <body>
 <main class="page">
@@ -87,6 +89,7 @@
     <button class="division-btn" id="btn-konselor" onclick="switchDivision('konselor')"><span class="division-icon">⚖</span><span class="division-copy"><strong>Divisi Konselor</strong><span></span></span><span class="division-tag">Kasus & SP</span></button>
     <button class="division-btn utility" id="btn-rank-sdm" onclick="switchDivision('rank-sdm')"><span class="division-icon">★</span><span class="division-copy"><strong>Rangking Kinerja SDM</strong><span></span></span><span class="division-tag">Per divisi</span></button>
     <button class="division-btn utility" id="btn-rank-usrah" onclick="switchDivision('rank-usrah')"><span class="division-icon">◎</span><span class="division-copy"><strong>Rangking Usrah</strong><span></span></span><span class="division-tag">Kinerja anggota</span></button>
+    <button class="division-btn utility report-card" id="btn-cetak-laporan" onclick="window.location.href='cetak-laporan.html?v=46'"><span class="division-icon">▤</span><span class="division-copy"><strong>Cetak Laporan</strong><span></span></span><span class="division-tag">PDF & Print</span></button>
   </div>
 
   <div class="detail-toolbar" id="detailToolbar"><button class="back-grid" onclick="showDashboardHome()">←</button><div><span id="detailKicker">Dashboard Divisi</span><strong id="detailTitle">Detail</strong></div></div>
@@ -179,7 +182,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="../js/cahaya-bandwidth.js?v=45"></script>
-<script src="../js/program-harian-24jam-v45.js?v=45"></script>
+<script src="../js/program-harian-24jam-v45.js?v=46"></script>
 <script>
 (()=>{
 'use strict';
@@ -208,7 +211,7 @@ async function readEvaluations(path){try{return values(await db.ref(path).orderB
 function flattenAttendanceRecords(records,kind){const out=[];(records||[]).forEach(parent=>{const children=Array.isArray(parent.data)?parent.data:Object.values(parent.data||{});if(children.length){children.forEach(child=>out.push({...parent,...(child||{}),_parent:parent,_kind:kind,program:parent.program||child?.program||'',mapel:parent.mapel||parent.mataPelajaran||child?.mapel||'',kelas:child?.kelas||parent.kelas||'',guru:parent.guru||parent.namaGuru||''}))}else out.push({...parent,_parent:parent,_kind:kind})});return out}
 function flattenProgramMaster(raw){const out=[];Object.entries(raw||{}).forEach(([group,value])=>{if(value&&typeof value==='object'&&!Array.isArray(value))Object.keys(value).forEach(name=>out.push({group,name}));else if(group)out.push({group:'',name:group})});return out}
 function flattenProgramSchedule(raw){const out=[];const walk=(node,unit='',keyHint='')=>{if(!node)return;if(Array.isArray(node)){node.forEach(x=>walk(x,unit,keyHint));return}if(typeof node!=='object')return;const scheduleLike=node.waktu||node.mulai||node.selesai||node.hariAktif||node.frekuensi||node.urutan!==undefined||node.pengawas;const name=String(node.nama||node.program||node.label||(scheduleLike?keyHint:'')||'').trim();const looksLikeProgram=name&&scheduleLike;if(looksLikeProgram)out.push({name,unit,urutan:num(node.urutan)||999});Object.entries(node).forEach(([k,v])=>{if(['nama','program','label','waktu','mulai','selesai','hariAktif','frekuensi','urutan','pengawas','id'].includes(k))return;walk(v,unit||(/putri/i.test(k)?'putri':/putra/i.test(k)?'putra':''),k)})};walk(raw);const seen=new Set();return out.sort((a,b)=>a.urutan-b.urutan||a.name.localeCompare(b.name,'id')).filter(x=>{const k=norm(x.name);if(!k||seen.has(k))return false;seen.add(k);return true})}
-function combinedProgramCatalog(){const schedule=flattenProgramSchedule(charState.schedulePrograms),master=flattenProgramMaster(charState.master),map=new Map();(window.CAHAYA_PROGRAM_HARIAN_24JAM||[]).forEach(x=>{const n=String(x.program||x.name||'').trim();if(n)map.set(norm(n),n)});schedule.forEach(x=>map.set(norm(x.name),x.name));master.forEach(x=>{const k=norm(x.name);if(!map.has(k))map.set(k,x.name)});return[...map.values()]}
+function combinedProgramCatalog(){const schedule=flattenProgramSchedule(charState.schedulePrograms),master=flattenProgramMaster(charState.master),map=new Map();[...(window.CAHAYA_PROGRAM_HARIAN_24JAM||[]),...(window.CAHAYA_PROGRAM_PEKANAN_PENGASUHAN||[])].forEach(x=>{const n=String(x.program||x.name||'').trim();if(n)map.set(norm(n),n)});schedule.forEach(x=>map.set(norm(x.name),x.name));master.forEach(x=>{const k=norm(x.name);if(!map.has(k))map.set(k,x.name)});return[...map.values()]}
 function canonicalProgramName(name){const text=String(name||'').trim();if(!text)return'Program';const catalog=combinedProgramCatalog();if(!catalog.length)return text;const key=norm(text);const exact=catalog.find(x=>norm(x)===key);if(exact)return exact;const alias=key.replace(/^salat/,'shalat').replace(/alquran/g,'quran').replace(/dzikir/g,'zikir');const fuzzy=catalog.find(x=>{const mk=norm(x).replace(/^salat/,'shalat').replace(/alquran/g,'quran').replace(/dzikir/g,'zikir');return mk===alias||mk.includes(alias)||alias.includes(mk)});return fuzzy||text}
 function statusOf(rec){return String(first(rec,['status','kehadiran','statusKehadiran','keterangan'],'')).toLowerCase()}
 function classifyStudent(rec){const s=statusOf(rec);if(s.includes('sakit')||s.includes('izin'))return'permit';if(s.includes('alfa')||s.includes('alpha')||s.includes('tanpa'))return'alpha';if(s.includes('hadir')||s.includes('tepat')||s.includes('terlambat'))return'present';return null}

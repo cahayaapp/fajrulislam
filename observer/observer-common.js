@@ -43,7 +43,7 @@
     let control='';
     if(field.type==='select') control=`<select class="obs-select" name="${esc(field.name)}" ${required}><option value="">${esc(field.placeholder||'Pilih data')}</option>${options}</select>`;
     else if(field.type==='textarea') control=`<textarea class="obs-textarea" name="${esc(field.name)}" placeholder="${esc(field.placeholder||'')}"></textarea>`;
-    else control=`<input class="obs-input ${field.name==='tanggal'?'obs-date':''} ${field.name==='waktu'?'obs-time':''}" type="${esc(field.type||'text')}" name="${esc(field.name)}" placeholder="${esc(field.placeholder||'')}" ${field.min!=null?`min="${field.min}"`:''} ${required}>`;
+    else control=`<input class="obs-input ${field.name==='tanggal'?'obs-date':''} ${field.name==='waktu'?'obs-time':''}" type="${esc(field.type||'text')}" name="${esc(field.name)}" placeholder="${esc(field.placeholder||'')}" ${field.min!=null?`min="${field.min}"`:''} ${field.readonly?'readonly':''} ${required}>`;
     return `<div class="obs-field${full}"><label class="obs-label">${esc(field.label)} ${mark}</label>${control}</div>`;
   }
 
@@ -152,6 +152,13 @@
     })).filter(item=>item.name);
   }
 
+  function programWeeklyCatalog(){
+    const rows=Array.isArray(window.CAHAYA_PROGRAM_PEKANAN_PENGASUHAN)?window.CAHAYA_PROGRAM_PEKANAN_PENGASUHAN:[];
+    return rows.map((item,index)=>({
+      name:String(item.program||item.nama||'').trim(),source:'weekly',urutan:Number(item.no||100+index),waktu:item.waktu||'',standar:item.standar||'',kategori:item.kategori||'Program Pekanan',frekuensi:item.frekuensi||'Pekanan',hariAktif:Array.isArray(item.hariAktif)?item.hariAktif:[]
+    })).filter(item=>item.name);
+  }
+
   function mergeProgramCatalog(scheduleRaw,masterRaw){
     const map=new Map();
     program24hCatalog().forEach(item=>map.set(normalizeProgramKey(item.name),item));
@@ -161,7 +168,7 @@
   }
 
   function renderProgram24hHelper(select){
-    const rows=program24hCatalog();
+    const rows=[...program24hCatalog(),...programWeeklyCatalog()];
     if(!rows.length||!select)return;
     let helper=document.getElementById('obsProgram24hHelper');
     if(!helper){
@@ -175,7 +182,7 @@
       const item=rows.find(x=>normalizeProgramKey(x.name)===normalizeProgramKey(select.value));
       if(!item){helper.style.display='none';helper.innerHTML='';return;}
       helper.style.display='block';
-      helper.innerHTML=`<strong style="color:#1f4f9b">${esc(item.waktu||'')}</strong> • ${esc(item.kategori||'Program Harian')}<br><span>${esc(item.standar||'')}</span>${item.penanggungJawab?`<br><small>PIC standar: ${esc(item.penanggungJawab)}</small>`:''}`;
+      helper.innerHTML=`<strong style="color:#1f4f9b">${esc(item.waktu||'')}</strong> • ${esc(item.kategori||'Program Harian')}${item.frekuensi?` • ${esc(item.frekuensi)}`:''}<br><span>${esc(item.standar||'')}</span>`;
     };
     if(!select.dataset.helper24hBound){select.addEventListener('change',update);select.dataset.helper24hBound='1';}
     update();
@@ -186,11 +193,21 @@
     if(!sourcePaths.length) return;
     const select=document.querySelector('select[name="program"]');
     if(!select) return;
+    if(config.programCatalogMode==='canonical-24h-weekly'){
+      const programs=[...program24hCatalog(),...programWeeklyCatalog()];
+      const placeholder=select.querySelector('option[value=""]')?.textContent || 'Pilih program';
+      select.innerHTML=`<option value="">${esc(placeholder)}</option>`;
+      const dailyGroup=document.createElement('optgroup');dailyGroup.label='Program Harian 24 Jam';programs.filter(item=>item.source==='24h').sort((a,b)=>a.urutan-b.urutan).forEach(item=>dailyGroup.appendChild(new Option(`${item.waktu?item.waktu+' • ':''}${item.name}`,item.name)));select.appendChild(dailyGroup);
+      const weekly=programs.filter(item=>item.source==='weekly').sort((a,b)=>a.urutan-b.urutan);if(weekly.length){const weeklyGroup=document.createElement('optgroup');weeklyGroup.label='Program Pekanan';weekly.forEach(item=>weeklyGroup.appendChild(new Option(`${item.waktu?item.waktu+' • ':''}${item.name}`,item.name)));select.appendChild(weeklyGroup);}
+      select.dataset.programMaster='program-harian-24jam+pekanan';renderProgram24hHelper(select);updatePengasuhanPIC();return;
+    }
     try{
       const snapshots=await Promise.all(sourcePaths.map(path=>db.ref(path).once('value').then(snap=>({path,value:snap.val()||{}})).catch(error=>({path,value:{},error}))));
       const scheduleRaw=snapshots.find(item=>/jadwal_program_harian/i.test(item.path))?.value||{};
       const masterRaw=snapshots.find(item=>/master_program_harian/i.test(item.path))?.value||{};
-      let programs=mergeProgramCatalog(scheduleRaw,masterRaw);
+      let programs;
+      if(config.programCatalogMode==='canonical-24h-weekly') programs=[...program24hCatalog(),...programWeeklyCatalog()];
+      else programs=mergeProgramCatalog(scheduleRaw,masterRaw);
       if(!programs.length){
         programs=snapshots.flatMap(item=>flattenProgramMaster(item.value));
         const seen=new Set();programs=programs.filter(item=>{const key=normalizeProgramKey(item.name);if(!key||seen.has(key))return false;seen.add(key);return true;});
@@ -198,17 +215,70 @@
       if(!programs.length) return;
       const placeholder=select.querySelector('option[value=""]')?.textContent || 'Pilih program';
       select.innerHTML=`<option value="">${esc(placeholder)}</option>`;
-      const daily24=programs.filter(item=>item.source==='24h');
-      const scheduled=programs.filter(item=>item.source==='schedule');
-      const masterOnly=programs.filter(item=>!['24h','schedule'].includes(item.source));
-      if(daily24.length){const og=document.createElement('optgroup');og.label='Program Harian 24 Jam';daily24.sort((a,b)=>a.urutan-b.urutan).forEach(item=>og.appendChild(new Option(`${item.waktu?item.waktu+' • ':''}${item.name}`,item.name)));select.appendChild(og);}
-      if(scheduled.length){const og=document.createElement('optgroup');og.label='Jadwal Operasional';scheduled.forEach(item=>og.appendChild(new Option(item.name,item.name)));select.appendChild(og);}
-      if(masterOnly.length){const og=document.createElement('optgroup');og.label='Program Absensi Harian';masterOnly.sort((a,b)=>a.name.localeCompare(b.name,'id')).forEach(item=>og.appendChild(new Option(item.name,item.name)));select.appendChild(og);}
-      select.dataset.programMaster='24jam+jadwal+absensi';
+      if(config.programCatalogMode==='canonical-24h-weekly'){
+        const daily24=programs.filter(item=>item.source==='24h').sort((a,b)=>a.urutan-b.urutan);
+        const weekly=programs.filter(item=>item.source==='weekly').sort((a,b)=>a.urutan-b.urutan);
+        const dailyGroup=document.createElement('optgroup');dailyGroup.label='Program Harian 24 Jam';daily24.forEach(item=>dailyGroup.appendChild(new Option(`${item.waktu?item.waktu+' • ':''}${item.name}`,item.name)));select.appendChild(dailyGroup);
+        if(weekly.length){const weeklyGroup=document.createElement('optgroup');weeklyGroup.label='Program Pekanan';weekly.forEach(item=>weeklyGroup.appendChild(new Option(`${item.waktu?item.waktu+' • ':''}${item.name}`,item.name)));select.appendChild(weeklyGroup);}
+        select.dataset.programMaster='program-harian-24jam+pekanan';
+      }else{
+        const daily24=programs.filter(item=>item.source==='24h');
+        const scheduled=programs.filter(item=>item.source==='schedule');
+        const masterOnly=programs.filter(item=>!['24h','schedule'].includes(item.source));
+        if(daily24.length){const og=document.createElement('optgroup');og.label='Program Harian 24 Jam';daily24.sort((a,b)=>a.urutan-b.urutan).forEach(item=>og.appendChild(new Option(`${item.waktu?item.waktu+' • ':''}${item.name}`,item.name)));select.appendChild(og);}
+        if(scheduled.length){const og=document.createElement('optgroup');og.label='Jadwal Operasional';scheduled.forEach(item=>og.appendChild(new Option(item.name,item.name)));select.appendChild(og);}
+        if(masterOnly.length){const og=document.createElement('optgroup');og.label='Program Absensi Harian';masterOnly.sort((a,b)=>a.name.localeCompare(b.name,'id')).forEach(item=>og.appendChild(new Option(item.name,item.name)));select.appendChild(og);}
+        select.dataset.programMaster='24jam+jadwal+absensi';
+      }
       renderProgram24hHelper(select);
+      updatePengasuhanPIC();
     }catch(error){
       console.warn('Daftar program Pengasuhan belum dapat disinkronkan; menggunakan pilihan bawaan.',error);
     }
+  }
+
+  let dutySchedule=null;
+  const DAY_KEYS=['ahad','senin','selasa','rabu','kamis','jumat','sabtu'];
+  function minutes(value){const m=String(value||'').match(/(\d{1,2}):(\d{2})/);return m?Number(m[1])*60+Number(m[2]):null;}
+  function insideTime(now,start,end){const n=minutes(now),s=minutes(start),e=minutes(end);if(n==null||s==null||e==null)return false;return e>=s?(n>=s&&n<e):(n>=s||n<e);}
+  function previousDayKey(date){const d=new Date(`${date}T12:00:00`);d.setDate(d.getDate()-1);return DAY_KEYS[d.getDay()];}
+  function currentDayKey(date){const d=new Date(`${date}T12:00:00`);return DAY_KEYS[d.getDay()];}
+  function dutyPutra(schedule,date,time){
+    const unit=schedule?.putra||{},blocks=unit.blok||{},day=currentDayKey(date);let blockKey='';let dutyDay=day;
+    for(const key of ['blok1','blok2','blok3']){const b=blocks[key]||{};if(insideTime(time,b.mulai,b.selesai)){blockKey=key;if(minutes(b.selesai)<minutes(b.mulai)&&minutes(time)<minutes(b.selesai))dutyDay=previousDayKey(date);break;}}
+    if(!blockKey)return{pic:'Belum terjadwal',detail:'Tidak ada blok piket pada jam ini'};
+    const pic=String(unit.jadwal?.[dutyDay]?.[blockKey]||'').trim()||'Belum terjadwal';
+    return{pic,detail:`Putra • ${blocks[blockKey]?.label||blockKey} • ${dutyDay}`};
+  }
+  function putriOff(schedule,date,time){
+    const off=schedule?.putri?.tanpaPiket;if(!off?.aktif)return false;const programs=schedule?.putri?.program||[];
+    const startProgram=programs.find(x=>String(x.id)===String(off.mulaiProgramId)),endProgram=programs.find(x=>String(x.id)===String(off.selesaiProgramId));
+    const day=currentDayKey(date),n=minutes(time),start=minutes(startProgram?.mulai||String(startProgram?.waktu||'').split(/[–-]/)[0]),end=minutes(endProgram?.selesai||String(endProgram?.waktu||'').split(/[–-]/)[1]);
+    const order=['senin','selasa','rabu','kamis','jumat','sabtu','ahad'],si=order.indexOf(off.mulaiHari),ei=order.indexOf(off.selesaiHari),di=order.indexOf(day);if(si<0||ei<0||di<0)return false;
+    if(si<=ei){if(di<si||di>ei)return false;if(di===si&&n!=null&&start!=null&&n<start)return false;if(di===ei&&n!=null&&end!=null&&n>=end)return false;return true;}
+    const within=di>=si||di<=ei;if(!within)return false;if(di===si&&n!=null&&start!=null&&n<start)return false;if(di===ei&&n!=null&&end!=null&&n>=end)return false;return true;
+  }
+  function dutyPutri(schedule,date,time,program){
+    if(putriOff(schedule,date,time))return{pic:'Tidak ada piket blok',detail:'Putri • masa tanpa piket sesuai jadwal'};
+    const day=currentDayKey(date),rows=(schedule?.putri?.program||[]).filter(x=>!Array.isArray(x.hariAktif)||!x.hariAktif.length||x.hariAktif.includes(day));
+    const target=normalizeProgramKey(program||'');
+    let match=rows.find(x=>target&&normalizeProgramKey(x.nama||x.program)===target);
+    if(!match)match=rows.find(x=>insideTime(time,x.mulai||String(x.waktu||'').split(/[–-]/)[0],x.selesai||String(x.waktu||'').split(/[–-]/)[1]));
+    if(!match){const n=minutes(time),timed=rows.map(x=>({...x,_start:minutes(x.mulai||String(x.waktu||'').split(/[–-]/)[0])})).filter(x=>x._start!=null).sort((a,b)=>a._start-b._start);match=[...timed].reverse().find(x=>x._start<=n)||timed[0];}
+    return{pic:String(match?.pengawas||'').trim()||'Belum terjadwal',detail:`Putri${match?.nama?` • ${match.nama}`:''}`};
+  }
+  async function hydrateDutySchedule(){
+    if(config.type!=='pengasuhan')return;
+    try{const snap=await db.ref(config.dutySchedulePath||'cahaya_app/jadwal_piket_naqib').once('value');dutySchedule=snap.val()||null;}catch(error){console.warn('Jadwal piket Firebase belum dapat dimuat.',error);}
+    if(!dutySchedule){try{const res=await fetch('../data/jadwal-piket-pengawas-2026-2027.json',{cache:'force-cache'});if(res.ok)dutySchedule=await res.json();}catch(error){console.warn('Fallback jadwal piket tidak tersedia.',error);}}
+    updatePengasuhanPIC();
+  }
+  function ensurePICHelper(input){let helper=document.getElementById('obsPICScheduleHelper');if(!helper&&input){helper=document.createElement('div');helper.id='obsPICScheduleHelper';helper.style.cssText='margin-top:7px;padding:8px 10px;border-radius:10px;background:#fff8df;border:1px solid #f0dfa4;color:#725b18;font-size:.7rem;font-weight:750;line-height:1.45';input.insertAdjacentElement('afterend',helper);}return helper;}
+  function updatePengasuhanPIC(){
+    if(config.type!=='pengasuhan')return;const form=document.getElementById('observerForm');if(!form)return;const date=form.elements.tanggal?.value,time=form.elements.waktu?.value,unit=form.elements.unitAsrama?.value,program=form.elements.program?.value,picInput=form.elements.pic,helper=ensurePICHelper(picInput);if(!picInput)return;
+    if(!date||!time||!unit){picInput.value='';if(helper)helper.textContent='Pilih tanggal, waktu, dan unit asrama. PIC akan diambil otomatis dari Jadwal Piket Naqib.';return;}
+    if(!dutySchedule){picInput.value='Memuat jadwal...';if(helper)helper.textContent='Mengambil Jadwal Piket Naqib...';return;}
+    const result=unit==='Putri'?dutyPutri(dutySchedule,date,time,program):dutyPutra(dutySchedule,date,time);picInput.value=result.pic;if(helper)helper.textContent=`${result.detail} • PIC: ${result.pic}`;
   }
 
   function bindEvents(){
@@ -216,6 +286,7 @@
     document.getElementById('observerForm').addEventListener('submit',save);
     document.getElementById('resetButton').addEventListener('click',resetForm);
     document.getElementById('obsPhotoInput').addEventListener('change',previewPhoto);
+    if(config.type==='pengasuhan'){['tanggal','waktu','unitAsrama','program'].forEach(name=>{const el=document.querySelector(`[name="${name}"]`);if(el)el.addEventListener('change',updatePengasuhanPIC);});hydrateDutySchedule();}
   }
 
   function setDefaults(){
@@ -248,6 +319,7 @@
     const form=event.currentTarget; const indicators=collectIndicators();
     if(indicators.some(item=>!item)){toast('⚠️','Indikator belum lengkap','Nilai seluruh indikator terlebih dahulu.');document.querySelector('.obs-indicator-shell').scrollIntoView({behavior:'smooth',block:'center'});return;}
     const data=Object.fromEntries(new FormData(form).entries());
+    if(config.type==='pengasuhan'&&(!String(data.pic||'').trim()||String(data.pic||'').includes('Memuat jadwal'))){toast('⚠️','PIC belum siap','Tunggu Jadwal Piket Naqib selesai dimuat, lalu coba simpan kembali.');return;}
     const score=indicators.reduce((sum,item)=>sum+item.nilai,0);
     const previewPersentase=Math.round(score/(indicators.length*4)*100);
     const effectiveStatus=isProgramQuality?qualityCategory(previewPersentase):data.status;
@@ -259,8 +331,8 @@
     const custom={}; config.fields.forEach(field=>custom[field.name]=data[field.name]??'');
     const persentase=Math.round(score/(indicators.length*4)*100);
     const status=effectiveStatus;
-    const program24Meta=program24hCatalog().find(item=>normalizeProgramKey(item.name)===normalizeProgramKey(data.program||''))||null;
-    const payload={jenis:config.type,jenisLabel:config.title,tanggal:data.tanggal,waktu:data.waktu,timestamp:new Date(`${data.tanggal}T${data.waktu||'00:00'}`).getTime()||now,dibuatPada:now,observer:{id:observerId,nama:observerName,role:currentUser.role||'observer'},dataUtama:custom,lokasi:data.lokasi||data.area||data.kelas||data.unit||'',program:data.program||data.mataPelajaran||data.sesi||data.jenisLayanan||'',program24Jam:program24Meta?{waktu:program24Meta.waktu,standar:program24Meta.standar,kategori:program24Meta.kategori,peran:program24Meta.peran,penanggungJawab:program24Meta.penanggungJawab}:null,pihakTerkait:data.pihakTerkait||data.guru||data.pic||data.penanggungJawab||data.petugas||'',indikator:indicators,skor:score,skorMaksimal:indicators.length*4,persentase,status,mutuProgram:isProgramQuality?{kategori:status,persentase,sumber:'indikator-observasi'}:null,mutuPembelajaran:(isProgramQuality&&config.type==='pembelajaran')?{kategori:status,persentase,sumber:'indikator-observasi'}:null,temuanPositif:String(data.temuanPositif||'').trim(),temuanPerbaikan:String(data.temuanPerbaikan||'').trim(),kategoriMasalah:data.kategoriMasalah||'',urgensi:data.urgensi||'Normal',rekomendasi:String(data.rekomendasi||'').trim(),foto:photoData||'',validasi:{status:'Menunggu Validasi',supervisor:'',catatan:''},tindakLanjut:{status:'Belum Ditindaklanjuti',catatan:'',tanggal:0}};
+    const program24Meta=[...program24hCatalog(),...programWeeklyCatalog()].find(item=>normalizeProgramKey(item.name)===normalizeProgramKey(data.program||''))||null;
+    const payload={jenis:config.type,jenisLabel:config.title,tanggal:data.tanggal,waktu:data.waktu,timestamp:new Date(`${data.tanggal}T${data.waktu||'00:00'}`).getTime()||now,dibuatPada:now,observer:{id:observerId,nama:observerName,role:currentUser.role||'observer'},dataUtama:custom,lokasi:data.lokasi||data.area||data.kelas||data.unit||'',program:data.program||data.mataPelajaran||data.sesi||data.jenisLayanan||'',program24Jam:program24Meta?{waktu:program24Meta.waktu,standar:program24Meta.standar,kategori:program24Meta.kategori,peran:program24Meta.peran,penanggungJawab:program24Meta.penanggungJawab,frekuensi:program24Meta.frekuensi||'Harian',hariAktif:program24Meta.hariAktif||[]}:null,picJadwal:{unit:data.unitAsrama||'',pic:data.pic||'',sumber:config.dutySchedulePath||'cahaya_app/jadwal_piket_naqib'},pihakTerkait:data.pihakTerkait||data.guru||data.pic||data.penanggungJawab||data.petugas||'',indikator:indicators,skor:score,skorMaksimal:indicators.length*4,persentase,status,mutuProgram:isProgramQuality?{kategori:status,persentase,sumber:'indikator-observasi'}:null,mutuPembelajaran:(isProgramQuality&&config.type==='pembelajaran')?{kategori:status,persentase,sumber:'indikator-observasi'}:null,temuanPositif:String(data.temuanPositif||'').trim(),temuanPerbaikan:String(data.temuanPerbaikan||'').trim(),kategoriMasalah:data.kategoriMasalah||'',urgensi:data.urgensi||'Normal',rekomendasi:String(data.rekomendasi||'').trim(),foto:photoData||'',validasi:{status:'Menunggu Validasi',supervisor:'',catatan:''},tindakLanjut:{status:'Belum Ditindaklanjuti',catatan:'',tanggal:0}};
     try{
       const recordRef=db.ref(DB_PATH).push();
       const recordId=recordRef.key;
@@ -276,7 +348,7 @@
     finally{button.disabled=false;button.textContent='💾 Simpan Observasi';}
   }
 
-  function resetForm(){const form=document.getElementById('observerForm');form.reset();document.querySelectorAll('.obs-rating').forEach(item=>item.classList.remove('selected'));photoData='';const preview=document.getElementById('obsPhotoPreview');preview.src='';preview.style.display='none';document.getElementById('obsPhotoPlaceholder').style.display='block';setDefaults();updateAutoQuality();}
+  function resetForm(){const form=document.getElementById('observerForm');form.reset();document.querySelectorAll('.obs-rating').forEach(item=>item.classList.remove('selected'));photoData='';const preview=document.getElementById('obsPhotoPreview');preview.src='';preview.style.display='none';document.getElementById('obsPhotoPlaceholder').style.display='block';setDefaults();updateAutoQuality();updatePengasuhanPIC();}
 
   async function previewPhoto(event){const file=event.target.files?.[0];if(!file)return;if(!file.type.startsWith('image/')){toast('⚠️','File tidak sesuai','Pilih file gambar.');return;}try{photoData=await compressImage(file);const preview=document.getElementById('obsPhotoPreview');preview.src=photoData;preview.style.display='block';document.getElementById('obsPhotoPlaceholder').style.display='none';}catch(error){console.error(error);toast('❌','Foto gagal diproses','Coba pilih gambar lain.');}}
   function compressImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const image=new Image();image.onerror=reject;image.onload=()=>{let width=image.width,height=image.height;const max=900;if(Math.max(width,height)>max){const ratio=max/Math.max(width,height);width=Math.round(width*ratio);height=Math.round(height*ratio);}const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;canvas.getContext('2d').drawImage(image,0,0,width,height);resolve(canvas.toDataURL('image/jpeg',.62));};image.src=reader.result;};reader.readAsDataURL(file);});}

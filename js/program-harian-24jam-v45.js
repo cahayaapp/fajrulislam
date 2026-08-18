@@ -282,3 +282,12 @@ window.CAHAYA_PROGRAM_HARIAN_24JAM = [
     "penanggungJawab": "Pengawas"
   }
 ];
+
+
+/* CAHAYA APP V46 — program pekanan Pengasuhan yang ikut dinilai observer. */
+window.CAHAYA_PROGRAM_PEKANAN_PENGASUHAN = [
+  { id:'W-01', no:101, waktu:'03.20–04.00', program:'Sahur Puasa Sunnah', standar:'Memastikan santri yang berpuasa sunnah bangun, sahur dengan tertib, dan siap mengikuti program berikutnya.', kategori:'Spiritual', frekuensi:'Pekanan', hariAktif:['senin','kamis'] },
+  { id:'W-02', no:102, waktu:'Seharian', program:'Puasa Sunnah', standar:'Memastikan pelaksanaan puasa sunnah berjalan tertib dan kebutuhan santri yang berpuasa terkoordinasi.', kategori:'Spiritual', frekuensi:'Pekanan', hariAktif:['senin','kamis'] },
+  { id:'W-03', no:103, waktu:'17.50–18.00', program:'Buka Puasa Sunnah', standar:'Memastikan santri berbuka dengan tertib, tepat waktu, dan menjaga adab makan.', kategori:'Spiritual', frekuensi:'Pekanan', hariAktif:['senin','kamis'] },
+  { id:'W-04', no:104, waktu:'18.30–19.10', program:'Maulid Pekanan', standar:'Memastikan Maulid pekanan berjalan tertib, santri mengikuti dengan adab, dan program selesai sesuai jadwal.', kategori:'Spiritual', frekuensi:'Pekanan', hariAktif:['kamis'] }
+];
