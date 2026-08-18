@@ -107,33 +107,68 @@
   function flattenProgramMaster(raw){
     const out=[];
     Object.entries(raw||{}).forEach(([group,value])=>{
-      if(value && typeof value==='object' && !Array.isArray(value)){
-        Object.keys(value).forEach(name=>out.push({group,name}));
-      }else if(group) out.push({group:'',name:group});
+      if(value && typeof value==='object' && !Array.isArray(value)) Object.keys(value).forEach(name=>out.push({group,name,source:'master'}));
+      else if(group) out.push({group:'',name:group,source:'master'});
     });
-    return out.sort((a,b)=>a.name.localeCompare(b.name,'id'));
+    return out;
+  }
+
+  function flattenProgramSchedule(raw){
+    const out=[];
+    const walk=(node,unit='',keyHint='')=>{
+      if(!node) return;
+      if(Array.isArray(node)){node.forEach(item=>walk(item,unit,keyHint));return;}
+      if(typeof node!=='object') return;
+      const scheduleLike=node.waktu||node.mulai||node.selesai||node.hariAktif||node.frekuensi||node.urutan!==undefined||node.pengawas;
+      const name=String(node.nama||node.program||node.label||(scheduleLike?keyHint:'')||'').trim();
+      const looksLikeProgram=name && scheduleLike;
+      if(looksLikeProgram) out.push({name,unit,urutan:Number(node.urutan)||999,source:'schedule'});
+      Object.entries(node).forEach(([key,value])=>{
+        if(['nama','program','label','waktu','mulai','selesai','hariAktif','frekuensi','urutan','pengawas','id'].includes(key)) return;
+        const nextUnit=unit||(/putri/i.test(key)?'putri':/putra/i.test(key)?'putra':'');
+        walk(value,nextUnit,key);
+      });
+    };
+    walk(raw);
+    const seen=new Set();
+    return out.sort((a,b)=>a.urutan-b.urutan||a.name.localeCompare(b.name,'id')).filter(item=>{
+      const key=normalizeProgramKey(item.name);if(!key||seen.has(key))return false;seen.add(key);return true;
+    });
+  }
+
+  function normalizeProgramKey(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+
+  function mergeProgramCatalog(scheduleRaw,masterRaw){
+    const map=new Map();
+    flattenProgramSchedule(scheduleRaw).forEach(item=>map.set(normalizeProgramKey(item.name),item));
+    flattenProgramMaster(masterRaw).forEach(item=>{const key=normalizeProgramKey(item.name);if(!map.has(key))map.set(key,item);});
+    return [...map.values()];
   }
 
   async function hydrateProgramMaster(){
-    if(!config.programSourcePath) return;
+    const sourcePaths=Array.isArray(config.programSourcePaths)&&config.programSourcePaths.length?config.programSourcePaths:(config.programSourcePath?[config.programSourcePath]:[]);
+    if(!sourcePaths.length) return;
     const select=document.querySelector('select[name="program"]');
     if(!select) return;
     try{
-      const snap=await db.ref(config.programSourcePath).once('value');
-      const programs=flattenProgramMaster(snap.val()||{});
+      const snapshots=await Promise.all(sourcePaths.map(path=>db.ref(path).once('value').then(snap=>({path,value:snap.val()||{}})).catch(error=>({path,value:{},error}))));
+      const scheduleRaw=snapshots.find(item=>/jadwal_program_harian/i.test(item.path))?.value||{};
+      const masterRaw=snapshots.find(item=>/master_program_harian/i.test(item.path))?.value||{};
+      let programs=mergeProgramCatalog(scheduleRaw,masterRaw);
+      if(!programs.length){
+        programs=snapshots.flatMap(item=>flattenProgramMaster(item.value));
+        const seen=new Set();programs=programs.filter(item=>{const key=normalizeProgramKey(item.name);if(!key||seen.has(key))return false;seen.add(key);return true;});
+      }
       if(!programs.length) return;
       const placeholder=select.querySelector('option[value=""]')?.textContent || 'Pilih program';
       select.innerHTML=`<option value="">${esc(placeholder)}</option>`;
-      const groups=new Map();
-      programs.forEach(item=>{
-        if(item.group){
-          if(!groups.has(item.group)){const og=document.createElement('optgroup');og.label=item.group;select.appendChild(og);groups.set(item.group,og)}
-          groups.get(item.group).appendChild(new Option(item.name,item.name));
-        }else select.appendChild(new Option(item.name,item.name));
-      });
-      select.dataset.programMaster='firebase';
+      const scheduled=programs.filter(item=>item.source==='schedule');
+      const masterOnly=programs.filter(item=>item.source!=='schedule');
+      if(scheduled.length){const og=document.createElement('optgroup');og.label='Jadwal Harian';scheduled.forEach(item=>og.appendChild(new Option(item.name,item.name)));select.appendChild(og);}
+      if(masterOnly.length){const og=document.createElement('optgroup');og.label='Program Absensi Harian';masterOnly.sort((a,b)=>a.name.localeCompare(b.name,'id')).forEach(item=>og.appendChild(new Option(item.name,item.name)));select.appendChild(og);}
+      select.dataset.programMaster='jadwal+absensi';
     }catch(error){
-      console.warn('Master program harian belum dapat dimuat; menggunakan pilihan bawaan.',error);
+      console.warn('Daftar program Pengasuhan belum dapat disinkronkan; menggunakan pilihan bawaan.',error);
     }
   }
 

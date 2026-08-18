@@ -1598,38 +1598,84 @@
       usrahAktif = defaultKey;
     }
 
-    function isiPilihanProgram(programData) {
-      const select = document.getElementById("program");
+    function normalisasiNamaProgram(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+    }
 
-      Object.entries(programData || {}).forEach(([key, value]) => {
-        if (value && typeof value === "object") {
-          const group = document.createElement("optgroup");
-          group.label = key;
-
-          Object.entries(value).forEach(([namaProgram, poin]) => {
-            masterPoinProgram[namaProgram] = Number(poin) || 0;
-
-            group.appendChild(
-              new Option(
-                `${namaProgram} (+${masterPoinProgram[namaProgram]})`,
-                namaProgram
-              )
-            );
-          });
-
-          select.appendChild(group);
-          return;
-        }
-
-        masterPoinProgram[key] = Number(value) || 0;
-
-        select.add(
-          new Option(
-            `${key} (+${masterPoinProgram[key]})`,
-            key
-          )
-        );
+    function daftarMasterProgram(programData) {
+      const out = [];
+      Object.entries(programData || {}).forEach(([group, value]) => {
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          Object.entries(value).forEach(([nama, poin]) => out.push({ nama, poin: Number(poin) || 0, group }));
+        } else if (group) out.push({ nama: group, poin: Number(value) || 0, group: "" });
       });
+      return out;
+    }
+
+    function daftarJadwalProgram(raw) {
+      const out = [];
+      const walk = (node, unit = "", keyHint = "") => {
+        if (!node) return;
+        if (Array.isArray(node)) { node.forEach(item => walk(item, unit, keyHint)); return; }
+        if (typeof node !== "object") return;
+        const jadwalTerlihat = node.waktu || node.mulai || node.selesai || node.hariAktif || node.frekuensi || node.urutan !== undefined || node.pengawas;
+        const nama = String(node.nama || node.program || node.label || (jadwalTerlihat ? keyHint : "") || "").trim();
+        const terlihatProgram = nama && jadwalTerlihat;
+        if (terlihatProgram) out.push({ nama, urutan: Number(node.urutan) || 999, unit });
+        Object.entries(node).forEach(([key, value]) => {
+          if (["nama","program","label","waktu","mulai","selesai","hariAktif","frekuensi","urutan","pengawas","id"].includes(key)) return;
+          const nextUnit = unit || (/putri/i.test(key) ? "putri" : /putra/i.test(key) ? "putra" : "");
+          walk(value, nextUnit, key);
+        });
+      };
+      walk(raw);
+      const seen = new Set();
+      return out.sort((a,b) => a.urutan - b.urutan || a.nama.localeCompare(b.nama, "id")).filter(item => {
+        const key = normalisasiNamaProgram(item.nama);
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function isiPilihanProgram(programData, jadwalProgramData = {}) {
+      const select = document.getElementById("program");
+      select.innerHTML = '<option value="">-- Pilih Program --</option>';
+      Object.keys(masterPoinProgram).forEach(key => delete masterPoinProgram[key]);
+
+      const masterRows = daftarMasterProgram(programData);
+      const masterByKey = new Map(masterRows.map(item => [normalisasiNamaProgram(item.nama), item]));
+      const scheduleRows = daftarJadwalProgram(jadwalProgramData);
+      const used = new Set();
+
+      if (scheduleRows.length) {
+        const group = document.createElement("optgroup");
+        group.label = "Jadwal Harian";
+        scheduleRows.forEach(item => {
+          const key = normalisasiNamaProgram(item.nama);
+          const master = masterByKey.get(key);
+          const poin = master ? master.poin : 0;
+          masterPoinProgram[item.nama] = poin;
+          used.add(key);
+          group.appendChild(new Option(`${item.nama} (+${poin})`, item.nama));
+        });
+        select.appendChild(group);
+      }
+
+      const tambahan = masterRows.filter(item => !used.has(normalisasiNamaProgram(item.nama))).sort((a,b) => a.nama.localeCompare(b.nama, "id"));
+      if (tambahan.length) {
+        const group = document.createElement("optgroup");
+        group.label = "Program Absensi Harian";
+        tambahan.forEach(item => {
+          masterPoinProgram[item.nama] = item.poin;
+          group.appendChild(new Option(`${item.nama} (+${item.poin})`, item.nama));
+        });
+        select.appendChild(group);
+      }
     }
 
     function statusSaatIni(row) {
@@ -1779,9 +1825,10 @@
       isiProfilPengguna();
 
       try {
-        const [snapUsrah, snapProgram] = await Promise.all([
+        const [snapUsrah, snapProgram, snapJadwalProgram] = await Promise.all([
           get(ref(db, "cahaya_app/master_usrah")),
-          get(ref(db, "cahaya_app/master_program_harian"))
+          get(ref(db, "cahaya_app/master_program_harian")),
+          get(ref(db, "cahaya_app/jadwal_program_harian")).catch(() => null)
         ]);
 
         dataUsrahCloud = snapUsrah.exists()
@@ -1791,9 +1838,12 @@
         const programData = snapProgram.exists()
           ? snapProgram.val()
           : {};
+        const jadwalProgramData = snapJadwalProgram && snapJadwalProgram.exists()
+          ? snapJadwalProgram.val()
+          : {};
 
         isiPilihanUsrah();
-        isiPilihanProgram(programData);
+        isiPilihanProgram(programData, jadwalProgramData);
         renderDaftarSantri();
         sembunyikanLoading();
       } catch (error) {
