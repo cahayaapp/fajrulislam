@@ -814,10 +814,12 @@
     }
 
     .riwayat-list {
-      display: grid !important;
+      display: none !important;
       gap: 9px !important;
       width: 100%;
     }
+
+    .riwayat-list.is-open { display:grid !important; }
 
     .riwayat-item {
       display: flex !important;
@@ -1523,7 +1525,9 @@
         border-radius: 14px !important;
       }
 
-      .riwayat-item {
+      
+
+    .riwayat-item {
         align-items: flex-start !important;
         padding: 10px !important;
       }
@@ -2107,7 +2111,7 @@
                 <h5 style="margin:0;">Riwayat Setoran</h5>
                 <button type="button" class="btn-workspace" data-nama="${namaHtml}" onclick="toggleRiwayatSantri(this,'${safeId}')" style="width:auto;padding:9px 14px;">Lihat daftar setoran</button>
               </div>
-              <div class="riwayat-list" id="riwayat_body_${safeId}" style="display:none;margin-top:12px;"></div>
+              <div class="riwayat-list" id="riwayat_body_${safeId}" style="margin-top:12px;"></div>
             </div>
 
             <div class="input-section">
@@ -2128,11 +2132,17 @@
                 <div id="wadah_surat_${safeId}"></div>
                 <button class="btn-tambah-surat" id="btn_tambah_${safeId}" onclick="tambahBarisSuratCard('${safeId}')">➕ Tambah Baris Surat</button>
               </div>
-
-              <div class="form-group target-tahfiz-only">
-                <label>🎯 Target Baris / Hari</label>
-                <input type="number" min="1" step="1" inputmode="numeric" class="form-control" id="target_baris_${safeId}" value="${targetBarisHarian || ''}" placeholder="Contoh: 15" oninput="updateTargetTahfizInfo('${safeId}')" style="font-weight:800;background:#f8fbff;border-color:#9fc1ee;">
-                <small id="target_info_${safeId}" style="display:block;margin-top:6px;color:var(--text-muted);font-weight:650;line-height:1.45;">${hariEfektifQuran ? `Bulan ini ${hariEfektifQuran} hari aktif Al-Qur’an${targetBarisHarian ? ` • target ${targetBarisHarian * hariEfektifQuran} baris` : ''}.` : 'Hari aktif Al-Qur’an akan mengikuti jadwal dan kalender pendidikan.'}</small>
+              <div class="form-group target-tahfiz-only" id="target_shell_${safeId}">
+                <label>🎯 Target Hafalan Harian</label>
+                <div id="target_summary_${safeId}" style="${targetBarisHarian ? 'display:flex' : 'display:none'};align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid #cfe0f6;border-radius:12px;background:#f8fbff;">
+                  <div><strong id="target_value_${safeId}" style="font-size:.88rem;color:#1d4ed8;">${targetBarisHarian || 0} baris / hari</strong><small style="display:block;margin-top:3px;color:var(--text-muted);font-weight:650;">Dipakai otomatis untuk setoran berikutnya.</small></div>
+                  <button type="button" class="btn-workspace" onclick="ubahTargetTahfiz('${safeId}')" style="width:auto;padding:8px 11px;">Ubah Target</button>
+                </div>
+                <div id="target_editor_${safeId}" style="${targetBarisHarian ? 'display:none' : 'display:grid'};grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;">
+                  <input type="number" min="1" step="1" inputmode="numeric" class="form-control" id="target_baris_${safeId}" value="${targetBarisHarian || ''}" placeholder="Contoh: 15" oninput="updateTargetTahfizInfo('${safeId}')" style="font-weight:800;background:#f8fbff;border-color:#9fc1ee;">
+                  <button type="button" class="btn-workspace" data-nama="${namaHtml}" onclick="simpanTargetTahfiz(this,'${safeId}')" style="width:auto;padding:10px 12px;">Simpan Target</button>
+                </div>
+                <small id="target_info_${safeId}" style="display:block;margin-top:6px;color:var(--text-muted);font-weight:650;line-height:1.45;">${hariEfektifQuran ? `Bulan ini ${hariEfektifQuran} hari aktif Al-Qur’an${targetBarisHarian ? ` • target ${targetBarisHarian * hariEfektifQuran} baris` : ''}.` : 'Hari aktif Al-Qur’an mengikuti jadwal dan kalender pendidikan.'}</small>
               </div>
 
               <div class="grid-3 tahfiz-only">
@@ -2410,6 +2420,34 @@
   // --- FIREBASE & PARSER EDIT ---
   // Nama dibaca dari data-attribute, bukan disisipkan langsung ke onclick.
   // Dengan demikian tanda petik satu/dobel pada nama santri tetap aman.
+  window.ubahTargetTahfiz = (safeId) => {
+    const editor=document.getElementById(`target_editor_${safeId}`), summary=document.getElementById(`target_summary_${safeId}`);
+    if(editor) editor.style.display='grid';
+    if(summary) summary.style.display='none';
+    setTimeout(()=>document.getElementById(`target_baris_${safeId}`)?.focus(),50);
+  };
+
+  window.simpanTargetTahfiz = async (button,safeId) => {
+    const nama=button?.dataset?.nama||'';
+    const input=document.getElementById(`target_baris_${safeId}`);
+    const target=Number(input?.value||0);
+    if(!nama || !Number.isInteger(target) || target<1){ alert('Isi target baris harian minimal 1.'); input?.focus(); return; }
+    const key=normalizeStudentKey(nama);
+    const old=getTargetBaris(nama);
+    button.disabled=true; const oldText=button.textContent; button.textContent='Menyimpan...';
+    try{
+      const payload={nama,namaSantri:nama,kelas:document.getElementById('tfzKelas').value,targetBarisHarian:target,tahunAjaran:'2026/2027',diubahOleh:user?.label||user?.nama||user?.username||'Guru Tahfiz',updatedAt:new Date().toISOString()};
+      await update(ref(db,`cahaya_app/target_tahfiz/${key}`),payload);
+      cacheTargetTahfiz[key]=payload;
+      const value=document.getElementById(`target_value_${safeId}`); if(value)value.textContent=`${target} baris / hari`;
+      const editor=document.getElementById(`target_editor_${safeId}`), summary=document.getElementById(`target_summary_${safeId}`);
+      if(editor) editor.style.display='none'; if(summary) summary.style.display='flex';
+      updateTargetTahfizInfo(safeId);
+      if(window.showPageToast) window.showPageToast(old? 'Target diperbarui':'Target tersimpan',`${nama}: ${target} baris per hari.`);
+    }catch(error){ console.error(error); alert('Target gagal disimpan: '+(error?.message||'Kesalahan koneksi')); }
+    finally{button.disabled=false;button.textContent=oldText;}
+  };
+
   window.simpanSetoranDariTombol = (button, safeId) => {
     window.simpanSetoranCard(button.dataset.nama || '', safeId);
   };
@@ -2512,7 +2550,7 @@
         data:[{ nama, setoran:strSetoran, ayat, targetBarisHarian: program === 'Tahfiz' ? targetBarisHarian : null, jenisMurojaah: isMurojaah ? jenisMurojaah : null, kesalahan:isTahsin ? '0' : (document.getElementById(`salah_${safeId}`).value || '0'), nilai, keterangan, ...(isTahsin ? {} : barisMeta), ...detailData }],
         waktuSimpan:new Date().toISOString()
       };
-      if(program === 'Tahfiz'){
+      if(program === 'Tahfiz' && getTargetBaris(nama) !== targetBarisHarian){
         const targetKey=normalizeStudentKey(nama);
         const targetPayload={nama,namaSantri:nama,kelas:document.getElementById('tfzKelas').value,targetBarisHarian,tahunAjaran:'2026/2027',diubahOleh:user?.label||user?.nama||user?.username||'Guru Tahfiz',updatedAt:new Date().toISOString()};
         await update(ref(db,`cahaya_app/target_tahfiz/${targetKey}`),targetPayload);
@@ -2589,7 +2627,7 @@
       if(riwayatBulanIni.length > 0) badgeInfo.innerText = `${riwayatBulanIni.length} ${programAktif === 'Tahsin' ? 'Talaqqi' : programAktif === 'Murojaah' ? 'Muroja’ah' : 'Setoran'} Bulan Ini`;
       else badgeInfo.innerText = "Belum Ada Setoran";
       // Daftar riwayat sengaja tidak dibuka otomatis agar form tetap ringkas.
-      if(listBody && listBody.style.display !== 'block') listBody.innerHTML = '';
+      if(listBody && !listBody.classList.contains('is-open')) listBody.innerHTML = '';
 
     } catch (e) {
       listBody.innerHTML = `<div style="text-align:center; color:red; padding:15px; font-size:0.85rem;">Gagal memuat: ${e.message}</div>`;
@@ -2605,8 +2643,8 @@
   }
   window.toggleRiwayatSantri = async (button,safeId) => {
     const body=document.getElementById(`riwayat_body_${safeId}`); if(!body)return; const nama=button.dataset.nama||'';
-    if(body.style.display==='block'){body.style.display='none';button.textContent='Lihat daftar setoran';return;}
-    body.style.display='block';button.textContent='Tutup daftar setoran';body.innerHTML='<div style="text-align:center;padding:16px;color:#777;">Memuat seluruh riwayat...</div>';
+    if(body.classList.contains('is-open')){body.classList.remove('is-open');button.textContent='Lihat daftar setoran';return;}
+    body.classList.add('is-open');button.textContent='Tutup daftar setoran';body.innerHTML='<div style="text-align:center;padding:16px;color:#777;">Memuat seluruh riwayat...</div>';
     try{
       const key=normalizeStudentKey(nama); let rows=riwayatAllCache[key];
       if(!rows){

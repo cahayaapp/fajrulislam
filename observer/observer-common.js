@@ -100,7 +100,41 @@
         </section>
       </main>
       <div class="obs-toast" id="obsToast"><div class="obs-toast-icon" id="obsToastIcon">✅</div><div><strong id="obsToastTitle">Berhasil</strong><span id="obsToastText">Data tersimpan.</span></div></div>`;
-    bindEvents(); setDefaults(); tick(); listen();
+    bindEvents(); setDefaults(); tick(); listen(); hydrateProgramMaster();
+  }
+
+
+  function flattenProgramMaster(raw){
+    const out=[];
+    Object.entries(raw||{}).forEach(([group,value])=>{
+      if(value && typeof value==='object' && !Array.isArray(value)){
+        Object.keys(value).forEach(name=>out.push({group,name}));
+      }else if(group) out.push({group:'',name:group});
+    });
+    return out.sort((a,b)=>a.name.localeCompare(b.name,'id'));
+  }
+
+  async function hydrateProgramMaster(){
+    if(!config.programSourcePath) return;
+    const select=document.querySelector('select[name="program"]');
+    if(!select) return;
+    try{
+      const snap=await db.ref(config.programSourcePath).once('value');
+      const programs=flattenProgramMaster(snap.val()||{});
+      if(!programs.length) return;
+      const placeholder=select.querySelector('option[value=""]')?.textContent || 'Pilih program';
+      select.innerHTML=`<option value="">${esc(placeholder)}</option>`;
+      const groups=new Map();
+      programs.forEach(item=>{
+        if(item.group){
+          if(!groups.has(item.group)){const og=document.createElement('optgroup');og.label=item.group;select.appendChild(og);groups.set(item.group,og)}
+          groups.get(item.group).appendChild(new Option(item.name,item.name));
+        }else select.appendChild(new Option(item.name,item.name));
+      });
+      select.dataset.programMaster='firebase';
+    }catch(error){
+      console.warn('Master program harian belum dapat dimuat; menggunakan pilihan bawaan.',error);
+    }
   }
 
   function bindEvents(){
