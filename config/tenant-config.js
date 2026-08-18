@@ -22,10 +22,10 @@
     },
     theme: {
       primary: "#2878ff",
-      primaryDark: "#152347",
-      secondary: "#19c6e6",
-      accent: "#f2b63d",
-      success: "#29c58d",
+      primaryDark: "#1557d5",
+      secondary: "#2878ff",
+      accent: "#f2b632",
+      success: "#2878ff",
       danger: "#ff5f70"
     },
     terminology: {

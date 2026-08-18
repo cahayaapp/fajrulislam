@@ -1968,7 +1968,7 @@
       container.innerHTML = `
         <div style="
           text-align:center;
-          color:#94a3b8;
+          color:#4d91ff;
           margin-top:20px;
           font-size:.85rem;
         ">
