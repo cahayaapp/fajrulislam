@@ -1,0 +1,67 @@
+CAHAYA APP V63 — WALI PREMIUM + PUSH NOTIFICATION
+Tanggal: 20 Agustus 2026
+
+PERUBAHAN PORTAL WALI
+1. Informasi Penting
+   - Hero/header halaman dihapus.
+   - Halaman langsung membuka submenu utama.
+   - Submenu Kalender Wali, Jadwal, Program Harian, SOP, Tata Tertib, dan menu terkait ditata sebagai grid premium tanpa scroll horizontal.
+
+2. Laporan Akademik
+   - Saat dibuka, wali memilih bulan terlebih dahulu melalui layer pemilih bulan premium.
+   - Identitas santri pada header dan blok filter bulan lama disembunyikan.
+   - Isi laporan ditata ulang dengan visual premium, modern, lebih mudah dibaca.
+   - Tombol Download PDF dipindahkan ke bagian paling bawah.
+
+3. Laporan Karakter CAHAYA
+   - Alur pemilihan bulan dan tampilan disamakan dengan Laporan Akademik.
+   - Identitas santri dan blok filter bulan lama disembunyikan.
+   - Nama Naqib/Naqibah pada bagian atas tidak ditampilkan.
+   - Baris Naqib/Naqibah juga dihapus dari identitas pada PDF karakter.
+   - Tombol Download PDF berada di bagian paling bawah.
+
+4. Laporan Pembinaan
+   - Alur pemilihan bulan premium.
+   - Header identitas dan blok filter bulan lama disembunyikan.
+   - Konten pembinaan dibuat lebih modern dan mudah dibaca.
+   - Tombol Download PDF berada di bagian paling bawah.
+
+5. Riwayat Kesehatan
+   - Hero dan toolbar lama disederhanakan.
+   - Saat dibuka, wali memilih bulan terlebih dahulu melalui layer premium.
+   - Ringkasan metrik, kartu pemeriksaan, detail pemeriksaan, obat, izin belajar, dan tindak lanjut menggunakan tampilan premium.
+
+6. Perizinan
+   - Hero lama dihapus.
+   - Tampilan premium dengan segmented navigation: Ajukan Izin / Riwayat Izin.
+   - Form dan riwayat dipisahkan agar tidak ramai dalam satu layar.
+
+CHAT GLOBAL
+- User biasa hanya dapat berkomunikasi dengan role: Direktur, Wakil Direktur, Konselor, dan Admin.
+- Portal Wali menggunakan batasan role yang sama.
+- Percakapan lama Wali dengan role di luar empat role tersebut tidak lagi ditampilkan di inbox.
+- Direktur/Wakil Direktur/Konselor/Admin tetap dapat menghubungi dan membalas seluruh user agar fungsi layanan tetap berjalan.
+
+PUSH NOTIFICATION CAHAYA
+- Frontend portal Wali kini mendaftarkan perangkat untuk Web Push melalui Firebase Cloud Messaging.
+- Token perangkat disimpan pada cahaya_app/fcm_tokens_wali.
+- Reverse index wali-santri disimpan pada cahaya_app/fcm_wali_by_student.
+- Kabar Ananda baru dapat memicu push notifikasi ke perangkat wali yang terhubung.
+- Pesan baru dari Direktur/Wakil Direktur/Konselor/Admin dapat memicu push notifikasi ke perangkat wali.
+- Klik notifikasi Kabar Ananda membuka Kabar Ananda.
+- Klik notifikasi Pesan membuka percakapan terkait.
+- Notifikasi yang diterima saat portal sedang terbuka tampil sebagai toast di dalam aplikasi.
+- Service worker Firebase Messaging sudah tersedia pada wali/dashboard/firebase-messaging-sw.js.
+
+BACKEND PUSH
+- Folder siap deploy: /push-backend
+- Contoh/salinan referensi: /push-backend-example dan /wali/dashboard/push-backend-example
+- Project default pada .firebaserc: absensi-santri-fajrul-islam
+- Functions menggunakan Realtime Database instance absensi-santri-fajrul-islam-default-rtdb.
+- Backend perlu dideploy satu kali ke Firebase Functions menggunakan akun Firebase pemilik project agar notifikasi server-side benar-benar aktif di produksi.
+- VAPID key dapat disimpan pada cahaya_app/pengaturan_notifikasi_web/vapidKey bila diperlukan konfigurasi Web Push project.
+
+FILE UI BARU
+- wali/dashboard/wali-premium-v63.css
+- wali/dashboard/wali-premium-v63.js
+- wali/dashboard/wali-push-v63.js

@@ -39,11 +39,26 @@ initializeApp();
 
 const DATABASE_INSTANCE =
   process.env.CAHAYA_DATABASE_INSTANCE ||
-  "YOUR_PROJECT_ID-default-rtdb";
+  "absensi-santri-fajrul-islam-default-rtdb";
 
 const DATABASE_REGION =
   process.env.CAHAYA_DATABASE_REGION ||
-  "asia-southeast1";
+  "us-central1";
+
+const ALLOWED_CHAT_ROLES = new Set([
+  "admin",
+  "direktur",
+  "wakil",
+  "konselor"
+]);
+
+const KABAR_CATEGORIES = new Set([
+  "halqah",
+  "tahfiz",
+  "program",
+  "pembelajaran",
+  "penindakan"
+]);
 
 function clean(value = "") {
   return String(value)
@@ -66,6 +81,39 @@ function safeKey(value = "") {
       "_"
     )
     .toLowerCase();
+}
+
+function normalizeRole(value = "") {
+  const raw = String(value || "").trim().toLowerCase();
+  const aliases = {
+    administrator: "admin",
+    "admin / tu": "admin",
+    "wakil direktur": "wakil",
+    wakil_direktur: "wakil",
+    wadir: "wakil",
+    "wakil direktur bidang": "wakil",
+    counselor: "konselor",
+    konseling: "konselor"
+  };
+  return aliases[raw] || raw;
+}
+
+function rolesOf(value = {}) {
+  let raw = value.roles ?? value.akses ?? value.role ?? value.jabatan ?? [];
+  if (!Array.isArray(raw)) raw = [raw];
+  return [...new Set(raw.flatMap(item => String(item || "").split(/[;,|]/)).map(normalizeRole).filter(Boolean))];
+}
+
+function allowedStaff(value = {}) {
+  return rolesOf(value).some(role => ALLOWED_CHAT_ROLES.has(role));
+}
+
+function studentKey(value = "") {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function isStaffSender(
@@ -316,7 +364,9 @@ async function sendToOneWali({
 async function sendBroadcast({
   title,
   body,
-  link = "index.html"
+  link = "index.html",
+  roomId =
+    "room_broadcast_wali"
 }) {
   const database =
     getDatabase();
@@ -403,7 +453,10 @@ async function sendBroadcast({
               ),
 
             roomId:
-              "room_broadcast_wali",
+              String(
+                roomId ||
+                "room_broadcast_wali"
+              ),
 
             notificationId:
               ""
@@ -490,6 +543,91 @@ async function sendBroadcast({
   };
 }
 
+
+async function waliUsernamesForStudent(studentKeyValue) {
+  const database = getDatabase();
+  const normalized = studentKey(studentKeyValue);
+  if (!normalized) return [];
+
+  const mapSnapshot = await database
+    .ref(`/cahaya_app/fcm_wali_by_student/${normalized}`)
+    .get();
+
+  const mapped = Object.entries(mapSnapshot.val() || {})
+    .filter(([, value]) => value && value.aktif !== false)
+    .map(([waliKey, value]) => String(value.username || waliKey || "").trim())
+    .filter(Boolean);
+
+  if (mapped.length) return [...new Set(mapped)];
+
+  /* Fallback untuk token lama sebelum reverse-index V63 dibuat. */
+  const tokenRoot = await database.ref("/cahaya_app/fcm_tokens_wali").get();
+  const matches = [];
+  Object.entries(tokenRoot.val() || {}).forEach(([waliKey, tokenData]) => {
+    const entries = activeTokenEntries(tokenData || {});
+    const hit = entries.some(([, item]) =>
+      studentKey(item.studentKey || item.namaAnak || "") === normalized
+    );
+    if (hit) matches.push(waliKey);
+  });
+  return [...new Set(matches)];
+}
+
+function kabarCopy(category, record = {}) {
+  const labels = {
+    halqah: ["Kabar Ananda Baru", "Ada pembaruan kegiatan halaqah ananda."],
+    tahfiz: ["Kabar Tahfiz Ananda", "Ada perkembangan tahfiz atau setoran Al-Qur'an ananda."],
+    program: ["Kabar Kegiatan Ananda", "Ada pembaruan program harian ananda."],
+    pembelajaran: ["Kabar Belajar Ananda", "Ada pembaruan pembelajaran ananda."],
+    penindakan: ["Kabar Pembinaan Ananda", "Ada pembaruan pembinaan ananda."]
+  };
+  const base = labels[category] || ["Kabar Ananda Baru", "Ada pembaruan baru tentang ananda."];
+  const detail = String(
+    record.program || record.namaProgram || record.mapel || record.mataPelajaran ||
+    record.surat || record.namaSurat || record.jenisPelanggaran || record.kategoriAkhir || ""
+  ).trim();
+  return {
+    title: base[0],
+    body: detail ? `${base[1]} ${detail}.` : base[1]
+  };
+}
+
+exports.pushKabarAnandaToWali =
+  onValueCreated(
+    {
+      ref: "/cahaya_app/wali_index/{studentKey}/{category}/{eventId}",
+      instance: DATABASE_INSTANCE,
+      region: DATABASE_REGION
+    },
+    async event => {
+      const category = String(event.params.category || "").toLowerCase();
+      if (!KABAR_CATEGORIES.has(category)) return null;
+      const record = event.data.val() || {};
+      const recipients = await waliUsernamesForStudent(event.params.studentKey);
+      if (!recipients.length) {
+        console.log("Belum ada perangkat wali untuk santri:", event.params.studentKey);
+        return null;
+      }
+      const copy = kabarCopy(category, record);
+      const results = await Promise.all(recipients.map(waliUsername =>
+        sendToOneWali({
+          waliUsername,
+          title: copy.title,
+          body: copy.body,
+          link: "index.html?openKabar=1",
+          notificationId: `kabar_${category}_${event.params.eventId}`
+        })
+      ));
+      console.log("Push Kabar Ananda selesai", {
+        studentKey: event.params.studentKey,
+        category,
+        recipients: recipients.length,
+        results
+      });
+      return results;
+    }
+  );
+
 /*
  * Chat langsung dari role pengurus ke wali.
  */
@@ -547,7 +685,13 @@ exports.pushChatToWali =
         return null;
       }
 
+      const senderRoleSource = {
+        ...meta.staff,
+        roles: meta.staff?.roles || message.senderRoles || []
+      };
+
       if (
+        !allowedStaff(senderRoleSource) ||
         !isStaffSender(
           message,
           meta.staff
@@ -705,7 +849,10 @@ exports.pushBroadcastToAllWali =
             "Ada pengumuman baru.",
 
           link:
-            "index.html"
+            "index.html",
+
+          roomId:
+            "room_broadcast_wali"
         });
 
       console.log(
@@ -716,3 +863,58 @@ exports.pushBroadcastToAllWali =
       return result;
     }
   );
+
+/*
+ * Broadcast "Semua Pengguna" juga dikirim ke seluruh perangkat wali.
+ * Pengurus menerima broadcast ini melalui listener dashboard.
+ */
+exports.pushBroadcastSemuaPenggunaToAllWali =
+  onValueCreated(
+    {
+      ref:
+        "/cahaya_app/pesan_global/room_broadcast_semua/{messageId}",
+
+      instance:
+        DATABASE_INSTANCE,
+
+      region:
+        DATABASE_REGION
+    },
+    async event => {
+      const message =
+        event.data.val();
+
+      if (
+        !message ||
+        message.dihapus === true ||
+        message.deleted === true
+      ) {
+        return null;
+      }
+
+      const result =
+        await sendBroadcast({
+          title:
+            message.judul ||
+            "Pengumuman untuk Semua Pengguna",
+
+          body:
+            message.teks ||
+            "Ada pengumuman baru.",
+
+          link:
+            "index.html",
+
+          roomId:
+            "room_broadcast_semua"
+        });
+
+      console.log(
+        "Push broadcast semua pengguna selesai",
+        result
+      );
+
+      return result;
+    }
+  );
+

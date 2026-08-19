@@ -2821,7 +2821,7 @@ const IS_EMBEDDED_WALI_PORTAL = window.parent && window.parent !== window;
           if (win) win.style.display = "none";
         }
         listenSystemNotifs();
-        preparePush();
+        if (!IS_EMBEDDED_WALI_PORTAL) preparePush();
       }
 
       if (attempts > 50) {
