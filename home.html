@@ -87,7 +87,7 @@
       .h24-modal-body{max-height:calc(100dvh - 225px - env(safe-area-inset-bottom))!important;padding-bottom:20px!important}
     }
 </style>
-  <meta name="cahaya-build" content="20260818-v39">
+  <meta name="cahaya-build" content="20260819-v47">
 </head>
 <body>
   <main class="home24">
@@ -132,8 +132,16 @@
     'use strict';
     const ROLE_LABEL={admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',observer:'Observer',guru:'Guru',naqib:'Naqib',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
     function safeJson(key){try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(_){return{}}}
-    function profile(){const a=safeJson('cahayaCurrentUser');const b=safeJson('cahayaUser');return Object.keys(a).length?a:b}
     function roles(p){let r=p.roles??p.role??p.jabatan??p.akses??[];if(!Array.isArray(r))r=[r];return r.map(x=>String(x||'').trim().toLowerCase()).filter(Boolean)}
+    function profile(){
+      const a=safeJson('cahayaCurrentUser'),b=safeJson('cahayaUser');
+      const base=Object.keys(a).length?a:b;
+      const preview=String(localStorage.getItem('cahayaDirectorViewRole')||'').trim().toLowerCase();
+      if(preview&&roles(base).includes('direktur')){
+        return {...base,akses:[preview],jabatan:[preview],role:preview,roleLabel:ROLE_LABEL[preview]||preview,directorPreviewRole:preview};
+      }
+      return base;
+    }
     function nameOf(p){return p.nama||p.name||p.namaLengkap||p.displayName||p.username||'Sahabat Cahaya'}
     function setProfile(){const p=profile(),r=roles(p);document.getElementById('userName').textContent=nameOf(p);document.getElementById('roleInline').textContent=(r.length?r.map(x=>ROLE_LABEL[x]||x).join(' • '):'Akun CAHAYA')}
     function cleanText(el){const clone=el.cloneNode(true);clone.querySelectorAll('.role-group-count,.nav-arrow').forEach(x=>x.remove());return String(clone.textContent||'').trim().replace(/\s+/g,' ')}
