@@ -1688,7 +1688,7 @@
 
 
   <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260819-v49">
+  <meta name="cahaya-build" content="20260819-v50">
 
 <style id="cahaya-v48-guru-scan-nav">
 /* V48 — tombol Scan Absen khusus tampilan Guru, model center action */
@@ -1807,6 +1807,26 @@
   .cahaya-shell-page .app-title-header{font-size:.96rem!important}
   .cahaya-shell-page .mobile-shortcut-label{font-size:.53rem!important}
 }
+
+/* V50 — header Guru lebih bersih: logo + CAHAYA APP + logout. Profil dipindah ke blok Ahlan. */
+.top-brand-logo{display:none}
+@media(max-width:900px){
+  .cahaya-shell-page .top-nav{
+    min-height:66px!important;height:66px!important;
+    padding:8px 16px!important;
+    grid-template-columns:minmax(0,1fr) 40px!important;
+    grid-template-rows:1fr!important;
+    column-gap:10px!important;row-gap:0!important;
+    align-items:center!important;
+  }
+  .cahaya-shell-page .page-heading{grid-column:1!important;grid-row:1!important;align-self:center!important}
+  .cahaya-shell-page .app-title-header{display:flex!important;align-items:center!important;gap:9px!important;min-width:0!important}
+  .cahaya-shell-page .top-brand-logo{display:block!important;width:34px!important;height:34px!important;flex:0 0 34px!important;object-fit:contain!important;filter:drop-shadow(0 3px 7px rgba(0,34,96,.18))}
+  .cahaya-shell-page #currentPageTitle{font-size:1rem!important;font-weight:1000!important;letter-spacing:.01em!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .cahaya-shell-page #topNavChat{display:none!important}
+  .cahaya-shell-page .top-logout-btn{grid-column:2!important;grid-row:1!important;width:38px!important;height:38px!important}
+  .cahaya-shell-page #topNavProfile,.cahaya-shell-page .top-user-copy{display:none!important}
+}
 </style>
 <style id="cahaya-v47-director-role-preview">
 /* V47 — Mode Pengembangan Direktur: preview menu per role tanpa mengubah role akun asli */
@@ -1903,16 +1923,13 @@
         <button class="menu-btn" type="button" onclick="toggleSidebar()" aria-label="Buka menu">☰</button>
         <div class="page-heading">
           <div class="app-title-header">
+            <img src="assets/logofi.png" alt="Logo CAHAYA APP" class="top-brand-logo" />
             <span id="currentPageTitle">CAHAYA APP</span>
           </div>
         </div>
       </div>
 
       <div class="top-nav-right">
-        <button class="top-action-btn" id="topNavChat" type="button" style="display:none;" onclick="togglePengurusChat()" aria-label="Buka Pesan" title="Pesan">
-          <svg class="top-action-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M8 10h8M8 13h5"/></svg>
-          <span class="top-notif-badge" id="topChatBadge">0</span>
-        </button>
         <button class="top-logout-btn" id="topNavLogout" type="button" onclick="logout()" aria-label="Keluar dari aplikasi" title="Keluar">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4"/><path d="M14 8l4 4-4 4M18 12H9"/></svg>
         </button>
@@ -2156,7 +2173,7 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=49', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=50', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
       </div>
 
