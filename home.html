@@ -167,8 +167,17 @@
       .h24-teacher-hadith{margin:15px 0 0!important;padding-top:13px!important;font-size:.79rem!important;line-height:1.55!important}
       .h24-teacher-hadith span{font-size:.66rem!important}
     }
+
+/* V52 — action langsung dari Jadwal Saya */
+.h24-teacher-row.has-actions{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}
+.h24-teacher-actions{grid-column:2 / 4;display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.h24-teacher-action{appearance:none;border:0;border-radius:11px;padding:8px 11px;font:inherit;font-size:.62rem;font-weight:1000;cursor:pointer;transition:.18s ease}
+.h24-teacher-action.primary{background:linear-gradient(135deg,#2878ff,#1557d5);color:#fff;box-shadow:0 7px 15px rgba(21,87,213,.18)}
+.h24-teacher-action.secondary{background:#fff7e1;color:#8a6304;border:1px solid rgba(242,182,50,.26)}
+.h24-teacher-action:active{transform:scale(.97)}
+@media(max-width:720px){.h24-teacher-row.has-actions{grid-template-columns:auto minmax(0,1fr)}.h24-teacher-row.has-actions .h24-teacher-row-time{grid-column:2}.h24-teacher-actions{grid-column:2;display:grid;grid-template-columns:1fr 1fr;width:100%}.h24-teacher-action{padding:9px 8px;font-size:.59rem}}
 </style>
-  <meta name="cahaya-build" content="20260819-v51">
+  <meta name="cahaya-build" content="20260819-v52">
 </head>
 <body>
   <main class="home24">
@@ -409,7 +418,7 @@
     }
     function parseScheduleRows(value){return Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}))}
     async function localScheduleRows(){try{const r=await fetch('data/jadwal-pelajaran-awal-2026-2027.json',{cache:'no-store'});if(!r.ok)return[];return parseScheduleRows(await r.json())}catch(_){return[]}}
-    function groupTeacherSchedules(rows=[]){const grouped=new Map();rows.forEach((r,i)=>{const key=[r.jamMulai||'',r.jamSelesai||'',r.mapel||'',r.sesi||'',r.guruKode||'',(!r.jamMulai&&!r.jamSelesai?r.id||i:'')].join('|');if(!grouped.has(key))grouped.set(key,{mapel:r.mapel||'Pelajaran',jamMulai:r.jamMulai||'',jamSelesai:r.jamSelesai||'',sesi:r.sesi||'',classes:[],unit:[]});const g=grouped.get(key);if(r.kelas&&!g.classes.includes(r.kelas))g.classes.push(r.kelas);if(r.unit&&!g.unit.includes(r.unit))g.unit.push(r.unit)});return [...grouped.values()].sort((a,b)=>String(a.jamMulai).localeCompare(String(b.jamMulai))||a.mapel.localeCompare(b.mapel,'id'))}
+    function groupTeacherSchedules(rows=[]){const grouped=new Map();rows.forEach((r,i)=>{const key=[r.jamMulai||'',r.jamSelesai||'',r.mapel||'',r.sesi||'',r.guruKode||'',(!r.jamMulai&&!r.jamSelesai?r.id||i:'')].join('|');if(!grouped.has(key))grouped.set(key,{mapel:r.mapel||'Pelajaran',jamMulai:r.jamMulai||'',jamSelesai:r.jamSelesai||'',sesi:r.sesi||'',classes:[],unit:[],rows:[]});const g=grouped.get(key);g.rows.push(r);if(r.kelas&&!g.classes.includes(r.kelas))g.classes.push(r.kelas);if(r.unit&&!g.unit.includes(r.unit))g.unit.push(r.unit)});return [...grouped.values()].sort((a,b)=>String(a.jamMulai).localeCompare(String(b.jamMulai))||a.mapel.localeCompare(b.mapel,'id'))}
     function permitIsActiveNow(r,ctx){if(String(r?.status||'').toUpperCase()!=='DISETUJUI')return false;const now=`${ctx.date}T${ctx.clock}`,start=String(r.tanggalMulai||r.mulai||'').slice(0,16),end=String(r.rencanaKembali||r.tanggalKembaliRencana||r.tanggalSelesai||'').slice(0,16);if(start&&start.includes('T')&&now<start)return false;if(end&&end.includes('T')&&now>end)return false;if(start&&!start.includes('T')&&ctx.date<start.slice(0,10))return false;if(end&&!end.includes('T')&&ctx.date>end.slice(0,10))return false;return !!(r.namaSantri||r.santri?.nama)}
     function teacherLeaveEntries(permitRaw,healthRaw,ctx){const byName=new Map();latestHealthRestEntries(healthRaw,ctx.date).forEach(x=>{const key=compactTeacherIdentity(x.name);if(!key)return;byName.set(key,{name:x.name,source:'UKS',detail:'Izin tidak mengikuti pembelajaran berdasarkan pemeriksaan UKS.',until:''})});objectValues(permitRaw).filter(r=>permitIsActiveNow(r,ctx)).forEach(r=>{const name=String(r.namaSantri||r.santri?.nama||'').trim(),key=compactTeacherIdentity(name);if(!key)return;const prev=byName.get(key),type=String(r.jenisIzin||r.keperluan||'Perizinan').trim(),until=String(r.rencanaKembali||r.tanggalKembaliRencana||'').trim();byName.set(key,{name,source:prev?`${prev.source} + Perizinan`:'Perizinan',detail:type,until})});return [...byName.values()].sort((a,b)=>a.name.localeCompare(b.name,'id'))}
     let teacherQuickPromise=null,currentTeacherQuickData={schedules:[],leaves:[],teacherCode:''};
@@ -419,7 +428,15 @@
     function formatDateTimeShort(v){if(!v)return'';try{const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v).replace('T',' ');return new Intl.DateTimeFormat('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(d)}catch(_){return String(v)}}
     window.closeTeacherQuickModal=function(){const modal=document.getElementById('teacherQuickModal');if(modal){modal.hidden=true;modal.setAttribute('aria-hidden','true')}};
     function openTeacherQuickBase(kicker,title,html){const modal=document.getElementById('teacherQuickModal'),body=document.getElementById('teacherQuickBody');if(!modal||!body)return;document.getElementById('teacherQuickKicker').textContent=kicker;document.getElementById('teacherQuickTitle').textContent=title;body.innerHTML=html;modal.hidden=false;modal.setAttribute('aria-hidden','false')}
-    window.openTeacherScheduleModal=function(){const d=currentTeacherQuickData||{},items=d.schedules||[];openTeacherQuickBase('JADWAL GURU HARI INI','Jadwal Saya Hari Ini',items.length?`<div class="h24-teacher-list">${items.map((x,i)=>`<div class="h24-teacher-row"><span class="h24-teacher-row-index">${i+1}</span><span class="h24-teacher-row-main"><b>${escapeHtml(x.mapel)}</b><span>${escapeHtml(x.classes.join(' • ')||x.sesi||'Jadwal mengajar')}</span></span><span class="h24-teacher-row-time">${escapeHtml(x.jamMulai&&x.jamSelesai?`${x.jamMulai}–${x.jamSelesai}`:x.jamMulai||x.sesi||'Hari ini')}</span></div>`).join('')}</div>`:`<div class="h24-modal-empty">${d.teacherCode?'Tidak ada jadwal mengajar hari ini.':'Nama akun belum dapat dicocokkan dengan jadwal guru.'}</div>`)};
+    function openTeacherMenuWithSchedule(menuId,item){
+      const p=window.parent&&window.parent!==window?window.parent:window;
+      const params={source:'jadwal-hari-ini',kelas:(item?.classes||[])[0]||'',mapel:item?.mapel||'',jam:item?.jamMulai||'',selesai:item?.jamSelesai||'',auto:menuId==='menu-absen-guru'?'1':'0'};
+      closeTeacherQuickModal();
+      if(typeof p.openAuthorizedMenuWithParams==='function')p.openAuthorizedMenuWithParams(menuId,params);
+      else if(typeof p.openAuthorizedMenu==='function')p.openAuthorizedMenu(menuId);
+    }
+    window.teacherScheduleAction=function(index,kind){const item=(currentTeacherQuickData?.schedules||[])[Number(index)];if(!item)return;openTeacherMenuWithSchedule(kind==='guru'?'menu-absen-guru':'menu-absen-kbm',item)};
+    window.openTeacherScheduleModal=function(){const d=currentTeacherQuickData||{},items=d.schedules||[];openTeacherQuickBase('JADWAL GURU HARI INI','Jadwal Saya Hari Ini',items.length?`<div class="h24-teacher-list">${items.map((x,i)=>`<div class="h24-teacher-row has-actions"><span class="h24-teacher-row-index">${i+1}</span><span class="h24-teacher-row-main"><b>${escapeHtml(x.mapel)}</b><span>${escapeHtml(x.classes.join(' • ')||x.sesi||'Jadwal mengajar')}</span></span><span class="h24-teacher-row-time">${escapeHtml(x.jamMulai&&x.jamSelesai?`${x.jamMulai}–${x.jamSelesai}`:x.jamMulai||x.sesi||'Hari ini')}</span><span class="h24-teacher-actions"><button class="h24-teacher-action primary" type="button" onclick="teacherScheduleAction(${i},'guru')">✓ Absen Guru</button><button class="h24-teacher-action secondary" type="button" onclick="teacherScheduleAction(${i},'santri')">Absen Santri</button></span></div>`).join('')}</div>`:`<div class="h24-modal-empty">${d.teacherCode?'Tidak ada jadwal mengajar hari ini.':'Nama akun belum dapat dicocokkan dengan jadwal guru.'}</div>`)};
     window.openTeacherLeaveModal=function(){const items=currentTeacherQuickData?.leaves||[];openTeacherQuickBase('IZIN TIDAK BELAJAR','Santri Tidak Mengikuti Pembelajaran',items.length?`<div class="h24-teacher-list">${items.map((x,i)=>`<div class="h24-teacher-row"><span class="h24-teacher-row-index">${i+1}</span><span class="h24-teacher-row-main"><b>${escapeHtml(x.name)}</b><span>${escapeHtml(x.detail||'Izin tidak belajar')}</span><span class="h24-source-pill">${escapeHtml(x.source)}</span></span>${x.until?`<span class="h24-teacher-row-time">s.d. ${escapeHtml(formatDateTimeShort(x.until))}</span>`:''}</div>`).join('')}</div>`:'<div class="h24-modal-empty">Tidak ada santri dengan izin tidak belajar yang aktif saat ini.</div>')};
 
     let currentHealthRestNames=[];

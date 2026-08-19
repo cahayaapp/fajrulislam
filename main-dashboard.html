@@ -1688,7 +1688,7 @@
 
 
   <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260819-v51">
+  <meta name="cahaya-build" content="20260819-v52">
 
 <style id="cahaya-v48-guru-scan-nav">
 /* V48 — tombol Scan Absen khusus tampilan Guru, model center action */
@@ -1841,6 +1841,12 @@
   }
   .cahaya-shell-page .app-title-header{gap:10px!important}
 }
+
+/* V52 — logo CAHAYA APP inline agar selalu tampil */
+.top-brand-mark{display:none}
+@media(max-width:900px){
+  .cahaya-shell-page .app-title-header .top-brand-mark{display:block!important;width:38px!important;height:38px!important;flex:0 0 38px!important;background:url('assets/cahaya-app-mark.png') center/contain no-repeat!important;filter:drop-shadow(0 4px 8px rgba(0,40,110,.16))}
+}
 </style>
 <style id="cahaya-v47-director-role-preview">
 /* V47 — Mode Pengembangan Direktur: preview menu per role tanpa mengubah role akun asli */
@@ -1937,7 +1943,7 @@
         <button class="menu-btn" type="button" onclick="toggleSidebar()" aria-label="Buka menu">☰</button>
         <div class="page-heading">
           <div class="app-title-header">
-            <img src="assets/cahaya-app-mark.png" alt="Logo CAHAYA APP" class="top-brand-logo" />
+            <span class="top-brand-mark" aria-hidden="true"></span>
             <span id="currentPageTitle">CAHAYA APP</span>
           </div>
         </div>
@@ -2187,7 +2193,7 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=51', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=52', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
       </div>
 
@@ -2248,16 +2254,16 @@
       <div class="menu-group">
         <div class="group-label">Akademik (Guru)</div>
 
-        <a class="nav-item menu-akses" id="menu-absen-guru" style="display: none;" onclick="loadPage('guru/absenguru.html', this)">📍 Absen Guru</a>
+        <a class="nav-item menu-akses" id="menu-absen-guru" style="display: none;" onclick="loadPage('guru/absenguru.html?v=52', this)">📍 Absen Guru</a>
 
-        <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html', this)">📋 Absensi KBM</a>
+        <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html?v=52', this)">📋 Absensi KBM</a>
 
         <a class="nav-item menu-akses" id="menu-guru-menulis" style="display: none;" onclick="loadPage('guru/gurumenulis.html', this)">✍️ Guru Menulis</a>
 
-        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html?v=43', this)">📖 Tahsin, Tahfiz & Muroja’ah</a>
+        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html?v=52', this)">📖 Tahsin, Tahfiz & Muroja’ah</a>
         <a class="nav-item menu-akses" id="menu-laporan-murojaah" style="display: none;" onclick="loadPage('guru/laporan-murojaah.html', this)">🔁 Laporan Muroja’ah</a>
 
-        <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html?v=43', this)">📝 Input Nilai Ujian</a>
+        <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html?v=52', this)">📝 Input Nilai Ujian</a>
       </div>
 
       <div class="menu-group">
@@ -3049,6 +3055,26 @@ function sinkronkanBadgePintasanMobile() {
 
       loadPage(url, menu);
     }
+
+    function openAuthorizedMenuWithParams(menuId, params = {}) {
+      if (!bolehAksesMenu(menuId)) { tampilkanPesanTidakBerwenang(menuId); return; }
+      const menu = document.getElementById(menuId);
+      if (!menu) { tampilkanPesanTidakBerwenang(menuId); return; }
+      const onclickText = menu.getAttribute('onclick') || '';
+      const match = onclickText.match(/loadPage\('([^']+)'/);
+      if (!match) return;
+      const raw = match[1];
+      const [path, hash=''] = raw.split('#');
+      const [base, query=''] = path.split('?');
+      const sp = new URLSearchParams(query);
+      Object.entries(params || {}).forEach(([k,v]) => {
+        if (v !== undefined && v !== null && String(v) !== '') sp.set(k, String(v));
+      });
+      sp.set('v','52');
+      const finalUrl = `${base}?${sp.toString()}${hash ? '#'+hash : ''}`;
+      loadPage(finalUrl, menu);
+    }
+    window.openAuthorizedMenuWithParams = openAuthorizedMenuWithParams;
 
     function loadPage(url, el) {
       const menuElement = (el && el.classList && el.classList.contains('menu-akses'))

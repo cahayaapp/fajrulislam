@@ -1623,6 +1623,15 @@
   </style>
 
   <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
+<style id="cahaya-v52-quran-flow">
+.c52-quran-selector{padding:20px!important}.c52-quran-title{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:13px}.c52-quran-title strong{color:#142b52;font-size:1rem;font-weight:1000}.c52-quran-title span{color:#71809a;font-size:.66rem;font-weight:800;text-align:right}
+.c52-program-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}.c52-program-btn{appearance:none;display:grid;grid-template-columns:38px minmax(0,1fr);grid-template-rows:auto auto;column-gap:11px;text-align:left;padding:14px;border:1px solid #dce7f6;border-radius:17px;background:#fff;cursor:pointer;transition:.18s ease}.c52-program-btn>span{grid-row:1/3;width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#edf5ff;color:#1557d5;font-size:1rem;font-weight:1000}.c52-program-btn b{color:#17284a;font-size:.8rem;font-weight:1000}.c52-program-btn small{color:#7d8ca4;font-size:.59rem;font-weight:760}.c52-program-btn.active{border-color:#2878ff;background:linear-gradient(135deg,#fff,#edf5ff);box-shadow:0 8px 20px rgba(40,120,255,.11);transform:translateY(-1px)}
+.c52-murojaah-choice{margin-top:14px;padding-top:14px;border-top:1px solid #edf2f8}.c52-murojaah-choice[hidden]{display:none!important}.c52-murojaah-choice>strong{display:block;margin-bottom:9px;color:#142b52;font-size:.75rem}.c52-muro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.c52-muro-grid button{appearance:none;padding:10px;border:1px solid #dce7f6;border-radius:12px;background:#fff;color:#385275;font-weight:900;cursor:pointer}.c52-muro-grid button.active{background:#fff7e1;border-color:#f2b632;color:#805e08}
+.c52-bottom-overview{margin-top:14px}.class-mini-quran{display:inline-flex;margin-left:8px;padding:3px 7px;border-radius:999px;background:#edf5ff;color:#1557d5;font-size:.55rem;font-weight:950;vertical-align:middle}
+.santri-card-body .input-section{order:1}.santri-card-body .resume-container-v52{order:2}.santri-card-body .riwayat-section{order:3}.santri-card.card-open .santri-card-body{display:flex;flex-direction:column}
+.santri-card-body .mode-switch{display:none!important}
+@media(max-width:720px){.c52-quran-selector{padding:15px!important}.c52-quran-title{align-items:flex-start;flex-direction:column;gap:4px}.c52-quran-title span{text-align:left}.c52-program-grid{grid-template-columns:1fr}.c52-program-btn{padding:12px}.c52-muro-grid{grid-template-columns:repeat(3,1fr);gap:6px}.c52-muro-grid button{padding:9px 5px;font-size:.65rem}}
+</style>
 </head>
 
 <body>
@@ -1658,65 +1667,27 @@
       </div>
     </section>
 
-    <section class="panel-card">
-      <div class="panel-head">
-        <div class="panel-title-wrap">
-          <div class="panel-icon">⚙️</div>
-          <div>
-            <h2>Pilih Kelompok Setoran</h2>
-            <p>Tentukan program dan kelas sebelum membuka lembar santri.</p>
-          </div>
-        </div>
-        <div class="context-chip">TA 2026/2027</div>
+    <section class="panel-card c52-quran-selector">
+      <div class="c52-quran-title">
+        <strong>Pilih Program</strong>
+        <span id="autoQuranContext">Kelas akan mengikuti jadwal mengajar Anda.</span>
       </div>
-
-      <div class="selector-grid">
-        <div class="form-group">
-          <label for="tfzProgram"><span class="label-icon">📚</span>Program</label>
-          <select class="form-control" id="tfzProgram" onchange="updateKelas()">
-            <option value="">-- Pilih Program --</option>
-            <option value="Tahsin">Tahsin</option>
-            <option value="Tahfiz">Tahfiz</option>
-            <option value="Murojaah">Muroja’ah</option>
-          </select>
-        </div>
-
-        <div class="form-group" id="murojaahTypeGroup" style="display:none;">
-          <label for="tfzJenisMurojaah"><span class="label-icon">🔁</span>Jenis Muroja’ah</label>
-          <select class="form-control" id="tfzJenisMurojaah">
-            <option value="">-- Pilih Jenis --</option>
-            <option value="Harian">Muroja’ah Harian</option>
-            <option value="Pekanan">Muroja’ah Pekanan</option>
-            <option value="Bulanan">Muroja’ah Bulanan</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="tfzKelas"><span class="label-icon">🏫</span>Kelas</label>
-          <select class="form-control" id="tfzKelas" onchange="renderSantriCards()" disabled>
-            <option value="">-- Menunggu Program --</option>
-          </select>
+      <div class="c52-program-grid">
+        <button type="button" class="c52-program-btn" data-quran-program="Tahsin" onclick="selectQuranProgram('Tahsin')"><span>ت</span><b>Tahsin</b><small>Talaqqi bacaan</small></button>
+        <button type="button" class="c52-program-btn" data-quran-program="Tahfiz" onclick="selectQuranProgram('Tahfiz')"><span>ح</span><b>Tahfiz</b><small>Hafalan baru</small></button>
+        <button type="button" class="c52-program-btn" data-quran-program="Murojaah" onclick="selectQuranProgram('Murojaah')"><span>م</span><b>Muroja’ah</b><small>Pengulangan hafalan</small></button>
+      </div>
+      <div class="c52-murojaah-choice" id="murojaahTypeGroup" hidden>
+        <strong>Jenis Muroja’ah</strong>
+        <div class="c52-muro-grid">
+          <button type="button" data-muro-type="Harian" onclick="selectMurojaahType('Harian')">Harian</button>
+          <button type="button" data-muro-type="Pekanan" onclick="selectMurojaahType('Pekanan')">Pekanan</button>
+          <button type="button" data-muro-type="Bulanan" onclick="selectMurojaahType('Bulanan')">Bulanan</button>
         </div>
       </div>
-
-      <div class="overview-grid">
-        <div class="overview-item">
-          <span class="overview-label">Program</span>
-          <strong class="overview-value" id="statProgram">Belum dipilih</strong>
-        </div>
-        <div class="overview-item">
-          <span class="overview-label">Kelas</span>
-          <strong class="overview-value" id="statClass">Belum dipilih</strong>
-        </div>
-        <div class="overview-item">
-          <span class="overview-label">Jumlah Santri</span>
-          <strong class="overview-value" id="statStudentTotal">0 Santri</strong>
-        </div>
-        <div class="overview-item">
-          <span class="overview-label">Setoran Bulan Ini</span>
-          <strong class="overview-value" id="statMonthlyTotal">0 Setoran</strong>
-        </div>
-      </div>
+      <select id="tfzProgram" hidden><option value=""></option><option value="Tahsin">Tahsin</option><option value="Tahfiz">Tahfiz</option><option value="Murojaah">Murojaah</option></select>
+      <select id="tfzJenisMurojaah" hidden><option value=""></option><option value="Harian">Harian</option><option value="Pekanan">Pekanan</option><option value="Bulanan">Bulanan</option></select>
+      <select id="tfzKelas" hidden><option value=""></option></select>
     </section>
 
     <section class="panel-card workspace-card">
@@ -1725,7 +1696,7 @@
           <div class="panel-icon">👥</div>
           <div>
             <h3>Lembar Setoran Santri</h3>
-            <p>Buka kartu santri untuk melihat capaian, riwayat, dan mengisi setoran.</p>
+            <p>Buka kartu santri lalu langsung isi surat dan rentang ayat. Ringkasan serta riwayat berada di bagian bawah.</p>
           </div>
         </div>
 
@@ -1747,7 +1718,7 @@
       </div>
 
       <div class="workspace-meta">
-        <span id="filterResultText">Pilih program dan kelas untuk menampilkan santri.</span>
+        <span id="filterResultText">Pilih Tahsin, Tahfiz, atau Muroja’ah untuk menampilkan santri.</span>
         <span id="openedCardText">0 kartu terbuka</span>
       </div>
 
@@ -1756,9 +1727,18 @@
           <div>
             <div class="initial-state-icon">📖</div>
             <strong>Lembar setoran belum dibuka</strong>
-            <span>Pilih program dan kelas terlebih dahulu untuk menampilkan daftar santri.</span>
+            <span>Pilih jenis input untuk menampilkan daftar santri sesuai jadwal Anda.</span>
           </div>
         </div>
+      </div>
+    </section>
+    <section class="panel-card c52-bottom-overview" id="quranOverviewPanel">
+      <div class="panel-head"><div class="panel-title-wrap"><div class="panel-icon">▤</div><div><h3>Ringkasan Data</h3><p>Informasi capaian dan jumlah data diletakkan di bawah agar form input tetap menjadi fokus utama.</p></div></div></div>
+      <div class="overview-grid">
+        <div class="overview-item"><span class="overview-label">Program</span><strong class="overview-value" id="statProgram">Belum dipilih</strong></div>
+        <div class="overview-item"><span class="overview-label">Kelas</span><strong class="overview-value" id="statClass">Otomatis</strong></div>
+        <div class="overview-item"><span class="overview-label">Jumlah Santri</span><strong class="overview-value" id="statStudentTotal">0 Santri</strong></div>
+        <div class="overview-item"><span class="overview-label">Data Bulan Ini</span><strong class="overview-value" id="statMonthlyTotal">0 Data</strong></div>
       </div>
     </section>
   </main>
@@ -1787,6 +1767,30 @@
   }
 
   let dataKelasCloud = {};
+  let autoQuranClasses = [];
+  let studentClassMap = new Map();
+  const TEACHER_CODE_ALIASES_QURAN = {
+    MULTAZAM:["multazam","multazam zakaria","abah multazam"],ZAKY:["zaky","zaki","muhammad zaky"],RAHIEL:["rahiel","mika rahiel","mika rahiel yusuf"],
+    FAIQ:["faiq","muhammad faiq"],FALAH:["falah","al falah","muhammad al falah"],FATIMAH:["fatimah"],MEILISA:["meilisa","melisa"],ALAMANDA:["alamanda"],NAQIEB:["naqieb","muhammad naqieb"]
+  };
+  const normalizeTeacherQuran=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\b(abah|abi|ummi|ustadzah|ustadz|ust|guru|bapak|ibu|pak|bu|dr)\b/g," ").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();
+  function detectTeacherCodeQuran(rows=[]){
+    const direct=String(user?.teacherCode||user?.guruKode||"").trim().toUpperCase();if(direct)return direct;
+    const names=[user?.label,user?.nama,user?.namaTampilan,user?.username,String(user?.email||"").split("@")[0]].filter(Boolean).map(normalizeTeacherQuran);
+    let best="";Object.entries(TEACHER_CODE_ALIASES_QURAN).some(([code,aliases])=>aliases.some(alias=>names.some(n=>{const a=normalizeTeacherQuran(alias);if(n===a||n.includes(a)||a.includes(n)){best=code;return true}return false})));return best;
+  }
+  function normalizeScheduleRowsQuran(value){return Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}))}
+  async function refreshAutoQuranClasses(scheduleRows=[]){
+    let rows=scheduleRows;
+    if(!rows.length){try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"no-store"});if(r.ok)rows=normalizeScheduleRowsQuran(await r.json())}catch(_){}}
+    const code=detectTeacherCodeQuran(rows);
+    autoQuranClasses=[...new Set(rows.filter(r=>r&&r.aktif!==false&&String(r.guruKode||"").trim().toUpperCase()===code&&/qur|tahsin|tahfiz/i.test(String(r.mapel||""))).map(r=>String(r.kelas||"").trim()).filter(k=>k&&dataKelasCloud[k]))];
+    const order=k=>{const i=URUTAN_KELAS.indexOf(k);return i<0?999:i};autoQuranClasses.sort((a,b)=>order(a)-order(b)||a.localeCompare(b,"id",{numeric:true}));
+    const ctx=document.getElementById("autoQuranContext"), sel=document.getElementById("tfzKelas");
+    if(sel){sel.innerHTML="";autoQuranClasses.forEach(k=>sel.add(new Option(k,k)));if(autoQuranClasses[0])sel.value=autoQuranClasses[0]}
+    if(ctx)ctx.textContent=autoQuranClasses.length?`Kelas otomatis: ${autoQuranClasses.join(" • ")}`:"Jadwal Al-Qur’an Anda belum ditemukan.";
+    const stat=document.getElementById("statClass");if(stat)stat.textContent=autoQuranClasses.length?autoQuranClasses.join(" • "):"Belum ditemukan";
+  }
 
   const URUTAN_KELAS = [
     "Kelas 1 Putra",
@@ -1974,99 +1978,47 @@
   };
 
   document.addEventListener('DOMContentLoaded', async () => {
-    // MENAMBAHKAN INFORMASI TOTAL AYAT DI DROPDOWN
-    if(window.daftarSurat) {
-        window.daftarSurat.forEach((s, i) => { 
-            window.opsiSuratHTML += `<option value="${i}">${i+1}. ${s.nama} (${s.ayat} Ayat)</option>`; 
-        });
-    }
-    try {
-      const snapshot = await get(ref(db, 'cahaya_app/master_akademik'));
-      const masterAkademik = snapshot.exists() ? snapshot.val() : {};
-
-      // Struktur utama 2026/2027: master_akademik/kelas
-      dataKelasCloud = masterAkademik.kelas || {};
-
-      // Fallback sementara bila migrasi Firebase belum selesai.
-      // Rumpun tidak ditampilkan pada halaman.
-      if (
-        Object.keys(dataKelasCloud).length === 0 &&
-        masterAkademik.halqah?.["Halqah Ilmiyah"]
-      ) {
-        dataKelasCloud = masterAkademik.halqah["Halqah Ilmiyah"];
-        console.warn(
-          "Master akademik masih memakai struktur lama. " +
-          "Sistem sementara memakai daftar kelas dari Halqah Ilmiyah."
-        );
-      }
-    } catch (e) {
-      console.error("Gagal memuat master kelas:", e);
-    }
-
-    document.getElementById('loadingOverlay').style.display = 'none';
+    if(window.daftarSurat) window.daftarSurat.forEach((surat,i)=>{window.opsiSuratHTML+=`<option value="${i}">${i+1}. ${surat.nama} (${surat.ayat} Ayat)</option>`});
+    try{
+      const [masterSnap,scheduleSnap]=await Promise.all([get(ref(db,'cahaya_app/master_akademik')).catch(()=>null),get(ref(db,'cahaya_app/jadwal_pelajaran')).catch(()=>null)]);
+      const masterAkademik=masterSnap?.exists?.()?masterSnap.val():{};
+      dataKelasCloud=masterAkademik.kelas||{};
+      if(!Object.keys(dataKelasCloud).length&&masterAkademik.halqah?.["Halqah Ilmiyah"])dataKelasCloud=masterAkademik.halqah["Halqah Ilmiyah"];
+      const scheduleRows=scheduleSnap?.exists?.()?normalizeScheduleRowsQuran(scheduleSnap.val()):[];
+      await refreshAutoQuranClasses(scheduleRows);
+      await ensureTahfizMeta();
+    }catch(e){console.error("Gagal memuat master/jadwal:",e)}
+    document.getElementById('loadingOverlay').style.display='none';
   });
 
-  window.updateKelas = () => {
-    const program = document.getElementById('tfzProgram').value;
-    const kelasSelect = document.getElementById('tfzKelas');
-    const murojaahTypeGroup = document.getElementById('murojaahTypeGroup');
-    const jenisMurojaahSelect = document.getElementById('tfzJenisMurojaah');
-    const isMurojaah = String(program).toLowerCase() === 'murojaah';
-    if (murojaahTypeGroup) murojaahTypeGroup.style.display = isMurojaah ? 'block' : 'none';
-    if (!isMurojaah && jenisMurojaahSelect) jenisMurojaahSelect.value = '';
-
-    kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
-    kelasSelect.disabled = true;
-
-    document.getElementById('santriCardsContainer').innerHTML =
-      '<div class="initial-state"><div><div class="initial-state-icon">📖</div><strong>Lembar setoran belum dibuka</strong><span>Pilih program dan kelas terlebih dahulu untuk menampilkan daftar santri.</span></div></div>';
-
-    if (!program) return;
-
-    const daftarKelas = Object.keys(dataKelasCloud || {}).sort((a, b) => {
-      const posisiA = URUTAN_KELAS.indexOf(a);
-      const posisiB = URUTAN_KELAS.indexOf(b);
-
-      if (posisiA !== -1 && posisiB !== -1) return posisiA - posisiB;
-      if (posisiA !== -1) return -1;
-      if (posisiB !== -1) return 1;
-
-      return a.localeCompare(b, 'id');
-    });
-
-    daftarKelas.forEach((kelas) => {
-      kelasSelect.add(new Option(kelas, kelas));
-    });
-
-    kelasSelect.disabled = daftarKelas.length === 0;
-
-    if (daftarKelas.length === 0) {
-      kelasSelect.innerHTML =
-        '<option value="">Data kelas belum tersedia</option>';
+  window.selectQuranProgram = async program => {
+    document.getElementById('tfzProgram').value=program;
+    document.querySelectorAll('[data-quran-program]').forEach(btn=>btn.classList.toggle('active',btn.dataset.quranProgram===program));
+    const group=document.getElementById('murojaahTypeGroup');
+    group.hidden=program!=='Murojaah';
+    if(program!=='Murojaah'){document.getElementById('tfzJenisMurojaah').value='';document.querySelectorAll('[data-muro-type]').forEach(btn=>btn.classList.remove('active'))}
+    document.getElementById('statProgram').textContent=program;
+    if(program==='Murojaah'){
+      document.getElementById('santriCardsContainer').innerHTML='<div class="initial-state"><div><div class="initial-state-icon">🔁</div><strong>Pilih jenis Muroja’ah</strong><span>Harian, Pekanan, atau Bulanan.</span></div></div>';
+      return;
     }
+    await renderSantriCards();
   };
+  window.selectMurojaahType = async type => {
+    document.getElementById('tfzJenisMurojaah').value=type;
+    document.querySelectorAll('[data-muro-type]').forEach(btn=>btn.classList.toggle('active',btn.dataset.muroType===type));
+    await renderSantriCards();
+  };
+  window.updateKelas = () => { const program=document.getElementById('tfzProgram').value;if(program)selectQuranProgram(program); };
 
   window.renderSantriCards = async () => {
-    const prog = document.getElementById('tfzProgram').value;
-    const kelas = document.getElementById('tfzKelas').value;
-    const container = document.getElementById('santriCardsContainer');
-
-    if (!prog || !kelas) {
-      container.innerHTML =
-        '<div class="initial-state"><div><div class="initial-state-icon">📖</div><strong>Lembar setoran belum dibuka</strong><span>Pilih program dan kelas terlebih dahulu untuk menampilkan daftar santri.</span></div></div>';
-      return;
-    }
-
-    const listSantri = Array.isArray(dataKelasCloud?.[kelas])
-      ? [...dataKelasCloud[kelas]].sort((a, b) => a.localeCompare(b, 'id'))
-      : [];
-
-    if (listSantri.length === 0) {
-      container.innerHTML =
-        '<div class="initial-state"><div><div class="initial-state-icon">👤</div><strong>Data santri belum tersedia</strong><span>Belum ada santri yang tercatat pada kelas ini.</span></div></div>';
-      return;
-    }
-
+    const prog=document.getElementById('tfzProgram').value, jenisMurojaah=document.getElementById('tfzJenisMurojaah')?.value||'', container=document.getElementById('santriCardsContainer');
+    if(!prog || (prog==='Murojaah'&&!jenisMurojaah)){container.innerHTML='<div class="initial-state"><div><div class="initial-state-icon">📖</div><strong>Pilih jenis input</strong><span>Pilih Tahsin, Tahfiz, atau Muroja’ah terlebih dahulu.</span></div></div>';return}
+    if(!autoQuranClasses.length){container.innerHTML='<div class="initial-state"><div><div class="initial-state-icon">📅</div><strong>Jadwal Al-Qur’an belum ditemukan</strong><span>Kelas otomatis mengikuti jadwal guru yang login.</span></div></div>';return}
+    const listSantri=[];studentClassMap=new Map();
+    autoQuranClasses.forEach(kelas=>{const list=Array.isArray(dataKelasCloud?.[kelas])?dataKelasCloud[kelas]:[];list.forEach(nama=>listSantri.push({nama,kelas}))});
+    listSantri.sort((a,b)=>a.kelas.localeCompare(b.kelas,'id',{numeric:true})||a.nama.localeCompare(b.nama,'id'));
+    if(!listSantri.length){container.innerHTML='<div class="initial-state"><div><div class="initial-state-icon">👤</div><strong>Data santri belum tersedia</strong><span>Belum ada santri pada kelas jadwal Anda.</span></div></div>';return}
     container.innerHTML =
       '<div class="initial-state"><div><div class="initial-state-icon">⏳</div><strong>Memuat lembar setoran</strong><span>Mengambil capaian dan riwayat setoran seluruh santri.</span></div></div>';
 
@@ -2082,20 +2034,22 @@
     }
 
     container.innerHTML = '';
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = localDateKey();
 
-    listSantri.forEach((nama, i) => {
+    listSantri.forEach((student, i) => {
+      const nama=student.nama, kelas=student.kelas;
       const theme = cardColors[i % cardColors.length];
-      const safeId = nama.replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
+      const safeId = (nama+"_"+kelas).replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
+      studentClassMap.set(safeId, kelas);
       const namaHtml = escapeHtml(nama);
       const targetBarisHarian = getTargetBaris(nama);
       const hariEfektifQuran = countEffectiveQuranDays(kelas);
 
       const cardHtml = `
-        <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal">
+        <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal" data-kelas="${escapeHtml(kelas)}">
           
           <div class="santri-card-header" onclick="toggleCard('${safeId}')">
-            <h3>${i+1}. ${namaHtml}</h3>
+            <h3>${i+1}. ${namaHtml}<span class="class-mini-quran">${escapeHtml(kelas)}</span></h3>
             <div style="display:flex; align-items:center; gap:10px;">
               <span id="badge_info_${safeId}" style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">Buka Card</span>
               <span class="icon-toggle">▼</span>
@@ -2104,7 +2058,7 @@
           
           <div class="santri-card-body" id="body_${safeId}">
             
-            <div id="resume_container_${safeId}"></div>
+            <div class="resume-container-v52" id="resume_container_${safeId}"></div>
 
             <div class="riwayat-section">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
@@ -2118,10 +2072,7 @@
               <h5>✎ Form Input Setoran</h5>
               <input type="hidden" id="edit_id_${safeId}">
               
-              <div class="form-group">
-                <label>Tanggal Input</label>
-                <input type="date" class="form-control" id="tgl_${safeId}" value="${todayStr}">
-              </div>
+              <input type="hidden" id="tgl_${safeId}" value="${todayStr}">
 
               <div id="area_input_${safeId}" class="tahfiz-only">
                 <div class="mode-switch" id="mode_switch_${safeId}">
@@ -2177,18 +2128,17 @@
 
 
               <div class="tahsin-only" id="tahsin_area_${safeId}">
+                <div class="form-group">
+                  <label>Surat dan Rentang Ayat</label>
+                  <div id="tahsin_wadah_surat_${safeId}"></div>
+                  <button class="btn-tambah-surat" type="button" id="tahsin_btn_tambah_${safeId}" onclick="tambahBarisTahsinCard('${safeId}')">➕ Tambah Surat Talaqqi</button>
+                  <small style="display:block;margin-top:-6px;color:var(--tfz-muted);font-weight:650;line-height:1.45;">Bisa memasukkan beberapa surat dalam satu kali talaqqi.</small>
+                </div>
                 <div class="program-note">Tahsin dicatat sebagai talaqqi bacaan. Nilai menunjukkan kualitas bacaan, bukan jumlah hafalan.</div>
                 <div class="tahsin-form-grid">
                   <div class="form-group"><label>Jenis Talaqqi</label><select class="form-control" id="jenis_talaqqi_${safeId}"><option>Talaqqi Baru</option><option>Pengulangan</option><option>Perbaikan Bacaan</option><option>Ujian Kenaikan Level</option></select></div>
                   <div class="form-group"><label>Total Ayat Talaqqi</label><input type="number" class="form-control" id="tahsin_total_ayat_${safeId}" readonly placeholder="0"></div>
                 </div>
-                <div class="form-group">
-                  <label>Surat dan Rentang Ayat</label>
-                  <div id="tahsin_wadah_surat_${safeId}"></div>
-                  <button class="btn-tambah-surat" type="button" id="tahsin_btn_tambah_${safeId}" onclick="tambahBarisTahsinCard('${safeId}')">➕ Tambah Surat Talaqqi</button>
-                  <small style="display:block;margin-top:-6px;color:var(--tfz-muted);font-weight:650;line-height:1.45;">Dapat memasukkan beberapa surat dalam satu kali talaqqi, seperti pada input Tahfiz.</small>
-                </div>
-                <div class="form-group"><label>Halaman Mushaf <span style="font-weight:600;color:var(--tfz-muted)">(opsional)</span></label><input type="text" class="form-control" id="tahsin_halaman_${safeId}" placeholder="Contoh: 12 atau 12–14"></div>
                 <div class="tahsin-score-grid">
                   ${[['makhraj','Makharijul Huruf'],['sifat','Sifatul Huruf'],['tajwid','Penerapan Tajwid'],['lancar','Kelancaran & Fashahah']].map(([k,l])=>`<div class="score-box"><label>${l}</label><select class="form-control tahsin-score" id="${k}_${safeId}" onchange="hitungNilaiTahsin('${safeId}')"><option value="4">4 — Sangat Baik</option><option value="3" selected>3 — Baik</option><option value="2">2 — Perlu Perbaikan</option><option value="1">1 — Bimbingan Intensif</option></select></div>`).join('')}
                 </div>
@@ -2211,8 +2161,9 @@
       container.innerHTML += cardHtml;
     });
 
-    listSantri.forEach((nama, i) => {
-      const safeId = nama.replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
+    listSantri.forEach((student, i) => {
+      const nama=student.nama, kelas=student.kelas;
+      const safeId = (nama+"_"+kelas).replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
       setModeCard('tunggal', safeId);
       terapkanModeProgramCard(safeId, prog);
       siapkanBarisTahsinAwal(safeId);
@@ -2221,9 +2172,13 @@
     });
   };
 
+  function getCardClass(safeId){
+    return document.getElementById(`card_${safeId}`)?.dataset?.kelas || studentClassMap.get(safeId) || autoQuranClasses[0] || '';
+  }
+
   window.updateTargetTahfizInfo = (safeId) => {
     const input=document.getElementById(`target_baris_${safeId}`), info=document.getElementById(`target_info_${safeId}`);
-    if(!input||!info)return; const days=countEffectiveQuranDays(document.getElementById('tfzKelas')?.value||''); const target=Number(input.value)||0;
+    if(!input||!info)return; const days=countEffectiveQuranDays(getCardClass(safeId)); const target=Number(input.value)||0;
     info.textContent=days ? `Bulan ini ${days} hari aktif Al-Qur’an${target>0 ? ` • target ${target*days} baris.` : '.'}` : 'Hari aktif Al-Qur’an akan mengikuti jadwal dan kalender pendidikan.';
   };
 
@@ -2436,7 +2391,7 @@
     const old=getTargetBaris(nama);
     button.disabled=true; const oldText=button.textContent; button.textContent='Menyimpan...';
     try{
-      const payload={nama,namaSantri:nama,kelas:document.getElementById('tfzKelas').value,targetBarisHarian:target,tahunAjaran:'2026/2027',diubahOleh:user?.label||user?.nama||user?.username||'Guru Tahfiz',updatedAt:new Date().toISOString()};
+      const payload={nama,namaSantri:nama,kelas:getCardClass(safeId),targetBarisHarian:target,tahunAjaran:'2026/2027',diubahOleh:user?.label||user?.nama||user?.username||'Guru Tahfiz',updatedAt:new Date().toISOString()};
       await update(ref(db,`cahaya_app/target_tahfiz/${key}`),payload);
       cacheTargetTahfiz[key]=payload;
       const value=document.getElementById(`target_value_${safeId}`); if(value)value.textContent=`${target} baris / hari`;
@@ -2482,7 +2437,6 @@
           alert(`${validationError.message}\n\nSantri: ${nama}`);
           return;
         }
-        const halaman = String(document.getElementById(`tahsin_halaman_${safeId}`).value || '').trim() || null;
         const totalAyatTahsin = materiList.reduce((sum, item) => sum + item.ayatSelesai - item.ayatMulai + 1, 0);
         strSetoran = materiList.map(item => `${item.surat} (${item.ayatMulai}-${item.ayatSelesai})`).join(', ');
         hitungNilaiTahsin(safeId);
@@ -2495,8 +2449,8 @@
         detailData = {
           jenisInput: 'talaqqi_bacaan',
           jenisTalaqqi: document.getElementById(`jenis_talaqqi_${safeId}`).value,
-          materi: { ...materiList[0], halaman },
-          materiList: materiList.map((item, index) => ({ ...item, halaman: index === 0 ? halaman : null })),
+          materi: { ...materiList[0] },
+          materiList: materiList.map(item => ({ ...item })),
           totalAyat: totalAyatTahsin,
           penilaian,
           nilaiAkhir: Number(document.getElementById(`nilai_tahsin_${safeId}`).value),
@@ -2544,7 +2498,7 @@
         tanggal: document.getElementById(`tgl_${safeId}`).value, program,
         jenisMurojaah: isMurojaah ? jenisMurojaah : null,
         jenisInput: isTahsin ? 'talaqqi_bacaan' : (isMurojaah ? 'setoran_murojaah' : 'setoran_hafalan'),
-        kelas: document.getElementById('tfzKelas').value, kelompok: document.getElementById('tfzKelas').value,
+        kelas: getCardClass(safeId), kelompok: getCardClass(safeId),
         tahunAjaran:'2026/2027', guru:user?.label || user?.nama || user?.username || (isTahsin ? 'Guru Tahsin' : (isMurojaah ? 'Guru Muroja’ah' : 'Guru Tahfiz')),
         targetBarisHarian: program === 'Tahfiz' ? targetBarisHarian : null,
         data:[{ nama, setoran:strSetoran, ayat, targetBarisHarian: program === 'Tahfiz' ? targetBarisHarian : null, jenisMurojaah: isMurojaah ? jenisMurojaah : null, kesalahan:isTahsin ? '0' : (document.getElementById(`salah_${safeId}`).value || '0'), nilai, keterangan, ...(isTahsin ? {} : barisMeta), ...detailData }],
@@ -2552,7 +2506,7 @@
       };
       if(program === 'Tahfiz' && getTargetBaris(nama) !== targetBarisHarian){
         const targetKey=normalizeStudentKey(nama);
-        const targetPayload={nama,namaSantri:nama,kelas:document.getElementById('tfzKelas').value,targetBarisHarian,tahunAjaran:'2026/2027',diubahOleh:user?.label||user?.nama||user?.username||'Guru Tahfiz',updatedAt:new Date().toISOString()};
+        const targetPayload={nama,namaSantri:nama,kelas:getCardClass(safeId),targetBarisHarian,tahunAjaran:'2026/2027',diubahOleh:user?.label||user?.nama||user?.username||'Guru Tahfiz',updatedAt:new Date().toISOString()};
         await update(ref(db,`cahaya_app/target_tahfiz/${targetKey}`),targetPayload);
         cacheTargetTahfiz[targetKey]=targetPayload;
       }
@@ -2677,7 +2631,6 @@
       });
       siapkanBarisTahsinAwal(safeId);
       hitungTotalAyatTahsinCard(safeId);
-      document.getElementById(`tahsin_halaman_${safeId}`).value = dat.materi?.halaman || dat.materiList?.find(item=>item?.halaman)?.halaman || '';
       document.getElementById(`jenis_talaqqi_${safeId}`).value = dat.jenisTalaqqi || 'Talaqqi Baru';
       document.getElementById(`makhraj_${safeId}`).value = dat.penilaian?.makhraj || 3;
       document.getElementById(`sifat_${safeId}`).value = dat.penilaian?.sifatHuruf || 3;
@@ -2849,20 +2802,20 @@
 
     function updateContextStats() {
       const program = $('tfzProgram')?.value || '';
-      const kelas = $('tfzKelas')?.value || '';
+      const kelas = autoQuranClasses.join(' • ');
       const cards = getCards();
 
       $('statProgram').textContent = program || 'Belum dipilih';
-      $('statClass').textContent = kelas || 'Belum dipilih';
+      $('statClass').textContent = kelas || 'Belum ditemukan';
       $('statStudentTotal').textContent = `${cards.length} Santri`;
 
       const monthlyTotal = cards.reduce((total, card) => {
         const badge = card.querySelector('[id^="badge_info_"]');
-        const match = badge?.textContent?.match(/(\d+)\s+Setoran/i);
+        const match = badge?.textContent?.match(/(\d+)\s+(?:Setoran|Talaqqi|Muroja)/i);
         return total + (match ? Number(match[1]) : 0);
       }, 0);
 
-      $('statMonthlyTotal').textContent = `${monthlyTotal} Setoran`;
+      $('statMonthlyTotal').textContent = `${monthlyTotal} Data`;
 
       const opened = cards.filter(card => card.classList.contains('card-open')).length;
       $('openedCardText').textContent = `${opened} kartu terbuka`;
@@ -2903,7 +2856,7 @@
         ? `${shown} dari ${cards.length} santri ditemukan.`
         : cards.length
           ? `${cards.length} santri siap diisi.`
-          : 'Pilih program dan kelas untuk menampilkan santri.';
+          : 'Pilih Tahsin, Tahfiz, atau Muroja’ah untuk menampilkan santri.';
 
       updateContextStats();
     };
@@ -2938,23 +2891,6 @@
       setIdentity();
       updateContextStats();
 
-      $('tfzProgram')?.addEventListener('change', () => {
-        $('statProgram').textContent = $('tfzProgram').value || 'Belum dipilih';
-        $('statClass').textContent = 'Belum dipilih';
-        $('statStudentTotal').textContent = '0 Santri';
-        $('statMonthlyTotal').textContent = '0 Setoran';
-        $('filterResultText').textContent = 'Pilih kelas untuk menampilkan santri.';
-        setTimeout(updateContextStats, 0);
-      });
-
-      $('tfzKelas')?.addEventListener('change', () => {
-        $('statClass').textContent = $('tfzKelas').value || 'Belum dipilih';
-        $('filterResultText').textContent = $('tfzKelas').value
-          ? 'Memuat lembar setoran santri...'
-          : 'Pilih kelas untuk menampilkan santri.';
-        $('searchSantri').value = '';
-        setTimeout(updateContextStats, 0);
-      });
 
       $('santriCardsContainer')?.addEventListener('click', (event) => {
         if (event.target.closest('.santri-card-header')) {

@@ -1264,7 +1264,19 @@
   <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
 </head>
 
+
+<style id="cahaya-v52-auto-attendance">
+.c52-toast{position:fixed;z-index:99999;left:50%;top:22px;transform:translate(-50%,-18px);width:min(420px,calc(100% - 28px));display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:17px;background:rgba(255,255,255,.98);border:1px solid #d9e7fb;box-shadow:0 18px 45px rgba(18,54,112,.20);opacity:0;pointer-events:none;transition:.24s cubic-bezier(.2,.8,.2,1)}
+.c52-toast.show{opacity:1;transform:translate(-50%,0)}
+.c52-toast-icon{width:38px;height:38px;display:grid;place-items:center;flex:0 0 38px;border-radius:12px;background:linear-gradient(135deg,#2878ff,#1557d5);color:#fff;font-size:1.05rem;font-weight:1000}
+.c52-toast-copy{min-width:0}.c52-toast-copy b{display:block;color:#142b52;font-size:.82rem;font-weight:1000}.c52-toast-copy span{display:block;margin-top:2px;color:#70809a;font-size:.66rem;font-weight:760;line-height:1.35}
+@media(max-width:720px){.c52-toast{top:14px;padding:11px 12px;border-radius:15px}.c52-toast-icon{width:34px;height:34px;flex-basis:34px}}
+</style>
 <body>
+<div class="c52-toast" id="autoAttendanceToast" aria-live="polite">
+  <div class="c52-toast-icon">✓</div>
+  <div class="c52-toast-copy"><b id="autoAttendanceToastTitle">Absensi berhasil</b><span id="autoAttendanceToastText"></span></div>
+</div>
   <script>
     (function syncMobileViewportHeight() {
       var scheduledFrame = 0;
@@ -2554,6 +2566,25 @@
     );
 
     const db = getDatabase(app);
+    const AUTO_PARAMS = new URLSearchParams(location.search);
+    const AUTO_ATTENDANCE = AUTO_PARAMS.get("auto") === "1";
+    const AUTO_CLASS = String(AUTO_PARAMS.get("kelas") || "").trim();
+    const AUTO_SUBJECT = String(AUTO_PARAMS.get("mapel") || "").trim();
+    const AUTO_START = String(AUTO_PARAMS.get("jam") || "").trim();
+    let autoAttendanceStarted = false;
+
+    function normalizedAutoText(value="") {
+      return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();
+    }
+    function showAutoAttendanceToast(title,text="") {
+      const box=document.getElementById("autoAttendanceToast");
+      if(!box) return;
+      document.getElementById("autoAttendanceToastTitle").textContent=title;
+      document.getElementById("autoAttendanceToastText").textContent=text;
+      box.classList.add("show");
+      clearTimeout(showAutoAttendanceToast.timer);
+      showAutoAttendanceToast.timer=setTimeout(()=>box.classList.remove("show"),3200);
+    }
 
     let profile = readActiveProfile();
     let teacherCode = "";
@@ -3072,6 +3103,16 @@
             recommended.id;
         }
 
+        if (AUTO_ATTENDANCE) {
+          const selectedForAuto = assignments.find(item => {
+            const subjectOk = !AUTO_SUBJECT || normalizedAutoText(item.subject) === normalizedAutoText(AUTO_SUBJECT);
+            const timeOk = !AUTO_START || String(item.scheduleStart || "").slice(0,5) === AUTO_START.slice(0,5);
+            const classOk = !AUTO_CLASS || (item.classNames || [item.className]).some(name => normalizedAutoText(name) === normalizedAutoText(AUTO_CLASS));
+            return subjectOk && timeOk && classOk;
+          });
+          if (selectedForAuto) select.value = selectedForAuto.id;
+        }
+
         document.getElementById(
           "assignmentBox"
         ).classList.add("show");
@@ -3088,6 +3129,11 @@
             : assignments[0].isCombined
               ? `${assignments[0].classNames.length} kelas diajar bersamaan. Satu konfirmasi akan mencatat kehadiran guru untuk seluruh kelas tersebut.`
               : `Mapel dan ruang sudah sesuai. Jadwal ${assignments[0].scheduleLabel}. Tekan konfirmasi untuk mencatat waktu tiba.`;
+        if (AUTO_ATTENDANCE) {
+          showAutoAttendanceToast("Kelas ditemukan", "Mencatat kehadiran secara otomatis…");
+          await new Promise(resolve => setTimeout(resolve, 120));
+          await confirmAttendance();
+        }
       } catch (error) {
         console.error(
           "Lokasi gagal:",
@@ -3445,6 +3491,7 @@
             ]
           );
 
+          showAutoAttendanceToast("Kehadiran sudah tercatat", `${assignment.subject} • ${assignment.isCombined ? assignment.classNames.join(", ") : assignment.className}`);
           document.getElementById("assignmentBox").classList.remove("show");
           document.getElementById("confirmPanel").classList.remove("show");
           return;
@@ -3547,6 +3594,7 @@
           ]
         );
 
+        showAutoAttendanceToast("Absensi guru berhasil", `${assignment.subject} • ${assignment.isCombined ? assignment.classNames.join(", ") : assignment.className} • ${attendanceResult.statusLabel}`);
         document.getElementById("assignmentBox").classList.remove("show");
         document.getElementById("confirmPanel").classList.remove("show");
       } catch (error) {
@@ -3593,6 +3641,21 @@
       const value = String(document.getElementById("directClassSelect")?.value || "").trim();
       if (!value) return null;
       return Object.values(rooms || {}).find(room => room && room.aktif !== false && [room.id, room.kodeKelas, room.qrToken].some(item => String(item || "").trim() === value)) || null;
+    }
+
+    async function maybeRunAutoAttendance() {
+      if (!AUTO_ATTENDANCE || autoAttendanceStarted || !AUTO_CLASS) return;
+      autoAttendanceStarted = true;
+      const target = Object.values(rooms || {}).find(room => {
+        if (!room || room.aktif === false) return false;
+        return [room.kelas, room.namaRuang, room.id, room.kodeKelas].some(value => normalizedAutoText(value) === normalizedAutoText(AUTO_CLASS));
+      });
+      if (!target) {
+        showResult("error","Kelas Jadwal Tidak Ditemukan",[{label:"Kelas",value:AUTO_CLASS},{label:"Tindakan",value:"Gunakan Scan Absen untuk memilih kelas secara manual."}]);
+        return;
+      }
+      const credential = target.kodeKelas || target.qrToken || target.id;
+      await processCredential(credential, "PILIH_KELAS");
     }
 
     async function loadData() {
@@ -3725,6 +3788,7 @@
       } finally {
         populateDirectClassSelect();
         showLoading(false);
+        await maybeRunAutoAttendance();
       }
     }
 

@@ -1299,6 +1299,12 @@
   </style>
 
   <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
+<style id="cahaya-v52-kbm-clean">
+.c52-kbm-context{position:relative;padding:18px 20px!important}
+.c52-kbm-context>.context-chip{position:absolute;right:20px;top:17px}
+.c52-kbm-grid{display:grid;grid-template-columns:minmax(170px,.65fr) minmax(280px,1.35fr);gap:14px;align-items:end;padding-top:30px}
+@media(max-width:720px){.c52-kbm-context{padding:14px!important}.c52-kbm-context>.context-chip{position:static;display:inline-flex;margin-bottom:10px}.c52-kbm-grid{grid-template-columns:1fr;padding-top:0;gap:10px}}
+</style>
 </head>
 <body>
   <div id="loadingOverlay">
@@ -1337,44 +1343,24 @@
       </div>
     </section>
 
-    <section class="panel-card setup-card">
-      <div class="panel-head">
-        <div class="panel-title-wrap">
-          <div class="panel-icon">⚙️</div>
-          <div>
-            <h2>Informasi Pembelajaran</h2>
-            <p>Pilih tanggal. Jadwal mapel dan kelas akan disesuaikan otomatis dengan guru yang login.</p>
-          </div>
-        </div>
-        <span class="context-chip" id="contextChip">Belum dipilih</span>
-      </div>
-
-      <div class="grid-form">
+    <section class="panel-card setup-card c52-kbm-context">
+      <span class="context-chip" id="contextChip">Belum dipilih</span>
+      <div class="c52-kbm-grid">
         <div class="form-group">
-          <label for="kbmTanggal"><span class="label-icon">📅</span>Tanggal KBM</label>
+          <label for="kbmTanggal"><span class="label-icon">📅</span>Tanggal</label>
           <input type="date" class="form-control" id="kbmTanggal" />
         </div>
-
-        <div class="form-group">
-          <label for="kbmKelas"><span class="label-icon">🏫</span>Kelas Otomatis</label>
-          <select class="form-control" id="kbmKelas" disabled>
-            <option value="">Menunggu pilihan jadwal</option>
-          </select>
-          <div class="helper-text">
-            Kelas mengikuti jadwal mengajar yang dipilih.
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="kbmMapel"><span class="label-icon">📖</span>Jadwal Mengajar Hari Ini</label>
+        <div class="form-group c52-kbm-schedule">
+          <label for="kbmMapel"><span class="label-icon">📖</span>Jadwal Mengajar</label>
           <select class="form-control" id="kbmMapel">
             <option value="">Memeriksa jadwal guru...</option>
           </select>
-          <div class="helper-text" id="scheduleHelper">
-            Sistem mencocokkan nama akun guru dengan jadwal pelajaran.
-          </div>
+          <div class="helper-text" id="scheduleHelper">Memeriksa jadwal mengajar...</div>
         </div>
       </div>
+      <select class="form-control" id="kbmKelas" disabled hidden aria-hidden="true">
+        <option value="">Kelas mengikuti jadwal</option>
+      </select>
     </section>
 
     <section class="panel-card">
@@ -1793,6 +1779,13 @@
 
   let teacherCodeAktif = "";
   let dailyAssignments = [];
+  const INCOMING_PARAMS = new URLSearchParams(location.search);
+  const INCOMING_CLASS = String(INCOMING_PARAMS.get("kelas") || "").trim();
+  const INCOMING_SUBJECT = String(INCOMING_PARAMS.get("mapel") || "").trim();
+  const INCOMING_START = String(INCOMING_PARAMS.get("jam") || "").trim();
+  let incomingScheduleApplied = false;
+  const normalizeIncoming = value => String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();
+
   let selectedAssignment = null;
   let toastTimer = null;
 
@@ -2265,6 +2258,23 @@
     window.tampilkanSantri();
   }
 
+  function applyIncomingScheduleContext() {
+    if (incomingScheduleApplied || (!INCOMING_CLASS && !INCOMING_SUBJECT && !INCOMING_START)) return false;
+    const match = dailyAssignments.find(item => {
+      const subjectOk = !INCOMING_SUBJECT || normalizeIncoming(item.subject) === normalizeIncoming(INCOMING_SUBJECT);
+      const timeOk = !INCOMING_START || String(item.scheduleStart || "").slice(0,5) === INCOMING_START.slice(0,5);
+      const classes = item.classNames || [item.className];
+      const classOk = !INCOMING_CLASS || classes.some(name => normalizeIncoming(name) === normalizeIncoming(INCOMING_CLASS));
+      return subjectOk && timeOk && classOk;
+    });
+    if (!match) return false;
+    incomingScheduleApplied = true;
+    document.getElementById("kbmMapel").value = match.id;
+    applySelectedSchedule();
+    showToast(`${match.subject} • ${labelKelasJadwal(match)}`, "success", "Jadwal dipilih otomatis");
+    return true;
+  }
+
   function loadTeacherScheduleForDate(
     options = {}
   ) {
@@ -2398,6 +2408,8 @@
         .join("");
 
     scheduleSelect.disabled = false;
+
+    if (applyIncomingScheduleContext()) return;
 
     if (dailyAssignments.length === 1) {
       scheduleSelect.value =
@@ -2753,7 +2765,7 @@
     if (!assignments.length) {
       listArea.innerHTML = emptyState(
         "🏫",
-        "Pilih kelas terlebih dahulu",
+        "Pilih jadwal mengajar",
         "Daftar santri akan tampil otomatis."
       );
       return;

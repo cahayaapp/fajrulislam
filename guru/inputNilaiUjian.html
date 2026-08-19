@@ -880,6 +880,17 @@
   </style>
 
   <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
+<style id="cahaya-v52-exam-wizard">
+.c52-exam-setup{display:grid;gap:0;padding:4px 22px!important}
+.c52-step{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;padding:20px 0;border-bottom:1px solid #edf2f8}.c52-step:last-child{border-bottom:0}
+.c52-step[hidden]{display:none!important}.c52-step-no{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(135deg,#2878ff,#1557d5);color:#fff;font-size:.74rem;font-weight:1000;box-shadow:0 7px 16px rgba(21,87,213,.18)}
+.c52-step-body h2{margin:4px 0 12px;color:#142b52;font-size:1rem;font-weight:1000}.c52-step-body .weight-head h2{margin:0}
+.c52-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.c52-choice{appearance:none;text-align:left;padding:14px;border:1px solid #dce7f6;border-radius:16px;background:#fff;cursor:pointer;transition:.18s ease}.c52-choice b{display:block;color:#17284a;font-size:.8rem;font-weight:1000}.c52-choice span{display:block;margin-top:4px;color:#7787a2;font-size:.62rem;font-weight:750}.c52-choice:hover,.c52-choice.active{border-color:#2878ff;background:#edf5ff;box-shadow:0 8px 20px rgba(40,120,255,.10);transform:translateY(-1px)}.c52-choice.active{box-shadow:inset 0 0 0 1px #2878ff,0 8px 20px rgba(40,120,255,.10)}
+.c52-auto-context{margin-top:8px;padding:8px 10px;border-radius:11px;background:#fff7e1;color:#805e08;font-size:.65rem;font-weight:850}
+.c52-continue{margin-top:14px;width:100%;height:46px;border:0;border-radius:14px;background:linear-gradient(135deg,#2878ff,#1557d5);color:#fff;font-weight:1000;cursor:pointer;box-shadow:0 10px 22px rgba(21,87,213,.2)}
+#scorePanel[hidden]{display:none!important}.class-mini{display:inline-flex;margin-left:7px;padding:3px 7px;border-radius:999px;background:#edf5ff;color:#1557d5;font-size:.55rem;font-weight:950;vertical-align:middle}
+@media(max-width:720px){.c52-exam-setup{padding:2px 14px!important}.c52-step{grid-template-columns:34px minmax(0,1fr);gap:10px;padding:16px 0}.c52-step-no{width:30px;height:30px;border-radius:10px}.c52-choice-grid{grid-template-columns:1fr}.c52-choice{padding:12px 13px}.c52-step-body h2{font-size:.9rem}}
+</style>
 </head>
 <body>
 
@@ -902,7 +913,7 @@
     <div class="hero-copy">
       <div class="hero-kicker">📊 Evaluasi Akademik 2026/2027</div>
       <h1>Input Nilai Ujian</h1>
-      <p>Catat hasil ujian bulanan dengan standar KKM Pesantren 75. Nilai ulangan harian diambil dari Absensi Pembelajaran.</p>
+      <p>Pilih periode dan mata pelajaran sesuai jadwal Anda. KKM Pesantren ditetapkan 75.</p>
     </div>
 
     <div class="hero-user">
@@ -912,131 +923,72 @@
     </div>
   </section>
 
-  <section class="panel-card">
-    <div class="section-head">
-      <div class="section-title-wrap">
-        <div class="section-icon">⚙️</div>
-        <div>
-          <h2>Informasi Ujian</h2>
-          <p>Tentukan periode, kelas, mata pelajaran, guru, dan materi evaluasi.</p>
+  <section class="panel-card c52-exam-setup">
+    <div class="c52-step">
+      <div class="c52-step-no">1</div>
+      <div class="c52-step-body">
+        <h2>Pilih Jenis Ujian</h2>
+        <div class="c52-choice-grid c52-type-grid">
+          <button type="button" class="c52-choice" data-exam-type="Bulanan" onclick="selectExamType('Bulanan')"><b>Bulanan</b><span>Evaluasi setiap bulan</span></button>
+          <button type="button" class="c52-choice" data-exam-type="Triwulan" onclick="selectExamType('Triwulan')"><b>Triwulan</b><span>Evaluasi per 3 bulan</span></button>
+          <button type="button" class="c52-choice" data-exam-type="Semester" onclick="selectExamType('Semester')"><b>Semester</b><span>Evaluasi akhir semester</span></button>
         </div>
       </div>
     </div>
 
-    <div class="academic-grid">
-      <div class="form-group">
-        <label for="tahunAkademik">📅 Tahun Akademik</label>
-        <select class="form-control" id="tahunAkademik"></select>
-      </div>
-
-      <div class="form-group">
-        <label for="semester">🗂️ Semester</label>
-        <select class="form-control" id="semester">
-          <option value="Ganjil">Ganjil</option>
-          <option value="Genap">Genap</option>
+    <div class="c52-step" id="periodStep" hidden>
+      <div class="c52-step-no">2</div>
+      <div class="c52-step-body">
+        <h2 id="periodStepTitle">Pilih Periode</h2>
+        <select class="form-control period-highlight" id="periodChooser" onchange="selectExamPeriod(this.value)">
+          <option value="">-- Pilih Periode --</option>
         </select>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label for="jenisUjian">🧭 Jenis Ujian</label>
-        <select class="form-control period-highlight" id="jenisUjian" onchange="syncJenisUjian()">
-          <option value="Bulanan" selected>Ujian Bulanan</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="kkmUjian">🎯 KKM</label>
-        <input type="number" class="form-control" id="kkmUjian" min="1" max="100" step="1" value="75" inputmode="numeric" readonly />
-      </div>
-
-      <div class="form-group" id="bulanUjianGroup">
-        <label for="bulanUjian">🗓️ Bulan Ujian</label>
-        <select class="form-control period-highlight" id="bulanUjian">
-          <option value="Januari">Januari</option>
-          <option value="Februari">Februari</option>
-          <option value="Maret">Maret</option>
-          <option value="April">April</option>
-          <option value="Mei">Mei</option>
-          <option value="Juni">Juni</option>
-          <option value="Juli">Juli</option>
-          <option value="Agustus">Agustus</option>
-          <option value="September">September</option>
-          <option value="Oktober">Oktober</option>
-          <option value="November">November</option>
-          <option value="Desember">Desember</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="tanggalUjian">⏱️ Tanggal Ujian</label>
-        <input type="date" class="form-control" id="tanggalUjian" />
-      </div>
-
-      <div class="form-group">
-        <label for="kelasKelompok">🏫 Kelas</label>
-        <select class="form-control" id="kelasKelompok" onchange="loadSantri()">
-          <option value="">-- Pilih Kelas --</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="mapel">📖 Mata Pelajaran</label>
-        <select class="form-control" id="mapel">
+    <div class="c52-step" id="subjectStep" hidden>
+      <div class="c52-step-no">3</div>
+      <div class="c52-step-body">
+        <h2>Pilih Mata Pelajaran</h2>
+        <select class="form-control" id="mapel" onchange="examSubjectChanged()">
           <option value="">-- Pilih Mata Pelajaran --</option>
         </select>
+        <div class="c52-auto-context" id="subjectClassInfo">Mata pelajaran disesuaikan dengan jadwal Anda.</div>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label for="guruPenguji">👨‍🏫 Penguji / Guru</label>
-        <select class="form-control" id="guruPenguji">
-          <option value="">-- Pilih Guru --</option>
-        </select>
-      </div>
-
-      <div class="form-group span-full">
-        <label for="materiUjian">📝 Materi Ujian</label>
-        <input type="text" class="form-control" id="materiUjian" placeholder="Contoh: Bab Thaharah atau materi pertemuan bulan ini" />
-      </div>
-
-      <div class="weight-panel span-full">
+    <div class="c52-step" id="weightStep" hidden>
+      <div class="c52-step-no">4</div>
+      <div class="c52-step-body">
         <div class="weight-head">
-          <div>
-            <h3>Komponen dan Bobot Penilaian</h3>
-            <p>Aktifkan komponen yang digunakan. Jumlah bobot harus tepat 100%.</p>
-          </div>
+          <div><h2>Bobot Penilaian</h2><p>Aktifkan komponen yang digunakan. Total harus 100%.</p></div>
           <div class="weight-status" id="infoBobot">Total Bobot 100%</div>
         </div>
-
         <div class="weight-grid">
-          <label class="weight-item">
-            <input class="weight-check" type="checkbox" id="chk_syafawi" value="Syafawi" checked onchange="refreshStrukturTabel()" />
-            <span class="weight-name">Syafawi</span>
-            <span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_syafawi" value="60" class="weight-input" oninput="refreshStrukturTabel()" />%</span>
-          </label>
-
-          <label class="weight-item">
-            <input class="weight-check" type="checkbox" id="chk_tahriri" value="Tahriri" checked onchange="refreshStrukturTabel()" />
-            <span class="weight-name">Tahriri</span>
-            <span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_tahriri" value="15" class="weight-input" oninput="refreshStrukturTabel()" />%</span>
-          </label>
-
-          <label class="weight-item">
-            <input class="weight-check" type="checkbox" id="chk_tashnif" value="Tashnif" checked onchange="refreshStrukturTabel()" />
-            <span class="weight-name">Tashnif</span>
-            <span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_tashnif" value="25" class="weight-input" oninput="refreshStrukturTabel()" />%</span>
-          </label>
-
-          <label class="weight-item">
-            <input class="weight-check" type="checkbox" id="chk_tathbiqi" value="Tathbiqi" onchange="refreshStrukturTabel()" />
-            <span class="weight-name">Tathbiqi</span>
-            <span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_tathbiqi" value="0" class="weight-input" oninput="refreshStrukturTabel()" />%</span>
-          </label>
+          <label class="weight-item"><input class="weight-check" type="checkbox" id="chk_syafawi" value="Syafawi" checked onchange="refreshStrukturTabel()" /><span class="weight-name">Syafawi</span><span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_syafawi" value="60" class="weight-input" oninput="refreshStrukturTabel()" />%</span></label>
+          <label class="weight-item"><input class="weight-check" type="checkbox" id="chk_tahriri" value="Tahriri" checked onchange="refreshStrukturTabel()" /><span class="weight-name">Tahriri</span><span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_tahriri" value="15" class="weight-input" oninput="refreshStrukturTabel()" />%</span></label>
+          <label class="weight-item"><input class="weight-check" type="checkbox" id="chk_tashnif" value="Tashnif" checked onchange="refreshStrukturTabel()" /><span class="weight-name">Tasnif</span><span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_tashnif" value="25" class="weight-input" oninput="refreshStrukturTabel()" />%</span></label>
+          <label class="weight-item"><input class="weight-check" type="checkbox" id="chk_tathbiqi" value="Tathbiqi" onchange="refreshStrukturTabel()" /><span class="weight-name">Tathbiqi</span><span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_tathbiqi" value="0" class="weight-input" oninput="refreshStrukturTabel()" />%</span></label>
         </div>
+        <button type="button" class="c52-continue" onclick="confirmExamSetup()">Tampilkan Daftar Santri →</button>
       </div>
+    </div>
+
+    <div hidden>
+      <select id="tahunAkademik"></select>
+      <select id="semester"><option value="Ganjil">Ganjil</option><option value="Genap">Genap</option></select>
+      <select id="jenisUjian"><option value=""></option></select>
+      <input id="kkmUjian" value="75">
+      <select id="bulanUjian"><option value=""></option></select>
+      <input id="periodeUjian">
+      <input type="date" id="tanggalUjian">
+      <select id="kelasKelompok"><option value=""></option></select>
+      <select id="guruPenguji"><option value=""></option></select>
+      <input id="materiUjian">
     </div>
   </section>
 
-  <section class="panel-card">
+  <section class="panel-card" id="scorePanel" hidden>
     <div class="section-head">
       <div class="section-title-wrap">
         <div class="section-icon">✍️</div>
@@ -1071,7 +1023,7 @@
         <span class="search-icon">🔎</span>
         <input type="search" id="searchSantri" placeholder="Cari nama santri..." oninput="filterSantri()" disabled />
       </div>
-      <div class="component-summary" id="componentSummary">Pilih kelas untuk mulai mengisi.</div>
+      <div class="component-summary" id="componentSummary">Selesaikan pilihan ujian untuk mulai mengisi.</div>
     </div>
 
     <div class="table-wrap">
@@ -1081,7 +1033,7 @@
             <tr id="tableHeaderRow"></tr>
           </thead>
           <tbody id="nilaiSantriBody">
-            <tr><td class="empty-state-cell" colspan="10">Pilih kelas untuk memuat daftar santri.</td></tr>
+            <tr><td class="empty-state-cell" colspan="10">Pilih jenis ujian, periode, dan mata pelajaran terlebih dahulu.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1111,6 +1063,10 @@
 
   let masterDataAkademik = {};
   let activeStudentList = [];
+  let scheduleRows = [];
+  let teacherCodeAktif = "";
+  let teacherSubjectClasses = {};
+  let setupConfirmed = false;
   let toastTimer = null;
 
   const fallbackMapel = [
@@ -1157,132 +1113,123 @@
     setTimeout(() => { overlay.style.display = "none"; }, 350);
   }
 
-  function initPageData() {
-    const today = new Date();
-    const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-      .toISOString().slice(0, 10);
-    document.getElementById("tanggalUjian").value = localDate;
-
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-    const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-    const academicStart = currentMonth >= 6 ? currentYear : currentYear - 1;
-    const currentAcademic = `${academicStart}/${academicStart + 1}`;
-    const previousAcademic = `${academicStart - 1}/${academicStart}`;
-
-    document.getElementById("tahunAkademik").innerHTML =
-      `<option value="${currentAcademic}">${currentAcademic}</option>` +
-      `<option value="${previousAcademic}">${previousAcademic}</option>`;
-
-    document.getElementById("semester").value = currentMonth >= 6 ? "Ganjil" : "Genap";
-    document.getElementById("bulanUjian").value = months[currentMonth];
-    document.getElementById("activeTeacherName").textContent = getActiveUserName();
-    document.getElementById("activeTeacherRole").textContent = getRoleLabel();
-    syncJenisUjian();
-  }
-
-  window.syncJenisUjian = function() {
-    const jenis = document.getElementById("jenisUjian")?.value || "Bulanan";
-    const monthly = jenis === "Bulanan";
-    const group = document.getElementById("bulanUjianGroup");
-    if (group) group.style.display = monthly ? "block" : "none";
-    const button = document.getElementById("btnSimpan");
-    if (button) button.innerHTML = "☁️ Simpan Nilai Ujian Bulanan";
+  const TEACHER_CODE_ALIASES = {
+    MULTAZAM:["multazam","multazam zakaria","abah multazam","dr multazam zakaria"], RASYIDIN:["rasyidin","rosyidin"],
+    NAQIEB:["naqieb","muhammad naqieb"], ZAKY:["zaky","zaki","muhammad zaky"], RAHIEL:["rahiel","mika rahiel","mika rahiel yusuf"],
+    FAIQ:["faiq","muhammad faiq"], FALAH:["falah","al falah","muhammad al falah","m al falah"], FATIMAH:["fatimah"],
+    MEILISA:["meilisa","melisa"], ALAMANDA:["alamanda"], HANIF:["hanif"], AHMAD_IMBRON:["ahmad imbron","imbron"],
+    ANDRIYANI:["andriyani","andriyani kusuma dayanti"], CAPPRY:["cappry","cappry yoda pratama"], DELLA:["della","della gustia"],
+    EDWIN:["edwin","edwin romeo"], EVITA:["evita","evita hardyanti"], FENNY:["fenny","fenny ayu anggraeni"],
+    LAILA:["laila","laila nuzlini"], MANDA:["manda","manda saputra"], MARYANA:["maryana"], NURUL_FADLILAH:["nurul fadlilah"], SHAFIRA:["shafira","shafira ramadanty"]
   };
+  function normalizeTeacherIdentity(value=""){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\b(abah|abi|ummi|ustadzah|ustadz|ust|muallimah|muallim|guru|bapak|ibu|pak|bu|dr|s pd|m pd|mpd|se)\b/g," ").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim()}
+  function compactTeacherIdentity(value=""){return normalizeTeacherIdentity(value).replace(/\s+/g,"")}
+  function normalizeScheduleRows(value){return Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}))}
+  function detectTeacherCode(rows=[]){
+    const direct=String(activeUser.teacherCode||activeUser.guruKode||"").trim().toUpperCase(); if(direct)return direct;
+    const candidates=[getActiveUserName(),activeUser.username,String(activeUser.email||"").split("@")[0]].filter(Boolean).map(normalizeTeacherIdentity);
+    const known=new Set(rows.map(r=>String(r?.guruKode||"").trim().toUpperCase()).filter(Boolean)); let best={code:"",score:0};
+    Object.entries(TEACHER_CODE_ALIASES).forEach(([code,aliases])=>{if(known.size&&!known.has(code))return;aliases.forEach(alias=>candidates.forEach(c=>{const a=normalizeTeacherIdentity(alias);let score=c===a?100:(c.includes(a)||a.includes(c)?80:0);if(score>best.score)best={code,score}}))}); return best.code;
+  }
+  async function loadLocalSchedule(){try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"no-store"});return r.ok?normalizeScheduleRows(await r.json()):[]}catch(_){return[]}}
+
+  function initPageData() {
+    const today=new Date(), localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    const year=today.getFullYear(), month=today.getMonth(), academicStart=month>=6?year:year-1;
+    document.getElementById("tanggalUjian").value=localDate;
+    document.getElementById("tahunAkademik").innerHTML=`<option value="${academicStart}/${academicStart+1}">${academicStart}/${academicStart+1}</option>`;
+    document.getElementById("semester").value=month>=6?"Ganjil":"Genap";
+    document.getElementById("kkmUjian").value="75";
+    document.getElementById("activeTeacherName").textContent=getActiveUserName();
+    document.getElementById("activeTeacherRole").textContent=getRoleLabel();
+  }
+  window.syncJenisUjian=function(){};
 
   function normalizeArray(value) {
     if (Array.isArray(value)) return value.filter(Boolean).map(String);
     if (value && typeof value === "object") return Object.values(value).filter(Boolean).map(String);
     return [];
   }
-
   function buildClassSource() {
-    const kelasBaru = masterDataAkademik.kelas && typeof masterDataAkademik.kelas === "object"
-      ? masterDataAkademik.kelas
-      : {};
-
-    if (Object.keys(kelasBaru).length) return kelasBaru;
-
-    // Fallback untuk database lama: semua kelas dari tiap kategori halqah
-    // digabung agar guru cukup memilih kelas tanpa memilih kategori.
-    const halqah = masterDataAkademik.halqah && typeof masterDataAkademik.halqah === "object"
-      ? masterDataAkademik.halqah
-      : {};
-
-    const hasil = {};
-    Object.values(halqah).forEach(kategori => {
-      if (!kategori || typeof kategori !== "object") return;
-      Object.entries(kategori).forEach(([namaKelas, daftarSantri]) => {
-        const santri = normalizeArray(daftarSantri);
-        hasil[namaKelas] = [...new Set([...(hasil[namaKelas] || []), ...santri])];
-      });
-    });
-
+    const kelasBaru=masterDataAkademik.kelas&&typeof masterDataAkademik.kelas==="object"?masterDataAkademik.kelas:{};
+    if(Object.keys(kelasBaru).length)return kelasBaru;
+    const halqah=masterDataAkademik.halqah&&typeof masterDataAkademik.halqah==="object"?masterDataAkademik.halqah:{}, hasil={};
+    Object.values(halqah).forEach(kategori=>{if(!kategori||typeof kategori!=="object")return;Object.entries(kategori).forEach(([namaKelas,daftarSantri])=>{hasil[namaKelas]=[...new Set([...(hasil[namaKelas]||[]),...normalizeArray(daftarSantri)])]})});
     return hasil;
   }
-
-  function populateMasterOptions() {
-    const classSelect = document.getElementById("kelasKelompok");
-    const classSource = buildClassSource();
-    classSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
-
-    Object.keys(classSource)
-      .sort((a, b) => a.localeCompare(b, "id", { numeric: true }))
-      .forEach(className => classSelect.add(new Option(className, className)));
-
-    const teachers = normalizeArray(masterDataAkademik.guru);
-    const teacherSelect = document.getElementById("guruPenguji");
-    teacherSelect.innerHTML = '<option value="">-- Pilih Guru --</option>';
-    teachers.sort((a, b) => a.localeCompare(b, "id")).forEach(name => teacherSelect.add(new Option(name, name)));
-
-    const userKey = normalizeText(getActiveUserName());
-    const matchingTeacher = teachers.find(name => {
-      const key = normalizeText(name);
-      return key && userKey && (key === userKey || key.includes(userKey) || userKey.includes(key));
+  function buildTeacherSubjectMap(){
+    const source=buildClassSource(); teacherSubjectClasses={};
+    scheduleRows.filter(r=>r&&r.aktif!==false&&String(r.jenis||"").toLowerCase()!=="ekskul"&&String(r.guruKode||"").trim().toUpperCase()===teacherCodeAktif).forEach(r=>{
+      const subject=String(r.mapel||"").trim(), cls=String(r.kelas||"").trim(); if(!subject||!cls||!source[cls])return;
+      if(!teacherSubjectClasses[subject])teacherSubjectClasses[subject]=new Set(); teacherSubjectClasses[subject].add(cls);
     });
-    if (matchingTeacher) teacherSelect.value = matchingTeacher;
-
-    const subjects = normalizeArray(masterDataAkademik.mapel);
-    const finalSubjects = subjects.length ? subjects : fallbackMapel;
-    const mapelSelect = document.getElementById("mapel");
-    mapelSelect.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
-    [...new Set(finalSubjects)]
-      .sort((a, b) => a.localeCompare(b, "id"))
-      .forEach(subject => mapelSelect.add(new Option(subject, subject)));
-
-    if (!Object.keys(classSource).length) {
-      classSelect.disabled = true;
-      classSelect.innerHTML = '<option value="">Data kelas belum tersedia</option>';
-    } else {
-      classSelect.disabled = false;
-    }
+    Object.keys(teacherSubjectClasses).forEach(k=>teacherSubjectClasses[k]=[...teacherSubjectClasses[k]].sort((a,b)=>a.localeCompare(b,"id",{numeric:true})));
+  }
+  function populateMasterOptions(){
+    const teachers=normalizeArray(masterDataAkademik.guru), teacherSelect=document.getElementById("guruPenguji");
+    teacherSelect.innerHTML=""; teacherSelect.add(new Option(getActiveUserName(),getActiveUserName())); teacherSelect.value=getActiveUserName();
+    teacherCodeAktif=detectTeacherCode(scheduleRows); buildTeacherSubjectMap();
+    const mapel=document.getElementById("mapel"); mapel.innerHTML='<option value="">-- Pilih Mata Pelajaran --</option>';
+    Object.keys(teacherSubjectClasses).sort((a,b)=>a.localeCompare(b,"id")).forEach(subject=>mapel.add(new Option(subject,subject)));
+    if(!teacherCodeAktif||!Object.keys(teacherSubjectClasses).length){mapel.disabled=true;showToast("error","Jadwal guru belum terdeteksi","Mata pelajaran hanya ditampilkan dari jadwal guru yang sedang login.");}
   }
 
+  window.selectExamType=function(type){
+    document.querySelectorAll("[data-exam-type]").forEach(btn=>btn.classList.toggle("active",btn.dataset.examType===type));
+    document.getElementById("jenisUjian").innerHTML=`<option value="${type}">${type}</option>`; document.getElementById("jenisUjian").value=type;
+    const chooser=document.getElementById("periodChooser"), title=document.getElementById("periodStepTitle");
+    chooser.innerHTML='<option value="">-- Pilih Periode --</option>';
+    if(type==="Bulanan"){title.textContent="Pilih Bulan";["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"].forEach(x=>chooser.add(new Option(x,x)));}
+    else if(type==="Triwulan"){title.textContent="Pilih Triwulan";[1,2,3,4].forEach(n=>chooser.add(new Option(`Triwulan ${n}`,`Triwulan ${n}`)));}
+    else {title.textContent="Pilih Semester";[1,2].forEach(n=>chooser.add(new Option(`Semester ${n}`,`Semester ${n}`)));}
+    document.getElementById("periodStep").hidden=false; document.getElementById("subjectStep").hidden=true; document.getElementById("weightStep").hidden=true; document.getElementById("scorePanel").hidden=true; setupConfirmed=false;
+  };
+  window.selectExamPeriod=function(value){
+    if(!value)return; const type=document.getElementById("jenisUjian").value;
+    document.getElementById("periodeUjian").value=value;
+    document.getElementById("bulanUjian").innerHTML=`<option value="${type==="Bulanan"?value:""}">${type==="Bulanan"?value:""}</option>`;
+    if(type==="Semester") document.getElementById("semester").value=value.endsWith("1")?"Ganjil":"Genap";
+    document.getElementById("subjectStep").hidden=false;
+  };
+  window.examSubjectChanged=function(){
+    const subject=document.getElementById("mapel").value, classes=teacherSubjectClasses[subject]||[];
+    document.getElementById("subjectClassInfo").textContent=classes.length?`Kelas otomatis: ${classes.join(" • ")}`:"Belum ada kelas pada jadwal Anda.";
+    document.getElementById("weightStep").hidden=!subject; document.getElementById("scorePanel").hidden=true; setupConfirmed=false;
+  };
+  function buildStudentsForSelectedSubject(){
+    const subject=document.getElementById("mapel").value, source=buildClassSource(), classes=teacherSubjectClasses[subject]||[], result=[];
+    classes.forEach(cls=>normalizeArray(source[cls]).forEach(name=>result.push({name,className:cls})));
+    const seen=new Set(); return result.filter(item=>{const key=`${item.className}|${item.name}`;if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>a.className.localeCompare(b.className,"id",{numeric:true})||a.name.localeCompare(b.name,"id"));
+  }
+  window.confirmExamSetup=function(){
+    const jenis=document.getElementById("jenisUjian").value, period=document.getElementById("periodChooser").value, subject=document.getElementById("mapel").value, active=getKomponenAktif(), total=active.reduce((a,b)=>a+b.bobot,0);
+    if(!jenis||!period||!subject){showToast("error","Pilihan belum lengkap","Pilih jenis ujian, periode, dan mata pelajaran.");return}
+    if(!active.length||!isWeightValid(total)){showToast("error","Bobot belum valid","Total bobot penilaian harus tepat 100%.");return}
+    activeStudentList=buildStudentsForSelectedSubject(); if(!activeStudentList.length){showToast("error","Santri belum ditemukan","Tidak ada santri pada kelas yang terkait dengan mata pelajaran ini.");return}
+    const classes=[...new Set(activeStudentList.map(x=>x.className))];
+    document.getElementById("kelasKelompok").innerHTML=`<option value="${classes.join(" | ")}">${classes.join(" | ")}</option>`;
+    document.getElementById("kelasKelompok").value=classes.join(" | ");
+    document.getElementById("materiUjian").value=`${jenis} ${period}`;
+    setupConfirmed=true; loadSantri(); document.getElementById("scorePanel").hidden=false; document.getElementById("scorePanel").scrollIntoView({behavior:"smooth",block:"start"});
+  };
+
   document.addEventListener("DOMContentLoaded", async () => {
-    initPageData();
-    refreshStrukturTabel();
-
-    try {
-      const snapshot = await get(ref(db, "cahaya_app/master_akademik"));
-      masterDataAkademik = snapshot.exists() ? snapshot.val() : {};
+    initPageData(); refreshStrukturTabel();
+    try{
+      const [masterSnap,scheduleSnap]=await Promise.all([get(ref(db,"cahaya_app/master_akademik")).catch(()=>null),get(ref(db,"cahaya_app/jadwal_pelajaran")).catch(()=>null)]);
+      masterDataAkademik=masterSnap?.exists?.()?masterSnap.val():{};
+      scheduleRows=scheduleSnap?.exists?.()?normalizeScheduleRows(scheduleSnap.val()):[];
+      if(!scheduleRows.length)scheduleRows=await loadLocalSchedule();
       populateMasterOptions();
-
-      if (!snapshot.exists()) {
-        showToast("error", "Data master belum tersedia", "Kelas, guru, dan mata pelajaran belum ditemukan di Firebase.");
-      }
-    } catch (error) {
-      console.error("Gagal memuat data master:", error);
-      showToast("error", "Gagal memuat data", error.message || "Koneksi ke Firebase tidak berhasil.");
-    } finally {
-      hideLoading();
-    }
+    }catch(error){console.error(error);showToast("error","Gagal memuat data",error.message||"Data belum dapat dimuat.");}
+    finally{hideLoading();}
   });
 
   window.getKomponenAktif = function() {
     return [
       { id: "syafawi", nama: "Syafawi", isChecked: document.getElementById("chk_syafawi").checked, bobot: Number(document.getElementById("bobot_syafawi").value) || 0 },
       { id: "tahriri", nama: "Tahriri", isChecked: document.getElementById("chk_tahriri").checked, bobot: Number(document.getElementById("bobot_tahriri").value) || 0 },
-      { id: "tashnif", nama: "Tashnif", isChecked: document.getElementById("chk_tashnif").checked, bobot: Number(document.getElementById("bobot_tashnif").value) || 0 },
+      { id: "tashnif", nama: "Tasnif", isChecked: document.getElementById("chk_tashnif").checked, bobot: Number(document.getElementById("bobot_tashnif").value) || 0 },
       { id: "tathbiqi", nama: "Tathbiqi", isChecked: document.getElementById("chk_tathbiqi").checked, bobot: Number(document.getElementById("bobot_tathbiqi").value) || 0 }
     ].filter(component => component.isChecked);
   };
@@ -1316,7 +1263,7 @@
     header += '<th style="text-align:center;">Nilai Total</th>';
     document.getElementById("tableHeaderRow").innerHTML = header;
 
-    if (document.getElementById("kelasKelompok").value) loadSantri();
+    if (setupConfirmed) loadSantri();
   };
 
   function getStudents(className) {
@@ -1347,57 +1294,15 @@
   }
 
   window.loadSantri = function() {
-    const className = document.getElementById("kelasKelompok").value;
-    const tbody = document.getElementById("nilaiSantriBody");
-
-    if (!className) {
-      activeStudentList = [];
-      renderEmpty("Pilih kelas untuk memuat daftar santri.");
-      updateStats();
-      return;
-    }
-
-    activeStudentList = getStudents(className);
-    if (!activeStudentList.length) {
-      renderEmpty("Belum ada santri pada kelas ini.");
-      updateStats();
-      return;
-    }
-
-    const activeComponents = getKomponenAktif();
-    tbody.innerHTML = activeStudentList.map((name, index) => {
-      const displayName = cleanStudentDisplayName(name);
-      const componentCells = activeComponents.map(component => `
-        <td class="score-cell" data-label="${escapeHtml(component.nama)}">
-          <input
-            type="number"
-            inputmode="decimal"
-            min="0"
-            max="100"
-            step="0.1"
-            class="score-input input-dinamis"
-            data-id="${component.id}"
-            data-bobot="${component.bobot}"
-            aria-label="Nilai ${escapeHtml(component.nama)} ${escapeHtml(displayName)}"
-            oninput="hitungTotal(this)"
-            placeholder="0"
-          />
-        </td>
-      `).join("");
-
-      return `
-        <tr data-nama="${escapeHtml(name)}" data-search="${escapeHtml(displayName.toLowerCase())}">
-          <td class="student-no">${index + 1}</td>
-          <td class="student-name">${escapeHtml(displayName)}</td>
-          ${componentCells}
-          <td class="nilai-total" data-label="Nilai Total"><span class="total-pill">0</span></td>
-        </tr>
-      `;
+    const tbody=document.getElementById("nilaiSantriBody");
+    if(!setupConfirmed||!activeStudentList.length){renderEmpty("Selesaikan pilihan ujian terlebih dahulu.");updateStats();return;}
+    const activeComponents=getKomponenAktif();
+    tbody.innerHTML=activeStudentList.map((item,index)=>{
+      const name=item.name||item, className=item.className||"", displayName=cleanStudentDisplayName(name);
+      const componentCells=activeComponents.map(component=>`<td class="score-cell" data-label="${escapeHtml(component.nama)}"><input type="number" inputmode="decimal" min="0" max="100" step="0.1" class="score-input input-dinamis" data-id="${component.id}" data-bobot="${component.bobot}" aria-label="Nilai ${escapeHtml(component.nama)} ${escapeHtml(displayName)}" oninput="hitungTotal(this)" placeholder="0" /></td>`).join("");
+      return `<tr data-nama="${escapeHtml(name)}" data-kelas="${escapeHtml(className)}" data-search="${escapeHtml((displayName+" "+className).toLowerCase())}"><td class="student-no">${index+1}</td><td class="student-name">${escapeHtml(displayName)}<span class="class-mini">${escapeHtml(className)}</span></td>${componentCells}<td class="nilai-total" data-label="Nilai Total"><span class="total-pill">0</span></td></tr>`;
     }).join("");
-
-    document.getElementById("searchSantri").disabled = false;
-    document.getElementById("searchSantri").value = "";
-    updateStats();
+    document.getElementById("searchSantri").disabled=false; document.getElementById("searchSantri").value=""; updateStats();
   };
 
   function validateScore(input) {
@@ -1484,13 +1389,14 @@
     }
 
     const jenis = document.getElementById("jenisUjian").value || "Bulanan";
-    const kkm = Number(document.getElementById("kkmUjian").value);
+    const kkm = 75;
     const params = {
       jenis,
       kkm,
       tahun: document.getElementById("tahunAkademik").value,
       semester: document.getElementById("semester").value,
       bulan: document.getElementById("bulanUjian").value,
+      periode: document.getElementById("periodeUjian").value,
       kelas: document.getElementById("kelasKelompok").value,
       mapel: document.getElementById("mapel").value,
       guru: document.getElementById("guruPenguji").value,
@@ -1504,8 +1410,8 @@
       return;
     }
 
-    if (!params.tahun || !params.semester || !params.kelas || !params.mapel || !params.guru || !params.materi || !params.tanggal || (jenis === "Bulanan" && !params.bulan)) {
-      showToast("error", "Data belum lengkap", "Lengkapi periode, kelas, mata pelajaran, guru, tanggal, materi ujian, dan KKM.");
+    if (!params.tahun || !params.periode || !params.mapel || !params.guru || !params.tanggal || !setupConfirmed) {
+      showToast("error", "Data belum lengkap", "Selesaikan pilihan jenis ujian, periode, mata pelajaran, dan bobot penilaian.");
       return;
     }
 
@@ -1536,7 +1442,7 @@
           const sameSubject = String(oldRecord?.mata_pelajaran || oldRecord?.mataPelajaran || oldRecord?.mapel || "") === params.mapel;
           const samePeriod = monthly
             ? oldRecord?.tahun_akademik === params.tahun && oldRecord?.bulan === params.bulan
-            : String(oldRecord?.tanggal || oldRecord?.tanggal_ujian || "") === params.tanggal;
+            : oldRecord?.tahun_akademik === params.tahun && String(oldRecord?.periode_ujian || oldRecord?.periode || "") === params.periode;
           if (sameStudent && sameSubject && samePeriod) {
             await remove(ref(db, `${dbPath}/${key}`));
             if (monthly) {
@@ -1554,7 +1460,9 @@
           semester: params.semester,
           bulan: params.bulan,
           nama_santri: studentName,
-          kelas_kelompok: params.kelas,
+          kelas_kelompok: row.dataset.kelas || params.kelas,
+          kelas: row.dataset.kelas || params.kelas,
+          periode_ujian: params.periode,
           mata_pelajaran: params.mapel,
           materi_ujian: params.materi,
           guru_penguji: params.guru,
