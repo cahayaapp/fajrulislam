@@ -9,6 +9,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Manajemen Kasus Harian</title>
+  <meta name="cahaya-build" content="20260819-v58">
 
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
 
@@ -1685,6 +1686,29 @@
   <script src="../js/cahaya-bandwidth.js"></script>
 
   <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
+
+  <style id="cahaya-v58-naqib-case-mode">
+    body.naqib-case-mode .case-hero,
+    body.naqib-case-mode .summary-grid,
+    body.naqib-case-mode .case-tabs,
+    body.naqib-case-mode #tab-queue .panel-heading,
+    body.naqib-case-mode #tab-queue .filter-grid{display:none!important}
+    body.naqib-case-mode{padding-top:8px!important;padding-bottom:92px!important}
+    body.naqib-case-mode .case-page{max-width:980px!important}
+    body.naqib-case-mode #tab-print,
+    body.naqib-case-mode #tab-history,
+    body.naqib-case-mode #tab-sp{display:none!important}
+    body.naqib-case-mode .danger-button{display:none!important}
+    body.naqib-case-mode.mode-single .case-select{display:none!important}
+    body.naqib-case-mode.mode-single #batchBar{display:none!important}
+    body.naqib-case-mode.mode-mass .case-actions .primary-button{display:none!important}
+    .naqib-action-modebar{display:none;position:sticky;z-index:35;bottom:10px;margin:14px auto 0;padding:7px;max-width:520px;grid-template-columns:1fr 1fr;gap:7px;border:1px solid #dce6f3;border-radius:18px;background:rgba(255,255,255,.97);box-shadow:0 14px 36px rgba(35,78,160,.16);backdrop-filter:blur(10px)}
+    body.naqib-case-mode .naqib-action-modebar{display:grid}
+    .naqib-mode-button{appearance:none;min-height:43px;border:0;border-radius:13px;background:#f2f6fc;color:#5d6d87;font-size:.69rem;font-weight:1000;cursor:pointer}
+    .naqib-mode-button.active{color:#fff;background:linear-gradient(135deg,#2878ff,#1557d5);box-shadow:0 8px 18px rgba(40,120,255,.2)}
+    body.naqib-case-mode .batch-bar.show{margin-bottom:10px}
+    @media(max-width:680px){body.naqib-case-mode{padding:4px 5px 94px!important}.naqib-action-modebar{bottom:8px;margin-left:6px;margin-right:6px}}
+  </style>
 </head>
 
 <body>
@@ -1855,6 +1879,11 @@
             <div class="empty-icon">⏳</div>
             Memuat antrean kasus...
           </div>
+        </div>
+
+        <div class="naqib-action-modebar" id="naqibActionModeBar">
+          <button class="naqib-mode-button active" id="naqibSingleMode" type="button" onclick="setNaqibActionMode('single')">Tindak Satu per Satu</button>
+          <button class="naqib-mode-button" id="naqibMassMode" type="button" onclick="setNaqibActionMode('mass')">Tindak Massal</button>
         </div>
       </div>
     </section>
@@ -2351,6 +2380,18 @@
       );
     } catch (error) {
       console.warn("Data pengguna tidak terbaca:", error);
+    }
+
+    const NAQIB_MODE =
+      new URLSearchParams(window.location.search).get("mode") === "naqib" ||
+      localStorage.getItem("cahayaDirectorViewRole") === "naqib";
+    let naqibActionMode = "single";
+
+    function naqibUnitGender() {
+      const key = normalizeKey(userName());
+      return ["fatimah", "meilisa", "melisa", "alamanda"].some(name => key.includes(name))
+        ? "PUTRI"
+        : "PUTRA";
     }
 
     function escapeHtml(value = "") {
@@ -3082,6 +3123,11 @@
         );
 
       return allCases.filter(item => {
+        if (NAQIB_MODE) {
+          if (item.route !== "NAQIB") return false;
+          if (item.gender !== naqibUnitGender()) return false;
+        }
+
         if (date && mode === "exact" && item.date !== date) {
           return false;
         }
@@ -3366,6 +3412,16 @@
         route
           ? `Laporan akan dibuat sebagai Tindak ${route === "NAQIB" ? "Naqib" : "Konselor"}.`
           : "Pilih kasus dari jalur penindak yang sama.";
+    }
+
+    function setNaqibActionMode(mode) {
+      naqibActionMode = mode === "mass" ? "mass" : "single";
+      document.body.classList.toggle("mode-mass", naqibActionMode === "mass");
+      document.body.classList.toggle("mode-single", naqibActionMode === "single");
+      document.getElementById("naqibSingleMode")?.classList.toggle("active", naqibActionMode === "single");
+      document.getElementById("naqibMassMode")?.classList.toggle("active", naqibActionMode === "mass");
+      selectedQueueIds.clear();
+      renderQueue();
     }
 
     function clearSelectedCases() {
@@ -4336,7 +4392,30 @@
     .case-evidence{margin-top:9px;max-width:210px}.case-evidence img{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:12px;border:1px solid #dce5ef;cursor:pointer}.case-evidence small{display:block;margin-top:4px;color:#7e8fa5;font-size:.58rem;font-weight:800}
 
 </style>
-        </head>
+        
+  <style id="cahaya-v58-naqib-case-mode">
+    body.naqib-case-mode .case-hero,
+    body.naqib-case-mode .summary-grid,
+    body.naqib-case-mode .case-tabs,
+    body.naqib-case-mode #tab-queue .panel-heading,
+    body.naqib-case-mode #tab-queue .filter-grid{display:none!important}
+    body.naqib-case-mode{padding-top:8px!important;padding-bottom:92px!important}
+    body.naqib-case-mode .case-page{max-width:980px!important}
+    body.naqib-case-mode #tab-print,
+    body.naqib-case-mode #tab-history,
+    body.naqib-case-mode #tab-sp{display:none!important}
+    body.naqib-case-mode .danger-button{display:none!important}
+    body.naqib-case-mode.mode-single .case-select{display:none!important}
+    body.naqib-case-mode.mode-single #batchBar{display:none!important}
+    body.naqib-case-mode.mode-mass .case-actions .primary-button{display:none!important}
+    .naqib-action-modebar{display:none;position:sticky;z-index:35;bottom:10px;margin:14px auto 0;padding:7px;max-width:520px;grid-template-columns:1fr 1fr;gap:7px;border:1px solid #dce6f3;border-radius:18px;background:rgba(255,255,255,.97);box-shadow:0 14px 36px rgba(35,78,160,.16);backdrop-filter:blur(10px)}
+    body.naqib-case-mode .naqib-action-modebar{display:grid}
+    .naqib-mode-button{appearance:none;min-height:43px;border:0;border-radius:13px;background:#f2f6fc;color:#5d6d87;font-size:.69rem;font-weight:1000;cursor:pointer}
+    .naqib-mode-button.active{color:#fff;background:linear-gradient(135deg,#2878ff,#1557d5);box-shadow:0 8px 18px rgba(40,120,255,.2)}
+    body.naqib-case-mode .batch-bar.show{margin-bottom:10px}
+    @media(max-width:680px){body.naqib-case-mode{padding:4px 5px 94px!important}.naqib-action-modebar{bottom:8px;margin-left:6px;margin-right:6px}}
+  </style>
+</head>
         <body>
           ${sections}
           <script>
@@ -4876,15 +4955,18 @@
       fillProfile();
 
       const yesterday = yesterdayValue();
+      document.getElementById("printDate").value = yesterday;
+      document.getElementById("historyDate").value = localDate();
 
-      document.getElementById("filterTanggal").value =
-        yesterday;
-
-      document.getElementById("printDate").value =
-        yesterday;
-
-      document.getElementById("historyDate").value =
-        localDate();
+      if (NAQIB_MODE) {
+        document.body.classList.add("naqib-case-mode", "mode-single");
+        document.getElementById("filterTanggal").value = "";
+        document.getElementById("filterMode").value = "all";
+        document.getElementById("filterGender").value = naqibUnitGender();
+        document.getElementById("filterRoute").value = "NAQIB";
+      } else {
+        document.getElementById("filterTanggal").value = yesterday;
+      }
 
       await loadAllCases();
       hideLoading();
@@ -4894,6 +4976,7 @@
     window.renderQueue = renderQueue;
     window.toggleCaseSelection = toggleCaseSelection;
     window.clearSelectedCases = clearSelectedCases;
+    window.setNaqibActionMode = setNaqibActionMode;
     window.startSelectedAction = startSelectedAction;
     window.startSingleAction = startSingleAction;
     window.removeActionCase = removeActionCase;

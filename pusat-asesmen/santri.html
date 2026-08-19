@@ -9,6 +9,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Asesmen CAHAYA Santri</title>
+  <meta name="cahaya-build" content="20260819-v58">
 
   <!-- PANGGIL MASTER THEME CAHAYA -->
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
@@ -35,9 +36,24 @@
 </style>
 
   <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
+
+  <style id="cahaya-v58-assessment-scenes">
+    body.assessment-flow .asesmen-hero, body.assessment-flow .identity-card{display:none!important}
+    body.assessment-flow:not(.assessment-final) .cahaya-container > .cahaya-card:not(.identity-card){display:none!important}
+    #assessmentFlow{min-height:calc(100dvh - 20px);display:flex;align-items:center;justify-content:center;padding:8px 0}
+    body.assessment-final #assessmentFlow{display:none!important}
+    .as-scene{display:none;width:min(780px,100%);animation:asSceneIn .34s cubic-bezier(.2,.8,.2,1) both}.as-scene.active{display:block}
+    .as-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.as-grid.months{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .as-choice{appearance:none;min-height:110px;padding:15px;border:1px solid #e0e8f4;border-radius:19px;background:#fff;color:#172643;box-shadow:0 12px 29px rgba(42,82,150,.075);text-align:left;cursor:pointer;transition:.18s}.as-choice:hover{transform:translateY(-3px);border-color:#bad1f4;box-shadow:0 17px 34px rgba(42,82,150,.12)}
+    .as-choice i{width:38px;height:38px;display:grid;place-items:center;margin-bottom:12px;border-radius:13px;background:#edf5ff;color:#2878ff;font-style:normal;font-size:1.05rem}.as-choice:nth-child(3n+2) i{background:#f1efff;color:#7567e9}.as-choice:nth-child(3n+3) i{background:#fff5da;color:#b5790b}.as-choice b{display:block;font-size:.79rem;font-weight:1000}.as-choice span{display:block;margin-top:4px;color:#73819a;font-size:.6rem;font-weight:760}
+    .as-back{appearance:none;width:38px;height:38px;display:grid;place-items:center;margin-bottom:12px;border:1px solid #e0e8f4;border-radius:13px;background:#fff;color:#506580;font-size:1.05rem;font-weight:1000;cursor:pointer}
+    @keyframes asSceneIn{from{opacity:0;transform:translateX(15px)}to{opacity:1;transform:none}}
+    @media(max-width:720px){#assessmentFlow{align-items:center;min-height:calc(100dvh - 18px)}.as-grid,.as-grid.months{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.as-choice{min-height:92px;padding:11px;border-radius:16px}.as-choice i{width:34px;height:34px;margin-bottom:9px}.as-choice b{font-size:.68rem}.as-choice span{font-size:.53rem}}
+    @media(max-width:420px){.as-grid.months{grid-template-columns:repeat(3,minmax(0,1fr))}.as-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  </style>
 </head>
 
-<body>
+<body class="assessment-flow">
 
 <div id="loadingOverlay">
   <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">📋</div>
@@ -45,6 +61,13 @@
 </div>
 
 <main class="cahaya-container">
+
+  <section id="assessmentFlow">
+    <div class="as-scene active" id="asSceneMonth"><div class="as-grid months" id="asMonthGrid"></div></div>
+    <div class="as-scene" id="asSceneUsrah"><button class="as-back" type="button" onclick="showAssessmentScene('asSceneMonth')">‹</button><div class="as-grid" id="asUsrahGrid"></div></div>
+    <div class="as-scene" id="asSceneStudent"><button class="as-back" type="button" onclick="showAssessmentScene('asSceneUsrah')">‹</button><div class="as-grid" id="asStudentGrid"></div></div>
+  </section>
+
   <section class="asesmen-hero">
     <div class="asesmen-hero-copy">
       <span class="asesmen-kicker">Evaluasi Perkembangan Santri</span>
@@ -337,6 +360,58 @@
   const namaNaqib = namaPengasesmen;
 
   let dataUsrahCloud = {};
+  let assessmentMonth = "";
+  const assessmentYear = Number(new Intl.DateTimeFormat("en-CA", {timeZone:"Asia/Jakarta", year:"numeric"}).format(new Date()));
+  const monthNames = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  const normalizeIdentity = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const roleValues = Array.isArray(user.akses) ? user.akses : [user.akses, user.role, user.jabatan].flat().filter(Boolean);
+  const isNaqibView = roleValues.some(v => String(v).toLowerCase().includes("naqib")) || localStorage.getItem("cahayaDirectorViewRole") === "naqib";
+  const isPutriNaqib = ["fatimah","meilisa","melisa","alamanda"].some(name => normalizeIdentity(rawNama).includes(name));
+
+  window.showAssessmentScene = function(id) {
+    document.querySelectorAll(".as-scene").forEach(scene => scene.classList.toggle("active", scene.id === id));
+  };
+
+  function assessmentUsrahAllowed(key) {
+    if (!isNaqibView) return true;
+    const n = Number(String(key || "").match(/\d+/)?.[0] || 0);
+    return isPutriNaqib ? n >= 7 && n <= 8 : n >= 1 && n <= 6;
+  }
+
+  function renderAssessmentMonths() {
+    document.getElementById("asMonthGrid").innerHTML = monthNames.map((name, index) => `
+      <button class="as-choice" type="button" onclick="selectAssessmentMonth(${index + 1})">
+        <i>${String(index + 1).padStart(2,"0")}</i><b>${name}</b><span>${assessmentYear}</span>
+      </button>`).join("");
+  }
+
+  window.selectAssessmentMonth = function(month) {
+    assessmentMonth = String(month).padStart(2,"0");
+    document.getElementById("tanggalAsesmen").value = `${assessmentYear}-${assessmentMonth}-01`;
+    const keys = Object.keys(dataUsrahCloud).filter(assessmentUsrahAllowed).sort((a,b) => nomorUsrah(a)-nomorUsrah(b));
+    document.getElementById("asUsrahGrid").innerHTML = keys.length ? keys.map(key => `
+      <button class="as-choice" type="button" onclick="selectAssessmentUsrah('${String(key).replace(/'/g,"\'")}')">
+        <i>◉</i><b>${labelUsrah(key)}</b><span>${normalisasiDaftarSantri(dataUsrahCloud[key]).length} santri</span>
+      </button>`).join("") : '<div style="grid-column:1/-1;padding:25px;text-align:center;color:#73819a;font-weight:800">Belum ada usrah untuk unit ini.</div>';
+    showAssessmentScene("asSceneUsrah");
+  };
+
+  window.selectAssessmentUsrah = function(key) {
+    document.getElementById("pilihUsrah").value = key;
+    window.ubahUsrah();
+    const daftar = normalisasiDaftarSantri(dataUsrahCloud[key]).sort((a,b)=>a.localeCompare(b,"id"));
+    document.getElementById("asStudentGrid").innerHTML = daftar.length ? daftar.map(nama => `
+      <button class="as-choice" type="button" onclick="selectAssessmentStudent('${String(nama).replace(/'/g,"\'")}')">
+        <i>☺</i><b>${nama}</b>
+      </button>`).join("") : '<div style="grid-column:1/-1;padding:25px;text-align:center;color:#73819a;font-weight:800">Belum ada santri pada usrah ini.</div>';
+    showAssessmentScene("asSceneStudent");
+  };
+
+  window.selectAssessmentStudent = function(name) {
+    document.getElementById("namaSantri").value = name;
+    document.body.classList.add("assessment-final");
+    window.scrollTo({top:0,behavior:"smooth"});
+  };
 
   function normalisasiDaftarSantri(value) {
     let daftar = [];
@@ -457,6 +532,7 @@
       ).value = new Date()
         .toISOString()
         .split("T")[0];
+      renderAssessmentMonths();
 
       try {
         const snapUsrah = await get(
@@ -626,6 +702,7 @@
 
     const payload = {
       tanggalAsesmen: tanggal,
+      periodeBulan: assessmentMonth ? `${assessmentYear}-${assessmentMonth}` : String(tanggal || "").slice(0,7),
       namaSantri: santri,
 
       usrah: usrah,

@@ -1690,7 +1690,7 @@
 
 
   <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260819-v55">
+  <meta name="cahaya-build" content="20260819-v58">
 
 <style id="cahaya-v48-guru-scan-nav">
 /* V48 — tombol Scan Absen khusus tampilan Guru, model center action */
@@ -2204,7 +2204,7 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=57', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=58', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
       </div>
 
@@ -2279,12 +2279,12 @@
 
       <div class="menu-group">
         <div class="group-label">Asrama (Naqib)</div>
-        <a class="nav-item menu-akses" id="menu-absen-asrama" style="display: none;" onclick="loadPage('naqib/absensi.html?v=44', this)">📋 Absensi Program</a>
-        <a class="nav-item menu-akses" id="menu-disiplin" style="display: none;" onclick="loadPage('naqib/kedisiplinan.html', this)">⚖️ Lapor Pelanggaran</a>
+        <a class="nav-item menu-akses" id="menu-absen-asrama" style="display: none;" onclick="loadPage('naqib/absensi.html?v=58', this)">📋 Absensi Program</a>
+        <a class="nav-item menu-akses" id="menu-disiplin" style="display: none;" onclick="loadPage('naqib/kedisiplinan.html?v=58', this)">⚖️ Lapor Pelanggaran</a>
         <a class="nav-item menu-akses" id="menu-gamifikasi" style="display: none;" onclick="loadPage('naqib/gamifikasi.html', this)">🌟 Catat Inisiatif</a>
-        <a class="nav-item menu-akses" id="menu-skor-usrah" style="display: none;" onclick="loadPage('naqib/skor-kedisiplinan-usrah.html?v=20260804-1', this)">📊 Skor Kedisiplinan Usrah</a>
+        <a class="nav-item menu-akses" id="menu-skor-usrah" style="display: none;" onclick="loadPage('naqib/skor-kedisiplinan-usrah.html?v=58', this)">📊 Skor Kedisiplinan Usrah</a>
         <a class="nav-item menu-akses" id="menu-jadwal-piket" style="display: none;" onclick="loadPage('naqib/jadwalpiket.html', this)">🗓️ Jadwal Piket Naqib</a>
-        <a class="nav-item menu-akses" id="menu-jurnal-piket" style="display: none;" onclick="loadPage('naqib/jurnal-piket.html', this)">📝 Jurnal Pengawasan</a>
+        <a class="nav-item menu-akses" id="menu-jurnal-piket" style="display: none;" onclick="loadPage('naqib/jurnal-piket.html?v=58', this)">📝 Jurnal Pengawasan</a>
         <a class="nav-item menu-akses" id="menu-usrah" style="display: none;" onclick="loadPage('naqib/edit-usrah.html', this)">⚙️ Manajemen Usrah</a>
       </div>
 
@@ -2292,12 +2292,12 @@
         <div class="group-label">Pusat Asesmen</div>
         <a class="nav-item menu-akses" id="menu-asesmen-naqib" style="display: none;" onclick="loadPage('pusat-asesmen/naqib.html', this)">🧘 Asesmen Mandiri Naqib</a>
         <a class="nav-item menu-akses" id="menu-asesmen-guru" style="display: none;" onclick="loadPage('pusat-asesmen/guru.html', this)">🧘 Asesmen Mandiri Guru</a>
-        <a class="nav-item menu-akses" id="menu-asesmen-santri" style="display: none;" onclick="loadPage('pusat-asesmen/santri.html', this)">📊 Asesmen CAHAYA Santri</a>
+        <a class="nav-item menu-akses" id="menu-asesmen-santri" style="display: none;" onclick="loadPage('pusat-asesmen/santri.html?v=58', this)">📊 Asesmen CAHAYA Santri</a>
       </div>
 
       <div class="menu-group">
         <div class="group-label">Bimbingan Konseling</div>
-        <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="loadPage('konselor/daftar-kasus-baru.html?v=45', this)">⏳ Tindak Pelanggaran</a>
+        <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="openRoleAwareCasePage(this)">⏳ Tindak Pelanggaran</a>
       </div>
 
       <div class="menu-group">
@@ -2314,6 +2314,16 @@
     `;
 
 
+
+function openRoleAwareCasePage(el) {
+  const roles = typeof getActiveViewRoles === 'function' ? getActiveViewRoles() : [];
+  const naqibView = roles.includes('naqib');
+  loadPage(
+    naqibView ? 'konselor/daftar-kasus-baru.html?v=58&mode=naqib' : 'konselor/daftar-kasus-baru.html?v=58',
+    el
+  );
+}
+
 const mobileUtilityIcon = {
   home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg>',
   menu: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
@@ -2324,10 +2334,16 @@ const mobileUtilityIcon = {
 
 function getMobileUtilityItems() {
   const items = [];
-  const teacherView = typeof getActiveViewRoles === 'function' && getActiveViewRoles().includes('guru');
+  const activeRoles = typeof getActiveViewRoles === 'function' ? getActiveViewRoles() : [];
+  const teacherView = activeRoles.includes('guru');
+  const naqibView = activeRoles.includes('naqib');
   if (bolehAksesMenu('menu-home')) items.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.home });
   items.push({ id:'utility-menu', label:'Menu', icon:mobileUtilityIcon.menu });
-  if (teacherView && bolehAksesMenu('menu-absen-guru')) items.push({ id:'menu-absen-guru', label:'Scan Absen', icon:mobileUtilityIcon.scan, center:true });
+  if (teacherView && bolehAksesMenu('menu-absen-guru')) {
+    items.push({ id:'menu-absen-guru', label:'Scan Absen', icon:mobileUtilityIcon.scan, center:true });
+  } else if (naqibView && bolehAksesMenu('menu-absen-asrama')) {
+    items.push({ id:'menu-absen-asrama', label:'Absen Program', icon:mobileUtilityIcon.scan, center:true });
+  }
   if (bolehAksesMenu('menu-chat')) items.push({ id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' });
   if (bolehAksesMenu('menu-profil')) items.push({ id:'menu-profil', label:'Profil', icon:mobileUtilityIcon.profile });
   return items;
@@ -2823,7 +2839,12 @@ function sinkronkanBadgePintasanMobile() {
       const fragment = document.createDocumentFragment();
       const activeViewRoles = getActiveViewRoles();
       ROLE_SIDEBAR_GROUPS.forEach((group,index) => {
-        const visibleItems = group.menus.map(id=>itemMap.get(id)).filter(item=>item && bolehAksesMenu(item.id) && item.dataset.moduleDisabled!=='true');
+        let groupMenuIds = [...group.menus];
+        if (activeViewRoles.includes('naqib')) {
+          if (group.key === 'naqib' && !groupMenuIds.includes('menu-antrean-kasus')) groupMenuIds.push('menu-antrean-kasus');
+          if (group.key === 'konselor') groupMenuIds = groupMenuIds.filter(id => id !== 'menu-antrean-kasus');
+        }
+        const visibleItems = groupMenuIds.map(id=>itemMap.get(id)).filter(item=>item && bolehAksesMenu(item.id) && item.dataset.moduleDisabled!=='true');
         if (!visibleItems.length) return;
         visibleItems.forEach(i=>assigned.add(i.id));
         const box=document.createElement('div');box.className='menu-group role-organized';box.dataset.roleGroup=group.key;
@@ -2984,6 +3005,12 @@ function sinkronkanBadgePintasanMobile() {
           });
         });
 
+        // V58: Tindak Pelanggaran adalah bagian operasional Naqib untuk kasus
+        // kedisiplinan/kebersihan yang memang berjalur NAQIB.
+        if (rolesUntukMenu.includes('naqib') && !gabunganMenu.includes('menu-antrean-kasus')) {
+          gabunganMenu.push('menu-antrean-kasus');
+        }
+
         // Guru PKBM wajib memperoleh kalender pendidikan sebagai alat operasional.
         // Identitasnya dicocokkan dengan master guru PKBM resmi.
         const akunGuruPkbm = isPkbmTeacherProfile(pUserSafe);
@@ -3001,6 +3028,7 @@ function sinkronkanBadgePintasanMobile() {
         if (allowedMenusUser.length && !getDirectorViewRole()) {
           const whitelist = new Set(allowedMenusUser);
           if (akunGuruPkbm) whitelist.add("menu-kalender-pendidikan");
+          if (rolesUntukMenu.includes('naqib')) whitelist.add('menu-antrean-kasus');
           for (let i = gabunganMenu.length - 1; i >= 0; i--) {
             if (!whitelist.has(gabunganMenu[i])) gabunganMenu.splice(i, 1);
           }

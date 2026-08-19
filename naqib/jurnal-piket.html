@@ -9,6 +9,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CAHAYA APP - Jurnal Pengawasan Naqib</title>
+  <meta name="cahaya-build" content="20260819-v58">
 
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
 
@@ -1085,9 +1086,17 @@
   <!-- Tampilan minimal: header internal dan ringkasan disembunyikan tanpa mengubah sistem -->
   <style id="cahaya-minimal-cleanup">
     .journal-hero,
-.summary-grid {
+.summary-grid,
+#piketInfoPanel,
+#journalChecklistPanel > .panel-heading,
+#journalChecklistPanel > .progress-wrap,
+.submit-copy {
       display: none !important;
     }
+    .journal-page{padding-top:4px!important}
+    .journal-page > .journal-panel:nth-of-type(2){margin-top:0!important}
+    .submit-row{justify-content:flex-end!important}
+    .submit-button{width:100%!important;justify-content:center!important}
   </style>
 
   <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
@@ -1153,7 +1162,7 @@
       </article>
     </section>
 
-    <section class="journal-panel">
+    <section class="journal-panel" id="piketInfoPanel">
       <div class="panel-heading">
         <div>
           <h2>Informasi Piket</h2>
@@ -1198,7 +1207,7 @@
       </div>
     </section>
 
-    <section class="journal-panel">
+    <section class="journal-panel" id="journalChecklistPanel">
       <div class="panel-heading">
         <div>
           <h3 id="checklistTitle">Checklist Pengawasan</h3>
@@ -1648,13 +1657,12 @@
     }
 
     function localDateValue() {
-      const now = new Date();
-
-      return [
-        now.getFullYear(),
-        String(now.getMonth() + 1).padStart(2, "0"),
-        String(now.getDate()).padStart(2, "0")
-      ].join("-");
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Jakarta",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(new Date());
     }
 
     function userName() {
@@ -1753,18 +1761,38 @@
     }
 
     function detectCurrentBlock() {
-      const now = new Date();
-      const minutes = now.getHours() * 60 + now.getMinutes();
-
-      if (minutes >= 210 && minutes < 680) {
-        return "Blok 1";
+      const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", hour12: false
+      }).formatToParts(new Date());
+      const hh = Number(parts.find(p => p.type === "hour")?.value || 0);
+      const mm = Number(parts.find(p => p.type === "minute")?.value || 0);
+      const nowMinutes = hh * 60 + mm;
+      const parse = value => {
+        const m = String(value || "").match(/^(\d{1,2}):(\d{2})/);
+        return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+      };
+      const configured = scheduleData?.putra?.blok || {};
+      for (const [key, value] of Object.entries(configured)) {
+        const a = parse(value?.mulai), b = parse(value?.selesai);
+        if (a === null || b === null) continue;
+        const match = a <= b ? (nowMinutes >= a && nowMinutes < b) : (nowMinutes >= a || nowMinutes < b);
+        if (match) {
+          const n = String(key).match(/\d+/)?.[0] || "1";
+          return `Blok ${n}`;
+        }
       }
-
-      if (minutes >= 680 && minutes < 1070) {
-        return "Blok 2";
-      }
-
+      if (nowMinutes >= 210 && nowMinutes < 680) return "Blok 1";
+      if (nowMinutes >= 680 && nowMinutes < 1070) return "Blok 2";
       return "Blok 3";
+    }
+
+    function putraDutyMatches(blockLabel) {
+      const date = document.getElementById("jpTanggal")?.value || localDateValue();
+      const day = dayKeyFromDate(date);
+      const n = String(blockLabel || "").match(/\d+/)?.[0] || "1";
+      const scheduled = scheduleData?.putra?.jadwal?.[day]?.[`blok${n}`];
+      if (!scheduleData?.putra?.jadwal) return { configured:false, match:true, scheduled:"" };
+      return { configured:true, match:personMatches(document.getElementById("jpNama")?.value || "", scheduled), scheduled:scheduled || "" };
     }
 
     function taskStatus(taskId) {
@@ -1825,7 +1853,7 @@
         return true;
       });
       const mine=all.filter(p=>personMatches(person,p.pengawas));
-      const selected=mine.length?mine:all;
+      const selected=mine;
       BLOCKS["Jadwal Putri"]={label:`Jadwal Putri • ${day.charAt(0).toUpperCase()+day.slice(1)}`,range:"Per Program",tasks:selected.map((p,i)=>({id:`PUTRI-${p.id}`,no:i+1,waktu:(p.mulai&&p.selesai?`${p.mulai}–${p.selesai}`:(p.waktu||p.mulai||'-')),program:p.nama||'-',standar:`Memastikan ${p.nama||'program'} terlaksana tertib sesuai standar program dan mencatat kendala apa adanya.`,kategori:p.frekuensi||'Program Putri',peran:"Utama",penanggungJawab:p.pengawas||'-',pengawasTerjadwal:p.pengawas||'-',programId:p.id}))};
       return {all,selected,day};
     }
@@ -1862,7 +1890,15 @@
           document.getElementById("journalFooter").style.display="none";
           return;
         }
-      }else activeBlock = document.getElementById("jpBlok").value;
+      }else {
+        activeBlock = document.getElementById("jpBlok").value;
+        const duty = putraDutyMatches(activeBlock);
+        if (duty.configured && !duty.match) {
+          document.getElementById("taskList").innerHTML = `<div class="empty-state"><div class="empty-icon">🕒</div>Tidak ada tugas pengawasan untuk akun ini pada jadwal saat ini.</div>`;
+          document.getElementById("journalFooter").style.display = "none";
+          return;
+        }
+      }
 
       const list = document.getElementById("taskList");
       const footer = document.getElementById("journalFooter");
