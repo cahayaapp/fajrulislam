@@ -484,6 +484,16 @@ body.page-beranda{
 .wm-gratitude{margin-top:12px;padding:18px;border:1px solid #d7eee6;border-radius:19px;background:linear-gradient(135deg,#f0fbf7,#f8fffc);color:#176b54;font-size:.78rem;font-weight:850;line-height:1.65}
 .wm-violation-list{display:grid;gap:10px;margin-top:12px}.wm-violation{padding:13px 14px;border:1px solid #f0dbe1;border-radius:17px;background:#fff9fa}.wm-violation b{display:block;color:#9e344f;font-size:.78rem;font-weight:1000}.wm-violation span{display:block;margin-top:4px;color:#786b72;font-size:.66rem;font-weight:750;line-height:1.5}.wm-violation .wm-critical{display:inline-flex;width:max-content;margin-top:7px;padding:4px 7px;border-radius:999px;background:#ffe9ed;color:#b52c49;font-size:.55rem;font-weight:1000}
 #waliKabarLayer .wm-layer-body{padding-top:4px}
+/* V62: chat hanya dibuka dari header shell, bukan tombol menggantung di beranda. */
+.fab-chat{display:none!important}
+#notificationDashboard{display:none!important}
+.page-beranda .wm-menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.wm-report-grid{display:grid;gap:11px}
+.wm-report-choice{width:100%;display:flex;align-items:center;gap:13px;padding:15px 16px;border:1px solid #e4eaf3;border-radius:18px;background:#fff;color:#17284a;text-align:left;cursor:pointer;box-shadow:0 8px 22px rgba(28,64,132,.055);transition:.18s ease}
+.wm-report-choice:active{transform:scale(.985)}
+.wm-report-choice .wm-menu-icon{width:42px;height:42px;flex:0 0 42px;border-radius:14px;background:linear-gradient(135deg,#fff7df,#fffaf0);color:#c98d08}
+.wm-report-choice b{display:block;font-size:.8rem;font-weight:1000}.wm-report-choice small{display:block;margin-top:3px;color:#7b879a;font-size:.64rem;font-weight:760;line-height:1.45}
+.wm-report-choice .wm-summary-arrow{margin-left:auto;color:#a3adbb;font-size:1.4rem}
 @keyframes wmLayerIn{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
 @media(max-width:720px){
  .page-beranda .wm-student-line{font-size:.69rem!important}
@@ -519,11 +529,7 @@ body.page-beranda{
       </div>
   </div>
 
-  <div id="ceritaSantriWrapper" class="fade-in" style="display: none; margin-top: 15px;">
-    <div class="section-header">
-      <div class="icon">✨</div>
-      <h3>Linimasa Santri</h3>
-    </div>
+  <div id="ceritaSantriWrapper" class="fade-in" style="display: none; margin-top: 4px;">
     <div class="timeline-diagnostic" id="timelineDiagnostic"></div>
     <div id="timelineContainer"></div>
     <button id="btnLoadMore" class="btn-load-more" onclick="muatCeritaSebelumnya()" style="display: none;">Muat Cerita Lebih Lama 🕰️</button>
@@ -545,8 +551,15 @@ body.page-beranda{
 
 <section class="wm-layer" id="waliKabarLayer" aria-hidden="true">
   <div class="wm-layer-card" role="dialog" aria-modal="true" aria-labelledby="waliKabarTitle">
-    <header class="wm-layer-head"><div><small>KABAR ANANDA</small><h3 id="waliKabarTitle">Linimasa & Notifikasi</h3></div><button class="wm-layer-close" type="button" onclick="closeWaliKabar()" aria-label="Tutup">×</button></header>
+    <header class="wm-layer-head"><div><h3 id="waliKabarTitle">Kabar Ananda</h3></div><button class="wm-layer-close" type="button" onclick="closeWaliKabar()" aria-label="Tutup">×</button></header>
     <div class="wm-layer-body" id="waliKabarLayerBody"></div>
+  </div>
+</section>
+
+<section class="wm-layer" id="waliReportLayer" aria-hidden="true">
+  <div class="wm-layer-card" role="dialog" aria-modal="true" aria-labelledby="waliReportTitle">
+    <header class="wm-layer-head"><div><small>LAPORAN BULANAN</small><h3 id="waliReportTitle">Pilih Laporan</h3></div><button class="wm-layer-close" type="button" onclick="closeWaliMonthlyReport()" aria-label="Tutup">×</button></header>
+    <div class="wm-layer-body" id="waliReportLayerBody"></div>
   </div>
 </section>
 
@@ -1288,7 +1301,7 @@ function ekstrakInstagramId(value) {
 
 
   /* =========================================================
-     V61 — BERANDA WALI • SELARAS BERANDA GURU
+     V62 — BERANDA WALI • KABAR UTAMA + LAPORAN RINGKAS
      Identitas santri langsung, Agenda Terdekat, Skor Disiplin,
      Kabar Ananda hanya dibuka saat dipilih.
      ========================================================= */
@@ -1321,7 +1334,7 @@ function ekstrakInstagramId(value) {
   window.closeWaliDiscipline=function(){const layer=document.getElementById('waliDisciplineLayer');if(layer){layer.classList.remove('open');layer.setAttribute('aria-hidden','true')}};
   window.openWaliAgenda=function(){openWaliMobileFeature('menu-informasi-penting-wali');};
 
-  function wmMountKabarLayer(){const body=document.getElementById('waliKabarLayerBody');if(!body)return;['notificationDashboard','ceritaSantriWrapper','footerMessage'].forEach(id=>{const el=document.getElementById(id);if(el&&el.parentElement!==body)body.appendChild(el)});}
+  function wmMountKabarLayer(){const body=document.getElementById('waliKabarLayerBody');if(!body)return;const notif=document.getElementById('notificationDashboard');if(notif)notif.style.display='none';['ceritaSantriWrapper','footerMessage'].forEach(id=>{const el=document.getElementById(id);if(el&&el.parentElement!==body)body.appendChild(el)});}
   window.openWaliKabar=function(){wmMountKabarLayer();const layer=document.getElementById('waliKabarLayer');if(layer){layer.classList.add('open');layer.setAttribute('aria-hidden','false')}};
   window.closeWaliKabar=function(){const layer=document.getElementById('waliKabarLayer');if(layer){layer.classList.remove('open');layer.setAttribute('aria-hidden','true')}};
   window.scrollWaliKabar=window.openWaliKabar;
@@ -1337,12 +1350,24 @@ function ekstrakInstagramId(value) {
       wallet:'<path d="M4 6h14a2 2 0 0 1 2 2v12H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h12"/><path d="M20 11h-5a2 2 0 0 0 0 4h5"/>',
       calendar:'<rect x="4" y="6" width="16" height="14" rx="2"/><path d="M8 3v6M16 3v6M4 10h16"/><path d="M8 14h2M14 14h2M8 17h2"/>',
       bell:'<path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M10 20h4"/>',
-      chart:'<path d="M5 20V10M12 20V4M19 20v-7"/><path d="M3 20h18"/>'
+      chart:'<path d="M5 20V10M12 20V4M19 20v-7"/><path d="M3 20h18"/>',
+      report:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h5M9 12h7M9 16h7"/>'
     };
     return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[type]||icons.book}</svg>`;
   }
   function wmActionSummary(action,type,label,value,note,cls=''){return`<button type="button" class="wm-summary-card ${cls}" onclick="${action}"><span class="wm-summary-icon">${wmIconSvg(type)}</span><span class="wm-summary-copy"><b>${wmEscape(label)}</b><strong>${wmEscape(value)}</strong><span>${wmEscape(note)}</span></span><span class="wm-summary-arrow">›</span></button>`;}
-  function wmMenu(menuId,type,label,desc){if(menuId!=='__kabar__'&&!wmAllowed(menuId))return'';const action=menuId==='__kabar__'?`openWaliKabar()`:`openWaliMobileFeature('${menuId}')`;return`<button type="button" class="wm-menu" onclick="${action}"><span class="wm-menu-icon">${wmIconSvg(type)}</span><b>${wmEscape(label)}</b>${desc?`<small>${wmEscape(desc)}</small>`:''}</button>`;}
+  function wmMenu(menuId,type,label,desc){
+    if(menuId==='__laporan__'){
+      const hasReport=['menu-akademik-wali','menu-karakter-wali','menu-pembinaan-wali'].some(wmAllowed);
+      if(!hasReport)return'';
+      return`<button type="button" class="wm-menu" onclick="openWaliMonthlyReport()"><span class="wm-menu-icon">${wmIconSvg(type)}</span><b>${wmEscape(label)}</b>${desc?`<small>${wmEscape(desc)}</small>`:''}</button>`;
+    }
+    if(!wmAllowed(menuId))return'';
+    return`<button type="button" class="wm-menu" onclick="openWaliMobileFeature('${menuId}')"><span class="wm-menu-icon">${wmIconSvg(type)}</span><b>${wmEscape(label)}</b>${desc?`<small>${wmEscape(desc)}</small>`:''}</button>`;
+  }
+  function wmReportChoice(menuId,type,label,desc){if(!wmAllowed(menuId))return'';return`<button type="button" class="wm-report-choice" onclick="closeWaliMonthlyReport();openWaliMobileFeature('${menuId}')"><span class="wm-menu-icon">${wmIconSvg(type)}</span><span><b>${wmEscape(label)}</b><small>${wmEscape(desc)}</small></span><span class="wm-summary-arrow">›</span></button>`;}
+  window.openWaliMonthlyReport=function(){const layer=document.getElementById('waliReportLayer'),body=document.getElementById('waliReportLayerBody');if(!layer||!body)return;body.innerHTML=`<div class="wm-report-grid">${wmReportChoice('menu-akademik-wali','book','Laporan Akademik','Nilai, tahfiz, dan perkembangan belajar')}${wmReportChoice('menu-karakter-wali','star','Laporan Karakter CAHAYA','Perkembangan lima dimensi CAHAYA')}${wmReportChoice('menu-pembinaan-wali','users','Laporan Pembinaan','Catatan pendampingan dan tindak lanjut')}</div>`;layer.classList.add('open');layer.setAttribute('aria-hidden','false');};
+  window.closeWaliMonthlyReport=function(){const layer=document.getElementById('waliReportLayer');if(layer){layer.classList.remove('open');layer.setAttribute('aria-hidden','true')}};
   function renderWaliMobileDashboard(){
     const root=document.getElementById('waliMobileDashboard');if(!root)return;
     const discipline=wmDiscipline();
@@ -1353,14 +1378,9 @@ function ekstrakInstagramId(value) {
     const photo=fotoUrlSantri||user.fotoProfil||user.fotoAnak||user.foto||'';
     const initials=String(name).split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
     const menus=[
-      ['menu-akademik-wali','book','Akademik','Nilai, tahfiz, dan capaian belajar'],
-      ['menu-karakter-wali','star','Karakter CAHAYA','Perkembangan karakter ananda'],
-      ['menu-pembinaan-wali','users','Pembinaan','Catatan pendampingan dan tindak lanjut'],
-      ['menu-riwayat-kesehatan-wali','health','Kesehatan','Riwayat kesehatan santri'],
-      ['menu-perizinan-wali','shield','Perizinan','Ajukan dan pantau izin'],
-      ['menu-keuangan-wali','wallet','Keuangan','Informasi pembayaran dan transaksi'],
       ['menu-informasi-penting-wali','calendar','Informasi Penting','Agenda, jadwal, dan pengumuman'],
-      ['__kabar__','bell','Kabar Ananda','Linimasa aktivitas terbaru']
+      ['__laporan__','report','Laporan Bulanan','Akademik, Karakter CAHAYA, dan Pembinaan'],
+      ['menu-riwayat-kesehatan-wali','health','Riwayat Kesehatan','Catatan kesehatan ananda']
     ];
     root.innerHTML=`
       <section class="wm-hero">
@@ -1380,7 +1400,7 @@ function ekstrakInstagramId(value) {
       <section class="wm-feature-section"><div class="wm-menu-grid">${menus.map(x=>wmMenu(...x)).join('')}</div></section>`;
   }
   function initWaliMobileDashboard(){wmMountKabarLayer();renderWaliMobileDashboard();wmLoadUpcomingAgenda();window.addEventListener('resize',renderWaliMobileDashboard,{passive:true});setTimeout(renderWaliMobileDashboard,550);setTimeout(renderWaliMobileDashboard,1700);}
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWaliDiscipline();closeWaliKabar();}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWaliDiscipline();closeWaliKabar();closeWaliMonthlyReport();}});
 
 
   // 3. INISIALISASI HALAMAN (MENARIK DATA USERS & SOSMED)
@@ -1527,7 +1547,7 @@ function ekstrakInstagramId(value) {
           'footerMessage'
       ).style.display = 'block';
 
-      // V61: elemen ini berada di layer Kabar Ananda yang tertutup secara default.
+      // V62: linimasa berada di layer Kabar Ananda yang dibuka dari bottom menu utama.
 
       const diagnostic = document.getElementById(
           'timelineDiagnostic'

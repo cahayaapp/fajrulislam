@@ -1776,8 +1776,26 @@
 @media(max-width:420px){.mobile-header{padding-left:14px!important;padding-right:14px!important}.mobile-brand{font-size:.96rem!important}.wali-mobile-shortcut-label{font-size:.53rem!important}}
 </style>
 
+<style id="cahaya-v62-wali-kabar-chat">
+/* V62 — Pesan pindah ke header; Kabar Ananda menjadi tombol utama tengah. */
+.wali-mobile-actions,.wali-mobile-message{display:none}
+@media(max-width:900px){
+  .mobile-header{grid-template-columns:minmax(0,1fr) auto!important}
+  .wali-mobile-actions{position:relative;z-index:2;grid-column:2;display:flex!important;align-items:center;gap:2px}
+  .wali-mobile-message,.wali-mobile-logout{position:relative!important;display:grid!important;place-items:center!important;width:38px!important;height:38px!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;color:#fff!important;cursor:pointer!important}
+  .wali-mobile-message:active,.wali-mobile-logout:active{transform:scale(.9);background:rgba(255,255,255,.12)!important}
+  .wali-mobile-message svg,.wali-mobile-logout svg{width:23px!important;height:23px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+  .wali-mobile-message .wali-chat-badge{top:0!important;right:0!important;min-width:17px!important;height:17px!important;font-size:.48rem!important;border-width:2px!important}
+  .wali-mobile-shortcut-btn.is-primary{position:relative!important;margin-top:-19px!important;color:#a66b00!important;z-index:3!important}
+  .wali-mobile-shortcut-btn.is-primary .wali-mobile-shortcut-icon{width:50px!important;height:50px!important;border-radius:50%!important;background:linear-gradient(145deg,#ffc94f,#e9a70c)!important;color:#fff!important;box-shadow:0 10px 24px rgba(221,158,11,.34),0 0 0 5px #fff!important}
+  .wali-mobile-shortcut-btn.is-primary .wali-mobile-shortcut-icon svg{width:25px!important;height:25px!important;stroke-width:2.1!important}
+  .wali-mobile-shortcut-btn.is-primary .wali-mobile-shortcut-label{margin-top:2px!important;color:#9a6809!important;font-size:.54rem!important}
+  .wali-mobile-shortcut-btn.is-primary.active{color:#a66b00!important}
+}
+</style>
+
   <link rel="stylesheet" href="../../css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260819-v61">
+  <meta name="cahaya-build" content="20260820-v62">
 </head>
 
 <body class="portal-shell cahaya-shell-page">
@@ -1824,7 +1842,7 @@
         <div class="menu-group" id="waliFeatureGroup">
           <div class="group-label">Informasi Santri</div>
 
-          <a class="nav-item" id="menu-beranda-wali" data-menu-id="menu-beranda-wali" data-page-url="beranda.html" onclick="loadPage('beranda.html', this)">
+          <a class="nav-item" id="menu-beranda-wali" data-menu-id="menu-beranda-wali" data-page-url="beranda.html?v=62" onclick="loadPage('beranda.html?v=62', this)">
             <span class="nav-icon">🏠</span>
             <span class="nav-label">Beranda Wali</span>
             <span class="nav-arrow">›</span>
@@ -1912,9 +1930,15 @@
         <span class="wali-top-brand-mark" aria-hidden="true"></span>
         <span>CAHAYA APP</span>
       </div>
-      <button class="wali-mobile-logout" type="button" onclick="logout()" aria-label="Keluar dari aplikasi" title="Keluar">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4"/><path d="M14 8l4 4-4 4M18 12H9"/></svg>
-      </button>
+      <div class="wali-mobile-actions">
+        <button class="wali-mobile-message" type="button" onclick="toggleWaliChat()" aria-label="Buka Pesan" title="Pesan">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>
+          <span class="wali-chat-badge" id="waliChatBadgeMobile">0</span>
+        </button>
+        <button class="wali-mobile-logout" type="button" onclick="logout()" aria-label="Keluar dari aplikasi" title="Keluar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4"/><path d="M14 8l4 4-4 4M18 12H9"/></svg>
+        </button>
+      </div>
       <div id="mobileAvatar" hidden aria-hidden="true"></div>
     </header>
 
@@ -1981,7 +2005,7 @@
         <iframe
           id="contentFrame"
           src="about:blank"
-          data-initial-page="beranda.html"
+          data-initial-page="beranda.html?v=62"
           title="Konten Portal Wali Santri"
         ></iframe>
       </div>
@@ -2084,7 +2108,7 @@
 
     const WALI_MENU_CONFIG = {
       "menu-beranda-wali": {
-        url: "beranda.html?v=22",
+        url: "beranda.html?v=62",
         title: "Beranda Wali",
         alwaysAllowed: true
       },
@@ -2110,7 +2134,8 @@
       },
       "menu-perizinan-wali": {
         url: "perizinan.html",
-        title: "Perizinan & Riwayat"
+        title: "Perizinan & Riwayat",
+        alwaysAllowed: true
       },
       "menu-keuangan-wali": {
         url: "keuangan.html",
@@ -2221,7 +2246,7 @@
         document.getElementById(WALI_HOME_MENU_ID);
 
       await loadPage(
-        "beranda.html?v=22",
+        "beranda.html?v=62",
         homeMenu
       );
     }
@@ -2231,14 +2256,17 @@
       home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg>',
       menu: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
       chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>',
+      permit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.2 8.3-8 10-4.8-1.7-8-5-8-10V6l8-3z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>',
+      kabar: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M10 20h4"/><path d="M17.5 4.5 20 2M6.5 4.5 4 2"/></svg>',
       profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22c.7-5 3.5-8 8-8s7.3 3 8 8"/></svg>'
     };
 
     function getWaliMobileUtilityItems() {
       const items = [];
       if (isWaliMenuAllowed('menu-beranda-wali')) items.push({id:'menu-beranda-wali',label:'Beranda',icon:waliMobileUtilityIcon.home});
+      if (isWaliMenuAllowed('menu-perizinan-wali')) items.push({id:'menu-perizinan-wali',label:'Izin',icon:waliMobileUtilityIcon.permit});
+      items.push({id:'utility-kabar',label:'Kabar Ananda',icon:waliMobileUtilityIcon.kabar,primary:true});
       items.push({id:'utility-menu',label:'Menu',icon:waliMobileUtilityIcon.menu});
-      items.push({id:'utility-chat',label:'Pesan',icon:waliMobileUtilityIcon.chat,badge:'chat'});
       items.push({id:'utility-profile',label:'Profil',icon:waliMobileUtilityIcon.profile});
       return items;
     }
@@ -2249,10 +2277,9 @@
       const items = getWaliMobileUtilityItems();
       nav.style.setProperty('--wali-shortcut-count',String(items.length));
       nav.innerHTML = `<div class="wali-mobile-bottom-nav-inner">${items.map(item=>`
-        <button type="button" class="wali-mobile-shortcut-btn" data-menu-id="${item.id}" onclick="openWaliMobileShortcut('${item.id}')" aria-label="${item.label}" title="${item.label}">
+        <button type="button" class="wali-mobile-shortcut-btn ${item.primary?'is-primary':''}" data-menu-id="${item.id}" onclick="openWaliMobileShortcut('${item.id}')" aria-label="${item.label}" title="${item.label}">
           <span class="wali-mobile-shortcut-icon">${item.icon}</span>
           <span class="wali-mobile-shortcut-label">${item.label}</span>
-          ${item.badge==='chat'?'<span class="wali-mobile-shortcut-badge" id="waliMobileChatBadge">0</span>':''}
         </button>`).join('')}</div>`;
       nav.classList.add('ready');
       setWaliMobileBottomActive(menuIdFromUrl(currentPortalPage)||WALI_HOME_MENU_ID);
@@ -2264,9 +2291,19 @@
       });
     }
 
+    async function openWaliKabarFromBottom() {
+      setWaliMobileBottomActive('utility-kabar');
+      const frame=document.getElementById('contentFrame');
+      const tryOpen=()=>{try{if(typeof frame?.contentWindow?.openWaliKabar==='function'){frame.contentWindow.openWaliKabar();return true}}catch(_){}return false};
+      if(tryOpen())return;
+      await openWaliHome();
+      let attempts=0;
+      const timer=setInterval(()=>{attempts+=1;if(tryOpen()||attempts>=12)clearInterval(timer)},120);
+    }
+
     function openWaliMobileShortcut(menuId) {
       if (menuId === 'utility-menu') { toggleSidebar(); return; }
-      if (menuId === 'utility-chat') { toggleWaliChat(); setWaliMobileBottomActive('utility-chat'); return; }
+      if (menuId === 'utility-kabar') { openWaliKabarFromBottom(); return; }
       if (menuId === 'utility-profile') { document.getElementById('navProfil')?.click(); setWaliMobileBottomActive('utility-profile'); return; }
       if (!isWaliMenuAllowed(menuId) || document.getElementById(menuId)?.dataset.moduleDisabled === 'true') return;
       const menu=document.getElementById(menuId),config=WALI_MENU_CONFIG[menuId];
@@ -2295,8 +2332,39 @@
       "layanan",
       "keuangan",
       "kasir",
-      "cla"
+      "cla",
+      "kepala-sekolah",
+      "observer",
+      "yayasan"
     ]);
+
+    function normalizeWaliChatRole(value = "") {
+      const raw=String(value||'').trim().toLowerCase();
+      const aliases={
+        'administrator':'admin','admin / tu':'admin',
+        'wakil direktur':'wakil','wakil_direktur':'wakil','wadir':'wakil','wakil direktur bidang':'wakil',
+        'counselor':'konselor','konseling':'konselor',
+        'kepala sekolah':'kepala-sekolah','kepala_sekolah':'kepala-sekolah','kepsek':'kepala-sekolah',
+        'center of learning & achievement':'cla','center of learning and achievement':'cla',
+        'kepala sarpras':'sarpras','tim layanan':'layanan','tim kesehatan':'kesehatan','petugas kesehatan':'kesehatan',
+        'tim observer':'observer','tim observasi':'observer','ketua yayasan':'yayasan',
+        'wali santri':'wali','wali_santri':'wali'
+      };
+      return aliases[raw]||raw;
+    }
+
+    function normalizeWaliChatRoles(user = {}) {
+      let raw=user.akses ?? user.jabatan ?? user.roles ?? user.role ?? user.peran ?? [];
+      if(!Array.isArray(raw))raw=[raw];
+      return raw.flatMap(value => String(value || '').split(/[;,|]/)).map(normalizeWaliChatRole).filter(Boolean);
+    }
+
+    function waliChatSmartCallName(fullName = "") {
+      let parts=String(fullName||'').trim().split(/\s+/).filter(Boolean);
+      const regexM=/^(m\.|m|muhammad|mohammad|mochammad|moch\.|moch|mohd\.|mohd|mhd\.|mhd)$/i;
+      if(regexM.test(parts[0]||'')&&parts.length>1){parts.shift();const rest=parts.join(' ').replace(/^(al\-|al\s|el\-|el\s)/i,'').trim().split(/\s|\-/).filter(Boolean);const name=rest[rest.length-1]||'Santri';return name.charAt(0).toUpperCase()+name.slice(1).toLowerCase();}
+      const name=parts[0]||'Santri';return name.charAt(0).toUpperCase()+name.slice(1).toLowerCase();
+    }
 
     function cleanWaliChatIdentity(value = "") {
       return String(value)
@@ -2305,25 +2373,9 @@
     }
 
     function getWaliChatIdentity() {
-      const account =
-        portalState?.account || {};
-
-      const student =
-        portalState?.student || {};
-
-      const studentName =
-        student.namaAnak ||
-        student.namaSantri ||
-        student.label ||
-        "Santri";
-
-      return String(
-        account.label ||
-        account.nama ||
-        account.displayName ||
-        account.username ||
-        `Abi Ummi ${studentName}`
-      ).trim();
+      const student = portalState?.student || {};
+      const studentName = student.namaAnak || student.namaSantri || student.anak || student.label || "Santri";
+      return `Abi Ummi ${waliChatSmartCallName(studentName)}`;
     }
 
     function buildWaliChatRoomId(a, b) {
@@ -2414,35 +2466,57 @@
     async function initializeWaliChat() {
       try {
         const meClean = cleanWaliChatIdentity(getWaliChatIdentity());
-        const cacheKey = 'cahaya_wali_chat_directory_v2';
+        const cacheKey = 'cahaya_wali_chat_directory_v3';
         let directory = [];
         try {
           const cached = JSON.parse(localStorage.getItem(cacheKey) || '{}');
-          if (cached.savedAt && Date.now() - cached.savedAt < 12 * 60 * 60 * 1000 && Array.isArray(cached.rows)) directory = cached.rows;
+          if (cached.savedAt && Date.now() - cached.savedAt < 6 * 60 * 60 * 1000 && Array.isArray(cached.rows)) directory = cached.rows;
         } catch (_) {}
+
         if (!directory.length) {
-          const snapshot = await dbRT.ref('cahaya_app/direktori_chat_wali').limitToLast(120).once('value');
-          directory = Object.values(snapshot.val() || {});
+          const merged = [];
+          try {
+            const usersSnapshot = await db.collection('users').get();
+            usersSnapshot.forEach(doc => merged.push({ id: doc.id, ...(doc.data() || {}) }));
+          } catch (error) {
+            console.warn('Master kontak Firestore belum dapat dibaca:', error);
+          }
+          try {
+            const snapshot = await dbRT.ref('cahaya_app/direktori_chat_wali').limitToLast(200).once('value');
+            merged.push(...Object.values(snapshot.val() || {}));
+          } catch (error) {
+            console.warn('Direktori kontak RTDB belum dapat dibaca:', error);
+          }
+          const unique = new Map();
+          merged.forEach(user => {
+            if (!user || typeof user !== 'object') return;
+            const key = cleanWaliChatIdentity(user.username || user.email || user.label || user.nama || user.id || '');
+            if (key && !unique.has(key)) unique.set(key, user);
+          });
+          directory = [...unique.values()];
           try { localStorage.setItem(cacheKey, JSON.stringify({savedAt:Date.now(),rows:directory})); } catch (_) {}
         }
-        waliChatContacts = directory.map(user => {
-          const roles = Array.isArray(user.akses) ? user.akses.map(role => String(role).toLowerCase()) : [];
-          const actualName = user.label || user.nama || user.username || '';
+
+        waliChatContacts = directory.filter(user => user?.aktif !== false && !/nonaktif|disabled|inactive/i.test(String(user?.status || ''))).map(user => {
+          const roles = normalizeWaliChatRoles(user);
+          const actualName = String(user.label || user.namaTampilan || user.nama || user.username || '').trim();
+          const username = String(user.username || user.userName || user.email?.split('@')[0] || '').trim().toLowerCase();
           return {
             actualName,
-            displayName:user.label || user.nama || (user.username ? `@${user.username}` : actualName),
-            username:user.username || '',
+            displayName: user.label || user.namaTampilan || user.nama || (username ? `@${username}` : actualName),
+            username,
             roles,
-            photo:user.fotoProfil || user.foto || ''
+            photo:user.fotoProfil || user.foto || user.photoURL || ''
           };
         }).filter(item => item.actualName && item.roles.some(role => WALI_CHAT_ALLOWED_ROLES.has(role)) && cleanWaliChatIdentity(item.actualName) !== meClean)
           .sort((a,b)=>a.displayName.localeCompare(b.displayName,'id'));
-        renderWaliChatContacts();
+
+        renderWaliChatList();
         listenToWaliChatRooms();
       } catch (error) {
         console.warn('Direktori chat wali belum dapat dimuat:', error);
         waliChatContacts = [];
-        renderWaliChatContacts();
+        renderWaliChatList();
         listenToWaliChatRooms();
       }
     }
@@ -2450,8 +2524,7 @@
     function updateWaliChatBadges(total = 0) {
       [
         "waliChatBadgeMobile",
-        "waliChatBadgeDesktop",
-        "waliMobileChatBadge"
+        "waliChatBadgeDesktop"
       ].forEach(id => {
         const badge = document.getElementById(id);
         if (!badge) return;
@@ -2488,6 +2561,8 @@
               roomId,
               actualName: item.peerLabel || item.peerUsername || "Pengurus Pesantren",
               displayName: item.peerLabel || item.peerUsername || "Pengurus Pesantren",
+              peerUsername: item.peerUsername || "",
+              peerLabel: item.peerLabel || "",
               lastMessage,
               unread,
               broadcast: false
@@ -2569,6 +2644,13 @@
       );
     }
 
+    function resolveWaliChatRoomId(contact = {}) {
+      const canonical = buildWaliChatRoomId(getWaliChatIdentity(), contact.actualName || contact.displayName || contact.username);
+      const canonicalInbox = waliChatInbox.find(item => item.roomId === canonical);
+      if (canonicalInbox) return canonicalInbox.roomId;
+      return canonical;
+    }
+
     function renderWaliChatList(searchValue = "") {
       const container =
         document.getElementById("waliChatList");
@@ -2589,10 +2671,7 @@
               actualName: contact.actualName,
               displayName: contact.displayName,
               preview: contact.roles.join(" • "),
-              roomId: buildWaliChatRoomId(
-                portalState?.account?.username || getWaliChatIdentity(),
-                contact.username || contact.actualName
-              ),
+              roomId: resolveWaliChatRoomId(contact),
               unread: false,
               broadcast: false
             }))
@@ -3107,7 +3186,7 @@
       currentPortalPage =
         url ||
         currentPortalPage ||
-        "beranda.html?v=22";
+        "beranda.html?v=62";
 
       const frame =
         document.getElementById(
