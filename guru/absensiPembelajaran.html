@@ -1298,12 +1298,31 @@
     }
   </style>
 
-  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
+  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=54" />
 <style id="cahaya-v52-kbm-clean">
 .c52-kbm-context{position:relative;padding:18px 20px!important}
 .c52-kbm-context>.context-chip{position:absolute;right:20px;top:17px}
 .c52-kbm-grid{display:grid;grid-template-columns:minmax(170px,.65fr) minmax(280px,1.35fr);gap:14px;align-items:end;padding-top:30px}
 @media(max-width:720px){.c52-kbm-context{padding:14px!important}.c52-kbm-context>.context-chip{position:static;display:inline-flex;margin-bottom:10px}.c52-kbm-grid{grid-template-columns:1fr;padding-top:0;gap:10px}}
+</style>
+<style id="cahaya-v54-kbm-focus">
+  /* Realtime: tanggal dan konteks yang sudah diketahui sistem tidak diulang di layar. */
+  #contextChip,.c52-kbm-context .form-group:first-child,#scheduleHelper{display:none!important}
+  .c52-kbm-grid{grid-template-columns:1fr!important;padding-top:0!important}
+  body.c54-direct-schedule .c52-kbm-context{display:none!important}
+  .panel-card>.panel-head .panel-title-wrap{display:none!important}
+  .panel-card>.panel-head{justify-content:flex-end!important;min-height:0!important;margin-bottom:10px!important}
+  .attendance-toolbar .search-box,#btnClearSearch{display:none!important}
+  .attendance-toolbar{justify-content:flex-end!important}
+  .save-panel>div:first-child{display:none!important}
+  .save-panel{justify-content:flex-end!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+  .journal-card .helper-text{display:none!important}
+  @media(max-width:720px){
+    .c52-kbm-context{padding:12px 14px!important}
+    .panel-card>.panel-head{margin-bottom:7px!important}
+    .attendance-toolbar{padding-top:0!important}
+    .save-panel .btn-simpan{width:100%!important}
+  }
 </style>
 </head>
 <body>
@@ -1344,12 +1363,9 @@
     </section>
 
     <section class="panel-card setup-card c52-kbm-context">
-      <span class="context-chip" id="contextChip">Belum dipilih</span>
+      <span class="context-chip" id="contextChip" hidden>Belum dipilih</span>
+      <input type="hidden" id="kbmTanggal" />
       <div class="c52-kbm-grid">
-        <div class="form-group">
-          <label for="kbmTanggal"><span class="label-icon">📅</span>Tanggal</label>
-          <input type="date" class="form-control" id="kbmTanggal" />
-        </div>
         <div class="form-group c52-kbm-schedule">
           <label for="kbmMapel"><span class="label-icon">📖</span>Jadwal Mengajar</label>
           <select class="form-control" id="kbmMapel">
@@ -1365,13 +1381,6 @@
 
     <section class="panel-card">
       <div class="panel-head">
-        <div class="panel-title-wrap">
-          <div class="panel-icon">👥</div>
-          <div>
-            <h2>Kehadiran & Nilai Harian</h2>
-            <p>Pilih status kehadiran dan isi nilai ulangan harian bila tersedia.</p>
-          </div>
-        </div>
         <span class="context-chip"><span id="jumlahSantri">0</span>&nbsp;santri</span>
       </div>
 
@@ -1403,16 +1412,9 @@
       </div>
 
       <div class="attendance-toolbar">
-        <div class="search-box">
-          <span>🔎</span>
-          <input id="searchSantri" type="search" placeholder="Cari nama santri..." oninput="filterSantri()" disabled />
-        </div>
-        <button type="button" class="btn-secondary" id="btnClearSearch" onclick="clearSearch()" disabled>
-          ↺ Reset Cari
-        </button>
-        <button type="button" class="btn-mark-all" id="btnMarkAll" onclick="markAll()" disabled>
-          ✓ Semua Hadir
-        </button>
+        <input id="searchSantri" type="search" oninput="filterSantri()" disabled hidden aria-hidden="true" />
+        <button type="button" id="btnClearSearch" onclick="clearSearch()" disabled hidden aria-hidden="true">Reset</button>
+        <button type="button" class="btn-mark-all" id="btnMarkAll" onclick="markAll()" disabled>✓ Semua Hadir</button>
       </div>
 
       <div class="list-container">
@@ -1431,8 +1433,8 @@
         <div id="santriList">
           <div class="empty-state">
             <div class="empty-icon">🏫</div>
-            <strong>Pilih kelas terlebih dahulu</strong>
-            <span>Daftar santri akan tampil otomatis.</span>
+            <strong>Menyiapkan daftar santri</strong>
+            <span>Jadwal mengikuti akun guru.</span>
           </div>
         </div>
       </div>
@@ -1459,11 +1461,6 @@
       </div>
 
       <div class="save-panel">
-        <div>
-          <div class="save-panel-title">☁️ Simpan ke CAHAYA APP</div>
-          <p>Pastikan kelas, mata pelajaran, kehadiran, dan nilai ulangan harian telah sesuai sebelum disimpan.</p>
-        </div>
-
         <button class="btn-simpan" id="btnSimpan" onclick="simpanKehadiran()">
           <span>💾</span>
           <span>Simpan Absensi & Nilai</span>
@@ -1859,11 +1856,21 @@
   }
 
   function tanggalLokalHariIni() {
-    const sekarang = new Date();
-    const tahun = sekarang.getFullYear();
-    const bulan = String(sekarang.getMonth() + 1).padStart(2, "0");
-    const tanggal = String(sekarang.getDate()).padStart(2, "0");
-    return `${tahun}-${bulan}-${tanggal}`;
+    // Tanggal operasional CAHAYA selalu mengikuti Asia/Jakarta, bukan setting zona waktu perangkat.
+    try {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Jakarta",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(new Date());
+    } catch (_) {
+      const sekarang = new Date();
+      const tahun = sekarang.getFullYear();
+      const bulan = String(sekarang.getMonth() + 1).padStart(2, "0");
+      const tanggal = String(sekarang.getDate()).padStart(2, "0");
+      return `${tahun}-${bulan}-${tanggal}`;
+    }
   }
 
   function namaGuruAktif() {
@@ -2271,7 +2278,7 @@
     incomingScheduleApplied = true;
     document.getElementById("kbmMapel").value = match.id;
     applySelectedSchedule();
-    showToast(`${match.subject} • ${labelKelasJadwal(match)}`, "success", "Jadwal dipilih otomatis");
+    document.body.classList.add("c54-direct-schedule");
     return true;
   }
 
@@ -2421,6 +2428,7 @@
       );
 
       applySelectedSchedule();
+      document.body.classList.add("c54-direct-schedule");
     } else {
       setScheduleHelper(
         akunMendukungAbsensiGabungan()
@@ -2605,23 +2613,27 @@
     document.getElementById("sumAlfa").textContent = String(counts.Alfa);
   }
 
+  function syncRealtimeKbmDate({ reloadSchedule = false } = {}) {
+    const input = document.getElementById("kbmTanggal");
+    if (!input) return;
+    const today = tanggalLokalHariIni();
+    const changed = input.value && input.value !== today;
+    input.value = today;
+    if (changed && reloadSchedule && Object.keys(masterDataAkademik.kelas || {}).length) {
+      incomingScheduleApplied = false;
+      document.body.classList.remove("c54-direct-schedule");
+      loadTeacherScheduleForDate({ notify: false });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", async () => {
-    document.getElementById("kbmTanggal").value =
-      tanggalLokalHariIni();
+    syncRealtimeKbmDate();
 
     tampilkanIdentitasGuru();
 
     document
       .getElementById("kbmKelas")
       .classList.add("auto-field");
-
-    document
-      .getElementById("kbmTanggal")
-      .addEventListener("change", () => {
-        loadTeacherScheduleForDate({
-          notify: false
-        });
-      });
 
     document
       .getElementById("kbmMapel")
@@ -2689,6 +2701,8 @@
       tampilkanErrorLoading(error.message);
     }
   });
+
+  setInterval(() => syncRealtimeKbmDate({ reloadSchedule: true }), 60000);
 
   window.addEventListener(
     "message",
@@ -2976,7 +2990,9 @@
   }
 
   window.simpanKehadiran = async function() {
-    const tanggal = document.getElementById("kbmTanggal").value;
+    syncRealtimeKbmDate();
+    const tanggal = tanggalLokalHariIni();
+    document.getElementById("kbmTanggal").value = tanggal;
     const assignment = selectedAssignment || getSelectedAssignment();
     const assignments = daftarJadwalTerpilih(assignment);
     const mapel = assignment?.subject || "";

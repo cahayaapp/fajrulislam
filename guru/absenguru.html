@@ -1261,7 +1261,7 @@
 </style>
 
 
-  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
+  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=54" />
 </head>
 
 
@@ -1386,8 +1386,7 @@
         <span class="hero-label">CAHAYA APP • Absensi Guru</span>
         <h1>Absen Kehadiran Guru</h1>
         <p>
-          Pilih kelas, scan QR, atau masukkan kode ruang.
-          Lokasi tetap diperiksa agar absensi tercatat sesuai zona pembelajaran.
+          Scan QR kelas atau masukkan kode ruang. Lokasi diperiksa otomatis agar absensi tercatat sesuai area pembelajaran.
         </p>
       </div>
 
@@ -1407,19 +1406,10 @@
         <div class="mobile-topbar-badge">SIAP ABSEN</div>
       </div>
 
-
-      <section class="quick-class-picker" aria-label="Pilih kelas tanpa scan QR">
-        <div class="quick-class-picker-head"><div><strong>Pilih Kelas Langsung</strong><span>Bisa dipilih langsung tanpa scan QR. Lokasi perangkat tetap diperiksa untuk membantu validasi.</span></div></div>
-        <div class="quick-class-picker-row">
-          <div><label class="input-label" for="directClassSelect">Kelas / Ruang</label><select id="directClassSelect"><option value="">Memuat kelas yang tersedia...</option></select></div>
-          <button type="button" class="button button-primary" id="useDirectClassButton">Lanjutkan</button>
-        </div>
-      </section>
-
       <div class="steps">
         <div class="step">
           <span>1</span>
-          <strong>Pilih kelas, scan QR, atau masukkan kode</strong>
+          <strong>Scan QR kelas atau masukkan kode ruang</strong>
         </div>
 
         <div class="step">
@@ -2697,25 +2687,26 @@
 
         const CACHE_KEY = "cahayaLastTeacherLocation";
         const now = Date.now();
-        let cached = null;
+        let recentCache = null;
         try {
-          cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
-          if (cached && now - Number(cached.savedAt || 0) <= 120000) {
-            resolve({
+          const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+          /* Cache hanya menjadi cadangan sangat singkat. Jangan langsung dipakai,
+             karena posisi lama adalah penyebab utama false 'di luar zonasi'. */
+          if (cached && now - Number(cached.savedAt || 0) <= 45000) {
+            recentCache = {
               coords: {
                 latitude: Number(cached.latitude),
                 longitude: Number(cached.longitude),
-                accuracy: Number(cached.accuracy || 150)
+                accuracy: Number(cached.accuracy || 9999)
               },
               timestamp: Number(cached.timestamp || now),
-              cahayaSource: "cache"
-            });
-            return;
+              cahayaSource: "cache-fallback"
+            };
           }
         } catch (_) {}
 
         let settled = false;
-        let bestPosition = null;
+        let bestFreshPosition = null;
         let watchId = null;
         let hardTimer = null;
 
@@ -2738,45 +2729,53 @@
           if (hardTimer) clearTimeout(hardTimer);
           if (position) {
             try { position.cahayaSource = source; } catch (_) {}
-            remember(position);
+            if (source !== "cache-fallback") remember(position);
             resolve(position);
           } else {
-            reject(new Error("Lokasi belum terbaca. Aktifkan GPS, izinkan lokasi presisi, lalu tekan Buka Kamera kembali."));
+            reject(new Error("Lokasi belum terbaca. Aktifkan lokasi presisi, pastikan browser mendapat izin lokasi, lalu coba lagi."));
           }
         };
 
-        const keepBest = position => {
+        const keepBestFresh = position => {
           if (!position?.coords) return;
-          if (!bestPosition || Number(position.coords.accuracy || 99999) < Number(bestPosition.coords.accuracy || 99999)) {
-            bestPosition = position;
+          const accuracy = Number(position.coords.accuracy || 99999);
+          if (!bestFreshPosition || accuracy < Number(bestFreshPosition.coords.accuracy || 99999)) {
+            bestFreshPosition = position;
           }
         };
 
-        // Tahap 1: pembacaan cepat yang lebih kompatibel dengan Android.
+        // Pembacaan fresh tanpa memakai posisi lama dari perangkat.
         navigator.geolocation.getCurrentPosition(
           position => {
-            keepBest(position);
-            if (Number(position.coords.accuracy || 9999) <= 120) finish(position, "quick");
+            keepBestFresh(position);
+            if (Number(position.coords.accuracy || 9999) <= 90) finish(position, "fresh");
           },
-          () => {},
-          { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+          error => {
+            if (error?.code === 1) finish(null);
+          },
+          { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
         );
 
-        // Tahap 2: terus perbaiki akurasi, tetapi tetap gunakan hasil terbaik saat waktu habis.
+        // Beberapa perangkat Android baru membaik akurasinya setelah beberapa update GPS.
         try {
           watchId = navigator.geolocation.watchPosition(
             position => {
-              keepBest(position);
-              if (Number(position.coords.accuracy || 9999) <= 60) finish(position, "high-accuracy");
+              keepBestFresh(position);
+              if (Number(position.coords.accuracy || 9999) <= 55) finish(position, "high-accuracy");
             },
             error => {
               if (error?.code === 1) finish(null);
             },
-            { enableHighAccuracy: true, timeout: 22000, maximumAge: 15000 }
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
           );
         } catch (_) {}
 
-        hardTimer = setTimeout(() => finish(bestPosition, "best-available"), 24000);
+        // Selalu utamakan hasil fresh terbaik. Cache hanya dipakai jika fresh benar-benar gagal.
+        hardTimer = setTimeout(() => {
+          if (bestFreshPosition) finish(bestFreshPosition, "best-fresh");
+          else if (recentCache) finish(recentCache, "cache-fallback");
+          else finish(null);
+        }, 21000);
       });
     }
 
@@ -2900,13 +2899,17 @@
           roundedDistance =
             Math.round(distance);
 
-          const accuracyTolerance = Math.min(Math.max(Number(accuracy || 0), 0), 150);
-          const effectiveDistance = Math.max(0, distance - accuracyTolerance);
+          // GPS di dalam bangunan sering bergeser puluhan-ratusan meter.
+          // Pakai akurasi perangkat sebagai uncertainty buffer, dengan batas aman.
+          const gpsTolerance = Math.min(Math.max(Number(accuracy || 0), 35), 350);
+          const buildingBuffer = 60;
+          const effectiveDistance = Math.max(0, distance - gpsTolerance - buildingBuffer);
 
           if (effectiveDistance > radius) {
+            const lowAccuracy = Number(accuracy || 0) >= 250;
             showResult(
               "error",
-              "Anda Berada di Luar Zona Absensi",
+              lowAccuracy ? "Lokasi Belum Cukup Akurat" : "Anda Berada di Luar Zona Absensi",
               [
                 {
                   label: "Ruang",
@@ -2918,22 +2921,17 @@
                 },
                 {
                   label: "Jarak Terdeteksi",
-                  value:
-                    `${roundedDistance} meter`
+                  value: `${roundedDistance} meter`
                 },
                 {
                   label: "Akurasi GPS",
                   value: `${accuracy || "-"} meter`
                 },
                 {
-                  label: "Radius Maksimal",
-                  value:
-                    `${radius} meter`
-                },
-                {
-                  label: "Akurasi Perangkat",
-                  value:
-                    `${accuracy} meter`
+                  label: lowAccuracy ? "Tindakan" : "Radius Zona",
+                  value: lowAccuracy
+                    ? "Aktifkan lokasi presisi, tunggu beberapa detik, lalu coba lagi. Sistem tidak menyimpulkan Anda di luar zona saat GPS belum akurat."
+                    : `${radius} meter`
                 }
               ]
             );
@@ -3551,11 +3549,11 @@
             statusKehadiran: attendanceResult.status,
             statusKehadiranLabel: attendanceResult.statusLabel,
             keterlambatanMenit: attendanceResult.lateMinutes,
-            sumber: selectedMethod === "PILIH_KELAS"
-              ? "ABSENSI_GURU_PILIH_KELAS_LOKASI"
+            sumber: selectedMethod === "JADWAL_OTOMATIS"
+              ? "ABSENSI_GURU_JADWAL_OTOMATIS_LOKASI"
               : "ABSENSI_GURU_QR_LOKASI",
-            validasiKelas: selectedMethod === "PILIH_KELAS"
-              ? "PILIH_MANUAL"
+            validasiKelas: selectedMethod === "JADWAL_OTOMATIS"
+              ? "JADWAL_OTOMATIS"
               : (selectedMethod === "SCAN_QR" ? "QR" : "KODE_KELAS"),
             dibuatPada: serverTimestamp(),
             versi: "2026/2027",
@@ -3613,36 +3611,6 @@
     }
 
 
-    function populateDirectClassSelect() {
-      const select = document.getElementById("directClassSelect");
-      if (!select) return;
-      const dateKey = jakartaDateKey();
-      const activeRooms = Object.values(rooms || {}).filter(room => room && room.aktif !== false).map(room => {
-        const assignments = teacherCode ? combinedAssignmentsForTeacherAndRoom(dateKey, teacherCode, room) : [];
-        return { room, assignments };
-      }).sort((a, b) => {
-        const aHas = a.assignments.length ? 0 : 1, bHas = b.assignments.length ? 0 : 1;
-        if (aHas !== bHas) return aHas - bHas;
-        return String(a.room.kelas || a.room.namaRuang || "").localeCompare(String(b.room.kelas || b.room.namaRuang || ""), "id");
-      });
-      const unique = [], seen = new Set();
-      activeRooms.forEach(item => {
-        const room = item.room, key = String(room.id || room.kodeKelas || room.qrToken || room.namaRuang || "");
-        if (!key || seen.has(key)) return; seen.add(key); unique.push(item);
-      });
-      select.innerHTML = '<option value="">Pilih kelas / ruang...</option>' + unique.map(item => {
-        const room = item.room, label = room.kelas || room.namaRuang || room.kodeKelas || room.id;
-        const marker = item.assignments.length ? ' • jadwal Anda' : '';
-        return `<option value="${escapeHtml(String(room.id || room.kodeKelas || room.qrToken || ''))}">${escapeHtml(label + marker)}</option>`;
-      }).join('');
-    }
-
-    function directSelectedRoom() {
-      const value = String(document.getElementById("directClassSelect")?.value || "").trim();
-      if (!value) return null;
-      return Object.values(rooms || {}).find(room => room && room.aktif !== false && [room.id, room.kodeKelas, room.qrToken].some(item => String(item || "").trim() === value)) || null;
-    }
-
     async function maybeRunAutoAttendance() {
       if (!AUTO_ATTENDANCE || autoAttendanceStarted || !AUTO_CLASS) return;
       autoAttendanceStarted = true;
@@ -3651,11 +3619,11 @@
         return [room.kelas, room.namaRuang, room.id, room.kodeKelas].some(value => normalizedAutoText(value) === normalizedAutoText(AUTO_CLASS));
       });
       if (!target) {
-        showResult("error","Kelas Jadwal Tidak Ditemukan",[{label:"Kelas",value:AUTO_CLASS},{label:"Tindakan",value:"Gunakan Scan Absen untuk memilih kelas secara manual."}]);
+        showResult("error","Kelas Jadwal Tidak Ditemukan",[{label:"Kelas",value:AUTO_CLASS},{label:"Tindakan",value:"Gunakan Scan Absen untuk memindai QR kelas."}]);
         return;
       }
       const credential = target.kodeKelas || target.qrToken || target.id;
-      await processCredential(credential, "PILIH_KELAS");
+      await processCredential(credential, "JADWAL_OTOMATIS");
     }
 
     async function loadData() {
@@ -3786,7 +3754,6 @@
           error
         );
       } finally {
-        populateDirectClassSelect();
         showLoading(false);
         await maybeRunAutoAttendance();
       }
@@ -3827,17 +3794,6 @@
         );
       });
 
-
-    document.getElementById("useDirectClassButton")?.addEventListener("click", async () => {
-      const room = directSelectedRoom();
-      if (!room) {
-        showResult("error", "Pilih Kelas Terlebih Dahulu", [{ label: "Tindakan", value: "Pilih kelas atau ruang dari daftar, lalu tekan Lanjutkan." }]);
-        return;
-      }
-      await stopScanner();
-      const credential = room.kodeKelas || room.qrToken || room.id;
-      processCredential(credential, "PILIH_KELAS");
-    });
 
     document.getElementById(
       "startCameraButton"
