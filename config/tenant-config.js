@@ -19,8 +19,8 @@
       favicon: "assets/cahaya-app/favicon.ico",
       appLogo: "assets/cahaya-app/logo-horizontal.png",
       appIcon: "assets/cahaya-app/logo-icon.png",
-      pwaIcon192: "assets/cahaya-app/app-icon-192.png",
-      pwaIcon512: "assets/cahaya-app/app-icon-512.png"
+      pwaIcon192: "assets/cahaya-app/app-icon-v67-192.png",
+      pwaIcon512: "assets/cahaya-app/app-icon-v67-512.png"
     },
     theme: {
       primary: "#2878ff",
