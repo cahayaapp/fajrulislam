@@ -9,7 +9,6 @@ FILE BARU/PENTING
 - beranda.html
 - beranda-whatsapp.css
 - beranda-whatsapp.js
-- firebase-messaging-sw.js
 - manifest.webmanifest
 - index.html
 

@@ -26,12 +26,9 @@ const IS_EMBEDDED_WALI_PORTAL = window.parent && window.parent !== window;
   let systemSnapshotReady = false;
   let systemNotifs = [];
   let broadcastNotifs = [];
-  let pushMessaging = null;
-  let pushRegistration = null;
   let readListenerInstalled = false;
   let systemListenerInstalled = false;
   let chatRoomsListenerInstalled = false;
-  let pushPrepared = false;
 
   function esc(value = "") {
     return String(value)
@@ -924,55 +921,9 @@ const IS_EMBEDDED_WALI_PORTAL = window.parent && window.parent !== window;
       );
   }
 
-  function browserNotif(
-    title,
-    desc,
-    roomId = ""
-  ) {
-    if (
-      !("Notification" in window) ||
-      Notification.permission !==
-        "granted" ||
-      !document.hidden
-    ) {
-      return;
-    }
-
-    try {
-      const notification =
-        new Notification(
-          title || "Pesan Baru",
-          {
-            body: desc || "",
-            icon:
-              "../../assets/cahaya-app/app-icon-192.png",
-            tag:
-              roomId ||
-              "cahaya-wali",
-            renotify: true
-          }
-        );
-
-      notification.onclick = () => {
-        window.focus();
-
-        if (roomId) {
-          const contact =
-            contactItems().find(item =>
-              item.roomId === roomId
-            );
-
-          if (contact) {
-            openChat(
-              contact,
-              roomId
-            );
-          }
-        }
-
-        notification.close();
-      };
-    } catch (error) {}
+  function browserNotif() {
+    // V64: Push/browser notification dinonaktifkan sementara.
+    return;
   }
 
   function processRooms(
@@ -2590,212 +2541,6 @@ const IS_EMBEDDED_WALI_PORTAL = window.parent && window.parent !== window;
     return "";
   }
 
-  function hidePushCard() {
-    const card =
-      document.getElementById(
-        "pushPermissionCard"
-      );
-
-    if (!card) {
-      return;
-    }
-
-    card.classList.remove(
-      "show"
-    );
-
-    card.style.display =
-      "none";
-  }
-
-  function pushCard(
-    message,
-    showButton = true
-  ) {
-    const card =
-      document.getElementById(
-        "pushPermissionCard"
-      );
-
-    const text =
-      document.getElementById(
-        "pushPermissionText"
-      );
-
-    const button =
-      document.getElementById(
-        "pushPermissionButton"
-      );
-
-    if (!card || !text || !button) {
-      return;
-    }
-
-    text.textContent = message;
-    button.style.display =
-      showButton
-        ? "inline-flex"
-        : "none";
-
-    card.classList.add("show");
-  }
-
-  async function preparePush() {
-    if (pushPrepared) return;
-    pushPrepared = true;
-
-    if (
-      !(
-        "serviceWorker" in navigator &&
-        "Notification" in window &&
-        firebase.messaging
-      )
-    ) {
-      /*
-       * Chat tetap berfungsi normal.
-       * Status teknis push tidak perlu ditampilkan kepada wali.
-       */
-      hidePushCard();
-      return;
-    }
-
-    try {
-      pushRegistration =
-        await navigator.serviceWorker
-          .register(
-            "firebase-messaging-sw.js",
-            {
-              scope: "./"
-            }
-          );
-
-      pushMessaging =
-        firebase.messaging();
-
-      pushMessaging.onMessage(payload => {
-        const title =
-          payload?.notification?.title ||
-          payload?.data?.title ||
-          "Pesan Baru";
-
-        const body =
-          payload?.notification?.body ||
-          payload?.data?.body ||
-          "";
-
-        notifAudioChat
-          .play()
-          .catch(() => {});
-
-        showToast(title, body);
-      });
-
-      if (
-        Notification.permission ===
-        "granted"
-      ) {
-        await registerToken();
-
-        document.getElementById(
-          "pushPermissionCard"
-        )?.classList.remove("show");
-
-        return;
-      }
-
-      if (
-        Notification.permission ===
-        "denied"
-      ) {
-        /*
-         * Jangan tampilkan peringatan teknis di daftar chat.
-         * Wali tetap dapat memakai chat realtime.
-         */
-        hidePushCard();
-        return;
-      }
-
-      pushCard(
-        "Aktifkan notifikasi agar balasan tetap muncul saat portal ditutup.",
-        true
-      );
-    } catch (error) {
-      console.warn(
-        "Push notification belum siap:",
-        error
-      );
-
-      /*
-       * Kegagalan push tidak memengaruhi fungsi chat.
-       * Pesan teknis disembunyikan dari antarmuka wali.
-       */
-      hidePushCard();
-    }
-  }
-
-  async function registerToken() {
-    if (
-      !pushMessaging ||
-      !pushRegistration
-    ) {
-      throw new Error(
-        "Service worker belum siap."
-      );
-    }
-
-    const snapshot =
-      await dbRT
-        .ref(
-          "cahaya_app/pengaturan_notifikasi_web/vapidKey"
-        )
-        .once("value");
-
-    const vapidKey =
-      String(
-        snapshot.val() || ""
-      ).trim();
-
-    if (!vapidKey) {
-      throw new Error(
-        "VAPID key belum dipasang di Firebase."
-      );
-    }
-
-    const token =
-      await pushMessaging.getToken({
-        vapidKey,
-        serviceWorkerRegistration:
-          pushRegistration
-      });
-
-    if (!token) {
-      throw new Error(
-        "Token notifikasi belum dibuat."
-      );
-    }
-
-    const tokenKey =
-      safeKey(
-        token.slice(-42)
-      );
-
-    await dbRT
-      .ref(
-        `cahaya_app/fcm_tokens_wali/${safeKey(userNameAsli)}/${tokenKey}`
-      )
-      .set({
-        token,
-        username: userNameAsli,
-        namaAnak: namaAnakUtuh,
-        aktif: true,
-        userAgent:
-          navigator.userAgent,
-        diperbarui:
-          new Date().toISOString()
-      });
-
-    return token;
-  }
 
   function bootstrap() {
     let attempts = 0;
@@ -2821,7 +2566,7 @@ const IS_EMBEDDED_WALI_PORTAL = window.parent && window.parent !== window;
           if (win) win.style.display = "none";
         }
         listenSystemNotifs();
-        if (!IS_EMBEDDED_WALI_PORTAL) preparePush();
+        // V64: Push Notification CAHAYA dinonaktifkan sementara.
       }
 
       if (attempts > 50) {
@@ -3144,51 +2889,6 @@ const IS_EMBEDDED_WALI_PORTAL = window.parent && window.parent !== window;
       window.closeActionSheet();
     };
 
-  window.aktifkanPushNotification =
-    async function () {
-      if (
-        !("Notification" in window)
-      ) {
-        alert(
-          "Browser tidak mendukung notifikasi."
-        );
-        return;
-      }
-
-      const permission =
-        await Notification
-          .requestPermission();
-
-      if (
-        permission !== "granted"
-      ) {
-        pushCard(
-          "Izin notifikasi belum diberikan.",
-          true
-        );
-        return;
-      }
-
-      try {
-        await registerToken();
-
-        document.getElementById(
-          "pushPermissionCard"
-        ).classList.remove("show");
-
-        alert(
-          "Notifikasi HP berhasil diaktifkan."
-        );
-      } catch (error) {
-        alert(
-          "Notifikasi belum aktif: " +
-          (
-            error?.message ||
-            "VAPID key belum tersedia."
-          )
-        );
-      }
-    };
 
   document.addEventListener(
     "DOMContentLoaded",
