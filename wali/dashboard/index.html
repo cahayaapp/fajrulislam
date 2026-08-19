@@ -1694,7 +1694,7 @@
 
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#075e54">
+  <meta name="theme-color" content="#1557d5">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <style>
@@ -1744,9 +1744,40 @@
 @media(max-width:420px){.wali-mobile-bottom-nav{padding-right:6px!important;padding-left:6px!important}.wali-mobile-shortcut-label{font-size:.55rem!important}.student-badge{min-width:0!important;max-width:150px!important}}
 </style>
 
+<style id="cahaya-v61-wali-shell-match-guru">
+/* V61 — header & bottom menu Wali disamakan dengan shell Pengurus/Guru. */
+.wali-top-brand-mark{display:none}
+.wali-mobile-logout{display:none}
+@media(max-width:900px){
+  :root{--mobile-bottom-nav-height:76px}
+  .mobile-header{
+    min-height:66px!important;height:66px!important;padding:8px 16px!important;display:grid!important;grid-template-columns:minmax(0,1fr) 40px!important;align-items:center!important;gap:10px!important;
+    border:0!important;border-radius:0!important;background:linear-gradient(180deg,#1557d5 0%,#2878ff 100%)!important;box-shadow:0 10px 28px rgba(21,87,213,.18)!important;overflow:hidden!important;position:relative!important
+  }
+  .mobile-header::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 125%,rgba(242,182,50,.24),transparent 32%),linear-gradient(90deg,rgba(255,255,255,.04),transparent 45%);pointer-events:none}
+  .menu-toggle-btn,.mobile-header-actions{display:none!important}
+  .mobile-brand{position:relative;z-index:1;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;min-width:0!important;color:#fff!important;font-size:1rem!important;font-weight:1000!important;letter-spacing:.01em!important}
+  .mobile-brand::after{display:none!important;content:none!important}
+  .mobile-brand img{display:none!important}
+  .wali-top-brand-mark{display:block!important;width:38px!important;height:38px!important;flex:0 0 38px!important;border-radius:11px!important;background:#0b3691 url('../../assets/cahaya-app/app-icon-192.png?v=54') center/cover no-repeat!important;box-shadow:0 5px 14px rgba(0,31,92,.22)!important}
+  .wali-mobile-logout{position:relative;z-index:1;grid-column:2;display:grid!important;place-items:center;width:38px;height:38px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;cursor:pointer}
+  .wali-mobile-logout:active{transform:scale(.9);background:rgba(255,255,255,.12)}
+  .wali-mobile-logout svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .workspace{padding:0!important}.frame-shell{border:0!important;border-radius:0!important;box-shadow:none!important}
+  .wali-mobile-bottom-nav{height:calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom))!important;padding:0!important;background:#fff!important;overflow:visible!important;box-shadow:none!important}
+  .wali-mobile-bottom-nav-inner{height:76px!important;min-height:76px!important;box-sizing:border-box!important;overflow:visible!important;padding:8px 8px calc(7px + env(safe-area-inset-bottom))!important;border:0!important;border-top:1px solid #edf1f6!important;border-radius:0!important;background:#fff!important;box-shadow:0 -5px 16px rgba(31,65,128,.055)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .wali-mobile-shortcut-btn{min-height:60px!important;padding:7px 2px 4px!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#6f7786!important;gap:4px!important;overflow:visible!important}
+  .wali-mobile-shortcut-btn.active{background:transparent!important;color:#1557d5!important;box-shadow:none!important}.wali-mobile-shortcut-btn.active::before{display:none!important}
+  .wali-mobile-shortcut-icon{width:25px!important;height:25px!important;display:grid!important;place-items:center!important;color:inherit!important;font-size:0!important}
+  .wali-mobile-shortcut-icon svg{width:24px!important;height:24px!important;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .wali-mobile-shortcut-label{font-size:.56rem!important;font-weight:900!important;color:inherit!important}
+  .wali-mobile-shortcut-badge{position:absolute;top:3px;left:calc(50% + 8px);min-width:17px;height:17px;display:none;place-items:center;padding:0 4px;border:2px solid #fff;border-radius:999px;background:#ef476f;color:#fff;font-size:.48rem;font-weight:1000;line-height:1}
+}
+@media(max-width:420px){.mobile-header{padding-left:14px!important;padding-right:14px!important}.mobile-brand{font-size:.96rem!important}.wali-mobile-shortcut-label{font-size:.53rem!important}}
+</style>
 
   <link rel="stylesheet" href="../../css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260818-v39">
+  <meta name="cahaya-build" content="20260819-v61">
 </head>
 
 <body class="portal-shell cahaya-shell-page">
@@ -1877,50 +1908,14 @@
 
   <main class="main-content">
     <header class="mobile-header">
-      <button
-        type="button"
-        class="menu-toggle-btn"
-        onclick="toggleSidebar()"
-        aria-label="Buka menu"
-      >
-        ☰
+      <div class="mobile-brand" aria-label="CAHAYA APP">
+        <span class="wali-top-brand-mark" aria-hidden="true"></span>
+        <span>CAHAYA APP</span>
+      </div>
+      <button class="wali-mobile-logout" type="button" onclick="logout()" aria-label="Keluar dari aplikasi" title="Keluar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4"/><path d="M14 8l4 4-4 4M18 12H9"/></svg>
       </button>
-
-      <div class="mobile-brand">
-        <img
-          src="../../assets/cahaya-app/logo-icon.png?v=54"
-          alt="Logo CAHAYA APP"
-        />
-        Cahaya App
-      </div>
-
-      <div class="mobile-header-actions">
-        <button
-          type="button"
-          class="wali-chat-top-button"
-          id="waliChatTopMobile"
-          onclick="toggleWaliChat()"
-          aria-label="Buka Live Chat"
-          title="Live Chat"
-        >
-          💬
-          <span class="wali-chat-badge" id="waliChatBadgeMobile">0</span>
-        </button>
-
-        <div
-          class="avatar-circle"
-          id="mobileAvatar"
-          style="
-            width:40px;
-            height:40px;
-            flex-basis:40px;
-            font-size:.9rem;
-          "
-          onclick="document.getElementById('navProfil').click()"
-        >
-          S
-        </div>
-      </div>
+      <div id="mobileAvatar" hidden aria-hidden="true"></div>
     </header>
 
     <header class="top-bar">
@@ -2232,130 +2227,52 @@
     }
 
 
-    const WALI_MOBILE_SHORTCUT_META = {
-      "menu-beranda-wali": {
-        icon: "🏠",
-        label: "Beranda"
-      },
-      "menu-akademik-wali": {
-        icon: "📚",
-        label: "Akademik"
-      },
-      "menu-karakter-wali": {
-        icon: "🕌",
-        label: "Karakter"
-      },
-      "menu-pembinaan-wali": {
-        icon: "📋",
-        label: "Pembinaan"
-      },
-      "menu-informasi-penting-wali": {
-        icon: "📌",
-        label: "Informasi"
-      },
-      "menu-riwayat-kesehatan-wali": {
-        icon: "🩺",
-        label: "Kesehatan"
-      },
-      "menu-perizinan-wali": {
-        icon: "📝",
-        label: "Perizinan"
-      },
-      "menu-keuangan-wali": {
-        icon: "💳",
-        label: "Keuangan"
-      }
+    const waliMobileUtilityIcon = {
+      home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg>',
+      menu: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
+      chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>',
+      profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22c.7-5 3.5-8 8-8s7.3 3 8 8"/></svg>'
     };
 
-    const WALI_MOBILE_SHORTCUT_ORDER = [
-      "menu-beranda-wali",
-      "menu-akademik-wali",
-      "menu-karakter-wali",
-      "menu-informasi-penting-wali",
-      "menu-perizinan-wali",
-      "menu-riwayat-kesehatan-wali",
-      "menu-keuangan-wali",
-      "menu-pembinaan-wali"
-    ];
-
-    function getWaliMobileShortcutIds() {
-      return WALI_MOBILE_SHORTCUT_ORDER
-        .filter(menuId => isWaliMenuAllowed(menuId) && document.getElementById(menuId)?.dataset.moduleDisabled !== "true")
-        .slice(0, 5);
+    function getWaliMobileUtilityItems() {
+      const items = [];
+      if (isWaliMenuAllowed('menu-beranda-wali')) items.push({id:'menu-beranda-wali',label:'Beranda',icon:waliMobileUtilityIcon.home});
+      items.push({id:'utility-menu',label:'Menu',icon:waliMobileUtilityIcon.menu});
+      items.push({id:'utility-chat',label:'Pesan',icon:waliMobileUtilityIcon.chat,badge:'chat'});
+      items.push({id:'utility-profile',label:'Profil',icon:waliMobileUtilityIcon.profile});
+      return items;
     }
 
     function renderWaliMobileShortcuts() {
-      const nav =
-        document.getElementById("waliMobileBottomNav");
-
+      const nav = document.getElementById('waliMobileBottomNav');
       if (!nav) return;
-
-      const menuIds =
-        getWaliMobileShortcutIds();
-
-      if (!menuIds.length) {
-        nav.innerHTML = "";
-        nav.classList.remove("ready");
-        return;
-      }
-
-      nav.style.setProperty(
-        "--wali-shortcut-count",
-        String(menuIds.length)
-      );
-
-      nav.innerHTML = `
-        <div class="wali-mobile-bottom-nav-inner">
-          ${menuIds.map(menuId => {
-            const meta = WALI_MOBILE_SHORTCUT_META[menuId];
-            return `
-              <button
-                type="button"
-                class="wali-mobile-shortcut-btn"
-                data-menu-id="${menuId}"
-                onclick="openWaliMobileShortcut('${menuId}')"
-                aria-label="Buka ${meta.label}"
-                title="${meta.label}"
-              >
-                <span class="wali-mobile-shortcut-icon">${meta.icon}</span>
-                <span class="wali-mobile-shortcut-label">${meta.label}</span>
-              </button>
-            `;
-          }).join("")}
-        </div>
-      `;
-
-      nav.classList.add("ready");
-      setWaliMobileBottomActive(
-        menuIdFromUrl(currentPortalPage) ||
-        WALI_HOME_MENU_ID
-      );
+      const items = getWaliMobileUtilityItems();
+      nav.style.setProperty('--wali-shortcut-count',String(items.length));
+      nav.innerHTML = `<div class="wali-mobile-bottom-nav-inner">${items.map(item=>`
+        <button type="button" class="wali-mobile-shortcut-btn" data-menu-id="${item.id}" onclick="openWaliMobileShortcut('${item.id}')" aria-label="${item.label}" title="${item.label}">
+          <span class="wali-mobile-shortcut-icon">${item.icon}</span>
+          <span class="wali-mobile-shortcut-label">${item.label}</span>
+          ${item.badge==='chat'?'<span class="wali-mobile-shortcut-badge" id="waliMobileChatBadge">0</span>':''}
+        </button>`).join('')}</div>`;
+      nav.classList.add('ready');
+      setWaliMobileBottomActive(menuIdFromUrl(currentPortalPage)||WALI_HOME_MENU_ID);
     }
 
-    function setWaliMobileBottomActive(menuId = "") {
-      document
-        .querySelectorAll("#waliMobileBottomNav .wali-mobile-shortcut-btn")
-        .forEach(button => {
-          button.classList.toggle(
-            "active",
-            button.dataset.menuId === menuId
-          );
-        });
+    function setWaliMobileBottomActive(menuId = '') {
+      document.querySelectorAll('#waliMobileBottomNav .wali-mobile-shortcut-btn').forEach(button=>{
+        button.classList.toggle('active',button.dataset.menuId===menuId);
+      });
     }
 
     function openWaliMobileShortcut(menuId) {
-      if (!isWaliMenuAllowed(menuId) || document.getElementById(menuId)?.dataset.moduleDisabled === "true") return;
-
-      const menu =
-        document.getElementById(menuId);
-
-      const config =
-        WALI_MENU_CONFIG[menuId];
-
-      if (menu && config) {
-        loadPage(config.url, menu);
-      }
+      if (menuId === 'utility-menu') { toggleSidebar(); return; }
+      if (menuId === 'utility-chat') { toggleWaliChat(); setWaliMobileBottomActive('utility-chat'); return; }
+      if (menuId === 'utility-profile') { document.getElementById('navProfil')?.click(); setWaliMobileBottomActive('utility-profile'); return; }
+      if (!isWaliMenuAllowed(menuId) || document.getElementById(menuId)?.dataset.moduleDisabled === 'true') return;
+      const menu=document.getElementById(menuId),config=WALI_MENU_CONFIG[menuId];
+      if(menu&&config)loadPage(config.url,menu);
     }
+
 
     let waliChatContacts = [];
     let waliChatInbox = [];
@@ -2533,7 +2450,8 @@
     function updateWaliChatBadges(total = 0) {
       [
         "waliChatBadgeMobile",
-        "waliChatBadgeDesktop"
+        "waliChatBadgeDesktop",
+        "waliMobileChatBadge"
       ].forEach(id => {
         const badge = document.getElementById(id);
         if (!badge) return;
