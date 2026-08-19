@@ -1832,7 +1832,7 @@
               body:
                 newest.desc,
               icon:
-                "assets/logofi.png",
+                "assets/cahaya-app/app-icon-192.png",
               tag:
                 newest.roomId,
               renotify:

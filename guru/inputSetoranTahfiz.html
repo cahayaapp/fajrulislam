@@ -1631,6 +1631,11 @@
 .santri-card-body .input-section{order:1}.santri-card-body .resume-container-v52{order:2}.santri-card-body .riwayat-section{order:3}.santri-card.card-open .santri-card-body{display:flex;flex-direction:column}
 .santri-card-body .mode-switch{display:none!important}
 @media(max-width:720px){.c52-quran-selector{padding:15px!important}.c52-quran-title{align-items:flex-start;flex-direction:column;gap:4px}.c52-quran-title span{text-align:left}.c52-program-grid{grid-template-columns:1fr}.c52-program-btn{padding:12px}.c52-muro-grid{grid-template-columns:repeat(3,1fr);gap:6px}.c52-muro-grid button{padding:9px 5px;font-size:.65rem}}
+
+/* V53 separate-scene navigation */
+.c53-qscene{display:none;opacity:0;transform:translateX(20px)}.c53-qscene.active{display:block;animation:c53QIn .32s cubic-bezier(.2,.75,.25,1) forwards}.c53-qscene.back.active{animation:c53QBack .32s cubic-bezier(.2,.75,.25,1) forwards}@keyframes c53QIn{to{opacity:1;transform:none}}@keyframes c53QBack{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+.c53-qback{appearance:none;width:38px;height:38px;border:1px solid #dce7f6;border-radius:12px;background:#fff;color:#1557d5;font-size:1rem;font-weight:1000;cursor:pointer;display:grid;place-items:center}.c53-qtype-head{display:flex;align-items:center;gap:11px;margin-bottom:14px}.c53-qtype-copy strong{display:block;color:#142b52;font-size:1rem;font-weight:1000}.c53-qtype-copy span{display:block;margin-top:4px;color:#71809a;font-size:.64rem;font-weight:780}.c53-qscene[hidden]{display:none!important}
+body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-quran-focus #quranSceneMurojaah{display:none!important}
 </style>
 </head>
 
@@ -1650,7 +1655,7 @@
   </div>
 
   <main class="page-shell">
-    <section class="tfz-hero">
+    <section class="tfz-hero" id="quranHero">
       <div>
         <div class="hero-label">📖 Modul Guru Al-Qur’an</div>
         <h1>Tahsin, Tahfiz & Muroja’ah</h1>
@@ -1667,7 +1672,7 @@
       </div>
     </section>
 
-    <section class="panel-card c52-quran-selector">
+    <section class="panel-card c52-quran-selector c53-qscene active" id="quranSceneProgram">
       <div class="c52-quran-title">
         <strong>Pilih Program</strong>
         <span id="autoQuranContext">Kelas akan mengikuti jadwal mengajar Anda.</span>
@@ -1677,20 +1682,21 @@
         <button type="button" class="c52-program-btn" data-quran-program="Tahfiz" onclick="selectQuranProgram('Tahfiz')"><span>ح</span><b>Tahfiz</b><small>Hafalan baru</small></button>
         <button type="button" class="c52-program-btn" data-quran-program="Murojaah" onclick="selectQuranProgram('Murojaah')"><span>م</span><b>Muroja’ah</b><small>Pengulangan hafalan</small></button>
       </div>
-      <div class="c52-murojaah-choice" id="murojaahTypeGroup" hidden>
-        <strong>Jenis Muroja’ah</strong>
-        <div class="c52-muro-grid">
-          <button type="button" data-muro-type="Harian" onclick="selectMurojaahType('Harian')">Harian</button>
-          <button type="button" data-muro-type="Pekanan" onclick="selectMurojaahType('Pekanan')">Pekanan</button>
-          <button type="button" data-muro-type="Bulanan" onclick="selectMurojaahType('Bulanan')">Bulanan</button>
-        </div>
-      </div>
       <select id="tfzProgram" hidden><option value=""></option><option value="Tahsin">Tahsin</option><option value="Tahfiz">Tahfiz</option><option value="Murojaah">Murojaah</option></select>
       <select id="tfzJenisMurojaah" hidden><option value=""></option><option value="Harian">Harian</option><option value="Pekanan">Pekanan</option><option value="Bulanan">Bulanan</option></select>
       <select id="tfzKelas" hidden><option value=""></option></select>
     </section>
 
-    <section class="panel-card workspace-card">
+    <section class="panel-card c53-qscene" id="quranSceneMurojaah">
+      <div class="c53-qtype-head"><button type="button" class="c53-qback" onclick="showQuranScene('program',true)">←</button><div class="c53-qtype-copy"><strong>Pilih Jenis Muroja’ah</strong><span>Satu tahap lagi sebelum membuka lembar santri.</span></div></div>
+      <div class="c52-muro-grid">
+        <button type="button" data-muro-type="Harian" onclick="selectMurojaahType('Harian')">Harian</button>
+        <button type="button" data-muro-type="Pekanan" onclick="selectMurojaahType('Pekanan')">Pekanan</button>
+        <button type="button" data-muro-type="Bulanan" onclick="selectMurojaahType('Bulanan')">Bulanan</button>
+      </div>
+    </section>
+
+    <section class="panel-card workspace-card c53-qscene" id="quranSceneWorkspace">
       <div class="panel-head">
         <div class="panel-title-wrap">
           <div class="panel-icon">👥</div>
@@ -1732,7 +1738,7 @@
         </div>
       </div>
     </section>
-    <section class="panel-card c52-bottom-overview" id="quranOverviewPanel">
+    <section class="panel-card c52-bottom-overview" id="quranOverviewPanel" hidden>
       <div class="panel-head"><div class="panel-title-wrap"><div class="panel-icon">▤</div><div><h3>Ringkasan Data</h3><p>Informasi capaian dan jumlah data diletakkan di bawah agar form input tetap menjadi fokus utama.</p></div></div></div>
       <div class="overview-grid">
         <div class="overview-item"><span class="overview-label">Program</span><strong class="overview-value" id="statProgram">Belum dipilih</strong></div>
@@ -1991,22 +1997,27 @@
     document.getElementById('loadingOverlay').style.display='none';
   });
 
+  window.showQuranScene=function(name,back=false){
+    const ids={program:'quranSceneProgram',murojaah:'quranSceneMurojaah',workspace:'quranSceneWorkspace'};
+    document.body.classList.toggle('c53-quran-focus',name==='workspace');
+    Object.values(ids).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active','back')});
+    const target=document.getElementById(ids[name]);if(!target)return;target.classList.add('active');if(back)target.classList.add('back');
+    const overview=document.getElementById('quranOverviewPanel');if(overview)overview.hidden=name!=='workspace';
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+
   window.selectQuranProgram = async program => {
     document.getElementById('tfzProgram').value=program;
     document.querySelectorAll('[data-quran-program]').forEach(btn=>btn.classList.toggle('active',btn.dataset.quranProgram===program));
-    const group=document.getElementById('murojaahTypeGroup');
-    group.hidden=program!=='Murojaah';
     if(program!=='Murojaah'){document.getElementById('tfzJenisMurojaah').value='';document.querySelectorAll('[data-muro-type]').forEach(btn=>btn.classList.remove('active'))}
     document.getElementById('statProgram').textContent=program;
-    if(program==='Murojaah'){
-      document.getElementById('santriCardsContainer').innerHTML='<div class="initial-state"><div><div class="initial-state-icon">🔁</div><strong>Pilih jenis Muroja’ah</strong><span>Harian, Pekanan, atau Bulanan.</span></div></div>';
-      return;
-    }
-    await renderSantriCards();
+    if(program==='Murojaah'){showQuranScene('murojaah');return;}
+    showQuranScene('workspace');await renderSantriCards();
   };
   window.selectMurojaahType = async type => {
     document.getElementById('tfzJenisMurojaah').value=type;
     document.querySelectorAll('[data-muro-type]').forEach(btn=>btn.classList.toggle('active',btn.dataset.muroType===type));
+    showQuranScene('workspace');
     await renderSantriCards();
   };
   window.updateKelas = () => { const program=document.getElementById('tfzProgram').value;if(program)selectQuranProgram(program); };

@@ -945,7 +945,7 @@ const IS_EMBEDDED_WALI_PORTAL = window.parent && window.parent !== window;
           {
             body: desc || "",
             icon:
-              "../../assets/logofi.png",
+              "../../assets/cahaya-app/app-icon-192.png",
             tag:
               roomId ||
               "cahaya-wali",

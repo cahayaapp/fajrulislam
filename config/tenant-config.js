@@ -16,9 +16,11 @@
     branding: {
       logo: "assets/logofi.png",
       logoAlt: "Logo Pesantren",
-      favicon: "assets/logofi.png",
-      pwaIcon192: "assets/logofi.png",
-      pwaIcon512: "assets/logofi.png"
+      favicon: "assets/cahaya-app/favicon.ico",
+      appLogo: "assets/cahaya-app/logo-horizontal.png",
+      appIcon: "assets/cahaya-app/logo-icon.png",
+      pwaIcon192: "assets/cahaya-app/app-icon-192.png",
+      pwaIcon512: "assets/cahaya-app/app-icon-512.png"
     },
     theme: {
       primary: "#2878ff",

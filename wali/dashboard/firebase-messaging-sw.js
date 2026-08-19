@@ -56,7 +56,7 @@ messaging.onBackgroundMessage(
 
     const iconUrl =
       new URL(
-        "../../assets/logofi.png",
+        "../../assets/cahaya-app/app-icon-192.png",
         self.registration.scope
       ).href;
 
