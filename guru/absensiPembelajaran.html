@@ -1324,6 +1324,45 @@
     .save-panel .btn-simpan{width:100%!important}
   }
 </style>
+
+<style id="cahaya-v55-kbm-scenes">
+  .kbm-scene{animation:v55SceneIn .34s cubic-bezier(.2,.8,.2,1)}
+  .kbm-scene[hidden]{display:none!important}
+  @keyframes v55SceneIn{from{opacity:0;transform:translateY(14px) scale(.992)}to{opacity:1;transform:none}}
+  .v55-kbm-picker{max-width:860px;margin:0 auto;padding:18px 4px 28px}
+  .v55-picker-head{margin:4px 0 18px;padding:0 4px}
+  .v55-picker-kicker{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#eef5ff;color:#1557d5;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+  .v55-picker-head h2{margin:10px 0 0;color:#152347;font-size:clamp(1.3rem,3vw,1.9rem);font-weight:950;letter-spacing:-.03em}
+  .v55-schedule-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .v55-schedule-card{appearance:none;border:1px solid #dbe7fb;background:linear-gradient(145deg,#fff 0%,#f9fbff 72%,#fff8e6 100%);border-radius:22px;padding:18px;text-align:left;cursor:pointer;min-height:145px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 12px 30px rgba(21,87,213,.08);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+  .v55-schedule-card:hover,.v55-schedule-card:focus-visible{transform:translateY(-3px);box-shadow:0 18px 38px rgba(21,87,213,.14);border-color:#a9c7ff;outline:none}
+  .v55-schedule-card.is-selected{border-color:#2878ff;box-shadow:0 16px 38px rgba(40,120,255,.17)}
+  .v55-schedule-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+  .v55-time-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;background:#edf4ff;color:#1557d5;font-size:.73rem;font-weight:850}
+  .v55-combined-pill{border-radius:999px;padding:5px 8px;background:#fff3cb;color:#8a6200;font-size:.67rem;font-weight:900}
+  .v55-schedule-mapel{display:block;color:#14254b;font-size:1.05rem;font-weight:950;line-height:1.2;margin-bottom:7px}
+  .v55-schedule-class{display:block;color:#73809a;font-size:.83rem;font-weight:750;line-height:1.45}
+  .v55-schedule-arrow{align-self:flex-end;margin-top:14px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#2878ff;color:white;font-size:1.05rem;font-weight:900;box-shadow:0 8px 18px rgba(40,120,255,.22)}
+  .v55-schedule-empty,.v55-schedule-loading{grid-column:1/-1;min-height:210px;border:1px dashed #cbdaf2;border-radius:22px;background:rgba(255,255,255,.78);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;color:#72809a;gap:10px}
+  .v55-schedule-empty strong,.v55-schedule-loading strong{color:#223354;font-size:1rem}
+  .v55-schedule-loader{width:32px;height:32px;border-radius:50%;border:3px solid #dce8ff;border-top-color:#2878ff;animation:v55Spin .8s linear infinite}
+  @keyframes v55Spin{to{transform:rotate(360deg)}}
+  .v55-kbm-attendance{animation:v55SceneIn .34s cubic-bezier(.2,.8,.2,1)}
+  .v55-attendance-nav{max-width:100%;margin:0 0 10px}
+  .v55-back-schedule{appearance:none;border:0;background:transparent;color:#1557d5;font:inherit;font-size:.78rem;font-weight:900;padding:6px 2px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .v55-back-schedule:hover{color:#0c45b4}
+  /* Scene daftar santri hanya menampilkan data yang dibutuhkan untuk input. */
+  .v55-kbm-attendance>.panel-card{margin-top:0}
+  @media(max-width:720px){
+    .v55-kbm-picker{padding:8px 0 20px}
+    .v55-picker-head{margin:2px 0 14px;padding:0 2px}
+    .v55-schedule-grid{grid-template-columns:1fr;gap:11px}
+    .v55-schedule-card{min-height:126px;border-radius:19px;padding:15px 16px}
+    .v55-schedule-top{margin-bottom:12px}
+    .v55-schedule-arrow{width:31px;height:31px}
+    .v55-attendance-nav{margin-bottom:7px}
+  }
+</style>
 </head>
 <body>
   <div id="loadingOverlay">
@@ -1362,22 +1401,34 @@
       </div>
     </section>
 
-    <section class="panel-card setup-card c52-kbm-context">
-      <span class="context-chip" id="contextChip" hidden>Belum dipilih</span>
-      <input type="hidden" id="kbmTanggal" />
-      <div class="c52-kbm-grid">
-        <div class="form-group c52-kbm-schedule">
-          <label for="kbmMapel"><span class="label-icon">📖</span>Jadwal Mengajar</label>
-          <select class="form-control" id="kbmMapel">
-            <option value="">Memeriksa jadwal guru...</option>
-          </select>
-          <div class="helper-text" id="scheduleHelper">Memeriksa jadwal mengajar...</div>
-        </div>
+    <section class="kbm-scene v55-kbm-picker" id="kbmScheduleScene">
+      <div class="v55-picker-head">
+        <span class="v55-picker-kicker">Jadwal Hari Ini</span>
+        <h2>Pilih Kelas & Mata Pelajaran</h2>
       </div>
+
+      <input type="hidden" id="kbmTanggal" />
+      <span class="context-chip" id="contextChip" hidden>Belum dipilih</span>
+      <select class="form-control" id="kbmMapel" hidden aria-hidden="true">
+        <option value="">Memeriksa jadwal guru...</option>
+      </select>
       <select class="form-control" id="kbmKelas" disabled hidden aria-hidden="true">
         <option value="">Kelas mengikuti jadwal</option>
       </select>
+      <div class="helper-text" id="scheduleHelper" hidden>Memeriksa jadwal mengajar...</div>
+
+      <div class="v55-schedule-grid" id="scheduleCardList">
+        <div class="v55-schedule-loading">
+          <span class="v55-schedule-loader"></span>
+          <strong>Menyiapkan jadwal hari ini…</strong>
+        </div>
+      </div>
     </section>
+
+    <section class="kbm-scene v55-kbm-attendance" id="kbmAttendanceScene" hidden>
+      <div class="v55-attendance-nav">
+        <button type="button" class="v55-back-schedule" onclick="kembaliKeJadwal()" aria-label="Kembali ke jadwal hari ini">← <span>Jadwal Hari Ini</span></button>
+      </div>
 
     <section class="panel-card">
       <div class="panel-head">
@@ -1466,6 +1517,7 @@
           <span>Simpan Absensi & Nilai</span>
         </button>
       </div>
+    </section>
     </section>
   </main>
 
@@ -2183,6 +2235,94 @@
     );
   }
 
+  function switchKbmScene(scene) {
+    const picker = document.getElementById("kbmScheduleScene");
+    const attendance = document.getElementById("kbmAttendanceScene");
+    if (!picker || !attendance) return;
+    const showAttendance = scene === "attendance";
+    picker.hidden = showAttendance;
+    attendance.hidden = !showAttendance;
+    if (!showAttendance) {
+      requestAnimationFrame(() => {
+        try { picker.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (_) {}
+      });
+    }
+  }
+
+  function renderScheduleCards(emptyMessage = "") {
+    const host = document.getElementById("scheduleCardList");
+    if (!host) return;
+    host.innerHTML = "";
+
+    if (!dailyAssignments.length) {
+      const empty = document.createElement("div");
+      empty.className = "v55-schedule-empty";
+      const icon = document.createElement("div");
+      icon.style.fontSize = "1.7rem";
+      icon.textContent = "📅";
+      const strong = document.createElement("strong");
+      strong.textContent = "Belum ada jadwal hari ini";
+      const span = document.createElement("span");
+      span.textContent = emptyMessage || "Tidak ditemukan jadwal mengajar untuk akun ini.";
+      empty.append(icon, strong, span);
+      host.appendChild(empty);
+      return;
+    }
+
+    dailyAssignments.forEach((item) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "v55-schedule-card" + (selectedAssignment?.id === item.id ? " is-selected" : "");
+      button.setAttribute("aria-label", `Pilih ${item.subject}, ${labelKelasJadwal(item)}`);
+
+      const top = document.createElement("div");
+      top.className = "v55-schedule-top";
+      const time = document.createElement("span");
+      time.className = "v55-time-pill";
+      const waktu = item.scheduleStart && item.scheduleEnd
+        ? `${item.scheduleStart}–${item.scheduleEnd}`
+        : (item.scheduleStart || item.sesi || "Hari ini");
+      time.textContent = `◷ ${waktu}`;
+      top.appendChild(time);
+      if (item.isCombined) {
+        const combined = document.createElement("span");
+        combined.className = "v55-combined-pill";
+        combined.textContent = "Gabungan";
+        top.appendChild(combined);
+      }
+
+      const body = document.createElement("div");
+      const mapel = document.createElement("strong");
+      mapel.className = "v55-schedule-mapel";
+      mapel.textContent = item.subject || "Pelajaran";
+      const kelas = document.createElement("span");
+      kelas.className = "v55-schedule-class";
+      kelas.textContent = labelKelasJadwal(item);
+      body.append(mapel, kelas);
+
+      const arrow = document.createElement("span");
+      arrow.className = "v55-schedule-arrow";
+      arrow.textContent = "›";
+
+      button.append(top, body, arrow);
+      button.addEventListener("click", () => pilihJadwalKbm(item.id));
+      host.appendChild(button);
+    });
+  }
+
+  function pilihJadwalKbm(id) {
+    const select = document.getElementById("kbmMapel");
+    select.value = id;
+    applySelectedSchedule();
+  }
+
+  function kembaliKeJadwal() {
+    renderScheduleCards();
+    switchKbmScene("schedule");
+  }
+
+  window.kembaliKeJadwal = kembaliKeJadwal;
+
   function setScheduleHelper(
     message,
     status = ""
@@ -2263,6 +2403,8 @@
 
     updateContextChip();
     window.tampilkanSantri();
+    renderScheduleCards();
+    switchKbmScene("attendance");
   }
 
   function applyIncomingScheduleContext() {
@@ -2285,164 +2427,77 @@
   function loadTeacherScheduleForDate(
     options = {}
   ) {
-    const {
-      notify = false
-    } = options;
+    const { notify = false } = options;
 
-    const dateValue =
-      document.getElementById("kbmTanggal").value;
+    const dateValue = document.getElementById("kbmTanggal").value;
+    const dayNumber = parseLocalDate(dateValue).getDay();
+    const dayLabel = DAYS_ID[dayNumber] || "Hari";
+    const scheduleSelect = document.getElementById("kbmMapel");
 
-    const dayNumber =
-      parseLocalDate(dateValue).getDay();
-
-    const dayLabel =
-      DAYS_ID[dayNumber] || "Hari";
-
-    const scheduleSelect =
-      document.getElementById("kbmMapel");
-
-    teacherCodeAktif =
-      detectTeacherCode();
-
+    teacherCodeAktif = detectTeacherCode();
     dailyAssignments = [];
     selectedAssignment = null;
 
     scheduleSelect.innerHTML = "";
     scheduleSelect.disabled = true;
+    switchKbmScene("schedule");
 
     if (!teacherCodeAktif) {
-      scheduleSelect.innerHTML =
-        '<option value="">Nama akun belum cocok dengan jadwal guru</option>';
-
-      setScheduleHelper(
-        `Nama akun “${namaGuruAktif()}” belum ditemukan pada jadwal pelajaran.`,
-        "error"
-      );
-
-      clearAttendanceForSchedule(
-        "Hubungi admin untuk menyamakan nama pengguna dengan nama guru pada jadwal."
-      );
-
+      scheduleSelect.innerHTML = '<option value="">Nama akun belum cocok dengan jadwal guru</option>';
+      setScheduleHelper(`Nama akun “${namaGuruAktif()}” belum ditemukan pada jadwal pelajaran.`, "error");
+      clearAttendanceForSchedule("Hubungi admin untuk menyamakan nama pengguna dengan nama guru pada jadwal.");
+      renderScheduleCards("Nama akun belum dapat dicocokkan dengan jadwal guru.");
       if (notify) {
-        showToast(
-          "Nama akun guru belum cocok dengan nama pada jadwal pelajaran.",
-          "error",
-          "Guru belum terdeteksi"
-        );
+        showToast("Nama akun guru belum cocok dengan nama pada jadwal pelajaran.", "error", "Guru belum terdeteksi");
       }
-
       return;
     }
 
     if (dayNumber === 0) {
-      scheduleSelect.innerHTML =
-        `<option value="">Tidak ada jadwal KBM pada ${dayLabel}</option>`;
-
-      setScheduleHelper(
-        `${dayLabel} tidak termasuk hari KBM pada jadwal pelajaran.`,
-        "warning"
-      );
-
-      clearAttendanceForSchedule(
-        `Tidak ada jadwal pembelajaran reguler pada ${dayLabel}.`
-      );
-
+      scheduleSelect.innerHTML = `<option value="">Tidak ada jadwal KBM pada ${dayLabel}</option>`;
+      setScheduleHelper(`${dayLabel} tidak termasuk hari KBM pada jadwal pelajaran.`, "warning");
+      clearAttendanceForSchedule(`Tidak ada jadwal pembelajaran reguler pada ${dayLabel}.`);
+      renderScheduleCards(`Tidak ada jadwal pembelajaran reguler pada ${dayLabel}.`);
       return;
     }
 
-    const rawAssignments =
-      buildAssignmentsForDay(dayNumber)
-        .filter(
-          item =>
-            item.teacher === teacherCodeAktif
-        )
-        .sort((a, b) => {
-          const startCompare = String(a.scheduleStart || "").localeCompare(String(b.scheduleStart || ""));
-          if (startCompare) return startCompare;
-
-          const classA = URUTAN_KELAS.indexOf(a.className);
-          const classB = URUTAN_KELAS.indexOf(b.className);
-
-          if (classA !== classB) {
-            if (classA === -1) return 1;
-            if (classB === -1) return -1;
-            return classA - classB;
-          }
-
-          return a.subject.localeCompare(b.subject, "id");
-        });
+    const rawAssignments = buildAssignmentsForDay(dayNumber)
+      .filter(item => item.teacher === teacherCodeAktif)
+      .sort((a, b) => {
+        const startCompare = String(a.scheduleStart || "").localeCompare(String(b.scheduleStart || ""));
+        if (startCompare) return startCompare;
+        const classA = URUTAN_KELAS.indexOf(a.className);
+        const classB = URUTAN_KELAS.indexOf(b.className);
+        if (classA !== classB) {
+          if (classA === -1) return 1;
+          if (classB === -1) return -1;
+          return classA - classB;
+        }
+        return a.subject.localeCompare(b.subject, "id");
+      });
 
     dailyAssignments = kelompokkanJadwalGabungan(rawAssignments);
 
     if (!dailyAssignments.length) {
-      scheduleSelect.innerHTML =
-        `<option value="">Tidak ada jadwal ${teacherCodeAktif} pada ${dayLabel}</option>`;
-
-      setScheduleHelper(
-        `${namaGuruAktif()} tidak memiliki jadwal mengajar pada ${dayLabel}.`,
-        "warning"
-      );
-
-      clearAttendanceForSchedule(
-        `Tidak ditemukan mapel untuk guru ini pada ${dayLabel}.`
-      );
-
+      scheduleSelect.innerHTML = `<option value="">Tidak ada jadwal ${teacherCodeAktif} pada ${dayLabel}</option>`;
+      setScheduleHelper(`${namaGuruAktif()} tidak memiliki jadwal mengajar pada ${dayLabel}.`, "warning");
+      clearAttendanceForSchedule(`Tidak ditemukan mapel untuk guru ini pada ${dayLabel}.`);
+      renderScheduleCards(`Tidak ditemukan jadwal mengajar pada ${dayLabel}.`);
       return;
     }
 
-    const placeholder =
-      dailyAssignments.length === 1
-        ? "Jadwal ditemukan"
-        : `Pilih 1 dari ${dailyAssignments.length} jadwal`;
-
-    scheduleSelect.innerHTML =
-      `<option value="">${placeholder}</option>` +
-      dailyAssignments
-        .map(item => {
-          const waktu = item.scheduleStart && item.scheduleEnd
-            ? ` • ${item.scheduleStart}–${item.scheduleEnd}`
-            : "";
-          const label = item.isCombined
-            ? `${item.subject} • Gabungan ${item.classNames.length} Kelas${waktu}`
-            : `${item.subject} • ${item.className}${waktu}`;
-
-          return (
-            `<option value="${item.id}">` +
-            `${label}` +
-            `</option>`
-          );
-        })
-        .join("");
-
+    scheduleSelect.innerHTML = '<option value="">Pilih jadwal</option>' +
+      dailyAssignments.map(item => `<option value="${item.id}">${item.subject} • ${labelKelasJadwal(item)}</option>`).join("");
     scheduleSelect.disabled = false;
+    setScheduleHelper(`${dayLabel}: ditemukan ${dailyAssignments.length} jadwal mengajar.`, "ready");
+    renderScheduleCards();
 
+    /* Jika datang dari tombol Absen Santri pada Jadwal Saya, konteks sudah dipilih di layar sebelumnya. */
     if (applyIncomingScheduleContext()) return;
 
-    if (dailyAssignments.length === 1) {
-      scheduleSelect.value =
-        dailyAssignments[0].id;
-
-      setScheduleHelper(
-        `${dayLabel}: jadwal otomatis ditemukan untuk ${teacherCodeAktif}.`,
-        "ready"
-      );
-
-      applySelectedSchedule();
-      document.body.classList.add("c54-direct-schedule");
-    } else {
-      setScheduleHelper(
-        akunMendukungAbsensiGabungan()
-          ? `${dayLabel}: sesi yang berlangsung pada waktu dan pelajaran yang sama otomatis digabung.`
-          : `${dayLabel}: ditemukan ${dailyAssignments.length} jadwal. Pilih mapel/kelas yang sedang diajarkan.`,
-        "ready"
-      );
-
-      clearAttendanceForSchedule(
-        akunMendukungAbsensiGabungan()
-          ? `Pilih sesi. Semua kelas yang diajar bersamaan akan tampil dalam satu daftar.`
-          : `Terdapat ${dailyAssignments.length} jadwal pada ${dayLabel}. Pilih salah satunya.`
-      );
-    }
+    clearAttendanceForSchedule("Pilih kelas dan mata pelajaran dari jadwal hari ini.");
+    renderScheduleCards();
+    switchKbmScene("schedule");
   }
 
   function showToast(message, type = "info", title = "Informasi") {
