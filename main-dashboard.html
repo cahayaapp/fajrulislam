@@ -1685,8 +1685,23 @@
 
 
   <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260819-v47">
+  <meta name="cahaya-build" content="20260819-v48">
 
+<style id="cahaya-v48-guru-scan-nav">
+/* V48 — tombol Scan Absen khusus tampilan Guru, model center action */
+@media(max-width:900px){
+  .mobile-bottom-nav:has(.mobile-shortcut-btn.is-scan){overflow:visible!important}
+  .mobile-bottom-nav:has(.mobile-shortcut-btn.is-scan) .mobile-bottom-nav-inner{overflow:visible!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;padding-top:7px!important}
+  .mobile-shortcut-btn.is-scan{position:relative;z-index:4;overflow:visible!important;background:transparent!important;box-shadow:none!important;transform:translateY(-13px)!important;gap:4px!important}
+  .mobile-shortcut-btn.is-scan:active{transform:translateY(-13px) scale(.95)!important}
+  .mobile-shortcut-btn.is-scan .mobile-shortcut-icon{width:58px!important;height:58px!important;display:grid!important;place-items:center!important;border:5px solid #fff!important;border-radius:50%!important;color:#fff!important;background:linear-gradient(145deg,#1557d5 0%,#2878ff 72%,#4d91ff 100%)!important;box-shadow:0 9px 22px rgba(21,87,213,.28),0 0 0 1px rgba(40,120,255,.10)!important}
+  .mobile-shortcut-btn.is-scan .mobile-shortcut-icon svg{width:26px!important;height:26px!important;stroke-width:1.9!important}
+  .mobile-shortcut-btn.is-scan .mobile-shortcut-icon::after{width:9px!important;height:9px!important;right:1px!important;top:0!important;background:#f2b632!important}
+  .mobile-shortcut-btn.is-scan .mobile-shortcut-label{margin-top:0!important;color:#1557d5!important;font-size:.56rem!important;font-weight:1000!important;white-space:nowrap!important}
+  .mobile-shortcut-btn.is-scan.active .mobile-shortcut-icon{background:linear-gradient(145deg,#0d46b8,#1557d5)!important;box-shadow:0 10px 24px rgba(21,87,213,.34),0 0 0 4px rgba(242,182,50,.14)!important}
+  .mobile-shortcut-btn.is-scan.active{background:transparent!important}
+}
+</style>
 <style id="cahaya-v47-director-role-preview">
 /* V47 — Mode Pengembangan Direktur: preview menu per role tanpa mengubah role akun asli */
 .director-role-switch{margin:12px 14px 4px;padding:13px;border:1px solid rgba(40,120,255,.18);border-radius:17px;background:linear-gradient(135deg,rgba(237,245,255,.96),rgba(255,247,225,.90));box-shadow:0 8px 24px rgba(31,65,128,.07)}
@@ -2032,7 +2047,7 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=47', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=48', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
       </div>
 
@@ -2146,13 +2161,16 @@ const mobileUtilityIcon = {
   home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg>',
   menu: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
   chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>',
-  profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22c.7-5 3.5-8 8-8s7.3 3 8 8"/></svg>'
+  profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22c.7-5 3.5-8 8-8s7.3 3 8 8"/></svg>',
+  scan: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/><path d="M8 9h3v3H8zM14 9h2M14 12h2M8 15h2M12 15h4M12 18h4"/></svg>'
 };
 
 function getMobileUtilityItems() {
   const items = [];
+  const teacherView = typeof getActiveViewRoles === 'function' && getActiveViewRoles().includes('guru');
   if (bolehAksesMenu('menu-home')) items.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.home });
   items.push({ id:'utility-menu', label:'Menu', icon:mobileUtilityIcon.menu });
+  if (teacherView && bolehAksesMenu('menu-absen-guru')) items.push({ id:'menu-absen-guru', label:'Scan Absen', icon:mobileUtilityIcon.scan, center:true });
   if (bolehAksesMenu('menu-chat')) items.push({ id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' });
   if (bolehAksesMenu('menu-profil')) items.push({ id:'menu-profil', label:'Profil', icon:mobileUtilityIcon.profile });
   return items;
@@ -2166,7 +2184,7 @@ function renderMobileBottomNav() {
   if (!items.length) { nav.innerHTML=''; nav.classList.remove('ready'); return; }
   nav.style.setProperty('--mobile-shortcut-count', String(items.length));
   nav.innerHTML = `<div class="mobile-bottom-nav-inner">${items.map(item => `
-    <button type="button" class="mobile-shortcut-btn" data-menu-id="${item.id}"
+    <button type="button" class="mobile-shortcut-btn${item.center?' is-scan':''}" data-menu-id="${item.id}"
       onclick="openMobileShortcut('${item.id}')" aria-label="${item.label}" title="${item.label}">
       <span class="mobile-shortcut-icon">${item.icon}</span>
       <span class="mobile-shortcut-label">${item.label}</span>

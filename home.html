@@ -86,8 +86,22 @@
       .h24-modal-card{width:calc(100% - 16px)!important;max-height:calc(100dvh - 122px - env(safe-area-inset-bottom))!important;border-radius:24px!important;margin:0 auto!important}
       .h24-modal-body{max-height:calc(100dvh - 225px - env(safe-area-inset-bottom))!important;padding-bottom:20px!important}
     }
+
+    /* V48 — Beranda Guru: jadwal, izin belajar, hadis guru */
+    .h24-menu-section{margin-top:14px}
+    .h24-teacher-quote{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;margin-top:14px;padding:16px 18px;border:1px solid rgba(40,120,255,.14);border-radius:20px;background:linear-gradient(115deg,#edf5ff 0%,#f8fbff 52%,#fff8df 100%);box-shadow:0 9px 24px rgba(40,120,255,.07)}
+    .h24-teacher-quote[hidden]{display:none!important}
+    .h24-teacher-quote::after{content:"";position:absolute;width:110px;height:110px;right:-48px;top:-52px;border:20px solid rgba(242,182,50,.11);border-radius:50%}
+    .h24-teacher-quote-icon{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:14px;color:#fff;background:linear-gradient(145deg,#1557d5,#2878ff);box-shadow:0 8px 18px rgba(40,120,255,.2);font-size:1.05rem}
+    .h24-teacher-quote small{display:block;margin-bottom:3px;color:#8d6a08;font-size:.58rem;font-weight:1000;letter-spacing:.08em}
+    .h24-teacher-quote p{margin:0;color:#17284a;font-size:.83rem;font-weight:950;line-height:1.55;font-style:italic}.h24-teacher-quote p span{font-size:.7rem;font-weight:850;font-style:normal;color:#637391}
+    .h24-role-wrap.is-teacher{margin-top:14px}.h24-role-wrap.is-teacher .h24-role-head{display:none}.h24-role-wrap.is-teacher .h24-role-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .h24-role-wrap.is-teacher .h24-role-card:first-child{border-color:rgba(40,120,255,.18);background:linear-gradient(135deg,#fff,#f5f9ff)}
+    .h24-role-wrap.is-teacher .h24-role-card:nth-child(2){border-color:rgba(242,182,50,.22);background:linear-gradient(135deg,#fff,#fffaf0)}
+    .h24-teacher-list{display:grid;gap:9px}.h24-teacher-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:center;padding:12px 10px;border:1px solid #edf2f8;border-radius:15px;background:#fff}.h24-teacher-row-index{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:#edf5ff;color:#1557d5;font-size:.68rem;font-weight:1000}.h24-teacher-row-main{min-width:0}.h24-teacher-row-main b{display:block;color:#17284a;font-size:.78rem;font-weight:1000;line-height:1.3}.h24-teacher-row-main span{display:block;margin-top:3px;color:#72819b;font-size:.65rem;font-weight:760;line-height:1.4}.h24-teacher-row-time{padding:5px 8px;border-radius:999px;background:#fff7e1;color:#8b6505;font-size:.61rem;font-weight:1000;white-space:nowrap}.h24-source-pill{display:inline-flex!important;width:max-content;margin-top:5px!important;padding:3px 7px;border-radius:999px;background:#edf5ff;color:#1557d5!important;font-size:.56rem!important;font-weight:950!important}
+    @media(max-width:720px){.h24-role-wrap.is-teacher .h24-role-cards{grid-template-columns:1fr}.h24-teacher-quote{padding:14px 14px;border-radius:18px}.h24-teacher-quote-icon{width:38px;height:38px;flex-basis:38px}.h24-teacher-quote p{font-size:.76rem}.h24-menu-section{margin-top:12px}.h24-teacher-row{grid-template-columns:auto minmax(0,1fr)}.h24-teacher-row-time{grid-column:2;justify-self:start}}
 </style>
-  <meta name="cahaya-build" content="20260819-v47">
+  <meta name="cahaya-build" content="20260819-v48">
 </head>
 <body>
   <main class="home24">
@@ -105,10 +119,15 @@
       <div class="h24-role-cards" id="roleCards"></div>
     </section>
 
-    <section class="h24-section">
-      <div class="h24-section-head">
-        <div><h2>Menu Saya</h2></div>
+    <section class="h24-teacher-quote" id="teacherHadith" hidden>
+      <div class="h24-teacher-quote-icon">✦</div>
+      <div>
+        <small>BEKAL SEORANG GURU</small>
+        <p>“Sesungguhnya Aku (Rasulullah SAW) diutus sebagai guru.” <span>(HR. Ibnu Majah)</span></p>
       </div>
+    </section>
+
+    <section class="h24-section h24-menu-section">
       <div class="h24-grid" id="menuGrid"><div class="h24-empty">Menyiapkan menu yang diizinkan...</div></div>
     </section>
   </main>
@@ -124,6 +143,20 @@
         <button type="button" class="h24-modal-close" onclick="closeHealthRestModal()" aria-label="Tutup">×</button>
       </div>
       <div class="h24-modal-body" id="healthRestList"></div>
+    </section>
+  </div>
+
+  <div class="h24-modal" id="teacherQuickModal" hidden aria-hidden="true">
+    <div class="h24-modal-backdrop" onclick="closeTeacherQuickModal()"></div>
+    <section class="h24-modal-card h24-teacher-modal-card" role="dialog" aria-modal="true" aria-labelledby="teacherQuickTitle">
+      <div class="h24-modal-head">
+        <div>
+          <small id="teacherQuickKicker">INFO GURU</small>
+          <h3 id="teacherQuickTitle">Detail</h3>
+        </div>
+        <button type="button" class="h24-modal-close" onclick="closeTeacherQuickModal()" aria-label="Tutup">×</button>
+      </div>
+      <div class="h24-modal-body" id="teacherQuickBody"></div>
     </section>
   </div>
 
@@ -204,10 +237,9 @@
         {label:'Lapor Pelanggaran',desc:'Catat kejadian kedisiplinan',targets:['menu-disiplin'],type:'shield'},
         {label:'Jurnal Pengawasan',desc:'Catat hasil piket',targets:['menu-jurnal-piket'],type:'edit'}
       ]},
-      guru:{title:'Ringkasan Guru',roles:['guru'],cards:[
-        {label:'Absen Guru',desc:'Catat kehadiran mengajar',targets:['menu-absen-guru'],type:'check'},
-        {label:'Absensi KBM',desc:'Catat kehadiran kelas',targets:['menu-absen-kbm'],type:'school'},
-        {label:'Kalender Pendidikan',desc:'Lihat agenda akademik',targets:['menu-kalender-pendidikan'],type:'calendar'}
+      guru:{title:'',showTitle:false,roles:['guru'],cards:[
+        {key:'teacherSchedule',label:'Jadwal Saya Hari Ini',type:'calendar'},
+        {key:'teacherLeave',label:'Izin Tidak Belajar',type:'shield'}
       ]},
       kesehatan:{title:'Ringkasan Kesehatan',roles:['kesehatan'],cards:[
         {key:'health',label:'Santri Sakit',targets:['menu-jurnal-kesehatan'],type:'health'},
@@ -238,7 +270,8 @@
       const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit',weekday:'long',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
       const out={};parts.forEach(p=>{if(p.type!=='literal')out[p.type]=p.value});
       const dayMap={Sunday:'ahad',Monday:'senin',Tuesday:'selasa',Wednesday:'rabu',Thursday:'kamis',Friday:'jumat',Saturday:'sabtu'};
-      return {date:`${out.year}-${out.month}-${out.day}`,day:dayMap[out.weekday]||'senin',minutes:(Number(out.hour)||0)*60+(Number(out.minute)||0)};
+      const dayNumberMap={Sunday:0,Monday:1,Tuesday:2,Wednesday:3,Thursday:4,Friday:5,Saturday:6};
+      return {date:`${out.year}-${out.month}-${out.day}`,day:dayMap[out.weekday]||'senin',dayNumber:dayNumberMap[out.weekday]??1,minutes:(Number(out.hour)||0)*60+(Number(out.minute)||0),clock:`${out.hour}:${out.minute}`};
     }
     function timeMinutes(v){const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?(Number(m[1])*60+Number(m[2])):null}
     function inRange(now,start,end){const s=timeMinutes(start),e=timeMinutes(end);if(s===null)return false;if(e===null)return now>=s;if(e>=s)return now>=s&&now<e;return now>=s||now<e}
@@ -265,15 +298,16 @@
       const names=[...new Set(active.map(p=>String(p.pengawas||'').trim()).filter(Boolean))];
       return {name:names.join(', ')||'Tidak ada piket saat ini',programs:active.map(p=>p.nama||'Program')};
     }
-    function latestHealthRestNames(raw,today){
+    function latestHealthRestEntries(raw,today){
       const latest=new Map();objectValues(raw).forEach(r=>{
         if(!r||typeof r!=='object')return;const name=r.identitasSantri?.namaSantri||r.identitas?.namaSantri||r.namaSantri||'';if(!name)return;
         const key=String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
         const stamp=String(r.waktuSimpan||r.dibuatPada||`${r.tanggalPemeriksaan||''}T${r.waktuPemeriksaan||'00:00'}`);
         const prev=latest.get(key);if(!prev||stamp>prev.stamp)latest.set(key,{name:String(name).trim(),stamp,record:r});
       });
-      return [...latest.values()].filter(x=>x.record?.izinPembelajaran?.bolehTidakMengikutiPembelajaranHariIni===true&&(!x.record?.izinPembelajaran?.tanggalIzin||x.record.izinPembelajaran.tanggalIzin===today)).map(x=>x.name).sort((a,b)=>a.localeCompare(b,'id'));
+      return [...latest.values()].filter(x=>x.record?.izinPembelajaran?.bolehTidakMengikutiPembelajaranHariIni===true&&(!x.record?.izinPembelajaran?.tanggalIzin||x.record.izinPembelajaran.tanggalIzin===today)).sort((a,b)=>a.name.localeCompare(b.name,'id'));
     }
+    function latestHealthRestNames(raw,today){return latestHealthRestEntries(raw,today).map(x=>x.name)}
     let operationalSummaryPromise=null;
     async function loadOperationalSummary(){
       try{
@@ -297,6 +331,33 @@
         return operationalSummaryPromise;
       }catch(err){console.warn('Ringkasan operasional beranda gagal:',err);return null}
     }
+    const TEACHER_CODE_ALIASES={MULTAZAM:['multazam','multazam zakaria','abah multazam','dr multazam zakaria'],RASYIDIN:['rasyidin','rosyidin','abi rasyidin','abi rosyidin'],NAQIEB:['naqieb','muhammad naqieb'],ZAKY:['zaky','zaki','muhammad zaky','muhammad zaki'],RAHIEL:['rahiel','mika rahiel','mika rahiel yusuf'],FAIQ:['faiq','muhammad faiq'],FALAH:['falah','al falah','muhammad al falah','m al falah'],FATIMAH:['fatimah'],MEILISA:['meilisa','melisa'],ALAMANDA:['alamanda'],HANIF:['hanif'],AHMAD_IMBRON:['ahmad imbron','ahmadimbron','imbron'],ANDRIYANI:['andriyani','andriyani kusuma dayanti'],CAPPRY:['cappry','cappry yoda pratama'],DELLA:['della','della gustia'],EDWIN:['edwin','edwin romeo'],EVITA:['evita','evita hardyanti'],FENNY:['fenny','fenny ayu anggraeni'],LAILA:['laila','laila nuzlini'],MANDA:['manda','manda saputra'],MARYANA:['maryana'],NURUL_FADLILAH:['nurul fadlilah','nurulfadlilah'],SHAFIRA:['shafira','shafira ramadanty']};
+    function normalizeTeacherIdentity(value=''){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\b(abah|abi|ummi|ustadzah|ustadz|ust|muallimah|muallim|mualimah|mualim|naqibah|naqib|guru|bapak|ibu|pak|bu|dr|s pd|m pd|mpd|se)\b/g,' ').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim()}
+    function compactTeacherIdentity(value=''){return normalizeTeacherIdentity(value).replace(/\s+/g,'')}
+    function detectTeacherCodeForHome(scheduleRows=[]){
+      const p=profile(),direct=String(p.teacherCode||p.guruKode||'').trim().toUpperCase();if(direct)return direct;
+      const candidates=[p.label,p.nama,p.namaTampilan,p.displayName,p.username,String(p.email||'').split('@')[0]].filter(Boolean).map(normalizeTeacherIdentity).filter(Boolean);
+      let best={code:'',score:0};const knownCodes=new Set(scheduleRows.map(r=>String(r?.guruKode||'').trim().toUpperCase()).filter(Boolean));
+      Object.entries(TEACHER_CODE_ALIASES).forEach(([code,aliases])=>{if(knownCodes.size&&!knownCodes.has(code))return;aliases.forEach(alias=>{const n=normalizeTeacherIdentity(alias),c=compactTeacherIdentity(alias);candidates.forEach(candidate=>{const cc=compactTeacherIdentity(candidate);let score=0;if(candidate===n||cc===c)score=100;else if(n.length>=4&&(candidate.includes(n)||n.includes(candidate)))score=80;else if(c.length>=4&&(cc.includes(c)||c.includes(cc)))score=70;if(score>best.score)best={code,score}})})});
+      if(best.code)return best.code;
+      for(const code of knownCodes){const nc=normalizeTeacherIdentity(code.replaceAll('_',' ')),cc=compactTeacherIdentity(nc);if(candidates.some(x=>x===nc||compactTeacherIdentity(x)===cc||compactTeacherIdentity(x).includes(cc)||cc.includes(compactTeacherIdentity(x))))return code}
+      return '';
+    }
+    function parseScheduleRows(value){return Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}))}
+    async function localScheduleRows(){try{const r=await fetch('data/jadwal-pelajaran-awal-2026-2027.json',{cache:'no-store'});if(!r.ok)return[];return parseScheduleRows(await r.json())}catch(_){return[]}}
+    function groupTeacherSchedules(rows=[]){const grouped=new Map();rows.forEach((r,i)=>{const key=[r.jamMulai||'',r.jamSelesai||'',r.mapel||'',r.sesi||'',r.guruKode||'',(!r.jamMulai&&!r.jamSelesai?r.id||i:'')].join('|');if(!grouped.has(key))grouped.set(key,{mapel:r.mapel||'Pelajaran',jamMulai:r.jamMulai||'',jamSelesai:r.jamSelesai||'',sesi:r.sesi||'',classes:[],unit:[]});const g=grouped.get(key);if(r.kelas&&!g.classes.includes(r.kelas))g.classes.push(r.kelas);if(r.unit&&!g.unit.includes(r.unit))g.unit.push(r.unit)});return [...grouped.values()].sort((a,b)=>String(a.jamMulai).localeCompare(String(b.jamMulai))||a.mapel.localeCompare(b.mapel,'id'))}
+    function permitIsActiveNow(r,ctx){if(String(r?.status||'').toUpperCase()!=='DISETUJUI')return false;const now=`${ctx.date}T${ctx.clock}`,start=String(r.tanggalMulai||r.mulai||'').slice(0,16),end=String(r.rencanaKembali||r.tanggalKembaliRencana||r.tanggalSelesai||'').slice(0,16);if(start&&start.includes('T')&&now<start)return false;if(end&&end.includes('T')&&now>end)return false;if(start&&!start.includes('T')&&ctx.date<start.slice(0,10))return false;if(end&&!end.includes('T')&&ctx.date>end.slice(0,10))return false;return !!(r.namaSantri||r.santri?.nama)}
+    function teacherLeaveEntries(permitRaw,healthRaw,ctx){const byName=new Map();latestHealthRestEntries(healthRaw,ctx.date).forEach(x=>{const key=compactTeacherIdentity(x.name);if(!key)return;byName.set(key,{name:x.name,source:'UKS',detail:'Izin tidak mengikuti pembelajaran berdasarkan pemeriksaan UKS.',until:''})});objectValues(permitRaw).filter(r=>permitIsActiveNow(r,ctx)).forEach(r=>{const name=String(r.namaSantri||r.santri?.nama||'').trim(),key=compactTeacherIdentity(name);if(!key)return;const prev=byName.get(key),type=String(r.jenisIzin||r.keperluan||'Perizinan').trim(),until=String(r.rencanaKembali||r.tanggalKembaliRencana||'').trim();byName.set(key,{name,source:prev?`${prev.source} + Perizinan`:'Perizinan',detail:type,until})});return [...byName.values()].sort((a,b)=>a.name.localeCompare(b.name,'id'))}
+    let teacherQuickPromise=null,currentTeacherQuickData={schedules:[],leaves:[],teacherCode:''};
+    async function loadTeacherQuickData(){
+      try{const p=window.parent&&window.parent!==window?window.parent:window,cached=p.__cahayaHomeTeacherCacheV48;if(cached&&Date.now()-cached.at<90*1000)return cached.data;if(teacherQuickPromise)return teacherQuickPromise;const fb=p.firebase;if(!fb||typeof fb.database!=='function')return currentTeacherQuickData;const db=fb.database(),ctx=jakartaParts();teacherQuickPromise=Promise.all([db.ref('cahaya_app/jadwal_pelajaran').once('value').catch(()=>null),db.ref('cahaya_app/perizinan_ringkas').orderByChild('status').equalTo('DISETUJUI').once('value').catch(()=>null),db.ref('cahaya_app/pemeriksaan_kesehatan').orderByChild('tanggalPemeriksaan').equalTo(ctx.date).once('value').catch(()=>null)]).then(async([scheduleSnap,permitSnap,healthSnap])=>{let rows=parseScheduleRows(scheduleSnap?.val?.()||{});if(!rows.length)rows=await localScheduleRows();const teacherCode=detectTeacherCodeForHome(rows),dayRows=rows.filter(r=>r&&r.aktif!==false&&String(r.jenis||'').toLowerCase()!=='ekskul'&&Number(r.hari)===Number(ctx.dayNumber)&&String(r.guruKode||'').trim().toUpperCase()===teacherCode),data={teacherCode,schedules:groupTeacherSchedules(dayRows),leaves:teacherLeaveEntries(permitSnap?.val?.()||{},healthSnap?.val?.()||{},ctx),ctx};currentTeacherQuickData=data;p.__cahayaHomeTeacherCacheV48={at:Date.now(),data};return data}).catch(err=>{console.warn('Ringkasan guru belum dapat dimuat:',err);return currentTeacherQuickData}).finally(()=>{teacherQuickPromise=null});return teacherQuickPromise}catch(err){console.warn('Ringkasan guru gagal:',err);return currentTeacherQuickData}
+    }
+    function formatDateTimeShort(v){if(!v)return'';try{const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v).replace('T',' ');return new Intl.DateTimeFormat('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(d)}catch(_){return String(v)}}
+    window.closeTeacherQuickModal=function(){const modal=document.getElementById('teacherQuickModal');if(modal){modal.hidden=true;modal.setAttribute('aria-hidden','true')}};
+    function openTeacherQuickBase(kicker,title,html){const modal=document.getElementById('teacherQuickModal'),body=document.getElementById('teacherQuickBody');if(!modal||!body)return;document.getElementById('teacherQuickKicker').textContent=kicker;document.getElementById('teacherQuickTitle').textContent=title;body.innerHTML=html;modal.hidden=false;modal.setAttribute('aria-hidden','false')}
+    window.openTeacherScheduleModal=function(){const d=currentTeacherQuickData||{},items=d.schedules||[];openTeacherQuickBase('JADWAL GURU HARI INI','Jadwal Saya Hari Ini',items.length?`<div class="h24-teacher-list">${items.map((x,i)=>`<div class="h24-teacher-row"><span class="h24-teacher-row-index">${i+1}</span><span class="h24-teacher-row-main"><b>${escapeHtml(x.mapel)}</b><span>${escapeHtml(x.classes.join(' • ')||x.sesi||'Jadwal mengajar')}</span></span><span class="h24-teacher-row-time">${escapeHtml(x.jamMulai&&x.jamSelesai?`${x.jamMulai}–${x.jamSelesai}`:x.jamMulai||x.sesi||'Hari ini')}</span></div>`).join('')}</div>`:`<div class="h24-modal-empty">${d.teacherCode?'Tidak ada jadwal mengajar hari ini.':'Nama akun belum dapat dicocokkan dengan jadwal guru.'}</div>`)};
+    window.openTeacherLeaveModal=function(){const items=currentTeacherQuickData?.leaves||[];openTeacherQuickBase('IZIN TIDAK BELAJAR','Santri Tidak Mengikuti Pembelajaran',items.length?`<div class="h24-teacher-list">${items.map((x,i)=>`<div class="h24-teacher-row"><span class="h24-teacher-row-index">${i+1}</span><span class="h24-teacher-row-main"><b>${escapeHtml(x.name)}</b><span>${escapeHtml(x.detail||'Izin tidak belajar')}</span><span class="h24-source-pill">${escapeHtml(x.source)}</span></span>${x.until?`<span class="h24-teacher-row-time">s.d. ${escapeHtml(formatDateTimeShort(x.until))}</span>`:''}</div>`).join('')}</div>`:'<div class="h24-modal-empty">Tidak ada santri dengan izin tidak belajar yang aktif saat ini.</div>')};
+
     let currentHealthRestNames=[];
     window.closeHealthRestModal=function(){const modal=document.getElementById('healthRestModal');if(modal){modal.hidden=true;modal.setAttribute('aria-hidden','true')}};
     window.openHealthRestModal=function(){
@@ -305,16 +366,26 @@
       modal.hidden=false;modal.setAttribute('aria-hidden','false');
     };
     function roleCardMarkup(c){
-      const target=c.target||'',onclick=c.action==='healthModal'?'openHealthRestModal()':target?`openHome24Menu('${escapeHtml(target)}')`:'';
+      const target=c.target||'',actions={healthModal:'openHealthRestModal()',teacherSchedule:'openTeacherScheduleModal()',teacherLeave:'openTeacherLeaveModal()'},onclick=actions[c.action]||(target?`openHome24Menu('${escapeHtml(target)}')`:'');
       return `<button class="h24-role-card${onclick?'':' is-static'}" type="button" ${onclick?`onclick="${onclick}"`:''}><span class="h24-role-icon">${iconSvg(c.type)}</span><span class="h24-role-copy"><b>${escapeHtml(c.label)}</b><span>${escapeHtml(c.desc||'')}</span></span>${onclick?'<span class="h24-role-arrow">›</span>':''}</button>`;
     }
     let roleRenderToken=0;
     async function renderRoleCards(){
       const token=++roleRenderToken,p=profile(),currentRoles=roles(p),group=roleCardGroup(currentRoles),section=document.getElementById('roleCardsSection'),box=document.getElementById('roleCards');
+      const teacherHadith=document.getElementById('teacherHadith');if(teacherHadith)teacherHadith.hidden=!currentRoles.includes('guru');
       if(!section||!box||!group){if(section)section.hidden=true;return}
       let available=[];
-      const isLeadership=group===ROLE_CARD_CONFIG.leadership,isHealthRole=group===ROLE_CARD_CONFIG.kesehatan;
-      if(isLeadership||isHealthRole){
+      const isLeadership=group===ROLE_CARD_CONFIG.leadership,isHealthRole=group===ROLE_CARD_CONFIG.kesehatan,isTeacherRole=group===ROLE_CARD_CONFIG.guru;
+      section.classList.toggle('is-teacher',isTeacherRole);
+      const head=section.querySelector('.h24-role-head');if(head)head.style.display=group.showTitle===false?'none':'';
+      if(teacherHadith)teacherHadith.hidden=!currentRoles.includes('guru');
+      if(isTeacherRole){
+        const data=await loadTeacherQuickData();if(token!==roleRenderToken)return;currentTeacherQuickData=data||currentTeacherQuickData;
+        available=[
+          {...group.cards[0],action:'teacherSchedule',desc:`${data?.schedules?.length||0} jadwal mengajar hari ini.`},
+          {...group.cards[1],action:'teacherLeave',desc:`${data?.leaves?.length||0} santri izin tidak belajar saat ini.`}
+        ];
+      }else if(isLeadership||isHealthRole){
         const ops=await loadOperationalSummary();if(token!==roleRenderToken)return;
         currentHealthRestNames=ops?.healthNames||[];
         for(const c of group.cards){
@@ -346,8 +417,9 @@
       try{
         if(!window.parent||window.parent===window)return[];
         const nav=window.parent.document.querySelector('#dynamicMenu');if(!nav)return[];
+        const teacherMode=roles(profile()).includes('guru');
         return [...nav.querySelectorAll('.menu-akses')]
-          .filter(el=>el.id&&el.id!=='menu-home'&&!DASHBOARD_EXCLUDED.has(el.id)&&isVisible(el))
+          .filter(el=>el.id&&el.id!=='menu-home'&&!DASHBOARD_EXCLUDED.has(el.id)&&!(teacherMode&&el.id==='menu-absen-guru')&&isVisible(el))
           .map(el=>{const label=stripLeadingIcon(cleanText(el));return{id:el.id,label,type:iconType(el.id,label)}});
       }catch(_){return[]}
     }
@@ -364,7 +436,7 @@
       if(!items.length){root.innerHTML='<div class="h24-empty">Belum ada menu yang tersedia untuk akun ini.</div>';return}
       root.innerHTML=items.map(item=>`<button class="h24-menu" type="button" onclick="animateAndOpenHome24(this,'${escapeHtml(item.id)}')"><span class="h24-icon">${iconSvg(item.type)}</span><b>${escapeHtml(item.label)}</b></button>`).join('')
     }
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHealthRestModal()});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeHealthRestModal();closeTeacherQuickModal()}});
     setProfile();render();renderRoleCards();
     try{if(window.parent&&window.parent!==window){const nav=window.parent.document.querySelector('#dynamicMenu');if(nav)new MutationObserver(()=>{render();renderRoleCards()}).observe(nav,{subtree:true,attributes:true,attributeFilter:['style','hidden','class'],childList:true})}}catch(_){ }
     setTimeout(()=>{render();renderRoleCards()},250);setTimeout(()=>{render();renderRoleCards()},850);setTimeout(()=>{render();renderRoleCards()},1800);
