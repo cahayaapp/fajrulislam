@@ -1298,7 +1298,7 @@
     }
   </style>
 
-  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=54" />
+  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=56" />
 <style id="cahaya-v52-kbm-clean">
 .c52-kbm-context{position:relative;padding:18px 20px!important}
 .c52-kbm-context>.context-chip{position:absolute;right:20px;top:17px}
@@ -1363,6 +1363,164 @@
     .v55-attendance-nav{margin-bottom:7px}
   }
 </style>
+<style id="cahaya-v56-kbm-fit-picker">
+  /* V56 — pemilih jadwal dibuat sebagai satu layar penuh, tanpa scroll. */
+  body.v56-schedule-picker{
+    height:100dvh!important;
+    min-height:100dvh!important;
+    overflow:hidden!important;
+    padding:clamp(8px,1.4vh,14px)!important;
+  }
+  body.v56-schedule-picker .page-shell{
+    height:100%!important;
+    min-height:0!important;
+    display:flex!important;
+    align-items:stretch!important;
+  }
+  body.v56-schedule-picker #kbmScheduleScene{
+    flex:1 1 auto!important;
+    min-height:0!important;
+  }
+  .v55-kbm-picker{
+    width:100%;
+    max-width:980px;
+    margin:0 auto!important;
+    padding:0!important;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr);
+    gap:clamp(8px,1.4vh,14px);
+  }
+  .v55-picker-head{
+    margin:0!important;
+    padding:0!important;
+  }
+  .v56-picker-heading{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    min-height:58px;
+    padding:10px 14px;
+    border:1px solid rgba(40,120,255,.14);
+    border-radius:20px;
+    background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(246,250,255,.94));
+    box-shadow:0 10px 28px rgba(21,87,213,.07);
+  }
+  .v56-picker-icon{
+    width:38px;height:38px;flex:0 0 38px;
+    display:grid;place-items:center;
+    border-radius:13px;
+    color:#fff;
+    font-size:1.05rem;font-weight:950;
+    background:linear-gradient(145deg,#1557d5,#2878ff);
+    box-shadow:0 8px 18px rgba(40,120,255,.22);
+  }
+  .v56-picker-heading h2{
+    margin:0!important;
+    color:#152347;
+    font-size:clamp(1rem,2.5vw,1.22rem)!important;
+    line-height:1.15;
+    letter-spacing:-.025em;
+    font-weight:950;
+  }
+  .v56-picker-count{
+    display:block;
+    margin-top:2px;
+    color:#7a879f;
+    font-size:.71rem;
+    font-weight:800;
+    line-height:1.2;
+  }
+  .v55-schedule-grid{
+    min-height:0!important;
+    height:100%!important;
+    display:grid!important;
+    grid-template-columns:repeat(var(--v56-cols,2),minmax(0,1fr))!important;
+    grid-template-rows:repeat(var(--v56-rows,1),minmax(0,1fr))!important;
+    grid-auto-rows:minmax(0,1fr)!important;
+    gap:clamp(8px,1.25vh,12px)!important;
+    align-content:stretch!important;
+    overflow:hidden!important;
+  }
+  .v55-schedule-card{
+    position:relative;
+    min-height:0!important;
+    height:100%!important;
+    overflow:hidden;
+    border:1px solid rgba(40,120,255,.16)!important;
+    border-radius:clamp(16px,2.2vw,22px)!important;
+    padding:clamp(11px,1.7vh,17px)!important;
+    background:
+      radial-gradient(circle at 92% 8%,rgba(242,182,50,.13),transparent 28%),
+      linear-gradient(145deg,#fff 0%,#f8fbff 100%)!important;
+    box-shadow:0 10px 25px rgba(21,87,213,.075)!important;
+    justify-content:flex-start!important;
+  }
+  .v55-schedule-card::before{
+    content:"";position:absolute;left:0;top:18%;bottom:18%;width:3px;border-radius:0 4px 4px 0;
+    background:linear-gradient(180deg,#2878ff,#f2b632);
+  }
+  .v55-schedule-card::after{
+    content:"›";position:absolute;right:12px;bottom:9px;
+    color:#f2b632;font-size:1.25rem;font-weight:950;line-height:1;
+  }
+  .v55-schedule-card:hover,.v55-schedule-card:focus-visible{
+    transform:translateY(-2px)!important;
+    border-color:#9fc0ff!important;
+    box-shadow:0 14px 28px rgba(21,87,213,.12)!important;
+  }
+  .v55-schedule-top{margin:0 0 clamp(7px,1vh,11px)!important;gap:6px!important;min-height:24px}
+  .v55-time-pill{
+    padding:4px 7px!important;
+    font-size:clamp(.61rem,1.7vw,.7rem)!important;
+    line-height:1!important;
+  }
+  .v55-combined-pill{padding:4px 6px!important;font-size:.58rem!important}
+  .v55-schedule-mapel{
+    margin:0 18px 4px 0!important;
+    color:#13254d!important;
+    font-size:clamp(.82rem,2.4vw,1rem)!important;
+    line-height:1.13!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .v55-schedule-class{
+    color:#74829c!important;
+    font-size:clamp(.66rem,1.9vw,.79rem)!important;
+    line-height:1.25!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .v55-schedule-arrow{display:none!important}
+  .v55-schedule-empty,.v55-schedule-loading{
+    min-height:0!important;height:100%!important;border-radius:20px!important;padding:18px!important;
+  }
+  .v55-schedule-grid.v56-dense .v55-schedule-card{padding:9px 10px!important;border-radius:15px!important}
+  .v55-schedule-grid.v56-dense .v55-schedule-top{margin-bottom:5px!important}
+  .v55-schedule-grid.v56-dense .v55-time-pill{font-size:.58rem!important;padding:3px 5px!important}
+  .v55-schedule-grid.v56-dense .v55-schedule-mapel{font-size:.76rem!important;margin-bottom:2px!important}
+  .v55-schedule-grid.v56-dense .v55-schedule-class{font-size:.61rem!important;line-height:1.15!important}
+  .v55-schedule-grid.v56-dense .v55-schedule-card::after{right:8px;bottom:6px;font-size:1rem}
+  @media(max-width:720px){
+    .v55-kbm-picker{gap:8px!important}
+    .v56-picker-heading{min-height:50px;padding:7px 10px;border-radius:16px}
+    .v56-picker-icon{width:34px;height:34px;flex-basis:34px;border-radius:11px;font-size:.95rem}
+    .v56-picker-heading h2{font-size:1rem!important}
+    .v56-picker-count{font-size:.65rem}
+    .v55-schedule-grid{gap:8px!important}
+    .v55-schedule-card{padding:10px 11px!important;border-radius:16px!important}
+  }
+  @media(max-height:560px){
+    .v56-picker-heading{min-height:44px;padding:6px 9px}
+    .v56-picker-icon{width:31px;height:31px;flex-basis:31px}
+    .v56-picker-count{display:none}
+    .v55-schedule-card{padding:8px 9px!important}
+    .v55-schedule-top{margin-bottom:4px!important}
+  }
+</style>
 </head>
 <body>
   <div id="loadingOverlay">
@@ -1403,8 +1561,13 @@
 
     <section class="kbm-scene v55-kbm-picker" id="kbmScheduleScene">
       <div class="v55-picker-head">
-        <span class="v55-picker-kicker">Jadwal Hari Ini</span>
-        <h2>Pilih Kelas & Mata Pelajaran</h2>
+        <div class="v56-picker-heading">
+          <span class="v56-picker-icon" aria-hidden="true">▦</span>
+          <div>
+            <h2>Jadwal Hari Ini</h2>
+            <span class="v56-picker-count" id="v56ScheduleCount">Memuat jadwal…</span>
+          </div>
+        </div>
       </div>
 
       <input type="hidden" id="kbmTanggal" />
@@ -2242,10 +2405,33 @@
     const showAttendance = scene === "attendance";
     picker.hidden = showAttendance;
     attendance.hidden = !showAttendance;
+    document.body.classList.toggle("v56-schedule-picker", !showAttendance);
     if (!showAttendance) {
-      requestAnimationFrame(() => {
-        try { picker.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (_) {}
-      });
+      requestAnimationFrame(fitScheduleGrid);
+    }
+  }
+
+  function fitScheduleGrid() {
+    const host = document.getElementById("scheduleCardList");
+    if (!host) return;
+    const count = Math.max(1, dailyAssignments.length || 1);
+    const mobile = window.matchMedia("(max-width: 720px)").matches;
+    let cols;
+    if (mobile) {
+      cols = count <= 6 ? 2 : 3;
+    } else {
+      cols = count <= 2 ? 2 : count <= 6 ? 3 : 4;
+    }
+    cols = Math.min(cols, count);
+    const rows = Math.max(1, Math.ceil(count / cols));
+    host.style.setProperty("--v56-cols", String(cols));
+    host.style.setProperty("--v56-rows", String(rows));
+    host.classList.toggle("v56-dense", rows >= 4 || (mobile && cols >= 3));
+    const countEl = document.getElementById("v56ScheduleCount");
+    if (countEl) {
+      countEl.textContent = dailyAssignments.length
+        ? `${dailyAssignments.length} jadwal mengajar`
+        : "Tidak ada jadwal";
     }
   }
 
@@ -2266,6 +2452,7 @@
       span.textContent = emptyMessage || "Tidak ditemukan jadwal mengajar untuk akun ini.";
       empty.append(icon, strong, span);
       host.appendChild(empty);
+      fitScheduleGrid();
       return;
     }
 
@@ -2308,7 +2495,12 @@
       button.addEventListener("click", () => pilihJadwalKbm(item.id));
       host.appendChild(button);
     });
+    fitScheduleGrid();
   }
+
+  window.addEventListener("resize", () => {
+    if (document.body.classList.contains("v56-schedule-picker")) fitScheduleGrid();
+  }, { passive: true });
 
   function pilihJadwalKbm(id) {
     const select = document.getElementById("kbmMapel");
