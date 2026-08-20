@@ -483,22 +483,10 @@
   function canChatWith(
     user = {}
   ) {
-    if (
-      !user ||
-      isSelfUser(user)
-    ) {
-      return false;
-    }
-
-    if (
-      currentIsPrivileged()
-    ) {
-      return true;
-    }
-
-    return isPrivilegedRoles(
-      rolesOf(user)
-    );
+    if (!user || isSelfUser(user)) return false;
+    // V69: seluruh pengguna hanya dapat membuka chat langsung dengan
+    // Direktur, Wakil Direktur, Konselor, dan Admin.
+    return isPrivilegedRoles(rolesOf(user));
   }
 
   function defaultRoomId(
@@ -639,15 +627,9 @@
       return;
     }
 
-    if (
-      currentIsPrivileged()
-    ) {
-      element.textContent =
-        "Akses pimpinan: dapat menghubungi seluruh pengguna dan mengirim broadcast.";
-    } else {
-      element.textContent =
-        "Akses terbatas: Anda hanya dapat menghubungi Direktur, Wakil Direktur, Admin, dan Konselor.";
-    }
+    element.textContent = currentIsPrivileged()
+      ? "Chat langsung dibatasi antar Direktur, Wakil Direktur, Admin, dan Konselor. Broadcast tetap tersedia sesuai kewenangan."
+      : "Anda hanya dapat menghubungi Direktur, Wakil Direktur, Admin, dan Konselor.";
   }
 
   function messageValues(
@@ -1822,7 +1804,8 @@
       "Notification" in window &&
       Notification.permission ===
         "granted" &&
-      document.hidden
+      document.hidden &&
+      !window.CahayaPushGlobal
     ) {
       try {
         const notification =
@@ -3660,7 +3643,7 @@
       }
     );
 
-    dbRT.ref(`cahaya_app/notifikasi_wali/${realUsername}`).limitToLast(100).on(
+    dbRT.ref(`cahaya_app/notifikasi_user/${safeFirebaseKey(realUsername)}`).limitToLast(100).on(
       "value",
       snapshot => {
         const value = snapshot.val() || {};
@@ -3670,6 +3653,46 @@
       error => console.warn("Notifikasi database belum dimuat:", error)
     );
   }
+
+  let chatHistoryArmed = false;
+
+  function chatWindowElement() {
+    return document.getElementById("pengurusChatWindow");
+  }
+
+  function chatIsOpen() {
+    return chatWindowElement()?.style.display === "flex";
+  }
+
+  function openChatWindow() {
+    const windowElement = chatWindowElement();
+    if (!windowElement) return null;
+    windowElement.style.display = "flex";
+    if (!chatHistoryArmed) {
+      history.pushState({...history.state, cahayaChatOpen:true}, "", location.href);
+      chatHistoryArmed = true;
+    }
+    return windowElement;
+  }
+
+  function closeChatWindow(fromHistory = false) {
+    const windowElement = chatWindowElement();
+    if (!windowElement || !chatIsOpen()) return;
+    windowElement.style.display = "none";
+    if (pChatListener) {
+      dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
+      pChatListener = null;
+    }
+    if (!fromHistory && chatHistoryArmed && history.state?.cahayaChatOpen) {
+      history.back();
+    }
+    if (fromHistory || !history.state?.cahayaChatOpen) chatHistoryArmed = false;
+  }
+
+  window.addEventListener("popstate", () => {
+    if (chatIsOpen()) closeChatWindow(true);
+    chatHistoryArmed = false;
+  });
 
   function toggleChat() {
     if (
@@ -3689,32 +3712,12 @@
         "pengurusChatWindow"
       );
 
-    if (
-      windowElement.style
-        .display ===
-      "flex"
-    ) {
-      windowElement.style.display =
-        "none";
-
-      if (
-        pChatListener
-      ) {
-        dbRT
-          .ref(
-            `cahaya_app/pesan_global/${pChatListener}`
-          )
-          .off();
-
-        pChatListener =
-          null;
-      }
-
+    if (windowElement.style.display === "flex") {
+      closeChatWindow(false);
       return;
     }
 
-    windowElement.style.display =
-      "flex";
+    openChatWindow();
 
     showList();
 
@@ -4078,10 +4081,7 @@
         }
       }
 
-      document.getElementById(
-        "pengurusChatWindow"
-      ).style.display =
-        "flex";
+      openChatWindow();
 
       await markRoomRead(
         roomId,

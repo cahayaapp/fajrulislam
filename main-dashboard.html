@@ -311,18 +311,6 @@
       display: none !important;
     }
 
-
-
-    /* SIDEBAR MULTI-PERAN — setiap tugas tampil dalam kelompok yang jelas */
-    .menu-group.role-organized{display:block!important;margin:8px 0 12px;border:1px solid #e2eaf6;border-radius:16px;background:rgba(255,255,255,.72);overflow:hidden;box-shadow:0 7px 18px rgba(34,67,116,.045)}
-    .menu-group.role-organized .group-label{display:flex!important;align-items:center;gap:8px;min-height:38px;padding:9px 12px;color:#334968;font-size:.66rem;font-weight:950;text-transform:uppercase;letter-spacing:.075em;background:linear-gradient(180deg,#f9fbff,#f1f6fd);border-bottom:1px solid #e7eef8;cursor:pointer;user-select:none}
-    .menu-group.role-organized .group-label::after{content:'⌃';margin-left:auto;color:#8da0b8;transition:.2s transform}
-    .menu-group.role-organized.collapsed .group-label::after{transform:rotate(180deg)}
-    .menu-group.role-organized .role-group-items{padding:5px 6px 7px}
-    .menu-group.role-organized.collapsed .role-group-items{display:none}
-    .menu-group.role-organized .nav-item{margin:2px 0}
-    .role-group-count{min-width:20px;height:20px;display:grid;place-items:center;border-radius:999px;background:#e7f0ff;color:#2b68b7;font-size:.58rem;font-weight:950}
-
     .nav-item {
       min-height: 45px;
       display: flex;
@@ -1859,20 +1847,32 @@
   }
 }
 </style>
-<style id="cahaya-v47-director-role-preview">
-/* V47 — Mode Pengembangan Direktur: preview menu per role tanpa mengubah role akun asli */
-.director-role-switch{margin:12px 14px 4px;padding:13px;border:1px solid rgba(40,120,255,.18);border-radius:17px;background:linear-gradient(135deg,rgba(237,245,255,.96),rgba(255,247,225,.90));box-shadow:0 8px 24px rgba(31,65,128,.07)}
-.director-role-switch[hidden]{display:none!important}
-.director-role-switch-head{display:flex;align-items:center;gap:10px;margin-bottom:9px}
-.director-role-switch-icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#1557d5;color:#fff;box-shadow:0 7px 16px rgba(21,87,213,.18);font-size:1rem;flex:0 0 auto}
-.director-role-switch-copy{min-width:0}
-.director-role-switch-copy strong{display:block;color:#111827;font-size:.76rem;font-weight:1000;letter-spacing:.01em;line-height:1.2}
-.director-role-switch-copy span{display:block;color:#6b7280;font-size:.62rem;font-weight:760;line-height:1.35;margin-top:2px}
-.director-role-select{width:100%;height:40px;border:1px solid #cbdcf7;border-radius:12px;background:#fff;color:#111827;padding:0 34px 0 11px;font-size:.72rem;font-weight:900;outline:none;box-shadow:0 2px 8px rgba(31,65,128,.04);cursor:pointer}
-.director-role-select:focus{border-color:#2878ff;box-shadow:0 0 0 3px rgba(40,120,255,.11)}
-.director-role-status{display:flex;align-items:center;gap:6px;margin-top:8px;color:#1557d5;font-size:.61rem;font-weight:850;line-height:1.35}
-.director-role-status::before{content:"";width:7px;height:7px;border-radius:50%;background:#f2b632;box-shadow:0 0 0 3px rgba(242,182,50,.16);flex:0 0 auto}
-@media(max-width:900px){.director-role-switch{margin:10px 12px 4px;padding:12px;border-radius:16px}.director-role-select{height:42px;font-size:.74rem}}
+
+<style id="cahaya-v69-integrated-shell">
+/* V69 — sidebar integral, role switch umum, loading seragam */
+#dynamicMenu{display:flex!important;flex-direction:column!important;gap:4px!important;padding:4px 8px 12px!important}
+#dynamicMenu>.nav-item{display:flex;min-height:44px;margin:0!important;border:1px solid transparent;border-radius:13px;padding:10px 12px!important;background:transparent;transition:.18s ease}
+#dynamicMenu>.nav-item:hover{background:#f6f9fe!important;border-color:#e6edf8!important;transform:translateX(2px)}
+#dynamicMenu>.nav-item.active{background:#edf5ff!important;border-color:#d8e7fb!important;box-shadow:none!important}
+#dynamicMenu>.nav-item.active::before{background:#2878ff!important}
+
+.cahaya-page-loader{position:absolute;inset:var(--topbar-height) 0 0 0;z-index:8500;display:none;place-items:center;background:rgba(246,249,253,.90);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:opacity .2s ease}
+.cahaya-page-loader.show{display:grid}
+.cahaya-page-loader-card{display:grid;justify-items:center;gap:13px;padding:22px 26px}
+.cahaya-page-loader-spinner{width:48px;height:48px;border-radius:50%;border:4px solid #dfe9f7;border-top-color:#1557d5;border-right-color:#f2b632;animation:cahayaV69Spin .85s linear infinite}
+.cahaya-page-loader-text{color:#47546b;font-size:.79rem;font-weight:900;letter-spacing:.01em}
+@keyframes cahayaV69Spin{to{transform:rotate(360deg)}}
+
+/* chat tidak menutup header aplikasi */
+.pw-header-button.pw-close-button{background:rgba(255,255,255,.96)!important;color:#b42334!important;border:2px solid rgba(255,255,255,.96)!important;box-shadow:0 5px 15px rgba(34,52,61,.18)!important;font-weight:1000!important}
+.pw-header-button.pw-close-button:hover{background:#fff!important;color:#8f1727!important;transform:scale(1.05)}
+@media(max-width:900px){
+  .pengurus-chat-window{width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;inset:auto 8px calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 8px) 8px!important;top:calc(var(--topbar-height) + env(safe-area-inset-top) + 8px)!important;right:8px!important;bottom:calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 8px)!important;border-radius:22px!important;box-shadow:0 24px 70px rgba(11,27,52,.30)!important}
+  .pw-chat-header{min-height:62px!important;padding:8px 9px!important}
+}
+@media(max-width:560px){
+  .pengurus-chat-window{top:calc(var(--topbar-height) + env(safe-area-inset-top) + 6px)!important;left:6px!important;right:6px!important;bottom:calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 6px)!important;border-radius:19px!important}
+}
 </style>
 </head>
 <body class="cahaya-shell-page">
@@ -1900,35 +1900,6 @@
           <span>Ruang kerja terpadu pesantren</span>
         </div>
       </div>
-
-      <section class="director-role-switch" id="directorRoleSwitch" hidden aria-label="Mode pengembangan direktur">
-        <div class="director-role-switch-head">
-          <div class="director-role-switch-icon">◈</div>
-          <div class="director-role-switch-copy">
-            <strong>Mode Pengembangan Direktur</strong>
-            <span>Fokus melihat aplikasi sebagai satu role.</span>
-          </div>
-        </div>
-        <select class="director-role-select" id="directorRoleSelect" onchange="setDirectorViewRole(this.value)">
-          <option value="">👑 Semua Akses Direktur</option>
-          <option value="naqib">🕌 Naqib / Pengasuhan</option>
-          <option value="guru">👨‍🏫 Guru</option>
-          <option value="konselor">🤝 Konselor</option>
-          <option value="kesehatan">🩺 Kesehatan / UKS</option>
-          <option value="sarpras">🔧 Sarpras</option>
-          <option value="layanan">🧹 Keamanan & Kebersihan</option>
-          <option value="observer">👁️ Observer</option>
-          <option value="supervisor">🎯 Supervisor</option>
-          <option value="kepala-sekolah">🏫 Kepala Sekolah</option>
-          <option value="cla">🎓 CLA</option>
-          <option value="keuangan">💳 Keuangan</option>
-          <option value="kasir">🏪 Kasir</option>
-          <option value="wakil">🥈 Wakil Direktur</option>
-          <option value="yayasan">🏛️ Yayasan</option>
-          <option value="admin">⚙️ Administrator</option>
-        </select>
-        <div class="director-role-status" id="directorRoleStatus">Mode asli Direktur aktif.</div>
-      </section>
     </div>
 
     <div class="sidebar-scroll">
@@ -1969,6 +1940,13 @@
           <span id="topUserRole">Ruang kerja digital</span>
         </div>
         <div class="user-profile-icon" id="topNavProfile" style="display:none;" onclick="openAuthorizedMenu('menu-profil')"></div>
+      </div>
+    </div>
+
+    <div class="cahaya-page-loader" id="cahayaPageLoader" aria-live="polite" aria-hidden="true">
+      <div class="cahaya-page-loader-card">
+        <div class="cahaya-page-loader-spinner" aria-hidden="true"></div>
+        <div class="cahaya-page-loader-text" id="cahayaPageLoaderText">Menyiapkan CAHAYA APP...</div>
       </div>
     </div>
 
@@ -2025,7 +2003,7 @@
 
       <button
         type="button"
-        class="pw-header-button"
+        class="pw-header-button pw-close-button"
         onclick="togglePengurusChat()"
         aria-label="Tutup obrolan"
       >✕</button>
@@ -2121,6 +2099,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 
   <script>
     const firebaseConfig = window.CAHAYA_CONFIG.firebase;
@@ -2173,7 +2152,8 @@
         "cahayaWaliStudentProfile",
         "cahayaCurrentRole",
         "cahayaCurrentProfile",
-        "cahayaDirectorViewRole"
+        "cahayaDirectorViewRole",
+        "cahayaActiveRole"
       ].forEach(key => {
         localStorage.removeItem(key);
         sessionStorage.removeItem(key);
@@ -2204,8 +2184,9 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=59', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=69', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
+        <a class="nav-item menu-akses" id="menu-notulensi-rapat" style="display:none;" onclick="loadPage('rapat/notulensi-rapat.html?v=69', this)">📝 Notulensi Rapat</a>
       </div>
 
 
@@ -2451,6 +2432,15 @@ function sinkronkanBadgePintasanMobile() {
       setCahayaLogoutLock(
         15000
       );
+
+      try {
+        if (window.CahayaPushGlobal?.deactivateCurrentDevice) {
+          await window.CahayaPushGlobal.deactivateCurrentDevice();
+        }
+      } catch (error) {
+        console.warn("Token notifikasi belum dinonaktifkan saat logout:", error);
+      }
+
       clearCahayaSessionKeys();
 
       document.body.classList.add(
@@ -2508,6 +2498,12 @@ function sinkronkanBadgePintasanMobile() {
 
       const aliasRole = {
         "administrator": "admin",
+        "director": "direktur",
+        "direktur pesantren": "direktur",
+        "pimpinan pesantren": "direktur",
+        "pimpinan": "direktur",
+        "pengasuh": "direktur",
+        "pimpinan/pengasuh": "direktur",
         "wakil direktur": "wakil",
         "wakil_direktur": "wakil",
         "wadir": "wakil",
@@ -2533,75 +2529,63 @@ function sinkronkanBadgePintasanMobile() {
       rawRoles.map(normalisasiRole).filter(Boolean)
     )];
 
-    const DIRECTOR_VIEW_KEY = "cahayaDirectorViewRole";
-    const DIRECTOR_VIEW_ROLES = new Set([
-      "naqib","guru","konselor","kesehatan","sarpras","layanan",
-      "observer","supervisor","kepala-sekolah","cla","keuangan",
-      "kasir","wakil","yayasan","admin"
-    ]);
-    let directorViewRole = normalisasiRole(localStorage.getItem(DIRECTOR_VIEW_KEY) || "");
+    const ACTIVE_ROLE_KEY = "cahayaActiveRole";
+    let activeRole = normalisasiRole(localStorage.getItem(ACTIVE_ROLE_KEY) || localStorage.getItem("cahayaCurrentRole") || "");
     let roleMenuRulesCache = null;
 
-    function isDirectorAccount() {
-      return myRoles.includes("direktur");
-    }
-
-    function getDirectorViewRole() {
-      if (!isDirectorAccount()) return "";
-      const role = normalisasiRole(directorViewRole);
-      return DIRECTOR_VIEW_ROLES.has(role) ? role : "";
+    function ensureActiveRole() {
+      if (!myRoles.length) { activeRole = ""; return ""; }
+      if (!activeRole || !myRoles.includes(activeRole)) activeRole = myRoles[0];
+      localStorage.setItem(ACTIVE_ROLE_KEY, activeRole);
+      localStorage.setItem("cahayaCurrentRole", activeRole);
+      return activeRole;
     }
 
     function getActiveViewRoles() {
-      const preview = getDirectorViewRole();
-      return preview ? [preview] : [...myRoles];
+      const role = ensureActiveRole();
+      return role ? [role] : [];
     }
 
     function getProfileForActiveView() {
-      const preview = getDirectorViewRole();
-      if (!preview) return pUserSafe;
+      const role = ensureActiveRole();
       return {
         ...pUserSafe,
-        akses: [preview],
-        jabatan: [preview],
-        role: preview,
-        roleLabel: labelRole(preview),
-        directorPreviewRole: preview,
-        actualRole: "direktur"
+        allRoles: [...myRoles],
+        akses: role ? [role] : [],
+        jabatan: role ? [role] : [],
+        role: role || "",
+        roleLabel: role ? labelRole(role) : "Pengguna CAHAYA",
+        activeRole: role || ""
       };
     }
 
-    function renderDirectorRoleSwitcher() {
-      const box = document.getElementById("directorRoleSwitch");
-      const select = document.getElementById("directorRoleSelect");
-      const status = document.getElementById("directorRoleStatus");
-      if (!box || !select || !status) return;
-
-      if (!isDirectorAccount()) {
-        box.hidden = true;
-        directorViewRole = "";
-        localStorage.removeItem(DIRECTOR_VIEW_KEY);
-        return;
-      }
-
-      box.hidden = false;
-      const preview = getDirectorViewRole();
-      select.value = preview;
-      status.textContent = preview
-        ? `Mode ${labelRole(preview)} aktif — hanya menu role ini yang ditampilkan.`
-        : "Mode asli Direktur aktif — seluruh akses Direktur ditampilkan.";
-    }
-
-    async function setDirectorViewRole(role) {
-      if (!isDirectorAccount()) return;
+    async function setActiveRole(role) {
       const normalized = normalisasiRole(role);
-      directorViewRole = DIRECTOR_VIEW_ROLES.has(normalized) ? normalized : "";
-      if (directorViewRole) localStorage.setItem(DIRECTOR_VIEW_KEY, directorViewRole);
-      else localStorage.removeItem(DIRECTOR_VIEW_KEY);
-
-      renderDirectorRoleSwitcher();
+      if (!normalized || !myRoles.includes(normalized)) return false;
+      activeRole = normalized;
+      pUserSafe.activeRole = activeRole;
+      localStorage.setItem(ACTIVE_ROLE_KEY, activeRole);
+      localStorage.setItem("cahayaCurrentRole", activeRole);
+      try {
+        const current = JSON.parse(localStorage.getItem("cahayaCurrentUser") || "{}") || {};
+        localStorage.setItem("cahayaCurrentUser", JSON.stringify({...current, activeRole}));
+        localStorage.setItem("cahayaCurrentProfile", JSON.stringify({
+          ...current,
+          allRoles: [...myRoles],
+          akses: [activeRole],
+          jabatan: [activeRole],
+          role: activeRole,
+          roleLabel: labelRole(activeRole),
+          activeRole
+        }));
+      } catch (_) {}
       await refreshUserProfileUI();
+      window.dispatchEvent(new CustomEvent("cahaya:active-role-changed", {detail:{role:activeRole}}));
+      return true;
     }
+    window.setCahayaActiveRole = setActiveRole;
+    window.getCahayaActiveRole = () => ensureActiveRole();
+
 
     let authorizedMenuIds = new Set();
     let authorizationReady = false;
@@ -2708,9 +2692,10 @@ function sinkronkanBadgePintasanMobile() {
       data.role = roles[0] || "";
       data.roleLabel = roles.map(labelRole).join(" • ");
 
-      pUserSafe = data;
       rawRoles = roles;
       myRoles = roles;
+      data.activeRole = ensureActiveRole();
+      pUserSafe = data;
 
       isTopLevel = myRoles.some(
         role => ["admin", "direktur", "wakil"].includes(role)
@@ -2734,6 +2719,10 @@ function sinkronkanBadgePintasanMobile() {
       localStorage.setItem(
         "cahayaCurrentUser",
         JSON.stringify(data)
+      );
+      localStorage.setItem(
+        "cahayaCurrentProfile",
+        JSON.stringify(getProfileForActiveView())
       );
 
       // Dapat dibaca halaman iframe beranda pada origin yang sama.
@@ -2809,53 +2798,38 @@ function sinkronkanBadgePintasanMobile() {
     }
 
     const DEFAULT_ROLE_MENUS = {
-      "kepala-sekolah": ["menu-home","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-profil"]
+      admin:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-laporan-observasi","menu-perizinan-santri","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-komentar","menu-media","menu-db-master","menu-jadwal","menu-qr-kelas","menu-users","menu-koreksi","menu-profil","menu-chat"],
+      direktur:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-laporan-observasi","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
+      wakil:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-laporan-observasi","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
+      guru:["menu-home","menu-kalender-pendidikan","menu-absen-guru","menu-absen-kbm","menu-guru-menulis","menu-tahfiz","menu-laporan-murojaah","menu-nilai","menu-asesmen-guru","menu-asesmen-santri","menu-profil","menu-chat"],
+      naqib:["menu-home","menu-kalender-pendidikan","menu-absen-asrama","menu-skor-usrah","menu-disiplin","menu-gamifikasi","menu-jadwal-piket","menu-jurnal-piket","menu-usrah","menu-antrean-kasus","menu-asesmen-naqib","menu-asesmen-santri","menu-profil","menu-chat"],
+      konselor:["menu-home","menu-kalender-pendidikan","menu-antrean-kasus","menu-perizinan-santri","menu-laporan-observasi","menu-profil","menu-chat"],
+      supervisor:["menu-home","menu-kalender-pendidikan","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-laporan-observasi","menu-profil","menu-chat"],
+      observer:["menu-home","menu-kalender-pendidikan","menu-observer-pembelajaran","menu-observer-pengasuhan","menu-observer-kebersihan","menu-observer-sarpras","menu-observer-dapur","menu-observer-uks","menu-profil","menu-chat"],
+      kesehatan:["menu-home","menu-kalender-pendidikan","menu-jurnal-kesehatan","menu-pemeriksaan-kesehatan","menu-perizinan-uks","menu-stok-obat","menu-profil","menu-chat"],
+      sarpras:["menu-home","menu-kalender-pendidikan","menu-jurnal-sarpras","menu-checklist-sarpras","menu-tindak-sarpras","menu-profil","menu-chat"],
+      layanan:["menu-home","menu-kalender-pendidikan","menu-jurnal-pkl","menu-profil","menu-chat"],
+      keuangan:["menu-home","menu-kalender-pendidikan","menu-pusat-keuangan","menu-pengaturan-keuangan","menu-kasir","menu-profil","menu-chat"],
+      kasir:["menu-home","menu-kasir","menu-profil","menu-chat"],
+      "kepala-sekolah":["menu-home","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-monitoring-absen-guru","menu-profil","menu-chat"],
+      cla:["menu-home","menu-kalender-pendidikan","menu-raport-bulanan","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
+      yayasan:["menu-home","menu-dashboard-pimpinan","menu-raport-bulanan","menu-profil","menu-chat"]
     };
 
 
-    const ROLE_SIDEBAR_GROUPS = [
-      { key:'umum', label:'Umum', icon:'✦', menus:['menu-home','menu-kalender-pendidikan','menu-chat','menu-profil'] },
-      { key:'pimpinan', label:'Pimpinan & Pengambilan Keputusan', icon:'📊', roles:['admin','direktur','wakil','yayasan','kepala-sekolah'], menus:['menu-dashboard-pimpinan','menu-laporan-observasi','menu-perizinan-santri','menu-rekap-kepala-sekolah'] },
-      { key:'supervisor', label:'Supervisor & Pembinaan SDM', icon:'🎯', roles:['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor','cla'], menus:['menu-raport-bulanan','menu-monitoring-absen-guru','menu-raport-sdm','menu-tindak-lanjut-sdm'] },
-      { key:'guru', label:'Guru / Akademik', icon:'👨‍🏫', roles:['guru','kepala-sekolah','admin','direktur','wakil'], menus:['menu-absen-guru','menu-absen-kbm','menu-guru-menulis','menu-nilai'] },
-      { key:'tahfiz', label:'Tahsin, Tahfiz & Muroja’ah', icon:'📖', roles:['guru','kepala-sekolah','admin','direktur','wakil'], menus:['menu-tahfiz','menu-laporan-murojaah'] },
-      { key:'naqib', label:'Naqib / Pengasuhan', icon:'🕌', roles:['naqib','admin','direktur','wakil'], menus:['menu-absen-asrama','menu-skor-usrah','menu-disiplin','menu-gamifikasi','menu-jadwal-piket','menu-jurnal-piket','menu-usrah'] },
-      { key:'konselor', label:'Konselor', icon:'🤝', roles:['konselor','admin','direktur','wakil'], menus:['menu-antrean-kasus'] },
-      { key:'kesehatan', label:'Kesehatan / UKS', icon:'🩺', roles:['kesehatan','admin','direktur','wakil'], menus:['menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan','menu-perizinan-uks','menu-stok-obat'] },
-      { key:'sarpras', label:'Sarpras', icon:'🔧', roles:['sarpras','admin','direktur','wakil'], menus:['menu-jurnal-sarpras','menu-checklist-sarpras','menu-tindak-sarpras'] },
-      { key:'layanan', label:'Keamanan & Kebersihan', icon:'🧹', roles:['layanan','admin','direktur','wakil'], menus:['menu-jurnal-pkl'] },
-      { key:'keuangan', label:'Keuangan & Kasir', icon:'💳', roles:['keuangan','kasir','admin','direktur','wakil'], menus:['menu-pusat-keuangan','menu-pengaturan-keuangan','menu-kasir'] },
-      { key:'observer', label:'Observer', icon:'👁️', roles:['observer','admin','direktur','wakil','supervisor'], menus:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-sarpras','menu-observer-dapur','menu-observer-uks'] },
-      { key:'asesmen', label:'Pusat Asesmen', icon:'🧘', roles:['guru','naqib','supervisor','admin','direktur','wakil'], menus:['menu-asesmen-naqib','menu-asesmen-guru','menu-asesmen-santri'] },
-      { key:'sistem', label:'Administrasi Sistem', icon:'⚙️', roles:['admin','direktur'], menus:['menu-komentar','menu-media','menu-db-master','menu-jadwal','menu-qr-kelas','menu-users','menu-koreksi'] }
-    ];
-
     function organizeSidebarByRole() {
-      const nav = document.getElementById('dynamicMenu');
+      const nav = document.getElementById("dynamicMenu");
       if (!nav) return;
-      const allItems = [...nav.querySelectorAll('.menu-akses')];
-      const itemMap = new Map(allItems.map(item => [item.id,item]));
-      const assigned = new Set();
+      const items = [...nav.querySelectorAll(".menu-akses")]
+        .filter(item => bolehAksesMenu(item.id) && item.dataset.moduleDisabled !== "true");
       const fragment = document.createDocumentFragment();
-      const activeViewRoles = getActiveViewRoles();
-      ROLE_SIDEBAR_GROUPS.forEach((group,index) => {
-        let groupMenuIds = [...group.menus];
-        if (activeViewRoles.includes('naqib')) {
-          if (group.key === 'naqib' && !groupMenuIds.includes('menu-antrean-kasus')) groupMenuIds.push('menu-antrean-kasus');
-          if (group.key === 'konselor') groupMenuIds = groupMenuIds.filter(id => id !== 'menu-antrean-kasus');
-        }
-        const visibleItems = groupMenuIds.map(id=>itemMap.get(id)).filter(item=>item && bolehAksesMenu(item.id) && item.dataset.moduleDisabled!=='true');
-        if (!visibleItems.length) return;
-        visibleItems.forEach(i=>assigned.add(i.id));
-        const box=document.createElement('div');box.className='menu-group role-organized';box.dataset.roleGroup=group.key;
-        const shouldCollapse = activeViewRoles.length>1 && !group.roles?.some(r=>activeViewRoles.includes(r)) && !['umum'].includes(group.key);
-        if(shouldCollapse)box.classList.add('collapsed');
-        const label=document.createElement('div');label.className='group-label';label.innerHTML=`<span>${group.icon}</span><span>${group.label}</span><span class="role-group-count">${visibleItems.length}</span>`;label.onclick=()=>box.classList.toggle('collapsed');
-        const items=document.createElement('div');items.className='role-group-items';visibleItems.forEach(item=>{item.style.display='flex';items.appendChild(item)});box.append(label,items);fragment.appendChild(box);
+      items.forEach(item => {
+        item.style.display = "flex";
+        item.classList.add("flat-integrated-menu-item");
+        fragment.appendChild(item);
       });
-      const leftovers=allItems.filter(item=>bolehAksesMenu(item.id)&&!assigned.has(item.id)&&item.dataset.moduleDisabled!=='true');
-      if(leftovers.length){const box=document.createElement('div');box.className='menu-group role-organized';const label=document.createElement('div');label.className='group-label';label.innerHTML=`<span>✦</span><span>Akses Tambahan</span><span class="role-group-count">${leftovers.length}</span>`;const items=document.createElement('div');items.className='role-group-items';leftovers.forEach(i=>{i.style.display='flex';items.appendChild(i)});box.append(label,items);fragment.appendChild(box)}
-      nav.innerHTML='';nav.appendChild(fragment);
+      nav.innerHTML = "";
+      nav.appendChild(fragment);
     }
 
     function terapkanOtorisasiFiturTambahan() {
@@ -2939,22 +2913,11 @@ function sinkronkanBadgePintasanMobile() {
         const avatarEl = document.getElementById('topNavProfile');
         const roleBadge = document.getElementById('roleBadge');
 
-        const directorPreview = getDirectorViewRole();
-        const roleTextAsli =
-          pUserSafe.roleLabel ||
-          myRoles.map(labelRole).join(" • ") ||
-          "Pengguna CAHAYA";
-
-        roleBadge.textContent = directorPreview
-          ? `Direktur • Mode ${labelRole(directorPreview)}`
-          : roleTextAsli;
-
-        roleBadge.title =
-          `${displayNama} — ${roleBadge.textContent}`;
-
-        const roleText = directorPreview
-          ? `Mode ${labelRole(directorPreview)}`
-          : roleTextAsli;
+        const active = ensureActiveRole();
+        const roleTextAsli = myRoles.map(labelRole).join(" • ") || "Pengguna CAHAYA";
+        const roleText = active ? labelRole(active) : roleTextAsli;
+        roleBadge.textContent = active ? `${labelRole(active)} • ${myRoles.length > 1 ? myRoles.length + " role tersedia" : "Akses aktif"}` : roleTextAsli;
+        roleBadge.title = `${displayNama} — ${roleTextAsli}`;
         const topUserName = document.getElementById('topUserName');
         const topUserRole = document.getElementById('topUserRole');
         const sidebarUserName = document.getElementById('sidebarUserName');
@@ -2964,7 +2927,7 @@ function sinkronkanBadgePintasanMobile() {
         if (topUserName) topUserName.textContent = displayNama;
         if (topUserRole) topUserRole.textContent = roleText;
         if (sidebarUserName) sidebarUserName.textContent = displayNama;
-        if (sidebarUserRole) sidebarUserRole.textContent = roleText;
+        if (sidebarUserRole) sidebarUserRole.textContent = myRoles.length > 1 ? `${roleText} aktif • ${myRoles.length} role` : roleText;
 
         if (sidebarUserAvatar) {
           if (pUserSafe.fotoProfil) {
@@ -2979,8 +2942,6 @@ function sinkronkanBadgePintasanMobile() {
         } else {
           avatarEl.textContent = displayNama.charAt(0).toUpperCase();
         }
-
-        renderDirectorRoleSwitcher();
 
         document.getElementById('dynamicMenu').innerHTML = allMenuHTML;
 
@@ -3005,6 +2966,14 @@ function sinkronkanBadgePintasanMobile() {
           });
         });
 
+        // V69: Notulensi Rapat adalah fitur integral untuk seluruh role internal.
+        if (rolesUntukMenu.some(role => role && role !== "wali") && !gabunganMenu.includes("menu-notulensi-rapat")) {
+          gabunganMenu.push("menu-notulensi-rapat");
+        }
+        ["menu-home","menu-profil","menu-chat"].forEach(menuId => {
+          if (rolesUntukMenu.length && !gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
+        });
+
         // V58: Tindak Pelanggaran adalah bagian operasional Naqib untuk kasus
         // kedisiplinan/kebersihan yang memang berjalur NAQIB.
         if (rolesUntukMenu.includes('naqib') && !gabunganMenu.includes('menu-antrean-kasus')) {
@@ -3025,10 +2994,12 @@ function sinkronkanBadgePintasanMobile() {
         const allowedMenusUser = Array.isArray(pUserSafe.allowedMenus)
           ? pUserSafe.allowedMenus.filter(Boolean)
           : [];
-        if (allowedMenusUser.length && !getDirectorViewRole()) {
+        if (allowedMenusUser.length) {
           const whitelist = new Set(allowedMenusUser);
           if (akunGuruPkbm) whitelist.add("menu-kalender-pendidikan");
           if (rolesUntukMenu.includes('naqib')) whitelist.add('menu-antrean-kasus');
+          if (rolesUntukMenu.some(role => role && role !== 'wali')) whitelist.add('menu-notulensi-rapat');
+          whitelist.add('menu-home'); whitelist.add('menu-profil'); whitelist.add('menu-chat');
           for (let i = gabunganMenu.length - 1; i >= 0; i--) {
             if (!whitelist.has(gabunganMenu[i])) gabunganMenu.splice(i, 1);
           }
@@ -3123,6 +3094,18 @@ function sinkronkanBadgePintasanMobile() {
     }
     window.openAuthorizedMenuWithParams = openAuthorizedMenuWithParams;
 
+    function showCahayaPageLoader(text = "Menyiapkan CAHAYA APP...") {
+      const loader = document.getElementById("cahayaPageLoader");
+      const label = document.getElementById("cahayaPageLoaderText");
+      if (label) label.textContent = text;
+      if (loader) { loader.classList.add("show"); loader.setAttribute("aria-hidden","false"); }
+    }
+    function hideCahayaPageLoader() {
+      const loader = document.getElementById("cahayaPageLoader");
+      if (loader) { loader.classList.remove("show"); loader.setAttribute("aria-hidden","true"); }
+    }
+    window.CahayaLoading = { show: showCahayaPageLoader, hide: hideCahayaPageLoader };
+
     function loadPage(url, el) {
       const menuElement = (el && el.classList && el.classList.contains('menu-akses'))
         ? el
@@ -3141,10 +3124,13 @@ function sinkronkanBadgePintasanMobile() {
 
       const frame = document.getElementById('contentFrame');
       frame.removeAttribute('srcdoc');
+      showCahayaPageLoader("Menyiapkan halaman...");
 
       frame.onload = () => {
         kirimProfilKeFrame();
+        hideCahayaPageLoader();
       };
+      frame.onerror = () => hideCahayaPageLoader();
 
       frame.src = url;
 
@@ -3299,6 +3285,7 @@ function sinkronkanBadgePintasanMobile() {
        agar pesan tidak ditimpa, room tidak terhapus, dan inbox tetap sinkron. */
   </script>
   <script src="js/pengurus-whatsapp-chat.js?v=39"></script>
+  <script src="js/cahaya-push-global-v68.js?v=68"></script>
 
   <script>
     window.addEventListener(

@@ -918,3 +918,297 @@ exports.pushBroadcastSemuaPenggunaToAllWali =
     }
   );
 
+
+/* =========================================================
+ * V68 — PUSH GLOBAL SELURUH ROLE
+ * Token umum: /cahaya_app/fcm_tokens_user/{username}/{tokenKey}
+ * Reverse index role: /cahaya_app/fcm_users_by_role/{role}/{username}
+ * ========================================================= */
+
+function isPrivilegedRoleList(roles = []) {
+  return roles.some(role => ALLOWED_CHAT_ROLES.has(normalizeRole(role)));
+}
+
+function messageRoleList(value) {
+  if (Array.isArray(value)) return value.map(normalizeRole).filter(Boolean);
+  if (!value) return [];
+  return String(value).split(/[;,|]/).map(normalizeRole).filter(Boolean);
+}
+
+async function sendToOneUser({
+  username,
+  title,
+  body,
+  link = "main-dashboard.html",
+  roomId = "",
+  notificationId = "",
+  tag = "",
+  requiredRole = ""
+}) {
+  const database = getDatabase();
+  const userKey = safeKey(username);
+  if (!userKey) return { successCount: 0, failureCount: 0 };
+
+  const tokenRef = database.ref(`/cahaya_app/fcm_tokens_user/${userKey}`);
+  const snapshot = await tokenRef.get();
+  let entries = activeTokenEntries(snapshot.val() || {});
+  if (requiredRole) {
+    const normalizedRequiredRole = normalizeRole(requiredRole);
+    entries = entries.filter(([, item]) =>
+      messageRoleList(item?.roles || []).includes(normalizedRequiredRole)
+    );
+  }
+  if (!entries.length) {
+    console.log("Belum ada token global aktif:", userKey);
+    return { successCount: 0, failureCount: 0 };
+  }
+
+  const response = await getMessaging().sendEachForMulticast({
+    tokens: entries.map(([, item]) => item.token),
+    data: {
+      title: String(title || "Notifikasi CAHAYA"),
+      body: String(body || "Ada pemberitahuan baru."),
+      link: String(link || "main-dashboard.html"),
+      roomId: String(roomId || ""),
+      notificationId: String(notificationId || ""),
+      tag: String(tag || roomId || notificationId || "cahaya-global")
+    },
+    webpush: { headers: { Urgency: "high" } }
+  });
+
+  await markInvalidTokens(tokenRef, entries, response.responses);
+  return { successCount: response.successCount, failureCount: response.failureCount };
+}
+
+async function usernamesForRole(roleValue) {
+  const role = safeKey(normalizeRole(roleValue));
+  if (!role) return [];
+  const snapshot = await getDatabase().ref(`/cahaya_app/fcm_users_by_role/${role}`).get();
+  return Object.entries(snapshot.val() || {})
+    .filter(([, value]) => value && value.aktif !== false)
+    .map(([userKey, value]) => String(value.username || userKey || "").trim())
+    .filter(Boolean);
+}
+
+async function sendToRole({ role, title, body, link = "index.html", notificationId = "" }) {
+  const users = [...new Set(await usernamesForRole(role))];
+  if (!users.length) return { users: 0, successCount: 0, failureCount: 0 };
+  const results = await Promise.all(users.map(username => sendToOneUser({
+    username, title, body, link, notificationId,
+    tag: `role_${safeKey(role)}_${notificationId}`,
+    requiredRole: role
+  })));
+  return {
+    users: users.length,
+    successCount: results.reduce((sum, item) => sum + (item.successCount || 0), 0),
+    failureCount: results.reduce((sum, item) => sum + (item.failureCount || 0), 0)
+  };
+}
+
+async function sendToAllUsers({ title, body, link = "index.html", notificationId = "", excludeRoles = [] }) {
+  const database = getDatabase();
+  const rootRef = database.ref("/cahaya_app/fcm_tokens_user");
+  const snapshot = await rootRef.get();
+  const allUsers = snapshot.val() || {};
+  const excluded = new Set(excludeRoles.map(normalizeRole));
+  const flat = [];
+
+  Object.entries(allUsers).forEach(([userKey, tokenData]) => {
+    activeTokenEntries(tokenData || {}).forEach(([tokenKey, item]) => {
+      const itemRoles = messageRoleList(item.roles || []);
+      if (excluded.size && itemRoles.some(role => excluded.has(role))) return;
+      flat.push({ userKey, tokenKey, token: item.token });
+    });
+  });
+
+  if (!flat.length) return { successCount: 0, failureCount: 0 };
+  let successCount = 0;
+  let failureCount = 0;
+
+  for (const batch of chunkArray(flat, 500)) {
+    const response = await getMessaging().sendEachForMulticast({
+      tokens: batch.map(item => item.token),
+      data: {
+        title: String(title || "Pengumuman CAHAYA"),
+        body: String(body || "Ada pengumuman baru."),
+        link: String(link || "index.html"),
+        roomId: "",
+        notificationId: String(notificationId || ""),
+        tag: String(notificationId || "cahaya-semua")
+      },
+      webpush: { headers: { Urgency: "high" } }
+    });
+    successCount += response.successCount;
+    failureCount += response.failureCount;
+
+    const updates = {};
+    response.responses.forEach((result, index) => {
+      if (result.success) return;
+      const code = result.error?.code || "";
+      if (!(code.includes("registration-token-not-registered") || code.includes("invalid-registration-token"))) return;
+      const entry = batch[index];
+      if (!entry) return;
+      updates[`${entry.userKey}/${entry.tokenKey}/aktif`] = false;
+      updates[`${entry.userKey}/${entry.tokenKey}/errorTerakhir`] = code;
+      updates[`${entry.userKey}/${entry.tokenKey}/diperbarui`] = new Date().toISOString();
+    });
+    if (Object.keys(updates).length) await rootRef.update(updates);
+  }
+
+  return { successCount, failureCount };
+}
+
+/* Pesan personal untuk penerima NON-WALI. Wali tetap ditangani pushChatToWali
+ * agar tidak menerima notifikasi ganda. Semua chat yang sah harus melibatkan
+ * minimal salah satu role: Direktur, Wakil Direktur, Konselor, atau Admin. */
+exports.pushChatToPengurus = onValueCreated(
+  {
+    ref: "/cahaya_app/pesan_global/{roomId}/{messageId}",
+    instance: DATABASE_INSTANCE,
+    region: DATABASE_REGION
+  },
+  async event => {
+    const message = event.data.val() || {};
+    const roomId = event.params.roomId;
+    if (!message || roomId.startsWith("room_broadcast_") || message.dihapus === true || message.deleted === true) return null;
+
+    const recipientUsername = String(message.recipientUsername || "").trim();
+    if (!recipientUsername) return null;
+
+    let recipientRoles = messageRoleList(message.recipientRoles || []);
+    let senderRoles = messageRoleList(message.senderRoles || []);
+
+    if (!recipientRoles.length || !senderRoles.length) {
+      try {
+        const meta = (await getDatabase().ref(`/cahaya_app/pesan_meta/${roomId}`).get()).val() || {};
+        const participants = Object.values(meta.participants || {});
+        if (!recipientRoles.length) {
+          const recipient = participants.find(item => clean(item?.username) === clean(recipientUsername));
+          recipientRoles = rolesOf(recipient || {});
+        }
+        if (!senderRoles.length) {
+          const sender = participants.find(item => clean(item?.username) === clean(message.senderUsername || ""));
+          senderRoles = rolesOf(sender || {});
+        }
+      } catch (_) {}
+    }
+
+    if (recipientRoles.includes("wali")) return null;
+    if (!(isPrivilegedRoleList(senderRoles) || isPrivilegedRoleList(recipientRoles))) return null;
+
+    const senderName = String(message.senderDisplay || message.pengirim || "Pengguna CAHAYA").trim();
+    const result = await sendToOneUser({
+      username: recipientUsername,
+      title: `Pesan dari ${senderName}`,
+      body: message.teks || "Ada pesan baru.",
+      roomId,
+      link: `main-dashboard.html?openChat=1&room=${encodeURIComponent(roomId)}`,
+      notificationId: `chat_${event.params.messageId}`,
+      tag: roomId
+    });
+    console.log("Push chat pengurus selesai", { roomId, recipientUsername, ...result });
+    return result;
+  }
+);
+
+/* Notifikasi sistem personal untuk akun non-wali maupun wali via token global. */
+exports.pushSystemNotificationToUser = onValueCreated(
+  {
+    ref: "/cahaya_app/notifikasi_user/{username}/{notificationId}",
+    instance: DATABASE_INSTANCE,
+    region: DATABASE_REGION
+  },
+  async event => {
+    const notification = event.data.val() || {};
+    if (!notification || notification.dibaca === true) return null;
+    return sendToOneUser({
+      username: event.params.username,
+      title: notification.title || notification.judul || "Notifikasi CAHAYA",
+      body: notification.desc || notification.pesan || notification.keterangan || "Ada pemberitahuan baru.",
+      link: notification.link || notification.url || notification.halaman || "index.html",
+      notificationId: event.params.notificationId
+    });
+  }
+);
+
+/* Satu notifikasi untuk seluruh perangkat pengguna pada role tertentu. */
+exports.pushRoleNotification = onValueCreated(
+  {
+    ref: "/cahaya_app/notifikasi_role/{role}/{notificationId}",
+    instance: DATABASE_INSTANCE,
+    region: DATABASE_REGION
+  },
+  async event => {
+    const notification = event.data.val() || {};
+    if (!notification || notification.dibaca === true) return null;
+    const result = await sendToRole({
+      role: event.params.role,
+      title: notification.title || notification.judul || "Notifikasi CAHAYA",
+      body: notification.desc || notification.pesan || notification.keterangan || "Ada pemberitahuan untuk role Anda.",
+      link: notification.link || notification.url || notification.halaman || "index.html",
+      notificationId: event.params.notificationId
+    });
+    console.log("Push role selesai", { role: event.params.role, ...result });
+    return result;
+  }
+);
+
+/* Pengumuman push global seluruh pengguna CAHAYA. */
+exports.pushGlobalNotification = onValueCreated(
+  {
+    ref: "/cahaya_app/notifikasi_semua/{notificationId}",
+    instance: DATABASE_INSTANCE,
+    region: DATABASE_REGION
+  },
+  async event => {
+    const notification = event.data.val() || {};
+    if (!notification || notification.dibaca === true) return null;
+    const result = await sendToAllUsers({
+      title: notification.title || notification.judul || "Pengumuman CAHAYA",
+      body: notification.desc || notification.pesan || notification.keterangan || "Ada pengumuman baru.",
+      link: notification.link || notification.url || notification.halaman || "index.html",
+      notificationId: event.params.notificationId
+    });
+    console.log("Push global selesai", result);
+    return result;
+  }
+);
+
+/* Kompatibilitas bila room broadcast lama masih dipakai langsung, bukan salinan private. */
+exports.pushBroadcastPengurusDirect = onValueCreated(
+  {
+    ref: "/cahaya_app/pesan_global/room_broadcast_pengurus/{messageId}",
+    instance: DATABASE_INSTANCE,
+    region: DATABASE_REGION
+  },
+  async event => {
+    const message = event.data.val() || {};
+    if (!message || message.dihapus === true || message.deleted === true) return null;
+    return sendToAllUsers({
+      title: message.judul || "Pengumuman Pengurus",
+      body: message.teks || "Ada pengumuman baru untuk pengurus.",
+      link: "main-dashboard.html",
+      notificationId: `broadcast_pengurus_${event.params.messageId}`,
+      excludeRoles: ["wali"]
+    });
+  }
+);
+
+exports.pushBroadcastSemuaPenggunaToPengurus = onValueCreated(
+  {
+    ref: "/cahaya_app/pesan_global/room_broadcast_semua/{messageId}",
+    instance: DATABASE_INSTANCE,
+    region: DATABASE_REGION
+  },
+  async event => {
+    const message = event.data.val() || {};
+    if (!message || message.dihapus === true || message.deleted === true) return null;
+    return sendToAllUsers({
+      title: message.judul || "Pengumuman untuk Semua Pengguna",
+      body: message.teks || "Ada pengumuman baru.",
+      link: "main-dashboard.html",
+      notificationId: `broadcast_semua_${event.params.messageId}`,
+      excludeRoles: ["wali"]
+    });
+  }
+);

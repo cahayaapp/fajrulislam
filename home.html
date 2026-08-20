@@ -214,7 +214,19 @@
   .h24-role-wrap.is-naqib .h24-role-card{min-height:82px;padding:13px 14px}
 }
 </style>
-  <meta name="cahaya-build" content="20260819-v59">
+  <meta name="cahaya-build" content="20260820-v69">
+
+<style id="cahaya-v69-multirole">
+.h24-user-main{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.h24-role-switcher{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.h24-role-chip{appearance:none;min-height:30px;padding:5px 11px;border:1px solid rgba(21,87,213,.17);border-radius:999px;background:rgba(255,255,255,.58);color:#284c79;font:inherit;font-size:.62rem;font-weight:1000;letter-spacing:.02em;cursor:pointer;box-shadow:0 3px 9px rgba(21,87,213,.05);transition:.18s ease}
+.h24-role-chip:hover{transform:translateY(-1px);background:#fff;border-color:rgba(21,87,213,.28)}
+.h24-role-chip.active{color:#fff;background:linear-gradient(135deg,#1557d5,#2878ff);border-color:transparent;box-shadow:0 7px 16px rgba(21,87,213,.22)}
+.h24-role-chip.active::before{content:"✓";margin-right:5px;font-size:.56rem}
+.h24-hero.is-naqib .h24-role-chip,.h24-hero.is-teacher .h24-role-chip{background:rgba(255,255,255,.72)}
+.h24-hero.is-naqib .h24-role-chip.active,.h24-hero.is-teacher .h24-role-chip.active{background:linear-gradient(135deg,#1557d5,#2878ff);color:#fff}
+@media(max-width:720px){.h24-user-main{gap:6px}.h24-role-switcher{gap:5px}.h24-role-chip{min-height:27px;padding:4px 9px;font-size:.57rem}}
+</style>
 </head>
 <body>
   <main class="home24">
@@ -222,7 +234,7 @@
       <div>
         <div class="h24-identity-row">
           <div class="h24-hero-avatar" id="heroProfileAvatar" hidden aria-hidden="true">C</div>
-          <div class="h24-user-title"><h1 class="h24-greeting"><span id="userName">Sahabat Cahaya</span></h1><span class="h24-role-inline" id="roleInline">CAHAYA</span></div>
+          <div class="h24-user-main"><h1 class="h24-greeting"><span id="userName">Sahabat Cahaya</span></h1><div class="h24-role-switcher" id="roleSwitcher" aria-label="Pilih role aktif"></div></div>
         </div>
         <p class="h24-hadith">“<strong><em>Allah mencintai</em></strong> seseorang yang apabila bekerja, mengerjakannya <strong><em>secara itqan</em></strong> (professional).” <span>(HR. Thabrani)</span></p>
         <p class="h24-teacher-hadith" id="teacherHadith" hidden>“Sesungguhnya Aku (Rasulullah SAW) diutus sebagai guru.” <span>(HR. Ibnu Majah)</span></p>
@@ -276,18 +288,34 @@
     'use strict';
     const ROLE_LABEL={admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',observer:'Observer',guru:'Guru',naqib:'Naqib',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
     function safeJson(key){try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(_){return{}}}
-    function roles(p){let r=p.roles??p.role??p.jabatan??p.akses??[];if(!Array.isArray(r))r=[r];return r.map(x=>String(x||'').trim().toLowerCase()).filter(Boolean)}
+    function normalizeRole(value){
+      const r=String(value||'').trim().toLowerCase();
+      const aliases={'administrator':'admin','director':'direktur','direktur pesantren':'direktur','pimpinan pesantren':'direktur','pimpinan':'direktur','pengasuh':'direktur','pimpinan/pengasuh':'direktur','wakil direktur':'wakil','wakil_direktur':'wakil','wadir':'wakil','kepala sekolah':'kepala-sekolah','kepala_sekolah':'kepala-sekolah','kepsek':'kepala-sekolah'};
+      return aliases[r]||r;
+    }
+    function roles(p){let r=p.allRoles??p.roles??p.jabatan??p.akses??p.role??[];if(!Array.isArray(r))r=[r];return [...new Set(r.map(normalizeRole).filter(Boolean))]}
     function profile(){
       const a=safeJson('cahayaCurrentUser'),b=safeJson('cahayaUser');
-      const base=Object.keys(a).length?a:b;
-      const preview=String(localStorage.getItem('cahayaDirectorViewRole')||'').trim().toLowerCase();
-      if(preview&&roles(base).includes('direktur')){
-        return {...base,akses:[preview],jabatan:[preview],role:preview,roleLabel:ROLE_LABEL[preview]||preview,directorPreviewRole:preview};
-      }
-      return base;
+      return Object.keys(a).length?a:b;
     }
+    function activeRoleOf(p=profile()){
+      const all=roles(p);let active=String(localStorage.getItem('cahayaActiveRole')||p.activeRole||localStorage.getItem('cahayaCurrentRole')||'').trim().toLowerCase();
+      if(!all.includes(active))active=all[0]||'';return active;
+    }
+    function activeRoles(){const r=activeRoleOf();return r?[r]:[]}
     function nameOf(p){return p.nama||p.name||p.namaLengkap||p.displayName||p.username||'Sahabat Cahaya'}
-    function setProfile(){const p=profile(),r=roles(p),showAvatar=r.includes('guru')||r.includes('naqib');document.getElementById('userName').textContent=nameOf(p);document.getElementById('roleInline').textContent=(r.length?r.map(x=>ROLE_LABEL[x]||x).join(' • '):'Akun CAHAYA');const av=document.getElementById('heroProfileAvatar');if(av){av.hidden=!showAvatar;if(showAvatar){const nm=nameOf(p);if(p.fotoProfil){av.innerHTML=`<img src="${escapeHtml(p.fotoProfil)}" alt="Foto profil ${escapeHtml(nm)}">`}else{av.textContent=String(nm||'C').trim().charAt(0).toUpperCase()||'C'}}}}
+    function selectRole(role){
+      try{if(window.parent&&window.parent!==window&&typeof window.parent.setCahayaActiveRole==='function'){window.parent.setCahayaActiveRole(role);return}}catch(_){ }
+      localStorage.setItem('cahayaActiveRole',role);localStorage.setItem('cahayaCurrentRole',role);location.reload();
+    }
+    window.selectHomeRole=selectRole;
+    function setProfile(){
+      const p=profile(),all=roles(p),active=activeRoleOf(p),showAvatar=active==='guru'||active==='naqib';
+      document.getElementById('userName').textContent=nameOf(p);
+      const switcher=document.getElementById('roleSwitcher');
+      if(switcher){switcher.innerHTML=(all.length?all:['']).map(r=>`<button type="button" class="h24-role-chip${r===active?' active':''}" onclick="selectHomeRole('${escapeHtml(r)}')">${escapeHtml(ROLE_LABEL[r]||r||'Akun CAHAYA')}</button>`).join('')}
+      const av=document.getElementById('heroProfileAvatar');if(av){av.hidden=!showAvatar;if(showAvatar){const nm=nameOf(p);if(p.fotoProfil){av.innerHTML=`<img src="${escapeHtml(p.fotoProfil)}" alt="Foto profil ${escapeHtml(nm)}">`}else{av.textContent=String(nm||'C').trim().charAt(0).toUpperCase()||'C'}}}
+    }
     function cleanText(el){const clone=el.cloneNode(true);clone.querySelectorAll('.role-group-count,.nav-arrow').forEach(x=>x.remove());return String(clone.textContent||'').trim().replace(/\s+/g,' ')}
     function stripLeadingIcon(text){return String(text||'').replace(/^[^\p{L}\p{N}]{1,5}\s*/u,'').trim()||'Menu'}
     function isVisible(el){if(!el||el.hidden)return false;const w=window.parent&&window.parent!==window?window.parent:window;const s=w.getComputedStyle(el);return s.display!=='none'&&s.visibility!=='hidden'}
@@ -295,6 +323,7 @@
       const k=(id+' '+label).toLowerCase();
       if(k.includes('kalender')||k.includes('jadwal')||k.includes('piket'))return'calendar';
       if(k.includes('chat')||k.includes('komentar')||k.includes('pesan'))return'chat';
+      if(k.includes('notulensi')||k.includes('rapat'))return'edit';
       if(k.includes('dashboard')||k.includes('monitor')||k.includes('skor')||k.includes('raport')||k.includes('rekap')||k.includes('laporan'))return'chart';
       if(k.includes('observer')||k.includes('observasi'))return'eye';
       if(k.includes('izin')||k.includes('disiplin')||k.includes('kasus'))return'shield';
@@ -534,7 +563,7 @@
     }
     let roleRenderToken=0;
     async function renderRoleCards(){
-      const token=++roleRenderToken,p=profile(),currentRoles=roles(p),group=roleCardGroup(currentRoles),section=document.getElementById('roleCardsSection'),box=document.getElementById('roleCards');
+      const token=++roleRenderToken,p=profile(),currentRoles=activeRoles(),group=roleCardGroup(currentRoles),section=document.getElementById('roleCardsSection'),box=document.getElementById('roleCards');
       const teacherHadith=document.getElementById('teacherHadith');if(teacherHadith)teacherHadith.hidden=!currentRoles.includes('guru');
       if(!section||!box||!group){if(section)section.hidden=true;return}
       let available=[];
@@ -588,7 +617,7 @@
       try{
         if(!window.parent||window.parent===window)return[];
         const nav=window.parent.document.querySelector('#dynamicMenu');if(!nav)return[];
-        const currentRoleList=roles(profile()),teacherMode=currentRoleList.includes('guru'),naqibMode=currentRoleList.includes('naqib');
+        const currentRoleList=activeRoles(),teacherMode=currentRoleList.includes('guru'),naqibMode=currentRoleList.includes('naqib');
         return [...nav.querySelectorAll('.menu-akses')]
           .filter(el=>el.id&&el.id!=='menu-home'&&!DASHBOARD_EXCLUDED.has(el.id)&&!(teacherMode&&el.id==='menu-absen-guru')&&!(naqibMode&&el.id==='menu-absen-asrama')&&isVisible(el))
           .map(el=>{const label=stripLeadingIcon(cleanText(el));return{id:el.id,label,type:iconType(el.id,label)}});

@@ -1,5 +1,5 @@
 /*
- * CAHAYA APP V65 — Firebase Cloud Messaging Service Worker
+ * CAHAYA APP V68 — Firebase Cloud Messaging Service Worker
  * Ditempatkan bersama index.html dan beranda.html di wali/dashboard/.
  */
 
