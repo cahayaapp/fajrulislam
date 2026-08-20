@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <title>Manajemen Operasional • CAHAYA APP</title>
+  <link rel="stylesheet" href="../css/cahaya-theme.css">
+  <link rel="stylesheet" href="operasional.css?v=70">
+</head>
+<body>
+  <main class="app">
+    <section class="top">
+      <div>
+        <span class="eyebrow">✦ CAHAYA Operational Loop</span>
+        <h1>Manajemen Operasional</h1>
+        <p>Menautkan tugas, observasi, rapat, tindak lanjut, laporan, jurnal, dan pengembangan kompetensi dalam satu siklus kerja yang dapat ditelusuri dari lapangan sampai pimpinan.</p>
+      </div>
+      <aside class="identity">
+        <div class="identity-row"><small>Pengguna</small><b id="identityName">Memuat…</b></div>
+        <div class="identity-row"><small>Role Aktif</small><b id="identityRole">-</b></div>
+        <div class="identity-row"><small>Bidang</small><b id="identityDivision">-</b></div>
+        <div class="identity-row"><small>Level Operasional</small><span class="level-pill" id="identityLevel">-</span></div>
+      </aside>
+    </section>
+
+    <nav class="nav" id="operationalNav" aria-label="Navigasi manajemen operasional">
+      <button data-view="dashboard">⌂ Dashboard</button>
+      <button data-view="tasks">✓ Tugas & Delegasi</button>
+      <button data-view="observations">◉ Observasi</button>
+      <button data-view="meetings">✎ Rapat</button>
+      <button data-view="followups">↗ Tindak Lanjut</button>
+      <button data-view="reports">▦ Laporan</button>
+      <button data-view="journals">☰ Jurnal</button>
+      <button data-view="competencies">✦ Kompetensi</button>
+    </nav>
+
+    <section class="view" id="view-dashboard">
+      <div class="section">
+        <div class="section-head"><div><h2>Operasional Hari Ini</h2><p>Ringkasan pekerjaan dan sinyal yang memerlukan perhatian.</p></div><div class="actions"><button class="btn primary" onclick="Operational.openTaskForm()">+ Delegasi</button><button class="btn gold" onclick="Operational.openObservationForm()">+ Observasi</button></div></div>
+        <div class="metrics">
+          <article class="metric blue"><span>Tugas Aktif</span><b id="metricTasks">0</b><em>belum selesai</em></article>
+          <article class="metric red"><span>Terlambat</span><b id="metricOverdue">0</b><em>perlu tindakan</em></article>
+          <article class="metric gold"><span>Temuan</span><b id="metricFindings">0</b><em>kuning / merah</em></article>
+          <article class="metric purple"><span>Tindak Lanjut</span><b id="metricFollowups">0</b><em>masih berjalan</em></article>
+          <article class="metric green"><span>Rapat Terdekat</span><b id="metricMeeting">-</b><em id="metricMeetingHint">belum terjadwal</em></article>
+        </div>
+      </div>
+
+      <div class="section grid2">
+        <article class="panel">
+          <h3 id="mandateTitle">Mandat Jabatan</h3><div class="sub">Tugas inti sesuai level operasional aktif.</div>
+          <div class="mandate" id="mandateList"></div>
+        </article>
+        <article class="panel">
+          <h3>Prioritas Tindak Lanjut</h3><div class="sub">Keputusan rapat, temuan observasi, dan tugas yang perlu segera ditutup.</div>
+          <div class="list" id="priorityFollowups"></div>
+        </article>
+      </div>
+
+      <div class="section grid2">
+        <article class="panel">
+          <h3>Sinyal Lintas Modul</h3><div class="sub">Aktivitas terkini dari modul CAHAYA yang sudah terhubung. Ini sinyal aktivitas, bukan penilaian mutu otomatis.</div>
+          <div class="health-list" id="moduleSignals"></div>
+        </article>
+        <article class="panel">
+          <h3>Agenda Manajemen</h3><div class="sub">Rapat, laporan, dan pekerjaan jatuh tempo terdekat.</div>
+          <div class="list" id="managementAgenda"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="view" id="view-tasks">
+      <div class="section">
+        <div class="section-head"><div><h2>Tugas & Delegasi</h2><p>Penugasan terstruktur dari level manajemen ke pelaksana.</p></div><div class="actions"><button class="btn primary" onclick="Operational.openTaskForm()">+ Tugas Baru</button></div></div>
+        <div class="toolbar"><input class="control search" id="taskSearch" placeholder="Cari tugas, PIC, atau bidang…"><select class="control" id="taskStatusFilter"><option value="">Semua Status</option><option value="baru">Baru</option><option value="proses">Proses</option><option value="selesai">Selesai</option><option value="terlambat">Terlambat</option></select><select class="control" id="taskDivisionFilter"></select></div>
+        <div class="cards" id="taskList"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-observations">
+      <div class="section">
+        <div class="section-head"><div><h2>Observasi Operasional</h2><p id="observationHelper">Observasi program dan proses manajerial sesuai level.</p></div><div class="actions"><button class="btn gold" onclick="Operational.openObservationForm()">+ Observasi Baru</button></div></div>
+        <div class="toolbar"><input class="control search" id="observationSearch" placeholder="Cari program, temuan, atau bidang…"><select class="control" id="observationSignalFilter"><option value="">Semua Kondisi</option><option value="green">Baik</option><option value="yellow">Perlu Perhatian</option><option value="red">Perlu Tindakan</option></select><select class="control" id="observationDivisionFilter"></select></div>
+        <div class="cards" id="observationList"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-meetings">
+      <div class="section">
+        <div class="section-head"><div><h2>Rapat Operasional</h2><p>Notulensi terintegrasi dengan observasi, tugas, keputusan, dan tindak lanjut.</p></div><div class="actions"><button class="btn primary" onclick="Operational.openMeetingForm()">+ Rapat Baru</button></div></div>
+        <div class="toolbar"><input class="control search" id="meetingSearch" placeholder="Cari rapat, agenda, atau pimpinan…"><select class="control" id="meetingTypeFilter"><option value="">Semua Rapat</option><option value="direksi">Rapat Direksi</option><option value="supervisi">Rapat Supervisi</option><option value="manajerial">Rapat Manajerial</option><option value="staf">Rapat Staf</option><option value="insidental">Rapat Insidental</option></select><select class="control" id="meetingPurposeFilter"><option value="">Semua Tujuan</option><option value="evaluasi">Evaluasi</option><option value="koordinasi">Koordinasi</option><option value="gabungan">Evaluasi & Koordinasi</option></select></div>
+        <div class="cards" id="meetingList"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-followups">
+      <div class="section">
+        <div class="section-head"><div><h2>Pusat Tindak Lanjut</h2><p>Satu antrean dari keputusan rapat, observasi, laporan, dan delegasi.</p></div></div>
+        <div class="toolbar"><input class="control search" id="followupSearch" placeholder="Cari tindak lanjut atau PIC…"><select class="control" id="followupStatusFilter"><option value="">Semua Status</option><option value="baru">Baru</option><option value="proses">Proses</option><option value="selesai">Selesai</option><option value="terlambat">Terlambat</option></select><select class="control" id="followupSourceFilter"><option value="">Semua Sumber</option><option value="rapat">Rapat</option><option value="observasi">Observasi</option><option value="tugas">Tugas</option><option value="laporan">Laporan</option></select></div>
+        <div class="cards" id="followupList"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-reports">
+      <div class="section">
+        <div class="section-head"><div><h2 id="reportHeading">Laporan Operasional</h2><p id="reportHelper">Laporan berjenjang berbasis data operasional.</p></div><div class="actions"><button class="btn primary" onclick="Operational.openReportForm()">+ Buat Laporan</button></div></div>
+        <div class="toolbar"><select class="control" id="reportPeriodFilter"><option value="">Semua Periode</option></select><input class="control search" id="reportSearch" placeholder="Cari laporan…"></div>
+        <div class="cards" id="reportList"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-journals">
+      <div class="section">
+        <div class="section-head"><div><h2>Jurnal Operasional</h2><p>Jejak aktivitas harian, refleksi singkat, dan fokus berikutnya.</p></div><div class="actions"><button class="btn green" onclick="Operational.openJournalForm()">+ Jurnal Hari Ini</button></div></div>
+        <div class="toolbar"><input class="control search" id="journalSearch" placeholder="Cari jurnal atau catatan…"><select class="control" id="journalScopeFilter"><option value="saya">Jurnal Saya</option><option value="tim">Jurnal Tim</option></select></div>
+        <div class="cards" id="journalList"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-competencies">
+      <div class="section">
+        <div class="section-head"><div><h2>Pengembangan Kompetensi</h2><p>Coaching, pelatihan, dan penguatan kemampuan berdasarkan kebutuhan lapangan.</p></div><div class="actions"><button class="btn gold" onclick="Operational.openCompetencyForm()">+ Program Pengembangan</button></div></div>
+        <div class="toolbar"><input class="control search" id="competencySearch" placeholder="Cari personil atau kompetensi…"><select class="control" id="competencyStatusFilter"><option value="">Semua Status</option><option value="direncanakan">Direncanakan</option><option value="berjalan">Berjalan</option><option value="selesai">Selesai</option></select></div>
+        <div class="cards" id="competencyList"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="formModal" hidden><div class="backdrop" onclick="Operational.closeForm()"></div><section class="modal-card"><header class="modal-head"><div><small id="formKicker">CAHAYA OPERASIONAL</small><h2 id="formTitle">Form</h2></div><button class="close" onclick="Operational.closeForm()" aria-label="Tutup">×</button></header><div class="modal-body" id="formBody"></div></section></div>
+  <div class="modal" id="detailModal" hidden><div class="backdrop" onclick="Operational.closeDetail()"></div><section class="modal-card"><header class="modal-head"><div><small id="detailKicker">DETAIL</small><h2 id="detailTitle">Detail</h2></div><button class="close" onclick="Operational.closeDetail()" aria-label="Tutup">×</button></header><div class="modal-body" id="detailBody"></div></section></div>
+  <div class="loader-layer show" id="loaderLayer"><div class="loader-card"><div class="loader"></div><div class="loader-text" id="loaderText">Menyiapkan CAHAYA APP...</div></div></div>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+  <script src="../js/cahaya-config-runtime.js"></script>
+  <script src="operasional.js?v=70"></script>
+</body>
+</html>

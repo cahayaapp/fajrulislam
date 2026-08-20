@@ -612,6 +612,15 @@
         <label class="check-label" style="border-color:#93c5fd; background:#eff6ff;"><input type="checkbox" value="keuangan" class="role-checkbox"> Administrasi Keuangan</label>
         <label class="check-label" style="border-color:#fdba74; background:#fff7ed;"><input type="checkbox" value="kasir" class="role-checkbox"> Kasir Kantin/Koperasi</label>
       </div>
+      <section id="operationalProfileBox" style="margin-top:16px;padding:16px;border:1px solid #bfdbfe;border-radius:14px;background:linear-gradient(135deg,#f8fbff,#fffdf6)">
+        <h4 style="margin:0 0 5px;color:#17345f">◉ Profil Manajemen Operasional</h4>
+        <p style="margin:0 0 14px;color:#6b7d96;font-size:.78rem;line-height:1.5">Level ini berbeda dari role fitur. Contoh: seseorang dapat ber-role Guru + Naqib, tetapi level operasionalnya tetap Staf Mula atau Staf Muda.</p>
+        <div class="scope-selects">
+          <div class="form-group"><label>Level Operasional</label><select class="form-control" id="operationalLevel"><option value="auto">Otomatis dari role</option><option value="direktur">Direktur</option><option value="supervisor">Supervisor</option><option value="manajer">Manajer</option><option value="staf-muda">Staf Muda</option><option value="staf-mula">Staf Mula</option></select></div>
+          <div class="form-group"><label>Divisi Operasional</label><select class="form-control" id="operationalDivision"><option>Semua Divisi</option><option>Pengajaran</option><option>Pembinaan Karakter & Asrama</option><option>Tahsin & Tahfiz</option><option>Konseling</option><option>Kesehatan</option><option>Sarpras</option><option>Dapur & Konsumsi</option><option>Kebersihan</option><option>Administrasi & Keuangan</option><option>Media & Digital</option><option>Keputrian</option><option>PKBM & Bimbel</option><option>Learning & Achievement</option><option>Layanan Operasional</option></select></div>
+        </div>
+        <div class="form-group" style="margin-bottom:0"><label>Atasan Operasional (username, opsional)</label><input class="form-control" id="operationalSupervisor" placeholder="Contoh: multazam, beni, dini"><small style="display:block;margin-top:6px;color:#72839b">Dipakai untuk jalur laporan dan monitoring bertingkat.</small></div>
+      </section>
       <section id="cashierUnitBox" style="display:none;margin-top:16px;padding:16px;border:1px solid #fed7aa;border-radius:14px;background:#fff7ed">
         <div class="form-group" style="margin:0"><label>Unit Kasir</label><select class="form-control" id="cashierUnit"><option value="putra">Kantin Putra</option><option value="putri">Kantin Putri</option></select><small style="display:block;margin-top:7px;color:#9a5b17">Akun kasir hanya akan melihat santri dan stok dari unit ini.</small></div>
       </section>
@@ -783,7 +792,9 @@
       const tertampilLabel = u.label || tertampilUname;
       const daftarAkses = Array.isArray(u.akses) ? u.akses : ["guru"];
       
-      const badges = daftarAkses.map(r => `<span class="role-badge role-${r}">${r}</span>`).join('') + (daftarAkses.includes('kasir')?`<span class="role-badge" style="background:#fff7ed;color:#a45b13">${u.cashierUnit==='putri'?'Kantin Putri':'Kantin Putra'}</span>`:'');
+      const opLevel=u.levelOperasional||u.levelManajemen||u.operationalLevel||'';
+      const opDivision=u.divisiOperasional||u.divisi||'';
+      const badges = daftarAkses.map(r => `<span class="role-badge role-${r}">${r}</span>`).join('') + (daftarAkses.includes('kasir')?`<span class="role-badge" style="background:#fff7ed;color:#a45b13">${u.cashierUnit==='putri'?'Kantin Putri':'Kantin Putra'}</span>`:'') + (opLevel?`<span class="role-badge" style="background:#eef6ff;color:#1557d5">${opLevel}</span>`:'') + (opDivision?`<span class="role-badge" style="background:#fff8df;color:#8a6508">${opDivision}</span>`:'');
       
       return `<tr>
         <td style="text-align:center;">${i+1}</td>
@@ -803,12 +814,16 @@
   const LEADERSHIP_ROLES = new Set(['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor','cla']);
   const ALL_SCOPE_FIELDS = ['attendance','academic','tahfiz','nurturing','health','counseling','facilities','observer','sdm','finance','ranking'];
   function selectedRoles(){ return [...document.querySelectorAll('.role-checkbox:checked')].map(cb=>cb.value); }
+  function inferOperationalLevel(roles=[]){if(roles.includes('direktur')||roles.includes('yayasan'))return'direktur';if(roles.includes('wakil')||roles.includes('supervisor'))return'supervisor';if(roles.some(r=>['admin','kepala-sekolah','sarpras','kesehatan','keuangan','cla'].includes(r)))return'manajer';if(roles.some(r=>['konselor','observer'].includes(r)))return'staf-muda';return'staf-mula'}
+  function inferOperationalDivision(roles=[]){if(roles.includes('direktur')||roles.includes('wakil')||roles.includes('supervisor')||roles.includes('yayasan'))return'Semua Divisi';if(roles.includes('guru')||roles.includes('kepala-sekolah'))return'Pengajaran';if(roles.includes('naqib'))return'Pembinaan Karakter & Asrama';if(roles.includes('konselor'))return'Konseling';if(roles.includes('kesehatan'))return'Kesehatan';if(roles.includes('sarpras'))return'Sarpras';if(roles.includes('keuangan')||roles.includes('kasir')||roles.includes('admin'))return'Administrasi & Keuangan';if(roles.includes('cla'))return'Learning & Achievement';return'Layanan Operasional'}
+  function syncOperationalDefaults(force=false){const roles=selectedRoles(),level=document.getElementById('operationalLevel'),division=document.getElementById('operationalDivision');if(!level||!division)return;if(force||level.value==='auto')division.value=inferOperationalDivision(roles);}
+
   function toggleLeadershipScope(){
     const show=selectedRoles().some(role=>LEADERSHIP_ROLES.has(role));
     document.getElementById('leadershipScopeBox')?.classList.toggle('show',show);
     if(show && !document.querySelector('.scope-field:checked')) document.querySelectorAll('.scope-field').forEach(cb=>cb.checked=true);
   }
-  document.querySelectorAll('.role-checkbox').forEach(cb=>cb.addEventListener('change',()=>{toggleLeadershipScope();toggleCashierUnit() }));
+  document.querySelectorAll('.role-checkbox').forEach(cb=>cb.addEventListener('change',()=>{toggleLeadershipScope();toggleCashierUnit();syncOperationalDefaults() }));
   function inferCashierUnit(username=''){return /putri/i.test(username)?'putri':/putra/i.test(username)?'putra':''}
   function toggleCashierUnit(){const show=selectedRoles().includes('kasir');const box=document.getElementById('cashierUnitBox');if(box)box.style.display=show?'block':'none';if(show&&!document.getElementById('cashierUnit').value)document.getElementById('cashierUnit').value=inferCashierUnit(document.getElementById('fUsername').value)||'putra'}
   document.getElementById('fUsername')?.addEventListener('input',e=>{if(!selectedRoles().includes('kasir'))return;const inferred=inferCashierUnit(e.target.value);if(inferred)document.getElementById('cashierUnit').value=inferred});
@@ -827,6 +842,7 @@
     document.getElementById('fUsername').value = ''; document.getElementById('fPassword').value = '';
     document.querySelectorAll('.role-checkbox').forEach(cb => cb.checked = (cb.value === 'guru'));
     fillLeadershipScope(null,['guru']);document.getElementById('cashierUnit').value='putra';toggleCashierUnit();
+    document.getElementById('operationalLevel').value='auto';document.getElementById('operationalDivision').value=inferOperationalDivision(['guru']);document.getElementById('operationalSupervisor').value='';
     document.getElementById('modalUser').style.display = 'flex';
   }
 
@@ -845,6 +861,9 @@
       cb.checked = daftarAkses.includes(cb.value); 
     });
     fillLeadershipScope(u.leadershipScope, daftarAkses);document.getElementById('cashierUnit').value=u.cashierUnit||inferCashierUnit(u.username||u.id)||'putra';toggleCashierUnit();
+    document.getElementById('operationalLevel').value=u.levelOperasional||u.levelManajemen||u.operationalLevel||'auto';
+    document.getElementById('operationalDivision').value=u.divisiOperasional||u.divisi||inferOperationalDivision(daftarAkses);
+    document.getElementById('operationalSupervisor').value=u.atasanOperasional||u.operationalSupervisor||'';
     document.getElementById('modalUser').style.display = 'flex';
   }
 
@@ -858,6 +877,10 @@
     document.querySelectorAll('.role-checkbox:checked').forEach(cb => akses.push(cb.value));
     const leadershipScope = akses.some(role => LEADERSHIP_ROLES.has(role)) ? readLeadershipScope() : null;
     const cashierUnit = akses.includes('kasir') ? (document.getElementById('cashierUnit').value || inferCashierUnit(uname) || 'putra') : null;
+    const operationalLevelRaw=document.getElementById('operationalLevel').value||'auto';
+    const levelOperasional=operationalLevelRaw==='auto'?inferOperationalLevel(akses):operationalLevelRaw;
+    const divisiOperasional=document.getElementById('operationalDivision').value||inferOperationalDivision(akses);
+    const atasanOperasional=document.getElementById('operationalSupervisor').value.trim().toLowerCase();
 
     if(!uname || akses.length === 0) return alert("Lengkapi isian data!");
     if(leadershipScope && !leadershipScope.fields.length) return alert("Pilih minimal satu bidang kontrol pimpinan.");
@@ -869,9 +892,9 @@
         if(pass.length < 6) throw new Error("Sandi min 6 karakter!");
         await secondaryApp.auth().createUserWithEmailAndPassword(`${uname}@cahayaapp.id`, pass);
         await secondaryApp.auth().signOut();
-        await db.collection("users").doc(uname).set({ username: uname, label: label || uname, akses: akses, leadershipScope, cashierUnit });
+        await db.collection("users").doc(uname).set({ username: uname, label: label || uname, akses: akses, leadershipScope, cashierUnit, levelOperasional, divisiOperasional, atasanOperasional });
       } else {
-        await db.collection("users").doc(uname).update({ label: label || uname, akses: akses, leadershipScope, cashierUnit });
+        await db.collection("users").doc(uname).update({ label: label || uname, akses: akses, leadershipScope, cashierUnit, levelOperasional, divisiOperasional, atasanOperasional });
       }
       tutupModal(); 
       await muatUsers(); 

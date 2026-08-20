@@ -593,14 +593,14 @@
       const identity = [user.cashierUnit, user.unitKasir, user.username, user.email, user.label]
         .filter(Boolean).join(' ');
       const dedicatedCashier = roles.includes('kasir') && /kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity);
-      const cashierOnly = roles.includes('kasir') && !roles.some(r => ['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','wali'].includes(r));
+      const cashierOnly = roles.includes('kasir') && !roles.some(r => ['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','manajer','staf-muda','staf-mula','wali'].includes(r));
       if (dedicatedCashier || cashierOnly) {
         const unit = /putri/i.test(identity) ? 'putri' : /putra/i.test(identity) ? 'putra' : '';
         return unit ? `keuangan/kasir.html?unit=${unit}` : 'keuangan/kasir.html';
       }
       return roles.includes('wali')
-        ? 'wali/dashboard/index.html?v=20260820-v69'
-        : 'main-dashboard.html?v=20260820-v69';
+        ? 'wali/dashboard/index.html?v=20260820-v70'
+        : 'main-dashboard.html?v=20260820-v70';
     }
 
     function resetEyeIcon() {

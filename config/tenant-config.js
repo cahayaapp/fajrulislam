@@ -63,7 +63,8 @@
       media: true,
       chat: true,
       pkl: true,
-      meetingMinutes: true
+      meetingMinutes: true,
+      operationalManagement: true
     },
     bandwidth: {
       chatMessageLimit: 50,

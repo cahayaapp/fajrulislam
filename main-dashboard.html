@@ -2184,9 +2184,9 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=69', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=70', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
-        <a class="nav-item menu-akses" id="menu-notulensi-rapat" style="display:none;" onclick="loadPage('rapat/notulensi-rapat.html?v=69', this)">📝 Notulensi Rapat</a>
+        <a class="nav-item menu-akses" id="menu-manajemen-operasional" style="display:none;" onclick="loadPage('operasional/index.html?v=70', this)">◉ Manajemen Operasional</a>
       </div>
 
 
@@ -2488,7 +2488,7 @@ function sinkronkanBadgePintasanMobile() {
     }
 
     let pUserSafe = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
-    {const roles=(Array.isArray(pUserSafe.akses)?pUserSafe.akses:[pUserSafe.akses||pUserSafe.role].filter(Boolean)).map(r=>String(r||'').toLowerCase()),identity=[pUserSafe.cashierUnit,pUserSafe.unitKasir,pUserSafe.username,pUserSafe.label].filter(Boolean).join(' '),dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity),cashierOnly=roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','kepala-sekolah','wali'].includes(r));if(dedicatedCashier||cashierOnly){const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';location.replace(`keuangan/kasir.html${unit?`?unit=${unit}`:''}`)}}
+    {const roles=(Array.isArray(pUserSafe.akses)?pUserSafe.akses:[pUserSafe.akses||pUserSafe.role].filter(Boolean)).map(r=>String(r||'').toLowerCase()),identity=[pUserSafe.cashierUnit,pUserSafe.unitKasir,pUserSafe.username,pUserSafe.label].filter(Boolean).join(' '),dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity),cashierOnly=roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','kepala-sekolah','manajer','staf-muda','staf-mula','wali'].includes(r));if(dedicatedCashier||cashierOnly){const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';location.replace(`keuangan/kasir.html${unit?`?unit=${unit}`:''}`)}}
 
     let rawRoles = pUserSafe.akses || [];
     if(typeof rawRoles === 'string') rawRoles = [rawRoles];
@@ -2519,7 +2519,12 @@ function sinkronkanBadgePintasanMobile() {
         "petugas kesehatan": "kesehatan",
         "tim observer": "observer",
         "tim observasi": "observer",
-        "petugas observer": "observer"
+        "petugas observer": "observer",
+        "manager": "manajer",
+        "staff muda": "staf-muda",
+        "staff mula": "staf-mula",
+        "staf muda": "staf-muda",
+        "staf mula": "staf-mula"
       };
 
       return aliasRole[nilai] || nilai;
@@ -2602,6 +2607,9 @@ function sinkronkanBadgePintasanMobile() {
         direktur: "Direktur",
         wakil: "Wakil Direktur",
         supervisor: "Supervisor",
+        manajer: "Manajer",
+        "staf-muda": "Staf Muda",
+        "staf-mula": "Staf Mula",
         observer: "Tim Observer",
         yayasan: "Ketua Yayasan",
         "kepala-sekolah": "Kepala Sekolah",
@@ -2813,7 +2821,10 @@ function sinkronkanBadgePintasanMobile() {
       kasir:["menu-home","menu-kasir","menu-profil","menu-chat"],
       "kepala-sekolah":["menu-home","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-monitoring-absen-guru","menu-profil","menu-chat"],
       cla:["menu-home","menu-kalender-pendidikan","menu-raport-bulanan","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
-      yayasan:["menu-home","menu-dashboard-pimpinan","menu-raport-bulanan","menu-profil","menu-chat"]
+      yayasan:["menu-home","menu-dashboard-pimpinan","menu-raport-bulanan","menu-profil","menu-chat"],
+      manajer:["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat"],
+      "staf-muda":["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat"],
+      "staf-mula":["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat"]
     };
 
 
@@ -2862,6 +2873,12 @@ function sinkronkanBadgePintasanMobile() {
     }
 
     function bukaHalamanAwalYangDiizinkan() {
+      const deepLinkOperasional = new URLSearchParams(window.location.search).get("operasional");
+      if (deepLinkOperasional && bolehAksesMenu("menu-manajemen-operasional")) {
+        const menuOperasional = document.getElementById("menu-manajemen-operasional");
+        loadPage(`operasional/index.html?v=70&view=${encodeURIComponent(deepLinkOperasional)}`, menuOperasional);
+        return;
+      }
       const prioritas = [];
       if (isWali) prioritas.push();
       prioritas.push('menu-home');
@@ -2966,9 +2983,9 @@ function sinkronkanBadgePintasanMobile() {
           });
         });
 
-        // V69: Notulensi Rapat adalah fitur integral untuk seluruh role internal.
-        if (rolesUntukMenu.some(role => role && role !== "wali") && !gabunganMenu.includes("menu-notulensi-rapat")) {
-          gabunganMenu.push("menu-notulensi-rapat");
+        // V70: Manajemen Operasional mengintegrasikan tugas, observasi, rapat, tindak lanjut, laporan, jurnal, dan kompetensi.
+        if (rolesUntukMenu.some(role => role && role !== "wali") && !gabunganMenu.includes("menu-manajemen-operasional")) {
+          gabunganMenu.push("menu-manajemen-operasional");
         }
         ["menu-home","menu-profil","menu-chat"].forEach(menuId => {
           if (rolesUntukMenu.length && !gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
@@ -2998,7 +3015,7 @@ function sinkronkanBadgePintasanMobile() {
           const whitelist = new Set(allowedMenusUser);
           if (akunGuruPkbm) whitelist.add("menu-kalender-pendidikan");
           if (rolesUntukMenu.includes('naqib')) whitelist.add('menu-antrean-kasus');
-          if (rolesUntukMenu.some(role => role && role !== 'wali')) whitelist.add('menu-notulensi-rapat');
+          if (rolesUntukMenu.some(role => role && role !== 'wali')) whitelist.add('menu-manajemen-operasional');
           whitelist.add('menu-home'); whitelist.add('menu-profil'); whitelist.add('menu-chat');
           for (let i = gabunganMenu.length - 1; i >= 0; i--) {
             if (!whitelist.has(gabunganMenu[i])) gabunganMenu.splice(i, 1);
