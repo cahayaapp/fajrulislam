@@ -412,7 +412,9 @@
           <option value="cla">🎓 Center of Learning & Achievement</option>
           <option value="wakil">🥈 Wakil Direktur</option>
           <option value="supervisor">🔍 Supervisor</option>
-          <option value="observer">👁️ Tim Observer</option>
+          <option value="manajer">🧭 Manajer</option>
+          <option value="staf-muda">🧩 Staf Muda</option>
+          <option value="staf-mula">⚙️ Staf Mula</option>
           <option value="yayasan">🏛️ Ketua Yayasan</option>
           <option value="direktur">👑 Direktur</option>
           <option value="admin">💻 Administrator</option>
@@ -504,7 +506,7 @@
           </div>
         </div>
 
-        <div class="menu-section" id="sectionObserverMenu" style="background:linear-gradient(135deg,#eef2ff,#f5f7ff); border-color:#c7d2fe;">
+        <div class="menu-section" id="sectionObserverMenu" style="display:none!important;background:linear-gradient(135deg,#eef2ff,#f5f7ff); border-color:#c7d2fe;">
           <h4 style="color:#4338ca; border-bottom-color:#a5b4fc;">👁️ Modul Tim Observer</h4>
           <div class="checkbox-grid" style="margin-top:0;">
             <label class="check-label" style="background:#ffffff; border-color:#93c5fd;"><input type="checkbox" class="cb-menu" value="menu-observer-pembelajaran"> 📚 Observasi Pembelajaran</label>
@@ -602,7 +604,9 @@
         <label class="check-label"><input type="checkbox" value="cla" class="role-checkbox"> Center of Learning (CLA)</label>
         <label class="check-label"><input type="checkbox" value="wakil" class="role-checkbox"> Wakil Direktur</label>
         <label class="check-label"><input type="checkbox" value="supervisor" class="role-checkbox"> Supervisor</label>
-        <label class="check-label" style="border-color:#a5b4fc; background:#eef2ff;"><input type="checkbox" value="observer" class="role-checkbox"> Tim Observer</label>
+        <label class="check-label" style="border-color:#86efac; background:#f0fdf4;"><input type="checkbox" value="manajer" class="role-checkbox"> Manajer</label>
+        <label class="check-label" style="border-color:#fdba74; background:#fff7ed;"><input type="checkbox" value="staf-muda" class="role-checkbox"> Staf Muda</label>
+        <label class="check-label" style="border-color:#cbd5e1; background:#f8fafc;"><input type="checkbox" value="staf-mula" class="role-checkbox"> Staf Mula</label>
         <label class="check-label"><input type="checkbox" value="yayasan" class="role-checkbox"> Ketua Yayasan</label>
         <label class="check-label"><input type="checkbox" value="direktur" class="role-checkbox"> Direktur</label>
         <label class="check-label"><input type="checkbox" value="admin" class="role-checkbox"> Admin</label>
@@ -638,7 +642,7 @@
           <label class="scope-chip"><input type="checkbox" class="scope-field" value="health"> UKS & Kesehatan</label>
           <label class="scope-chip"><input type="checkbox" class="scope-field" value="counseling"> Pelanggaran & Konseling</label>
           <label class="scope-chip"><input type="checkbox" class="scope-field" value="facilities"> Sarpras, Kebersihan & Keamanan</label>
-          <label class="scope-chip"><input type="checkbox" class="scope-field" value="observer"> Observasi</label>
+          <label class="scope-chip"><input type="checkbox" class="scope-field" value="operations"> Manajemen Operasional</label>
           <label class="scope-chip"><input type="checkbox" class="scope-field" value="sdm"> Raport & Tindak Lanjut SDM</label>
           <label class="scope-chip"><input type="checkbox" class="scope-field" value="finance"> Keuangan</label>
           <label class="scope-chip"><input type="checkbox" class="scope-field" value="ranking"> Ranking Operasional</label>
@@ -696,7 +700,7 @@
 
     if (role === "wali") {
       roots = [document.getElementById("sectionWaliMenu")];
-    } else if (role === "observer") {
+    } else if (role === "__legacy_observer_disabled") {
       roots = [
         document.getElementById("sectionMainMenu"),
         document.getElementById("sectionObserverMenu")
@@ -737,7 +741,7 @@
         return;
       }
 
-      if (role === 'observer') {
+      if (role === '__legacy_observer_disabled') {
         section.style.display = (fiturUtama || khususObserver) ? '' : 'none';
         return;
       }
@@ -790,7 +794,7 @@
     tbody.innerHTML = filtered.map((u, i) => {
       const tertampilUname = u.username || u.id || "-";
       const tertampilLabel = u.label || tertampilUname;
-      const daftarAkses = Array.isArray(u.akses) ? u.akses : ["guru"];
+      const daftarAkses = (Array.isArray(u.akses) ? u.akses : ["guru"]).map(r=>r==='observer'?'staf-muda':r);
       
       const opLevel=u.levelOperasional||u.levelManajemen||u.operationalLevel||'';
       const opDivision=u.divisiOperasional||u.divisi||'';
@@ -811,10 +815,10 @@
     }).join('');
   }
 
-  const LEADERSHIP_ROLES = new Set(['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor','cla']);
-  const ALL_SCOPE_FIELDS = ['attendance','academic','tahfiz','nurturing','health','counseling','facilities','observer','sdm','finance','ranking'];
+  const LEADERSHIP_ROLES = new Set(['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor','manajer','cla']);
+  const ALL_SCOPE_FIELDS = ['attendance','academic','tahfiz','nurturing','health','counseling','facilities','operations','sdm','finance','ranking'];
   function selectedRoles(){ return [...document.querySelectorAll('.role-checkbox:checked')].map(cb=>cb.value); }
-  function inferOperationalLevel(roles=[]){if(roles.includes('direktur')||roles.includes('yayasan'))return'direktur';if(roles.includes('wakil')||roles.includes('supervisor'))return'supervisor';if(roles.some(r=>['admin','kepala-sekolah','sarpras','kesehatan','keuangan','cla'].includes(r)))return'manajer';if(roles.some(r=>['konselor','observer'].includes(r)))return'staf-muda';return'staf-mula'}
+  function inferOperationalLevel(roles=[]){if(roles.includes('direktur')||roles.includes('yayasan'))return'direktur';if(roles.includes('wakil')||roles.includes('supervisor'))return'supervisor';if(roles.some(r=>['admin','kepala-sekolah','sarpras','kesehatan','keuangan','cla'].includes(r)))return'manajer';if(roles.includes('manajer'))return'manajer';if(roles.some(r=>['konselor','staf-muda','observer'].includes(r)))return'staf-muda';if(roles.includes('staf-mula'))return'staf-mula';return'staf-mula'}
   function inferOperationalDivision(roles=[]){if(roles.includes('direktur')||roles.includes('wakil')||roles.includes('supervisor')||roles.includes('yayasan'))return'Semua Divisi';if(roles.includes('guru')||roles.includes('kepala-sekolah'))return'Pengajaran';if(roles.includes('naqib'))return'Pembinaan Karakter & Asrama';if(roles.includes('konselor'))return'Konseling';if(roles.includes('kesehatan'))return'Kesehatan';if(roles.includes('sarpras'))return'Sarpras';if(roles.includes('keuangan')||roles.includes('kasir')||roles.includes('admin'))return'Administrasi & Keuangan';if(roles.includes('cla'))return'Learning & Achievement';return'Layanan Operasional'}
   function syncOperationalDefaults(force=false){const roles=selectedRoles(),level=document.getElementById('operationalLevel'),division=document.getElementById('operationalDivision');if(!level||!division)return;if(force||level.value==='auto')division.value=inferOperationalDivision(roles);}
 
@@ -856,7 +860,7 @@
     document.getElementById('fUsername').value = u.username || u.id;
     document.getElementById('fLabel').value = u.label || u.username || u.id;
     
-    const daftarAkses = Array.isArray(u.akses) ? u.akses : [];
+    const daftarAkses = (Array.isArray(u.akses) ? u.akses : []).map(r=>r==='observer'?'staf-muda':r);
     document.querySelectorAll('.role-checkbox').forEach(cb => { 
       cb.checked = daftarAkses.includes(cb.value); 
     });
@@ -943,7 +947,7 @@
     const knownMenus = new Set(daftarMenuOtorisasiTersedia(role));
     const selector = role === 'wali'
       ? '#sectionWaliMenu .cb-menu:checked'
-      : role === 'observer'
+      : role === '__legacy_observer_disabled'
         ? '#sectionMainMenu .cb-menu:checked, #sectionObserverMenu .cb-menu:checked'
         : '.cb-menu:checked';
 

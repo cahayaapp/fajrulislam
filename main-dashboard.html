@@ -1678,7 +1678,7 @@
 
 
   <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260819-v59">
+  <meta name="cahaya-build" content="20260820-v71">
 
 <style id="cahaya-v48-guru-scan-nav">
 /* V48 — tombol Scan Absen khusus tampilan Guru, model center action */
@@ -2186,7 +2186,7 @@
         <div class="group-label">Utama</div>
         <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=70', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
-        <a class="nav-item menu-akses" id="menu-manajemen-operasional" style="display:none;" onclick="loadPage('operasional/index.html?v=70', this)">◉ Manajemen Operasional</a>
+        <a class="nav-item menu-akses" id="menu-manajemen-operasional" style="display:none;" onclick="loadPage('operasional/index.html?v=71', this)">◉ Manajemen Operasional</a>
       </div>
 
 
@@ -2233,7 +2233,7 @@
         <a class="nav-item menu-akses" id="menu-kasir" style="display: none;" onclick="loadPage('keuangan/kasir.html', this)">🏪 Kasir Kantin/Koperasi</a>
       </div>
 
-      <div class="menu-group" id="group-observer">
+      <div class="menu-group" id="group-observer" style="display:none!important;">
         <div class="group-label">Tim Observer</div>
         <a class="nav-item menu-akses" id="menu-observer-pembelajaran" style="display: none;" onclick="loadPage('observer/pembelajaran.html?v=42', this)">📚 Observasi Pembelajaran</a>
         <a class="nav-item menu-akses" id="menu-observer-pengasuhan" style="display: none;" onclick="loadPage('observer/pengasuhan.html?v=46', this)">🕌 Observasi Pengasuhan</a>
@@ -2517,10 +2517,11 @@ function sinkronkanBadgePintasanMobile() {
         "tim layanan": "layanan",
         "tim kesehatan": "kesehatan",
         "petugas kesehatan": "kesehatan",
-        "tim observer": "observer",
-        "tim observasi": "observer",
-        "petugas observer": "observer",
+        "tim observer": "staf-muda",
+        "tim observasi": "staf-muda",
+        "petugas observer": "staf-muda",
         "manager": "manajer",
+        "observer": "staf-muda",
         "staff muda": "staf-muda",
         "staff mula": "staf-mula",
         "staf muda": "staf-muda",
@@ -2610,7 +2611,6 @@ function sinkronkanBadgePintasanMobile() {
         manajer: "Manajer",
         "staf-muda": "Staf Muda",
         "staf-mula": "Staf Mula",
-        observer: "Tim Observer",
         yayasan: "Ketua Yayasan",
         "kepala-sekolah": "Kepala Sekolah",
         guru: "Guru",
@@ -2813,7 +2813,6 @@ function sinkronkanBadgePintasanMobile() {
       naqib:["menu-home","menu-kalender-pendidikan","menu-absen-asrama","menu-skor-usrah","menu-disiplin","menu-gamifikasi","menu-jadwal-piket","menu-jurnal-piket","menu-usrah","menu-antrean-kasus","menu-asesmen-naqib","menu-asesmen-santri","menu-profil","menu-chat"],
       konselor:["menu-home","menu-kalender-pendidikan","menu-antrean-kasus","menu-perizinan-santri","menu-laporan-observasi","menu-profil","menu-chat"],
       supervisor:["menu-home","menu-kalender-pendidikan","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-laporan-observasi","menu-profil","menu-chat"],
-      observer:["menu-home","menu-kalender-pendidikan","menu-observer-pembelajaran","menu-observer-pengasuhan","menu-observer-kebersihan","menu-observer-sarpras","menu-observer-dapur","menu-observer-uks","menu-profil","menu-chat"],
       kesehatan:["menu-home","menu-kalender-pendidikan","menu-jurnal-kesehatan","menu-pemeriksaan-kesehatan","menu-perizinan-uks","menu-stok-obat","menu-profil","menu-chat"],
       sarpras:["menu-home","menu-kalender-pendidikan","menu-jurnal-sarpras","menu-checklist-sarpras","menu-tindak-sarpras","menu-profil","menu-chat"],
       layanan:["menu-home","menu-kalender-pendidikan","menu-jurnal-pkl","menu-profil","menu-chat"],
@@ -2876,7 +2875,7 @@ function sinkronkanBadgePintasanMobile() {
       const deepLinkOperasional = new URLSearchParams(window.location.search).get("operasional");
       if (deepLinkOperasional && bolehAksesMenu("menu-manajemen-operasional")) {
         const menuOperasional = document.getElementById("menu-manajemen-operasional");
-        loadPage(`operasional/index.html?v=70&view=${encodeURIComponent(deepLinkOperasional)}`, menuOperasional);
+        loadPage(`operasional/index.html?v=71&view=${encodeURIComponent(deepLinkOperasional)}`, menuOperasional);
         return;
       }
       const prioritas = [];
@@ -2983,8 +2982,10 @@ function sinkronkanBadgePintasanMobile() {
           });
         });
 
-        // V70: Manajemen Operasional mengintegrasikan tugas, observasi, rapat, tindak lanjut, laporan, jurnal, dan kompetensi.
-        if (rolesUntukMenu.some(role => role && role !== "wali") && !gabunganMenu.includes("menu-manajemen-operasional")) {
+        // V71: Manajemen Operasional hanya untuk personel yang memang memiliki posisi operasional.
+        const roleOperasional = new Set(["admin","direktur","wakil","supervisor","manajer","staf-muda","staf-mula","kepala-sekolah","naqib","konselor","cla","layanan","sarpras","kesehatan","keuangan"]);
+        const punyaPosisiOperasional = rolesUntukMenu.some(role => roleOperasional.has(role)) || Boolean(pUserSafe.levelOperasional || pUserSafe.operationalLevel || pUserSafe.jabatanOperasional);
+        if (punyaPosisiOperasional && !gabunganMenu.includes("menu-manajemen-operasional")) {
           gabunganMenu.push("menu-manajemen-operasional");
         }
         ["menu-home","menu-profil","menu-chat"].forEach(menuId => {
@@ -3015,7 +3016,7 @@ function sinkronkanBadgePintasanMobile() {
           const whitelist = new Set(allowedMenusUser);
           if (akunGuruPkbm) whitelist.add("menu-kalender-pendidikan");
           if (rolesUntukMenu.includes('naqib')) whitelist.add('menu-antrean-kasus');
-          if (rolesUntukMenu.some(role => role && role !== 'wali')) whitelist.add('menu-manajemen-operasional');
+          if (punyaPosisiOperasional) whitelist.add('menu-manajemen-operasional');
           whitelist.add('menu-home'); whitelist.add('menu-profil'); whitelist.add('menu-chat');
           for (let i = gabunganMenu.length - 1; i >= 0; i--) {
             if (!whitelist.has(gabunganMenu[i])) gabunganMenu.splice(i, 1);

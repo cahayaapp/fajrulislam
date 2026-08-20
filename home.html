@@ -214,7 +214,7 @@
   .h24-role-wrap.is-naqib .h24-role-card{min-height:82px;padding:13px 14px}
 }
 </style>
-  <meta name="cahaya-build" content="20260820-v69">
+  <meta name="cahaya-build" content="20260820-v71">
 
 <style id="cahaya-v69-multirole">
 .h24-user-main{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
@@ -226,6 +226,10 @@
 .h24-hero.is-naqib .h24-role-chip,.h24-hero.is-teacher .h24-role-chip{background:rgba(255,255,255,.72)}
 .h24-hero.is-naqib .h24-role-chip.active,.h24-hero.is-teacher .h24-role-chip.active{background:linear-gradient(135deg,#1557d5,#2878ff);color:#fff}
 @media(max-width:720px){.h24-user-main{gap:6px}.h24-role-switcher{gap:5px}.h24-role-chip{min-height:27px;padding:4px 9px;font-size:.57rem}}
+</style>
+
+<style id="cahaya-v71-personal-performance">
+.h24-performance{margin-top:16px}.h24-performance-card{width:100%;border:1px solid #e4eaf2;border-radius:24px;background:linear-gradient(145deg,#fff,#fbfdff);box-shadow:0 16px 40px rgba(25,55,100,.08);padding:18px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;text-align:left;cursor:pointer}.h24-performance-score{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(135deg,#1557d5,#2878ff);color:#fff;box-shadow:0 12px 25px rgba(21,87,213,.22)}.h24-performance-score b{font-size:1.45rem;font-weight:1000;line-height:1}.h24-performance-score small{display:block;font-size:.48rem;font-weight:900;letter-spacing:.1em;margin-top:3px}.h24-performance-copy b{display:block;color:#17284a;font-size:.9rem;font-weight:1000}.h24-performance-copy span{display:block;color:#708098;font-size:.66rem;font-weight:750;margin-top:4px;line-height:1.45}.h24-performance-rank{text-align:right}.h24-performance-rank strong{display:block;color:#9b6800;font-size:.82rem;font-weight:1000}.h24-performance-rank small{color:#8b99ad;font-size:.56rem;font-weight:800}.h24-perf-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.h24-perf-metric{border:1px solid #edf1f6;border-radius:16px;padding:13px;background:#fff}.h24-perf-metric small{display:block;color:#8793a5;font-size:.58rem;font-weight:900;text-transform:uppercase;letter-spacing:.07em}.h24-perf-metric b{display:block;color:#17284a;font-size:1.25rem;margin-top:5px}.h24-perf-note{margin-top:12px;padding:12px;border-radius:14px;background:#fff8df;color:#785500;font-size:.68rem;font-weight:750;line-height:1.55}.h24-perf-note.ok{background:#ecfdf5;color:#17694a}@media(max-width:640px){.h24-performance-card{grid-template-columns:auto 1fr;padding:15px}.h24-performance-rank{grid-column:1/-1;text-align:left;padding-left:88px;margin-top:-8px}.h24-performance-score{width:64px;height:64px;border-radius:19px}}
 </style>
 </head>
 <body>
@@ -248,6 +252,14 @@
       <div class="h24-role-cards" id="roleCards"></div>
     </section>
 
+    <section class="h24-performance" id="personalPerformanceSection" hidden>
+      <button class="h24-performance-card" type="button" onclick="openPersonalPerformance()">
+        <span class="h24-performance-score"><span><b id="personalPerformanceScore">–</b><small>SKOR</small></span></span>
+        <span class="h24-performance-copy"><b>Kinerja Saya <span id="personalPerformanceMonth"></span></b><span id="personalPerformanceMeta">Pelaksanaan jobdesk dan mutu observasi atasan</span></span>
+        <span class="h24-performance-rank"><strong id="personalPerformanceRank">Belum dirangking</strong><small>Lihat detail penilaian →</small></span>
+      </button>
+    </section>
+
 
     <section class="h24-section h24-menu-section">
       <div class="h24-grid" id="menuGrid"><div class="h24-empty">Menyiapkan menu yang diizinkan...</div></div>
@@ -265,6 +277,15 @@
         <button type="button" class="h24-modal-close" onclick="closeHealthRestModal()" aria-label="Tutup">×</button>
       </div>
       <div class="h24-modal-body" id="healthRestList"></div>
+    </section>
+  </div>
+
+
+  <div class="h24-modal" id="personalPerformanceModal" hidden aria-hidden="true">
+    <div class="h24-modal-backdrop" onclick="closePersonalPerformance()"></div>
+    <section class="h24-modal-card" role="dialog" aria-modal="true">
+      <div class="h24-modal-head"><div><small>KINERJA SAYA</small><h3>Detail Penilaian</h3></div><button type="button" class="h24-modal-close" onclick="closePersonalPerformance()">×</button></div>
+      <div class="h24-modal-body" id="personalPerformanceBody"></div>
     </section>
   </div>
 
@@ -286,11 +307,11 @@
   <script>
   (function(){
     'use strict';
-    const ROLE_LABEL={admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',observer:'Observer',guru:'Guru',naqib:'Naqib',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
+    const ROLE_LABEL={admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',manajer:'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula',guru:'Guru',naqib:'Naqib',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
     function safeJson(key){try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(_){return{}}}
     function normalizeRole(value){
       const r=String(value||'').trim().toLowerCase();
-      const aliases={'administrator':'admin','director':'direktur','direktur pesantren':'direktur','pimpinan pesantren':'direktur','pimpinan':'direktur','pengasuh':'direktur','pimpinan/pengasuh':'direktur','wakil direktur':'wakil','wakil_direktur':'wakil','wadir':'wakil','kepala sekolah':'kepala-sekolah','kepala_sekolah':'kepala-sekolah','kepsek':'kepala-sekolah'};
+      const aliases={'administrator':'admin','director':'direktur','direktur pesantren':'direktur','pimpinan pesantren':'direktur','pimpinan':'direktur','pengasuh':'direktur','pimpinan/pengasuh':'direktur','wakil direktur':'wakil','wakil_direktur':'wakil','wadir':'wakil','kepala sekolah':'kepala-sekolah','kepala_sekolah':'kepala-sekolah','kepsek':'kepala-sekolah','observer':'staf-muda','tim observer':'staf-muda','tim observasi':'staf-muda','manager':'manajer','staff muda':'staf-muda','staff mula':'staf-mula','staf muda':'staf-muda','staf mula':'staf-mula'};
       return aliases[r]||r;
     }
     function roles(p){let r=p.allRoles??p.roles??p.jabatan??p.akses??p.role??[];if(!Array.isArray(r))r=[r];return [...new Set(r.map(normalizeRole).filter(Boolean))]}
@@ -396,10 +417,8 @@
         {label:'Tindak Lanjut',desc:'Selesaikan temuan sarpras',targets:['menu-tindak-sarpras'],type:'tools'},
         {label:'Jurnal Sarpras',desc:'Catat pekerjaan hari ini',targets:['menu-jurnal-sarpras'],type:'edit'}
       ]},
-      observer:{title:'Ringkasan Observer',roles:['observer'],cards:[
-        {label:'Pembelajaran',desc:'Observasi kegiatan belajar',targets:['menu-observer-pembelajaran'],type:'eye'},
-        {label:'Pengasuhan',desc:'Observasi pendampingan santri',targets:['menu-observer-pengasuhan'],type:'eye'},
-        {label:'Kebersihan',desc:'Observasi area pesantren',targets:['menu-observer-kebersihan'],type:'eye'}
+      operasional:{title:'Ringkasan Operasional',roles:['manajer','staf-muda','staf-mula'],cards:[
+        {label:'Manajemen Operasional',desc:'Tugas, jurnal, rapat dan tindak lanjut',targets:['menu-manajemen-operasional'],type:'chart'}
       ]}
     };
     function parentMenu(id){try{return window.parent&&window.parent!==window?window.parent.document.getElementById(id):null}catch(_){return null}}
@@ -603,6 +622,31 @@
       document.getElementById('roleCardsTitle').textContent=group.title;box.innerHTML=available.map(roleCardMarkup).join('');section.hidden=false;
     }
 
+    const OPERATIONAL_ROLES=new Set(['admin','direktur','wakil','supervisor','manajer','staf-muda','staf-mula','kepala-sekolah','naqib','konselor','cla','layanan','sarpras','kesehatan','keuangan']);
+    let personalPerformanceData=null;
+    function currentMonthKey(){const f=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit'}).format(new Date());return f.slice(0,7)}
+    function currentUsername(){const p=profile();return String(p.username||p.id||p.email?.split('@')[0]||'').trim().toLowerCase()}
+    async function loadPersonalPerformance(){
+      const section=document.getElementById('personalPerformanceSection'),role=activeRoleOf();
+      if(!section||!OPERATIONAL_ROLES.has(role)){if(section)section.hidden=true;return}
+      try{
+        const par=window.parent&&window.parent!==window?window.parent:window,fb=par.firebase;if(!fb?.database){section.hidden=true;return}
+        const month=currentMonthKey(),snap=await fb.database().ref(`cahaya_app/manajemen_operasional_v1/performance_monthly/${month}`).once('value'),root=snap.val()||{},un=currentUsername(),all=[];
+        Object.entries(root).forEach(([group,val])=>Object.values(val||{}).forEach(r=>{if(r&&typeof r==='object')all.push({...r,_group:group})}));
+        const mine=all.filter(r=>String(r.username||'').toLowerCase()===un).sort((a,b)=>(b.official?1:0)-(a.official?1:0)||Number(b.score||0)-Number(a.score||0))[0];
+        if(!mine){section.hidden=true;return}
+        const peers=all.filter(r=>r._group===mine._group&&r.official&&Number.isFinite(Number(r.score))).sort((a,b)=>Number(b.score)-Number(a.score)),idx=peers.findIndex(r=>String(r.username||'').toLowerCase()===un);
+        personalPerformanceData={...mine,rank:mine.official&&idx>=0?idx+1:null,peerCount:peers.length,month};
+        document.getElementById('personalPerformanceScore').textContent=mine.score??'–';
+        document.getElementById('personalPerformanceMonth').textContent='• '+new Intl.DateTimeFormat('id-ID',{month:'long',year:'numeric'}).format(new Date(month+'-01T00:00:00'));
+        document.getElementById('personalPerformanceMeta').textContent=`Pelaksanaan ${mine.execution??'–'}% • Mutu ${mine.quality??'–'}% • ${mine.positionTitle||mine.level||'Personel Operasional'}`;
+        document.getElementById('personalPerformanceRank').textContent=personalPerformanceData.rank?`Peringkat #${personalPerformanceData.rank} dari ${personalPerformanceData.peerCount}`:'Penilaian sementara';
+        section.hidden=false;
+      }catch(e){console.warn('Kinerja personal belum tersedia:',e);section.hidden=true}
+    }
+    window.openPersonalPerformance=function(){const d=personalPerformanceData;if(!d)return;const box=document.getElementById('personalPerformanceBody');box.innerHTML=`<div class="h24-perf-grid"><div class="h24-perf-metric"><small>Skor Kinerja</small><b>${d.score??'–'}</b></div><div class="h24-perf-metric"><small>Ranking</small><b>${d.rank?'#'+d.rank:'Sementara'}</b></div><div class="h24-perf-metric"><small>Pelaksanaan</small><b>${d.execution??'–'}%</b></div><div class="h24-perf-metric"><small>Mutu</small><b>${d.quality??'–'}%</b></div></div><div class="h24-perf-note ${d.official?'ok':''}"><b>Mengapa nilainya seperti ini?</b><br>Pelaksanaan dihitung dari ${d.journalCount||0} jurnal jobdesk harian. Mutu dihitung dari ${d.observationCount||0} observasi atasan. Rumus kinerja: 60% Pelaksanaan + 40% Mutu.${d.observationCount<3?'<br><br>Ranking resmi baru aktif setelah minimal 3 observasi mutu dalam periode ini.':'<br><br>Data mutu sudah memenuhi minimum observasi untuk ranking resmi.'}</div>`;const m=document.getElementById('personalPerformanceModal');m.hidden=false;m.setAttribute('aria-hidden','false')};
+    window.closePersonalPerformance=function(){const m=document.getElementById('personalPerformanceModal');if(m){m.hidden=true;m.setAttribute('aria-hidden','true')}};
+
     const DASHBOARD_EXCLUDED=new Set([
       'menu-profil',
       'menu-laporan-murojaah',
@@ -637,10 +681,10 @@
       if(!items.length){root.innerHTML='<div class="h24-empty">Belum ada menu yang tersedia untuk akun ini.</div>';return}
       root.innerHTML=items.map(item=>`<button class="h24-menu" type="button" onclick="animateAndOpenHome24(this,'${escapeHtml(item.id)}')"><span class="h24-icon">${iconSvg(item.type)}</span><b>${escapeHtml(item.label)}</b></button>`).join('')
     }
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeHealthRestModal();closeTeacherQuickModal()}});
-    setProfile();render();renderRoleCards();
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeHealthRestModal();closeTeacherQuickModal();closePersonalPerformance()}});
+    setProfile();render();renderRoleCards();loadPersonalPerformance();
     try{if(window.parent&&window.parent!==window){const nav=window.parent.document.querySelector('#dynamicMenu');if(nav)new MutationObserver(()=>{render();renderRoleCards()}).observe(nav,{subtree:true,attributes:true,attributeFilter:['style','hidden','class'],childList:true})}}catch(_){ }
-    setTimeout(()=>{render();renderRoleCards()},250);setTimeout(()=>{render();renderRoleCards()},850);setTimeout(()=>{render();renderRoleCards()},1800);
+    setTimeout(()=>{render();renderRoleCards();loadPersonalPerformance()},250);setTimeout(()=>{render();renderRoleCards()},850);setTimeout(()=>{render();renderRoleCards()},1800);
   })();
   </script>
   <script src="js/cahaya-responsive-v24.js?v=37" defer></script>
