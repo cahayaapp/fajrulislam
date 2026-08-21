@@ -42,6 +42,7 @@
     .role-yayasan { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
     .role-cla { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; } 
     .role-wali { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; } 
+    .role-operasional { background:#eef8ff; color:#1557d5; border:1px solid #93c5fd; } 
     .role-layanan { background: #fefefc; color: #854d0e; border: 1px solid #eab308; } 
     /* ROLE BARU: KEPALA SARPRAS (Palet Teal Premium) */
     .role-sarpras { background: #f0fdfa; color: #0f766e; border: 1px solid #14b8a6; }
@@ -102,6 +103,16 @@
   .assignment-card{padding:13px;border:1px solid #dbe7f5;border-radius:14px;background:#fff;margin-bottom:10px}
   .assignment-card .assignment-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
   .assignment-card .assignment-title b{color:#17345f}
+
+  .access-system-box,.operational-position-box{margin-top:16px;padding:16px;border:1px solid #dbe7f5;border-radius:16px;background:linear-gradient(135deg,#fbfdff,#fff)}
+  .operational-position-box{border-color:#bfdbfe;background:linear-gradient(135deg,#f8fbff,#fffdf6)}
+  .section-mini-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.section-mini-head b{display:block;color:#17345f;font-size:.92rem}.section-mini-head small{display:block;margin-top:3px;color:#718198;font-size:.72rem;line-height:1.45}
+  .mini-add-position{border:0;border-radius:11px;padding:9px 12px;background:#1557d5;color:#fff;font-weight:900;cursor:pointer;white-space:nowrap}.mini-add-position:hover{filter:brightness(.96)}
+  .architecture-note{padding:10px 11px;margin-bottom:11px;border:1px dashed #bfdbfe;border-radius:11px;background:#fff;color:#637892;font-size:.71rem;line-height:1.5}
+  .assignment-card{position:relative}.assignment-card .position-name{display:block;color:#17345f;font-size:.86rem;font-weight:1000}.assignment-card .position-code{display:block;margin-top:2px;color:#7d8ba0;font-size:.62rem;font-weight:750}.assignment-grid-v73{display:grid;grid-template-columns:1fr 1.2fr 1.2fr;gap:9px}.assignment-grid-v73 .wide{grid-column:span 2}.assignment-remove{border:1px solid #fecaca;background:#fff5f5;color:#b91c1c;border-radius:9px;width:30px;height:30px;cursor:pointer;font-weight:1000}
+  .scope-mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:9px;border:1px solid #e5edf6;border-radius:11px;background:#fbfdff}.scope-mini-grid label{display:flex;align-items:center;gap:6px;font-size:.66rem;font-weight:800;color:#5f7188}.scope-mini-grid input{accent-color:#1557d5}
+  .position-standard-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:14px}.position-standard-meta>div{padding:10px;border:1px solid #e3eaf3;border-radius:12px;background:#fbfdff}.position-standard-meta small{display:block;color:#8391a5;font-size:.58rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em}.position-standard-meta b{display:block;margin-top:3px;color:#24476f;font-size:.78rem}
+  @media(max-width:760px){.section-mini-head.position-head{align-items:flex-start}.assignment-grid-v73{grid-template-columns:1fr}.assignment-grid-v73 .wide{grid-column:auto}.position-standard-meta{grid-template-columns:1fr}.mini-add-position{font-size:.7rem}}
   .assignment-grid{display:grid;grid-template-columns:1fr 130px 1fr;gap:9px}
   .assignment-grid .form-group{margin:0}
   @media(max-width:720px){
@@ -408,7 +419,7 @@
 
 <main class="cahaya-container"><div class="tab-nav" style="margin-bottom: 25px;">
     <button class="tab-btn active" onclick="switchTab('tab-akun', this)">👥 Daftar Akun</button>
-    <button class="tab-btn" onclick="switchTab('tab-standar-role', this)">🎯 Tupoksi, Jobdesk & KPI</button>
+    <button class="tab-btn" onclick="switchTab('tab-standar-role', this)">🧭 Master Jabatan & Kinerja</button>
     <button class="tab-btn" onclick="switchTab('tab-otorisasi', this)">🔐 Otorisasi Menu (RBAC)</button>
   </div>
 
@@ -427,7 +438,7 @@
               <th width="5%">No</th>
               <th width="25%">Username</th>
               <th width="30%">Nama Tampilan</th>
-              <th width="30%">Hak Akses (Role)</th>
+              <th width="30%">Hak Akses & Jabatan</th>
               <th width="10%" style="text-align: center;">Aksi</th>
             </tr>
           </thead>
@@ -442,19 +453,19 @@
     <div class="cahaya-card role-standard-shell">
       <div class="role-standard-head">
         <div>
-          <span class="role-standard-kicker">MASTER STANDAR JABATAN</span>
-          <h3>Tupoksi, Jobdesk & KPI Role</h3>
-          <p>Satu kali atur di sini. Semua personel yang memegang role tersebut otomatis memakai standar yang sama di Manajemen Operasional.</p>
+          <span class="role-standard-kicker">MASTER JABATAN OPERASIONAL</span>
+          <h3>Tupoksi, Jobdesk & KPI Jabatan</h3>
+          <p>Jenjang, bidang, dan fungsi dipisahkan agar tidak tumpang tindih. Standar yang sama otomatis dipakai semua personel dengan jabatan operasional tersebut.</p>
         </div>
         <div class="role-standard-actions">
-          <select class="form-control" id="selectOperationalRole" onchange="renderRoleStandardForm()"></select>
+          <select class="form-control" id="selectPositionStandard" onchange="renderPositionStandardForm()"></select>
         </div>
       </div>
 
       <div class="role-standard-flow">
         <span><b>1</b> Tupoksi<small>Mengapa role ini ada?</small></span>
         <i>→</i>
-        <span><b>2</b> Jobdesk<small>Apa yang rutin dilakukan?</small></span>
+        <span><b>2</b> Jobdesk<small>Apa tanggung jawab rutinnya?</small></span>
         <i>→</i>
         <span><b>3</b> KPI<small>Hasilnya diukur dengan apa?</small></span>
       </div>
@@ -479,10 +490,7 @@
           <option value="konselor">🛡️ Konselor Kesantrian</option>
           <option value="cla">🎓 Center of Learning & Achievement</option>
           <option value="wakil">🥈 Wakil Direktur</option>
-          <option value="supervisor">🔍 Supervisor</option>
-          <option value="manajer">🧭 Manajer</option>
-          <option value="staf-muda">🧩 Staf Muda</option>
-          <option value="staf-mula">⚙️ Staf Mula</option>
+          <option value="operasional">🧭 Manajemen Operasional</option>
           <option value="yayasan">🏛️ Ketua Yayasan</option>
           <option value="direktur">👑 Direktur</option>
           <option value="admin">💻 Administrator</option>
@@ -501,6 +509,7 @@
           <div class="checkbox-grid" style="margin-top:0;">
             <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-home"> Beranda Dashboard</label>
             <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-kalender-pendidikan"> Kalender Pendidikan</label>
+            <label class="check-label" style="background:#eef8ff;border-color:#93c5fd"><input type="checkbox" class="cb-menu" value="menu-manajemen-operasional"> 🧭 Manajemen Operasional</label>
             <label class="check-label" style="background:#fff9e9;border-color:#f6d38b"><input type="checkbox" class="cb-menu" value="menu-notulensi-rapat" checked disabled> 📝 Notulensi Rapat <small style="color:#9a6a0b">(integral)</small></label>
             <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-chat"> Pusat Komunikasi / Chat</label>
             <label class="check-label"><input type="checkbox" class="cb-menu" value="menu-profil"> Pengaturan Profil</label>
@@ -662,31 +671,36 @@
         <input type="text" class="form-control" id="fLabel" placeholder="Contoh: Ustadz Ali Zainal">
       </div>
       
-      <label style="margin-top: 20px; border-bottom: 1px solid var(--input-border); padding-bottom: 5px; display:block;">Pilih Jabatan (Role)</label>
-      <div class="checkbox-grid">
-        <label class="check-label"><input type="checkbox" value="wali" class="role-checkbox"> Wali Santri</label>
-        <label class="check-label"><input type="checkbox" value="guru" class="role-checkbox" checked> Guru</label>
-        <label class="check-label" style="border-color:#93c5fd;background:#edf5ff"><input type="checkbox" value="kepala-sekolah" class="role-checkbox"> Kepala Sekolah</label>
-        <label class="check-label"><input type="checkbox" value="naqib" class="role-checkbox"> Naqib</label>
-        <label class="check-label"><input type="checkbox" value="konselor" class="role-checkbox"> Konselor</label>
-        <label class="check-label"><input type="checkbox" value="cla" class="role-checkbox"> Center of Learning (CLA)</label>
-        <label class="check-label"><input type="checkbox" value="wakil" class="role-checkbox"> Wakil Direktur</label>
-        <label class="check-label"><input type="checkbox" value="supervisor" class="role-checkbox"> Supervisor</label>
-        <label class="check-label" style="border-color:#86efac; background:#f0fdf4;"><input type="checkbox" value="manajer" class="role-checkbox"> Manajer</label>
-        <label class="check-label" style="border-color:#fdba74; background:#fff7ed;"><input type="checkbox" value="staf-muda" class="role-checkbox"> Staf Muda</label>
-        <label class="check-label" style="border-color:#cbd5e1; background:#f8fafc;"><input type="checkbox" value="staf-mula" class="role-checkbox"> Staf Mula</label>
-        <label class="check-label"><input type="checkbox" value="yayasan" class="role-checkbox"> Ketua Yayasan</label>
-        <label class="check-label"><input type="checkbox" value="direktur" class="role-checkbox"> Direktur</label>
-        <label class="check-label"><input type="checkbox" value="admin" class="role-checkbox"> Admin</label>
-        <label class="check-label" style="border-color:#eab308; background:#fefefc;"><input type="checkbox" value="layanan" class="role-checkbox"> Tim Layanan (PKL)</label>
-        <label class="check-label" style="border-color:#14b8a6; background:#f0fdfa;"><input type="checkbox" value="sarpras" class="role-checkbox"> Kepala Sarpras</label>
-        <label class="check-label" style="border-color:#67e8f9; background:#ecfeff;"><input type="checkbox" value="kesehatan" class="role-checkbox"> Tim Kesehatan</label>
-        <label class="check-label" style="border-color:#93c5fd; background:#eff6ff;"><input type="checkbox" value="keuangan" class="role-checkbox"> Administrasi Keuangan</label>
-        <label class="check-label" style="border-color:#fdba74; background:#fff7ed;"><input type="checkbox" value="kasir" class="role-checkbox"> Kasir Kantin/Koperasi</label>
-      </div>
-      <section id="operationalProfileBox" style="margin-top:16px;padding:16px;border:1px solid #bfdbfe;border-radius:14px;background:linear-gradient(135deg,#f8fbff,#fffdf6)">
-        <h4 style="margin:0 0 5px;color:#17345f">◉ Penugasan Jabatan / Role</h4>
-        <p style="margin:0 0 14px;color:#6b7d96;font-size:.78rem;line-height:1.55">Jabatan mengikuti role yang dipilih di atas. Di sini cukup tentukan <b>bidang, unit, dan atasan</b> untuk setiap role operasional. Jika satu orang memiliki beberapa role, setiap role dapat memiliki penugasan yang berbeda.</p>
+      <section class="access-system-box">
+        <div class="section-mini-head">
+          <div><b>🔐 Hak Akses Sistem</b><small>Menentukan fitur yang boleh dibuka. Ini bukan jenjang jabatan.</small></div>
+        </div>
+        <div class="checkbox-grid">
+          <label class="check-label"><input type="checkbox" value="wali" class="role-checkbox"> Wali Santri</label>
+          <label class="check-label"><input type="checkbox" value="guru" class="role-checkbox" checked> Guru</label>
+          <label class="check-label" style="border-color:#93c5fd;background:#edf5ff"><input type="checkbox" value="kepala-sekolah" class="role-checkbox"> Kepala Sekolah</label>
+          <label class="check-label"><input type="checkbox" value="naqib" class="role-checkbox"> Naqib</label>
+          <label class="check-label"><input type="checkbox" value="konselor" class="role-checkbox"> Konselor</label>
+          <label class="check-label"><input type="checkbox" value="cla" class="role-checkbox"> Center of Learning (CLA)</label>
+          <label class="check-label"><input type="checkbox" value="direktur" class="role-checkbox"> Direktur</label>
+          <label class="check-label"><input type="checkbox" value="wakil" class="role-checkbox"> Wakil Direktur</label>
+          <label class="check-label"><input type="checkbox" value="yayasan" class="role-checkbox"> Ketua Yayasan</label>
+          <label class="check-label"><input type="checkbox" value="admin" class="role-checkbox"> Admin</label>
+          <label class="check-label" style="border-color:#7dd3fc;background:#f0f9ff"><input type="checkbox" value="operasional" class="role-checkbox"> Manajemen Operasional</label>
+          <label class="check-label" style="border-color:#eab308; background:#fefefc;"><input type="checkbox" value="layanan" class="role-checkbox"> Tim Layanan</label>
+          <label class="check-label" style="border-color:#14b8a6; background:#f0fdfa;"><input type="checkbox" value="sarpras" class="role-checkbox"> Sarpras</label>
+          <label class="check-label" style="border-color:#67e8f9; background:#ecfeff;"><input type="checkbox" value="kesehatan" class="role-checkbox"> Tim Kesehatan</label>
+          <label class="check-label" style="border-color:#93c5fd; background:#eff6ff;"><input type="checkbox" value="keuangan" class="role-checkbox"> Administrasi Keuangan</label>
+          <label class="check-label" style="border-color:#fdba74; background:#fff7ed;"><input type="checkbox" value="kasir" class="role-checkbox"> Kasir Kantin/Koperasi</label>
+        </div>
+      </section>
+
+      <section id="operationalProfileBox" class="operational-position-box">
+        <div class="section-mini-head position-head">
+          <div><b>🧭 Jabatan Operasional</b><small>Jenjang + bidang + fungsi. Satu personel boleh memiliki beberapa jabatan.</small></div>
+          <button type="button" class="mini-add-position" onclick="addOperationalAssignment()">+ Tambah Jabatan</button>
+        </div>
+        <div class="architecture-note"><b>Contoh:</b> Staf Muda → Pengajaran → Guru &nbsp;•&nbsp; Staf Muda → Pembinaan Karakter → Naqib &nbsp;•&nbsp; Supervisor → Pendidikan.</div>
         <div id="roleAssignmentList"></div>
       </section>
       <section id="cashierUnitBox" style="display:none;margin-top:16px;padding:16px;border:1px solid #fed7aa;border-radius:14px;background:#fff7ed">
@@ -726,6 +740,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="../js/cahaya-operational-standards-v73.js?v=73"></script>
 
 <script>
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
@@ -741,8 +756,8 @@
   let allUsers = [];
   let isEditMode = false;
   let dynamicRoleMenus = {};
-  let roleProfiles = {};
-  let editingRoleAssignments = {};
+  let positionProfiles = {};
+  let editingOperationalAssignments = [];
 
   const LEGACY_WALI_MENU_MAP = {
     "menu-laporan-wali": "menu-akademik-wali"
@@ -758,7 +773,8 @@
   ];
 
   const DEFAULT_ROLE_MENUS = {
-    "kepala-sekolah": ["menu-home","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-profil"]
+    "kepala-sekolah": ["menu-home","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-profil"],
+    "operasional": ["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat"]
   };
 
   function daftarMenuOtorisasiTersedia(role = "") {
@@ -818,193 +834,102 @@
 
 
 
-  // V72 — role = jabatan. Tupoksi, Jobdesk dan KPI dipusatkan di Manajemen User.
-  const ROLE_LABELS_V72 = {
+  // V73 — Hak Akses Sistem dipisahkan dari Jabatan Operasional.
+  const STD=window.CAHAYA_OPERATIONAL_STANDARD_LIBRARY||{};
+  const STRUCTURAL_LEGACY=new Set(['supervisor','manajer','staf-muda','staf-mula','observer']);
+  const ROLE_LABELS_V72={
     wali:'Wali Santri',guru:'Guru','kepala-sekolah':'Kepala Sekolah',naqib:'Naqib',konselor:'Konselor',
-    cla:'Center of Learning & Achievement',wakil:'Wakil Direktur',supervisor:'Supervisor',manajer:'Manajer',
-    'staf-muda':'Staf Muda','staf-mula':'Staf Mula',yayasan:'Ketua Yayasan',direktur:'Direktur',
-    admin:'Administrator',layanan:'Tim Layanan',sarpras:'Kepala Sarpras',kesehatan:'Tim Kesehatan',
+    cla:'Center of Learning & Achievement',wakil:'Wakil Direktur',yayasan:'Ketua Yayasan',direktur:'Direktur',
+    admin:'Administrator',operasional:'Manajemen Operasional',layanan:'Tim Layanan',sarpras:'Sarpras',kesehatan:'Tim Kesehatan',
     keuangan:'Administrasi Keuangan',kasir:'Kasir'
   };
-  const ROLE_LEVEL_DEFAULT = {
-    direktur:'direktur',yayasan:'direktur',wakil:'supervisor',supervisor:'supervisor',
-    manajer:'manajer','kepala-sekolah':'manajer',sarpras:'manajer',kesehatan:'manajer',
-    keuangan:'manajer',admin:'manajer',cla:'manajer','staf-muda':'staf-muda',
-    konselor:'staf-muda','staf-mula':'staf-mula',naqib:'staf-mula',layanan:'staf-mula'
-  };
-  const DEFAULT_OPERATIONAL_ROLES = new Set(Object.keys(ROLE_LEVEL_DEFAULT));
-  const DIVISION_OPTIONS_V72 = ['Semua Divisi','Pengajaran','Pembinaan Karakter & Asrama','Tahsin & Tahfiz','Konseling','Kesehatan','Sarpras','Dapur & Konsumsi','Kebersihan','Administrasi & Keuangan','Media & Digital','Keputrian','PKBM & Bimbel','Learning & Achievement','Layanan Operasional'];
-  const DEFAULT_DIVISION_BY_ROLE = {
-    direktur:'Semua Divisi',yayasan:'Semua Divisi',wakil:'Semua Divisi',supervisor:'Semua Divisi',
-    'kepala-sekolah':'Pengajaran',naqib:'Pembinaan Karakter & Asrama',konselor:'Konseling',
-    kesehatan:'Kesehatan',sarpras:'Sarpras',keuangan:'Administrasi & Keuangan',kasir:'Administrasi & Keuangan',
-    admin:'Administrasi & Keuangan',cla:'Learning & Achievement',layanan:'Layanan Operasional',
-    manajer:'Layanan Operasional','staf-muda':'Layanan Operasional','staf-mula':'Layanan Operasional'
-  };
-  const ROLE_PROFILE_SEED = {
-    direktur:{operational:true,level:'direktur',tupoksi:'Memimpin, mengarahkan, dan memastikan seluruh sistem pesantren berjalan selaras dengan visi, target, dan standar mutu.',jobdesks:[],kpis:[]},
-    supervisor:{operational:true,level:'supervisor',tupoksi:'Mengendalikan mutu dan pencapaian bidang yang disupervisi melalui monitoring, observasi, rapat, tindak lanjut, dan pembinaan manajer.',jobdesks:[],kpis:[]},
-    manajer:{operational:true,level:'manajer',tupoksi:'Mengelola program, personel, dan target bidang agar terlaksana efektif, tertib, terukur, dan tuntas.',jobdesks:[],kpis:[]},
-    'staf-muda':{operational:true,level:'staf-muda',tupoksi:'Mengkoordinasikan pelaksanaan pekerjaan lapangan dan memastikan amanah bidang terlaksana sesuai target.',jobdesks:[],kpis:[]},
-    'staf-mula':{operational:true,level:'staf-mula',tupoksi:'Melaksanakan pekerjaan operasional harian sesuai jobdesk dan melaporkan kendala secara cepat.',jobdesks:[],kpis:[]}
-  };
-  function roleProfile(role){
-    const base=ROLE_PROFILE_SEED[role]||{operational:DEFAULT_OPERATIONAL_ROLES.has(role),level:ROLE_LEVEL_DEFAULT[role]||'staf-mula',tupoksi:'',jobdesks:[],kpis:[]};
-    const saved=roleProfiles[role]||{};
-    return {...base,...saved,jobdesks:Array.isArray(saved.jobdesks)?saved.jobdesks:(base.jobdesks||[]),kpis:Array.isArray(saved.kpis)?saved.kpis:(base.kpis||[])};
-  }
-  function isOperationalRole(role){ return roleProfile(role).operational === true; }
-  function allRoleKeys(){ return Object.keys(ROLE_LABELS_V72); }
+  const POSITION_LEVELS={direktur:'Direktur',supervisor:'Supervisor',manajer:'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula'};
+  const DIVISION_OPTIONS_V73=Array.isArray(STD.divisions)?STD.divisions:['Pendidikan','Pengajaran','Pembinaan Karakter & Asrama','Tahsin & Tahfiz','Konseling','Kesehatan','Sarpras','Dapur & Konsumsi','Kebersihan','Administrasi & Keuangan','Media & Digital','Keputrian','PKBM & Bimbel','Learning & Achievement','Layanan Operasional','Administrasi & Layanan','Semua Divisi'];
   function safeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-  function defaultDivision(role){return DEFAULT_DIVISION_BY_ROLE[role]||'Layanan Operasional'}
-  function divisionOptionsHtml(selected=''){
-    return DIVISION_OPTIONS_V72.map(v=>`<option value="${safeHtml(v)}" ${v===selected?'selected':''}>${safeHtml(v)}</option>`).join('');
-  }
-  function operationalRoleOptions(selected=''){
-    return allRoleKeys().map(r=>`<option value="${safeHtml(r)}" ${r===selected?'selected':''}>${safeHtml(ROLE_LABELS_V72[r]||r)}</option>`).join('');
-  }
   function profileId(prefix='x'){return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`}
-
+  function clone(v){return JSON.parse(JSON.stringify(v||null))}
+  function positionFunctions(level,division){return typeof STD.functionsFor==='function'?STD.functionsFor(level,division):[{key:level,label:POSITION_LEVELS[level]||level}]}
+  function makeStandardId(level,division,functionKey){return typeof STD.makeId==='function'?STD.makeId(level,division,functionKey):`${level}__${String(division||'').toLowerCase().replace(/\W+/g,'-')}__${functionKey}`}
+  function builtInProfile(id){return clone(STD.profiles?.[id]||null)}
+  function profileForAssignment(a={}){
+    const id=a.standardId||makeStandardId(a.level,a.division,a.functionKey);
+    const saved=positionProfiles[id],seed=builtInProfile(id)||(typeof STD.findMatching==='function'?STD.findMatching(a.level,a.division,a.functionKey):null)||{};
+    return {...seed,...saved,id,jobdesks:Array.isArray(saved?.jobdesks)?saved.jobdesks:(seed.jobdesks||[]),kpis:Array.isArray(saved?.kpis)?saved.kpis:(seed.kpis||[])};
+  }
+  function standardCatalog(){
+    const merged={...(STD.profiles||{}),...positionProfiles};
+    (Array.isArray(allUsers)?allUsers:[]).forEach(u=>assignmentsFromLegacy(u,Array.isArray(u.akses)?u.akses:[]).forEach(a=>{const p=profileForAssignment(a);merged[p.id]=p}));
+    editingOperationalAssignments.forEach(a=>{const p=profileForAssignment(a);merged[p.id]=p});
+    return Object.values(merged).filter(Boolean).sort((a,b)=>(a.level||'').localeCompare(b.level||'')||(a.division||'').localeCompare(b.division||'')||(a.title||'').localeCompare(b.title||''));
+  }
   async function muatRoleProfiles(){
-    const snap=await db.collection('settings').doc('operational_role_profiles').get().catch(()=>null);
-    roleProfiles=snap?.exists ? (snap.data()?.profiles||{}) : {};
-    const sel=document.getElementById('selectOperationalRole');
-    if(sel){
-      sel.innerHTML=operationalRoleOptions(sel.value||'direktur');
-      if(!sel.value) sel.value='direktur';
-      renderRoleStandardForm();
-    }
+    const snap=await db.collection('settings').doc('operational_position_profiles').get().catch(()=>null);
+    positionProfiles=snap?.exists?(snap.data()?.profiles||{}):{};
+    renderPositionStandardSelector();
   }
-
-  window.renderRoleStandardForm = () => {
-    const role=document.getElementById('selectOperationalRole')?.value||'direktur',p=roleProfile(role);
-    const box=document.getElementById('roleStandardForm');if(!box)return;
-    const jobs=p.jobdesks||[],kpis=p.kpis||[];
+  function renderPositionStandardSelector(preferred=''){
+    const sel=document.getElementById('selectPositionStandard');if(!sel)return;
+    const rows=standardCatalog();sel.innerHTML=rows.map(p=>`<option value="${safeHtml(p.id)}">${safeHtml(p.title||`${POSITION_LEVELS[p.level]||p.level} • ${p.division}`)}</option>`).join('');
+    if(preferred&&rows.some(p=>p.id===preferred))sel.value=preferred;
+    if(!sel.value&&rows[0])sel.value=rows[0].id;
+    renderPositionStandardForm();
+  }
+  window.renderPositionStandardForm=()=>{
+    const id=document.getElementById('selectPositionStandard')?.value,seed=standardCatalog().find(x=>x.id===id)||builtInProfile(id)||{},p={...seed,...(positionProfiles[id]||{})};
+    const box=document.getElementById('roleStandardForm');if(!box||!id)return;
+    const jobs=Array.isArray(p.jobdesks)?p.jobdesks:[],kpis=Array.isArray(p.kpis)?p.kpis:[];
     box.innerHTML=`
-      <div class="role-op-switch">
-        <input type="checkbox" id="roleOperational" ${p.operational?'checked':''}>
-        <div><b>Masuk Manajemen Operasional</b><div style="font-size:.75rem;color:#7a6640;margin-top:2px">Matikan untuk role seperti Wali/Guru murni yang tidak perlu muncul sebagai personel manajemen.</div></div>
-        <div style="margin-left:auto;min-width:150px"><label style="font-size:.67rem;font-weight:900;color:#7c5d18">LEVEL KINERJA</label>
-          <select class="form-control" id="rolePerformanceLevel">
-            ${['direktur','supervisor','manajer','staf-muda','staf-mula'].map(v=>`<option value="${v}" ${p.level===v?'selected':''}>${v.replace('-', ' ')}</option>`).join('')}
-          </select>
-        </div>
-      </div>
+      <div class="position-standard-meta"><div><small>Jenjang</small><b>${safeHtml(POSITION_LEVELS[p.level]||p.level||'-')}</b></div><div><small>Bidang</small><b>${safeHtml(p.division||'-')}</b></div><div><small>Fungsi</small><b>${safeHtml(p.functionLabel||p.functionKey||'-')}</b></div></div>
       <div class="role-standard-grid">
-        <section class="role-standard-panel full">
-          <h4>Tupoksi</h4><p>Satu rumusan singkat tentang tanggung jawab utama role ini. Bukan daftar pekerjaan harian.</p>
-          <textarea class="form-control" id="roleTupoksi" rows="3" placeholder="Contoh: Memastikan seluruh proses pengajaran berjalan efektif, tertib, dan mencapai standar mutu.">${safeHtml(p.tupoksi||'')}</textarea>
-        </section>
-        <section class="role-standard-panel full">
-          <h4>Jobdesk Role</h4><p>Pekerjaan rutin yang melahirkan To Do dan Jurnal. Buat sesederhana mungkin.</p>
-          <div id="jobdeskStandardRows">${jobs.map((j,i)=>jobdeskStandardRow(j,i)).join('')}</div>
-          <button class="standard-add" type="button" onclick="addRoleJobdesk()">+ Tambah Jobdesk</button>
-        </section>
-        <section class="role-standard-panel full">
-          <h4>KPI Role</h4><p>Ukuran hasil. Target aktual diatur per Objective/periode dalam Manajemen Operasional.</p>
-          <div id="kpiStandardRows">${kpis.map((k,i)=>kpiStandardRow(k,i)).join('')}</div>
-          <button class="standard-add" type="button" onclick="addRoleKpi()">+ Tambah KPI</button>
-        </section>
-      </div>
-      <button class="btn-cahaya btn-gold" id="btnSaveRoleStandard" style="margin-top:18px" onclick="simpanRoleStandard()">💾 SIMPAN STANDAR ROLE</button>`;
+        <section class="role-standard-panel full"><h4>Nama Jabatan</h4><p>Nama yang tampil di Manajemen Operasional.</p><input class="form-control" id="positionStandardTitle" value="${safeHtml(p.title||'')}"></section>
+        <section class="role-standard-panel full"><h4>Tupoksi</h4><p>Mandat utama jabatan. Cukup satu rumusan ringkas.</p><textarea class="form-control" id="roleTupoksi" rows="3">${safeHtml(p.tupoksi||'')}</textarea></section>
+        <section class="role-standard-panel full"><h4>Jobdesk</h4><p>Pekerjaan rutin yang otomatis menjadi sumber To Do dan Jurnal.</p><div id="jobdeskStandardRows">${jobs.map((j,i)=>jobdeskStandardRow(j,i)).join('')}</div><button class="standard-add" type="button" onclick="addRoleJobdesk()">+ Tambah Jobdesk</button></section>
+        <section class="role-standard-panel full"><h4>KPI</h4><p>Ukuran hasil jabatan. Target periodik tetap dapat disesuaikan pada Objective.</p><div id="kpiStandardRows">${kpis.map((k,i)=>kpiStandardRow(k,i)).join('')}</div><button class="standard-add" type="button" onclick="addRoleKpi()">+ Tambah KPI</button></section>
+      </div><button class="btn-cahaya btn-gold" id="btnSaveRoleStandard" style="margin-top:18px" onclick="simpanRoleStandard()">💾 SIMPAN STANDAR JABATAN</button>`;
   };
-  function jobdeskStandardRow(j={},i=0){
-    const days=Array.isArray(j.days)?j.days.join(','):'';
-    return `<div class="standard-row role-job-row" data-id="${safeHtml(j.id||profileId('job'))}">
-      <input class="form-control rj-title" placeholder="Nama jobdesk" value="${safeHtml(j.title||'')}">
-      <select class="form-control rj-frequency"><option value="daily" ${(j.frequency||'daily')==='daily'?'selected':''}>Harian</option><option value="weekly" ${j.frequency==='weekly'?'selected':''}>Pekanan</option><option value="monthly" ${j.frequency==='monthly'?'selected':''}>Bulanan</option></select>
-      <input class="form-control rj-time" placeholder="Jam" value="${safeHtml(j.time||'')}">
-      <button type="button" class="standard-remove" onclick="this.closest('.role-job-row').remove()">×</button>
-      <details class="jobdesk-advanced" style="grid-column:1/-1">
-        <summary>Pengaturan tambahan <span>opsional</span></summary>
-        <div class="jobdesk-advanced-grid">
-          <input class="form-control rj-standard" placeholder="Standar hasil / keterangan singkat" value="${safeHtml(j.standard||'')}">
-          <input class="form-control rj-days" placeholder="Hari aktif: senin,selasa,..." value="${safeHtml(days)}">
-          <select class="form-control rj-source"><option value="manual" ${(j.source||'manual')==='manual'?'selected':''}>Dari Jobdesk Role</option><option value="naqib_schedule" ${j.source==='naqib_schedule'?'selected':''}>Ambil Jadwal Piket Naqib</option></select>
-        </div>
-      </details>
-    </div>`;
-  }
-  function kpiStandardRow(k={},i=0){
-    return `<div class="standard-row kpi-row role-kpi-row" data-id="${safeHtml(k.id||profileId('kpi'))}">
-      <input class="form-control rk-name" placeholder="Nama KPI" value="${safeHtml(k.name||'')}">
-      <input class="form-control rk-unit" placeholder="Unit %" value="${safeHtml(k.unit||'%')}">
-      <input class="form-control rk-target" type="number" step="any" placeholder="Target" value="${safeHtml(k.defaultTarget??'')}">
-      <select class="form-control rk-direction"><option value="at_least" ${(k.direction||'at_least')==='at_least'?'selected':''}>≥ Target</option><option value="at_most" ${k.direction==='at_most'?'selected':''}>≤ Target</option></select>
-      <button type="button" class="standard-remove" onclick="this.closest('.role-kpi-row').remove()">×</button>
-    </div>`;
-  }
-  window.addRoleJobdesk=()=>document.getElementById('jobdeskStandardRows')?.insertAdjacentHTML('beforeend',jobdeskStandardRow({},Date.now()));
-  window.addRoleKpi=()=>document.getElementById('kpiStandardRows')?.insertAdjacentHTML('beforeend',kpiStandardRow({},Date.now()));
+  function jobdeskStandardRow(j={}){const days=Array.isArray(j.days)?j.days.join(','):'';return `<div class="standard-row role-job-row" data-id="${safeHtml(j.id||profileId('job'))}"><input class="form-control rj-title" placeholder="Nama jobdesk" value="${safeHtml(j.title||'')}"><select class="form-control rj-frequency"><option value="daily" ${(j.frequency||'daily')==='daily'?'selected':''}>Harian</option><option value="weekly" ${j.frequency==='weekly'?'selected':''}>Pekanan</option><option value="monthly" ${j.frequency==='monthly'?'selected':''}>Bulanan</option></select><input class="form-control rj-time" placeholder="Jam (opsional)" value="${safeHtml(j.time||'')}"><button type="button" class="standard-remove" onclick="this.closest('.role-job-row').remove()">×</button><details class="jobdesk-advanced" style="grid-column:1/-1"><summary>Pengaturan tambahan <span>opsional</span></summary><div class="jobdesk-advanced-grid"><input class="form-control rj-standard" placeholder="Standar hasil / keterangan" value="${safeHtml(j.standard||'')}"><input class="form-control rj-days" placeholder="Hari aktif: senin,selasa,..." value="${safeHtml(days)}"><select class="form-control rj-source"><option value="manual" ${(j.source||'manual')==='manual'?'selected':''}>Dari Jobdesk</option><option value="naqib_schedule" ${j.source==='naqib_schedule'?'selected':''}>Ambil Jadwal Piket Naqib</option></select></div></details></div>`}
+  function kpiStandardRow(k={}){return `<div class="standard-row kpi-row role-kpi-row" data-id="${safeHtml(k.id||profileId('kpi'))}"><input class="form-control rk-name" placeholder="Nama KPI" value="${safeHtml(k.name||'')}"><input class="form-control rk-unit" placeholder="Unit" value="${safeHtml(k.unit||'%')}"><input class="form-control rk-target" type="number" step="any" placeholder="Target" value="${safeHtml(k.defaultTarget??'')}"><select class="form-control rk-direction"><option value="at_least" ${(k.direction||'at_least')==='at_least'?'selected':''}>≥ Target</option><option value="at_most" ${k.direction==='at_most'?'selected':''}>≤ Target</option></select><button type="button" class="standard-remove" onclick="this.closest('.role-kpi-row').remove()">×</button></div>`}
+  window.addRoleJobdesk=()=>document.getElementById('jobdeskStandardRows')?.insertAdjacentHTML('beforeend',jobdeskStandardRow({}));
+  window.addRoleKpi=()=>document.getElementById('kpiStandardRows')?.insertAdjacentHTML('beforeend',kpiStandardRow({}));
   window.simpanRoleStandard=async()=>{
-    const role=document.getElementById('selectOperationalRole').value;
-    const jobdesks=[...document.querySelectorAll('.role-job-row')].map(r=>({
-      id:r.dataset.id||profileId('job'),title:r.querySelector('.rj-title').value.trim(),
-      frequency:r.querySelector('.rj-frequency').value,time:r.querySelector('.rj-time').value.trim(),
-      standard:r.querySelector('.rj-standard').value.trim(),
-      days:r.querySelector('.rj-days').value.split(',').map(x=>x.trim().toLowerCase()).filter(Boolean),
-      source:r.querySelector('.rj-source').value
-    })).filter(x=>x.title);
-    const kpis=[...document.querySelectorAll('.role-kpi-row')].map(r=>({
-      id:r.dataset.id||profileId('kpi'),name:r.querySelector('.rk-name').value.trim(),
-      unit:r.querySelector('.rk-unit').value.trim()||'%',
-      defaultTarget:Number(r.querySelector('.rk-target').value||0),
-      direction:r.querySelector('.rk-direction').value
-    })).filter(x=>x.name);
-    roleProfiles[role]={
-      operational:document.getElementById('roleOperational').checked,
-      level:document.getElementById('rolePerformanceLevel').value,
-      tupoksi:document.getElementById('roleTupoksi').value.trim(),
-      jobdesks,kpis,updatedAt:new Date().toISOString()
-    };
-    const btn=document.getElementById('btnSaveRoleStandard'); if(btn){btn.disabled=true;btn.textContent='⏳ Menyimpan...'}
-    try{
-      await db.collection('settings').doc('operational_role_profiles').set({profiles:roleProfiles,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:false});
-      alert('✅ Standar role tersimpan. Manajemen Operasional akan memakai standar ini.');
-      renderRoleAssignments();
-    }catch(e){alert(e.message)}
-    finally{if(btn){btn.disabled=false;btn.textContent='💾 SIMPAN STANDAR ROLE'}}
+    const id=document.getElementById('selectPositionStandard').value,base=standardCatalog().find(x=>x.id===id)||builtInProfile(id)||{};
+    const jobdesks=[...document.querySelectorAll('.role-job-row')].map(r=>({id:r.dataset.id||profileId('job'),title:r.querySelector('.rj-title').value.trim(),frequency:r.querySelector('.rj-frequency').value,time:r.querySelector('.rj-time').value.trim(),standard:r.querySelector('.rj-standard').value.trim(),days:r.querySelector('.rj-days').value.split(',').map(x=>x.trim().toLowerCase()).filter(Boolean),source:r.querySelector('.rj-source').value})).filter(x=>x.title);
+    const kpis=[...document.querySelectorAll('.role-kpi-row')].map(r=>({id:r.dataset.id||profileId('kpi'),name:r.querySelector('.rk-name').value.trim(),unit:r.querySelector('.rk-unit').value.trim()||'%',defaultTarget:Number(r.querySelector('.rk-target').value||0),direction:r.querySelector('.rk-direction').value})).filter(x=>x.name);
+    positionProfiles[id]={...base,title:document.getElementById('positionStandardTitle').value.trim()||base.title,tupoksi:document.getElementById('roleTupoksi').value.trim(),jobdesks,kpis,updatedAt:new Date().toISOString()};
+    const btn=document.getElementById('btnSaveRoleStandard');if(btn){btn.disabled=true;btn.textContent='⏳ Menyimpan...'}
+    try{await db.collection('settings').doc('operational_position_profiles').set({profiles:positionProfiles,version:73,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:false});alert('✅ Standar jabatan tersimpan. Semua personel pada jabatan ini otomatis memakai perubahan tersebut.');renderPositionStandardSelector(id)}catch(e){alert(e.message)}finally{if(btn){btn.disabled=false;btn.textContent='💾 SIMPAN STANDAR JABATAN'}}
   };
 
-  function currentAssignmentsFromLegacy(u={},roles=[]){
-    if(u.roleAssignments&&typeof u.roleAssignments==='object')return JSON.parse(JSON.stringify(u.roleAssignments));
-    const op=roles.find(r=>isOperationalRole(r));
-    if(!op)return{};
-    return {[op]:{division:u.divisiOperasional||u.divisi||defaultDivision(op),unit:u.unitOperasional||'',supervisorUsername:u.atasanOperasional||u.operationalSupervisor||''}};
+  function normalizeLegacyLevel(role){return ({direktur:'direktur',yayasan:'direktur',wakil:'supervisor',supervisor:'supervisor',manajer:'manajer','kepala-sekolah':'manajer',sarpras:'manajer',kesehatan:'staf-muda',keuangan:'staf-muda',admin:'staf-muda',cla:'staf-muda',konselor:'staf-muda',naqib:'staf-muda',layanan:'staf-mula','staf-muda':'staf-muda','staf-mula':'staf-mula'})[role]||'staf-muda'}
+  function legacyDivision(role){return ({direktur:'Semua Divisi',yayasan:'Semua Divisi',wakil:'Pendidikan','kepala-sekolah':'Pengajaran',guru:'Pengajaran',naqib:'Pembinaan Karakter & Asrama',konselor:'Konseling',kesehatan:'Kesehatan',sarpras:'Sarpras',keuangan:'Administrasi & Keuangan',admin:'Administrasi & Keuangan',cla:'Learning & Achievement',layanan:'Kebersihan'})[role]||'Layanan Operasional'}
+  function legacyFunction(role,level,division){const fs=positionFunctions(level,division);return fs.find(f=>f.key===role)||fs[0]||{key:role,label:ROLE_LABELS_V72[role]||role}}
+  function assignmentsFromLegacy(u={},roles=[]){
+    if(Array.isArray(u.operationalAssignments)&&u.operationalAssignments.length)return clone(u.operationalAssignments);
+    const old=u.roleAssignments&&typeof u.roleAssignments==='object'?u.roleAssignments:{};const structural=roles.filter(r=>STRUCTURAL_LEGACY.has(r));const result=[];
+    const candidates=Object.keys(old).length?Object.keys(old):roles.filter(r=>['direktur','wakil','kepala-sekolah','naqib','konselor','sarpras','kesehatan','keuangan','admin','cla','layanan',...STRUCTURAL_LEGACY].includes(r));
+    candidates.forEach(role=>{const a=old[role]||{},level=STRUCTURAL_LEGACY.has(role)?(role==='observer'?'staf-muda':role):normalizeLegacyLevel(role),division=a.division||u.divisiOperasional||legacyDivision(role),fn=legacyFunction(role,level,division),id=profileId('pos');result.push({id,level,division,functionKey:fn.key,functionLabel:fn.label,unit:a.unit||u.unitOperasional||'',supervisorUsername:a.supervisorUsername||u.atasanOperasional||'',scopeDivisions:Array.isArray(a.scopeDivisions)?a.scopeDivisions:(level==='supervisor'?defaultScopeDivisions(division):[]),standardId:makeStandardId(level,division,fn.key),active:true})});
+    if(!result.length&&u.levelOperasional){const level=u.levelOperasional,division=u.divisiOperasional||'Layanan Operasional',fn=legacyFunction('',level,division);result.push({id:profileId('pos'),level,division,functionKey:fn.key,functionLabel:fn.label,unit:u.unitOperasional||'',supervisorUsername:u.atasanOperasional||'',scopeDivisions:level==='supervisor'?defaultScopeDivisions(division):[],standardId:makeStandardId(level,division,fn.key),active:true})}
+    return result;
   }
-  function allOperationalSelectedRoles(){return selectedRoles().filter(r=>isOperationalRole(r))}
-  window.renderRoleAssignments = () => {
-    const box=document.getElementById('roleAssignmentList');if(!box)return;
-    const roles=allOperationalSelectedRoles();
-    if(!roles.length){box.innerHTML='<div style="padding:12px;border-radius:12px;background:#fff;color:#718198;font-size:.78rem">Tidak ada role operasional yang dipilih. Akun ini tidak akan muncul dalam pilihan personel Manajemen Operasional.</div>';return}
-    box.innerHTML=roles.map(role=>{
-      const a=editingRoleAssignments[role]||{},division=a.division||defaultDivision(role),unit=a.unit||'',sup=a.supervisorUsername||'';
-      const userOptions=['<option value="">— Tidak ditentukan —</option>',...allUsers.filter(u=>(u.username||u.id)!==(document.getElementById('fUsername')?.value||'')).map(u=>{const un=(u.username||u.id||'').toLowerCase();return `<option value="${safeHtml(un)}" ${un===sup?'selected':''}>${safeHtml(u.label||u.username||u.id)}</option>`})].join('');
-      return `<div class="assignment-card" data-role="${safeHtml(role)}">
-        <div class="assignment-title"><b>${safeHtml(ROLE_LABELS_V72[role]||role)}</b><span class="role-badge role-${safeHtml(role)}">${safeHtml(roleProfile(role).level||'')}</span></div>
-        <div class="assignment-grid">
-          <div class="form-group"><label>Bidang</label><select class="form-control ra-division">${divisionOptionsHtml(division)}</select></div>
-          <div class="form-group"><label>Unit</label><select class="form-control ra-unit"><option value="" ${!unit?'selected':''}>Umum</option><option value="Putra" ${unit==='Putra'?'selected':''}>Putra</option><option value="Putri" ${unit==='Putri'?'selected':''}>Putri</option></select></div>
-          <div class="form-group"><label>Atasan Langsung</label><select class="form-control ra-supervisor">${userOptions}</select></div>
-        </div>
-      </div>`;
-    }).join('');
-  };
-  function readRoleAssignments(){
-    const out={};
-    document.querySelectorAll('.assignment-card[data-role]').forEach(card=>{
-      out[card.dataset.role]={
-        division:card.querySelector('.ra-division')?.value||defaultDivision(card.dataset.role),
-        unit:card.querySelector('.ra-unit')?.value||'',
-        supervisorUsername:(card.querySelector('.ra-supervisor')?.value||'').trim().toLowerCase()
-      };
-    });
-    return out;
+  function levelOptionsHtml(selected=''){return Object.entries(POSITION_LEVELS).map(([v,l])=>`<option value="${v}" ${v===selected?'selected':''}>${l}</option>`).join('')}
+  function divisionOptionsHtml(selected=''){return DIVISION_OPTIONS_V73.map(v=>`<option value="${safeHtml(v)}" ${v===selected?'selected':''}>${safeHtml(v)}</option>`).join('')}
+  function userSupervisorOptions(selected=''){const me=(document.getElementById('fUsername')?.value||'').toLowerCase();return ['<option value="">— Tidak ditentukan —</option>',...allUsers.filter(u=>(u.username||u.id||'').toLowerCase()!==me).map(u=>{const un=(u.username||u.id||'').toLowerCase();return `<option value="${safeHtml(un)}" ${un===selected?'selected':''}>${safeHtml(u.label||u.username||u.id)}</option>`})].join('')}
+  function assignmentTitle(a){const p=profileForAssignment(a);return p.title||`${POSITION_LEVELS[a.level]||a.level} • ${a.division}${a.functionLabel?' • '+a.functionLabel:''}`}
+  function defaultScopeDivisions(division){if(division==='Pendidikan')return ['Pengajaran','Pembinaan Karakter & Asrama','Tahsin & Tahfiz','Konseling'];if(division==='Administrasi & Layanan')return ['Administrasi & Keuangan','Kesehatan','Sarpras','Dapur & Konsumsi','Kebersihan','Media & Digital','Layanan Operasional'];if(division==='Semua Divisi')return DIVISION_OPTIONS_V73.filter(x=>!['Semua Divisi','Pendidikan','Administrasi & Layanan'].includes(x));return [division].filter(Boolean)}
+  function assignmentCard(a={}){
+    const level=a.level||'staf-muda',division=a.division||'Pengajaran',funcs=positionFunctions(level,division),fn=funcs.find(f=>f.key===a.functionKey)||funcs[0]||{key:'pelaksana',label:'Pelaksana'},scopeDivisions=Array.isArray(a.scopeDivisions)&&a.scopeDivisions.length?a.scopeDivisions:(level==='supervisor'?defaultScopeDivisions(division):[]),normalized={...a,level,division,functionKey:fn.key,functionLabel:a.functionLabel||fn.label,scopeDivisions};normalized.standardId=a.standardId||makeStandardId(level,division,fn.key);
+    const scopeHtml=DIVISION_OPTIONS_V73.filter(x=>!['Semua Divisi','Pendidikan','Administrasi & Layanan'].includes(x)).map(d=>`<label><input type="checkbox" class="ra-scope" value="${safeHtml(d)}" ${scopeDivisions.includes(d)?'checked':''}> ${safeHtml(d)}</label>`).join('');
+    return `<div class="assignment-card" data-id="${safeHtml(normalized.id||profileId('pos'))}" data-standard-id="${safeHtml(normalized.standardId)}"><div class="assignment-title"><div><span class="position-name">${safeHtml(assignmentTitle(normalized))}</span><span class="position-code">Jenjang menentukan ranking • bidang menentukan lingkup • fungsi menentukan jobdesk</span></div><button type="button" class="assignment-remove" onclick="removeOperationalAssignment(this)">×</button></div><div class="assignment-grid-v73"><div class="form-group"><label>Jenjang</label><select class="form-control ra-level" onchange="refreshAssignmentCard(this.closest('.assignment-card'))">${levelOptionsHtml(level)}</select></div><div class="form-group"><label>${level==='supervisor'?'Kelompok Supervisi':'Bidang'}</label><select class="form-control ra-division" onchange="refreshAssignmentCard(this.closest('.assignment-card'))">${divisionOptionsHtml(division)}</select></div><div class="form-group"><label>Fungsi Spesifik</label><select class="form-control ra-function" onchange="refreshAssignmentCard(this.closest('.assignment-card'))">${funcs.map(f=>`<option value="${safeHtml(f.key)}" ${f.key===fn.key?'selected':''}>${safeHtml(f.label)}</option>`).join('')}</select></div><div class="form-group"><label>Unit</label><select class="form-control ra-unit"><option value="" ${!normalized.unit?'selected':''}>Umum</option><option value="Putra" ${normalized.unit==='Putra'?'selected':''}>Putra</option><option value="Putri" ${normalized.unit==='Putri'?'selected':''}>Putri</option></select></div><div class="form-group wide"><label>Atasan Langsung</label><select class="form-control ra-supervisor">${userSupervisorOptions(normalized.supervisorUsername||'')}</select></div><div class="form-group wide ra-scope-wrap" style="display:${level==='supervisor'?'block':'none'}"><label>Cakupan Bidang yang Disupervisi</label><div class="scope-mini-grid">${scopeHtml}</div><small style="display:block;margin-top:6px;color:#8492a6">Boleh beberapa bidang. Ini yang menentukan tim, observasi, rapat, dan laporan yang terlihat.</small></div></div></div>`;
   }
-
+  window.renderRoleAssignments=()=>{const box=document.getElementById('roleAssignmentList');if(!box)return;box.innerHTML=editingOperationalAssignments.length?editingOperationalAssignments.map(assignmentCard).join(''):'<div style="padding:12px;border-radius:12px;background:#fff;color:#718198;font-size:.78rem">Belum ada jabatan operasional. Tambahkan hanya jika personel memang masuk struktur manajemen.</div>'}
+  window.addOperationalAssignment=()=>{editingOperationalAssignments.push({id:profileId('pos'),level:'staf-muda',division:'Pengajaran',functionKey:'guru',functionLabel:'Guru',unit:'',supervisorUsername:'',scopeDivisions:[],standardId:'staf-muda__pengajaran__guru',active:true});renderRoleAssignments()}
+  window.removeOperationalAssignment=btn=>{const id=btn.closest('.assignment-card')?.dataset.id;editingOperationalAssignments=editingOperationalAssignments.filter(x=>x.id!==id);renderRoleAssignments()}
+  window.refreshAssignmentCard=card=>{if(!card)return;const level=card.querySelector('.ra-level').value,division=card.querySelector('.ra-division').value,current=card.querySelector('.ra-function')?.value||'',funcs=positionFunctions(level,division),fn=funcs.find(f=>f.key===current)||funcs[0];card.querySelector('.ra-function').innerHTML=funcs.map(f=>`<option value="${safeHtml(f.key)}" ${f.key===fn.key?'selected':''}>${safeHtml(f.label)}</option>`).join('');const a={level,division,functionKey:fn.key,functionLabel:fn.label,standardId:makeStandardId(level,division,fn.key)};card.dataset.standardId=a.standardId;card.querySelector('.position-name').textContent=assignmentTitle(a);const wrap=card.querySelector('.ra-scope-wrap');if(wrap){wrap.style.display=level==='supervisor'?'block':'none';if(level==='supervisor'&&!card.querySelector('.ra-scope:checked')){const defaults=defaultScopeDivisions(division);card.querySelectorAll('.ra-scope').forEach(cb=>cb.checked=defaults.includes(cb.value))}}}
+  function readOperationalAssignments(){return [...document.querySelectorAll('.assignment-card[data-id]')].map(card=>{const level=card.querySelector('.ra-level').value,division=card.querySelector('.ra-division').value,fnSel=card.querySelector('.ra-function'),functionKey=fnSel.value,functionLabel=fnSel.options[fnSel.selectedIndex]?.text||functionKey;return{id:card.dataset.id||profileId('pos'),level,division,functionKey,functionLabel,unit:card.querySelector('.ra-unit').value||'',supervisorUsername:(card.querySelector('.ra-supervisor').value||'').trim().toLowerCase(),scopeDivisions:level==='supervisor'?[...card.querySelectorAll('.ra-scope:checked')].map(cb=>cb.value):[],standardId:makeStandardId(level,division,functionKey),active:true}})}
   document.addEventListener('DOMContentLoaded', async () => {
     try {
       await Promise.all([ muatUsers(), muatPengaturanMenu(), muatRoleProfiles() ]);
+      renderPositionStandardSelector(document.getElementById('selectPositionStandard')?.value||'');
     } catch (e) {
       console.error("Error penarikan data:", e);
     } finally {
@@ -1047,9 +972,10 @@
       const tertampilLabel = u.label || tertampilUname;
       const daftarAkses = (Array.isArray(u.akses) ? u.akses : ["guru"]).map(r=>r==='observer'?'staf-muda':r);
       
-      const roleAssignments=u.roleAssignments&&typeof u.roleAssignments==='object'?u.roleAssignments:{};
-      const assignmentBadges=Object.entries(roleAssignments).map(([role,a])=>a?.division?`<span class="role-badge" style="background:#fff8df;color:#8a6508">${ROLE_LABELS_V72[role]||role}: ${safeHtml(a.division)}</span>`:'').join('');
-      const badges = daftarAkses.map(r => `<span class="role-badge role-${r}">${r}</span>`).join('') + (daftarAkses.includes('kasir')?`<span class="role-badge" style="background:#fff7ed;color:#a45b13">${u.cashierUnit==='putri'?'Kantin Putri':'Kantin Putra'}</span>`:'') + assignmentBadges;
+      const operationalAssignments=assignmentsFromLegacy(u,daftarAkses);
+      const assignmentBadges=operationalAssignments.map(a=>`<span class="role-badge" style="background:#fff8df;color:#7b5c0b;border:1px solid #f3d98a">${safeHtml(assignmentTitle(a))}</span>`).join('');
+      const systemAkses = daftarAkses.filter(r=>!STRUCTURAL_LEGACY.has(r));
+      const badges = systemAkses.map(r => `<span class="role-badge role-${r}">${safeHtml(ROLE_LABELS_V72[r]||r)}</span>`).join('') + (daftarAkses.includes('kasir')?`<span class="role-badge" style="background:#fff7ed;color:#a45b13">${u.cashierUnit==='putri'?'Kantin Putri':'Kantin Putra'}</span>`:'') + assignmentBadges;
       
       return `<tr>
         <td style="text-align:center;">${i+1}</td>
@@ -1066,7 +992,7 @@
     }).join('');
   }
 
-  const LEADERSHIP_ROLES = new Set(['admin','direktur','wakil','yayasan','kepala-sekolah','supervisor','manajer','cla']);
+  const LEADERSHIP_ROLES = new Set(['admin','direktur','wakil','yayasan','kepala-sekolah','cla']);
   const ALL_SCOPE_FIELDS = ['attendance','academic','tahfiz','nurturing','health','counseling','facilities','operations','sdm','finance','ranking'];
   function selectedRoles(){ return [...document.querySelectorAll('.role-checkbox:checked')].map(cb=>cb.value); }
   function toggleLeadershipScope(){
@@ -1074,7 +1000,7 @@
     document.getElementById('leadershipScopeBox')?.classList.toggle('show',show);
     if(show && !document.querySelector('.scope-field:checked')) document.querySelectorAll('.scope-field').forEach(cb=>cb.checked=true);
   }
-  document.querySelectorAll('.role-checkbox').forEach(cb=>cb.addEventListener('change',()=>{toggleLeadershipScope();toggleCashierUnit();renderRoleAssignments()}));
+  document.querySelectorAll('.role-checkbox').forEach(cb=>cb.addEventListener('change',()=>{toggleLeadershipScope();toggleCashierUnit()}));
   function inferCashierUnit(username=''){return /putri/i.test(username)?'putri':/putra/i.test(username)?'putra':''}
   function toggleCashierUnit(){const show=selectedRoles().includes('kasir');const box=document.getElementById('cashierUnitBox');if(box)box.style.display=show?'block':'none';if(show&&!document.getElementById('cashierUnit').value)document.getElementById('cashierUnit').value=inferCashierUnit(document.getElementById('fUsername').value)||'putra'}
   document.getElementById('fUsername')?.addEventListener('input',e=>{if(!selectedRoles().includes('kasir'))return;const inferred=inferCashierUnit(e.target.value);if(inferred)document.getElementById('cashierUnit').value=inferred});
@@ -1093,7 +1019,7 @@
     document.getElementById('fUsername').value = ''; document.getElementById('fPassword').value = '';
     document.querySelectorAll('.role-checkbox').forEach(cb => cb.checked = (cb.value === 'guru'));
     fillLeadershipScope(null,['guru']);document.getElementById('cashierUnit').value='putra';toggleCashierUnit();
-    editingRoleAssignments={}; renderRoleAssignments();
+    editingOperationalAssignments=[]; renderRoleAssignments();
     document.getElementById('modalUser').style.display = 'flex';
   }
 
@@ -1102,17 +1028,16 @@
     const u = allUsers.find(x => x.id === id); 
     if(!u) return;
     
-    document.getElementById('modalTitle').textContent = "Edit Profil & Jabatan";
+    document.getElementById('modalTitle').textContent = "Edit Profil, Akses & Jabatan";
     document.getElementById('areaKredensial').style.display = 'none';
     document.getElementById('fUsername').value = u.username || u.id;
     document.getElementById('fLabel').value = u.label || u.username || u.id;
     
-    const daftarAkses = (Array.isArray(u.akses) ? u.akses : []).map(r=>r==='observer'?'staf-muda':r);
-    document.querySelectorAll('.role-checkbox').forEach(cb => { 
-      cb.checked = daftarAkses.includes(cb.value); 
-    });
+    const daftarAkses = (Array.isArray(u.akses) ? u.akses : []).map(r=>String(r||'').toLowerCase());
+    const hasLegacyStructural=daftarAkses.some(r=>STRUCTURAL_LEGACY.has(r));
+    document.querySelectorAll('.role-checkbox').forEach(cb => { cb.checked = daftarAkses.includes(cb.value) || (cb.value==='operasional'&&hasLegacyStructural); });
     fillLeadershipScope(u.leadershipScope, daftarAkses);document.getElementById('cashierUnit').value=u.cashierUnit||inferCashierUnit(u.username||u.id)||'putra';toggleCashierUnit();
-    editingRoleAssignments=currentAssignmentsFromLegacy(u,daftarAkses); renderRoleAssignments();
+    editingOperationalAssignments=assignmentsFromLegacy(u,daftarAkses); renderRoleAssignments();
     document.getElementById('modalUser').style.display = 'flex';
   }
 
@@ -1126,15 +1051,15 @@
     document.querySelectorAll('.role-checkbox:checked').forEach(cb => akses.push(cb.value));
     const leadershipScope = akses.some(role => LEADERSHIP_ROLES.has(role)) ? readLeadershipScope() : null;
     const cashierUnit = akses.includes('kasir') ? (document.getElementById('cashierUnit').value || inferCashierUnit(uname) || 'putra') : null;
-    const roleAssignments=readRoleAssignments();
-    const operationalRoles=akses.filter(r=>isOperationalRole(r));
-    const primaryOperationalRole=operationalRoles[0]||'';
-    const primaryAssignment=roleAssignments[primaryOperationalRole]||{};
-    const levelOperasional=primaryOperationalRole ? (roleProfile(primaryOperationalRole).level||ROLE_LEVEL_DEFAULT[primaryOperationalRole]||'staf-mula') : '';
+    const operationalAssignments=readOperationalAssignments();
+    if(operationalAssignments.length && !akses.includes('operasional')) akses.push('operasional');
+    const primaryAssignment=operationalAssignments[0]||{};
+    const primaryOperationalRole=primaryAssignment.standardId||'';
+    const levelOperasional=primaryAssignment.level||'';
     const divisiOperasional=primaryAssignment.division||'';
     const atasanOperasional=primaryAssignment.supervisorUsername||'';
 
-    if(!uname || akses.length === 0) return alert("Lengkapi isian data!");
+    if(!uname || akses.length === 0) return alert("Pilih minimal satu Hak Akses Sistem atau tambahkan Jabatan Operasional.");
     if(leadershipScope && !leadershipScope.fields.length) return alert("Pilih minimal satu bidang kontrol pimpinan.");
     const btn = document.getElementById('btnSimpan'); 
     btn.innerHTML = "⏳ MEMPROSES..."; btn.disabled = true;
@@ -1144,9 +1069,9 @@
         if(pass.length < 6) throw new Error("Sandi min 6 karakter!");
         await secondaryApp.auth().createUserWithEmailAndPassword(`${uname}@cahayaapp.id`, pass);
         await secondaryApp.auth().signOut();
-        await db.collection("users").doc(uname).set({ username: uname, label: label || uname, akses: akses, leadershipScope, cashierUnit, roleAssignments, primaryOperationalRole, levelOperasional, divisiOperasional, atasanOperasional });
+        await db.collection("users").doc(uname).set({ username: uname, label: label || uname, akses: akses, leadershipScope, cashierUnit, operationalAssignments, primaryOperationalRole, levelOperasional, divisiOperasional, atasanOperasional });
       } else {
-        await db.collection("users").doc(uname).update({ label: label || uname, akses: akses, leadershipScope, cashierUnit, roleAssignments, primaryOperationalRole, levelOperasional, divisiOperasional, atasanOperasional });
+        await db.collection("users").doc(uname).update({ label: label || uname, akses: akses, leadershipScope, cashierUnit, operationalAssignments, primaryOperationalRole, levelOperasional, divisiOperasional, atasanOperasional });
       }
       tutupModal(); 
       await muatUsers(); 

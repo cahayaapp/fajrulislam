@@ -216,7 +216,7 @@
 
     .h24-perf-role{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;margin-top:9px;padding:11px;border:1px solid #e5ebf4;border-radius:14px;background:#fbfdff}.h24-perf-role b{display:block;color:#294766;font-size:.72rem;font-weight:1000}.h24-perf-role small{display:block;color:#8391a4;font-size:.55rem;font-weight:800}.h24-perf-role strong{grid-row:1/3;grid-column:2;color:#173b69;font-size:1.1rem;font-weight:1000}.h24-perf-role>span{grid-column:1/-1;color:#6e8098;font-size:.56rem;font-weight:850}
 </style>
-  <meta name="cahaya-build" content="20260821-v72">
+  <meta name="cahaya-build" content="20260821-v73">
 
 <style id="cahaya-v69-multirole">
 .h24-user-main{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
@@ -310,11 +310,11 @@
   (function(){
     'use strict';
     const ALL_ROLE_MODE='semua-peran';
-    const ROLE_LABEL={'semua-peran':'Semua Peran',admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',manajer:'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula',guru:'Guru',naqib:'Naqib',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
+    const ROLE_LABEL={'semua-peran':'Semua Peran',operasional:'Manajemen Operasional',admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',manajer:'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula',guru:'Guru',naqib:'Naqib',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
     function safeJson(key){try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(_){return{}}}
     function normalizeRole(value){
       const r=String(value||'').trim().toLowerCase();
-      const aliases={'administrator':'admin','director':'direktur','direktur pesantren':'direktur','pimpinan pesantren':'direktur','pimpinan':'direktur','pengasuh':'direktur','pimpinan/pengasuh':'direktur','wakil direktur':'wakil','wakil_direktur':'wakil','wadir':'wakil','kepala sekolah':'kepala-sekolah','kepala_sekolah':'kepala-sekolah','kepsek':'kepala-sekolah','observer':'staf-muda','tim observer':'staf-muda','tim observasi':'staf-muda','manager':'manajer','staff muda':'staf-muda','staff mula':'staf-mula','staf muda':'staf-muda','staf mula':'staf-mula'};
+      const aliases={'administrator':'admin','director':'direktur','direktur pesantren':'direktur','pimpinan pesantren':'direktur','pimpinan':'direktur','pengasuh':'direktur','pimpinan/pengasuh':'direktur','wakil direktur':'wakil','wakil_direktur':'wakil','wadir':'wakil','kepala sekolah':'kepala-sekolah','kepala_sekolah':'kepala-sekolah','kepsek':'kepala-sekolah','observer':'staf-muda','tim observer':'staf-muda','tim observasi':'staf-muda','manager':'manajer','staff muda':'staf-muda','staff mula':'staf-mula','staf muda':'staf-muda','staf mula':'staf-mula','manajemen operasional':'operasional','operasional':'operasional'};
       return aliases[r]||r;
     }
     function roles(p){let r=p.allRoles??p.roles??p.jabatan??p.akses??p.role??[];if(!Array.isArray(r))r=[r];return [...new Set(r.map(normalizeRole).filter(Boolean))]}
@@ -329,7 +329,7 @@
     }
     function activeRoles(){const p=profile(),r=activeRoleOf(p);return r===ALL_ROLE_MODE?roles(p):(r?[r]:[])}
     function nameOf(p){return p.nama||p.name||p.namaLengkap||p.displayName||p.username||'Sahabat Cahaya'}
-    function roleDisplay(p,r){if(r===ALL_ROLE_MODE)return'Semua Peran';const a=p?.roleAssignments?.[r]||{},base=ROLE_LABEL[r]||r||'Akun CAHAYA';return a.division?`${base} • ${a.division}`:base}
+    function roleDisplay(p,r){if(r===ALL_ROLE_MODE)return'Semua Peran';const base=ROLE_LABEL[r]||r||'Akun CAHAYA',ops=Array.isArray(p?.operationalAssignments)?p.operationalAssignments:[],a=ops.find(x=>String(x?.functionKey||'').toLowerCase()===r)||(r==='operasional'?ops[0]:null);if(a)return r==='operasional'?`${base}${a.level?' • '+({'direktur':'Direktur','supervisor':'Supervisor','manajer':'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula'}[a.level]||a.level):''}`:(a.division?`${base} • ${a.division}`:base);const legacy=p?.roleAssignments?.[r]||{};return legacy.division?`${base} • ${legacy.division}`:base}
     function selectRole(role){
       try{if(window.parent&&window.parent!==window&&typeof window.parent.setCahayaActiveRole==='function'){window.parent.setCahayaActiveRole(role);return}}catch(_){ }
       localStorage.setItem('cahayaActiveRole',role);localStorage.setItem('cahayaCurrentRole',role);location.reload();
@@ -422,7 +422,7 @@
         {label:'Tindak Lanjut',desc:'Selesaikan temuan sarpras',targets:['menu-tindak-sarpras'],type:'tools'},
         {label:'Jurnal Sarpras',desc:'Catat pekerjaan hari ini',targets:['menu-jurnal-sarpras'],type:'edit'}
       ]},
-      operasional:{title:'Ringkasan Operasional',roles:['manajer','staf-muda','staf-mula'],cards:[
+      operasional:{title:'Ringkasan Operasional',roles:['operasional','manajer','staf-muda','staf-mula'],cards:[
         {label:'Manajemen Operasional',desc:'Tugas, jurnal, rapat dan tindak lanjut',targets:['menu-manajemen-operasional'],type:'chart'}
       ]}
     };
@@ -628,22 +628,22 @@
       document.getElementById('roleCardsTitle').textContent=group.title;box.innerHTML=available.map(roleCardMarkup).join('');section.hidden=false;
     }
 
-    const OPERATIONAL_ROLES=new Set(['admin','direktur','wakil','supervisor','manajer','staf-muda','staf-mula','kepala-sekolah','naqib','konselor','cla','layanan','sarpras','kesehatan','keuangan']);
+    const OPERATIONAL_ROLES=new Set(['operasional','admin','direktur','wakil','supervisor','manajer','staf-muda','staf-mula','kepala-sekolah','naqib','konselor','cla','layanan','sarpras','kesehatan','keuangan']);
     let personalPerformanceData=null;
     function currentMonthKey(){const f=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit'}).format(new Date());return f.slice(0,7)}
     function currentUsername(){const p=profile();return String(p.username||p.id||p.email?.split('@')[0]||'').trim().toLowerCase()}
     function perfSafeKey(v){return String(v||'').replace(/[.#$\[\]\/]/g,'_')}
-    function performanceGroupsFor(p,viewRoles){const groups=[];for(const r of viewRoles){if(!OPERATIONAL_ROLES.has(r))continue;const a=p?.roleAssignments?.[r]||{},division=a.division||(viewRoles.length===1?(p.divisiOperasional||p.divisionOperasional||''):'');if(division)groups.push(perfSafeKey(`${r}__${division}`))}return [...new Set(groups)]}
+    function performanceGroupsFor(p,viewRoles){const groups=[],ops=Array.isArray(p?.operationalAssignments)?p.operationalAssignments.filter(a=>a&&a.active!==false):[];if(ops.length){const useAll=viewRoles.includes('operasional')||activeRoleOf(p)===ALL_ROLE_MODE;const chosen=useAll?ops:ops.filter(a=>viewRoles.includes(normalizeRole(a.functionKey||''))||viewRoles.includes(normalizeRole(a.level||'')));chosen.forEach(a=>groups.push(perfSafeKey(a.standardId||`${a.level}__${a.division}__${a.functionKey||'pelaksana'}`)));return [...new Set(groups)]}for(const r of viewRoles){if(!OPERATIONAL_ROLES.has(r))continue;const a=p?.roleAssignments?.[r]||{},division=a.division||(viewRoles.length===1?(p.divisiOperasional||p.divisionOperasional||''):'');if(division)groups.push(perfSafeKey(`${r}__${division}`))}return [...new Set(groups)]}
     async function loadPersonalPerformance(){
       const section=document.getElementById('personalPerformanceSection'),role=activeRoleOf(),viewRoles=activeRoles();
-      if(!section||!viewRoles.some(r=>OPERATIONAL_ROLES.has(r))){if(section)section.hidden=true;return}
+      if(!section||(!viewRoles.some(r=>OPERATIONAL_ROLES.has(r))&&!(Array.isArray(profile().operationalAssignments)&&profile().operationalAssignments.length))){if(section)section.hidden=true;return}
       try{
         const par=window.parent&&window.parent!==window?window.parent:window,fb=par.firebase;if(!fb?.database){section.hidden=true;return}
         const month=currentMonthKey(),p=profile(),groups=performanceGroupsFor(p,viewRoles),un=currentUsername(),all=[];
         if(groups.length){await Promise.all(groups.map(async group=>{const snap=await fb.database().ref(`cahaya_app/manajemen_operasional_v1/performance_monthly/${month}/${group}`).once('value');Object.values(snap.val()||{}).forEach(r=>{if(r&&typeof r==='object')all.push({...r,_group:group})})}))}
         else{const snap=await fb.database().ref(`cahaya_app/manajemen_operasional_v1/performance_monthly/${month}`).once('value'),root=snap.val()||{};Object.entries(root).forEach(([group,val])=>Object.values(val||{}).forEach(r=>{if(r&&typeof r==='object')all.push({...r,_group:group})}))}
-        let mineRows=all.filter(r=>String(r.username||'').toLowerCase()===un&&(!r.role||viewRoles.includes(normalizeRole(r.role))));
-        if(role!==ALL_ROLE_MODE)mineRows=mineRows.filter(r=>normalizeRole(r.role||'')===role||!r.role);
+        let mineRows=all.filter(r=>String(r.username||'').toLowerCase()===un);
+        if(role!==ALL_ROLE_MODE&&role!=='operasional')mineRows=mineRows.filter(r=>normalizeRole(r.role||r.functionKey||'')===role||!r.role);
         mineRows.sort((a,b)=>(b.official?1:0)-(a.official?1:0)||Number(b.score||0)-Number(a.score||0));
         if(!mineRows.length){section.hidden=true;return}
         if(role===ALL_ROLE_MODE){
@@ -665,7 +665,7 @@
       }catch(e){console.warn('Kinerja personal belum tersedia:',e);section.hidden=true}
     }
     window.openPersonalPerformance=function(){const d=personalPerformanceData;if(!d)return;const box=document.getElementById('personalPerformanceBody');
-      if(d.allMode){box.innerHTML=`<div class="h24-perf-note ok"><b>Kinerja per Peran</b><br>Skor tidak dicampur menjadi ranking tunggal. Setiap amanah dinilai sesuai jobdesk dan KPI perannya.</div>`+d.items.map(x=>`<div class="h24-perf-role"><div><b>${escapeHtml(ROLE_LABEL[normalizeRole(x.role)]||x.positionTitle||x.role||'Peran')}</b><small>${escapeHtml(x.division||'')}</small></div><strong>${x.score??'–'}</strong><span>Pelaksanaan ${x.execution??'–'}% • Mutu ${x.quality??'–'}% • Hasil ${x.result??'–'}%${x.official?'':' • sementara'}</span></div>`).join('');}
+      if(d.allMode){box.innerHTML=`<div class="h24-perf-note ok"><b>Kinerja per Peran</b><br>Skor tidak dicampur menjadi ranking tunggal. Setiap amanah dinilai sesuai jobdesk dan KPI perannya.</div>`+d.items.map(x=>`<div class="h24-perf-role"><div><b>${escapeHtml(x.positionTitle||ROLE_LABEL[normalizeRole(x.role)]||x.role||'Peran')}</b><small>${escapeHtml(x.division||'')}</small></div><strong>${x.score??'–'}</strong><span>Pelaksanaan ${x.execution??'–'}% • Mutu ${x.quality??'–'}% • Hasil ${x.result??'–'}%${x.official?'':' • sementara'}</span></div>`).join('');}
       else{box.innerHTML=`<div class="h24-perf-grid"><div class="h24-perf-metric"><small>Skor Kinerja</small><b>${d.score??'–'}</b></div><div class="h24-perf-metric"><small>Ranking</small><b>${d.rank?'#'+d.rank:'Sementara'}</b></div><div class="h24-perf-metric"><small>Pelaksanaan</small><b>${d.execution??'–'}%</b></div><div class="h24-perf-metric"><small>Mutu</small><b>${d.quality??'–'}%</b></div><div class="h24-perf-metric"><small>Hasil/KPI</small><b>${d.result??'–'}%</b></div></div><div class="h24-perf-note ${d.official?'ok':''}"><b>Mengapa nilainya seperti ini?</b><br>Pelaksanaan berasal dari ${d.journalCount||0} jurnal To Do yang lahir dari Jobdesk. Mutu berasal dari ${d.observationCount||0} observasi atasan langsung. Hasil berasal dari ${d.objectiveCount||0} Objective/KPI periode ini.<br><br>${escapeHtml(d.formula||'')}.${d.official?'<br>Data sudah lengkap dan masuk ranking resmi.':'<br>Ranking resmi memerlukan Pelaksanaan, Hasil/KPI, dan minimal 3 observasi mutu.'}</div>`;}
       const m=document.getElementById('personalPerformanceModal');m.hidden=false;m.setAttribute('aria-hidden','false')};
     window.closePersonalPerformance=function(){const m=document.getElementById('personalPerformanceModal');if(m){m.hidden=true;m.setAttribute('aria-hidden','true')}};

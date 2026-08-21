@@ -1678,7 +1678,7 @@
 
 
   <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260821-v72">
+  <meta name="cahaya-build" content="20260821-v73">
 
 <style id="cahaya-v48-guru-scan-nav">
 /* V48 — tombol Scan Absen khusus tampilan Guru, model center action */
@@ -2184,9 +2184,9 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=70', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=73', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
-        <a class="nav-item menu-akses" id="menu-manajemen-operasional" style="display:none;" onclick="loadPage('operasional/index.html?v=72', this)">◉ Manajemen Operasional</a>
+        <a class="nav-item menu-akses" id="menu-manajemen-operasional" style="display:none;" onclick="loadPage('operasional/index.html?v=73', this)">◉ Manajemen Operasional</a>
       </div>
 
 
@@ -2288,7 +2288,7 @@
         <a class="nav-item menu-akses" id="menu-db-master" style="display: none;" onclick="loadPage('admin/database.html', this)">🗄️ Database Master</a>
         <a class="nav-item menu-akses" id="menu-jadwal" style="display: none;" onclick="loadPage('admin/atur-jadwal.html', this)">📅 Atur Jadwal KBM</a>
         <a class="nav-item menu-akses" id="menu-qr-kelas" style="display: none;" onclick="loadPage('admin/qrkelas.html', this)">▦ Master QR Kelas</a>
-        <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html', this)">🔐 Manajemen User</a>
+        <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html?v=73', this)">🔐 Manajemen User</a>
         <a class="nav-item menu-akses" id="menu-koreksi" style="display: none;" onclick="loadPage('admin/settings.html', this)">🛠️ Pusat Koreksi Data</a>
         <a class="nav-item menu-akses" id="menu-profil" style="display: none;" onclick="loadPage('profil.html', this)">👤 Pengaturan Profil</a>
       </div>
@@ -2525,7 +2525,9 @@ function sinkronkanBadgePintasanMobile() {
         "staff muda": "staf-muda",
         "staff mula": "staf-mula",
         "staf muda": "staf-muda",
-        "staf mula": "staf-mula"
+        "staf mula": "staf-mula",
+        "manajemen operasional": "operasional",
+        "operasional": "operasional"
       };
 
       return aliasRole[nilai] || nilai;
@@ -2610,6 +2612,7 @@ function sinkronkanBadgePintasanMobile() {
       const labels = {
         "semua-peran": "Semua Peran",
         admin: "Administrator",
+        operasional: "Manajemen Operasional",
         direktur: "Direktur",
         wakil: "Wakil Direktur",
         supervisor: "Supervisor",
@@ -2635,8 +2638,15 @@ function sinkronkanBadgePintasanMobile() {
 
     function labelRoleContext(role) {
       if (role === ALL_ROLES_MODE) return "Semua Peran";
-      const assignment = (pUserSafe.roleAssignments && pUserSafe.roleAssignments[role]) || {};
-      return assignment.division ? `${labelRole(role)} • ${assignment.division}` : labelRole(role);
+      const assignments = Array.isArray(pUserSafe.operationalAssignments) ? pUserSafe.operationalAssignments : [];
+      const match = assignments.find(a => String(a.functionKey||'').toLowerCase() === role) || (role === 'operasional' ? assignments[0] : null);
+      if (match) {
+        const level = {direktur:'Direktur',supervisor:'Supervisor',manajer:'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula'}[match.level] || '';
+        if (role === 'operasional') return match.functionLabel ? `${level} • ${match.division} • ${match.functionLabel}` : `${level} • ${match.division}`;
+        return match.division ? `${labelRole(role)} • ${match.division}` : labelRole(role);
+      }
+      const legacy = (pUserSafe.roleAssignments && pUserSafe.roleAssignments[role]) || {};
+      return legacy.division ? `${labelRole(role)} • ${legacy.division}` : labelRole(role);
     }
 
     function terapkanProfilAktif(profile = {}, authUser = null) {
@@ -2655,6 +2665,16 @@ function sinkronkanBadgePintasanMobile() {
       roles = [...new Set(
         roles.map(normalisasiRole).filter(Boolean)
       )];
+
+      // V73: Supervisor/Manajer/Staf adalah jenjang operasional, bukan Hak Akses Sistem.
+      // Akun lama dinormalisasi tanpa menghapus data lama di Firestore.
+      const structuralLegacyRoles = new Set(["supervisor","manajer","staf-muda","staf-mula"]);
+      const hasOperationalAssignment = Array.isArray(data.operationalAssignments) && data.operationalAssignments.some(a => a && a.active !== false);
+      const hasLegacyStructuralRole = roles.some(r => structuralLegacyRoles.has(r));
+      if (hasOperationalAssignment || hasLegacyStructuralRole) {
+        roles = roles.filter(r => !structuralLegacyRoles.has(r));
+        if (!roles.includes("operasional")) roles.push("operasional");
+      }
 
       const usernameAuth =
         authUser?.email?.split("@")[0]?.toLowerCase() || "";
@@ -2817,6 +2837,7 @@ function sinkronkanBadgePintasanMobile() {
     }
 
     const DEFAULT_ROLE_MENUS = {
+      operasional:["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat"],
       admin:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-laporan-observasi","menu-perizinan-santri","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-komentar","menu-media","menu-db-master","menu-jadwal","menu-qr-kelas","menu-users","menu-koreksi","menu-profil","menu-chat"],
       direktur:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-laporan-observasi","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
       wakil:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-laporan-observasi","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
@@ -2886,7 +2907,7 @@ function sinkronkanBadgePintasanMobile() {
       const deepLinkOperasional = new URLSearchParams(window.location.search).get("operasional");
       if (deepLinkOperasional && bolehAksesMenu("menu-manajemen-operasional")) {
         const menuOperasional = document.getElementById("menu-manajemen-operasional");
-        loadPage(`operasional/index.html?v=72&view=${encodeURIComponent(deepLinkOperasional)}`, menuOperasional);
+        loadPage(`operasional/index.html?v=73&view=${encodeURIComponent(deepLinkOperasional)}`, menuOperasional);
         return;
       }
       const prioritas = [];
@@ -2994,8 +3015,9 @@ function sinkronkanBadgePintasanMobile() {
         });
 
         // V71: Manajemen Operasional hanya untuk personel yang memang memiliki posisi operasional.
-        const roleOperasional = new Set(["admin","direktur","wakil","supervisor","manajer","staf-muda","staf-mula","kepala-sekolah","naqib","konselor","cla","layanan","sarpras","kesehatan","keuangan"]);
-        const punyaPosisiOperasional = rolesUntukMenu.some(role => roleOperasional.has(role)) || Boolean(pUserSafe.levelOperasional || pUserSafe.operationalLevel || pUserSafe.jabatanOperasional);
+        const roleOperasionalLegacy = new Set(["admin","direktur","wakil","supervisor","manajer","staf-muda","staf-mula","kepala-sekolah","naqib","konselor","cla","layanan","sarpras","kesehatan","keuangan","operasional"]);
+        const punyaAssignmentOperasional = Array.isArray(pUserSafe.operationalAssignments) && pUserSafe.operationalAssignments.some(a => a && a.active !== false);
+        const punyaPosisiOperasional = punyaAssignmentOperasional || rolesUntukMenu.some(role => roleOperasionalLegacy.has(role)) || Boolean(pUserSafe.levelOperasional || pUserSafe.operationalLevel || pUserSafe.jabatanOperasional);
         if (punyaPosisiOperasional && !gabunganMenu.includes("menu-manajemen-operasional")) {
           gabunganMenu.push("menu-manajemen-operasional");
         }
