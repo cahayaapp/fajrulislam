@@ -213,8 +213,10 @@
   .h24-hero.is-naqib .h24-hadith{margin:14px 0 0!important;padding-top:12px!important;font-size:.77rem!important}
   .h24-role-wrap.is-naqib .h24-role-card{min-height:82px;padding:13px 14px}
 }
+
+    .h24-perf-role{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;margin-top:9px;padding:11px;border:1px solid #e5ebf4;border-radius:14px;background:#fbfdff}.h24-perf-role b{display:block;color:#294766;font-size:.72rem;font-weight:1000}.h24-perf-role small{display:block;color:#8391a4;font-size:.55rem;font-weight:800}.h24-perf-role strong{grid-row:1/3;grid-column:2;color:#173b69;font-size:1.1rem;font-weight:1000}.h24-perf-role>span{grid-column:1/-1;color:#6e8098;font-size:.56rem;font-weight:850}
 </style>
-  <meta name="cahaya-build" content="20260820-v71">
+  <meta name="cahaya-build" content="20260821-v72">
 
 <style id="cahaya-v69-multirole">
 .h24-user-main{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
@@ -228,7 +230,7 @@
 @media(max-width:720px){.h24-user-main{gap:6px}.h24-role-switcher{gap:5px}.h24-role-chip{min-height:27px;padding:4px 9px;font-size:.57rem}}
 </style>
 
-<style id="cahaya-v71-personal-performance">
+<style id="cahaya-v72-personal-performance">
 .h24-performance{margin-top:16px}.h24-performance-card{width:100%;border:1px solid #e4eaf2;border-radius:24px;background:linear-gradient(145deg,#fff,#fbfdff);box-shadow:0 16px 40px rgba(25,55,100,.08);padding:18px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;text-align:left;cursor:pointer}.h24-performance-score{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(135deg,#1557d5,#2878ff);color:#fff;box-shadow:0 12px 25px rgba(21,87,213,.22)}.h24-performance-score b{font-size:1.45rem;font-weight:1000;line-height:1}.h24-performance-score small{display:block;font-size:.48rem;font-weight:900;letter-spacing:.1em;margin-top:3px}.h24-performance-copy b{display:block;color:#17284a;font-size:.9rem;font-weight:1000}.h24-performance-copy span{display:block;color:#708098;font-size:.66rem;font-weight:750;margin-top:4px;line-height:1.45}.h24-performance-rank{text-align:right}.h24-performance-rank strong{display:block;color:#9b6800;font-size:.82rem;font-weight:1000}.h24-performance-rank small{color:#8b99ad;font-size:.56rem;font-weight:800}.h24-perf-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.h24-perf-metric{border:1px solid #edf1f6;border-radius:16px;padding:13px;background:#fff}.h24-perf-metric small{display:block;color:#8793a5;font-size:.58rem;font-weight:900;text-transform:uppercase;letter-spacing:.07em}.h24-perf-metric b{display:block;color:#17284a;font-size:1.25rem;margin-top:5px}.h24-perf-note{margin-top:12px;padding:12px;border-radius:14px;background:#fff8df;color:#785500;font-size:.68rem;font-weight:750;line-height:1.55}.h24-perf-note.ok{background:#ecfdf5;color:#17694a}@media(max-width:640px){.h24-performance-card{grid-template-columns:auto 1fr;padding:15px}.h24-performance-rank{grid-column:1/-1;text-align:left;padding-left:88px;margin-top:-8px}.h24-performance-score{width:64px;height:64px;border-radius:19px}}
 </style>
 </head>
@@ -255,7 +257,7 @@
     <section class="h24-performance" id="personalPerformanceSection" hidden>
       <button class="h24-performance-card" type="button" onclick="openPersonalPerformance()">
         <span class="h24-performance-score"><span><b id="personalPerformanceScore">–</b><small>SKOR</small></span></span>
-        <span class="h24-performance-copy"><b>Kinerja Saya <span id="personalPerformanceMonth"></span></b><span id="personalPerformanceMeta">Pelaksanaan jobdesk dan mutu observasi atasan</span></span>
+        <span class="h24-performance-copy"><b>Kinerja Saya <span id="personalPerformanceMonth"></span></b><span id="personalPerformanceMeta">Pelaksanaan • Mutu • Hasil/KPI</span></span>
         <span class="h24-performance-rank"><strong id="personalPerformanceRank">Belum dirangking</strong><small>Lihat detail penilaian →</small></span>
       </button>
     </section>
@@ -307,7 +309,8 @@
   <script>
   (function(){
     'use strict';
-    const ROLE_LABEL={admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',manajer:'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula',guru:'Guru',naqib:'Naqib',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
+    const ALL_ROLE_MODE='semua-peran';
+    const ROLE_LABEL={'semua-peran':'Semua Peran',admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',manajer:'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula',guru:'Guru',naqib:'Naqib',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
     function safeJson(key){try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(_){return{}}}
     function normalizeRole(value){
       const r=String(value||'').trim().toLowerCase();
@@ -321,20 +324,22 @@
     }
     function activeRoleOf(p=profile()){
       const all=roles(p);let active=String(localStorage.getItem('cahayaActiveRole')||p.activeRole||localStorage.getItem('cahayaCurrentRole')||'').trim().toLowerCase();
-      if(!all.includes(active))active=all[0]||'';return active;
+      if(active===ALL_ROLE_MODE&&all.length>1)return ALL_ROLE_MODE;
+      active=normalizeRole(active);if(!all.includes(active))active=all[0]||'';return active;
     }
-    function activeRoles(){const r=activeRoleOf();return r?[r]:[]}
+    function activeRoles(){const p=profile(),r=activeRoleOf(p);return r===ALL_ROLE_MODE?roles(p):(r?[r]:[])}
     function nameOf(p){return p.nama||p.name||p.namaLengkap||p.displayName||p.username||'Sahabat Cahaya'}
+    function roleDisplay(p,r){if(r===ALL_ROLE_MODE)return'Semua Peran';const a=p?.roleAssignments?.[r]||{},base=ROLE_LABEL[r]||r||'Akun CAHAYA';return a.division?`${base} • ${a.division}`:base}
     function selectRole(role){
       try{if(window.parent&&window.parent!==window&&typeof window.parent.setCahayaActiveRole==='function'){window.parent.setCahayaActiveRole(role);return}}catch(_){ }
       localStorage.setItem('cahayaActiveRole',role);localStorage.setItem('cahayaCurrentRole',role);location.reload();
     }
     window.selectHomeRole=selectRole;
     function setProfile(){
-      const p=profile(),all=roles(p),active=activeRoleOf(p),showAvatar=active==='guru'||active==='naqib';
+      const p=profile(),all=roles(p),active=activeRoleOf(p),showAvatar=active!=='semua-peran'&&(active==='guru'||active==='naqib');
       document.getElementById('userName').textContent=nameOf(p);
       const switcher=document.getElementById('roleSwitcher');
-      if(switcher){switcher.innerHTML=(all.length?all:['']).map(r=>`<button type="button" class="h24-role-chip${r===active?' active':''}" onclick="selectHomeRole('${escapeHtml(r)}')">${escapeHtml(ROLE_LABEL[r]||r||'Akun CAHAYA')}</button>`).join('')}
+      if(switcher){const choices=all.length>1?[ALL_ROLE_MODE,...all]:all;switcher.innerHTML=(choices.length?choices:['']).map(r=>`<button type="button" class="h24-role-chip${r===active?' active':''}" onclick="selectHomeRole('${escapeHtml(r)}')">${escapeHtml(roleDisplay(p,r))}</button>`).join('')}
       const av=document.getElementById('heroProfileAvatar');if(av){av.hidden=!showAvatar;if(showAvatar){const nm=nameOf(p);if(p.fotoProfil){av.innerHTML=`<img src="${escapeHtml(p.fotoProfil)}" alt="Foto profil ${escapeHtml(nm)}">`}else{av.textContent=String(nm||'C').trim().charAt(0).toUpperCase()||'C'}}}
     }
     function cleanText(el){const clone=el.cloneNode(true);clone.querySelectorAll('.role-group-count,.nav-arrow').forEach(x=>x.remove());return String(clone.textContent||'').trim().replace(/\s+/g,' ')}
@@ -583,12 +588,13 @@
     }
     let roleRenderToken=0;
     async function renderRoleCards(){
-      const token=++roleRenderToken,p=profile(),currentRoles=activeRoles(),group=roleCardGroup(currentRoles),section=document.getElementById('roleCardsSection'),box=document.getElementById('roleCards');
-      const teacherHadith=document.getElementById('teacherHadith');if(teacherHadith)teacherHadith.hidden=!currentRoles.includes('guru');
+      const token=++roleRenderToken,p=profile(),currentRoles=activeRoles(),activeMode=activeRoleOf(p),group=roleCardGroup(currentRoles),section=document.getElementById('roleCardsSection'),box=document.getElementById('roleCards');
+      const teacherHadith=document.getElementById('teacherHadith');if(teacherHadith)teacherHadith.hidden=activeMode===ALL_ROLE_MODE||!currentRoles.includes('guru');
+      const homeHero=document.getElementById('homeHero');if(activeMode===ALL_ROLE_MODE){if(homeHero){homeHero.classList.remove('is-teacher','is-naqib')}if(section)section.hidden=true;return}
       if(!section||!box||!group){if(section)section.hidden=true;return}
       let available=[];
       const isLeadership=group===ROLE_CARD_CONFIG.leadership,isHealthRole=group===ROLE_CARD_CONFIG.kesehatan,isTeacherRole=group===ROLE_CARD_CONFIG.guru,isNaqibRole=group===ROLE_CARD_CONFIG.naqib;
-      const homeHero=document.getElementById('homeHero');if(homeHero){homeHero.classList.toggle('is-teacher',isTeacherRole);homeHero.classList.toggle('is-naqib',isNaqibRole)}
+      if(homeHero){homeHero.classList.toggle('is-teacher',isTeacherRole);homeHero.classList.toggle('is-naqib',isNaqibRole)}
       section.classList.toggle('is-teacher',isTeacherRole);section.classList.toggle('is-naqib',isNaqibRole);
       const head=section.querySelector('.h24-role-head');if(head)head.style.display=group.showTitle===false?'none':'';
       if(teacherHadith)teacherHadith.hidden=!currentRoles.includes('guru');
@@ -626,25 +632,42 @@
     let personalPerformanceData=null;
     function currentMonthKey(){const f=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit'}).format(new Date());return f.slice(0,7)}
     function currentUsername(){const p=profile();return String(p.username||p.id||p.email?.split('@')[0]||'').trim().toLowerCase()}
+    function perfSafeKey(v){return String(v||'').replace(/[.#$\[\]\/]/g,'_')}
+    function performanceGroupsFor(p,viewRoles){const groups=[];for(const r of viewRoles){if(!OPERATIONAL_ROLES.has(r))continue;const a=p?.roleAssignments?.[r]||{},division=a.division||(viewRoles.length===1?(p.divisiOperasional||p.divisionOperasional||''):'');if(division)groups.push(perfSafeKey(`${r}__${division}`))}return [...new Set(groups)]}
     async function loadPersonalPerformance(){
-      const section=document.getElementById('personalPerformanceSection'),role=activeRoleOf();
-      if(!section||!OPERATIONAL_ROLES.has(role)){if(section)section.hidden=true;return}
+      const section=document.getElementById('personalPerformanceSection'),role=activeRoleOf(),viewRoles=activeRoles();
+      if(!section||!viewRoles.some(r=>OPERATIONAL_ROLES.has(r))){if(section)section.hidden=true;return}
       try{
         const par=window.parent&&window.parent!==window?window.parent:window,fb=par.firebase;if(!fb?.database){section.hidden=true;return}
-        const month=currentMonthKey(),snap=await fb.database().ref(`cahaya_app/manajemen_operasional_v1/performance_monthly/${month}`).once('value'),root=snap.val()||{},un=currentUsername(),all=[];
-        Object.entries(root).forEach(([group,val])=>Object.values(val||{}).forEach(r=>{if(r&&typeof r==='object')all.push({...r,_group:group})}));
-        const mine=all.filter(r=>String(r.username||'').toLowerCase()===un).sort((a,b)=>(b.official?1:0)-(a.official?1:0)||Number(b.score||0)-Number(a.score||0))[0];
-        if(!mine){section.hidden=true;return}
-        const peers=all.filter(r=>r._group===mine._group&&r.official&&Number.isFinite(Number(r.score))).sort((a,b)=>Number(b.score)-Number(a.score)),idx=peers.findIndex(r=>String(r.username||'').toLowerCase()===un);
+        const month=currentMonthKey(),p=profile(),groups=performanceGroupsFor(p,viewRoles),un=currentUsername(),all=[];
+        if(groups.length){await Promise.all(groups.map(async group=>{const snap=await fb.database().ref(`cahaya_app/manajemen_operasional_v1/performance_monthly/${month}/${group}`).once('value');Object.values(snap.val()||{}).forEach(r=>{if(r&&typeof r==='object')all.push({...r,_group:group})})}))}
+        else{const snap=await fb.database().ref(`cahaya_app/manajemen_operasional_v1/performance_monthly/${month}`).once('value'),root=snap.val()||{};Object.entries(root).forEach(([group,val])=>Object.values(val||{}).forEach(r=>{if(r&&typeof r==='object')all.push({...r,_group:group})}))}
+        let mineRows=all.filter(r=>String(r.username||'').toLowerCase()===un&&(!r.role||viewRoles.includes(normalizeRole(r.role))));
+        if(role!==ALL_ROLE_MODE)mineRows=mineRows.filter(r=>normalizeRole(r.role||'')===role||!r.role);
+        mineRows.sort((a,b)=>(b.official?1:0)-(a.official?1:0)||Number(b.score||0)-Number(a.score||0));
+        if(!mineRows.length){section.hidden=true;return}
+        if(role===ALL_ROLE_MODE){
+          const scored=mineRows.filter(r=>Number.isFinite(Number(r.score))),avg=scored.length?Math.round(scored.reduce((a,b)=>a+Number(b.score),0)/scored.length):null;
+          const official=scored.filter(r=>r.official).length;
+          personalPerformanceData={allMode:true,items:mineRows,score:avg,officialCount:official,month};
+          document.getElementById('personalPerformanceScore').textContent=avg??'–';
+          document.getElementById('personalPerformanceMonth').textContent='• '+new Intl.DateTimeFormat('id-ID',{month:'long',year:'numeric'}).format(new Date(month+'-01T00:00:00'));
+          document.getElementById('personalPerformanceMeta').textContent=`${mineRows.length} scorecard peran • ${official} sudah resmi`;
+          document.getElementById('personalPerformanceRank').textContent='Lihat kinerja per peran';section.hidden=false;return;
+        }
+        const mine=mineRows[0],peers=all.filter(r=>r._group===mine._group&&r.official&&Number.isFinite(Number(r.score))).sort((a,b)=>Number(b.score)-Number(a.score)),idx=peers.findIndex(r=>String(r.username||'').toLowerCase()===un&&normalizeRole(r.role||'')===normalizeRole(mine.role||''));
         personalPerformanceData={...mine,rank:mine.official&&idx>=0?idx+1:null,peerCount:peers.length,month};
         document.getElementById('personalPerformanceScore').textContent=mine.score??'–';
         document.getElementById('personalPerformanceMonth').textContent='• '+new Intl.DateTimeFormat('id-ID',{month:'long',year:'numeric'}).format(new Date(month+'-01T00:00:00'));
-        document.getElementById('personalPerformanceMeta').textContent=`Pelaksanaan ${mine.execution??'–'}% • Mutu ${mine.quality??'–'}% • ${mine.positionTitle||mine.level||'Personel Operasional'}`;
+        document.getElementById('personalPerformanceMeta').textContent=`Pelaksanaan ${mine.execution??'–'}% • Mutu ${mine.quality??'–'}% • Hasil/KPI ${mine.result??'–'}%`;
         document.getElementById('personalPerformanceRank').textContent=personalPerformanceData.rank?`Peringkat #${personalPerformanceData.rank} dari ${personalPerformanceData.peerCount}`:'Penilaian sementara';
         section.hidden=false;
       }catch(e){console.warn('Kinerja personal belum tersedia:',e);section.hidden=true}
     }
-    window.openPersonalPerformance=function(){const d=personalPerformanceData;if(!d)return;const box=document.getElementById('personalPerformanceBody');box.innerHTML=`<div class="h24-perf-grid"><div class="h24-perf-metric"><small>Skor Kinerja</small><b>${d.score??'–'}</b></div><div class="h24-perf-metric"><small>Ranking</small><b>${d.rank?'#'+d.rank:'Sementara'}</b></div><div class="h24-perf-metric"><small>Pelaksanaan</small><b>${d.execution??'–'}%</b></div><div class="h24-perf-metric"><small>Mutu</small><b>${d.quality??'–'}%</b></div></div><div class="h24-perf-note ${d.official?'ok':''}"><b>Mengapa nilainya seperti ini?</b><br>Pelaksanaan dihitung dari ${d.journalCount||0} jurnal jobdesk harian. Mutu dihitung dari ${d.observationCount||0} observasi atasan. Rumus kinerja: 60% Pelaksanaan + 40% Mutu.${d.observationCount<3?'<br><br>Ranking resmi baru aktif setelah minimal 3 observasi mutu dalam periode ini.':'<br><br>Data mutu sudah memenuhi minimum observasi untuk ranking resmi.'}</div>`;const m=document.getElementById('personalPerformanceModal');m.hidden=false;m.setAttribute('aria-hidden','false')};
+    window.openPersonalPerformance=function(){const d=personalPerformanceData;if(!d)return;const box=document.getElementById('personalPerformanceBody');
+      if(d.allMode){box.innerHTML=`<div class="h24-perf-note ok"><b>Kinerja per Peran</b><br>Skor tidak dicampur menjadi ranking tunggal. Setiap amanah dinilai sesuai jobdesk dan KPI perannya.</div>`+d.items.map(x=>`<div class="h24-perf-role"><div><b>${escapeHtml(ROLE_LABEL[normalizeRole(x.role)]||x.positionTitle||x.role||'Peran')}</b><small>${escapeHtml(x.division||'')}</small></div><strong>${x.score??'–'}</strong><span>Pelaksanaan ${x.execution??'–'}% • Mutu ${x.quality??'–'}% • Hasil ${x.result??'–'}%${x.official?'':' • sementara'}</span></div>`).join('');}
+      else{box.innerHTML=`<div class="h24-perf-grid"><div class="h24-perf-metric"><small>Skor Kinerja</small><b>${d.score??'–'}</b></div><div class="h24-perf-metric"><small>Ranking</small><b>${d.rank?'#'+d.rank:'Sementara'}</b></div><div class="h24-perf-metric"><small>Pelaksanaan</small><b>${d.execution??'–'}%</b></div><div class="h24-perf-metric"><small>Mutu</small><b>${d.quality??'–'}%</b></div><div class="h24-perf-metric"><small>Hasil/KPI</small><b>${d.result??'–'}%</b></div></div><div class="h24-perf-note ${d.official?'ok':''}"><b>Mengapa nilainya seperti ini?</b><br>Pelaksanaan berasal dari ${d.journalCount||0} jurnal To Do yang lahir dari Jobdesk. Mutu berasal dari ${d.observationCount||0} observasi atasan langsung. Hasil berasal dari ${d.objectiveCount||0} Objective/KPI periode ini.<br><br>${escapeHtml(d.formula||'')}.${d.official?'<br>Data sudah lengkap dan masuk ranking resmi.':'<br>Ranking resmi memerlukan Pelaksanaan, Hasil/KPI, dan minimal 3 observasi mutu.'}</div>`;}
+      const m=document.getElementById('personalPerformanceModal');m.hidden=false;m.setAttribute('aria-hidden','false')};
     window.closePersonalPerformance=function(){const m=document.getElementById('personalPerformanceModal');if(m){m.hidden=true;m.setAttribute('aria-hidden','true')}};
 
     const DASHBOARD_EXCLUDED=new Set([

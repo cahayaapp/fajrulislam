@@ -1678,7 +1678,7 @@
 
 
   <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260820-v71">
+  <meta name="cahaya-build" content="20260821-v72">
 
 <style id="cahaya-v48-guru-scan-nav">
 /* V48 — tombol Scan Absen khusus tampilan Guru, model center action */
@@ -2186,7 +2186,7 @@
         <div class="group-label">Utama</div>
         <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=70', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
-        <a class="nav-item menu-akses" id="menu-manajemen-operasional" style="display:none;" onclick="loadPage('operasional/index.html?v=71', this)">◉ Manajemen Operasional</a>
+        <a class="nav-item menu-akses" id="menu-manajemen-operasional" style="display:none;" onclick="loadPage('operasional/index.html?v=72', this)">◉ Manajemen Operasional</a>
       </div>
 
 
@@ -2536,12 +2536,14 @@ function sinkronkanBadgePintasanMobile() {
     )];
 
     const ACTIVE_ROLE_KEY = "cahayaActiveRole";
+    const ALL_ROLES_MODE = "semua-peran";
     let activeRole = normalisasiRole(localStorage.getItem(ACTIVE_ROLE_KEY) || localStorage.getItem("cahayaCurrentRole") || "");
     let roleMenuRulesCache = null;
 
     function ensureActiveRole() {
       if (!myRoles.length) { activeRole = ""; return ""; }
-      if (!activeRole || !myRoles.includes(activeRole)) activeRole = myRoles[0];
+      const allAllowed = myRoles.length > 1 && activeRole === ALL_ROLES_MODE;
+      if (!allAllowed && (!activeRole || !myRoles.includes(activeRole))) activeRole = myRoles[0];
       localStorage.setItem(ACTIVE_ROLE_KEY, activeRole);
       localStorage.setItem("cahayaCurrentRole", activeRole);
       return activeRole;
@@ -2549,25 +2551,26 @@ function sinkronkanBadgePintasanMobile() {
 
     function getActiveViewRoles() {
       const role = ensureActiveRole();
-      return role ? [role] : [];
+      return role === ALL_ROLES_MODE ? [...myRoles] : (role ? [role] : []);
     }
 
     function getProfileForActiveView() {
       const role = ensureActiveRole();
+      const viewRoles = getActiveViewRoles();
       return {
         ...pUserSafe,
         allRoles: [...myRoles],
-        akses: role ? [role] : [],
-        jabatan: role ? [role] : [],
-        role: role || "",
-        roleLabel: role ? labelRole(role) : "Pengguna CAHAYA",
+        akses: [...viewRoles],
+        jabatan: [...viewRoles],
+        role: role === ALL_ROLES_MODE ? "" : (role || ""),
+        roleLabel: role === ALL_ROLES_MODE ? "Semua Peran" : (role ? labelRole(role) : "Pengguna CAHAYA"),
         activeRole: role || ""
       };
     }
 
     async function setActiveRole(role) {
-      const normalized = normalisasiRole(role);
-      if (!normalized || !myRoles.includes(normalized)) return false;
+      const normalized = String(role||'').trim().toLowerCase() === ALL_ROLES_MODE ? ALL_ROLES_MODE : normalisasiRole(role);
+      if (!normalized || (normalized !== ALL_ROLES_MODE && !myRoles.includes(normalized)) || (normalized === ALL_ROLES_MODE && myRoles.length < 2)) return false;
       activeRole = normalized;
       pUserSafe.activeRole = activeRole;
       localStorage.setItem(ACTIVE_ROLE_KEY, activeRole);
@@ -2575,13 +2578,14 @@ function sinkronkanBadgePintasanMobile() {
       try {
         const current = JSON.parse(localStorage.getItem("cahayaCurrentUser") || "{}") || {};
         localStorage.setItem("cahayaCurrentUser", JSON.stringify({...current, activeRole}));
+        const viewRoles = activeRole === ALL_ROLES_MODE ? [...myRoles] : [activeRole];
         localStorage.setItem("cahayaCurrentProfile", JSON.stringify({
           ...current,
           allRoles: [...myRoles],
-          akses: [activeRole],
-          jabatan: [activeRole],
-          role: activeRole,
-          roleLabel: labelRole(activeRole),
+          akses: viewRoles,
+          jabatan: viewRoles,
+          role: activeRole === ALL_ROLES_MODE ? "" : activeRole,
+          roleLabel: activeRole === ALL_ROLES_MODE ? "Semua Peran" : labelRole(activeRole),
           activeRole
         }));
       } catch (_) {}
@@ -2604,6 +2608,7 @@ function sinkronkanBadgePintasanMobile() {
 
     function labelRole(role) {
       const labels = {
+        "semua-peran": "Semua Peran",
         admin: "Administrator",
         direktur: "Direktur",
         wakil: "Wakil Direktur",
@@ -2626,6 +2631,12 @@ function sinkronkanBadgePintasanMobile() {
       };
 
       return labels[role] || role;
+    }
+
+    function labelRoleContext(role) {
+      if (role === ALL_ROLES_MODE) return "Semua Peran";
+      const assignment = (pUserSafe.roleAssignments && pUserSafe.roleAssignments[role]) || {};
+      return assignment.division ? `${labelRole(role)} • ${assignment.division}` : labelRole(role);
     }
 
     function terapkanProfilAktif(profile = {}, authUser = null) {
@@ -2875,7 +2886,7 @@ function sinkronkanBadgePintasanMobile() {
       const deepLinkOperasional = new URLSearchParams(window.location.search).get("operasional");
       if (deepLinkOperasional && bolehAksesMenu("menu-manajemen-operasional")) {
         const menuOperasional = document.getElementById("menu-manajemen-operasional");
-        loadPage(`operasional/index.html?v=71&view=${encodeURIComponent(deepLinkOperasional)}`, menuOperasional);
+        loadPage(`operasional/index.html?v=72&view=${encodeURIComponent(deepLinkOperasional)}`, menuOperasional);
         return;
       }
       const prioritas = [];
@@ -2931,8 +2942,8 @@ function sinkronkanBadgePintasanMobile() {
 
         const active = ensureActiveRole();
         const roleTextAsli = myRoles.map(labelRole).join(" • ") || "Pengguna CAHAYA";
-        const roleText = active ? labelRole(active) : roleTextAsli;
-        roleBadge.textContent = active ? `${labelRole(active)} • ${myRoles.length > 1 ? myRoles.length + " role tersedia" : "Akses aktif"}` : roleTextAsli;
+        const roleText = active === ALL_ROLES_MODE ? "Semua Peran" : (active ? labelRoleContext(active) : roleTextAsli);
+        roleBadge.textContent = active === ALL_ROLES_MODE ? `Semua Peran • ${myRoles.length} role aktif` : (active ? `${labelRoleContext(active)} • ${myRoles.length > 1 ? myRoles.length + " role tersedia" : "Akses aktif"}` : roleTextAsli);
         roleBadge.title = `${displayNama} — ${roleTextAsli}`;
         const topUserName = document.getElementById('topUserName');
         const topUserRole = document.getElementById('topUserRole');

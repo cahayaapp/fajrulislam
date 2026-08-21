@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
   <title>Manajemen Operasional • CAHAYA APP</title>
   <link rel="stylesheet" href="../css/cahaya-theme.css">
-  <link rel="stylesheet" href="operasional.css?v=71">
+  <link rel="stylesheet" href="operasional.css?v=72">
 </head>
 <body>
   <main class="app">
@@ -15,7 +15,7 @@
       <div>
         <span class="eyebrow">✦ CAHAYA Operational Loop</span>
         <h1>Manajemen Operasional</h1>
-        <p>Tugas harian, observasi mutu, rapat, tindak lanjut, laporan dan pengembangan personel dalam satu siklus kerja yang saling terhubung.</p>
+        <p>Satu alur sederhana: target jelas, pekerjaan terlaksana, mutu terpantau, hasil terukur, dan tindak lanjut tidak terlewat.</p>
       </div>
       <aside class="identity">
         <div class="identity-row"><small>Pengguna</small><b id="identityName">Memuat…</b></div>
@@ -28,21 +28,22 @@
 
     <nav class="nav" id="operationalNav" aria-label="Navigasi manajemen operasional">
       <button data-view="dashboard">⌂ Dashboard</button>
-      <button data-view="tasks">✓ Tugas & Delegasi</button>
+      <button data-view="objectives">◎ Objektif & KPI</button>
+      <button data-view="tasks">✓ To Do & Delegasi</button>
       <button data-view="observations">◉ Observasi</button>
       <button data-view="meetings">✎ Rapat</button>
       <button data-view="followups">↗ Tindak Lanjut</button>
       <button data-view="reports">▦ Laporan</button>
       <button data-view="journals">☰ Jurnal</button>
       <button data-view="competencies">✦ Kompetensi</button>
-      <button data-view="structure" id="navStructure">⌘ Struktur & Jobdesk</button>
     </nav>
 
     <section class="view" id="view-dashboard">
       <div class="section">
         <div class="section-head"><div><h2>Operasional Hari Ini</h2><p id="dashboardPositionHint">Tugas dan tanggung jawab sesuai posisi aktif.</p></div><div class="actions"><button class="btn primary leader-only" onclick="Operational.openTaskForm()">+ Delegasi</button><button class="btn gold observer-action" onclick="Operational.openObservationForm()">+ Observasi</button></div></div>
         <div class="metrics">
-          <article class="metric blue"><span>Jobdesk Hari Ini</span><b id="metricDailyJobs">0</b><em id="metricDailyHint">belum dimuat</em></article>
+          <article class="metric blue"><span>To Do Hari Ini</span><b id="metricDailyJobs">0</b><em id="metricDailyHint">belum dimuat</em></article>
+          <article class="metric teal"><span>Objektif Aktif</span><b id="metricObjectives">0</b><em id="metricObjectiveHint">periode berjalan</em></article>
           <article class="metric red"><span>Terlambat</span><b id="metricOverdue">0</b><em>tugas / tindak lanjut</em></article>
           <article class="metric gold"><span>Temuan</span><b id="metricFindings">0</b><em>perlu perhatian</em></article>
           <article class="metric purple"><span>Tindak Lanjut</span><b id="metricFollowups">0</b><em>masih terbuka</em></article>
@@ -56,7 +57,7 @@
           <div class="daily-list" id="todayJobList"><div class="skeleton-lines"></div></div>
         </article>
         <article class="panel performance-panel">
-          <div class="panel-title-row"><div><h3>Kinerja Posisi Aktif</h3><div class="sub">Pelaksanaan dari jurnal • Mutu dari observasi atasan.</div></div><span class="month-pill" id="performanceMonth">-</span></div>
+          <div class="panel-title-row"><div><h3>Performance Scorecard</h3><div class="sub">Pelaksanaan • Mutu • Hasil/KPI. Ranking hanya dari data yang lengkap.</div></div><span class="month-pill" id="performanceMonth">-</span></div>
           <div id="performanceCard"><div class="skeleton-lines"></div></div>
           <div id="teamRankingWrap" hidden><div class="panel-divider"></div><h4>Ranking Tim</h4><div class="ranking-mini" id="teamRanking"></div></div>
         </article>
@@ -64,7 +65,7 @@
 
       <div class="section grid2">
         <article class="panel">
-          <h3 id="mandateTitle">Mandat Jabatan</h3><div class="sub">Tugas inti sesuai posisi operasional aktif.</div>
+          <h3 id="mandateTitle">Tupoksi & Jobdesk Role</h3><div class="sub">Standar role diatur terpusat pada Manajemen User.</div>
           <div class="mandate" id="mandateList"></div>
         </article>
         <article class="panel">
@@ -85,9 +86,24 @@
       </div>
     </section>
 
+
+    <section class="view" id="view-objectives">
+      <div class="section">
+        <div class="section-head"><div><h2>Objektif & KPI</h2><p>Tentukan hasil yang ingin dicapai pada periode ini. Pilih KPI yang sudah ditetapkan pada role, isi target dan aktual—cukup itu.</p></div><div class="actions"><button class="btn gold" onclick="Operational.openObjectiveForm()">+ Objektif</button></div></div>
+        <div class="objective-flow">
+          <span><b>Objektif</b><small>Apa yang ingin dicapai?</small></span>
+          <span><b>KPI + Target</b><small>Bagaimana hasil diukur?</small></span>
+          <span><b>To Do</b><small>Apa yang dikerjakan?</small></span>
+          <span><b>Hasil</b><small>Tercapai atau belum?</small></span>
+        </div>
+        <div class="toolbar"><input class="control search" id="objectiveSearch" placeholder="Cari objektif atau KPI…"><select class="control" id="objectivePeriodFilter"><option value="">Semua Periode</option></select><select class="control" id="objectiveStatusFilter"><option value="">Semua Status</option><option value="aktif">Aktif</option><option value="tercapai">Tercapai</option><option value="belum">Belum Tercapai</option></select></div>
+        <div class="cards" id="objectiveList"></div>
+      </div>
+    </section>
+
     <section class="view" id="view-tasks">
       <div class="section">
-        <div class="section-head"><div><h2>Tugas & Delegasi</h2><p>Penugasan insidental di luar jobdesk rutin.</p></div><div class="actions"><button class="btn primary leader-only" onclick="Operational.openTaskForm()">+ Tugas Baru</button></div></div>
+        <div class="section-head"><div><h2>To Do & Delegasi</h2><p>Pekerjaan konkret yang harus diselesaikan. To Do dapat berasal dari Objektif, rapat, observasi, atau delegasi.</p></div><div class="actions"><button class="btn primary leader-only" onclick="Operational.openTaskForm()">+ Tugas Baru</button></div></div>
         <div class="toolbar"><input class="control search" id="taskSearch" placeholder="Cari tugas, PIC, atau bidang…"><select class="control" id="taskStatusFilter"><option value="">Semua Status</option><option value="baru">Baru</option><option value="proses">Proses</option><option value="selesai">Selesai</option><option value="terlambat">Terlambat</option></select><select class="control" id="taskDivisionFilter"></select></div>
         <div class="cards" id="taskList"></div>
       </div>
@@ -141,16 +157,6 @@
       </div>
     </section>
 
-    <section class="view" id="view-structure">
-      <div class="section">
-        <div class="section-head"><div><h2>Struktur Organisasi Digital</h2><p>CAHAYA mengenali bukan hanya level, tetapi jabatan, bidang, unit, atasan dan bawahan langsung.</p></div><div class="actions"><button class="btn primary structure-edit" onclick="Operational.openPositionForm()">+ Posisi</button><button class="btn gold structure-edit" onclick="Operational.openJobdeskForm()">+ Jobdesk</button></div></div>
-        <div class="structure-summary" id="structureSummary"></div>
-        <div class="grid2">
-          <article class="panel"><div class="panel-title-row"><div><h3>Posisi Operasional</h3><div class="sub">Hanya personel operasional. Wali dan Guru PKBM murni tidak ditampilkan.</div></div></div><div class="structure-list" id="positionList"></div></article>
-          <article class="panel"><div class="panel-title-row"><div><h3>Master Jobdesk</h3><div class="sub">Rutin harian, pekanan, bulanan, atau sumber jadwal otomatis.</div></div></div><div class="structure-list" id="jobdeskList"></div></article>
-        </div>
-      </div>
-    </section>
   </main>
 
   <div class="modal" id="formModal" hidden><div class="backdrop" onclick="Operational.closeForm()"></div><section class="modal-card"><header class="modal-head"><div><small id="formKicker">CAHAYA OPERASIONAL</small><h2 id="formTitle">Form</h2></div><button class="close" onclick="Operational.closeForm()" aria-label="Tutup">×</button></header><div class="modal-body" id="formBody"></div></section></div>
@@ -164,6 +170,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
   <script src="../js/cahaya-config-runtime.js"></script>
-  <script src="operasional.js?v=71"></script>
+  <script src="operasional.js?v=72"></script>
 </body>
 </html>
