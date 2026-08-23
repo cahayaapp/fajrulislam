@@ -951,7 +951,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     </section>
 
     <section class="panel-card c53-scene c53-scene-card" id="sceneSubject" data-scene="subject">
-      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="showExamScene('assessment',true)" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Mata pelajaran</small><h2>Pilih Pelajaran Kitab</h2><p>Hanya diperlukan untuk kategori pelajaran kitab. Pilihan mengikuti jadwal guru yang sedang login.</p></div></div>
+      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="showExamScene('assessment',true)" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Mata pelajaran</small><h2>Pilih Mata Pelajaran</h2><p>Semua mata pelajaran pada jadwal Anda ditampilkan. Pilih mata pelajaran yang akan menggunakan skema penilaian ini.</p></div></div>
       <div class="c53-subject-grid" id="subjectButtonGrid"></div>
     </section>
 
@@ -1040,8 +1040,9 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     </div>
 
     <div class="save-area">
+      <div style="font-size:12px;line-height:1.55;color:#718096;margin-bottom:10px;text-align:center;">Boleh simpan sebagian dulu. Nilai yang sudah tersimpan akan muncul kembali saat pelajaran dan periode yang sama dibuka, dan tetap dapat diedit.</div>
       <button class="save-button" id="btnSimpan" onclick="simpanNilaiUjian()">
-        ☁️ Simpan Nilai Ujian
+        ☁️ Simpan Nilai Ini Dulu
       </button>
     </div>
   </section>
@@ -1069,6 +1070,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   let setupConfirmed = false;
   let toastTimer = null;
   let currentAssessmentKey = "";
+  let existingScoreRecords = {};
 
   const ASSESSMENT_TYPES = {
     tahfiz: {
@@ -1192,7 +1194,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   function buildTeacherSubjectMap(){
     const source=buildClassSource(); teacherSubjectClasses={};
     scheduleRows.filter(r=>r&&r.aktif!==false&&String(r.jenis||"").toLowerCase()!=="ekskul"&&String(r.guruKode||"").trim().toUpperCase()===teacherCodeAktif).forEach(r=>{
-      const subject=String(r.mapel||"").trim(), cls=String(r.kelas||"").trim(); if(!subject||!cls||!source[cls])return;
+      const subject=String(r.mapel||"").trim(), cls=String(r.kelas||"").trim(); if(!subject||!cls)return;
       if(!teacherSubjectClasses[subject])teacherSubjectClasses[subject]=new Set(); teacherSubjectClasses[subject].add(cls);
     });
     Object.keys(teacherSubjectClasses).forEach(k=>teacherSubjectClasses[k]=[...teacherSubjectClasses[k]].sort((a,b)=>a.localeCompare(b,"id",{numeric:true})));
@@ -1229,14 +1231,10 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     mapel.innerHTML=`<option value="${escapeHtml(value||'')}">${escapeHtml(value||'')}</option>`;
     mapel.value=value||'';
   }
-  function isKitabSubject(subject=''){
-    return /aqid|fiq|adab|shir|sirah|hadit|hadis|nahwu|sharaf|sorof|balagh|tafsir|ushul|faraidh|mantiq|tasawuf|akhlaq|kitab/i.test(String(subject||''));
-  }
   function kitabSubjectEntries(){
-    const all=Object.keys(teacherSubjectClasses).sort((a,b)=>a.localeCompare(b,'id'));
-    const preferred=all.filter(isKitabSubject);
-    if(preferred.length) return preferred;
-    return all.filter(subject=>!/tahfiz|tahsin|al\s*[- ]?qur|qur[’'`]?an|quran|bahasa\s*arab|kewirausahaan|manajemen|matematika|ipa|ips|pkn|sejarah|informatika|olahraga|futsal|panahan|silat|bahasa\s*(indonesia|inggris)/i.test(subject));
+    // Untuk dua skema Kitab, tampilkan SEMUA mata pelajaran yang ada pada jadwal guru.
+    // Skema bobot dipilih oleh guru; mata pelajaran tidak lagi difilter berdasarkan nama.
+    return Object.keys(teacherSubjectClasses).sort((a,b)=>a.localeCompare(b,'id'));
   }
   function classesForActiveAssessment(){
     const config=activeAssessment(); if(!config)return[];
@@ -1301,7 +1299,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     classes.forEach(cls=>normalizeArray(source[cls]).forEach(name=>result.push({name,className:cls})));
     const seen=new Set(); return result.filter(item=>{const key=`${item.className}|${item.name}`;if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>a.className.localeCompare(b.className,'id',{numeric:true})||a.name.localeCompare(b.name,'id'));
   }
-  window.confirmExamSetup=function(){
+  window.confirmExamSetup=async function(){
     const config=activeAssessment(), jenis=document.getElementById('jenisUjian').value, period=document.getElementById('periodChooser').value, subject=document.getElementById('mapel').value, active=getKomponenAktif(), total=active.reduce((a,b)=>a+b.bobot,0);
     if(!config||!jenis||!period||!subject){showToast('error','Pilihan belum lengkap','Pilih jenis penilaian, jenis ujian, dan periode.');return}
     if(!active.length||!isWeightValid(total)){showToast('error','Skema bobot bermasalah','Bobot tetap jenis penilaian harus berjumlah 100%.');return}
@@ -1312,6 +1310,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     document.getElementById('kelasKelompok').value=classes.join(' | ');
     document.getElementById('materiUjian').value=`${config.label} • ${jenis} ${period}`;
     setupConfirmed=true; refreshStrukturTabel(); loadSantri(); document.getElementById('scorePanel').hidden=false; document.body.classList.add('c53-score-focus'); document.getElementById('scorePanel').scrollIntoView({behavior:'smooth',block:'start'});
+    await loadExistingScoresForCurrentSetup();
   };
 
   window.backToExamSetup=function(){document.body.classList.remove('c53-score-focus');document.getElementById('scorePanel').hidden=true;showExamScene('period',true);};
@@ -1394,11 +1393,151 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     const activeComponents=getKomponenAktif();
     tbody.innerHTML=activeStudentList.map((item,index)=>{
       const name=item.name||item, className=item.className||"", displayName=cleanStudentDisplayName(name);
-      const componentCells=activeComponents.map(component=>`<td class="score-cell" data-label="${escapeHtml(component.nama)}"><input type="number" inputmode="decimal" min="0" max="100" step="0.1" class="score-input input-dinamis" data-id="${component.id}" data-bobot="${component.bobot}" aria-label="Nilai ${escapeHtml(component.nama)} ${escapeHtml(displayName)}" oninput="hitungTotal(this)" placeholder="0" /></td>`).join("");
+      const componentCells=activeComponents.map(component=>`<td class="score-cell" data-label="${escapeHtml(component.nama)}"><input type="number" inputmode="decimal" min="0" max="100" step="0.1" class="score-input input-dinamis" data-id="${component.id}" data-bobot="${component.bobot}" aria-label="Nilai ${escapeHtml(component.nama)} ${escapeHtml(displayName)}" oninput="markScoreDirty(this);hitungTotal(this)" placeholder="0" /></td>`).join("");
       return `<tr data-nama="${escapeHtml(name)}" data-kelas="${escapeHtml(className)}" data-search="${escapeHtml((displayName+" "+className).toLowerCase())}"><td class="student-no">${index+1}</td><td class="student-name">${escapeHtml(displayName)}<span class="class-mini">${escapeHtml(className)}</span></td>${componentCells}<td class="nilai-total" data-label="Nilai Total"><span class="total-pill">0</span></td></tr>`;
     }).join("");
     document.getElementById("searchSantri").disabled=false; document.getElementById("searchSantri").value=""; updateStats();
   };
+
+
+  function stableKey(value = "") {
+    const text = String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    let hash = 5381;
+    for (let i = 0; i < text.length; i++) hash = ((hash << 5) + hash) ^ text.charCodeAt(i);
+    return "k" + (hash >>> 0).toString(36);
+  }
+
+  function currentExamParams() {
+    return {
+      jenis: document.getElementById("jenisUjian").value || "Bulanan",
+      jenisPenilaian: activeAssessment()?.label || "",
+      kodePenilaian: currentAssessmentKey,
+      tahun: document.getElementById("tahunAkademik").value,
+      semester: document.getElementById("semester").value,
+      bulan: document.getElementById("bulanUjian").value,
+      periode: document.getElementById("periodeUjian").value,
+      mapel: document.getElementById("mapel").value,
+      guru: document.getElementById("guruPenguji").value
+    };
+  }
+
+  function scoreSessionKey(params = currentExamParams()) {
+    return stableKey([params.tahun, params.semester, params.jenis, params.periode, params.kodePenilaian, params.mapel, params.guru].join("|"));
+  }
+
+  function scoreStudentKey(name, className = "") {
+    return stableKey(`${className}|${name}`);
+  }
+
+  function scoreIndexPath(params = currentExamParams()) {
+    return `cahaya_app/nilai_input_index/${scoreSessionKey(params)}`;
+  }
+
+  function recordMatchesSession(record, params) {
+    if (!record) return false;
+    const sameSubject = String(record.mata_pelajaran || record.mataPelajaran || record.mapel || "") === params.mapel;
+    const oldAssessmentCode = String(record.kode_penilaian || "").trim();
+    const sameAssessment = oldAssessmentCode ? oldAssessmentCode === params.kodePenilaian : true;
+    const sameYear = String(record.tahun_akademik || record.tahunAjaran || "") === String(params.tahun || "");
+    const oldPeriod = String(record.periode_ujian || record.periode || record.bulan || "");
+    const samePeriod = oldPeriod === String(params.periode || params.bulan || "");
+    return sameSubject && sameAssessment && sameYear && samePeriod;
+  }
+
+  async function loadLegacySessionRecords(params) {
+    const monthly = params.jenis === "Bulanan";
+    const dbPath = monthly ? "cahaya_app/nilai_ujian_bulanan" : "cahaya_app/nilai_ujian";
+    try {
+      // Fallback untuk data lama sebelum indeks V75. Dibatasi agar tidak mengunduh seluruh histori.
+      const snap = await get(query(ref(db, dbPath), limitToLast(monthly ? 1800 : 1200)));
+      const data = snap.val() || {};
+      const result = {};
+      Object.entries(data).forEach(([recordKey, record]) => {
+        if (!recordMatchesSession(record, params)) return;
+        const name = String(record.nama_santri || record.namaSantri || record.nama || "");
+        const cls = String(record.kelas_kelompok || record.kelas || "");
+        if (!name) return;
+        result[scoreStudentKey(name, cls)] = { recordKey, dbPath, data: record };
+      });
+      return result;
+    } catch (error) {
+      console.warn("Data nilai lama belum dapat dimuat:", error);
+      return {};
+    }
+  }
+
+  async function loadExistingScoresForCurrentSetup() {
+    existingScoreRecords = {};
+    if (!setupConfirmed) return;
+    const params = currentExamParams();
+    try {
+      const indexSnap = await get(ref(db, scoreIndexPath(params)));
+      const indexed = indexSnap.exists() ? indexSnap.val() : {};
+      Object.entries(indexed || {}).forEach(([studentKey, item]) => {
+        if (!item || !item.data) return;
+        existingScoreRecords[studentKey] = item;
+      });
+
+      if (!Object.keys(existingScoreRecords).length) {
+        existingScoreRecords = await loadLegacySessionRecords(params);
+      }
+
+      let loadedCount = 0;
+      document.querySelectorAll("#nilaiSantriBody tr[data-nama]").forEach(row => {
+        const studentKey = scoreStudentKey(row.dataset.nama, row.dataset.kelas || "");
+        let item = existingScoreRecords[studentKey];
+        if (!item) {
+          // Kompatibilitas data lama yang mungkin tidak menyimpan kelas secara konsisten.
+          item = Object.values(existingScoreRecords).find(candidate => {
+            const d = candidate?.data || {};
+            return String(d.nama_santri || d.namaSantri || d.nama || "") === String(row.dataset.nama || "");
+          });
+        }
+        if (!item) return;
+        const record = item.data || {};
+        row.dataset.recordKey = item.recordKey || "";
+        row.dataset.recordPath = item.dbPath || (params.jenis === "Bulanan" ? "cahaya_app/nilai_ujian_bulanan" : "cahaya_app/nilai_ujian");
+        row.dataset.studentKey = studentKey;
+        row.querySelectorAll(".input-dinamis").forEach(input => {
+          const field = `nilai_${input.dataset.id}`;
+          if (Object.prototype.hasOwnProperty.call(record, field) && record[field] !== null && record[field] !== "") {
+            input.value = record[field];
+          } else {
+            input.value = "";
+          }
+          input.dataset.dirty = "0";
+        });
+        const anyFilled = [...row.querySelectorAll(".input-dinamis")].some(input => input.value !== "");
+        if (anyFilled) loadedCount++;
+        recalcScoreRow(row);
+      });
+      updateStats();
+      if (loadedCount) showToast("success", "Nilai sebelumnya dimuat", `${loadedCount} data santri sudah terisi dan dapat dilanjutkan atau diedit.`);
+    } catch (error) {
+      console.warn("Nilai sebelumnya belum dapat dimuat:", error);
+    }
+  }
+
+  window.markScoreDirty = function(input) {
+    if (input) input.dataset.dirty = "1";
+  };
+
+  function recalcScoreRow(row) {
+    if (!row) return;
+    let total = 0;
+    let hasInput = false;
+    row.querySelectorAll(".input-dinamis").forEach(input => {
+      if (input.value !== "") hasInput = true;
+      const score = Number(input.value) || 0;
+      const weight = Number(input.dataset.bobot) || 0;
+      total += score * (weight / 100);
+    });
+    const pill = row.querySelector(".total-pill");
+    if (pill) {
+      pill.textContent = total.toFixed(1);
+      pill.classList.toggle("filled", hasInput);
+    }
+  }
 
   function validateScore(input) {
     if (input.value === "") {
@@ -1414,20 +1553,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 
   window.hitungTotal = function(element) {
     validateScore(element);
-    const row = element.closest("tr");
-    let total = 0;
-    let hasInput = false;
-
-    row.querySelectorAll(".input-dinamis").forEach(input => {
-      if (input.value !== "") hasInput = true;
-      const score = Number(input.value) || 0;
-      const weight = Number(input.dataset.bobot) || 0;
-      total += score * (weight / 100);
-    });
-
-    const pill = row.querySelector(".total-pill");
-    pill.textContent = total.toFixed(1);
-    pill.classList.toggle("filled", hasInput);
+    recalcScoreRow(element.closest("tr"));
     updateStats();
   };
 
@@ -1486,26 +1612,12 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     const jenis = document.getElementById("jenisUjian").value || "Bulanan";
     const kkm = 75;
     const params = {
-      jenis,
-      jenisPenilaian: activeAssessment()?.label || "",
-      kodePenilaian: currentAssessmentKey,
+      ...currentExamParams(),
       kkm,
-      tahun: document.getElementById("tahunAkademik").value,
-      semester: document.getElementById("semester").value,
-      bulan: document.getElementById("bulanUjian").value,
-      periode: document.getElementById("periodeUjian").value,
       kelas: document.getElementById("kelasKelompok").value,
-      mapel: document.getElementById("mapel").value,
-      guru: document.getElementById("guruPenguji").value,
       materi: document.getElementById("materiUjian").value.trim(),
       tanggal: document.getElementById("tanggalUjian").value
     };
-
-    if (!Number.isFinite(kkm) || kkm < 1 || kkm > 100) {
-      showToast("error", "KKM tidak valid", "KKM harus berada pada rentang 1 sampai 100.");
-      document.getElementById("kkmUjian").focus();
-      return;
-    }
 
     if (!params.tahun || !params.periode || !params.mapel || !params.guru || !params.tanggal || !params.jenisPenilaian || !setupConfirmed) {
       showToast("error", "Data belum lengkap", "Selesaikan pilihan jenis penilaian, jenis ujian, dan periode.");
@@ -1513,46 +1625,38 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     }
 
     const rows = [...document.querySelectorAll("#nilaiSantriBody tr[data-nama]")];
-    const rowsToSave = rows.filter(row => [...row.querySelectorAll(".input-dinamis")].some(input => input.value !== ""));
+    const rowsToSave = rows.filter(row => {
+      const inputs = [...row.querySelectorAll(".input-dinamis")];
+      const dirty = inputs.some(input => input.dataset.dirty === "1");
+      const newWithValue = !row.dataset.recordKey && inputs.some(input => input.value !== "");
+      return dirty || newWithValue;
+    });
+
     if (!rowsToSave.length) {
-      showToast("error", "Belum ada nilai", "Isi minimal satu nilai santri sebelum menyimpan.");
+      showToast("info", "Tidak ada perubahan", "Nilai yang tampil sudah tersimpan. Silakan ubah atau isi nilai yang belum ada.");
       return;
     }
 
-    button.innerHTML = "⏳ Menyimpan Nilai...";
+    button.innerHTML = "⏳ Menyimpan...";
     button.disabled = true;
 
     try {
       const monthly = jenis === "Bulanan";
       const dbPath = monthly ? "cahaya_app/nilai_ujian_bulanan" : "cahaya_app/nilai_ujian";
-      const dateField = monthly ? "tanggal_ujian" : "tanggal";
-      const rangeStart = monthly ? `${String(params.tanggal).slice(0,7)}-01` : params.tanggal;
-      const rangeEnd = monthly ? `${String(params.tanggal).slice(0,7)}-31` : params.tanggal;
-      const snapshot = await get(query(ref(db, dbPath), orderByChild(dateField), startAt(rangeStart), endAt(rangeEnd), limitToLast(1500)));
-      const oldData = snapshot.val() || {};
+      const indexBase = scoreIndexPath(params);
       let count = 0;
+      let partialCount = 0;
 
       for (const row of rowsToSave) {
         const studentName = row.dataset.nama;
-        for (const [key, oldRecord] of Object.entries(oldData)) {
-          const sameStudent = String(oldRecord?.nama_santri || oldRecord?.namaSantri || oldRecord?.nama || "") === studentName;
-          const sameSubject = String(oldRecord?.mata_pelajaran || oldRecord?.mataPelajaran || oldRecord?.mapel || "") === params.mapel;
-          const oldAssessmentCode = String(oldRecord?.kode_penilaian || "").trim();
-          const sameAssessment = oldAssessmentCode ? oldAssessmentCode === params.kodePenilaian : true;
-          const samePeriod = monthly
-            ? oldRecord?.tahun_akademik === params.tahun && oldRecord?.bulan === params.bulan
-            : oldRecord?.tahun_akademik === params.tahun && String(oldRecord?.periode_ujian || oldRecord?.periode || "") === params.periode;
-          if (sameStudent && sameSubject && sameAssessment && samePeriod) {
-            await remove(ref(db, `${dbPath}/${key}`));
-            if (monthly) {
-              const oldWaliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-              if(oldWaliKey) await remove(ref(db,`cahaya_app/wali_index/${oldWaliKey}/nilai_bulanan/${key}`));
-            }
-          }
-        }
+        const className = row.dataset.kelas || params.kelas;
+        const studentKey = scoreStudentKey(studentName, className);
+        const existingItem = existingScoreRecords[studentKey] || {};
+        const oldData = { ...(existingItem.data || {}) };
+        let recordKey = row.dataset.recordKey || existingItem.recordKey || "";
 
-        const total = Number(row.querySelector(".total-pill").textContent) || 0;
         const finalData = {
+          ...oldData,
           jenis_ujian: jenis,
           jenis_penilaian: params.jenisPenilaian,
           kode_penilaian: params.kodePenilaian,
@@ -1561,45 +1665,76 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
           semester: params.semester,
           bulan: params.bulan,
           nama_santri: studentName,
-          kelas_kelompok: row.dataset.kelas || params.kelas,
-          kelas: row.dataset.kelas || params.kelas,
+          kelas_kelompok: className,
+          kelas: className,
           periode_ujian: params.periode,
           mata_pelajaran: params.mapel,
           materi_ujian: params.materi,
           guru_penguji: params.guru,
           tanggal: params.tanggal,
           tanggal_ujian: params.tanggal,
-          nilai: total,
-          nilai_total: total,
           komponen_aktif: activeComponents.map(component => component.nama),
           skema_bobot: activeComponents.reduce((acc, component) => { acc[component.nama] = component.bobot; return acc; }, {}),
           tahunAjaran: params.tahun,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         };
 
         activeComponents.forEach(component => {
           const input = row.querySelector(`.input-dinamis[data-id="${component.id}"]`);
-          finalData[`nilai_${component.id}`] = input && input.value !== "" ? Number(input.value) : 0;
+          const field = `nilai_${component.id}`;
+          if (!input) return;
+          if (input.dataset.dirty === "1") {
+            if (input.value === "") delete finalData[field];
+            else finalData[field] = Number(input.value);
+          } else if (!Object.prototype.hasOwnProperty.call(finalData, field) && input.value !== "") {
+            finalData[field] = Number(input.value);
+          }
           finalData[`bobot_${component.id}_persen`] = component.bobot;
         });
 
-        const savedRef = await push(ref(db, dbPath), finalData);
+        const filledComponents = activeComponents.filter(component => Object.prototype.hasOwnProperty.call(finalData, `nilai_${component.id}`));
+        const total = activeComponents.reduce((sum, component) => {
+          const field = `nilai_${component.id}`;
+          return sum + (Object.prototype.hasOwnProperty.call(finalData, field) ? Number(finalData[field] || 0) * (component.bobot / 100) : 0);
+        }, 0);
+        finalData.nilai = Number(total.toFixed(2));
+        finalData.nilai_total = Number(total.toFixed(2));
+        finalData.komponen_terisi = filledComponents.map(component => component.nama);
+        finalData.komponen_belum_terisi = activeComponents.filter(component => !Object.prototype.hasOwnProperty.call(finalData, `nilai_${component.id}`)).map(component => component.nama);
+        finalData.status_input = filledComponents.length === activeComponents.length ? "lengkap" : "parsial";
+        if (finalData.status_input === "parsial") partialCount++;
+
+        if (!recordKey) {
+          const savedRef = await push(ref(db, dbPath));
+          recordKey = savedRef.key;
+        }
+        await set(ref(db, `${dbPath}/${recordKey}`), finalData);
+
+        const indexData = { recordKey, dbPath, data: finalData, updatedAt: new Date().toISOString() };
+        await set(ref(db, `${indexBase}/${studentKey}`), indexData);
+        existingScoreRecords[studentKey] = indexData;
+        row.dataset.recordKey = recordKey;
+        row.dataset.recordPath = dbPath;
+        row.dataset.studentKey = studentKey;
+        row.querySelectorAll(".input-dinamis").forEach(input => { input.dataset.dirty = "0"; });
+
         if (monthly) {
           const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-          if(waliKey && savedRef.key) await pushIndexRecord(waliKey, savedRef.key, finalData);
+          if(waliKey && recordKey) await set(ref(db,`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordKey}`),finalData);
         }
         count++;
       }
 
-      showToast("success", "Nilai berhasil disimpan", `${count} data ujian ${jenis.toLowerCase()} telah tersimpan.`);
-      setTimeout(() => location.reload(), 1200);
+      showToast("success", "Nilai berhasil disimpan", partialCount ? `${count} data tersimpan. ${partialCount} masih parsial dan bisa dilanjutkan kapan saja.` : `${count} data tersimpan lengkap dan tetap dapat diedit.`);
+      button.innerHTML = "✅ Tersimpan — Tetap Bisa Diedit";
+      setTimeout(() => { if (document.body.contains(button)) button.innerHTML = "☁️ Simpan Nilai Ini Dulu"; }, 1800);
+      updateStats();
     } catch (error) {
       console.error("Gagal menyimpan nilai:", error);
       showToast("error", "Gagal menyimpan", error.message || "Terjadi kesalahan saat mengirim data ke Firebase.");
-      button.disabled = false;
     } finally {
       if (document.body.contains(button)) {
-        syncJenisUjian();
         const total = getKomponenAktif().reduce((sum, item) => sum + item.bobot, 0);
         button.disabled = !isWeightValid(total);
       }
