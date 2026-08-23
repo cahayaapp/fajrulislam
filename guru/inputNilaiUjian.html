@@ -1231,10 +1231,17 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     mapel.innerHTML=`<option value="${escapeHtml(value||'')}">${escapeHtml(value||'')}</option>`;
     mapel.value=value||'';
   }
+  function isDedicatedAssessmentSubject(subject=''){
+    const value=String(subject||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’'`]/g,'');
+    // Mapel yang sudah memiliki skema penilaian khusus tidak ditampilkan lagi pada pilihan Kitab.
+    return /bahasa\s*arab/.test(value) || /tahfiz|tahsin/.test(value) || /al\s*[- ]?qur|quran/.test(value);
+  }
   function kitabSubjectEntries(){
-    // Untuk dua skema Kitab, tampilkan SEMUA mata pelajaran yang ada pada jadwal guru.
-    // Skema bobot dipilih oleh guru; mata pelajaran tidak lagi difilter berdasarkan nama.
-    return Object.keys(teacherSubjectClasses).sort((a,b)=>a.localeCompare(b,'id'));
+    // Hanya mapel yang benar-benar diajar oleh guru aktif sesuai Jadwal Pelajaran.
+    // Al-Qur'an/Tahfiz/Tahsin dan Bahasa Arab dikeluarkan karena memiliki skema penilaian tersendiri.
+    return Object.keys(teacherSubjectClasses)
+      .filter(subject=>!isDedicatedAssessmentSubject(subject))
+      .sort((a,b)=>a.localeCompare(b,'id'));
   }
   function classesForActiveAssessment(){
     const config=activeAssessment(); if(!config)return[];
