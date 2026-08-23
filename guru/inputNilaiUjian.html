@@ -898,6 +898,11 @@
 .c53-weight-wrap{position:relative;z-index:1}.c53-continue{margin-top:16px;width:100%;height:48px;border:0;border-radius:15px;background:linear-gradient(135deg,#2878ff,#1557d5);color:#fff;font-weight:1000;cursor:pointer;box-shadow:0 11px 24px rgba(21,87,213,.21)}
 #scorePanel[hidden]{display:none!important}.c53-score-only{padding-top:0!important}.c53-score-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}.c53-score-title{font-weight:1000;color:#142b52;font-size:1rem}.c53-score-only .stats-grid,.c53-score-only .component-summary{display:none!important}.c53-score-only .section-head{display:none!important}.c53-score-only .tools-row{justify-content:flex-end}.c53-score-only .search-box{max-width:360px}.class-mini{display:inline-flex;margin-left:7px;padding:3px 7px;border-radius:999px;background:#edf5ff;color:#1557d5;font-size:.55rem;font-weight:950;vertical-align:middle}
 body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!important}
+.c74-assessment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.c74-assessment{min-height:96px;align-items:flex-start;text-align:left}
+.c74-assessment b{font-size:.92rem}
+.c74-assessment span{line-height:1.45}
+@media(max-width:720px){.c74-assessment-grid{grid-template-columns:1fr}.c74-assessment{min-height:82px}}
 @media(max-width:720px){.c53-scene-shell{min-height:260px}.c53-scene-card{padding:18px 15px!important}.c53-scene-nav{margin-bottom:16px}.c53-scene-copy h2{font-size:1rem}.c53-choice-grid{grid-template-columns:1fr}.c53-choice{padding:14px;min-height:76px}.c53-period-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.c53-period-btn{padding:11px 5px;font-size:.65rem}.c53-subject-grid{grid-template-columns:1fr}.c53-score-only{padding:12px!important}.c53-score-only .tools-row{margin-top:2px}.c53-score-only .search-box{max-width:none;width:100%}}
 </style>
 </head>
@@ -922,7 +927,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     <div class="hero-copy">
       <div class="hero-kicker">📊 Evaluasi Akademik 2026/2027</div>
       <h1>Input Nilai Ujian</h1>
-      <p>Pilih periode dan mata pelajaran sesuai jadwal Anda. KKM Pesantren ditetapkan 75.</p>
+      <p>Pilih jenis penilaian. Bobot sudah ditetapkan oleh pesantren sehingga guru tinggal memilih periode dan mengisi nilai.</p>
     </div>
 
     <div class="hero-user">
@@ -933,8 +938,25 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   </section>
 
   <section class="c53-scene-shell" id="examWizard">
-    <section class="panel-card c53-scene c53-scene-card active" id="sceneType" data-scene="type">
-      <div class="c53-scene-nav"><div class="c53-scene-copy"><small>Langkah 1 dari 4</small><h2>Pilih Jenis Ujian</h2><p>Satu pilihan per layar agar proses input lebih fokus.</p></div></div>
+    <section class="panel-card c53-scene c53-scene-card active" id="sceneAssessment" data-scene="assessment">
+      <div class="c53-scene-nav"><div class="c53-scene-copy"><small>Mulai dari sini</small><h2>Pilih Jenis Penilaian</h2><p>Bobot nilai sudah tetap. Pilih sesuai jenis pelajaran yang akan dinilai.</p></div></div>
+      <div class="c53-choice-grid c74-assessment-grid">
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('tahfiz')"><b>📖 Tahfiz Al-Qur’an</b><span>Lisan 80% • Tulisan 20%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('kitab_tanpa_praktek')"><b>📚 Kitab Tanpa Praktek</b><span>Lisan 40% • Tulisan 40% • Tashnif 20%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('kitab_dengan_praktek')"><b>🧭 Kitab Dengan Praktek</b><span>Lisan 30% • Tulisan 25% • Praktek 25% • Tashnif 20%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('bahasa_arab')"><b>🗣️ Bahasa Arab</b><span>Lisan 50% • Tulisan 50%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('tahsin_praktek')"><b>🎙️ Tahsin Praktek</b><span>Level 1 &amp; 3 • Praktek 100%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('tahsin_teori')"><b>✍️ Tahsin Teori</b><span>Level 2 • Lisan 50% • Tulisan 30% • Tashnif 20%</span></button>
+      </div>
+    </section>
+
+    <section class="panel-card c53-scene c53-scene-card" id="sceneSubject" data-scene="subject">
+      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="showExamScene('assessment',true)" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Mata pelajaran</small><h2>Pilih Pelajaran Kitab</h2><p>Hanya diperlukan untuk kategori pelajaran kitab. Pilihan mengikuti jadwal guru yang sedang login.</p></div></div>
+      <div class="c53-subject-grid" id="subjectButtonGrid"></div>
+    </section>
+
+    <section class="panel-card c53-scene c53-scene-card" id="sceneType" data-scene="type">
+      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="backFromExamType()" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Jenis ujian</small><h2>Pilih Jenis Ujian</h2><p>Pilih evaluasi bulanan, triwulan, atau semester.</p></div></div>
       <div class="c53-choice-grid">
         <button type="button" class="c53-choice" onclick="selectExamType('Bulanan')"><b>Bulanan</b><span>Evaluasi rutin setiap bulan.</span></button>
         <button type="button" class="c53-choice" onclick="selectExamType('Triwulan')"><b>Triwulan</b><span>Evaluasi tiap tiga bulan.</span></button>
@@ -943,30 +965,12 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     </section>
 
     <section class="panel-card c53-scene c53-scene-card" id="scenePeriod" data-scene="period">
-      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="showExamScene('type',true)" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Langkah 2 dari 4</small><h2 id="periodSceneTitle">Pilih Periode</h2><p id="periodSceneDesc">Pilih periode ujian yang akan diinput.</p></div></div>
+      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="showExamScene('type',true)" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Periode</small><h2 id="periodSceneTitle">Pilih Periode</h2><p id="periodSceneDesc">Setelah periode dipilih, daftar santri langsung dibuka.</p></div></div>
       <div class="c53-period-grid" id="periodButtonGrid"></div>
     </section>
 
-    <section class="panel-card c53-scene c53-scene-card" id="sceneSubject" data-scene="subject">
-      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="showExamScene('period',true)" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Langkah 3 dari 4</small><h2>Pilih Mata Pelajaran</h2><p>Hanya mata pelajaran yang ada pada jadwal Anda.</p></div></div>
-      <div class="c53-subject-grid" id="subjectButtonGrid"></div>
-    </section>
-
-    <section class="panel-card c53-scene c53-scene-card" id="sceneWeight" data-scene="weight">
-      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="showExamScene('subject',true)" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Langkah 4 dari 4</small><h2>Bobot Penilaian</h2><p>Aktifkan komponen yang digunakan. Total bobot harus 100%.</p></div></div>
-      <div class="c53-weight-wrap">
-        <div class="weight-head"><div></div><div class="weight-status" id="infoBobot">Total Bobot 100%</div></div>
-        <div class="weight-grid">
-          <label class="weight-item"><input class="weight-check" type="checkbox" id="chk_syafawi" value="Syafawi" checked onchange="refreshStrukturTabel()" /><span class="weight-name">Syafawi</span><span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_syafawi" value="60" class="weight-input" oninput="refreshStrukturTabel()" />%</span></label>
-          <label class="weight-item"><input class="weight-check" type="checkbox" id="chk_tahriri" value="Tahriri" checked onchange="refreshStrukturTabel()" /><span class="weight-name">Tahriri</span><span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_tahriri" value="15" class="weight-input" oninput="refreshStrukturTabel()" />%</span></label>
-          <label class="weight-item"><input class="weight-check" type="checkbox" id="chk_tashnif" value="Tashnif" checked onchange="refreshStrukturTabel()" /><span class="weight-name">Tasnif</span><span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_tashnif" value="25" class="weight-input" oninput="refreshStrukturTabel()" />%</span></label>
-          <label class="weight-item"><input class="weight-check" type="checkbox" id="chk_tathbiqi" value="Tathbiqi" onchange="refreshStrukturTabel()" /><span class="weight-name">Tathbiqi</span><span class="weight-number-wrap"><input type="number" min="0" max="100" id="bobot_tathbiqi" value="0" class="weight-input" oninput="refreshStrukturTabel()" />%</span></label>
-        </div>
-        <button type="button" class="c53-continue" onclick="confirmExamSetup()">Buka Daftar Santri →</button>
-      </div>
-    </section>
-
     <div hidden>
+      <input id="assessmentType" value="">
       <select id="periodChooser"><option value=""></option></select>
       <select id="mapel"><option value=""></option></select>
       <select id="tahunAkademik"></select>
@@ -990,7 +994,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         <div class="section-icon">✍️</div>
         <div>
           <h2>Nilai Santri</h2>
-          <p id="headerSubtitle">Syafawi 60% • Tahriri 15% • Tashnif 25%</p>
+          <p id="headerSubtitle">Pilih jenis penilaian untuk melihat bobot tetap.</p>
         </div>
       </div>
     </div>
@@ -1019,7 +1023,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         <span class="search-icon">🔎</span>
         <input type="search" id="searchSantri" placeholder="Cari nama santri..." oninput="filterSantri()" disabled />
       </div>
-      <div class="component-summary" id="componentSummary">Selesaikan pilihan ujian untuk mulai mengisi.</div>
+      <div class="component-summary" id="componentSummary">Bobot mengikuti jenis penilaian yang dipilih.</div>
     </div>
 
     <div class="table-wrap">
@@ -1029,7 +1033,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
             <tr id="tableHeaderRow"></tr>
           </thead>
           <tbody id="nilaiSantriBody">
-            <tr><td class="empty-state-cell" colspan="10">Pilih jenis ujian, periode, dan mata pelajaran terlebih dahulu.</td></tr>
+            <tr><td class="empty-state-cell" colspan="10">Pilih jenis penilaian dan periode terlebih dahulu.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1064,6 +1068,38 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   let teacherSubjectClasses = {};
   let setupConfirmed = false;
   let toastTimer = null;
+  let currentAssessmentKey = "";
+
+  const ASSESSMENT_TYPES = {
+    tahfiz: {
+      label: "Tahfiz Al-Qur’an", mapel: "Tahfiz Al-Qur’an", requiresSubject: false,
+      matchSubject: value => /tahfiz|al\s*[- ]?qur|qur[’'`]?an|quran/i.test(String(value||"")),
+      components: [{id:"syafawi",nama:"Lisan",bobot:80},{id:"tahriri",nama:"Tulisan",bobot:20}]
+    },
+    kitab_tanpa_praktek: {
+      label: "Pelajaran Kitab tanpa Praktek", requiresSubject: true,
+      components: [{id:"syafawi",nama:"Lisan",bobot:40},{id:"tahriri",nama:"Tulisan",bobot:40},{id:"tashnif",nama:"Tashnif",bobot:20}]
+    },
+    kitab_dengan_praktek: {
+      label: "Pelajaran Kitab dengan Praktek", requiresSubject: true,
+      components: [{id:"syafawi",nama:"Lisan",bobot:30},{id:"tahriri",nama:"Tulisan",bobot:25},{id:"tathbiqi",nama:"Praktek",bobot:25},{id:"tashnif",nama:"Tashnif",bobot:20}]
+    },
+    bahasa_arab: {
+      label: "Bahasa Arab", mapel: "Bahasa Arab", requiresSubject: false,
+      matchSubject: value => /bahasa\s*arab/i.test(String(value||"")),
+      components: [{id:"syafawi",nama:"Lisan",bobot:50},{id:"tahriri",nama:"Tulisan",bobot:50}]
+    },
+    tahsin_praktek: {
+      label: "Tahsin Praktek (Level 1 dan 3)", mapel: "Tahsin", requiresSubject: false,
+      matchSubject: value => /tahsin|al\s*[- ]?qur|qur[’'`]?an|quran/i.test(String(value||"")),
+      components: [{id:"tathbiqi",nama:"Praktek",bobot:100}]
+    },
+    tahsin_teori: {
+      label: "Tahsin Teori (Level 2)", mapel: "Tahsin", requiresSubject: false,
+      matchSubject: value => /tahsin|al\s*[- ]?qur|qur[’'`]?an|quran/i.test(String(value||"")),
+      components: [{id:"syafawi",nama:"Lisan",bobot:50},{id:"tahriri",nama:"Tulisan",bobot:30},{id:"tashnif",nama:"Tashnif",bobot:20}]
+    }
+  };
 
   const fallbackMapel = [
     "AQIDAH", "FIQIH", "ADAB", "SHIRAH", "HADITS", "NAHWU SHARAF",
@@ -1170,7 +1206,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     if(!teacherCodeAktif||!Object.keys(teacherSubjectClasses).length){mapel.disabled=true;showToast("error","Jadwal guru belum terdeteksi","Mata pelajaran hanya ditampilkan dari jadwal guru yang sedang login.");}
   }
 
-  const examSceneMap={type:'sceneType',period:'scenePeriod',subject:'sceneSubject',weight:'sceneWeight'};
+  const examSceneMap={assessment:'sceneAssessment',subject:'sceneSubject',type:'sceneType',period:'scenePeriod'};
   window.showExamScene=function(name,back=false){
     document.body.classList.remove('c53-score-focus');
     const target=document.getElementById(examSceneMap[name]||name); if(!target)return;
@@ -1178,6 +1214,52 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     target.classList.add('active'); if(back)target.classList.add('back');
     document.getElementById('scorePanel').hidden=true;
     target.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+
+  function activeAssessment(){ return ASSESSMENT_TYPES[currentAssessmentKey] || null; }
+  function resetExamPeriod(){
+    document.getElementById('jenisUjian').innerHTML='<option value=""></option>';
+    document.getElementById('periodChooser').innerHTML='<option value=""></option>';
+    document.getElementById('periodeUjian').value='';
+    document.getElementById('bulanUjian').innerHTML='<option value=""></option>';
+    setupConfirmed=false;
+  }
+  function setMapelValue(value){
+    const mapel=document.getElementById('mapel');
+    mapel.innerHTML=`<option value="${escapeHtml(value||'')}">${escapeHtml(value||'')}</option>`;
+    mapel.value=value||'';
+  }
+  function isKitabSubject(subject=''){
+    return /aqid|fiq|adab|shir|sirah|hadit|hadis|nahwu|sharaf|sorof|balagh|tafsir|ushul|faraidh|mantiq|tasawuf|akhlaq|kitab/i.test(String(subject||''));
+  }
+  function kitabSubjectEntries(){
+    const all=Object.keys(teacherSubjectClasses).sort((a,b)=>a.localeCompare(b,'id'));
+    const preferred=all.filter(isKitabSubject);
+    if(preferred.length) return preferred;
+    return all.filter(subject=>!/tahfiz|tahsin|al\s*[- ]?qur|qur[’'`]?an|quran|bahasa\s*arab|kewirausahaan|manajemen|matematika|ipa|ips|pkn|sejarah|informatika|olahraga|futsal|panahan|silat|bahasa\s*(indonesia|inggris)/i.test(subject));
+  }
+  function classesForActiveAssessment(){
+    const config=activeAssessment(); if(!config)return[];
+    if(config.requiresSubject){return teacherSubjectClasses[document.getElementById('mapel').value]||[];}
+    const classes=[];
+    Object.entries(teacherSubjectClasses).forEach(([subject,list])=>{
+      if(config.matchSubject && config.matchSubject(subject)) classes.push(...(list||[]));
+    });
+    return [...new Set(classes)].sort((a,b)=>a.localeCompare(b,'id',{numeric:true}));
+  }
+
+  window.selectAssessmentType=function(key){
+    const config=ASSESSMENT_TYPES[key]; if(!config)return;
+    currentAssessmentKey=key; document.getElementById('assessmentType').value=key; resetExamPeriod();
+    if(config.requiresSubject){
+      setMapelValue(''); renderSubjectButtons(); showExamScene('subject');
+    }else{
+      setMapelValue(config.mapel); refreshStrukturTabel(); showExamScene('type');
+    }
+  };
+  window.backFromExamType=function(){
+    const config=activeAssessment();
+    showExamScene(config?.requiresSubject?'subject':'assessment',true);
   };
   function renderPeriodButtons(type){
     const grid=document.getElementById('periodButtonGrid'),title=document.getElementById('periodSceneTitle'),items=[];
@@ -1189,13 +1271,21 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   }
   function renderSubjectButtons(){
     const grid=document.getElementById('subjectButtonGrid');
-    const entries=Object.keys(teacherSubjectClasses).sort((a,b)=>a.localeCompare(b,'id'));
-    grid.innerHTML=entries.length?entries.map(subject=>{const cls=teacherSubjectClasses[subject]||[];return `<button type="button" class="c53-subject-btn" data-subject="${escapeHtml(subject)}"><b>${escapeHtml(subject)}</b><span>${escapeHtml(cls.join(' • ')||'Kelas mengikuti jadwal')}</span></button>`}).join(''):'<div class="empty-state-cell">Mata pelajaran pada jadwal Anda belum ditemukan.</div>';
+    const entries=kitabSubjectEntries();
+    grid.innerHTML=entries.length?entries.map(subject=>{const cls=teacherSubjectClasses[subject]||[];return `<button type="button" class="c53-subject-btn" data-subject="${escapeHtml(subject)}"><b>${escapeHtml(subject)}</b><span>${escapeHtml(cls.join(' • ')||'Kelas mengikuti jadwal')}</span></button>`}).join(''):'<div class="empty-state-cell">Pelajaran kitab pada jadwal Anda belum ditemukan.</div>';
     grid.querySelectorAll('[data-subject]').forEach(btn=>btn.addEventListener('click',()=>selectExamSubject(btn.dataset.subject)));
   }
+  window.selectExamSubject=function(subject){
+    setMapelValue(subject); examSubjectChanged(); refreshStrukturTabel(); showExamScene('type');
+  };
+  window.examSubjectChanged=function(){
+    const classes=classesForActiveAssessment();
+    const info=document.getElementById('subjectClassInfo'); if(info)info.textContent=classes.length?`Kelas otomatis: ${classes.join(' • ')}`:'Belum ada kelas pada jadwal Anda.';
+    document.getElementById('scorePanel').hidden=true;setupConfirmed=false;
+  };
   window.selectExamType=function(type){
     document.getElementById('jenisUjian').innerHTML=`<option value="${type}">${type}</option>`;document.getElementById('jenisUjian').value=type;
-    document.getElementById('periodChooser').value='';document.getElementById('mapel').value='';setupConfirmed=false;
+    document.getElementById('periodChooser').value='';setupConfirmed=false;
     renderPeriodButtons(type);showExamScene('period');
   };
   window.selectExamPeriod=function(value){
@@ -1204,35 +1294,27 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     document.getElementById('periodeUjian').value=value;
     document.getElementById('bulanUjian').innerHTML=`<option value="${type==='Bulanan'?escapeHtml(value):''}">${type==='Bulanan'?escapeHtml(value):''}</option>`;
     if(type==='Semester')document.getElementById('semester').value=value.endsWith('1')?'Ganjil':'Genap';
-    renderSubjectButtons();showExamScene('subject');
-  };
-  window.selectExamSubject=function(subject){
-    const mapel=document.getElementById('mapel'); if(![...mapel.options].some(o=>o.value===subject))mapel.add(new Option(subject,subject)); mapel.value=subject;
-    examSubjectChanged();showExamScene('weight');
-  };
-  window.examSubjectChanged=function(){
-    const subject=document.getElementById('mapel').value,classes=teacherSubjectClasses[subject]||[];
-    const info=document.getElementById('subjectClassInfo'); if(info)info.textContent=classes.length?`Kelas otomatis: ${classes.join(' • ')}`:'Belum ada kelas pada jadwal Anda.';
-    document.getElementById('scorePanel').hidden=true;setupConfirmed=false;
+    confirmExamSetup();
   };
   function buildStudentsForSelectedSubject(){
-    const subject=document.getElementById("mapel").value, source=buildClassSource(), classes=teacherSubjectClasses[subject]||[], result=[];
+    const source=buildClassSource(), classes=classesForActiveAssessment(), result=[];
     classes.forEach(cls=>normalizeArray(source[cls]).forEach(name=>result.push({name,className:cls})));
-    const seen=new Set(); return result.filter(item=>{const key=`${item.className}|${item.name}`;if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>a.className.localeCompare(b.className,"id",{numeric:true})||a.name.localeCompare(b.name,"id"));
+    const seen=new Set(); return result.filter(item=>{const key=`${item.className}|${item.name}`;if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>a.className.localeCompare(b.className,'id',{numeric:true})||a.name.localeCompare(b.name,'id'));
   }
   window.confirmExamSetup=function(){
-    const jenis=document.getElementById("jenisUjian").value, period=document.getElementById("periodChooser").value, subject=document.getElementById("mapel").value, active=getKomponenAktif(), total=active.reduce((a,b)=>a+b.bobot,0);
-    if(!jenis||!period||!subject){showToast("error","Pilihan belum lengkap","Pilih jenis ujian, periode, dan mata pelajaran.");return}
-    if(!active.length||!isWeightValid(total)){showToast("error","Bobot belum valid","Total bobot penilaian harus tepat 100%.");return}
-    activeStudentList=buildStudentsForSelectedSubject(); if(!activeStudentList.length){showToast("error","Santri belum ditemukan","Tidak ada santri pada kelas yang terkait dengan mata pelajaran ini.");return}
+    const config=activeAssessment(), jenis=document.getElementById('jenisUjian').value, period=document.getElementById('periodChooser').value, subject=document.getElementById('mapel').value, active=getKomponenAktif(), total=active.reduce((a,b)=>a+b.bobot,0);
+    if(!config||!jenis||!period||!subject){showToast('error','Pilihan belum lengkap','Pilih jenis penilaian, jenis ujian, dan periode.');return}
+    if(!active.length||!isWeightValid(total)){showToast('error','Skema bobot bermasalah','Bobot tetap jenis penilaian harus berjumlah 100%.');return}
+    activeStudentList=buildStudentsForSelectedSubject();
+    if(!activeStudentList.length){showToast('error','Santri belum ditemukan',config.requiresSubject?'Tidak ada santri pada kelas yang terkait dengan mata pelajaran ini.':'Kelas untuk jenis penilaian ini belum ditemukan pada jadwal guru.');return}
     const classes=[...new Set(activeStudentList.map(x=>x.className))];
-    document.getElementById("kelasKelompok").innerHTML=`<option value="${classes.join(" | ")}">${classes.join(" | ")}</option>`;
-    document.getElementById("kelasKelompok").value=classes.join(" | ");
-    document.getElementById("materiUjian").value=`${jenis} ${period}`;
-    setupConfirmed=true; loadSantri(); document.getElementById('scorePanel').hidden=false; document.body.classList.add('c53-score-focus'); document.getElementById('scorePanel').scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('kelasKelompok').innerHTML=`<option value="${classes.join(' | ')}">${classes.join(' | ')}</option>`;
+    document.getElementById('kelasKelompok').value=classes.join(' | ');
+    document.getElementById('materiUjian').value=`${config.label} • ${jenis} ${period}`;
+    setupConfirmed=true; refreshStrukturTabel(); loadSantri(); document.getElementById('scorePanel').hidden=false; document.body.classList.add('c53-score-focus'); document.getElementById('scorePanel').scrollIntoView({behavior:'smooth',block:'start'});
   };
 
-  window.backToExamSetup=function(){document.body.classList.remove('c53-score-focus');document.getElementById('scorePanel').hidden=true;showExamScene('weight',true);};
+  window.backToExamSetup=function(){document.body.classList.remove('c53-score-focus');document.getElementById('scorePanel').hidden=true;showExamScene('period',true);};
 
   document.addEventListener("DOMContentLoaded", async () => {
     initPageData(); refreshStrukturTabel();
@@ -1247,12 +1329,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   });
 
   window.getKomponenAktif = function() {
-    return [
-      { id: "syafawi", nama: "Syafawi", isChecked: document.getElementById("chk_syafawi").checked, bobot: Number(document.getElementById("bobot_syafawi").value) || 0 },
-      { id: "tahriri", nama: "Tahriri", isChecked: document.getElementById("chk_tahriri").checked, bobot: Number(document.getElementById("bobot_tahriri").value) || 0 },
-      { id: "tashnif", nama: "Tasnif", isChecked: document.getElementById("chk_tashnif").checked, bobot: Number(document.getElementById("bobot_tashnif").value) || 0 },
-      { id: "tathbiqi", nama: "Tathbiqi", isChecked: document.getElementById("chk_tathbiqi").checked, bobot: Number(document.getElementById("bobot_tathbiqi").value) || 0 }
-    ].filter(component => component.isChecked);
+    const config=activeAssessment();
+    return config ? config.components.map(component=>({...component})) : [];
   };
 
   function isWeightValid(total) {
@@ -1262,17 +1340,13 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   window.refreshStrukturTabel = function() {
     const active = getKomponenAktif();
     const totalWeight = active.reduce((sum, item) => sum + item.bobot, 0);
-    const infoBox = document.getElementById("infoBobot");
     const saveButton = document.getElementById("btnSimpan");
     const valid = isWeightValid(totalWeight) && active.length > 0;
-
-    infoBox.textContent = valid ? `Total Bobot ${totalWeight}% ✓` : `Total Bobot ${totalWeight}% • Harus 100%`;
-    infoBox.classList.toggle("invalid", !valid);
     saveButton.disabled = !valid;
 
     const componentText = active.length
       ? active.map(item => `${item.nama} ${item.bobot}%`).join(" • ")
-      : "Belum ada komponen aktif";
+      : "Pilih jenis penilaian terlebih dahulu";
 
     document.getElementById("headerSubtitle").textContent = componentText;
     document.getElementById("componentSummary").textContent = componentText;
@@ -1413,6 +1487,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     const kkm = 75;
     const params = {
       jenis,
+      jenisPenilaian: activeAssessment()?.label || "",
+      kodePenilaian: currentAssessmentKey,
       kkm,
       tahun: document.getElementById("tahunAkademik").value,
       semester: document.getElementById("semester").value,
@@ -1431,8 +1507,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
       return;
     }
 
-    if (!params.tahun || !params.periode || !params.mapel || !params.guru || !params.tanggal || !setupConfirmed) {
-      showToast("error", "Data belum lengkap", "Selesaikan pilihan jenis ujian, periode, mata pelajaran, dan bobot penilaian.");
+    if (!params.tahun || !params.periode || !params.mapel || !params.guru || !params.tanggal || !params.jenisPenilaian || !setupConfirmed) {
+      showToast("error", "Data belum lengkap", "Selesaikan pilihan jenis penilaian, jenis ujian, dan periode.");
       return;
     }
 
@@ -1461,10 +1537,12 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         for (const [key, oldRecord] of Object.entries(oldData)) {
           const sameStudent = String(oldRecord?.nama_santri || oldRecord?.namaSantri || oldRecord?.nama || "") === studentName;
           const sameSubject = String(oldRecord?.mata_pelajaran || oldRecord?.mataPelajaran || oldRecord?.mapel || "") === params.mapel;
+          const oldAssessmentCode = String(oldRecord?.kode_penilaian || "").trim();
+          const sameAssessment = oldAssessmentCode ? oldAssessmentCode === params.kodePenilaian : true;
           const samePeriod = monthly
             ? oldRecord?.tahun_akademik === params.tahun && oldRecord?.bulan === params.bulan
             : oldRecord?.tahun_akademik === params.tahun && String(oldRecord?.periode_ujian || oldRecord?.periode || "") === params.periode;
-          if (sameStudent && sameSubject && samePeriod) {
+          if (sameStudent && sameSubject && sameAssessment && samePeriod) {
             await remove(ref(db, `${dbPath}/${key}`));
             if (monthly) {
               const oldWaliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -1476,6 +1554,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         const total = Number(row.querySelector(".total-pill").textContent) || 0;
         const finalData = {
           jenis_ujian: jenis,
+          jenis_penilaian: params.jenisPenilaian,
+          kode_penilaian: params.kodePenilaian,
           kkm: params.kkm,
           tahun_akademik: params.tahun,
           semester: params.semester,
@@ -1492,6 +1572,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
           nilai: total,
           nilai_total: total,
           komponen_aktif: activeComponents.map(component => component.nama),
+          skema_bobot: activeComponents.reduce((acc, component) => { acc[component.nama] = component.bobot; return acc; }, {}),
           tahunAjaran: params.tahun,
           timestamp: new Date().toISOString()
         };

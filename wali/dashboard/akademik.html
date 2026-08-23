@@ -853,9 +853,10 @@
     filtered.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
     filtered.forEach(ev => {
       let comps = '';
-      if(ev.nilai_syafawi !== undefined && ev.bobot_syafawi_persen > 0) comps += `<div class="comp-pill">Syafawi: <span>${ev.nilai_syafawi}</span></div>`;
-      if(ev.nilai_tahriri !== undefined && ev.bobot_tahriri_persen > 0) comps += `<div class="comp-pill">Tahriri: <span>${ev.nilai_tahriri}</span></div>`;
+      if(ev.nilai_syafawi !== undefined && ev.bobot_syafawi_persen > 0) comps += `<div class="comp-pill">Lisan: <span>${ev.nilai_syafawi}</span></div>`;
+      if(ev.nilai_tahriri !== undefined && ev.bobot_tahriri_persen > 0) comps += `<div class="comp-pill">Tulisan: <span>${ev.nilai_tahriri}</span></div>`;
       if(ev.nilai_tashnif !== undefined && ev.bobot_tashnif_persen > 0) comps += `<div class="comp-pill">Tashnif: <span>${ev.nilai_tashnif}</span></div>`;
+      if(ev.nilai_tathbiqi !== undefined && ev.bobot_tathbiqi_persen > 0) comps += `<div class="comp-pill">Praktek: <span>${ev.nilai_tathbiqi}</span></div>`;
 
       let score = parseFloat(ev.nilai_total) || 0;
       
@@ -1303,6 +1304,7 @@
           item.nilai_syafawi !== undefined ? teksPdf(item.nilai_syafawi) : "-",
           item.nilai_tahriri !== undefined ? teksPdf(item.nilai_tahriri) : "-",
           item.nilai_tashnif !== undefined ? teksPdf(item.nilai_tashnif) : "-",
+          item.nilai_tathbiqi !== undefined ? teksPdf(item.nilai_tathbiqi) : "-",
           score.toFixed(score % 1 ? 1 : 0),
           predikatNilai(score)
         ];
@@ -1315,17 +1317,18 @@
         margin: { left: 10, right: 10, top: 20, bottom: 18 },
         styles: { fontSize: 7.2, cellPadding: 1.9 },
         columnStyles: {
-          0: { cellWidth: 25 },
-          1: { cellWidth: 28 },
-          2: { cellWidth: 44 },
-          3: { cellWidth: 15, halign: "center" },
-          4: { cellWidth: 15, halign: "center" },
-          5: { cellWidth: 15, halign: "center" },
-          6: { cellWidth: 15, halign: "center", fontStyle: "bold" },
-          7: { cellWidth: 33, halign: "center" }
+          0: { cellWidth: 23 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 35 },
+          3: { cellWidth: 14, halign: "center" },
+          4: { cellWidth: 14, halign: "center" },
+          5: { cellWidth: 14, halign: "center" },
+          6: { cellWidth: 14, halign: "center" },
+          7: { cellWidth: 14, halign: "center", fontStyle: "bold" },
+          8: { cellWidth: 29, halign: "center" }
         }
       }),
-      head: [["Mata Pelajaran", "Guru", "Materi Ujian", "Syafawi", "Tahriri", "Tashnif", "Nilai", "Predikat"]],
+      head: [["Mata Pelajaran", "Guru", "Materi Ujian", "Lisan", "Tulisan", "Tashnif", "Praktek", "Nilai", "Predikat"]],
       body: rows
     });
 
