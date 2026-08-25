@@ -2279,7 +2279,7 @@
         </div>
         <div class="sp-form-card" id="spFormCard">
           <div class="sp-form-grid">
-            <div class="form-group"><label class="form-label" for="spStudent">Nama Santri</label><select class="form-control" id="spStudent"><option value="">Pilih santri</option></select></div>
+            <div class="form-group"><label class="form-label" for="spStudent">Nama Santri</label><input class="form-control" id="spStudent" list="spStudentList" placeholder="Ketik atau pilih nama santri..." autocomplete="off"><datalist id="spStudentList"></datalist></div>
             <div class="form-group"><label class="form-label" for="spType">Jenis SP</label><select class="form-control" id="spType"><option value="1">SP 1</option><option value="2">SP 2</option></select></div>
             <div class="form-group wide"><label class="form-label" for="spDescription">Deskripsi Pelanggaran</label><textarea class="form-control" id="spDescription" rows="4" placeholder="Jelaskan pelanggaran yang menjadi dasar pemberian SP..."></textarea></div>
             <div class="form-group wide"><label class="form-label" for="spPhoto">Foto SP</label><input class="form-control" type="file" id="spPhoto" accept="image/*"></div>
@@ -2607,24 +2607,36 @@
       const names = new Set();
       const displayNames = new Map();
 
+      function addStudentName(rawName) {
+        const clean = String(rawName || "").replace(/^\s*\d+\s*[.):-]\s*/, "").trim();
+        if (!clean) return;
+        const key = normalizeText(clean);
+        if (!key) return;
+        names.add(key);
+        if (!displayNames.has(key)) displayNames.set(key, clean);
+      }
+
       function deepScan(value) {
+        if (typeof value === "string") {
+          addStudentName(value);
+          return;
+        }
+        if (Array.isArray(value)) {
+          value.forEach(deepScan);
+          return;
+        }
         if (!value || typeof value !== "object") return;
 
-        if (
-          typeof value.nama === "string" &&
-          value.nama.trim()
-        ) {
-          names.add(normalizeText(value.nama));
-          if (!displayNames.has(normalizeText(value.nama))) displayNames.set(normalizeText(value.nama), value.nama.trim());
-        }
+        const directName = value.nama || value.namaSantri || value.label;
+        if (typeof directName === "string") addStudentName(directName);
 
         Object.values(value).forEach(child => {
-          if (child && typeof child === "object") {
-            deepScan(child);
-          }
+          if (child && (typeof child === "object" || typeof child === "string")) deepScan(child);
         });
       }
 
+      // Ambil nama dari dua sumber agar form SP tetap berfungsi walau format master berubah.
+      Object.values(masterUsrah || {}).forEach(list => normalizeList(list).forEach(addStudentName));
       deepScan(masterStudentData);
 
       validStudents = names.size ? names : null;
@@ -4859,11 +4871,12 @@
 
 
     function renderSpStudentOptions() {
-      const select = document.getElementById("spStudent");
-      if (!select) return;
-      const current = select.value;
-      select.innerHTML = '<option value="">Pilih santri</option>' + studentDisplayNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
-      if ([...select.options].some(o => o.value === current)) select.value = current;
+      const input = document.getElementById("spStudent");
+      const list = document.getElementById("spStudentList");
+      if (!input || !list) return;
+      const current = input.value;
+      list.innerHTML = studentDisplayNames.map(name => `<option value="${escapeHtml(name)}"></option>`).join("");
+      input.value = current;
     }
 
     function toggleSpForm(show) {
@@ -4908,7 +4921,8 @@
       const jenisSP = Number(document.getElementById("spType").value || 1);
       const deskripsiPelanggaran = document.getElementById("spDescription").value.trim();
       const file = document.getElementById("spPhoto").files?.[0] || null;
-      if (!namaSantri) return showToast("warning", "Data belum lengkap", "Pilih nama santri terlebih dahulu.");
+      if (!namaSantri) return showToast("warning", "Data belum lengkap", "Ketik atau pilih nama santri terlebih dahulu.");
+      if (!isValidStudent(namaSantri)) return showToast("warning", "Nama santri tidak ditemukan", "Pilih nama santri yang terdaftar pada database santri.");
       if (!deskripsiPelanggaran) return showToast("warning", "Data belum lengkap", "Deskripsi pelanggaran wajib diisi.");
       if (![1,2].includes(jenisSP)) return showToast("warning", "Jenis SP", "Jenis SP tidak valid.");
       button.disabled = true; button.textContent = "Menyimpan...";

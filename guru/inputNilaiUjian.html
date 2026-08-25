@@ -606,6 +606,28 @@
       box-shadow: none;
     }
 
+    .final-button {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid #f2bf73;
+      border-radius: 15px;
+      background: linear-gradient(135deg,#fff8eb,#fff1d2);
+      color: #9a5a00;
+      font-family: inherit;
+      font-size: .88rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+    .final-button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 22px rgba(192,119,12,.14)}
+    .final-button:disabled{opacity:.55;cursor:not-allowed;box-shadow:none;transform:none}
+    .final-lock-note{margin-top:8px;text-align:center;color:#a05d00;font-size:11px;font-weight:800;line-height:1.45}
+
     #loadingOverlay {
       position: fixed;
       inset: 0;
@@ -1044,13 +1066,17 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
       <button class="save-button" id="btnSimpan" onclick="simpanNilaiUjian()">
         ☁️ Simpan Nilai Ini Dulu
       </button>
+      <button class="final-button" id="btnFinal" onclick="kirimNilaiFinal()">
+        🔒 KIRIM NILAI FINAL (Tidak Bisa Diedit Lagi)
+      </button>
+      <div class="final-lock-note" id="finalLockNote">Gunakan tombol final hanya setelah seluruh komponen nilai selesai diinput.</div>
     </div>
   </section>
 </main>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, get, remove, set, query, orderByChild, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, get, remove, set, update, query, orderByChild, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
@@ -1071,6 +1097,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   let toastTimer = null;
   let currentAssessmentKey = "";
   let existingScoreRecords = {};
+  let currentSessionFinal = false;
 
   const ASSESSMENT_TYPES = {
     tahfiz: {
@@ -1225,6 +1252,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     document.getElementById('periodeUjian').value='';
     document.getElementById('bulanUjian').innerHTML='<option value=""></option>';
     setupConfirmed=false;
+    currentSessionFinal=false;
   }
   function setMapelValue(value){
     const mapel=document.getElementById('mapel');
@@ -1324,6 +1352,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 
   document.addEventListener("DOMContentLoaded", async () => {
     initPageData(); refreshStrukturTabel();
+    const searchInput=document.getElementById("searchSantri");
+    if(searchInput) searchInput.addEventListener("input", window.filterSantri);
     try{
       const [masterSnap,scheduleSnap]=await Promise.all([get(ref(db,"cahaya_app/master_akademik")).catch(()=>null),get(ref(db,"cahaya_app/jadwal_pelajaran")).catch(()=>null)]);
       masterDataAkademik=masterSnap?.exists?.()?masterSnap.val():{};
@@ -1392,6 +1422,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     document.getElementById("nilaiSantriBody").innerHTML =
       `<tr><td class="empty-state-cell" colspan="10">${escapeHtml(message)}</td></tr>`;
     document.getElementById("searchSantri").disabled = true;
+    const finalButton = document.getElementById("btnFinal");
+    if (finalButton) finalButton.disabled = true;
   }
 
   window.loadSantri = function() {
@@ -1401,11 +1433,22 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     tbody.innerHTML=activeStudentList.map((item,index)=>{
       const name=item.name||item, className=item.className||"", displayName=cleanStudentDisplayName(name);
       const componentCells=activeComponents.map(component=>`<td class="score-cell" data-label="${escapeHtml(component.nama)}"><input type="number" inputmode="decimal" min="0" max="100" step="0.1" class="score-input input-dinamis" data-id="${component.id}" data-bobot="${component.bobot}" aria-label="Nilai ${escapeHtml(component.nama)} ${escapeHtml(displayName)}" oninput="markScoreDirty(this);hitungTotal(this)" placeholder="0" /></td>`).join("");
-      return `<tr data-nama="${escapeHtml(name)}" data-kelas="${escapeHtml(className)}" data-search="${escapeHtml((displayName+" "+className).toLowerCase())}"><td class="student-no">${index+1}</td><td class="student-name">${escapeHtml(displayName)}<span class="class-mini">${escapeHtml(className)}</span></td>${componentCells}<td class="nilai-total" data-label="Nilai Total"><span class="total-pill">0</span></td></tr>`;
+      return `<tr data-nama="${escapeHtml(name)}" data-kelas="${escapeHtml(className)}" data-search="${escapeHtml(normalizeSearchText(displayName+" "+className))}"><td class="student-no">${index+1}</td><td class="student-name">${escapeHtml(displayName)}<span class="class-mini">${escapeHtml(className)}</span></td>${componentCells}<td class="nilai-total" data-label="Nilai Total"><span class="total-pill">0</span></td></tr>`;
     }).join("");
-    document.getElementById("searchSantri").disabled=false; document.getElementById("searchSantri").value=""; updateStats();
+    const search=document.getElementById("searchSantri"); search.disabled=false; search.value="";
+    const finalButton=document.getElementById("btnFinal"); if(finalButton) finalButton.disabled=false;
+    updateStats();
   };
 
+
+  function normalizeSearchText(value = "") {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
   function stableKey(value = "") {
     const text = String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -1438,6 +1481,10 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 
   function scoreIndexPath(params = currentExamParams()) {
     return `cahaya_app/nilai_input_index/${scoreSessionKey(params)}`;
+  }
+
+  function scoreFinalPath(params = currentExamParams()) {
+    return `cahaya_app/nilai_input_final/${scoreSessionKey(params)}`;
   }
 
   function recordMatchesSession(record, params) {
@@ -1518,14 +1565,39 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         if (anyFilled) loadedCount++;
         recalcScoreRow(row);
       });
+      const finalSnap = await get(ref(db, scoreFinalPath(params))).catch(()=>null);
+      currentSessionFinal = Boolean(finalSnap?.exists?.() && finalSnap.val()?.status === "FINAL");
+      if (!currentSessionFinal) {
+        const populated = Object.values(existingScoreRecords).filter(item=>item?.data);
+        currentSessionFinal = populated.length >= activeStudentList.length && populated.every(item => String(item.data.status_nilai || "").toUpperCase() === "FINAL");
+      }
+      applyFinalState();
       updateStats();
-      if (loadedCount) showToast("success", "Nilai sebelumnya dimuat", `${loadedCount} data santri sudah terisi dan dapat dilanjutkan atau diedit.`);
+      if (currentSessionFinal) showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
+      else if (loadedCount) showToast("success", "Nilai sebelumnya dimuat", `${loadedCount} data santri sudah terisi dan dapat dilanjutkan atau diedit.`);
     } catch (error) {
       console.warn("Nilai sebelumnya belum dapat dimuat:", error);
     }
   }
 
+  function applyFinalState() {
+    const saveButton = document.getElementById("btnSimpan");
+    const finalButton = document.getElementById("btnFinal");
+    const note = document.getElementById("finalLockNote");
+    document.querySelectorAll("#nilaiSantriBody .input-dinamis").forEach(input => { input.disabled = currentSessionFinal; });
+    if (saveButton) {
+      saveButton.disabled = currentSessionFinal || !isWeightValid(getKomponenAktif().reduce((sum,item)=>sum+item.bobot,0));
+      saveButton.innerHTML = currentSessionFinal ? "🔒 Nilai Sudah FINAL" : "☁️ Simpan Nilai Ini Dulu";
+    }
+    if (finalButton) {
+      finalButton.disabled = currentSessionFinal;
+      finalButton.innerHTML = currentSessionFinal ? "✅ NILAI FINAL — TERKUNCI" : "🔒 KIRIM NILAI FINAL (Tidak Bisa Diedit Lagi)";
+    }
+    if (note) note.textContent = currentSessionFinal ? "Nilai telah dikirim final dan dikunci." : "Gunakan tombol final hanya setelah seluruh komponen nilai selesai diinput.";
+  }
+
   window.markScoreDirty = function(input) {
+    if (currentSessionFinal) return;
     if (input) input.dataset.dirty = "1";
   };
 
@@ -1565,9 +1637,13 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   };
 
   window.filterSantri = function() {
-    const query = document.getElementById("searchSantri").value.trim().toLowerCase();
+    const input = document.getElementById("searchSantri");
+    const keyword = normalizeSearchText(input?.value || "");
     document.querySelectorAll("#nilaiSantriBody tr[data-nama]").forEach(row => {
-      row.hidden = Boolean(query) && !String(row.dataset.search || "").includes(query);
+      const haystack = normalizeSearchText(`${row.dataset.nama || ""} ${row.dataset.kelas || ""} ${row.textContent || ""}`);
+      const visible = !keyword || haystack.includes(keyword);
+      row.hidden = !visible;
+      row.style.display = visible ? "" : "none";
     });
   };
 
@@ -1598,14 +1674,18 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
       .find(input => !validateScore(input));
   }
 
-  window.simpanNilaiUjian = async function() {
+  window.simpanNilaiUjian = async function(options = {}) {
     const button = document.getElementById("btnSimpan");
+    if (currentSessionFinal) {
+      if (!options.silent) showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
+      return false;
+    }
     const activeComponents = getKomponenAktif();
     const totalWeight = activeComponents.reduce((sum, item) => sum + item.bobot, 0);
 
     if (!isWeightValid(totalWeight) || !activeComponents.length) {
       showToast("error", "Bobot belum valid", "Total bobot komponen harus tepat 100%.");
-      return;
+      return false;
     }
 
     const invalidInput = findInvalidScore();
@@ -1613,7 +1693,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
       showToast("error", "Nilai tidak valid", "Nilai hanya dapat diisi dari 0 sampai 100.");
       invalidInput.scrollIntoView({ behavior: "smooth", block: "center" });
       invalidInput.focus();
-      return;
+      return false;
     }
 
     const jenis = document.getElementById("jenisUjian").value || "Bulanan";
@@ -1628,7 +1708,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 
     if (!params.tahun || !params.periode || !params.mapel || !params.guru || !params.tanggal || !params.jenisPenilaian || !setupConfirmed) {
       showToast("error", "Data belum lengkap", "Selesaikan pilihan jenis penilaian, jenis ujian, dan periode.");
-      return;
+      return false;
     }
 
     const rows = [...document.querySelectorAll("#nilaiSantriBody tr[data-nama]")];
@@ -1640,8 +1720,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     });
 
     if (!rowsToSave.length) {
-      showToast("info", "Tidak ada perubahan", "Nilai yang tampil sudah tersimpan. Silakan ubah atau isi nilai yang belum ada.");
-      return;
+      if (!options.silent) showToast("info", "Tidak ada perubahan", "Nilai yang tampil sudah tersimpan. Silakan ubah atau isi nilai yang belum ada.");
+      return true;
     }
 
     button.innerHTML = "⏳ Menyimpan...";
@@ -1733,18 +1813,99 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         count++;
       }
 
-      showToast("success", "Nilai berhasil disimpan", partialCount ? `${count} data tersimpan. ${partialCount} masih parsial dan bisa dilanjutkan kapan saja.` : `${count} data tersimpan lengkap dan tetap dapat diedit.`);
+      if (!options.silent) showToast("success", "Nilai berhasil disimpan", partialCount ? `${count} data tersimpan. ${partialCount} masih parsial dan bisa dilanjutkan kapan saja.` : `${count} data tersimpan lengkap dan tetap dapat diedit.`);
       button.innerHTML = "✅ Tersimpan — Tetap Bisa Diedit";
-      setTimeout(() => { if (document.body.contains(button)) button.innerHTML = "☁️ Simpan Nilai Ini Dulu"; }, 1800);
+      setTimeout(() => { if (document.body.contains(button) && !currentSessionFinal) button.innerHTML = "☁️ Simpan Nilai Ini Dulu"; }, 1800);
       updateStats();
+      return true;
     } catch (error) {
       console.error("Gagal menyimpan nilai:", error);
       showToast("error", "Gagal menyimpan", error.message || "Terjadi kesalahan saat mengirim data ke Firebase.");
+      return false;
     } finally {
       if (document.body.contains(button)) {
         const total = getKomponenAktif().reduce((sum, item) => sum + item.bobot, 0);
-        button.disabled = !isWeightValid(total);
+        button.disabled = currentSessionFinal || !isWeightValid(total);
       }
+    }
+  };
+
+  window.kirimNilaiFinal = async function() {
+    if (currentSessionFinal) {
+      showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
+      return;
+    }
+    const rows = [...document.querySelectorAll("#nilaiSantriBody tr[data-nama]")];
+    if (!rows.length) {
+      showToast("error", "Belum ada data", "Tampilkan daftar santri terlebih dahulu.");
+      return;
+    }
+    const incomplete = rows.find(row => [...row.querySelectorAll(".input-dinamis")].some(input => input.value === ""));
+    if (incomplete) {
+      incomplete.scrollIntoView({behavior:"smooth",block:"center"});
+      showToast("error", "Nilai belum lengkap", `Lengkapi seluruh komponen nilai ${cleanStudentDisplayName(incomplete.dataset.nama || "santri")} sebelum dikirim final.`);
+      return;
+    }
+    const invalidInput = findInvalidScore();
+    if (invalidInput) {
+      showToast("error", "Nilai tidak valid", "Nilai hanya dapat diisi dari 0 sampai 100.");
+      invalidInput.focus();
+      return;
+    }
+    const ok = window.confirm("Kirim NILAI FINAL? Setelah dikirim, nilai pada pelajaran dan periode ini tidak dapat diedit lagi dari CAHAYA App.");
+    if (!ok) return;
+
+    const finalButton = document.getElementById("btnFinal");
+    finalButton.disabled = true;
+    finalButton.innerHTML = "⏳ Mengirim nilai final...";
+    const saved = await window.simpanNilaiUjian({silent:true});
+    if (!saved) {
+      finalButton.disabled = false;
+      finalButton.innerHTML = "🔒 KIRIM NILAI FINAL (Tidak Bisa Diedit Lagi)";
+      return;
+    }
+
+    try {
+      const params = currentExamParams();
+      const monthly = params.jenis === "Bulanan";
+      const nowIso = new Date().toISOString();
+      const finalBy = getActiveUserName();
+      const updates = {};
+      const nextIndexRecords = {};
+      for (const row of rows) {
+        const studentKey = scoreStudentKey(row.dataset.nama, row.dataset.kelas || "");
+        let item = existingScoreRecords[studentKey];
+        if (!item) {
+          item = Object.values(existingScoreRecords).find(candidate => String(candidate?.data?.nama_santri || "") === String(row.dataset.nama || ""));
+        }
+        if (!item?.recordKey || !item?.dbPath || !item?.data) throw new Error(`Data ${row.dataset.nama || "santri"} belum tersimpan.`);
+        const finalData = {...item.data, status_nilai:"FINAL", status_input:"lengkap", locked:true, final_at:nowIso, final_by:finalBy, updated_at:nowIso};
+        const indexData = {...item, data:finalData, updatedAt:nowIso, status:"FINAL"};
+        updates[`${item.dbPath}/${item.recordKey}`] = finalData;
+        updates[`${scoreIndexPath(params)}/${studentKey}`] = indexData;
+        nextIndexRecords[studentKey] = indexData;
+        if (monthly) {
+          const waliKey = String(row.dataset.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${item.recordKey}`] = finalData;
+        }
+      }
+      updates[scoreFinalPath(params)] = {
+        status:"FINAL", locked:true, finalAt:nowIso, finalBy,
+        jenisPenilaian:params.jenisPenilaian, kodePenilaian:params.kodePenilaian,
+        jenisUjian:params.jenis, periode:params.periode, mapel:params.mapel,
+        tahunAkademik:params.tahun, guru:params.guru, jumlahSantri:rows.length
+      };
+      // Satu multi-location update: seluruh nilai menjadi FINAL sekaligus atau gagal sekaligus.
+      await update(ref(db), updates);
+      Object.assign(existingScoreRecords, nextIndexRecords);
+      currentSessionFinal = true;
+      applyFinalState();
+      showToast("success", "Nilai FINAL terkirim", `${rows.length} nilai santri telah dikunci. Nilai tidak dapat diedit lagi dari CAHAYA App.`);
+    } catch (error) {
+      console.error("Gagal finalisasi nilai:", error);
+      finalButton.disabled = false;
+      finalButton.innerHTML = "🔒 KIRIM NILAI FINAL (Tidak Bisa Diedit Lagi)";
+      showToast("error", "Gagal mengirim nilai final", error.message || "Nilai belum berhasil dikunci.");
     }
   };
 </script>
