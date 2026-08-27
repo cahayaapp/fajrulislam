@@ -1,0 +1,60 @@
+<!DOCTYPE html><html lang="id"><head>
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Buku Tamu • CAHAYA APP</title><style>
+:root{--blue:#2878ff;--blue2:#1557d5;--gold:#f2b632;--ink:#15213f;--muted:#70809f;--line:#e4eaf4;--green:#1eb980;--red:#e95464;--putri:#be6ed1}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,"Nunito",Arial,sans-serif;color:var(--ink);background:#f4f7fb}body{padding:18px}
+.page{max-width:690px;margin:0 auto}.brand{display:flex;align-items:center;gap:12px;margin:4px 0 18px}.brand img{width:50px;height:50px;object-fit:contain}.brand b{display:block;font-size:18px}.brand span{font-size:12px;color:var(--muted)}
+.hero{padding:22px;border-radius:24px;background:linear-gradient(135deg,#fff,#f7fbff);border:1px solid #dfe8f6;box-shadow:0 16px 50px rgba(44,80,140,.10);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-70px;top:-75px;background:rgba(40,120,255,.07)}
+.unit{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;font-weight:800;font-size:12px;background:#eaf3ff;color:#1557d5}.unit.putri{background:#f8eafa;color:#9b46af}.hero h1{margin:13px 0 6px;font-size:28px;line-height:1.1}.hero p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}
+.card{margin-top:14px;padding:20px;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 10px 34px rgba(31,60,108,.07)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}label{font-size:12px;font-weight:800;color:#34415e}.req{color:#e95464}input,select,textarea{width:100%;border:1px solid #d9e1ee;border-radius:14px;padding:13px 14px;background:#fbfdff;color:#14213f;outline:0;font:inherit;font-size:14px}input:focus,select:focus,textarea:focus{border-color:#4c8ef7;box-shadow:0 0 0 4px rgba(40,120,255,.09);background:#fff}textarea{resize:vertical;min-height:94px}
+.hint{font-size:11px;color:#8995aa;line-height:1.45}.notice{padding:12px 14px;border-radius:14px;background:#fff9e9;border:1px solid #f5dd97;color:#7b5b13;font-size:12px;line-height:1.5;margin-bottom:14px}.btn{width:100%;border:0;border-radius:15px;padding:15px 18px;font-weight:900;font-size:14px;cursor:pointer;background:linear-gradient(135deg,var(--blue2),var(--blue));color:white;box-shadow:0 12px 24px rgba(40,120,255,.22)}.btn:disabled{opacity:.55;cursor:not-allowed}.success{display:none;text-align:center;padding:28px}.success .ico{width:64px;height:64px;border-radius:20px;margin:0 auto 14px;display:grid;place-items:center;font-size:28px;background:#e9fbf4;color:#129565}.success h2{margin:0 0 8px}.code{display:inline-block;margin:10px 0;padding:9px 14px;border-radius:12px;background:#f1f5fb;font-weight:900;letter-spacing:.4px}.errorBox{display:none;margin-bottom:14px;padding:12px 14px;border-radius:13px;background:#fff0f1;border:1px solid #fac5ca;color:#b73746;font-size:12px;font-weight:700}.footer{text-align:center;color:#8b97aa;font-size:11px;padding:18px}
+@media(max-width:600px){body{padding:12px}.hero,.card{border-radius:19px;padding:17px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.hero h1{font-size:23px}}
+</style></head><body>
+<div class="page"><div class="brand"><img src="../logofi.png"><div><b>CAHAYA APP</b><span>Pesantren Cahaya Fajrul Islam</span></div></div>
+<section class="hero"><span id="unitBadge" class="unit">📍 Pondok</span><h1>📒 Buku Tamu Digital</h1><p>Silakan isi data kunjungan. Unit pondok ditentukan otomatis dari QR yang Anda scan.</p></section>
+<section class="card" id="formCard"><div class="notice">🔐 Pastikan QR yang dipindai berada di lokasi resmi Pesantren Cahaya Fajrul Islam.</div><div id="err" class="errorBox"></div>
+<form id="guestForm"><div class="grid">
+<div class="field"><label>Nama Lengkap <span class="req">*</span></label><input id="nama" required autocomplete="name" placeholder="Nama tamu"></div>
+<div class="field"><label>No. WhatsApp <span class="req">*</span></label><input id="hp" required inputmode="tel" placeholder="08xxxxxxxxxx"></div>
+<div class="field full"><label>Asal / Instansi <span class="req">*</span></label><input id="asal" required placeholder="Keluarga / instansi / daerah asal"></div>
+<div class="field"><label>Keperluan <span class="req">*</span></label><select id="keperluan" required><option value="">Pilih keperluan</option><option>Menjenguk Santri</option><option>Mengantar / Menjemput Santri</option><option>Bertemu Pengurus</option><option>Keperluan Administrasi</option><option>Kunjungan / Silaturahmi</option><option>Lainnya</option></select></div>
+<div class="field"><label>Jumlah Tamu <span class="req">*</span></label><input id="jumlah" required type="number" min="1" max="50" value="1"></div>
+<div class="field full"><label>Santri / Pihak yang Dituju</label><input id="tujuan" list="santriList" placeholder="Ketik nama santri atau pihak yang ditemui"><datalist id="santriList"></datalist><div class="hint">Daftar santri otomatis menyesuaikan Pondok Putra/Putri.</div></div>
+<div class="field"><label>Hubungan dengan Santri</label><select id="hubungan"><option value="">— Jika relevan —</option><option>Ayah / Ibu</option><option>Saudara</option><option>Keluarga</option><option>Wali</option><option>Lainnya</option></select></div>
+<div class="field"><label>Kendaraan</label><input id="kendaraan" placeholder="Contoh: Motor / Mobil / B 1234 CD"></div>
+<div class="field full"><label>Catatan</label><textarea id="catatan" placeholder="Keterangan tambahan jika diperlukan"></textarea></div>
+</div><button id="submitBtn" class="btn" type="submit">✓ KIRIM DATA KUNJUNGAN</button></form></section>
+<section id="success" class="card success"><div class="ico">✓</div><h2>Terima kasih</h2><p>Data kunjungan Anda sudah tercatat.</p><div id="successCode" class="code"></div><p class="hint">Silakan tunjukkan halaman ini kepada petugas bila diminta.</p></section><div class="footer">CAHAYA APP • Buku Tamu Digital</div></div>
+<script type="module">
+const TOKEN_MAP={"tamu-putra": "CT-PUTRA-78-A71F", "tamu-putri": "CT-PUTRI-78-C39D", "titipan-putra": "CB-PUTRA-78-E52K", "titipan-putri": "CB-PUTRI-78-H84M"};
+const params=new URLSearchParams(location.search); const unit=(params.get('unit')||'').toLowerCase(); const token=params.get('token')||'';
+function validToken(kind){return ['putra','putri'].includes(unit)&&TOKEN_MAP[`${kind}-${unit}`]===token}
+function unitLabel(){return unit==='putri'?'Pondok Putri':'Pondok Putra'}
+function santriByUnit(){
+ const groups=window.CAHAYA_MASTER_DATA?.santriByClass||{}; const out=[];
+ Object.entries(groups).forEach(([kelas,names])=>{
+   const lower=kelas.toLowerCase(); const isAsramaClass=lower.startsWith('kelas '); const match=isAsramaClass && (unit==='putri'?lower.includes('putri'):lower.includes('putra'));
+   if(!match)return; (Array.isArray(names)?names:[]).forEach(n=>out.push({nama:String(n),kelas}));
+ });
+ const m=new Map(); out.forEach(x=>{const k=x.nama.trim().toUpperCase(); if(!m.has(k))m.set(k,x)}); return [...m.values()].sort((a,b)=>a.nama.localeCompare(b.nama));
+}
+function fillSantriDatalist(id){const el=document.getElementById(id); if(!el)return; el.innerHTML=santriByUnit().map(x=>`<option value="${x.nama.replace(/"/g,'&quot;')}">${x.kelas}</option>`).join('')}
+function inferKelas(name){const q=String(name||'').trim().toUpperCase(); return santriByUnit().find(x=>x.nama.trim().toUpperCase()===q)?.kelas||''}
+function makeCode(prefix){const d=new Date(); const y=String(d.getFullYear()).slice(-2),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${prefix}-${unit==='putri'?'W':'P'}-${y}${m}${day}-${Math.random().toString(36).slice(2,6).toUpperCase()}`}
+function monthKey(){const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'; import {getDatabase,ref,push,set,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+const badge=document.getElementById('unitBadge'); badge.textContent='📍 '+unitLabel(); badge.classList.toggle('putri',unit==='putri'); fillSantriDatalist('santriList');
+if(!validToken('tamu')){document.getElementById('formCard').innerHTML='<div class="success" style="display:block"><div class="ico" style="background:#fff0f1;color:#b73746">!</div><h2>QR tidak valid</h2><p>Silakan scan QR Buku Tamu resmi di area pondok.</p></div>'; throw new Error('Invalid token')}
+const app=initializeApp(window.CAHAYA_CONFIG.firebase); const db=getDatabase(app);
+const form=document.getElementById('guestForm'), btn=document.getElementById('submitBtn'), err=document.getElementById('err');
+form.addEventListener('submit',async e=>{e.preventDefault();err.style.display='none';btn.disabled=true;btn.textContent='Menyimpan...'; try{
+ const code=makeCode('TAMU'); const data={code,unit,nama:document.getElementById('nama').value.trim(),hp:document.getElementById('hp').value.trim(),asal:document.getElementById('asal').value.trim(),keperluan:document.getElementById('keperluan').value,jumlah:Number(document.getElementById('jumlah').value||1),tujuan:document.getElementById('tujuan').value.trim(),kelasTujuan:inferKelas(document.getElementById('tujuan').value),hubungan:document.getElementById('hubungan').value,kendaraan:document.getElementById('kendaraan').value.trim(),catatan:document.getElementById('catatan').value.trim(),status:'CHECK_IN',source:'QR_PUBLIC',createdAt:serverTimestamp(),deviceTime:new Date().toISOString()};
+ const item=push(ref(db,`buku_tamu/${unit}/${monthKey()}`)); await set(item,data); document.getElementById('formCard').style.display='none'; document.getElementById('successCode').textContent=code; document.getElementById('success').style.display='block'; window.scrollTo({top:0,behavior:'smooth'});
+ }catch(ex){console.error(ex);err.textContent='Data belum berhasil disimpan. Periksa koneksi internet lalu coba kembali.';err.style.display='block';btn.disabled=false;btn.textContent='✓ KIRIM DATA KUNJUNGAN'}});
+</script></body></html>

@@ -63,6 +63,8 @@
       media: true,
       chat: true,
       pkl: true,
+      guestBook: true,
+      itemDeposit: true,
       meetingMinutes: true,
       operationalManagement: true
     },
