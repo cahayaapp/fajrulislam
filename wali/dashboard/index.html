@@ -1884,6 +1884,13 @@
             <span class="nav-arrow">›</span>
           </a>
 
+
+          <a class="nav-item" id="menu-penitipan-wali" data-menu-id="menu-penitipan-wali" data-page-url="../../layanan/akses-titipan.html?source=wali&v=79" onclick="loadPage('../../layanan/akses-titipan.html?source=wali&v=79', this)">
+            <span class="nav-icon">▦</span>
+            <span class="nav-label">Scan Penitipan Barang</span>
+            <span class="nav-arrow">›</span>
+          </a>
+
           <a class="nav-item" id="menu-keuangan-wali" data-menu-id="menu-keuangan-wali" data-page-url="keuangan.html" onclick="loadPage('keuangan.html', this)">
             <span class="nav-icon">💳</span>
             <span class="nav-label">Keuangan Santri</span>
@@ -2138,6 +2145,11 @@
         title: "Perizinan & Riwayat",
         alwaysAllowed: true
       },
+      "menu-penitipan-wali": {
+        url: "../../layanan/akses-titipan.html?source=wali&v=79",
+        title: "Scan Penitipan Barang",
+        alwaysAllowed: true
+      },
       "menu-keuangan-wali": {
         url: "keuangan.html",
         title: "Keuangan Santri"
@@ -2259,6 +2271,7 @@
       chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>',
       permit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.2 8.3-8 10-4.8-1.7-8-5-8-10V6l8-3z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>',
       kabar: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M10 20h4"/><path d="M17.5 4.5 20 2M6.5 4.5 4 2"/></svg>',
+      deposit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/><path d="M8 9h3v3H8zM14 9h2M14 12h2M8 15h2M12 15h4M12 18h4"/></svg>',
       profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22c.7-5 3.5-8 8-8s7.3 3 8 8"/></svg>'
     };
 
@@ -2266,9 +2279,9 @@
       const items = [];
       if (isWaliMenuAllowed('menu-beranda-wali')) items.push({id:'menu-beranda-wali',label:'Beranda',icon:waliMobileUtilityIcon.home});
       if (isWaliMenuAllowed('menu-perizinan-wali')) items.push({id:'menu-perizinan-wali',label:'Izin',icon:waliMobileUtilityIcon.permit});
-      items.push({id:'utility-kabar',label:'Kabar Ananda',icon:waliMobileUtilityIcon.kabar,primary:true});
+      if (isWaliMenuAllowed('menu-penitipan-wali')) items.push({id:'menu-penitipan-wali',label:'Scan Titipan',icon:waliMobileUtilityIcon.deposit,primary:true});
+      items.push({id:'utility-kabar',label:'Kabar Ananda',icon:waliMobileUtilityIcon.kabar});
       items.push({id:'utility-menu',label:'Menu',icon:waliMobileUtilityIcon.menu});
-      items.push({id:'utility-profile',label:'Profil',icon:waliMobileUtilityIcon.profile});
       return items;
     }
 

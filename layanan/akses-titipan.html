@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Scan Penitipan • CAHAYA APP</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:18px;display:grid;place-items:center;font-family:Inter,"Nunito",Arial,sans-serif;background:linear-gradient(180deg,#eef5ff,#f9fbff);color:#14213f}.wrap{width:min(680px,100%)}.brand{display:flex;align-items:center;gap:12px;margin-bottom:16px}.brand img{width:48px;height:48px;object-fit:contain}.brand b{display:block;font-size:18px}.brand span{display:block;font-size:11px;color:#75839a}.card{background:#fff;border:1px solid #dfe7f2;border-radius:26px;padding:24px;box-shadow:0 20px 60px rgba(28,62,118,.12)}.scan{width:66px;height:66px;border-radius:22px;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,#1557d5,#2878ff);color:#fff;box-shadow:0 14px 28px rgba(40,120,255,.24)}h1{margin:16px 0 7px;font-size:27px}p{margin:0;color:#71809a;font-size:13px;line-height:1.6}.units{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}.unit{border:1px solid #dfe7f2;border-radius:20px;padding:18px;text-align:left;background:#fbfdff;cursor:pointer;transition:.15s}.unit:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(39,77,137,.10)}.unit b{display:block;font-size:16px}.unit span{display:block;margin-top:5px;color:#71809a;font-size:11px;line-height:1.45}.unit.putra{border-top:4px solid #2878ff}.unit.putri{border-top:4px solid #bd63cb}.auto{margin-top:14px;padding:11px 13px;border-radius:14px;background:#eef6ff;color:#315f9b;font-size:11px;line-height:1.5}.foot{text-align:center;margin-top:15px;color:#8b97aa;font-size:10px}@media(max-width:560px){body{padding:12px}.card{border-radius:21px;padding:18px}.units{grid-template-columns:1fr}h1{font-size:23px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><img src="../logofi.png" alt="Logo"><div><b>CAHAYA APP</b><span>Pesantren Cahaya Fajrul Islam</span></div></div>
+  <section class="card">
+    <div class="scan">▦</div>
+    <h1>Scan Penitipan</h1>
+    <p>CAHAYA APP akan mengarahkan Anda ke form penitipan sesuai Pondok Putra atau Pondok Putri. Jika unit dapat dikenali dari profil, form dibuka otomatis.</p>
+    <div id="auto" class="auto">Mendeteksi unit pondok dari profil...</div>
+    <div class="units">
+      <button class="unit putra" type="button" onclick="openUnit('putra')"><b>👦 Pondok Putra</b><span>Buka form penitipan barang untuk santri putra.</span></button>
+      <button class="unit putri" type="button" onclick="openUnit('putri')"><b>👧 Pondok Putri</b><span>Buka form penitipan barang untuk santri putri.</span></button>
+    </div>
+  </section>
+  <div class="foot">Form yang sama dengan QR penitipan resmi pesantren.</div>
+</div>
+<script>
+const TOKENS={putra:'CB-PUTRA-78-E52K',putri:'CB-PUTRI-78-H84M'};
+const qs=new URLSearchParams(location.search),source=(qs.get('source')||'app').toLowerCase();
+function parse(k){try{return JSON.parse(localStorage.getItem(k)||'{}')||{}}catch(_){return {}}}
+function inferUnit(){
+  const explicit=(qs.get('unit')||'').toLowerCase();if(['putra','putri'].includes(explicit))return explicit;
+  const objects=[parse('cahayaWaliStudentProfile'),parse('cahayaWaliAccount'),parse('cahayaCurrentProfile'),parse('cahayaCurrentUser')];
+  const vals=[];objects.forEach(o=>Object.entries(o||{}).forEach(([k,v])=>{if(/unit|gender|kelamin|kelas|asrama|santri|label|nama/i.test(k)&&['string','number'].includes(typeof v))vals.push(String(v))}));
+  const text=vals.join(' ').toLowerCase();if(/putri|perempuan|wanita|female/.test(text))return 'putri';if(/putra|laki|pria|male/.test(text))return 'putra';return '';
+}
+window.openUnit=function(unit){if(!TOKENS[unit])return;location.replace(`form-titipan.html?unit=${unit}&token=${encodeURIComponent(TOKENS[unit])}&source=${encodeURIComponent(source)}`)};
+const inferred=inferUnit(),auto=document.getElementById('auto');if(inferred){auto.textContent=`✓ Unit terdeteksi: Pondok ${inferred==='putri'?'Putri':'Putra'}. Membuka form penitipan...`;setTimeout(()=>openUnit(inferred),180)}else{auto.textContent='Unit belum dapat dikenali otomatis. Pilih Pondok Putra atau Pondok Putri di bawah.'}
+</script>
+</body>
+</html>

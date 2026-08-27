@@ -1,53 +1,152 @@
-<!DOCTYPE html><html lang="id"><head>
+<!DOCTYPE html>
+<html lang="id">
+<head>
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Penitipan Barang • CAHAYA APP</title><style>
-:root{--blue:#2878ff;--blue2:#1557d5;--gold:#f2b632;--ink:#15213f;--muted:#70809f;--line:#e4eaf4;--green:#1eb980;--red:#e95464;--putri:#be6ed1}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,"Nunito",Arial,sans-serif;color:var(--ink);background:#f4f7fb}body{padding:18px}
-.page{max-width:690px;margin:0 auto}.brand{display:flex;align-items:center;gap:12px;margin:4px 0 18px}.brand img{width:50px;height:50px;object-fit:contain}.brand b{display:block;font-size:18px}.brand span{font-size:12px;color:var(--muted)}
-.hero{padding:22px;border-radius:24px;background:linear-gradient(135deg,#fff,#f7fbff);border:1px solid #dfe8f6;box-shadow:0 16px 50px rgba(44,80,140,.10);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-70px;top:-75px;background:rgba(40,120,255,.07)}
-.unit{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;font-weight:800;font-size:12px;background:#eaf3ff;color:#1557d5}.unit.putri{background:#f8eafa;color:#9b46af}.hero h1{margin:13px 0 6px;font-size:28px;line-height:1.1}.hero p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}
-.card{margin-top:14px;padding:20px;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 10px 34px rgba(31,60,108,.07)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}label{font-size:12px;font-weight:800;color:#34415e}.req{color:#e95464}input,select,textarea{width:100%;border:1px solid #d9e1ee;border-radius:14px;padding:13px 14px;background:#fbfdff;color:#14213f;outline:0;font:inherit;font-size:14px}input:focus,select:focus,textarea:focus{border-color:#4c8ef7;box-shadow:0 0 0 4px rgba(40,120,255,.09);background:#fff}textarea{resize:vertical;min-height:94px}
-.hint{font-size:11px;color:#8995aa;line-height:1.45}.notice{padding:12px 14px;border-radius:14px;background:#fff9e9;border:1px solid #f5dd97;color:#7b5b13;font-size:12px;line-height:1.5;margin-bottom:14px}.btn{width:100%;border:0;border-radius:15px;padding:15px 18px;font-weight:900;font-size:14px;cursor:pointer;background:linear-gradient(135deg,var(--blue2),var(--blue));color:white;box-shadow:0 12px 24px rgba(40,120,255,.22)}.btn:disabled{opacity:.55;cursor:not-allowed}.success{display:none;text-align:center;padding:28px}.success .ico{width:64px;height:64px;border-radius:20px;margin:0 auto 14px;display:grid;place-items:center;font-size:28px;background:#e9fbf4;color:#129565}.success h2{margin:0 0 8px}.code{display:inline-block;margin:10px 0;padding:9px 14px;border-radius:12px;background:#f1f5fb;font-weight:900;letter-spacing:.4px}.errorBox{display:none;margin-bottom:14px;padding:12px 14px;border-radius:13px;background:#fff0f1;border:1px solid #fac5ca;color:#b73746;font-size:12px;font-weight:700}.footer{text-align:center;color:#8b97aa;font-size:11px;padding:18px}
-@media(max-width:600px){body{padding:12px}.hero,.card{border-radius:19px;padding:17px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.hero h1{font-size:23px}}
-</style></head><body>
-<div class="page"><div class="brand"><img src="../logofi.png"><div><b>CAHAYA APP</b><span>Pesantren Cahaya Fajrul Islam</span></div></div>
-<section class="hero"><span id="unitBadge" class="unit">📍 Pondok</span><h1>📦 Penitipan Barang</h1><p>Isi data barang yang dititipkan. Penerima dan unit pondok akan tercatat agar barang mudah dilacak.</p></section>
-<section class="card" id="formCard"><div class="notice">📌 Simpan kode penitipan setelah data terkirim. Petugas akan menandai barang sebagai <b>Sudah Diambil</b> setelah diserahkan.</div><div id="err" class="errorBox"></div>
-<form id="itemForm"><div class="grid">
-<div class="field"><label>Nama Penitip <span class="req">*</span></label><input id="nama" required placeholder="Nama lengkap"></div><div class="field"><label>No. WhatsApp <span class="req">*</span></label><input id="hp" required inputmode="tel" placeholder="08xxxxxxxxxx"></div>
-<div class="field full"><label>Nama Santri / Penerima <span class="req">*</span></label><input id="penerima" list="santriList" required placeholder="Ketik nama santri"><datalist id="santriList"></datalist><div id="kelasHint" class="hint">Daftar santri menyesuaikan unit pondok.</div></div>
-<div class="field"><label>Jenis Barang <span class="req">*</span></label><select id="jenis" required><option value="">Pilih jenis</option><option>Makanan / Minuman</option><option>Pakaian / Perlengkapan</option><option>Buku / Alat Belajar</option><option>Obat / Kesehatan</option><option>Dokumen</option><option>Uang / Barang Berharga</option><option>Lainnya</option></select></div>
-<div class="field"><label>Jumlah / Satuan <span class="req">*</span></label><input id="jumlah" required placeholder="Contoh: 1 paket / 2 tas"></div>
-<div class="field full"><label>Isi / Ciri Barang <span class="req">*</span></label><textarea id="detail" required placeholder="Jelaskan isi atau ciri barang agar mudah dikenali"></textarea></div>
-<div class="field full"><label>Catatan</label><textarea id="catatan" placeholder="Pesan untuk penerima / petugas"></textarea></div>
-</div><button id="submitBtn" class="btn" type="submit">✓ SIMPAN PENITIPAN BARANG</button></form></section>
-<section id="success" class="card success"><div class="ico">✓</div><h2>Barang tercatat</h2><p>Data penitipan sudah masuk ke buku penitipan.</p><div id="successCode" class="code"></div><p class="hint">Simpan kode ini sampai barang diterima.</p></section><div class="footer">CAHAYA APP • Buku Penitipan Barang</div></div>
+  <title>Penitipan Barang • CAHAYA APP</title>
+  <style>
+    :root{--blue:#2878ff;--blue2:#1557d5;--gold:#f2b632;--ink:#15213f;--muted:#70809f;--line:#e4eaf4;--green:#1eb980;--red:#e95464;--putri:#be6ed1;--amber:#b7791f}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,"Nunito",Arial,sans-serif;color:var(--ink);background:#f4f7fb}body{padding:18px}
+    .page{max-width:720px;margin:0 auto}.brand{display:flex;align-items:center;gap:12px;margin:4px 0 18px}.brand img{width:50px;height:50px;object-fit:contain}.brand b{display:block;font-size:18px}.brand span{font-size:12px;color:var(--muted)}
+    .hero{padding:22px;border-radius:24px;background:linear-gradient(135deg,#fff,#f7fbff);border:1px solid #dfe8f6;box-shadow:0 16px 50px rgba(44,80,140,.10);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-70px;top:-75px;background:rgba(40,120,255,.07)}
+    .unit{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;font-weight:800;font-size:12px;background:#eaf3ff;color:#1557d5}.unit.putri{background:#f8eafa;color:#9b46af}.hero h1{margin:13px 0 6px;font-size:28px;line-height:1.1}.hero p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}
+    .sopbar{margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.sopchip{padding:12px;border-radius:16px;border:1px solid #e1e8f2;background:#fff}.sopchip b{display:block;font-size:12px}.sopchip span{display:block;margin-top:3px;font-size:10px;color:var(--muted);line-height:1.4}
+    .card{margin-top:14px;padding:20px;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 10px 34px rgba(31,60,108,.07)}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}label{font-size:12px;font-weight:800;color:#34415e}.req{color:#e95464}input,select,textarea{width:100%;border:1px solid #d9e1ee;border-radius:14px;padding:13px 14px;background:#fbfdff;color:#14213f;outline:0;font:inherit;font-size:14px}input:focus,select:focus,textarea:focus{border-color:#4c8ef7;box-shadow:0 0 0 4px rgba(40,120,255,.09);background:#fff}textarea{resize:vertical;min-height:94px}
+    .hint{font-size:11px;color:#8995aa;line-height:1.45}.notice,.warning,.okbox{padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.55;margin-bottom:14px}.notice{background:#fff9e9;border:1px solid #f5dd97;color:#7b5b13}.warning{background:#fff1f2;border:1px solid #fecdd3;color:#9f1239}.okbox{background:#ecfdf5;border:1px solid #bbf7d0;color:#166534}.btn{width:100%;border:0;border-radius:15px;padding:15px 18px;font-weight:900;font-size:14px;cursor:pointer;background:linear-gradient(135deg,var(--blue2),var(--blue));color:white;box-shadow:0 12px 24px rgba(40,120,255,.22)}.btn:disabled{opacity:.55;cursor:not-allowed}
+    .success{display:none;text-align:center;padding:28px}.success .ico{width:64px;height:64px;border-radius:20px;margin:0 auto 14px;display:grid;place-items:center;font-size:28px;background:#e9fbf4;color:#129565}.success h2{margin:0 0 8px}.code{display:inline-block;margin:10px 0;padding:9px 14px;border-radius:12px;background:#f1f5fb;font-weight:900;letter-spacing:.4px}.errorBox{display:none;margin-bottom:14px;padding:12px 14px;border-radius:13px;background:#fff0f1;border:1px solid #fac5ca;color:#b73746;font-size:12px;font-weight:700}.footer{text-align:center;color:#8b97aa;font-size:11px;padding:18px}
+    .photoBox{border:1px dashed #b9c7dc;border-radius:16px;padding:12px;background:#f8fbff}.photoBox input{padding:10px;background:#fff}.photoPreview{display:none;margin-top:10px;position:relative}.photoPreview img{width:100%;max-height:300px;object-fit:cover;border-radius:14px;border:1px solid #e0e7f0}.photoMeta{font-size:10px;color:#74829b;margin-top:6px}.checkrow{display:flex;align-items:flex-start;gap:9px;padding:12px;border:1px solid #e3e9f2;border-radius:14px;background:#fbfcff}.checkrow input{width:18px;height:18px;margin-top:1px;flex:0 0 auto}.checkrow label{font-size:11px;line-height:1.55;color:#475569;font-weight:700}.forbidden{margin-top:8px;border:1px solid #f1d6d8;border-radius:14px;background:#fff8f8;padding:12px}.forbidden summary{cursor:pointer;font-size:11px;font-weight:900;color:#9f1239}.forbidden p{margin:8px 0 0;color:#7f1d1d;font-size:10.5px;line-height:1.55}.weekInfo{margin-top:8px;padding:10px 12px;border-radius:12px;background:#f1f6ff;color:#315f9b;font-size:10.5px;line-height:1.5}.hidden{display:none!important}
+    @media(max-width:620px){body{padding:12px}.hero,.card{border-radius:19px;padding:17px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.hero h1{font-size:23px}.sopbar{grid-template-columns:1fr}.sopchip{padding:10px 12px}}
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="brand"><img src="../logofi.png" alt="Logo"><div><b>CAHAYA APP</b><span>Pesantren Cahaya Fajrul Islam</span></div></div>
+  <section class="hero">
+    <span id="unitBadge" class="unit">📍 Pondok</span>
+    <h1>📦 Penitipan Barang</h1>
+    <p>Form digital sesuai SOP pengantaran dan penitipan barang. Data tersimpan di Buku Penitipan dan dapat direkap per wali setiap bulan.</p>
+  </section>
+  <div class="sopbar">
+    <div class="sopchip"><b>🕐 Jam Layanan</b><span>Senin–Ahad, pukul 13.00–17.00 WIB.</span></div>
+    <div class="sopchip"><b>1× Batas Pekanan</b><span>Maksimal satu kali per pekan di luar kunjungan bulanan.</span></div>
+    <div class="sopchip"><b>🔎 Pemeriksaan Barang</b><span>Barang dapat diperiksa petugas sebelum diterima.</span></div>
+  </div>
+
+  <section class="card" id="formCard">
+    <div class="notice">📌 Penitipan bukan waktu kunjungan. Wali/pengantar wajib mengisi data dengan benar dan barang yang tidak sesuai SOP tidak akan diterima.</div>
+    <div id="scheduleNotice" class="warning hidden"></div>
+    <div id="err" class="errorBox"></div>
+    <form id="itemForm">
+      <div class="grid">
+        <div class="field"><label>Nama Penitip <span class="req">*</span></label><input id="nama" required autocomplete="name" placeholder="Nama lengkap wali/pengantar"></div>
+        <div class="field"><label>No. WhatsApp <span class="req">*</span></label><input id="hp" required inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx"></div>
+        <div class="field"><label>Status Pengantar <span class="req">*</span></label><select id="statusPengantar" required><option value="">Pilih status</option><option value="WALI_SANTRI">Wali Santri</option><option value="KELUARGA">Keluarga</option><option value="PIHAK_DIBERI_AMANAH">Pihak yang Diberi Amanah</option><option value="LAINNYA">Lainnya</option></select></div>
+        <div class="field"><label>Konteks Penitipan <span class="req">*</span></label><select id="konteks" required><option value="REGULER">Penitipan Reguler</option><option value="KUNJUNGAN_BULANAN">Saat Kunjungan/KMS Bulanan</option><option value="DARURAT">Darurat di Luar Jadwal</option></select></div>
+        <div class="field full hidden" id="daruratWrap"><label>Kondisi Darurat <span class="req">*</span></label><select id="daruratKategori"><option value="">Pilih kondisi</option><option value="OBAT_RESEP_MENDESAK">Obat khusus/resep yang harus segera dikonsumsi</option><option value="SERAGAM_WAJIB">Seragam/pakaian khusus untuk agenda resmi</option><option value="PERMINTAAN_PIMPINAN">Barang diminta langsung oleh pimpinan/pengasuh</option></select><div class="hint">Di luar jam layanan hanya tiga kondisi ini yang dapat diproses sesuai SOP.</div></div>
+        <div class="field full"><label>Nama Santri / Penerima <span class="req">*</span></label><input id="penerima" list="santriList" required placeholder="Ketik nama santri"><datalist id="santriList"></datalist><div id="kelasHint" class="hint">Daftar santri menyesuaikan unit pondok.</div></div>
+        <div class="field"><label>Jenis Barang <span class="req">*</span></label><select id="jenis" required><option value="">Pilih jenis</option><option value="MAKANAN_MINUMAN">Makanan / Minuman yang Diizinkan</option><option value="PAKAIAN_PERLENGKAPAN">Pakaian / Perlengkapan</option><option value="BUKU_ALAT_BELAJAR">Buku / Alat Belajar</option><option value="OBAT_KESEHATAN">Obat / Kesehatan Sesuai Ketentuan</option><option value="DOKUMEN">Dokumen</option><option value="LAINNYA">Lainnya yang Diizinkan</option></select></div>
+        <div class="field"><label>Jumlah / Satuan <span class="req">*</span></label><input id="jumlah" required placeholder="Contoh: 1 paket / 2 tas"></div>
+        <div class="field full"><label>Isi / Ciri Barang <span class="req">*</span></label><textarea id="detail" required placeholder="Tuliskan isi barang secara jujur dan rinci agar mudah diperiksa"></textarea></div>
+        <div class="field full"><label>Foto Barang / Paket</label><div class="photoBox"><input id="foto" type="file" accept="image/*" capture="environment"><div class="hint">Opsional. Foto otomatis diperkecil agar hemat data.</div><div class="photoPreview" id="photoPreview"><img id="photoImg" alt="Pratinjau foto"><div id="photoMeta" class="photoMeta"></div></div></div></div>
+        <div class="field full"><label>Catatan</label><textarea id="catatan" placeholder="Keterangan tambahan untuk petugas"></textarea></div>
+        <div class="field full">
+          <details class="forbidden"><summary>🚫 Lihat daftar barang yang tidak boleh dititipkan</summary><p>Handphone/tablet, smart watch, speaker Bluetooth, radio/MP3, rokok/vape/cerutu, bacaan berkonten dewasa, uang tunai besar, perhiasan/barang berharga, senjata tajam, kartu permainan, foto pemain bola/artis, petasan/bahan mudah terbakar, obat wajib resep tanpa prosedur yang sesuai, bumbu penyedap, mi instan, minuman tinggi gula/energi, makanan terlalu pedas, dan makanan berbau menyengat.</p></details>
+        </div>
+        <div class="field full"><div class="checkrow"><input id="sopAgree" type="checkbox" required><label for="sopAgree">Saya menyatakan data dan isi barang benar, memahami batas penitipan maksimal 1× per pekan di luar kunjungan bulanan, serta bersedia barang diperiksa petugas dan dikembalikan bila tidak sesuai SOP.</label></div><div id="weekInfo" class="weekInfo">Sistem akan memeriksa riwayat penitipan wali/pengantar pada pekan yang sama sebelum data disimpan.</div></div>
+      </div>
+      <button id="submitBtn" class="btn" type="submit">✓ SIMPAN PENITIPAN BARANG</button>
+    </form>
+  </section>
+  <section id="success" class="card success"><div class="ico">✓</div><h2>Barang tercatat</h2><p>Data penitipan sudah masuk ke Buku Penitipan Barang.</p><div id="successCode" class="code"></div><p id="successInfo" class="hint">Simpan kode ini sampai barang diterima.</p></section>
+  <div class="footer">CAHAYA APP • Buku Penitipan Barang • SOP/ADM-PCFI/002/2026 Rev.01</div>
+</div>
+
 <script type="module">
-const TOKEN_MAP={"tamu-putra": "CT-PUTRA-78-A71F", "tamu-putri": "CT-PUTRI-78-C39D", "titipan-putra": "CB-PUTRA-78-E52K", "titipan-putri": "CB-PUTRI-78-H84M"};
-const params=new URLSearchParams(location.search); const unit=(params.get('unit')||'').toLowerCase(); const token=params.get('token')||'';
+const TOKEN_MAP={"tamu-putra":"CT-PUTRA-78-A71F","tamu-putri":"CT-PUTRI-78-C39D","titipan-putra":"CB-PUTRA-78-E52K","titipan-putri":"CB-PUTRI-78-H84M"};
+const params=new URLSearchParams(location.search);
+const unit=(params.get('unit')||'').toLowerCase();
+const token=params.get('token')||'';
+const source=(params.get('source')||'QR_PUBLIC').toUpperCase();
 function validToken(kind){return ['putra','putri'].includes(unit)&&TOKEN_MAP[`${kind}-${unit}`]===token}
 function unitLabel(){return unit==='putri'?'Pondok Putri':'Pondok Putra'}
-function santriByUnit(){
- const groups=window.CAHAYA_MASTER_DATA?.santriByClass||{}; const out=[];
- Object.entries(groups).forEach(([kelas,names])=>{
-   const lower=kelas.toLowerCase(); const isAsramaClass=lower.startsWith('kelas '); const match=isAsramaClass && (unit==='putri'?lower.includes('putri'):lower.includes('putra'));
-   if(!match)return; (Array.isArray(names)?names:[]).forEach(n=>out.push({nama:String(n),kelas}));
- });
- const m=new Map(); out.forEach(x=>{const k=x.nama.trim().toUpperCase(); if(!m.has(k))m.set(k,x)}); return [...m.values()].sort((a,b)=>a.nama.localeCompare(b.nama));
+function safeParse(key){try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(_){return {}}}
+function cleanText(v){return String(v||'').trim()}
+function normalizeName(v){return cleanText(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+function normalizePhone(v){let s=String(v||'').replace(/\D/g,'');if(s.startsWith('62'))s='0'+s.slice(2);return s}
+function jakartaParts(){const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());const m={};parts.forEach(p=>m[p.type]=p.value);return {year:+m.year,month:+m.month,day:+m.day,hour:+m.hour,minute:+m.minute}}
+function monthKeyFromDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+function monthKey(){const p=jakartaParts();return `${p.year}-${String(p.month).padStart(2,'0')}`}
+function dateKeyJakarta(){const p=jakartaParts();return `${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`}
+function weekKeyFromDate(dateString=dateKeyJakarta()){
+  const d=new Date(`${dateString}T12:00:00+07:00`);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-function fillSantriDatalist(id){const el=document.getElementById(id); if(!el)return; el.innerHTML=santriByUnit().map(x=>`<option value="${x.nama.replace(/"/g,'&quot;')}">${x.kelas}</option>`).join('')}
-function inferKelas(name){const q=String(name||'').trim().toUpperCase(); return santriByUnit().find(x=>x.nama.trim().toUpperCase()===q)?.kelas||''}
-function makeCode(prefix){const d=new Date(); const y=String(d.getFullYear()).slice(-2),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${prefix}-${unit==='putri'?'W':'P'}-${y}${m}${day}-${Math.random().toString(36).slice(2,6).toUpperCase()}`}
-function monthKey(){const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+function isServiceHour(){const p=jakartaParts();const minutes=p.hour*60+p.minute;return minutes>=13*60 && minutes<=17*60}
+function makeCode(prefix){const p=jakartaParts();return `${prefix}-${unit==='putri'?'W':'P'}-${String(p.year).slice(-2)}${String(p.month).padStart(2,'0')}${String(p.day).padStart(2,'0')}-${Math.random().toString(36).slice(2,6).toUpperCase()}`}
+function santriByUnit(){const groups=window.CAHAYA_MASTER_DATA?.santriByClass||{};const out=[];Object.entries(groups).forEach(([kelas,names])=>{const lower=kelas.toLowerCase();const isAsramaClass=lower.startsWith('kelas ');const match=isAsramaClass&&(unit==='putri'?lower.includes('putri'):lower.includes('putra'));if(!match)return;(Array.isArray(names)?names:[]).forEach(n=>out.push({nama:String(n),kelas}))});const m=new Map();out.forEach(x=>{const k=x.nama.trim().toUpperCase();if(!m.has(k))m.set(k,x)});return [...m.values()].sort((a,b)=>a.nama.localeCompare(b.nama))}
+function fillSantriDatalist(id){const el=document.getElementById(id);if(!el)return;el.innerHTML=santriByUnit().map(x=>`<option value="${x.nama.replace(/"/g,'&quot;')}">${x.kelas}</option>`).join('')}
+function inferKelas(name){const q=String(name||'').trim().toUpperCase();return santriByUnit().find(x=>x.nama.trim().toUpperCase()===q)?.kelas||''}
+function prefillFromSession(){
+  const account=safeParse('cahayaWaliAccount');const student=safeParse('cahayaWaliStudentProfile');const current=safeParse('cahayaCurrentUser');
+  const name=[account.namaWali,account.namaOrangTua,account.nama,account.label,current.namaWali,current.label,current.nama].map(cleanText).find(Boolean);
+  const phone=[account.noWhatsApp,account.whatsapp,account.hp,account.telepon,current.noWhatsApp,current.hp,current.telepon].map(cleanText).find(Boolean);
+  const studentName=[student.namaAnak,student.namaSantri,student.nama,student.label,account.namaAnak,current.namaAnak].map(cleanText).find(Boolean);
+  if(name&&!document.getElementById('nama').value)document.getElementById('nama').value=name;
+  if(phone&&!document.getElementById('hp').value)document.getElementById('hp').value=phone;
+  if(studentName&&!document.getElementById('penerima').value){document.getElementById('penerima').value=studentName;document.getElementById('statusPengantar').value='WALI_SANTRI'}
+}
+function renderScheduleState(){const n=document.getElementById('scheduleNotice');if(isServiceHour()){n.className='okbox';n.textContent='✓ Saat ini berada dalam jam layanan penitipan 13.00–17.00 WIB.'}else{n.className='warning';n.textContent='⚠ Saat ini di luar jam layanan 13.00–17.00 WIB. Penitipan hanya dapat dilanjutkan bila benar-benar memenuhi kondisi darurat sesuai SOP.'}}
+function refreshEmergency(){const isEmergency=document.getElementById('konteks').value==='DARURAT';document.getElementById('daruratWrap').classList.toggle('hidden',!isEmergency);document.getElementById('daruratKategori').required=isEmergency}
+async function compressPhoto(file){
+  if(!file)return null;if(!file.type.startsWith('image/'))throw new Error('File foto harus berupa gambar.');if(file.size>12*1024*1024)throw new Error('Ukuran foto terlalu besar. Maksimal 12 MB sebelum kompresi.');
+  const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('Foto tidak dapat dibaca.'));r.readAsDataURL(file)});
+  const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('Foto tidak dapat diproses.'));i.src=dataUrl});
+  const max=900,scale=Math.min(1,max/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+  let quality=.72,out=canvas.toDataURL('image/jpeg',quality);while(out.length>390000&&quality>.42){quality-=.07;out=canvas.toDataURL('image/jpeg',quality)}
+  return {dataUrl:out,name:file.name||'foto-barang.jpg',type:'image/jpeg',originalSize:file.size,storedBytes:Math.round(out.length*0.75),width:canvas.width,height:canvas.height};
+}
+function previousMonthKeys(){const p=jakartaParts();const d=new Date(p.year,p.month-1,15);const prev=new Date(d.getFullYear(),d.getMonth()-1,15);return [...new Set([monthKeyFromDate(d),monthKeyFromDate(prev)])]}
+function sameOwner(item,phoneKey,nameKey){const p=normalizePhone(item.hp||item.noWhatsApp||'');const n=normalizeName(item.namaPenitip||item.namaWali||'');return (phoneKey&&p&&p===phoneKey)||(nameKey&&n===nameKey)}
 
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'; import {getDatabase,ref,push,set,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-const badge=document.getElementById('unitBadge'); badge.textContent='📍 '+unitLabel(); badge.classList.toggle('putri',unit==='putri'); fillSantriDatalist('santriList'); const penerima=document.getElementById('penerima'); penerima.addEventListener('input',()=>{const k=inferKelas(penerima.value);document.getElementById('kelasHint').textContent=k?'Kelas: '+k:'Daftar santri menyesuaikan unit pondok.'});
-if(!validToken('titipan')){document.getElementById('formCard').innerHTML='<div class="success" style="display:block"><div class="ico" style="background:#fff0f1;color:#b73746">!</div><h2>QR tidak valid</h2><p>Silakan scan QR Penitipan Barang resmi di area pondok.</p></div>'; throw new Error('Invalid token')}
-const app=initializeApp(window.CAHAYA_CONFIG.firebase); const db=getDatabase(app); const form=document.getElementById('itemForm'),btn=document.getElementById('submitBtn'),err=document.getElementById('err');
-form.addEventListener('submit',async e=>{e.preventDefault();err.style.display='none';btn.disabled=true;btn.textContent='Menyimpan...';try{const code=makeCode('BRG');const pn=penerima.value.trim();const data={code,unit,namaPenitip:document.getElementById('nama').value.trim(),hp:document.getElementById('hp').value.trim(),penerima:pn,kelasPenerima:inferKelas(pn),jenis:document.getElementById('jenis').value,jumlah:document.getElementById('jumlah').value.trim(),detail:document.getElementById('detail').value.trim(),catatan:document.getElementById('catatan').value.trim(),status:'DITITIPKAN',source:'QR_PUBLIC',createdAt:serverTimestamp(),deviceTime:new Date().toISOString()};const item=push(ref(db,`penitipan_barang/${unit}/${monthKey()}`));await set(item,data);document.getElementById('formCard').style.display='none';document.getElementById('successCode').textContent=code;document.getElementById('success').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}catch(ex){console.error(ex);err.textContent='Data belum berhasil disimpan. Periksa koneksi internet lalu coba kembali.';err.style.display='block';btn.disabled=false;btn.textContent='✓ SIMPAN PENITIPAN BARANG'}});
-</script></body></html>
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import {getDatabase,ref,push,set,get,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+const badge=document.getElementById('unitBadge');badge.textContent='📍 '+unitLabel();badge.classList.toggle('putri',unit==='putri');fillSantriDatalist('santriList');prefillFromSession();renderScheduleState();refreshEmergency();
+const penerima=document.getElementById('penerima');penerima.addEventListener('input',()=>{const k=inferKelas(penerima.value);document.getElementById('kelasHint').textContent=k?'Kelas: '+k:'Daftar santri menyesuaikan unit pondok.'});
+document.getElementById('konteks').addEventListener('change',refreshEmergency);
+if(!validToken('titipan')){document.getElementById('formCard').innerHTML='<div class="success" style="display:block"><div class="ico" style="background:#fff0f1;color:#b73746">!</div><h2>Akses tidak valid</h2><p>Silakan buka melalui QR resmi atau tombol Scan Penitipan di CAHAYA APP.</p></div>';throw new Error('Invalid token')}
+const app=initializeApp(window.CAHAYA_CONFIG.firebase);const db=getDatabase(app);const form=document.getElementById('itemForm'),btn=document.getElementById('submitBtn'),err=document.getElementById('err');
+let photoData=null;
+document.getElementById('foto').addEventListener('change',async e=>{const file=e.target.files?.[0];const preview=document.getElementById('photoPreview');if(!file){photoData=null;preview.style.display='none';return}try{photoData=await compressPhoto(file);document.getElementById('photoImg').src=photoData.dataUrl;document.getElementById('photoMeta').textContent=`Foto tersimpan ± ${Math.round(photoData.storedBytes/1024)} KB • ${photoData.width}×${photoData.height}px`;preview.style.display='block'}catch(ex){photoData=null;e.target.value='';preview.style.display='none';alert(ex.message)}});
+
+async function getOwnerHistory(phoneKey,nameKey){const rows=[];for(const key of previousMonthKeys()){try{const snap=await get(ref(db,`penitipan_barang/${unit}/${key}`));Object.values(snap.val()||{}).forEach(v=>{if(sameOwner(v,phoneKey,nameKey))rows.push(v)})}catch(ex){console.warn('Riwayat penitipan tidak dapat dibaca:',ex)}}return rows}
+
+form.addEventListener('submit',async e=>{
+  e.preventDefault();err.style.display='none';btn.disabled=true;btn.textContent='Memeriksa SOP...';
+  try{
+    const nama=cleanText(document.getElementById('nama').value),hp=cleanText(document.getElementById('hp').value),statusPengantar=document.getElementById('statusPengantar').value,konteks=document.getElementById('konteks').value,daruratKategori=document.getElementById('daruratKategori').value,pn=cleanText(penerima.value);
+    if(!nama||!hp||!statusPengantar||!konteks||!pn)throw new Error('Lengkapi data wajib sebelum menyimpan.');
+    if(konteks==='DARURAT'&&!daruratKategori)throw new Error('Pilih kondisi darurat yang sesuai SOP.');
+    if(!isServiceHour()&&konteks!=='DARURAT')throw new Error('Saat ini di luar jam layanan 13.00–17.00 WIB. Pilih Darurat hanya bila benar-benar memenuhi salah satu kondisi darurat dalam SOP.');
+    if(!document.getElementById('sopAgree').checked)throw new Error('Konfirmasi kepatuhan terhadap SOP terlebih dahulu.');
+    const phoneKey=normalizePhone(hp),nameKey=normalizeName(nama),weekKey=weekKeyFromDate(),currentMonth=monthKey();
+    btn.textContent='Memeriksa riwayat pekanan...';
+    const history=await getOwnerHistory(phoneKey,nameKey);
+    const counted=history.filter(x=>(x.konteks||'REGULER')!=='KUNJUNGAN_BULANAN');
+    const sameWeek=counted.filter(x=>(x.weekKey||weekKeyFromDate(String(x.deviceTime||'').slice(0,10)))===weekKey).length;
+    const sameMonth=history.filter(x=>String(x.monthKey||'').slice(0,7)===currentMonth || String(x.deviceTime||'').slice(0,7)===currentMonth).length;
+    if(konteks!=='KUNJUNGAN_BULANAN'&&sameWeek>=1)throw new Error(`Wali/pengantar ini sudah tercatat ${sameWeek} kali menitip pada pekan yang sama. SOP membatasi maksimal 1 kali per pekan di luar kunjungan bulanan.`);
+    const code=makeCode('BRG');
+    const data={
+      code,unit,namaPenitip:nama,hp,statusPengantar,phoneKey,nameKey,penerima:pn,kelasPenerima:inferKelas(pn),jenis:document.getElementById('jenis').value,jumlah:cleanText(document.getElementById('jumlah').value),detail:cleanText(document.getElementById('detail').value),catatan:cleanText(document.getElementById('catatan').value),konteks,daruratKategori:konteks==='DARURAT'?daruratKategori:'',fotoBarang:photoData||null,status:'DITITIPKAN',source,sourceRole:source,weekKey,monthKey:currentMonth,urutanPenitipanWaliBulan:sameMonth+1,sopVersion:'SOP/ADM-PCFI/002/2026-REV01',sopConfirmed:true,createdAt:serverTimestamp(),deviceTime:new Date().toISOString()
+    };
+    btn.textContent='Menyimpan...';const item=push(ref(db,`penitipan_barang/${unit}/${currentMonth}`));await set(item,data);
+    document.getElementById('formCard').style.display='none';document.getElementById('successCode').textContent=code;document.getElementById('successInfo').textContent=`Titipan ke-${sameMonth+1} dari wali/pengantar ini pada bulan berjalan. Simpan kode sampai barang diterima.`;document.getElementById('success').style.display='block';window.scrollTo({top:0,behavior:'smooth'});
+  }catch(ex){console.error(ex);err.textContent=ex.message||'Data belum berhasil disimpan. Periksa koneksi internet lalu coba kembali.';err.style.display='block';btn.disabled=false;btn.textContent='✓ SIMPAN PENITIPAN BARANG'}
+});
+</script>
+</body>
+</html>
