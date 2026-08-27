@@ -2209,8 +2209,8 @@
         <div class="group-label">Modul PKL / Pengurus</div>
         <a class="nav-item menu-akses" id="menu-jurnal-pkl" style="display: none;" onclick="loadPage('PKL/jurnal-pkl.html', this)">🧹 Jurnal Keamanan & Kebersihan</a>
         <a class="nav-item menu-akses" id="menu-buku-izin" style="display: none;" onclick="loadPage('layanan/buku-izin.html?v=79', this)">📝 Buku Izin</a>
-        <a class="nav-item menu-akses" id="menu-buku-tamu" style="display: none;" onclick="loadPage('PKL/buku-tamu.html?v=80', this)">📒 Buku Tamu</a>
-        <a class="nav-item menu-akses" id="menu-penitipan-barang" style="display: none;" onclick="loadPage('PKL/penitipan-barang.html?v=80', this)">📦 Penitipan Barang</a>
+        <a class="nav-item menu-akses" id="menu-buku-tamu" style="display: none;" onclick="loadPage('PKL/buku-tamu.html?v=80.2', this)">📒 Buku Tamu</a>
+        <a class="nav-item menu-akses" id="menu-penitipan-barang" style="display: none;" onclick="loadPage('PKL/penitipan-barang.html?v=80.2', this)">📦 Penitipan Barang</a>
       </div>
 
       <div class="menu-group">
@@ -3028,18 +3028,9 @@ function sinkronkanBadgePintasanMobile() {
         ["menu-home","menu-profil","menu-chat"].forEach(menuId => {
           if (rolesUntukMenu.length && !gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
         });
-        // V80: Buku Tamu dan Penitipan hanya untuk Pengurus/Tim Layanan (PKL).
-        if (rolesUntukMenu.includes('layanan')) {
-          ['menu-buku-tamu','menu-penitipan-barang'].forEach(menuId => {
-            if (!gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
-          });
-        }
-        else {
-          ['menu-buku-tamu','menu-penitipan-barang'].forEach(menuId => {
-            const idx = gabunganMenu.indexOf(menuId);
-            if (idx >= 0) gabunganMenu.splice(idx, 1);
-          });
-        }
+        // V80.2: Buku Tamu dan Penitipan mengikuti otorisasi menu yang
+        // ditetapkan di Manajemen User / settings role_menus. Tidak lagi dikunci
+        // ulang berdasarkan nama role agar centang otorisasi benar-benar berlaku.
 
         // V58: Tindak Pelanggaran adalah bagian operasional Naqib untuk kasus
         // kedisiplinan/kebersihan yang memang berjalur NAQIB.

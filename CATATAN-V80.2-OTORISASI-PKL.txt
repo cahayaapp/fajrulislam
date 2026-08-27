@@ -1,0 +1,13 @@
+CAHAYA APP v80.2 — HOTFIX OTORISASI BUKU TAMU & PENITIPAN
+
+PERBAIKAN
+1. Menghapus kunci role hard-code yang membuat halaman Buku Tamu/Penitipan menolak pengguna walaupun akses sudah dicentang di Manajemen User.
+2. Otorisasi utama sekarang mengikuti authorizedMenuIds pada shell CAHAYA APP (hasil settings/role_menus / Manajemen User).
+3. Halaman PKL/buku-tamu.html dan PKL/penitipan-barang.html membaca otorisasi dari parent shell.
+4. Fallback role layanan/pengurus tetap dipertahankan untuk kompatibilitas jika halaman dibuka langsung.
+5. Query version kedua halaman dinaikkan ke v80.2 untuk mengurangi risiko cache lama.
+
+HASIL YANG DIHARAPKAN
+- Jika Buku Tamu dicentang untuk role pengguna, menu tampil dan halaman dapat dibuka.
+- Jika Penitipan Barang dicentang untuk role pengguna, menu tampil dan halaman dapat dibuka.
+- Jika tidak dicentang, shell tetap menolak akses.
