@@ -2192,8 +2192,7 @@
 
       <div class="menu-group" id="group-pimpinan">
         <div class="group-label">Pimpinan</div>
-        <a class="nav-item menu-akses" id="menu-dashboard-pimpinan" style="display: none;" onclick="loadPage('pimpinan/dashboard-pimpinan.html?v=46', this)">📊 Dashboard Pimpinan</a>
-        <a class="nav-item menu-akses" id="menu-laporan-observasi" style="display: none;" onclick="loadPage('pimpinan/dashboard-pimpinan.html?v=46#mutu-program', this)">👁️ Laporan Observasi</a>
+        <a class="nav-item menu-akses" id="menu-dashboard-pimpinan" style="display: none;" onclick="loadPage('pimpinan/dashboard-pimpinan.html?v=80', this)">📊 Dashboard Pimpinan</a>
         <a class="nav-item menu-akses" id="menu-perizinan-santri" style="display: none;" onclick="loadPage('pimpinan/perizinan-santri.html', this)">🛡️ Perizinan Santri</a>
         <a class="nav-item menu-akses" id="menu-rekap-kepala-sekolah" style="display: none;" onclick="loadPage('pimpinan/rekap-kepala-sekolah.html?v=20', this)">🏫 Rekap Kepala Sekolah</a>
       </div>
@@ -2207,12 +2206,11 @@
       </div>
 
       <div class="menu-group">
-        <div class="group-label">Personil Layanan</div>
+        <div class="group-label">Modul PKL / Pengurus</div>
         <a class="nav-item menu-akses" id="menu-jurnal-pkl" style="display: none;" onclick="loadPage('PKL/jurnal-pkl.html', this)">🧹 Jurnal Keamanan & Kebersihan</a>
         <a class="nav-item menu-akses" id="menu-buku-izin" style="display: none;" onclick="loadPage('layanan/buku-izin.html?v=79', this)">📝 Buku Izin</a>
-        <a class="nav-item menu-akses" id="menu-buku-tamu" style="display: none;" onclick="loadPage('layanan/buku-tamu.html?v=79', this)">📒 Buku Tamu</a>
-        <a class="nav-item menu-akses" id="menu-penitipan-barang" style="display: none;" onclick="loadPage('layanan/penitipan-barang.html?v=79', this)">📦 Buku Penitipan</a>
-        <a class="nav-item menu-akses" id="menu-scan-penitipan" style="display: none;" onclick="loadPage('layanan/akses-titipan.html?source=pengurus&v=79', this)">▦ Scan Penitipan</a>
+        <a class="nav-item menu-akses" id="menu-buku-tamu" style="display: none;" onclick="loadPage('PKL/buku-tamu.html?v=80', this)">📒 Buku Tamu</a>
+        <a class="nav-item menu-akses" id="menu-penitipan-barang" style="display: none;" onclick="loadPage('PKL/penitipan-barang.html?v=80', this)">📦 Penitipan Barang</a>
       </div>
 
       <div class="menu-group">
@@ -2328,8 +2326,6 @@ function getMobileUtilityItems() {
     items.push({ id:'menu-absen-guru', label:'Scan Absen', icon:mobileUtilityIcon.scan, center:true });
   } else if (naqibView && bolehAksesMenu('menu-absen-asrama')) {
     items.push({ id:'menu-absen-asrama', label:'Absen Program', icon:mobileUtilityIcon.scan, center:true });
-  } else if (activeRoles.some(role => ['admin','direktur','wakil','layanan','operasional'].includes(role)) && bolehAksesMenu('menu-scan-penitipan')) {
-    items.push({ id:'menu-scan-penitipan', label:'Scan Titipan', icon:mobileUtilityIcon.scan, center:true });
   }
   if (bolehAksesMenu('menu-chat')) items.push({ id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' });
   if (bolehAksesMenu('menu-profil')) items.push({ id:'menu-profil', label:'Profil', icon:mobileUtilityIcon.profile });
@@ -2845,17 +2841,17 @@ function sinkronkanBadgePintasanMobile() {
     }
 
     const DEFAULT_ROLE_MENUS = {
-      operasional:["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat","menu-buku-izin","menu-buku-tamu","menu-penitipan-barang","menu-scan-penitipan"],
-      admin:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-laporan-observasi","menu-perizinan-santri","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-komentar","menu-media","menu-db-master","menu-jadwal","menu-qr-kelas","menu-users","menu-koreksi","menu-profil","menu-chat","menu-buku-izin","menu-buku-tamu","menu-penitipan-barang","menu-scan-penitipan"],
-      direktur:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-laporan-observasi","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat","menu-buku-izin","menu-buku-tamu","menu-penitipan-barang","menu-scan-penitipan"],
-      wakil:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-laporan-observasi","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat","menu-buku-izin","menu-buku-tamu","menu-penitipan-barang","menu-scan-penitipan"],
+      operasional:["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat","menu-buku-izin"],
+      admin:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-perizinan-santri","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-komentar","menu-media","menu-db-master","menu-jadwal","menu-qr-kelas","menu-users","menu-koreksi","menu-profil","menu-chat","menu-buku-izin"],
+      direktur:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat","menu-buku-izin"],
+      wakil:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat","menu-buku-izin"],
       guru:["menu-home","menu-kalender-pendidikan","menu-absen-guru","menu-absen-kbm","menu-guru-menulis","menu-tahfiz","menu-laporan-murojaah","menu-nilai","menu-asesmen-guru","menu-asesmen-santri","menu-profil","menu-chat"],
       naqib:["menu-home","menu-kalender-pendidikan","menu-absen-asrama","menu-skor-usrah","menu-disiplin","menu-gamifikasi","menu-jadwal-piket","menu-jurnal-piket","menu-usrah","menu-antrean-kasus","menu-asesmen-naqib","menu-asesmen-santri","menu-profil","menu-chat"],
-      konselor:["menu-home","menu-kalender-pendidikan","menu-antrean-kasus","menu-perizinan-santri","menu-laporan-observasi","menu-profil","menu-chat"],
-      supervisor:["menu-home","menu-kalender-pendidikan","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-laporan-observasi","menu-profil","menu-chat"],
+      konselor:["menu-home","menu-kalender-pendidikan","menu-antrean-kasus","menu-perizinan-santri","menu-profil","menu-chat"],
+      supervisor:["menu-home","menu-kalender-pendidikan","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
       kesehatan:["menu-home","menu-kalender-pendidikan","menu-jurnal-kesehatan","menu-pemeriksaan-kesehatan","menu-perizinan-uks","menu-stok-obat","menu-profil","menu-chat"],
       sarpras:["menu-home","menu-kalender-pendidikan","menu-jurnal-sarpras","menu-checklist-sarpras","menu-tindak-sarpras","menu-profil","menu-chat"],
-      layanan:["menu-home","menu-kalender-pendidikan","menu-jurnal-pkl","menu-profil","menu-chat","menu-buku-izin","menu-buku-tamu","menu-penitipan-barang","menu-scan-penitipan"],
+      layanan:["menu-home","menu-kalender-pendidikan","menu-jurnal-pkl","menu-profil","menu-chat","menu-buku-izin","menu-buku-tamu","menu-penitipan-barang"],
       keuangan:["menu-home","menu-kalender-pendidikan","menu-pusat-keuangan","menu-pengaturan-keuangan","menu-kasir","menu-profil","menu-chat"],
       kasir:["menu-home","menu-kasir","menu-profil","menu-chat"],
       "kepala-sekolah":["menu-home","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-monitoring-absen-guru","menu-profil","menu-chat"],
@@ -3032,11 +3028,16 @@ function sinkronkanBadgePintasanMobile() {
         ["menu-home","menu-profil","menu-chat"].forEach(menuId => {
           if (rolesUntukMenu.length && !gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
         });
-
-        // V79: buku administrasi dan scan penitipan adalah fitur front-office umum.
-        if (rolesUntukMenu.some(role => ['admin','direktur','wakil','layanan','operasional'].includes(role))) {
-          ['menu-buku-izin','menu-buku-tamu','menu-penitipan-barang','menu-scan-penitipan'].forEach(menuId => {
+        // V80: Buku Tamu dan Penitipan hanya untuk Pengurus/Tim Layanan (PKL).
+        if (rolesUntukMenu.includes('layanan')) {
+          ['menu-buku-tamu','menu-penitipan-barang'].forEach(menuId => {
             if (!gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
+          });
+        }
+        else {
+          ['menu-buku-tamu','menu-penitipan-barang'].forEach(menuId => {
+            const idx = gabunganMenu.indexOf(menuId);
+            if (idx >= 0) gabunganMenu.splice(idx, 1);
           });
         }
 

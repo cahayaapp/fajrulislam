@@ -100,7 +100,7 @@
     financeSettings:['menu-pengaturan-keuangan'],
     cashier:['menu-kasir'],
     facilities:['menu-jurnal-sarpras','menu-checklist-sarpras','menu-tindak-sarpras'],
-    observer:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-sarpras','menu-observer-dapur','menu-observer-uks','menu-laporan-observasi'],
+    observer:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-sarpras','menu-observer-dapur','menu-observer-uks'],
     assessment:['menu-asesmen-naqib','menu-asesmen-guru','menu-asesmen-santri','menu-asesmen-sdm'],
     media:['menu-komentar','menu-media'],chat:['menu-chat'],pkl:['menu-jurnal-pkl'],operationalManagement:['menu-manajemen-operasional']
   };
