@@ -1,0 +1,14 @@
+CAHAYA APP V80.5 — HOTFIX STATUS FINAL INPUT NILAI
+
+Perbaikan:
+1. Status FINAL sekarang memakai identitas sesi yang spesifik: tahun akademik, semester, jenis ujian, periode, jenis penilaian, guru, mata pelajaran, dan cakupan kelas.
+2. Marker FINAL versi lama tidak lagi dapat mengunci sesi baru hanya karena kunci sesi lama cocok sebagian.
+3. Pembacaan nilai lama diperketat agar guru, mapel, periode, jenis ujian, tahun, dan kelas harus benar-benar sesuai.
+4. Sesi hanya dianggap FINAL dari data lama jika setiap santri aktif pada sesi yang sedang dibuka mempunyai record FINAL yang cocok persis.
+5. Berpindah mata pelajaran/periode selalu mereset state lock sebelum status sesi baru diperiksa.
+6. Nilai lama tetap dapat dimuat dan dimigrasikan ke indeks sesi V80.5 tanpa membuat duplikasi record.
+7. Cache-buster menu Input Nilai dinaikkan ke v805.
+
+Dampak:
+- Pelajaran yang belum pernah diinput tidak lagi ikut terkunci karena FINAL milik sesi lain.
+- Nilai yang memang sudah FINAL secara sah tetap terkunci.

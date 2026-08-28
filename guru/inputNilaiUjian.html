@@ -1314,7 +1314,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   window.examSubjectChanged=function(){
     const classes=classesForActiveAssessment();
     const info=document.getElementById('subjectClassInfo'); if(info)info.textContent=classes.length?`Kelas otomatis: ${classes.join(' • ')}`:'Belum ada kelas pada jadwal Anda.';
-    document.getElementById('scorePanel').hidden=true;setupConfirmed=false;
+    document.getElementById('scorePanel').hidden=true;setupConfirmed=false;currentSessionFinal=false;
   };
   window.selectExamType=function(type){
     document.getElementById('jenisUjian').innerHTML=`<option value="${type}">${type}</option>`;document.getElementById('jenisUjian').value=type;
@@ -1322,7 +1322,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     renderPeriodButtons(type);showExamScene('period');
   };
   window.selectExamPeriod=function(value){
-    if(!value)return;const type=document.getElementById('jenisUjian').value;
+    if(!value)return;currentSessionFinal=false;const type=document.getElementById('jenisUjian').value;
     const chooser=document.getElementById('periodChooser');chooser.innerHTML=`<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`;chooser.value=value;
     document.getElementById('periodeUjian').value=value;
     document.getElementById('bulanUjian').innerHTML=`<option value="${type==='Bulanan'?escapeHtml(value):''}">${type==='Bulanan'?escapeHtml(value):''}</option>`;
@@ -1344,7 +1344,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     document.getElementById('kelasKelompok').innerHTML=`<option value="${classes.join(' | ')}">${classes.join(' | ')}</option>`;
     document.getElementById('kelasKelompok').value=classes.join(' | ');
     document.getElementById('materiUjian').value=`${config.label} • ${jenis} ${period}`;
-    setupConfirmed=true; refreshStrukturTabel(); loadSantri(); document.getElementById('scorePanel').hidden=false; document.body.classList.add('c53-score-focus'); document.getElementById('scorePanel').scrollIntoView({behavior:'smooth',block:'start'});
+    setupConfirmed=true; currentSessionFinal=false; refreshStrukturTabel(); loadSantri(); document.getElementById('scorePanel').hidden=false; document.body.classList.add('c53-score-focus'); document.getElementById('scorePanel').scrollIntoView({behavior:'smooth',block:'start'});
     await loadExistingScoresForCurrentSetup();
   };
 
@@ -1457,7 +1457,26 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     return "k" + (hash >>> 0).toString(36);
   }
 
+  function normalizeSessionText(value = "") {
+    return String(value || "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().replace(/[’'`]/g, "")
+      .replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function classScopeFromParams(params = {}) {
+    const raw = Array.isArray(params.kelasList)
+      ? params.kelasList
+      : String(params.kelas || "").split("|");
+    return [...new Set(raw.map(item => String(item || "").trim()).filter(Boolean))]
+      .sort((a,b) => a.localeCompare(b, "id", {numeric:true}));
+  }
+
   function currentExamParams() {
+    const kelasElement = document.getElementById("kelasKelompok");
+    const kelas = String(kelasElement?.value || classesForActiveAssessment().join(" | ") || "").trim();
+    const kelasList = kelas.split("|").map(item => item.trim()).filter(Boolean);
+    const guru = document.getElementById("guruPenguji").value;
     return {
       jenis: document.getElementById("jenisUjian").value || "Bulanan",
       jenisPenilaian: activeAssessment()?.label || "",
@@ -1467,11 +1486,32 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
       bulan: document.getElementById("bulanUjian").value,
       periode: document.getElementById("periodeUjian").value,
       mapel: document.getElementById("mapel").value,
-      guru: document.getElementById("guruPenguji").value
+      guru,
+      guruKode: String(teacherCodeAktif || "").trim().toUpperCase(),
+      guruKey: String(teacherCodeAktif || "").trim().toUpperCase() || normalizeTeacherIdentity(guru),
+      kelas,
+      kelasList
     };
   }
 
+  // V80.5: identitas sesi FINAL harus spesifik sampai guru + mapel + jenis penilaian + periode + cakupan kelas.
   function scoreSessionKey(params = currentExamParams()) {
+    const classScope = classScopeFromParams(params).map(normalizeSessionText).join("~");
+    return stableKey([
+      "v805",
+      params.tahun,
+      params.semester,
+      params.jenis,
+      params.periode || params.bulan,
+      params.kodePenilaian,
+      normalizeSessionText(params.mapel),
+      String(params.guruKode || params.guruKey || normalizeTeacherIdentity(params.guru || "")),
+      classScope
+    ].join("|"));
+  }
+
+  // Hanya untuk membaca indeks V75–V80.4 agar nilai lama tetap dapat dimigrasikan ke sesi baru.
+  function legacyScoreSessionKeyV77(params = currentExamParams()) {
     return stableKey([params.tahun, params.semester, params.jenis, params.periode, params.kodePenilaian, params.mapel, params.guru].join("|"));
   }
 
@@ -1483,26 +1523,81 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     return `cahaya_app/nilai_input_index/${scoreSessionKey(params)}`;
   }
 
+  function legacyScoreIndexPathV77(params = currentExamParams()) {
+    return `cahaya_app/nilai_input_index/${legacyScoreSessionKeyV77(params)}`;
+  }
+
   function scoreFinalPath(params = currentExamParams()) {
     return `cahaya_app/nilai_input_final/${scoreSessionKey(params)}`;
   }
 
-  function recordMatchesSession(record, params) {
+  function teacherMatchesSession(value, params = {}) {
+    const source = normalizeTeacherIdentity(value || "");
+    if (!source) return false;
+    const target = normalizeTeacherIdentity(params.guru || "");
+    if (source === target) return true;
+    const code = String(params.guruKode || "").trim().toUpperCase();
+    const aliases = (TEACHER_CODE_ALIASES[code] || []).map(normalizeTeacherIdentity).filter(Boolean);
+    return aliases.includes(source);
+  }
+
+  function recordMatchesSession(record, params, options = {}) {
     if (!record) return false;
-    const sameSubject = String(record.mata_pelajaran || record.mataPelajaran || record.mapel || "") === params.mapel;
+    const subject = normalizeSessionText(record.mata_pelajaran || record.mataPelajaran || record.mapel || "");
+    const sameSubject = subject && subject === normalizeSessionText(params.mapel || "");
+
     const oldAssessmentCode = String(record.kode_penilaian || "").trim();
-    const sameAssessment = oldAssessmentCode ? oldAssessmentCode === params.kodePenilaian : true;
-    const sameYear = String(record.tahun_akademik || record.tahunAjaran || "") === String(params.tahun || "");
-    const oldPeriod = String(record.periode_ujian || record.periode || record.bulan || "");
-    const samePeriod = oldPeriod === String(params.periode || params.bulan || "");
-    return sameSubject && sameAssessment && sameYear && samePeriod;
+    const oldAssessmentLabel = normalizeSessionText(record.jenis_penilaian || "");
+    const sameAssessment = oldAssessmentCode
+      ? oldAssessmentCode === String(params.kodePenilaian || "")
+      : (!oldAssessmentLabel || oldAssessmentLabel === normalizeSessionText(params.jenisPenilaian || ""));
+
+    const oldYear = String(record.tahun_akademik || record.tahunAjaran || "").trim();
+    const sameYear = !oldYear || oldYear === String(params.tahun || "").trim();
+
+    const oldPeriod = normalizeSessionText(record.periode_ujian || record.periode || record.bulan || "");
+    const targetPeriod = normalizeSessionText(params.periode || params.bulan || "");
+    const samePeriod = oldPeriod && oldPeriod === targetPeriod;
+
+    const oldExamType = normalizeSessionText(record.jenis_ujian || "");
+    const sameExamType = !oldExamType || oldExamType === normalizeSessionText(params.jenis || "");
+
+    const oldSemester = normalizeSessionText(record.semester || "");
+    const sameSemester = !oldSemester || oldSemester === normalizeSessionText(params.semester || "");
+
+    const oldTeacherRaw = record.guru_penguji || record.guru || record.nama_guru || "";
+    const sameTeacher = String(oldTeacherRaw || "").trim()
+      ? teacherMatchesSession(oldTeacherRaw, params)
+      : Boolean(options.allowMissingTeacher);
+
+    const recordClass = String(record.kelas_kelompok || record.kelas || "").trim();
+    const scope = classScopeFromParams(params).map(normalizeSessionText);
+    const sameClass = !recordClass || !scope.length || scope.includes(normalizeSessionText(recordClass));
+
+    return sameSubject && sameAssessment && sameYear && samePeriod && sameExamType && sameSemester && sameTeacher && sameClass;
+  }
+
+  function markerMatchesSession(marker, params) {
+    if (!marker || String(marker.status || "").toUpperCase() !== "FINAL") return false;
+    if (String(marker.sessionVersion || "") !== "v805") return false;
+    const sameMapel = normalizeSessionText(marker.mapel || "") === normalizeSessionText(params.mapel || "");
+    const sameGuru = teacherMatchesSession(marker.guru || "", params);
+    const sameJenis = normalizeSessionText(marker.jenisUjian || "") === normalizeSessionText(params.jenis || "");
+    const samePeriode = normalizeSessionText(marker.periode || "") === normalizeSessionText(params.periode || params.bulan || "");
+    const samePenilaian = String(marker.kodePenilaian || "") === String(params.kodePenilaian || "");
+    const sameTahun = String(marker.tahunAkademik || "") === String(params.tahun || "");
+    const markerClasses = String(marker.kelasScope || "").split("|").map(x=>normalizeSessionText(x)).filter(Boolean).sort();
+    const currentClasses = classScopeFromParams(params).map(normalizeSessionText).sort();
+    const sameClasses = markerClasses.length === currentClasses.length && markerClasses.every((x,i)=>x===currentClasses[i]);
+    return sameMapel && sameGuru && sameJenis && samePeriode && samePenilaian && sameTahun && sameClasses;
   }
 
   async function loadLegacySessionRecords(params) {
     const monthly = params.jenis === "Bulanan";
     const dbPath = monthly ? "cahaya_app/nilai_ujian_bulanan" : "cahaya_app/nilai_ujian";
+    const activeKeys = new Set(activeStudentList.map(item => scoreStudentKey(item.name, item.className)));
     try {
-      // Fallback untuk data lama sebelum indeks V75. Dibatasi agar tidak mengunduh seluruh histori.
+      // Fallback data lama dibuat ketat: guru, mapel, jenis ujian, periode, tahun, dan kelas harus cocok.
       const snap = await get(query(ref(db, dbPath), limitToLast(monthly ? 1800 : 1200)));
       const data = snap.val() || {};
       const result = {};
@@ -1510,8 +1605,10 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         if (!recordMatchesSession(record, params)) return;
         const name = String(record.nama_santri || record.namaSantri || record.nama || "");
         const cls = String(record.kelas_kelompok || record.kelas || "");
-        if (!name) return;
-        result[scoreStudentKey(name, cls)] = { recordKey, dbPath, data: record };
+        if (!name || !cls) return;
+        const studentKey = scoreStudentKey(name, cls);
+        if (activeKeys.size && !activeKeys.has(studentKey)) return;
+        result[studentKey] = { recordKey, dbPath, data: record };
       });
       return result;
     } catch (error) {
@@ -1522,16 +1619,37 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 
   async function loadExistingScoresForCurrentSetup() {
     existingScoreRecords = {};
+    currentSessionFinal = false;
+    applyFinalState();
     if (!setupConfirmed) return;
     const params = currentExamParams();
-    try {
-      const indexSnap = await get(ref(db, scoreIndexPath(params)));
-      const indexed = indexSnap.exists() ? indexSnap.val() : {};
+    const activeKeys = new Set(activeStudentList.map(item => scoreStudentKey(item.name, item.className)));
+
+    const acceptIndexedData = (indexed = {}) => {
       Object.entries(indexed || {}).forEach(([studentKey, item]) => {
         if (!item || !item.data) return;
-        existingScoreRecords[studentKey] = item;
+        const record = item.data;
+        if (!recordMatchesSession(record, params)) return;
+        const name = String(record.nama_santri || record.namaSantri || record.nama || "");
+        const cls = String(record.kelas_kelompok || record.kelas || "");
+        const exactKey = name && cls ? scoreStudentKey(name, cls) : studentKey;
+        if (activeKeys.size && !activeKeys.has(exactKey)) return;
+        existingScoreRecords[exactKey] = item;
       });
+    };
 
+    try {
+      // 1) Indeks sesi baru V80.5.
+      const indexSnap = await get(ref(db, scoreIndexPath(params))).catch(()=>null);
+      if (indexSnap?.exists?.()) acceptIndexedData(indexSnap.val() || {});
+
+      // 2) Migrasi aman dari indeks lama V75–V80.4. Data tetap wajib lolos pencocokan sesi yang ketat.
+      if (!Object.keys(existingScoreRecords).length) {
+        const legacyIndexSnap = await get(ref(db, legacyScoreIndexPathV77(params))).catch(()=>null);
+        if (legacyIndexSnap?.exists?.()) acceptIndexedData(legacyIndexSnap.val() || {});
+      }
+
+      // 3) Fallback record lama apabila indeks belum tersedia.
       if (!Object.keys(existingScoreRecords).length) {
         existingScoreRecords = await loadLegacySessionRecords(params);
       }
@@ -1541,10 +1659,13 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         const studentKey = scoreStudentKey(row.dataset.nama, row.dataset.kelas || "");
         let item = existingScoreRecords[studentKey];
         if (!item) {
-          // Kompatibilitas data lama yang mungkin tidak menyimpan kelas secara konsisten.
+          // Hanya izinkan fallback nama bila kelas record juga sama / record lama benar-benar tidak memiliki kelas.
           item = Object.values(existingScoreRecords).find(candidate => {
             const d = candidate?.data || {};
-            return String(d.nama_santri || d.namaSantri || d.nama || "") === String(row.dataset.nama || "");
+            const sameName = String(d.nama_santri || d.namaSantri || d.nama || "") === String(row.dataset.nama || "");
+            const candidateClass = String(d.kelas_kelompok || d.kelas || "").trim();
+            const sameClass = !candidateClass || normalizeSessionText(candidateClass) === normalizeSessionText(row.dataset.kelas || "");
+            return sameName && sameClass && recordMatchesSession(d, params);
           });
         }
         if (!item) return;
@@ -1565,18 +1686,31 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         if (anyFilled) loadedCount++;
         recalcScoreRow(row);
       });
+
+      // Marker FINAL lama tidak lagi dipercaya untuk mengunci sesi baru.
+      // Marker V80.5 harus membawa identitas sesi lengkap dan cocok dengan guru/mapel/periode/kelas saat ini.
       const finalSnap = await get(ref(db, scoreFinalPath(params))).catch(()=>null);
-      currentSessionFinal = Boolean(finalSnap?.exists?.() && finalSnap.val()?.status === "FINAL");
-      if (!currentSessionFinal) {
-        const populated = Object.values(existingScoreRecords).filter(item=>item?.data);
-        currentSessionFinal = populated.length >= activeStudentList.length && populated.every(item => String(item.data.status_nilai || "").toUpperCase() === "FINAL");
-      }
+      const marker = finalSnap?.exists?.() ? finalSnap.val() : null;
+      const markerFinal = markerMatchesSession(marker, params);
+
+      // Kompatibilitas FINAL lama: hanya dianggap final bila SETIAP santri aktif memiliki record FINAL
+      // yang benar-benar cocok dengan sesi ini. Jumlah record lain tidak boleh mengunci sesi.
+      const rosterFinal = activeStudentList.length > 0 && activeStudentList.every(student => {
+        const studentKey = scoreStudentKey(student.name, student.className);
+        const item = existingScoreRecords[studentKey];
+        return Boolean(item?.data && recordMatchesSession(item.data, params) && String(item.data.status_nilai || "").toUpperCase() === "FINAL");
+      });
+
+      currentSessionFinal = Boolean(markerFinal || rosterFinal);
       applyFinalState();
       updateStats();
       if (currentSessionFinal) showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
       else if (loadedCount) showToast("success", "Nilai sebelumnya dimuat", `${loadedCount} data santri sudah terisi dan dapat dilanjutkan atau diedit.`);
     } catch (error) {
+      currentSessionFinal = false;
+      applyFinalState();
       console.warn("Nilai sebelumnya belum dapat dimuat:", error);
+      showToast("error", "Status nilai gagal diperiksa", "Sesi tidak dikunci otomatis. Muat ulang halaman sebelum mengirim nilai final.");
     }
   }
 
@@ -1891,9 +2025,14 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
       }
       updates[scoreFinalPath(params)] = {
         status:"FINAL", locked:true, finalAt:nowIso, finalBy,
+        sessionVersion:"v805", sessionKey:scoreSessionKey(params),
         jenisPenilaian:params.jenisPenilaian, kodePenilaian:params.kodePenilaian,
         jenisUjian:params.jenis, periode:params.periode, mapel:params.mapel,
-        tahunAkademik:params.tahun, guru:params.guru, jumlahSantri:rows.length
+        tahunAkademik:params.tahun, semester:params.semester,
+        guru:params.guru, guruKode:params.guruKode || "",
+        kelasScope:classScopeFromParams(params).join(" | "),
+        rosterHash:stableKey(activeStudentList.map(item=>`${item.className}|${item.name}`).sort().join("||")),
+        jumlahSantri:rows.length
       };
       // Satu multi-location update: seluruh nilai menjadi FINAL sekaligus atau gagal sekaligus.
       await update(ref(db), updates);
