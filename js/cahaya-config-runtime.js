@@ -90,9 +90,9 @@
     }catch(e){console.warn('Branding runtime:',e)}
   }
   const menuModules={
-    academic:['menu-absen-guru','menu-absen-kbm','menu-guru-menulis','menu-prauas','menu-input-soal-uas','menu-nilai','menu-raport','menu-halqah','menu-monitoring-absen-guru'],
+    academic:['menu-absen-guru','menu-absen-kbm','menu-guru-menulis','menu-prauas','menu-input-soal-uas','menu-nilai','menu-raport','menu-halqah','menu-monitoring-absen-guru','menu-kontrol-pendidikan','menu-review-pendidikan','menu-dashboard-pendidikan'],
     tahfiz:['menu-tahfiz','menu-laporan-murojaah','menu-buku-tahfiz'],
-    nurturing:['menu-absen-asrama','menu-skor-usrah','menu-disiplin','menu-mentoring','menu-gamifikasi','menu-jadwal-piket','menu-jurnal-piket','menu-usrah'],
+    nurturing:['menu-absen-asrama','menu-skor-usrah','menu-disiplin','menu-mentoring','menu-gamifikasi','menu-jadwal-piket','menu-jurnal-piket','menu-usrah','menu-kontrol-pembinaan','menu-review-pembinaan','menu-mentoring-individu','menu-mentoring-usrah','menu-pantau-pendampingan'],
     counseling:['menu-antrean-kasus','menu-buku-kasus','menu-evaluasi-kasus'],
     health:['menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan','menu-perizinan-uks','menu-stok-obat'],
     permits:['menu-perizinan-santri'],
@@ -101,8 +101,8 @@
     cashier:['menu-kasir'],
     facilities:['menu-jurnal-sarpras','menu-checklist-sarpras','menu-tindak-sarpras'],
     observer:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-sarpras','menu-observer-dapur','menu-observer-uks'],
-    assessment:['menu-asesmen-naqib','menu-asesmen-guru','menu-asesmen-santri','menu-asesmen-sdm'],
-    media:['menu-komentar','menu-media'],chat:['menu-chat'],pkl:['menu-jurnal-pkl'],operationalManagement:['menu-manajemen-operasional']
+    assessment:['menu-asesmen-naqib','menu-asesmen-guru','menu-asesmen-santri','menu-pantau-asesmen','menu-asesmen-sdm'],
+    media:['menu-komentar','menu-media'],chat:['menu-chat'],pkl:['menu-jurnal-pkl'],operationalDashboard:['menu-dashboard-operasional']
   };
   function disableElement(el){if(!el)return;el.dataset.moduleDisabled='true';el.style.display='none';}
   function applyModules(scope=document){

@@ -2316,20 +2316,37 @@
       return assignments;
     }
 
+
+    function replacementMatchesTeacher(record = {}, activeTeacherCode = teacherCode) {
+      const candidate = compactIdentity(record.guruPengganti || "");
+      if (!candidate) return false;
+      const identities = [teacherName, activeTeacherCode, ...(TEACHER_ALIASES[activeTeacherCode] || [])].map(compactIdentity).filter(Boolean);
+      return identities.some(x => x === candidate || (x.length >= 4 && (x.includes(candidate) || candidate.includes(x))));
+    }
+
+    function activeTeacherAssignments(dateValue, activeTeacherCode) {
+      return buildDailyAssignments(dateValue).filter(item => {
+        if (item.teacher === activeTeacherCode) return true;
+        return replacementTeacherRows.some(r => {
+          if (!r || r.tanggal !== dateValue || !replacementMatchesTeacher(r, activeTeacherCode)) return false;
+          const scheduleMatch = r.jadwalId && compactIdentity(r.jadwalId) === compactIdentity(item.id);
+          const fallback = compactIdentity(r.kelas || "") === compactIdentity(item.className || "") && compactIdentity(r.mapel || "") === compactIdentity(item.subject || "");
+          return scheduleMatch || fallback;
+        });
+      }).map(item => {
+        if (item.teacher === activeTeacherCode) return item;
+        const record = replacementTeacherRows.find(r => r.tanggal === dateValue && replacementMatchesTeacher(r, activeTeacherCode) && ((r.jadwalId && compactIdentity(r.jadwalId) === compactIdentity(item.id)) || (compactIdentity(r.kelas || "") === compactIdentity(item.className || "") && compactIdentity(r.mapel || "") === compactIdentity(item.subject || ""))));
+        return {...item,isReplacement:true,originalTeacher:item.teacher,teacher:activeTeacherCode,replacementRecordId:record?.id||""};
+      });
+    }
+
     function assignmentsForTeacherAndRoom(
       dateValue,
       teacherCode,
       room
     ) {
-      return buildDailyAssignments(dateValue)
-        .filter(item => {
-          return (
-            item.teacher === teacherCode &&
-            item.unit === room.unit &&
-            compactIdentity(item.className) ===
-              compactIdentity(room.kelas)
-          );
-        });
+      return activeTeacherAssignments(dateValue, teacherCode)
+        .filter(item => item.unit === room.unit && compactIdentity(item.className) === compactIdentity(room.kelas));
     }
 
     function akunGuruMendukungAbsensiGabungan() {
@@ -2365,8 +2382,7 @@
         }));
       }
 
-      const allTeacherAssignments = buildDailyAssignments(dateValue)
-        .filter(item => item.teacher === activeTeacherCode);
+      const allTeacherAssignments = activeTeacherAssignments(dateValue, activeTeacherCode);
       const seen = new Set();
       const groups = [];
 
@@ -2579,6 +2595,7 @@
     let profile = readActiveProfile();
     let teacherCode = "";
     let onlineScheduleRows = [];
+    let replacementTeacherRows = [];
     let rooms = cloneData(DEFAULT_ROOMS);
     let locations =
       cloneData(DEFAULT_LOCATIONS);
@@ -3513,6 +3530,9 @@
             guruKey: teacherKey,
             guruKodeKalender: teacherCode,
             namaGuru: teacherName,
+            statusGuruPengganti: Boolean(item.isReplacement),
+            guruPenggantiUntuk: item.isReplacement ? (item.originalTeacher || "") : "",
+            idCatatanGuruBerhalangan: item.replacementRecordId || "",
             emailGuru: profile.email || "",
             jadwalId: item.id,
             hariJadwal: item.dayLabel,
@@ -3674,7 +3694,8 @@
                 db,
                 PATHS.schedule
               )
-            )
+            ),
+            get(ref(db, "cahaya_app/guru_berhalangan"))
           ]);
 
         const timeoutPromise =
@@ -3692,11 +3713,16 @@
         const [
           locationSnapshot,
           roomSnapshot,
-          scheduleSnapshot
+          scheduleSnapshot,
+          replacementSnapshot
         ] = await Promise.race([
           firebaseDataPromise,
           timeoutPromise
         ]);
+
+        replacementTeacherRows = replacementSnapshot?.exists?.()
+          ? Object.entries(replacementSnapshot.val() || {}).map(([id, v]) => ({ id, ...(v || {}) }))
+          : [];
 
         if (
           locationSnapshot.exists()

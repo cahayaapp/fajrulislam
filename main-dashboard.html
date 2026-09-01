@@ -5,7 +5,7 @@
   <script src="config/tenant-config.js"></script>
   <script src="keuangan/finance-settings.js"></script>
   <script src="config/master-data.js"></script>
-  <script src="js/cahaya-config-runtime.js" defer></script>
+  <script src="js/cahaya-config-runtime.js?v=83" defer></script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -1678,7 +1678,7 @@
 
 
   <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
-  <meta name="cahaya-build" content="20260821-v73">
+  <meta name="cahaya-build" content="20260901-v83">
 
 <style id="cahaya-v48-guru-scan-nav">
 /* V48 — tombol Scan Absen khusus tampilan Guru, model center action */
@@ -2184,9 +2184,9 @@
     const allMenuHTML = `
       <div class="menu-group" id="group-utama">
         <div class="group-label">Utama</div>
-        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=73', this)">🏠 Beranda Dashboard</a>
+        <a class="nav-item menu-akses" id="menu-home" style="display:none;" onclick="loadPage('home.html?v=83', this)">🏠 Beranda Dashboard</a>
         <a class="nav-item menu-akses" id="menu-kalender-pendidikan" style="display:none;" onclick="loadPage('kalender.html?mode=view&v=40', this)">🗓️ Kalender Pendidikan</a>
-        <a class="nav-item menu-akses" id="menu-manajemen-operasional" style="display:none;" onclick="loadPage('operasional/index.html?v=73', this)">◉ Manajemen Operasional</a>
+        <a class="nav-item menu-akses" id="menu-dashboard-operasional" style="display:none;" onclick="openOperationalDashboard(this)">⚡ Dashboard Operasional</a>
       </div>
 
 
@@ -2195,6 +2195,24 @@
         <a class="nav-item menu-akses" id="menu-dashboard-pimpinan" style="display: none;" onclick="loadPage('pimpinan/dashboard-pimpinan.html?v=80.7', this)">📊 Dashboard Pimpinan</a>
         <a class="nav-item menu-akses" id="menu-perizinan-santri" style="display: none;" onclick="loadPage('pimpinan/perizinan-santri.html', this)">🛡️ Perizinan Santri</a>
         <a class="nav-item menu-akses" id="menu-rekap-kepala-sekolah" style="display: none;" onclick="loadPage('pimpinan/rekap-kepala-sekolah.html?v=20', this)">🏫 Rekap Kepala Sekolah</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Manajemen Pendidikan</div>
+        <a class="nav-item menu-akses" id="menu-kontrol-pendidikan" style="display: none;" onclick="loadPage('manajer/kontrol-pendidikan.html?v=81', this)">🎛️ Kontrol Pendidikan Harian</a>
+        <a class="nav-item menu-akses" id="menu-review-pendidikan" style="display: none;" onclick="loadPage('supervisor/review-pendidikan.html?v=81', this)">🎯 Review Pendidikan Bulanan</a>
+        <a class="nav-item menu-akses" id="menu-dashboard-pendidikan" style="display: none;" onclick="loadPage('pimpinan/dashboard-pendidikan.html?v=81', this)">📚 Dashboard Direktur Pendidikan</a>
+        <a class="nav-item menu-akses" id="menu-tindak-akademik" style="display: none;" onclick="loadPage('pendidikan/tindak-lanjut-akademik.html?v=83', this)">🧩 Tindak Lanjut Akademik</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="group-label">Pembinaan Karakter</div>
+        <a class="nav-item menu-akses" id="menu-kontrol-pembinaan" style="display: none;" onclick="loadPage('manajer/kontrol-pembinaan.html?v=83', this)">🌱 Kontrol Pembinaan Harian</a>
+        <a class="nav-item menu-akses" id="menu-review-pembinaan" style="display: none;" onclick="loadPage('supervisor/review-pembinaan.html?v=83', this)">🎯 Review Pembinaan Bulanan</a>
+        <a class="nav-item menu-akses" id="menu-mentoring-individu" style="display: none;" onclick="loadPage('pembinaan/mentoring-individu.html?v=83', this)">🤝 Mentoring Individu</a>
+        <a class="nav-item menu-akses" id="menu-mentoring-usrah" style="display: none;" onclick="loadPage('pembinaan/mentoring-usrah.html?v=83', this)">👥 Mentoring Usrah</a>
+        <a class="nav-item menu-akses" id="menu-pantau-pendampingan" style="display: none;" onclick="loadPage('pembinaan/pantau-pendampingan.html?v=83', this)">📊 Pantau Pendampingan</a>
+        <a class="nav-item menu-akses" id="menu-dashboard-dua-divisi" style="display: none;" onclick="loadPage('pimpinan/dashboard-dua-divisi.html?v=83', this)">✨ Executive Dua Divisi</a>
       </div>
 
       <div class="menu-group">
@@ -2276,10 +2294,11 @@
         <a class="nav-item menu-akses" id="menu-asesmen-naqib" style="display: none;" onclick="loadPage('pusat-asesmen/naqib.html', this)">🧘 Asesmen Mandiri Naqib</a>
         <a class="nav-item menu-akses" id="menu-asesmen-guru" style="display: none;" onclick="loadPage('pusat-asesmen/guru.html', this)">🧘 Asesmen Mandiri Guru</a>
         <a class="nav-item menu-akses" id="menu-asesmen-santri" style="display: none;" onclick="loadPage('pusat-asesmen/santri.html?v=59', this)">📊 Asesmen CAHAYA Santri</a>
+        <a class="nav-item menu-akses" id="menu-pantau-asesmen" style="display: none;" onclick="loadPage('pembinaan/pantau-asesmen.html?v=83', this)">📈 Pantau Asesmen CAHAYA</a>
       </div>
 
       <div class="menu-group">
-        <div class="group-label">Bimbingan Konseling</div>
+        <div class="group-label">Kasus & Konseling</div>
         <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="openRoleAwareCasePage(this)">⏳ Tindak Pelanggaran</a>
       </div>
 
@@ -2290,7 +2309,7 @@
         <a class="nav-item menu-akses" id="menu-db-master" style="display: none;" onclick="loadPage('admin/database.html', this)">🗄️ Database Master</a>
         <a class="nav-item menu-akses" id="menu-jadwal" style="display: none;" onclick="loadPage('admin/atur-jadwal.html', this)">📅 Atur Jadwal KBM</a>
         <a class="nav-item menu-akses" id="menu-qr-kelas" style="display: none;" onclick="loadPage('admin/qrkelas.html', this)">▦ Master QR Kelas</a>
-        <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html?v=73', this)">🔐 Manajemen User</a>
+        <a class="nav-item menu-akses" id="menu-users" style="display: none;" onclick="loadPage('admin/users.html?v=83', this)">🔐 Manajemen User</a>
         <a class="nav-item menu-akses" id="menu-koreksi" style="display: none;" onclick="loadPage('admin/settings.html', this)">🛠️ Pusat Koreksi Data</a>
         <a class="nav-item menu-akses" id="menu-profil" style="display: none;" onclick="loadPage('profil.html', this)">👤 Pengaturan Profil</a>
       </div>
@@ -2298,9 +2317,48 @@
 
 
 
+function openOperationalDashboard(el) {
+  const role = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
+  const assignmentText = Array.isArray(pUserSafe?.workspaceAssignments)
+    ? pUserSafe.workspaceAssignments.map(a => `${a.divisionLabel||a.division||''} ${a.role||''}`).join(' ').toLowerCase()
+    : '';
+  let route = '';
+  const routes = {
+    'guru': 'workspace/guru.html?v=83',
+    'mentor-quran': 'workspace/mentor-quran.html?v=83',
+    'manajer-pendidikan': 'manajer/kontrol-pendidikan.html?v=83',
+    'supervisor-pendidikan': 'supervisor/review-pendidikan.html?v=83',
+    'naqib-operasional': 'workspace/naqib-operasional.html?v=83',
+    'asisten-naqib': 'workspace/asisten-naqib.html?v=83',
+    'naqib-pendamping': 'workspace/naqib-pendamping.html?v=83',
+    'manajer-pembinaan': 'manajer/kontrol-pembinaan.html?v=83',
+    'supervisor-pembinaan': 'supervisor/review-pembinaan.html?v=83',
+    'direktur': 'pimpinan/dashboard-dua-divisi.html?v=83',
+    'admin': 'pimpinan/dashboard-dua-divisi.html?v=83',
+    'naqib': 'workspace/naqib-operasional.html?v=83'
+  };
+  route = routes[role] || '';
+  if (!route && role === 'manajer') {
+    route = /pendidikan|pengajaran|tahsin|tahfiz/.test(assignmentText)
+      ? 'manajer/kontrol-pendidikan.html?v=83'
+      : /pembinaan|karakter|asrama|konsel/.test(assignmentText)
+        ? 'manajer/kontrol-pembinaan.html?v=83' : '';
+  }
+  if (!route && role === 'supervisor') {
+    route = /pendidikan|pengajaran|tahsin|tahfiz/.test(assignmentText)
+      ? 'supervisor/review-pendidikan.html?v=83'
+      : /pembinaan|karakter|asrama|konsel/.test(assignmentText)
+        ? 'supervisor/review-pembinaan.html?v=83' : '';
+  }
+  if (!route) route = 'home.html?v=83';
+  loadPage(route, el);
+}
+
+
+
 function openRoleAwareCasePage(el) {
   const roles = typeof getActiveViewRoles === 'function' ? getActiveViewRoles() : [];
-  const naqibView = roles.includes('naqib');
+  const naqibView = roles.includes('naqib') || roles.includes('naqib-operasional');
   loadPage(
     naqibView ? 'konselor/daftar-kasus-baru.html?v=77&mode=naqib' : 'konselor/daftar-kasus-baru.html?v=77',
     el
@@ -2312,20 +2370,16 @@ const mobileUtilityIcon = {
   menu: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
   chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>',
   profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22c.7-5 3.5-8 8-8s7.3 3 8 8"/></svg>',
-  scan: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/><path d="M8 9h3v3H8zM14 9h2M14 12h2M8 15h2M12 15h4M12 18h4"/></svg>'
+  scan: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/><path d="M8 9h3v3H8zM14 9h2M14 12h2M8 15h2M12 15h4M12 18h4"/></svg>',
+  operations: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19V8"/><path d="M2 19h22"/><circle cx="4" cy="7" r="2"/><circle cx="10" cy="3" r="2"/><circle cx="16" cy="10" r="2"/><circle cx="22" cy="6" r="2"/></svg>'
 };
 
 function getMobileUtilityItems() {
   const items = [];
-  const activeRoles = typeof getActiveViewRoles === 'function' ? getActiveViewRoles() : [];
-  const teacherView = activeRoles.includes('guru');
-  const naqibView = activeRoles.includes('naqib');
   if (bolehAksesMenu('menu-home')) items.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.home });
   items.push({ id:'utility-menu', label:'Menu', icon:mobileUtilityIcon.menu });
-  if (teacherView && bolehAksesMenu('menu-absen-guru')) {
-    items.push({ id:'menu-absen-guru', label:'Scan Absen', icon:mobileUtilityIcon.scan, center:true });
-  } else if (naqibView && bolehAksesMenu('menu-absen-asrama')) {
-    items.push({ id:'menu-absen-asrama', label:'Absen Program', icon:mobileUtilityIcon.scan, center:true });
+  if (bolehAksesMenu('menu-dashboard-operasional')) {
+    items.push({ id:'menu-dashboard-operasional', label:'Operasional', icon:mobileUtilityIcon.operations, center:true });
   }
   if (bolehAksesMenu('menu-chat')) items.push({ id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' });
   if (bolehAksesMenu('menu-profil')) items.push({ id:'menu-profil', label:'Profil', icon:mobileUtilityIcon.profile });
@@ -2410,7 +2464,7 @@ function sinkronkanBadgePintasanMobile() {
 
     function tampilkanPesanTidakBerwenang(menuId = "") {
       console.warn("Akses menu ditolak:", menuId);
-      alert("Akses ditolak. Menu ini belum dicentang pada Manajemen User.");
+      alert("Akses ditolak. Menu ini belum tersedia untuk Divisi & Role aktif Anda.");
     }
 
         async function logout() {
@@ -2492,7 +2546,7 @@ function sinkronkanBadgePintasanMobile() {
     let pUserSafe = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
     {const roles=(Array.isArray(pUserSafe.akses)?pUserSafe.akses:[pUserSafe.akses||pUserSafe.role].filter(Boolean)).map(r=>String(r||'').toLowerCase()),identity=[pUserSafe.cashierUnit,pUserSafe.unitKasir,pUserSafe.username,pUserSafe.label].filter(Boolean).join(' '),dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity),cashierOnly=roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','kepala-sekolah','manajer','staf-muda','staf-mula','wali'].includes(r));if(dedicatedCashier||cashierOnly){const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';location.replace(`keuangan/kasir.html${unit?`?unit=${unit}`:''}`)}}
 
-    let rawRoles = pUserSafe.akses || [];
+    let rawRoles = (Array.isArray(pUserSafe.workspaceRoles) && pUserSafe.workspaceRoles.length) ? pUserSafe.workspaceRoles : (pUserSafe.akses || []);
     if(typeof rawRoles === 'string') rawRoles = [rawRoles];
 
     function normalisasiRole(role) {
@@ -2531,7 +2585,20 @@ function sinkronkanBadgePintasanMobile() {
         "staf muda": "staf-muda",
         "staf mula": "staf-mula",
         "manajemen operasional": "operasional",
-        "operasional": "operasional"
+        "operasional": "operasional",
+        "mentor tahsin/tahfiz": "mentor-quran",
+        "mentor tahsin tahfiz": "mentor-quran",
+        "mentor quran": "mentor-quran",
+        "manajer pendidikan": "manajer-pendidikan",
+        "supervisor pendidikan": "supervisor-pendidikan",
+        "naqib operasional": "naqib-operasional",
+        "asisten naqib": "asisten-naqib",
+        "asisten naqib pendamping": "asisten-naqib",
+        "naqib pendamping": "naqib-pendamping",
+        "manajer pembinaan karakter": "manajer-pembinaan",
+        "manajer pembinaan": "manajer-pembinaan",
+        "supervisor pembinaan karakter": "supervisor-pembinaan",
+        "supervisor pembinaan": "supervisor-pembinaan"
       };
 
       return aliasRole[nilai] || nilai;
@@ -2560,12 +2627,35 @@ function sinkronkanBadgePintasanMobile() {
       return role === ALL_ROLES_MODE ? [...myRoles] : (role ? [role] : []);
     }
 
+    function compatRolesForWorkspace(role) {
+      const map = {
+        'mentor-quran': ['mentor-quran','guru'],
+        'manajer-pendidikan': ['manajer-pendidikan','manajer','operasional'],
+        'supervisor-pendidikan': ['supervisor-pendidikan','supervisor','operasional'],
+        'naqib-operasional': ['naqib-operasional','naqib'],
+        'asisten-naqib': ['asisten-naqib','naqib'],
+        'naqib-pendamping': ['naqib-pendamping','naqib'],
+        'manajer-pembinaan': ['manajer-pembinaan','manajer','operasional','konselor'],
+        'supervisor-pembinaan': ['supervisor-pembinaan','supervisor','operasional','konselor']
+      };
+      return [...new Set(map[role] || [role].filter(Boolean))];
+    }
+
+    function compatRolesForWorkspaceList(roles = []) {
+      return [...new Set((roles || []).flatMap(compatRolesForWorkspace).filter(Boolean))];
+    }
+
     function getProfileForActiveView() {
       const role = ensureActiveRole();
-      const viewRoles = getActiveViewRoles();
+      const workspaceViewRoles = getActiveViewRoles();
+      const viewRoles = role === ALL_ROLES_MODE
+        ? compatRolesForWorkspaceList(workspaceViewRoles)
+        : compatRolesForWorkspace(role);
       return {
         ...pUserSafe,
         allRoles: [...myRoles],
+        workspaceRoles: [...myRoles],
+        activeWorkspaceRoles: [...workspaceViewRoles],
         akses: [...viewRoles],
         jabatan: [...viewRoles],
         role: role === ALL_ROLES_MODE ? "" : (role || ""),
@@ -2584,10 +2674,13 @@ function sinkronkanBadgePintasanMobile() {
       try {
         const current = JSON.parse(localStorage.getItem("cahayaCurrentUser") || "{}") || {};
         localStorage.setItem("cahayaCurrentUser", JSON.stringify({...current, activeRole}));
-        const viewRoles = activeRole === ALL_ROLES_MODE ? [...myRoles] : [activeRole];
+        const workspaceViewRoles = activeRole === ALL_ROLES_MODE ? [...myRoles] : [activeRole];
+        const viewRoles = activeRole === ALL_ROLES_MODE ? compatRolesForWorkspaceList(workspaceViewRoles) : compatRolesForWorkspace(activeRole);
         localStorage.setItem("cahayaCurrentProfile", JSON.stringify({
           ...current,
           allRoles: [...myRoles],
+          workspaceRoles: [...myRoles],
+          activeWorkspaceRoles: workspaceViewRoles,
           akses: viewRoles,
           jabatan: viewRoles,
           role: activeRole === ALL_ROLES_MODE ? "" : activeRole,
@@ -2616,7 +2709,7 @@ function sinkronkanBadgePintasanMobile() {
       const labels = {
         "semua-peran": "Semua Peran",
         admin: "Administrator",
-        operasional: "Manajemen Operasional",
+        operasional: "Operasional",
         direktur: "Direktur",
         wakil: "Wakil Direktur",
         supervisor: "Supervisor",
@@ -2626,7 +2719,15 @@ function sinkronkanBadgePintasanMobile() {
         yayasan: "Ketua Yayasan",
         "kepala-sekolah": "Kepala Sekolah",
         guru: "Guru",
+        "mentor-quran": "Mentor Tahsin/Tahfiz",
+        "manajer-pendidikan": "Manajer Pendidikan",
+        "supervisor-pendidikan": "Supervisor Pendidikan",
         naqib: "Naqib",
+        "naqib-operasional": "Naqib Operasional",
+        "asisten-naqib": "Asisten Naqib Pendamping",
+        "naqib-pendamping": "Naqib Pendamping",
+        "manajer-pembinaan": "Manajer Pembinaan Karakter",
+        "supervisor-pembinaan": "Supervisor Pembinaan Karakter",
         konselor: "Konselor",
         cla: "Center of Learning & Achievement",
         layanan: "Tim Layanan",
@@ -2642,6 +2743,9 @@ function sinkronkanBadgePintasanMobile() {
 
     function labelRoleContext(role) {
       if (role === ALL_ROLES_MODE) return "Semua Peran";
+      const workspaceAssignments = Array.isArray(pUserSafe.workspaceAssignments) ? pUserSafe.workspaceAssignments : [];
+      const workspaceMatch = workspaceAssignments.find(a => String(a.role||'').toLowerCase() === role);
+      if (workspaceMatch) return workspaceMatch.divisionLabel ? `${labelRole(role)} • ${workspaceMatch.divisionLabel}` : labelRole(role);
       const assignments = Array.isArray(pUserSafe.operationalAssignments) ? pUserSafe.operationalAssignments : [];
       const match = assignments.find(a => String(a.functionKey||'').toLowerCase() === role) || (role === 'operasional' ? assignments[0] : null);
       if (match) {
@@ -2663,21 +2767,21 @@ function sinkronkanBadgePintasanMobile() {
         return data;
       }
 
-      let roles = data.akses || data.jabatan || data.role || [];
+      const hasWorkspaceRoles = Array.isArray(data.workspaceRoles) && data.workspaceRoles.length;
+      let roles = hasWorkspaceRoles ? data.workspaceRoles : (data.akses || data.jabatan || data.role || []);
       if (!Array.isArray(roles)) roles = [roles];
 
-      roles = [...new Set(
-        roles.map(normalisasiRole).filter(Boolean)
-      )];
+      roles = [...new Set(roles.map(normalisasiRole).filter(Boolean))];
 
-      // V73: Supervisor/Manajer/Staf adalah jenjang operasional, bukan Hak Akses Sistem.
-      // Akun lama dinormalisasi tanpa menghapus data lama di Firestore.
-      const structuralLegacyRoles = new Set(["supervisor","manajer","staf-muda","staf-mula"]);
-      const hasOperationalAssignment = Array.isArray(data.operationalAssignments) && data.operationalAssignments.some(a => a && a.active !== false);
-      const hasLegacyStructuralRole = roles.some(r => structuralLegacyRoles.has(r));
-      if (hasOperationalAssignment || hasLegacyStructuralRole) {
-        roles = roles.filter(r => !structuralLegacyRoles.has(r));
-        if (!roles.includes("operasional")) roles.push("operasional");
+      // Akun lama tetap kompatibel. Akun v82 memakai workspaceRoles sebagai daftar homepage/peran.
+      if (!hasWorkspaceRoles) {
+        const structuralLegacyRoles = new Set(["supervisor","manajer","staf-muda","staf-mula"]);
+        const hasOperationalAssignment = Array.isArray(data.operationalAssignments) && data.operationalAssignments.some(a => a && a.active !== false);
+        const hasLegacyStructuralRole = roles.some(r => structuralLegacyRoles.has(r));
+        if (hasOperationalAssignment || hasLegacyStructuralRole) {
+          roles = roles.filter(r => !structuralLegacyRoles.has(r));
+          if (!roles.includes("operasional")) roles.push("operasional");
+        }
       }
 
       const usernameAuth =
@@ -2730,8 +2834,10 @@ function sinkronkanBadgePintasanMobile() {
       data.label = namaTampilan;
       data.nama = namaTampilan;
       data.namaTampilan = namaTampilan;
-      data.akses = roles;
-      data.jabatan = roles;
+      data.workspaceRoles = roles;
+      const compatibleRoles = hasWorkspaceRoles ? compatRolesForWorkspaceList(roles) : roles;
+      data.akses = compatibleRoles;
+      data.jabatan = compatibleRoles;
       data.role = roles[0] || "";
       data.roleLabel = roles.map(labelRole).join(" • ");
 
@@ -2744,7 +2850,7 @@ function sinkronkanBadgePintasanMobile() {
         role => ["admin", "direktur", "wakil"].includes(role)
       );
 
-      isKonselor = myRoles.includes("konselor");
+      isKonselor = myRoles.includes("konselor") || myRoles.includes("manajer-pembinaan") || myRoles.includes("supervisor-pembinaan");
       isWali = myRoles.includes("wali");
       realUsername = data.username || "guest";
       namaSaya = data.label || data.username || "Pengurus";
@@ -2841,25 +2947,33 @@ function sinkronkanBadgePintasanMobile() {
     }
 
     const DEFAULT_ROLE_MENUS = {
-      operasional:["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat","menu-buku-izin"],
-      admin:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-perizinan-santri","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-komentar","menu-media","menu-db-master","menu-jadwal","menu-qr-kelas","menu-users","menu-koreksi","menu-profil","menu-chat","menu-buku-izin"],
-      direktur:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat","menu-buku-izin"],
-      wakil:["menu-home","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat","menu-buku-izin"],
-      guru:["menu-home","menu-kalender-pendidikan","menu-absen-guru","menu-absen-kbm","menu-guru-menulis","menu-tahfiz","menu-laporan-murojaah","menu-nilai","menu-asesmen-guru","menu-asesmen-santri","menu-profil","menu-chat"],
-      naqib:["menu-home","menu-kalender-pendidikan","menu-absen-asrama","menu-skor-usrah","menu-disiplin","menu-gamifikasi","menu-jadwal-piket","menu-jurnal-piket","menu-usrah","menu-antrean-kasus","menu-asesmen-naqib","menu-asesmen-santri","menu-profil","menu-chat"],
+      operasional:["menu-home","menu-kalender-pendidikan","menu-profil","menu-chat","menu-buku-izin"],
+      admin:["menu-home","menu-dashboard-operasional","menu-kontrol-pendidikan","menu-review-pendidikan","menu-dashboard-pendidikan","menu-tindak-akademik","menu-kontrol-pembinaan","menu-review-pembinaan","menu-dashboard-dua-divisi","menu-pantau-pendampingan","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-perizinan-santri","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-komentar","menu-media","menu-db-master","menu-jadwal","menu-qr-kelas","menu-users","menu-koreksi","menu-profil","menu-chat","menu-buku-izin"],
+      direktur:["menu-home","menu-dashboard-operasional","menu-kontrol-pendidikan","menu-review-pendidikan","menu-dashboard-pendidikan","menu-tindak-akademik","menu-kontrol-pembinaan","menu-review-pembinaan","menu-dashboard-dua-divisi","menu-pantau-pendampingan","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat","menu-buku-izin"],
+      wakil:["menu-home","menu-kontrol-pendidikan","menu-review-pendidikan","menu-dashboard-pendidikan","menu-kalender-pendidikan","menu-dashboard-pimpinan","menu-perizinan-santri","menu-rekap-kepala-sekolah","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat","menu-buku-izin"],
+      guru:["menu-home","menu-dashboard-operasional","menu-kalender-pendidikan","menu-absen-guru","menu-absen-kbm","menu-guru-menulis","menu-tahfiz","menu-laporan-murojaah","menu-nilai","menu-asesmen-guru","menu-profil","menu-chat"],
+      naqib:["menu-home","menu-dashboard-operasional","menu-kalender-pendidikan","menu-absen-asrama","menu-skor-usrah","menu-disiplin","menu-gamifikasi","menu-jadwal-piket","menu-jurnal-piket","menu-usrah","menu-antrean-kasus","menu-asesmen-naqib","menu-asesmen-santri","menu-profil","menu-chat"],
       konselor:["menu-home","menu-kalender-pendidikan","menu-antrean-kasus","menu-perizinan-santri","menu-profil","menu-chat"],
-      supervisor:["menu-home","menu-kalender-pendidikan","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
+      supervisor:["menu-home","menu-kontrol-pendidikan","menu-review-pendidikan","menu-kalender-pendidikan","menu-raport-bulanan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
       kesehatan:["menu-home","menu-kalender-pendidikan","menu-jurnal-kesehatan","menu-pemeriksaan-kesehatan","menu-perizinan-uks","menu-stok-obat","menu-profil","menu-chat"],
       sarpras:["menu-home","menu-kalender-pendidikan","menu-jurnal-sarpras","menu-checklist-sarpras","menu-tindak-sarpras","menu-profil","menu-chat"],
       layanan:["menu-home","menu-kalender-pendidikan","menu-jurnal-pkl","menu-profil","menu-chat","menu-buku-izin","menu-buku-tamu","menu-penitipan-barang"],
       keuangan:["menu-home","menu-kalender-pendidikan","menu-pusat-keuangan","menu-pengaturan-keuangan","menu-kasir","menu-profil","menu-chat"],
       kasir:["menu-home","menu-kasir","menu-profil","menu-chat"],
-      "kepala-sekolah":["menu-home","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-monitoring-absen-guru","menu-profil","menu-chat"],
+      "kepala-sekolah":["menu-home","menu-kontrol-pendidikan","menu-kalender-pendidikan","menu-rekap-kepala-sekolah","menu-monitoring-absen-guru","menu-profil","menu-chat"],
       cla:["menu-home","menu-kalender-pendidikan","menu-raport-bulanan","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
-      yayasan:["menu-home","menu-dashboard-pimpinan","menu-raport-bulanan","menu-profil","menu-chat"],
-      manajer:["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat"],
-      "staf-muda":["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat"],
-      "staf-mula":["menu-home","menu-manajemen-operasional","menu-kalender-pendidikan","menu-profil","menu-chat"]
+      yayasan:["menu-home","menu-dashboard-pendidikan","menu-dashboard-pimpinan","menu-raport-bulanan","menu-profil","menu-chat"],
+      manajer:["menu-home","menu-kontrol-pendidikan","menu-kalender-pendidikan","menu-profil","menu-chat"],
+      "staf-muda":["menu-home","menu-kalender-pendidikan","menu-profil","menu-chat"],
+      "staf-mula":["menu-home","menu-kalender-pendidikan","menu-profil","menu-chat"],
+      "mentor-quran":["menu-home","menu-dashboard-operasional","menu-kalender-pendidikan","menu-tahfiz","menu-laporan-murojaah","menu-profil","menu-chat"],
+      "manajer-pendidikan":["menu-home","menu-dashboard-operasional","menu-kontrol-pendidikan","menu-kalender-pendidikan","menu-nilai","menu-tahfiz","menu-tindak-akademik","menu-profil","menu-chat"],
+      "supervisor-pendidikan":["menu-home","menu-dashboard-operasional","menu-review-pendidikan","menu-kontrol-pendidikan","menu-kalender-pendidikan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
+      "naqib-operasional":["menu-home","menu-dashboard-operasional","menu-absen-asrama","menu-antrean-kasus","menu-disiplin","menu-skor-usrah","menu-usrah","menu-asesmen-santri","menu-gamifikasi","menu-profil","menu-chat"],
+      "asisten-naqib":["menu-home","menu-dashboard-operasional","menu-mentoring-usrah","menu-usrah","menu-asesmen-santri","menu-gamifikasi","menu-profil","menu-chat"],
+      "naqib-pendamping":["menu-home","menu-dashboard-operasional","menu-mentoring-individu","menu-usrah","menu-profil","menu-chat"],
+      "manajer-pembinaan":["menu-home","menu-dashboard-operasional","menu-kontrol-pembinaan","menu-antrean-kasus","menu-pantau-pendampingan","menu-pantau-asesmen","menu-gamifikasi","menu-usrah","menu-profil","menu-chat"],
+      "supervisor-pembinaan":["menu-home","menu-dashboard-operasional","menu-review-pembinaan","menu-kontrol-pembinaan","menu-antrean-kasus","menu-pantau-pendampingan","menu-pantau-asesmen","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"]
     };
 
 
@@ -2901,7 +3015,7 @@ function sinkronkanBadgePintasanMobile() {
         '<html lang="id"><head><meta charset="UTF-8">',
         '<meta name="viewport" content="width=device-width,initial-scale=1">',
         '<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;font-family:Arial,sans-serif;color:#0f172a;padding:24px;box-sizing:border-box}.box{max-width:560px;background:white;border:1px solid #e2e8f0;border-radius:18px;padding:30px;text-align:center;box-shadow:0 12px 35px rgba(15,23,42,.08)}.icon{font-size:42px;margin-bottom:12px}h2{margin:0 0 10px}p{color:#64748b;line-height:1.65;margin:0}</style>',
-        '</head><body><div class="box"><div class="icon">🔒</div><h2>Belum Ada Menu yang Diotorisasi</h2><p>Administrator perlu mencentang minimal satu menu untuk role akun ini melalui halaman Manajemen Pengguna.</p></div></body></html>'
+        '</head><body><div class="box"><div class="icon">🔒</div><h2>Belum Ada Menu yang Diotorisasi</h2><p>Administrator perlu menetapkan Divisi dan Role pengguna melalui halaman Pengaturan User.</p></div></body></html>'
       ].join('');
 
       document.getElementById('currentPageTitle').textContent = "CAHAYA APP";
@@ -2909,9 +3023,9 @@ function sinkronkanBadgePintasanMobile() {
 
     function bukaHalamanAwalYangDiizinkan() {
       const deepLinkOperasional = new URLSearchParams(window.location.search).get("operasional");
-      if (deepLinkOperasional && bolehAksesMenu("menu-manajemen-operasional")) {
-        const menuOperasional = document.getElementById("menu-manajemen-operasional");
-        loadPage(`operasional/index.html?v=73&view=${encodeURIComponent(deepLinkOperasional)}`, menuOperasional);
+      if (deepLinkOperasional && bolehAksesMenu("menu-dashboard-operasional")) {
+        const menuOperasional = document.getElementById("menu-dashboard-operasional");
+        openOperationalDashboard(menuOperasional);
         return;
       }
       const prioritas = [];
@@ -2950,6 +3064,7 @@ function sinkronkanBadgePintasanMobile() {
         return tokens.some(token => token && (identity.includes(token) || (username && token.includes(username))));
       });
     }
+
 
     async function refreshUserProfileUI() {
       try {
@@ -3018,16 +3133,43 @@ function sinkronkanBadgePintasanMobile() {
           });
         });
 
-        // V71: Manajemen Operasional hanya untuk personel yang memang memiliki posisi operasional.
-        const roleOperasionalLegacy = new Set(["admin","direktur","wakil","supervisor","manajer","staf-muda","staf-mula","kepala-sekolah","naqib","konselor","cla","layanan","sarpras","kesehatan","keuangan","operasional"]);
-        const punyaAssignmentOperasional = Array.isArray(pUserSafe.operationalAssignments) && pUserSafe.operationalAssignments.some(a => a && a.active !== false);
-        const punyaPosisiOperasional = punyaAssignmentOperasional || rolesUntukMenu.some(role => roleOperasionalLegacy.has(role)) || Boolean(pUserSafe.levelOperasional || pUserSafe.operationalLevel || pUserSafe.jabatanOperasional);
-        if (punyaPosisiOperasional && !gabunganMenu.includes("menu-manajemen-operasional")) {
-          gabunganMenu.push("menu-manajemen-operasional");
+        // V83: Dashboard Operasional dan menu inti dua divisi mengikuti role secara otomatis.
+        // Pengaturan role_menus lama tidak boleh menghilangkan workspace inti baru.
+        const CORE_V83_ROLE_MENUS = {
+          admin:["menu-dashboard-operasional","menu-kontrol-pendidikan","menu-review-pendidikan","menu-dashboard-pendidikan","menu-tindak-akademik","menu-kontrol-pembinaan","menu-review-pembinaan","menu-dashboard-dua-divisi","menu-pantau-pendampingan","menu-pantau-asesmen","menu-users"],
+          direktur:["menu-dashboard-operasional","menu-kontrol-pendidikan","menu-review-pendidikan","menu-dashboard-pendidikan","menu-tindak-akademik","menu-kontrol-pembinaan","menu-review-pembinaan","menu-dashboard-dua-divisi","menu-pantau-pendampingan","menu-pantau-asesmen"],
+          guru:["menu-dashboard-operasional","menu-absen-kbm","menu-nilai","menu-tindak-akademik"],
+          "mentor-quran":["menu-dashboard-operasional","menu-tahfiz","menu-laporan-murojaah"],
+          "manajer-pendidikan":["menu-dashboard-operasional","menu-kontrol-pendidikan","menu-tindak-akademik","menu-nilai","menu-tahfiz"],
+          "supervisor-pendidikan":["menu-dashboard-operasional","menu-review-pendidikan","menu-kontrol-pendidikan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm"],
+          "naqib-operasional":["menu-dashboard-operasional","menu-absen-asrama","menu-antrean-kasus","menu-asesmen-santri","menu-gamifikasi","menu-usrah"],
+          "asisten-naqib":["menu-dashboard-operasional","menu-mentoring-usrah","menu-asesmen-santri","menu-gamifikasi","menu-usrah"],
+          "naqib-pendamping":["menu-dashboard-operasional","menu-mentoring-individu","menu-usrah"],
+          "manajer-pembinaan":["menu-dashboard-operasional","menu-kontrol-pembinaan","menu-antrean-kasus","menu-pantau-pendampingan","menu-pantau-asesmen","menu-gamifikasi"],
+          "supervisor-pembinaan":["menu-dashboard-operasional","menu-review-pembinaan","menu-kontrol-pembinaan","menu-antrean-kasus","menu-pantau-pendampingan","menu-pantau-asesmen","menu-raport-sdm","menu-tindak-lanjut-sdm"]
+        };
+        rolesUntukMenu.forEach(role => (CORE_V83_ROLE_MENUS[role] || []).forEach(menuId => {
+          if (!gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
+        }));
+
+        // V82: Asesmen CAHAYA formal hanya diinput Ketua Usrah/Asisten Naqib
+        // dan Naqib Operasional untuk Ketua Usrah. Manager/Supervisor memantau, bukan menginput.
+        const rolePengasesmenCahaya = rolesUntukMenu.some(role => ["asisten-naqib","naqib-operasional","naqib"].includes(role));
+        if (!rolePengasesmenCahaya) {
+          const idx = gabunganMenu.indexOf("menu-asesmen-santri");
+          if (idx >= 0) gabunganMenu.splice(idx, 1);
         }
+        const rolePantauAsesmen = rolesUntukMenu.some(role => ["admin","direktur","manajer-pembinaan","supervisor-pembinaan"].includes(role));
+        if (rolePantauAsesmen && !gabunganMenu.includes("menu-pantau-asesmen")) gabunganMenu.push("menu-pantau-asesmen");
+        const rolePantauPendampingan = rolesUntukMenu.some(role => ["admin","direktur","manajer-pembinaan","supervisor-pembinaan"].includes(role));
+        if (rolePantauPendampingan && !gabunganMenu.includes("menu-pantau-pendampingan")) gabunganMenu.push("menu-pantau-pendampingan");
         ["menu-home","menu-profil","menu-chat"].forEach(menuId => {
           if (rolesUntukMenu.length && !gabunganMenu.includes(menuId)) gabunganMenu.push(menuId);
         });
+        const roleOperasionalLegacy = new Set(["admin","direktur","wakil","supervisor","manajer","staf-muda","staf-mula","kepala-sekolah","naqib","konselor","cla","layanan","sarpras","kesehatan","keuangan","operasional"]);
+        const punyaAssignmentOperasional = Array.isArray(pUserSafe.operationalAssignments) && pUserSafe.operationalAssignments.some(a => a && a.active !== false);
+        const punyaPosisiOperasional = punyaAssignmentOperasional || rolesUntukMenu.some(role => roleOperasionalLegacy.has(role)) || Boolean(pUserSafe.levelOperasional || pUserSafe.operationalLevel || pUserSafe.jabatanOperasional);
+
         // V80.2: Buku Tamu dan Penitipan mengikuti otorisasi menu yang
         // ditetapkan di Manajemen User / settings role_menus. Tidak lagi dikunci
         // ulang berdasarkan nama role agar centang otorisasi benar-benar berlaku.
@@ -3048,15 +3190,27 @@ function sinkronkanBadgePintasanMobile() {
         // RBAC tetap ketat untuk menu lain. Akun khusus dapat dibatasi
         // melalui allowedMenus, dengan kalender tetap dipertahankan untuk guru PKBM.
 
+        // V81: menu Manajemen Pendidikan mewarisi izin dari menu lama yang setara agar
+        // pengguna lama tidak perlu langsung diedit satu per satu di Manajemen User.
+        const inheritMenu = (sourceIds, targetId) => {
+          if (sourceIds.some(id => gabunganMenu.includes(id)) && !gabunganMenu.includes(targetId)) gabunganMenu.push(targetId);
+        };
+        inheritMenu(["menu-monitoring-absen-guru","menu-rekap-kepala-sekolah"], "menu-kontrol-pendidikan");
+        inheritMenu(["menu-raport-bulanan","menu-tindak-lanjut-sdm","menu-raport-sdm"], "menu-review-pendidikan");
+        inheritMenu(["menu-dashboard-pimpinan"], "menu-dashboard-pendidikan");
+
         // Akun khusus seperti guru PKBM dapat dibatasi hanya ke menu tertentu.
         const allowedMenusUser = Array.isArray(pUserSafe.allowedMenus)
           ? pUserSafe.allowedMenus.filter(Boolean)
           : [];
         if (allowedMenusUser.length) {
           const whitelist = new Set(allowedMenusUser);
+          if (["menu-monitoring-absen-guru","menu-rekap-kepala-sekolah"].some(id=>whitelist.has(id))) whitelist.add("menu-kontrol-pendidikan");
+          if (["menu-raport-bulanan","menu-tindak-lanjut-sdm","menu-raport-sdm"].some(id=>whitelist.has(id))) whitelist.add("menu-review-pendidikan");
+          if (whitelist.has("menu-dashboard-pimpinan")) whitelist.add("menu-dashboard-pendidikan");
           if (akunGuruPkbm) whitelist.add("menu-kalender-pendidikan");
           if (rolesUntukMenu.includes('naqib')) whitelist.add('menu-antrean-kasus');
-          if (punyaPosisiOperasional) whitelist.add('menu-manajemen-operasional');
+          if (gabunganMenu.includes('menu-dashboard-operasional')) whitelist.add('menu-dashboard-operasional');
           whitelist.add('menu-home'); whitelist.add('menu-profil'); whitelist.add('menu-chat');
           for (let i = gabunganMenu.length - 1; i >= 0; i--) {
             if (!whitelist.has(gabunganMenu[i])) gabunganMenu.splice(i, 1);
@@ -3118,6 +3272,10 @@ function sinkronkanBadgePintasanMobile() {
       // V59: menu Tindak Pelanggaran memakai routing berbasis peran.
       // Dashboard Home memanggil openAuthorizedMenu(), jadi kasus ini tidak boleh
       // dipaksa melewati parser onclick loadPage() biasa.
+      if (menuId === 'menu-dashboard-operasional') {
+        openOperationalDashboard(menu);
+        return;
+      }
       if (menuId === 'menu-antrean-kasus') {
         openRoleAwareCasePage(menu);
         return;

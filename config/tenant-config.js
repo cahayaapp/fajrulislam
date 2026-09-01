@@ -66,7 +66,7 @@
       guestBook: true,
       itemDeposit: true,
       meetingMinutes: true,
-      operationalManagement: true
+      operationalDashboard: true
     },
     bandwidth: {
       chatMessageLimit: 50,

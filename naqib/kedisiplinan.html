@@ -1449,6 +1449,9 @@
           }
         : null;
 
+      const jalurPenanganan = (!kritis && bidang !== "Moral/Etika")
+        ? "NAQIB"
+        : "MANAJER_SUPERVISOR";
       const commonPayload = {
         waktu: now.toISOString(),
         tanggal: now.toISOString().slice(0, 10),
@@ -1460,7 +1463,8 @@
         kritis,
         kategoriKhusus: kritis ? "KRITIS" : "",
         prioritas: kritis ? "KRITIS" : "NORMAL",
-        statusPenanganan: "Menunggu Konselor",
+        jalurPenanganan,
+        statusPenanganan: jalurPenanganan === "NAQIB" ? "Menunggu Naqib Operasional" : "Menunggu Manajer/Supervisor",
         naqibPendata: namaPenginput,
         namaPenginput,
         buktiFoto: evidenceMeta,
@@ -1509,7 +1513,9 @@
         tampilkanToast(
           "success",
           kritis ? "Laporan KRITIS terkirim" : "Laporan terkirim",
-          `${terlaporList.length} laporan santri telah masuk ke antrean Konselor.`
+          jalurPenanganan === "NAQIB"
+            ? `${terlaporList.length} laporan ringan masuk ke antrean Naqib Operasional.`
+            : `${terlaporList.length} laporan masuk ke antrean Manajer/Supervisor Pembinaan Karakter.`
         );
 
         resetPilihanSantri();

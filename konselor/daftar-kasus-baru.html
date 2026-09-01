@@ -1739,7 +1739,7 @@
         <h1>Manajemen Kasus Santri</h1>
         <p>
           Kasus kemarin dicetak dan diselesaikan hari ini. Kedisiplinan serta
-          kebersihan ditindak Naqib; moral, etika, dan kasus kritis ditindak Konselor.
+          kebersihan dan kerapian harian ditangani Naqib Operasional; kasus berulang, moral/etika, sedang, dan kritis ditangani Manajer atau Supervisor Pembinaan Karakter.
         </p>
       </div>
 
@@ -1764,7 +1764,7 @@
       </article>
 
       <article class="summary-card konselor">
-        <span class="summary-label">Tindak Konselor</span>
+        <span class="summary-label">Manajer / Supervisor</span>
         <strong class="summary-value" id="sumKonselor">0</strong>
       </article>
 
@@ -1838,7 +1838,7 @@
             <select class="form-control" id="filterRoute" onchange="renderQueue()">
               <option value="">Semua Penindak</option>
               <option value="NAQIB">Tindak Naqib</option>
-              <option value="KONSELOR">Tindak Konselor</option>
+              <option value="KONSELOR">Manajer / Supervisor</option>
             </select>
           </div>
 
@@ -1970,7 +1970,7 @@
 
           <article class="print-card konselor">
             <div class="print-card-icon">🧠</div>
-            <h3>Tindak Konselor</h3>
+            <h3>Manajer / Supervisor</h3>
             <p>
               Moral, etika, perilaku berisiko, dan seluruh kasus yang
               ditandai KRITIS.
@@ -1981,7 +1981,7 @@
             </div>
             <div class="print-actions">
               <button class="print-button cons" onclick="printCases('KONSELOR')">
-                🖨️ Cetak Tindak Konselor
+                🖨️ Cetak Manajer / Supervisor
               </button>
             </div>
           </article>
@@ -2245,7 +2245,7 @@
             <select class="form-control" id="historyRoute" onchange="renderActionHistory()">
               <option value="">Semua Penindak</option>
               <option value="NAQIB">Tindak Naqib</option>
-              <option value="KONSELOR">Tindak Konselor</option>
+              <option value="KONSELOR">Manajer / Supervisor</option>
             </select>
           </div>
 
@@ -2676,9 +2676,26 @@
       );
     }
 
+    function isMediumReport(value = {}, context = "") {
+      const raw = normalizeText([
+        value.tingkatPelanggaran,
+        value.levelPelanggaran,
+        value.kategoriKhusus,
+        value.prioritas,
+        value.kategori,
+        value.bidangPelanggaran,
+        context
+      ].filter(Boolean).join(" "));
+      return raw.includes("pelanggaran sedang") || raw === "sedang" || raw.includes(" level sedang") || raw.includes("tingkat sedang");
+    }
+
     function classifyCategory(source, context = "") {
       if (isCriticalReport(source)) {
         return "Kritis";
+      }
+
+      if (isMediumReport(source, context)) {
+        return "Pelanggaran Sedang";
       }
 
       const raw = normalizeText(
@@ -2714,6 +2731,7 @@
     function routeForCategory(category) {
       return (
         category === "Moral/Etika" ||
+        category === "Pelanggaran Sedang" ||
         category === "Kritis"
       )
         ? "KONSELOR"
@@ -2759,7 +2777,12 @@
         reporter: String(reporter || "-").trim(),
         initialPoint: Math.abs(Number(initialPoint) || 0),
         category: finalCategory,
-        route: routeForCategory(finalCategory),
+        route: (() => {
+          const rawRoute = normalizeText(raw?.jalurPenanganan || raw?.jalurPenindakan || raw?.route || "");
+          if (rawRoute.includes("naqib")) return "NAQIB";
+          if (rawRoute.includes("manajer") || rawRoute.includes("supervisor") || rawRoute.includes("konselor")) return "KONSELOR";
+          return routeForCategory(finalCategory);
+        })(),
         critical: finalCategory === "Kritis",
         usrah: resolvedUsrah,
         gender: getGenderByUsrah(resolvedUsrah),
@@ -3001,10 +3024,10 @@
             );
 
             const routeRaw = normalizeText(
-              value?.jalurPenindakan || value?.route || ""
+              value?.jalurPenangananV2 || value?.jalurPenindakan || value?.route || ""
             );
 
-            const route = routeRaw.includes("konselor")
+            const route = (routeRaw.includes("manajer") || routeRaw.includes("supervisor") || routeRaw.includes("konselor"))
               ? "KONSELOR"
               : "NAQIB";
 
@@ -3076,6 +3099,31 @@
           if (dateCompare !== 0) return dateCompare;
 
           return a.student.localeCompare(b.student, "id");
+        });
+
+        // V82 — pelanggaran ringan yang berulang naik ke Manajer/Supervisor.
+        const repeatWindowStart = Date.now() - (30 * 86400000);
+        const repeatMap = new Map();
+        const repeatAdd = (student, category, date) => {
+          const time = Date.parse(date || "");
+          if (time && time < repeatWindowStart) return;
+          const cat = normalizeText(category);
+          if (!(cat.includes("kedisiplin") || cat.includes("kebersihan") || cat.includes("kerapian"))) return;
+          const key = `${normalizeText(student)}|${cat}`;
+          repeatMap.set(key, (repeatMap.get(key) || 0) + 1);
+        };
+        allActions.forEach(item => repeatAdd(item.student, item.category, item.actionDate || item.eventDate));
+        allCases.forEach(item => repeatAdd(item.student, item.category, item.date));
+        allCases.forEach(item => {
+          if (item.route !== "NAQIB") return;
+          const key = `${normalizeText(item.student)}|${normalizeText(item.category)}`;
+          const count = repeatMap.get(key) || 1;
+          if (count >= 3) {
+            item.route = "KONSELOR";
+            item.repeated = true;
+            item.repeatCount = count;
+            item.routeReason = `Pelanggaran berulang ${count}x dalam 30 hari`;
+          }
         });
 
         selectedQueueIds = new Set(
@@ -3276,7 +3324,7 @@
             <div class="case-meta">
               <span class="case-badge">${escapeHtml(item.sourceBadge)}</span>
               <span class="case-badge ${routeClass}">
-                Tindak ${item.route === "NAQIB" ? "Naqib" : "Konselor"}
+                Tindak ${item.route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor"}
               </span>
               ${
                 isOverdue(item)
@@ -3335,7 +3383,7 @@
               `).join("")}
               ${routes.map(route => `
                 <span class="case-badge ${route === "NAQIB" ? "naqib" : "konselor"}">
-                  ${route === "NAQIB" ? "Naqib" : "Konselor"}
+                  ${route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor"}
                 </span>
               `).join("")}
             </div>
@@ -3400,7 +3448,7 @@
           showToast(
             "error",
             "Jalur penindak berbeda",
-            "Kasus Tindak Naqib dan Tindak Konselor harus dibuat dalam laporan terpisah."
+            "Kasus Tindak Naqib dan Manajer / Supervisor harus dibuat dalam laporan terpisah."
           );
 
           return;
@@ -3429,7 +3477,7 @@
 
       document.getElementById("batchSubtitle").textContent =
         route
-          ? `Laporan akan dibuat sebagai Tindak ${route === "NAQIB" ? "Naqib" : "Konselor"}.`
+          ? `Laporan akan dibuat sebagai Tindak ${route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor"}.`
           : "Pilih kasus dari jalur penindak yang sama.";
     }
 
@@ -3545,7 +3593,7 @@
 
         empty.innerHTML = `
           <div class="empty-icon">⚠️</div>
-          Tindak Naqib dan Tindak Konselor harus dilaporkan secara terpisah.
+          Tindak Naqib dan Manajer / Supervisor harus dilaporkan secara terpisah.
         `;
 
         return;
@@ -3558,7 +3606,7 @@
       const title =
         route === "NAQIB"
           ? "Laporan Tindak Naqib"
-          : "Laporan Tindak Konselor";
+          : "Laporan Manajer / Supervisor";
 
       document.getElementById("actionRouteTitle").textContent =
         title;
@@ -3874,7 +3922,7 @@
 
             <div class="student-group-summary">
               <span class="case-badge ${routeClass}">
-                Tindak ${batch.route === "NAQIB" ? "Naqib" : "Konselor"}
+                Tindak ${batch.route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor"}
               </span>
               <span class="case-badge">
                 ${batch.cases.length} kasus
@@ -4513,7 +4561,7 @@
         showToast(
           "error",
           "Jalur penindak berbeda",
-          "Pisahkan laporan Tindak Naqib dan Tindak Konselor."
+          "Pisahkan laporan Tindak Naqib dan Manajer / Supervisor."
         );
         return;
       }
@@ -4557,7 +4605,7 @@
         showToast(
           "error",
           "Pelaksana belum diisi",
-          "Tuliskan nama Naqib atau Konselor yang melakukan penindakan."
+          "Tuliskan nama Naqib Operasional, Manajer, atau Supervisor yang melakukan penanganan."
         );
         return;
       }
@@ -4626,6 +4674,12 @@
         updates[`${item.dbPath}/jalurPenindakan`] =
           route;
 
+        updates[`${item.dbPath}/jalurPenangananV2`] =
+          route === "NAQIB" ? "NAQIB_OPERASIONAL" : "MANAJER_SUPERVISOR";
+
+        updates[`${item.dbPath}/statusPembinaan`] =
+          "SELESAI";
+
         updates[`${item.dbPath}/batchPenindakanId`] =
           batchId;
 
@@ -4659,6 +4713,9 @@
 
           kelompokKasus: item.category,
           jalurPenindakan: route,
+          jalurPenangananV2: route === "NAQIB" ? "NAQIB_OPERASIONAL" : "MANAJER_SUPERVISOR",
+          penanggungJawabFungsi: route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor Pembinaan Karakter",
+          statusPembinaan: "SELESAI",
           penindak: actionOfficer,
           dicatatOleh: recorder,
           peranPencatat: userRole(),

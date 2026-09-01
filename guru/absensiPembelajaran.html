@@ -1288,7 +1288,10 @@
         transition-duration: 0.01ms !important;
       }
     }
-  </style>
+  
+/* V81 — Absensi dua tahap */
+.action-group{grid-template-columns:repeat(4,minmax(0,1fr))!important}.status-head-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.row-belum-hadir{background:#fffaf0!important}.row-alfa{background:#fff5f6!important}
+</style>
 
   <!-- Tampilan minimal: header internal dan ringkasan disembunyikan tanpa mengubah sistem -->
   <style id="cahaya-minimal-cleanup">
@@ -1595,7 +1598,7 @@
 
     <section class="panel-card">
       <div class="panel-head">
-        <span class="context-chip"><span id="jumlahSantri">0</span>&nbsp;santri</span>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><span class="context-chip" id="absensiStageBadge">Tahap 1 • Absensi Pembukaan</span><span class="context-chip"><span id="jumlahSantri">0</span>&nbsp;santri</span></div>
       </div>
 
       <div class="summary-grid" aria-label="Ringkasan kehadiran">
@@ -1608,7 +1611,7 @@
           <strong id="sumHadir">0</strong>
         </div>
         <div class="summary-card summary-terlambat">
-          <div class="summary-label"><span class="summary-dot"></span>Telat</div>
+          <div class="summary-label"><span class="summary-dot"></span><span id="sumLabelPending">Belum Hadir</span></div>
           <strong id="sumTerlambat">0</strong>
         </div>
         <div class="summary-card summary-izin">
@@ -1620,7 +1623,7 @@
           <strong id="sumSakit">0</strong>
         </div>
         <div class="summary-card summary-alfa">
-          <div class="summary-label"><span class="summary-dot"></span>Alfa</div>
+          <div class="summary-label"><span class="summary-dot"></span><span id="sumLabelAlfa">Alfa (Final)</span></div>
           <strong id="sumAlfa">0</strong>
         </div>
       </div>
@@ -1635,11 +1638,10 @@
         <div class="list-header">
           <div>Nama Santri</div>
           <div class="status-head-grid">
-            <span>Hadir</span>
-            <span>Terlambat</span>
-            <span>Izin</span>
-            <span>Sakit</span>
-            <span>Alfa</span>
+            <span id="headStatus1">Hadir</span>
+            <span id="headStatus2">Belum Hadir</span>
+            <span id="headStatus3">Izin</span>
+            <span id="headStatus4">Sakit</span>
           </div>
           <div class="score-head">Nilai Ulangan Harian</div>
         </div>
@@ -1677,7 +1679,7 @@
       <div class="save-panel">
         <button class="btn-simpan" id="btnSimpan" onclick="simpanKehadiran()">
           <span>💾</span>
-          <span>Simpan Absensi & Nilai</span>
+          <span>Simpan Absensi Awal</span>
         </button>
       </div>
     </section>
@@ -1691,7 +1693,10 @@
     ref,
     get,
     push,
-    update
+    update,
+    query,
+    orderByChild,
+    equalTo
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
@@ -1783,11 +1788,18 @@
 
   const STATUS_LIST = [
     { value: "Hadir", label: "Hadir" },
-    { value: "Terlambat", label: "Telat" },
+    { value: "Belum Hadir", label: "Belum Hadir" },
     { value: "Izin", label: "Izin" },
-    { value: "Sakit", label: "Sakit" },
-    { value: "Alfa", label: "Alfa" }
+    { value: "Sakit", label: "Sakit" }
   ];
+  const FINAL_STATUS_LIST = [
+    { value: "Terlambat", label: "Terlambat" },
+    { value: "Alfa", label: "Alfa" },
+    { value: "Izin", label: "Izin" },
+    { value: "Sakit", label: "Sakit" }
+  ];
+  let attendanceStageMode = "AWAL";
+  let existingAttendanceByAssignment = new Map();
 
   /* ==========================================================
      JADWAL PELAJARAN 2026/2027
@@ -1983,6 +1995,7 @@
   };
 
   let onlineScheduleRows = [];
+  let replacementTeacherRows = [];
   let masterDataAkademik = {
     kelas: {},
     guru: [],
@@ -2616,6 +2629,29 @@
     return true;
   }
 
+
+  function replacementMatchesActiveTeacher(record = {}) {
+    const candidate = compactIdentity(record.guruPengganti || "");
+    if (!candidate) return false;
+    const active = [namaGuruAktif(), teacherCodeAktif, ...(TEACHER_ALIASES[teacherCodeAktif] || [])]
+      .map(compactIdentity).filter(Boolean);
+    return active.some(x => x === candidate || (x.length >= 4 && (x.includes(candidate) || candidate.includes(x))));
+  }
+
+  function replacementAssignmentsForDate(dateValue, dayNumber) {
+    return buildAssignmentsForDay(dayNumber).filter(item => {
+      return replacementTeacherRows.some(r => {
+        if (!r || r.tanggal !== dateValue || !replacementMatchesActiveTeacher(r)) return false;
+        const scheduleMatch = r.jadwalId && String(r.jadwalId) === String(item.id);
+        const fallbackMatch = normalizeIdentity(r.kelas || "") === normalizeIdentity(item.className || "") && normalizeIdentity(r.mapel || "") === normalizeIdentity(item.subject || "");
+        return scheduleMatch || fallbackMatch;
+      });
+    }).map(item => {
+      const record = replacementTeacherRows.find(r => r.tanggal === dateValue && replacementMatchesActiveTeacher(r) && ((r.jadwalId && String(r.jadwalId) === String(item.id)) || (normalizeIdentity(r.kelas || "") === normalizeIdentity(item.className || "") && normalizeIdentity(r.mapel || "") === normalizeIdentity(item.subject || ""))));
+      return { ...item, isReplacement: true, originalTeacher: item.teacher, teacher: teacherCodeAktif, replacementRecordId: record?.id || "" };
+    });
+  }
+
   function loadTeacherScheduleForDate(
     options = {}
   ) {
@@ -2653,8 +2689,10 @@
       return;
     }
 
-    const rawAssignments = buildAssignmentsForDay(dayNumber)
-      .filter(item => item.teacher === teacherCodeAktif)
+    const regularAssignments = buildAssignmentsForDay(dayNumber).filter(item => item.teacher === teacherCodeAktif);
+    const replacementAssignments = replacementAssignmentsForDate(dateValue, dayNumber);
+    const rawAssignments = [...regularAssignments, ...replacementAssignments]
+      .filter((item,index,arr)=>arr.findIndex(x=>x.id===item.id)===index)
       .sort((a, b) => {
         const startCompare = String(a.scheduleStart || "").localeCompare(String(b.scheduleStart || ""));
         if (startCompare) return startCompare;
@@ -2837,13 +2875,7 @@
 
   function updateSummary() {
     const rows = [...document.querySelectorAll(".santri-row")];
-    const counts = {
-      Hadir: 0,
-      Terlambat: 0,
-      Izin: 0,
-      Sakit: 0,
-      Alfa: 0
-    };
+    const counts = { Hadir: 0, "Belum Hadir": 0, Terlambat: 0, Izin: 0, Sakit: 0, Alfa: 0 };
 
     rows.forEach((row) => {
       const selected = row.querySelector('input[type="radio"]:checked');
@@ -2854,7 +2886,7 @@
 
     document.getElementById("sumTotal").textContent = String(rows.length);
     document.getElementById("sumHadir").textContent = String(counts.Hadir);
-    document.getElementById("sumTerlambat").textContent = String(counts.Terlambat);
+    document.getElementById("sumTerlambat").textContent = String(attendanceStageMode === "AWAL" ? counts["Belum Hadir"] : counts.Terlambat);
     document.getElementById("sumIzin").textContent = String(counts.Izin);
     document.getElementById("sumSakit").textContent = String(counts.Sakit);
     document.getElementById("sumAlfa").textContent = String(counts.Alfa);
@@ -2890,10 +2922,12 @@
       );
 
     try {
-      const [snapshot, scheduleSnapshot] = await Promise.all([
+      const [snapshot, scheduleSnapshot, replacementSnapshot] = await Promise.all([
         get(ref(db, "cahaya_app/master_akademik")),
-        get(ref(db, "cahaya_app/jadwal_pelajaran"))
+        get(ref(db, "cahaya_app/jadwal_pelajaran")),
+        get(ref(db, "cahaya_app/guru_berhalangan"))
       ]);
+      replacementTeacherRows = replacementSnapshot.exists() ? Object.entries(replacementSnapshot.val() || {}).map(([id,v])=>({id,...(v||{})})) : [];
 
       const dataFirebase = snapshot.exists()
         ? snapshot.val()
@@ -3129,7 +3163,7 @@
         input.setAttribute("aria-label", `${nama}: ${status.value}`);
 
         input.addEventListener("change", () => {
-          row.className = `santri-row row-${status.value.toLowerCase()}`;
+          row.className = `santri-row row-${status.value.toLowerCase().replace(/\s+/g, "-")}`;
           updateSummary();
         });
 
@@ -3184,6 +3218,7 @@
     });
 
     updateSummary();
+    restoreTwoStageAttendance().catch(error => console.warn("Gagal memuat status absensi dua tahap:", error));
   };
 
   window.filterSantri = function() {
@@ -3233,7 +3268,117 @@
     btn.disabled = isLoading;
     btn.innerHTML = isLoading
       ? '<span>⏳</span><span>Menyimpan...</span>'
-      : '<span>💾</span><span>Simpan Absensi & Nilai</span>';
+      : `<span>💾</span><span>${attendanceStageMode === "FINAL" ? "Finalisasi Absensi" : attendanceStageMode === "FINAL_VIEW" ? "Absensi Sudah Final" : "Simpan Absensi Awal"}</span>`;
+  }
+
+
+  async function loadTodayAttendanceRecords() {
+    const tanggal = tanggalLokalHariIni();
+    try {
+      const snap = await get(query(ref(db, "cahaya_app/absensi_pembelajaran"), orderByChild("tanggal"), equalTo(tanggal)));
+      return Object.entries(snap.val() || {}).map(([id, value]) => ({ id, ...(value || {}) }));
+    } catch (e) {
+      const snap = await get(ref(db, "cahaya_app/absensi_pembelajaran"));
+      return Object.entries(snap.val() || {}).map(([id, value]) => ({ id, ...(value || {}) })).filter(x => x.tanggal === tanggal);
+    }
+  }
+
+  function setTwoStageLabels(mode) {
+    attendanceStageMode = mode;
+    const p = document.getElementById("sumLabelPending");
+    const a = document.getElementById("sumLabelAlfa");
+    const h1 = document.getElementById("headStatus1");
+    const h2 = document.getElementById("headStatus2");
+    const h3 = document.getElementById("headStatus3");
+    const h4 = document.getElementById("headStatus4");
+    if (p) p.textContent = mode === "AWAL" ? "Belum Hadir" : "Terlambat";
+    if (a) a.textContent = mode === "AWAL" ? "Alfa (Final)" : "Alfa";
+    if (h1) h1.textContent = mode === "AWAL" ? "Hadir" : "Terlambat";
+    if (h2) h2.textContent = mode === "AWAL" ? "Belum Hadir" : "Alfa";
+    if (h3) h3.textContent = "Izin";
+    if (h4) h4.textContent = "Sakit";
+    const stageBadge = document.getElementById("absensiStageBadge");
+    if (stageBadge) stageBadge.textContent = mode === "AWAL" ? "Tahap 1 • Absensi Pembukaan" : mode === "FINAL" ? "Tahap 2 • Finalisasi Absensi" : "Absensi • Sudah Final";
+    const markAll = document.getElementById("btnMarkAll");
+    if (markAll) { markAll.disabled = mode !== "AWAL"; markAll.textContent = mode === "AWAL" ? "✓ Semua Hadir" : "Finalisasi status tertunda"; }
+    const btn = document.getElementById("btnSimpan");
+    if (btn) {
+      btn.disabled = mode === "FINAL_VIEW";
+      btn.innerHTML = mode === "FINAL" ? '<span>✅</span><span>Finalisasi Absensi</span>' : mode === "FINAL_VIEW" ? '<span>🔒</span><span>Absensi Sudah Final</span>' : '<span>💾</span><span>Simpan Absensi Awal</span>';
+    }
+  }
+
+  function rebuildActionGroup(row, options, checkedValue = "", disabled = false) {
+    const group = row.querySelector(".action-group");
+    if (!group) return;
+    group.innerHTML = "";
+    options.forEach(status => {
+      const label = document.createElement("label"); label.className = "radio-item"; label.title = status.value;
+      const input = document.createElement("input"); input.type = "radio"; input.name = `final_${row.dataset.assignmentId}_${row.dataset.nama}`; input.value = status.value; input.checked = checkedValue === status.value; input.disabled = disabled;
+      input.addEventListener("change", () => { row.className = `santri-row row-${status.value.toLowerCase().replace(/\s+/g,'-')}`; updateSummary(); });
+      const checkmark = document.createElement("span"); checkmark.className = "checkmark";
+      const symbol = document.createElement("span"); symbol.className = "status-symbol";
+      const txt = document.createElement("span"); txt.textContent = status.label;
+      checkmark.append(symbol, txt); label.append(input, checkmark); group.appendChild(label);
+    });
+  }
+
+  async function restoreTwoStageAttendance() {
+    const assignment = selectedAssignment || getSelectedAssignment();
+    const assignments = daftarJadwalTerpilih(assignment);
+    if (!assignments.length) return;
+    const todays = await loadTodayAttendanceRecords();
+    existingAttendanceByAssignment = new Map();
+    assignments.forEach(a => {
+      const candidates = todays.filter(x => String(x.jadwalId || "") === String(a.id) || (normalizeIdentity(x.kelas || x.sub || "") === normalizeIdentity(a.className) && normalizeIdentity(x.mapel || "") === normalizeIdentity(a.subject || "")));
+      if (candidates.length) {
+        candidates.sort((x,y)=>String(y.waktuSimpan||y.waktuFinalisasi||"").localeCompare(String(x.waktuSimpan||x.waktuFinalisasi||"")));
+        existingAttendanceByAssignment.set(a.id, candidates[0]);
+      }
+    });
+    if (!existingAttendanceByAssignment.size) { setTwoStageLabels("AWAL"); return; }
+    const records = [...existingAttendanceByAssignment.values()];
+    const needsFinal = records.some(r => r.statusFinalisasi === "BELUM_FINAL" || (r.data || []).some(x => (x.statusAwal || x.status) === "Belum Hadir" && !(x.statusAkhir || x.statusFinal)));
+    setTwoStageLabels(needsFinal ? "FINAL" : "FINAL_VIEW");
+    document.querySelectorAll(".santri-row").forEach(row => {
+      const rec = existingAttendanceByAssignment.get(row.dataset.assignmentId) || records.find(r => normalizeIdentity(r.kelas||r.sub||"")===normalizeIdentity(row.dataset.kelas||""));
+      const item = (rec?.data || []).find(x => normalizeIdentity(x.nama) === normalizeIdentity(row.dataset.nama));
+      if (!item) return;
+      const awal = item.statusAwal || item.status || "Hadir";
+      const akhir = item.statusAkhir || item.statusFinal || (awal !== "Belum Hadir" ? awal : "");
+      const score = row.querySelector(".daily-score-input"); if (score && item.nilaiUlanganHarian != null) score.value = item.nilaiUlanganHarian; if (score && needsFinal) score.disabled = true;
+      if (needsFinal && awal === "Belum Hadir") rebuildActionGroup(row, FINAL_STATUS_LIST, akhir, false);
+      else rebuildActionGroup(row, [{value: akhir || awal, label: akhir || awal}], akhir || awal, true);
+      row.dataset.statusAwal = awal;
+    });
+    updateSummary();
+  }
+
+  async function finalizeExistingAttendance(assignments, catatan, mapel) {
+    const pendingRows = [...document.querySelectorAll(".santri-row")].filter(row => row.dataset.statusAwal === "Belum Hadir");
+    const unresolved = pendingRows.filter(row => !row.querySelector('input[type="radio"]:checked'));
+    if (unresolved.length) {
+      showToast(`${unresolved.length} santri berstatus Belum Hadir belum ditentukan menjadi Terlambat, Alfa, Izin, atau Sakit.`, "error", "Finalisasi belum lengkap");
+      unresolved[0].scrollIntoView({behavior:"smooth",block:"center"}); return false;
+    }
+    const updates = {};
+    assignments.forEach(a => {
+      const rec = existingAttendanceByAssignment.get(a.id); if (!rec?.id) return;
+      const classRows = [...document.querySelectorAll('.santri-row')].filter(row => row.dataset.assignmentId === a.id || row.dataset.kelas === a.className);
+      const oldByName = new Map((rec.data || []).map(x => [normalizeIdentity(x.nama), x]));
+      const newData = classRows.map(row => {
+        const old = oldByName.get(normalizeIdentity(row.dataset.nama)) || {nama:row.dataset.nama,statusAwal:row.dataset.statusAwal||"Hadir"};
+        const awal = old.statusAwal || old.status || "Hadir";
+        const selected = row.querySelector('input[type="radio"]:checked');
+        const akhir = awal === "Belum Hadir" ? selected?.value : (old.statusAkhir || old.statusFinal || awal);
+        return {...old, statusAwal:awal, statusAkhir:akhir, statusFinal:akhir, status:akhir, final:true, poin:hitungPoin(akhir,mapel), waktuFinalisasi:new Date().toISOString()};
+      });
+      const patch = {data:newData,catatan:catatan||rec.catatan||"",tahapAbsensi:"FINAL",statusFinalisasi:"FINAL",waktuFinalisasi:new Date().toISOString(),waktuSimpan:new Date().toISOString()};
+      updates[`cahaya_app/absensi_pembelajaran/${rec.id}`] = {...rec,...patch};
+      newData.forEach(item => { const waliKey=String(item.nama||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,""); if(waliKey) updates[`cahaya_app/wali_index/${waliKey}/pembelajaran/${rec.id}`] = {...rec,...patch,data:[item]}; });
+    });
+    await update(ref(db), updates); showToast("Absensi akhir berhasil difinalisasi. Status Belum Hadir sudah ditetapkan secara faktual.","success","Finalisasi selesai");
+    setTwoStageLabels("FINAL_VIEW"); return true;
   }
 
   window.simpanKehadiran = async function() {
@@ -3252,6 +3397,18 @@
         "error",
         "Jadwal belum dipilih"
       );
+      return;
+    }
+
+    if (attendanceStageMode === "FINAL_VIEW") {
+      showToast("Absensi untuk jadwal ini sudah difinalisasi.", "success", "Sudah final");
+      return;
+    }
+    if (attendanceStageMode === "FINAL") {
+      setSaveButtonLoading(true);
+      try { const ok = await finalizeExistingAttendance(assignments, catatan, mapel); if (ok) setTimeout(()=>location.reload(),900); }
+      catch(error){ console.error(error); showToast(error.message||"Gagal finalisasi absensi.","error","Gagal finalisasi"); }
+      finally { setSaveButtonLoading(false); }
       return;
     }
 
@@ -3310,7 +3467,7 @@
         const statusDipilih = row.querySelector('input[type="radio"]:checked');
         const statusAwal = statusDipilih ? statusDipilih.value : "Hadir";
         const izinUKS = izinByNama.get(compactIdentity(nama));
-        const status = statusAwal === "Alfa" && izinUKS ? "Sakit" : statusAwal;
+        const status = statusAwal === "Belum Hadir" && izinUKS ? "Sakit" : statusAwal;
         const nilaiRaw = row.querySelector(".daily-score-input")?.value.trim() || "";
         const nilaiUlanganHarian = nilaiRaw === "" ? null : Number(nilaiRaw);
         if (status !== statusAwal) jumlahKoreksiUKS += 1;
@@ -3319,8 +3476,12 @@
           nama,
           kelas,
           assignmentId,
+          statusAwal: status,
+          statusAkhir: status === "Belum Hadir" ? "" : status,
+          statusFinal: status === "Belum Hadir" ? "" : status,
           status,
-          poin: hitungPoin(status, mapel),
+          final: status !== "Belum Hadir",
+          poin: status === "Belum Hadir" ? 0 : hitungPoin(status, mapel),
           nilaiUlanganHarian,
           nilaiUlanganHarianDiisi: nilaiRaw !== "",
           ...(status !== statusAwal ? {
@@ -3360,6 +3521,9 @@
           guru: namaGuruAktif(),
           guruKodeKalender: teacherCodeAktif,
           guruUid: user?.uid || "",
+          guruPenggantiUntuk: itemAssignment.isReplacement ? (itemAssignment.originalTeacher || "") : "",
+          statusGuruPengganti: Boolean(itemAssignment.isReplacement),
+          idCatatanGuruBerhalangan: itemAssignment.replacementRecordId || "",
           jadwalId: itemAssignment.id,
           hariJadwal: itemAssignment.dayLabel,
           nomorHariJadwal: itemAssignment.dayNumber,
@@ -3374,6 +3538,10 @@
           jumlahNilaiUlanganHarian: nilaiTerisi.length,
           rataRataNilaiUlanganHarian,
           data: hasil,
+          tahapAbsensi: hasil.some(item => item.statusAwal === "Belum Hadir") ? "AWAL" : "FINAL",
+          statusFinalisasi: hasil.some(item => item.statusAwal === "Belum Hadir") ? "BELUM_FINAL" : "FINAL",
+          waktuAbsensiAwal: new Date().toISOString(),
+          waktuFinalisasi: hasil.some(item => item.statusAwal === "Belum Hadir") ? "" : new Date().toISOString(),
           waktuSimpan: new Date().toISOString(),
           absensiGabungan: Boolean(assignment.isCombined),
           idAbsensiGabungan: groupId,
@@ -3402,11 +3570,11 @@
 
       const suksesGabungan = assignment.isCombined
         ? `${assignments.length} kelas dan ${hasilSemua.length} santri berhasil disimpan sekaligus.`
-        : "Absensi dan nilai ulangan harian berhasil disimpan.";
+        : "Absensi pembukaan berhasil disimpan. Jika masih ada santri Belum Hadir, buka kembali jadwal ini pada akhir KBM untuk finalisasi.";
 
       showToast(
         jumlahKoreksiUKS
-          ? `${suksesGabungan} ${jumlahKoreksiUKS} status Alfa otomatis diubah menjadi Sakit berdasarkan izin UKS.`
+          ? `${suksesGabungan} ${jumlahKoreksiUKS} status Belum Hadir otomatis diubah menjadi Sakit berdasarkan izin UKS.`
           : suksesGabungan,
         "success",
         assignment.isCombined ? "Absensi gabungan berhasil" : "Penyimpanan berhasil"

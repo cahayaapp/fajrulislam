@@ -1,0 +1,56 @@
+CAHAYA APP v82 — PENDIDIKAN + PEMBINAAN KARAKTER
+Pesantren Cahaya Fajrul Islam
+Tanggal build: 1 September 2026
+
+ARAH V82
+Cahaya App v82 memprioritaskan dua mesin operasional utama: Divisi Pendidikan dan Divisi Pembinaan Karakter. Identitas visual lama dipertahankan; yang direstrukturisasi adalah alur kerja, homepage berbasis role, kontrol manajemen, dan akses user.
+
+1. USER SETTING BARU
+- Struktur utama: User → Divisi → Role/Homepage.
+- Satu user dapat memiliki beberapa role.
+- Tidak ada layar Role Selector sebelum masuk.
+- Setelah login, aplikasi otomatis membuka homepage berdasarkan role aktif/default/terakhir.
+- User multi-role dapat berpindah homepage dari pemilih peran di dalam aplikasi tanpa login ulang.
+- Kompatibilitas field akses lama tetap dipertahankan agar migrasi bertahap aman.
+
+2. PENDIDIKAN
+- Workspace Guru berbasis pekerjaan hari ini.
+- Workspace Mentor Qur'an.
+- Control Center Manajer Pendidikan menonjolkan pekerjaan/exception yang harus dibereskan.
+- Sistem Pendidikan tetap memakai evaluasi/nilai bulanan dan mekanisme tindak lanjut.
+- Pola absensi KBM dua tahap tetap menjadi standar operasional.
+
+3. PEMBINAAN KARAKTER + KONSELING
+- Workspace Naqib Operasional: program harian dan kasus harian/ringan.
+- Workspace Asisten Naqib: usrah, target, mentoring usrah, asesmen anggota.
+- Workspace Naqib Pendamping: santri binaan dan mentoring individu.
+- Control Center Manajer Pembinaan Karakter.
+- Review Center Supervisor Pembinaan Karakter.
+- Dashboard pimpinan fokus Pendidikan + Pembinaan Karakter.
+
+4. ROUTING KASUS
+- Kasus ringan/harian: kedisiplinan, kebersihan, kerapian → Naqib Operasional.
+- Pelanggaran berulang, moral/etika, sedang, kritis → Manajer/Supervisor Pembinaan Karakter.
+- Penyimpanan kasus mempertahankan field kompatibilitas lama sekaligus menambahkan jalurPenangananV2.
+
+5. ASESMEN CAHAYA
+- Bersifat BULANAN, standar pelaksanaan akhir bulan.
+- Santri biasa diasesmen Ketua Usrah/Asisten Naqib.
+- Ketua Usrah diasesmen Naqib Operasional.
+- Manajer/Supervisor memantau, bukan menjadi penginput asesmen.
+- Periode asesmen dipisahkan dari tanggal input agar asesmen bulan sebelumnya yang diinput awal bulan berikutnya tetap masuk periode yang benar.
+
+6. PENDAMPINGAN
+- Mentoring Individu diinput Naqib Pendamping.
+- Mentoring Usrah diinput Asisten Naqib/Ketua Usrah.
+- Manajer/Supervisor memakai halaman Pantau Pendampingan, bukan form input mentoring.
+
+7. DATABASE / FIREBASE
+- Struktur lama dipertahankan untuk kompatibilitas.
+- Ditambahkan indeks RTDB untuk target pertumbuhan, mentoring usrah, dan review pembinaan.
+- File rules: firebase-rtdb-rules-cahaya-app-v20.json
+
+CATATAN DEPLOYMENT
+Jika mengganti FULL package, upload seluruh isi paket sesuai root web Cahaya App.
+Jika memakai PATCH, timpa file sesuai struktur folder.
+Perubahan RTDB rules/index tidak otomatis aktif hanya dengan upload file web; terapkan rules Firebase sesuai proses deployment yang biasa digunakan.

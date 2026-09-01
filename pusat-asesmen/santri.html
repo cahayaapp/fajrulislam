@@ -337,11 +337,13 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getDatabase, ref, push, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+  const dbFS = getFirestore(app);
 
   // --- KECERDASAN PEMBERSIH NAMA ---
   // Fungsi ini otomatis membuang awalan "Kak ", "Ustadz ", "Mu'allim", dll
@@ -380,8 +382,44 @@
   const monthNames = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
   const normalizeIdentity = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const roleValues = Array.isArray(user.akses) ? user.akses : [user.akses, user.role, user.jabatan].flat().filter(Boolean);
-  const isNaqibView = roleValues.some(v => String(v).toLowerCase().includes("naqib")) || localStorage.getItem("cahayaDirectorViewRole") === "naqib";
-  const isPutriNaqib = ["fatimah","meilisa","melisa","alamanda"].some(name => normalizeIdentity(rawNama).includes(name));
+  const activeRole = String(localStorage.getItem("cahayaActiveRole") || localStorage.getItem("cahayaCurrentRole") || user.activeRole || user.role || "").toLowerCase();
+  const workspaceAssignments = Array.isArray(user.workspaceAssignments) ? user.workspaceAssignments : [];
+  const activeAssignment = workspaceAssignments.find(a => String(a?.role || "").toLowerCase() === activeRole) || {};
+  const activeUnit = String(activeAssignment.unit || user.unit || "").trim();
+  let assignedUsrah = String(user.usrahBinaan || user.usrah || user.kelompokNaqib || user.kelompok || "").trim();
+  const isNaqibOps = activeRole === "naqib-operasional" || (activeRole === "naqib" && !roleValues.some(v => String(v).toLowerCase().includes("asisten")));
+  const isAsistenNaqib = activeRole === "asisten-naqib";
+  const canAssessCahaya = isNaqibOps || isAsistenNaqib;
+  const isNaqibView = canAssessCahaya;
+  const isPutriNaqib = activeUnit === "Putri";
+  const ketuaUsrahNames = new Set();
+
+  function findUsrahForName(name) {
+    const target = normalizeIdentity(name);
+    if (!target) return "";
+    for (const [key, value] of Object.entries(dataUsrahCloud || {})) {
+      if (normalisasiDaftarSantri(value).some(n => normalizeIdentity(n) === target)) return key;
+    }
+    return "";
+  }
+
+  async function loadKetuaUsrahFromUsers() {
+    ketuaUsrahNames.clear();
+    try {
+      const snap = await getDocs(collection(dbFS, "users"));
+      snap.forEach(docSnap => {
+        const data = docSnap.data() || {};
+        const roles = Array.isArray(data.workspaceRoles) ? data.workspaceRoles : [];
+        const assignments = Array.isArray(data.workspaceAssignments) ? data.workspaceAssignments : [];
+        const isAssistant = roles.map(v=>String(v||"").toLowerCase()).includes("asisten-naqib") || assignments.some(a => String(a?.role||"").toLowerCase() === "asisten-naqib");
+        if (!isAssistant) return;
+        const name = data.label || data.nama || data.namaTampilan || data.username || docSnap.id;
+        if (name) ketuaUsrahNames.add(normalizeIdentity(name));
+      });
+    } catch (error) {
+      console.warn("Daftar Ketua Usrah dari User Setting belum dapat dimuat:", error);
+    }
+  }
 
   window.showAssessmentScene = function(id) {
     document.querySelectorAll(".as-scene").forEach(scene => scene.classList.toggle("active", scene.id === id));
@@ -389,7 +427,14 @@
 
   function assessmentUsrahAllowed(key) {
     if (!isNaqibView) return true;
+    if (isAsistenNaqib && assignedUsrah) {
+      const a = normalizeIdentity(assignedUsrah);
+      const b = normalizeIdentity(key);
+      if (a && b && a !== b && !b.includes(a) && !a.includes(b)) return false;
+    }
+    if (!activeUnit || activeUnit === "Semua") return true;
     const n = Number(String(key || "").match(/\d+/)?.[0] || 0);
+    if (!n) return true;
     return isPutriNaqib ? n >= 7 && n <= 8 : n >= 1 && n <= 6;
   }
 
@@ -402,7 +447,6 @@
 
   window.selectAssessmentMonth = function(month) {
     assessmentMonth = String(month).padStart(2,"0");
-    document.getElementById("tanggalAsesmen").value = `${assessmentYear}-${assessmentMonth}-01`;
     const keys = Object.keys(dataUsrahCloud).filter(assessmentUsrahAllowed).sort((a,b) => nomorUsrah(a)-nomorUsrah(b));
     document.getElementById("asUsrahGrid").innerHTML = keys.length ? keys.map(key => `
       <button class="as-choice" type="button" onclick="selectAssessmentUsrah('${String(key).replace(/'/g,"\'")}')">
@@ -414,11 +458,17 @@
   window.selectAssessmentUsrah = function(key) {
     document.getElementById("pilihUsrah").value = key;
     window.ubahUsrah();
-    const daftar = normalisasiDaftarSantri(dataUsrahCloud[key]).sort((a,b)=>a.localeCompare(b,"id"));
+    let daftar = normalisasiDaftarSantri(dataUsrahCloud[key]).sort((a,b)=>a.localeCompare(b,"id"));
+    if (isNaqibOps && ketuaUsrahNames.size) {
+      daftar = daftar.filter(nama => ketuaUsrahNames.has(normalizeIdentity(nama)));
+    }
+    if (isAsistenNaqib) {
+      daftar = daftar.filter(nama => normalizeIdentity(nama) !== normalizeIdentity(rawNama));
+    }
     document.getElementById("asStudentGrid").innerHTML = daftar.length ? daftar.map(nama => `
       <button class="as-choice" type="button" onclick="selectAssessmentStudent('${String(nama).replace(/'/g,"\'")}')">
         <i>☺</i><b>${nama}</b>
-      </button>`).join("") : '<div style="grid-column:1/-1;padding:25px;text-align:center;color:#73819a;font-weight:800">Belum ada santri pada usrah ini.</div>';
+      </button>`).join("") : `<div style="grid-column:1/-1;padding:25px;text-align:center;color:#73819a;font-weight:800">${isNaqibOps ? 'Ketua Usrah belum terdeteksi dari User Setting pada usrah ini.' : 'Belum ada santri yang dapat diasesmen pada usrah ini.'}</div>`;
     showAssessmentScene("asSceneStudent");
   };
 
@@ -476,6 +526,7 @@
       '<option value="">-- Pilih Usrah --</option>';
 
     Object.keys(dataUsrahCloud)
+      .filter(assessmentUsrahAllowed)
       .sort((a, b) => {
         const nomorA = nomorUsrah(a);
         const nomorB = nomorUsrah(b);
@@ -518,9 +569,12 @@
       return;
     }
 
-    const daftarSantri = normalisasiDaftarSantri(
+    let daftarSantri = normalisasiDaftarSantri(
       dataUsrahCloud[usrah]
     ).sort((a, b) => a.localeCompare(b, "id"));
+
+    if (isNaqibOps && ketuaUsrahNames.size) daftarSantri = daftarSantri.filter(nama => ketuaUsrahNames.has(normalizeIdentity(nama)));
+    if (isAsistenNaqib) daftarSantri = daftarSantri.filter(nama => normalizeIdentity(nama) !== normalizeIdentity(rawNama));
 
     selectSantri.innerHTML =
       '<option value="">-- Pilih Santri --</option>';
@@ -544,10 +598,12 @@
     async function() {
       document.getElementById(
         "tanggalAsesmen"
-      ).value = new Date()
-        .toISOString()
-        .split("T")[0];
+      ).value = new Intl.DateTimeFormat("en-CA", {timeZone:"Asia/Jakarta", year:"numeric", month:"2-digit", day:"2-digit"}).format(new Date());
       renderAssessmentMonths();
+      if (!canAssessCahaya) {
+        document.getElementById("btnSubmit").disabled = true;
+        document.getElementById("btnSubmit").textContent = "ASESMEN HANYA UNTUK KETUA USRAH / NAQIB OPERASIONAL";
+      }
 
       try {
         const snapUsrah = await get(
@@ -558,6 +614,8 @@
           ? snapUsrah.val()
           : {};
 
+        if (isAsistenNaqib && !assignedUsrah) assignedUsrah = findUsrahForName(rawNama);
+        await loadKetuaUsrahFromUsers();
         isiDaftarUsrah();
         ubahUsrah();
       } catch (error) {
@@ -687,6 +745,10 @@
   }
 
   window.simpanAsesmen = async function() {
+    if (!canAssessCahaya) {
+      alert("⚠️ Asesmen CAHAYA bulanan hanya diinput oleh Ketua Usrah/Asisten Naqib untuk anggota usrah dan Naqib Operasional untuk Ketua Usrah.");
+      return;
+    }
     const tanggal =
       document.getElementById("tanggalAsesmen").value;
 
@@ -706,6 +768,25 @@
       return;
     }
 
+    if (isAsistenNaqib && assignedUsrah) {
+      const a = normalizeIdentity(assignedUsrah), b = normalizeIdentity(usrah);
+      if (a && b && a !== b && !a.includes(b) && !b.includes(a)) {
+        alert("⚠️ Ketua Usrah hanya dapat mengasesmen anggota usrahnya sendiri.");
+        return;
+      }
+    }
+
+    // V82 — pembagian asesmen: anggota oleh Ketua Usrah/Asisten Naqib,
+    // Ketua Usrah oleh Naqib Operasional. Ketua Usrah tidak menilai dirinya sendiri.
+    if (isAsistenNaqib && normalizeIdentity(santri) === normalizeIdentity(rawNama)) {
+      alert("⚠️ Ketua Usrah tidak mengasesmen dirinya sendiri. Asesmen Ketua Usrah dilakukan oleh Naqib Operasional.");
+      return;
+    }
+    if (isNaqibOps && ketuaUsrahNames.size && !ketuaUsrahNames.has(normalizeIdentity(santri))) {
+      alert("⚠️ Role Naqib Operasional hanya mengasesmen Ketua Usrah. Nama yang dipilih belum terdaftar sebagai Asisten Naqib/Ketua Usrah pada User Setting.");
+      return;
+    }
+
     const btn = document.getElementById("btnSubmit");
     btn.innerHTML = "⏳ MENYIMPAN KE DATABASE..."; btn.disabled = true;
 
@@ -718,6 +799,8 @@
     const payload = {
       tanggalAsesmen: tanggal,
       periodeBulan: assessmentMonth ? `${assessmentYear}-${assessmentMonth}` : String(tanggal || "").slice(0,7),
+      frekuensiAsesmen: "BULANAN",
+      waktuPelaksanaanStandar: "AKHIR_BULAN",
       namaSantri: santri,
 
       usrah: usrah,
@@ -725,10 +808,9 @@
       labelUsrah: labelUsrah(usrah),
 
       namaPengasesmen: namaPengasesmen,
-      peranPengasesmen:
-        user.akses ||
-        user.role ||
-        "",
+      peranPengasesmen: activeRole || user.role || "",
+      jenisAsesmenPengasesmen: isNaqibOps ? "KETUA_USRAH_OLEH_NAQIB_OPERASIONAL" : (isAsistenNaqib ? "ANGGOTA_USRAH_OLEH_KETUA_USRAH" : "ASESMEN_CAHAYA_BULANAN"),
+      unitPengasesmen: activeUnit || "",
 
       // Field lama dipertahankan untuk kompatibilitas.
       namaNaqib: namaNaqib,

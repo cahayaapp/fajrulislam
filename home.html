@@ -310,7 +310,7 @@
   (function(){
     'use strict';
     const ALL_ROLE_MODE='semua-peran';
-    const ROLE_LABEL={'semua-peran':'Semua Peran',operasional:'Manajemen Operasional',admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',manajer:'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula',guru:'Guru',naqib:'Naqib',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
+    const ROLE_LABEL={'semua-peran':'Semua Peran',operasional:'Operasional',admin:'Administrator',pimpinan:'Pimpinan',pengasuh:'Pimpinan',direktur:'Direktur',wakil:'Wakil Direktur',yayasan:'Yayasan','kepala-sekolah':'Kepala Sekolah',supervisor:'Supervisor',manajer:'Manajer','staf-muda':'Staf Muda','staf-mula':'Staf Mula',guru:'Guru','mentor-quran':'Mentor Tahsin/Tahfiz','manajer-pendidikan':'Manajer Pendidikan','supervisor-pendidikan':'Supervisor Pendidikan',naqib:'Naqib','naqib-operasional':'Naqib Operasional','asisten-naqib':'Asisten Naqib Pendamping','naqib-pendamping':'Naqib Pendamping','manajer-pembinaan':'Manajer Pembinaan Karakter','supervisor-pembinaan':'Supervisor Pembinaan Karakter',konselor:'Konselor',cla:'CLA',layanan:'Layanan',sarpras:'Sarpras',kesehatan:'Kesehatan',keuangan:'Keuangan',kasir:'Kasir',wali:'Wali Santri'};
     function safeJson(key){try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(_){return{}}}
     function normalizeRole(value){
       const r=String(value||'').trim().toLowerCase();
@@ -393,17 +393,17 @@
     }
 
     const ROLE_CARD_CONFIG={
-      leadership:{title:'Ringkasan Pimpinan',roles:['admin','pimpinan','pengasuh','direktur','wakil','yayasan','kepala-sekolah','supervisor'],cards:[
+      leadership:{title:'Ringkasan Pimpinan',roles:['admin','pimpinan','pengasuh','direktur','wakil','yayasan','kepala-sekolah','supervisor','manajer-pendidikan','supervisor-pendidikan','manajer-pembinaan','supervisor-pembinaan'],cards:[
         {key:'permit',label:'Permohonan Izin',targets:['menu-perizinan-santri'],type:'shield'},
         {key:'health',label:'Santri Sakit',targets:['menu-jurnal-kesehatan','menu-pemeriksaan-kesehatan'],type:'health'},
         {key:'duty',label:'Petugas Piket',targets:['menu-jurnal-piket','menu-jadwal-piket'],type:'calendar'},
         {key:'monitor',label:'Monitoring Guru',desc:'Pantau kehadiran guru',targets:['menu-monitoring-absen-guru'],type:'chart'}
       ]},
-      naqib:{title:'',showTitle:false,roles:['naqib'],cards:[
+      naqib:{title:'',showTitle:false,roles:['naqib','naqib-operasional','asisten-naqib','naqib-pendamping'],cards:[
         {key:'currentProgram',label:'Tugas Pengawasan Saat Ini',type:'check'},
         {key:'attention',label:'Perlu Perhatian',type:'shield'}
       ]},
-      guru:{title:'',showTitle:false,roles:['guru'],cards:[
+      guru:{title:'',showTitle:false,roles:['guru','mentor-quran'],cards:[
         {key:'teacherSchedule',label:'Jadwal Saya Hari Ini',type:'calendar'},
         {key:'teacherLeave',label:'Izin Tidak Belajar',type:'shield'}
       ]},
@@ -422,7 +422,7 @@
         {label:'Jurnal Sarpras',desc:'Catat pekerjaan hari ini',targets:['menu-jurnal-sarpras'],type:'edit'}
       ]},
       operasional:{title:'Ringkasan Operasional',roles:['operasional','manajer','staf-muda','staf-mula'],cards:[
-        {label:'Manajemen Operasional',desc:'Tugas, jurnal, rapat dan tindak lanjut',targets:['menu-manajemen-operasional'],type:'chart'}
+        {label:'Dashboard Operasional',desc:'Ruang kerja operasional sesuai role aktif',targets:['menu-dashboard-operasional'],type:'chart'}
       ]}
     };
     function parentMenu(id){try{return window.parent&&window.parent!==window?window.parent.document.getElementById(id):null}catch(_){return null}}
@@ -627,7 +627,7 @@
       document.getElementById('roleCardsTitle').textContent=group.title;box.innerHTML=available.map(roleCardMarkup).join('');section.hidden=false;
     }
 
-    const OPERATIONAL_ROLES=new Set(['operasional','admin','direktur','wakil','supervisor','manajer','staf-muda','staf-mula','kepala-sekolah','naqib','konselor','cla','layanan','sarpras','kesehatan','keuangan']);
+    const OPERATIONAL_ROLES=new Set(['operasional','admin','direktur','wakil','supervisor','manajer','staf-muda','staf-mula','kepala-sekolah','guru','mentor-quran','manajer-pendidikan','supervisor-pendidikan','naqib','naqib-operasional','asisten-naqib','naqib-pendamping','manajer-pembinaan','supervisor-pembinaan','konselor','cla','layanan','sarpras','kesehatan','keuangan']);
     let personalPerformanceData=null;
     function currentMonthKey(){const f=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit'}).format(new Date());return f.slice(0,7)}
     function currentUsername(){const p=profile();return String(p.username||p.id||p.email?.split('@')[0]||'').trim().toLowerCase()}
