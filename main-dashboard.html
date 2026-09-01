@@ -1875,7 +1875,13 @@
 }
 </style>
 
-  <link rel="stylesheet" href="css/cahaya-signature-v87.css?v=87" />
+  <link rel="stylesheet" href="css/cahaya-signature-v87.css?v=88" />
+
+<style id="cahaya-v88-director-home-shell">
+body.director-home-shell .top-nav{display:none!important}
+body.director-home-shell .cahaya-page-loader{inset:0!important}
+@media(max-width:900px){body.director-home-shell .main-content{height:calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom))!important;flex-basis:calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom))!important}body.director-home-shell #contentFrame{height:100%!important;flex:1!important}}
+</style>
 </head>
 <body class="cahaya-shell-page">
 
@@ -2320,6 +2326,7 @@
 
 
 function openOperationalDashboard(el) {
+  document.body.classList.remove('director-home-shell');
   const role = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
   const assignments = Array.isArray(pUserSafe?.workspaceAssignments) ? pUserSafe.workspaceAssignments : [];
   const activeAssignment = assignments.find(a => String(a.role||'').toLowerCase() === role) || assignments[0] || {};
@@ -2409,6 +2416,7 @@ function openRoleAwareCasePage(el) {
 const mobileUtilityIcon = {
   home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg>',
   menu: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>',
   chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>',
   profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22c.7-5 3.5-8 8-8s7.3 3 8 8"/></svg>',
   scan: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/><path d="M8 9h3v3H8zM14 9h2M14 12h2M8 15h2M12 15h4M12 18h4"/></svg>',
@@ -2416,6 +2424,16 @@ const mobileUtilityIcon = {
 };
 
 function getMobileUtilityItems() {
+  const active = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
+  if (active === 'direktur') {
+    const directorItems = [];
+    if (bolehAksesMenu('menu-home')) directorItems.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.home });
+    if (bolehAksesMenu('menu-kalender-pendidikan')) directorItems.push({ id:'menu-kalender-pendidikan', label:'Jadwal', icon:mobileUtilityIcon.calendar });
+    if (bolehAksesMenu('menu-chat')) directorItems.push({ id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' });
+    if (bolehAksesMenu('menu-profil')) directorItems.push({ id:'menu-profil', label:'Profil', icon:mobileUtilityIcon.profile });
+    directorItems.push({ id:'utility-menu', label:'Lainnya', icon:mobileUtilityIcon.menu });
+    return directorItems;
+  }
   const items = [];
   if (bolehAksesMenu('menu-home')) items.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.home });
   items.push({ id:'utility-menu', label:'Menu', icon:mobileUtilityIcon.menu });
@@ -3465,6 +3483,9 @@ function sinkronkanBadgePintasanMobile() {
         : cariMenuBerdasarkanUrl(url);
 
       const menuId = menuElement?.id || "";
+      const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
+      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=88';
+      document.body.classList.toggle('director-home-shell', menuId === 'menu-home' && activeRoleForPage === 'direktur');
 
       if (!menuId || !bolehAksesMenu(menuId)) {
         tampilkanPesanTidakBerwenang(menuId);
