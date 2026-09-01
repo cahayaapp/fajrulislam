@@ -22,12 +22,14 @@ html,body{overflow-x:hidden}.page{width:100%}.modal-card{overscroll-behavior:con
 </style>
 
 <link rel="stylesheet" href="../css/cahaya-premium-v85.css?v=85">
+
+  <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
 </head>
 <body class="v84-purple">
 <main class="page">
   <section class="hero"><div class="hero-row"><div><div class="eyebrow">CAHAYA APP • Pengaturan</div><h1>Pengaturan User</h1><p>Struktur akses cukup <b>User → Divisi → Role</b>. Setiap user boleh memiliki beberapa role; Dashboard Operasional otomatis menyesuaikan role aktif tanpa membuat akun baru.</p></div><button class="btn" type="button" onclick="openAdd()">+ Tambah User</button></div></section>
   <div class="toolbar"><input class="search" id="search" placeholder="Cari nama atau username..." oninput="render()"><button class="btn soft" onclick="loadUsers()">Muat Ulang</button></div>
-  <div class="note">Menu aplikasi ditentukan otomatis oleh role. Untuk dua divisi utama, gunakan role baru seperti <b>Manajer Pendidikan, Supervisor Pendidikan, Naqib Operasional, Naqib Pendamping, Asisten Naqib, Manajer Pembinaan Karakter</b>, dan <b>Supervisor Pembinaan Karakter</b>.</div>
+  <div class="note">Menu aplikasi ditentukan otomatis oleh role. Role tersedia per divisi. Untuk Pendidikan/Pembinaan gunakan role khusus seperti <b>Manajer Pendidikan, Supervisor Pendidikan, Naqib Operasional, Naqib Pendamping, Asisten Naqib, Manajer Pembinaan Karakter</b>, dan <b>Supervisor Pembinaan Karakter</b>.</div>
   <section class="card" style="margin-top:12px"><div class="card-head"><div><h2>User & Role</h2><p id="countLabel">Memuat data...</p></div></div><div class="table-wrap"><table><thead><tr><th>User</th><th>Divisi</th><th>Role</th><th>Aksi</th></tr></thead><tbody id="rows"><tr><td colspan="4" class="empty">Memuat pengguna...</td></tr></tbody></table></div></section>
 </main>
 
@@ -57,7 +59,7 @@ const DIVISIONS = [
   'Pimpinan',
   'Pendidikan Putra','Pendidikan Putri','Pendidikan Putra & Putri',
   'Pembinaan Karakter Putra','Pembinaan Karakter Putri','Pembinaan Karakter Putra & Putri',
-  'Kesehatan','Sarpras','Administrasi & Keuangan','Layanan','Wali Santri'
+  'Kesehatan','Sarpras','Keamanan & Kebersihan','Layanan','Administrasi & Keuangan','Dapur','Media & Digital','Wali Santri'
 ];
 const ROLE_OPTIONS = {
   'Pimpinan':[
@@ -69,10 +71,13 @@ const ROLE_OPTIONS = {
   'Pembinaan Karakter':[
     ['naqib-operasional','Naqib Operasional'],['asisten-naqib','Asisten Naqib Pendamping'],['naqib-pendamping','Naqib Pendamping'],['manajer-pembinaan','Manajer Pembinaan Karakter'],['supervisor-pembinaan','Supervisor Pembinaan Karakter']
   ],
-  'Kesehatan':[['kesehatan','Tim Kesehatan']],
-  'Sarpras':[['sarpras','Kepala Sarpras']],
-  'Administrasi & Keuangan':[['keuangan','Administrasi Keuangan'],['kasir','Kasir']],
-  'Layanan':[['layanan','Tim Layanan']],
+  'Kesehatan':[['kesehatan','Petugas Kesehatan'],['manajer-kesehatan','Manajer Kesehatan'],['supervisor-kesehatan','Supervisor Kesehatan']],
+  'Sarpras':[['sarpras','Pelaksana / Kepala Sarpras'],['manajer-sarpras','Manajer Sarpras'],['supervisor-sarpras','Supervisor Sarpras']],
+  'Keamanan & Kebersihan':[['keamanan-kebersihan','Petugas Keamanan & Kebersihan'],['manajer-keamanan-kebersihan','Manajer Keamanan & Kebersihan'],['supervisor-keamanan-kebersihan','Supervisor Keamanan & Kebersihan']],
+  'Layanan':[['layanan','Tim Layanan'],['manajer-layanan','Manajer Layanan'],['supervisor-layanan','Supervisor Layanan']],
+  'Administrasi & Keuangan':[['keuangan','Staf Administrasi & Keuangan'],['manajer-keuangan','Manajer Administrasi & Keuangan'],['supervisor-keuangan','Supervisor Administrasi & Keuangan'],['kasir','Kasir']],
+  'Dapur':[['tim-dapur','Tim Dapur'],['manajer-dapur','Manajer Dapur'],['supervisor-dapur','Supervisor Dapur']],
+  'Media & Digital':[['media-digital','Tim Media & Digital'],['manajer-media','Manajer Media & Digital'],['supervisor-media','Supervisor Media & Digital']],
   'Wali Santri':[['wali','Wali Santri']]
 };
 const ROLE_LABEL = Object.fromEntries(Object.values(ROLE_OPTIONS).flat());
@@ -114,7 +119,14 @@ function legacyAssignments(u={}){
     else if(r==='kepala-sekolah'||r==='cla') push('Pendidikan Putra & Putri',r);
     else if(r==='naqib') push('Pembinaan Karakter Putra & Putri','naqib-operasional');
     else if(r==='konselor') push('Pembinaan Karakter Putra & Putri','manajer-pembinaan');
-    else if(r==='kesehatan') push('Kesehatan',r); else if(r==='sarpras')push('Sarpras',r); else if(r==='keuangan'||r==='kasir')push('Administrasi & Keuangan',r); else if(r==='layanan')push('Layanan',r); else if(r==='wali')push('Wali Santri',r);
+    else if(['kesehatan','manajer-kesehatan','supervisor-kesehatan'].includes(r)) push('Kesehatan',r);
+    else if(['sarpras','manajer-sarpras','supervisor-sarpras'].includes(r))push('Sarpras',r);
+    else if(['keamanan-kebersihan','manajer-keamanan-kebersihan','supervisor-keamanan-kebersihan'].includes(r))push('Keamanan & Kebersihan',r);
+    else if(['keuangan','manajer-keuangan','supervisor-keuangan','kasir'].includes(r))push('Administrasi & Keuangan',r);
+    else if(['layanan','manajer-layanan','supervisor-layanan'].includes(r))push('Layanan',r);
+    else if(['tim-dapur','manajer-dapur','supervisor-dapur'].includes(r))push('Dapur',r);
+    else if(['media-digital','manajer-media','supervisor-media'].includes(r))push('Media & Digital',r);
+    else if(r==='wali')push('Wali Santri',r);
   }
   const ops=Array.isArray(u.operationalAssignments)?u.operationalAssignments:[];
   for(const a of ops){const f=String(a.functionKey||'').toLowerCase(); const d=String(a.division||''); const unit=a.unit||'Semua';
@@ -135,7 +147,24 @@ function compatForRole(r){return ({
   'asisten-naqib':['asisten-naqib','naqib'],
   'naqib-pendamping':['naqib-pendamping','naqib'],
   'manajer-pembinaan':['manajer-pembinaan','manajer','operasional','konselor'],
-  'supervisor-pembinaan':['supervisor-pembinaan','supervisor','operasional','konselor']
+  'supervisor-pembinaan':['supervisor-pembinaan','supervisor','operasional','konselor'],
+  'manajer-kesehatan':['manajer-kesehatan','kesehatan','manajer','operasional'],
+  'supervisor-kesehatan':['supervisor-kesehatan','kesehatan','supervisor','operasional'],
+  'manajer-sarpras':['manajer-sarpras','sarpras','manajer','operasional'],
+  'supervisor-sarpras':['supervisor-sarpras','sarpras','supervisor','operasional'],
+  'keamanan-kebersihan':['keamanan-kebersihan','layanan'],
+  'manajer-keamanan-kebersihan':['manajer-keamanan-kebersihan','layanan','manajer','operasional'],
+  'supervisor-keamanan-kebersihan':['supervisor-keamanan-kebersihan','layanan','supervisor','operasional'],
+  'manajer-layanan':['manajer-layanan','layanan','manajer','operasional'],
+  'supervisor-layanan':['supervisor-layanan','layanan','supervisor','operasional'],
+  'manajer-keuangan':['manajer-keuangan','keuangan','manajer','operasional'],
+  'supervisor-keuangan':['supervisor-keuangan','keuangan','supervisor','operasional'],
+  'tim-dapur':['tim-dapur','operasional'],
+  'manajer-dapur':['manajer-dapur','manajer','operasional'],
+  'supervisor-dapur':['supervisor-dapur','supervisor','operasional'],
+  'media-digital':['media-digital','operasional'],
+  'manajer-media':['manajer-media','manajer','operasional'],
+  'supervisor-media':['supervisor-media','supervisor','operasional']
 }[r]||[r]).filter(Boolean)}
 function operationalFrom(assignments){
   const out=[]; let n=0;
@@ -144,7 +173,28 @@ function operationalFrom(assignments){
     'supervisor-pendidikan':['supervisor','Pendidikan','Supervisor Pendidikan'],
     'naqib-operasional':['staf-muda','Pembinaan Karakter','Naqib Operasional'],
     'manajer-pembinaan':['manajer','Pembinaan Karakter','Manajer Pembinaan Karakter'],
-    'supervisor-pembinaan':['supervisor','Pembinaan Karakter','Supervisor Pembinaan Karakter']
+    'supervisor-pembinaan':['supervisor','Pembinaan Karakter','Supervisor Pembinaan Karakter'],
+    'kesehatan':['staf-muda','Kesehatan','Petugas Kesehatan'],
+    'manajer-kesehatan':['manajer','Kesehatan','Manajer Kesehatan'],
+    'supervisor-kesehatan':['supervisor','Kesehatan','Supervisor Kesehatan'],
+    'sarpras':['staf-muda','Sarpras','Pelaksana Sarpras'],
+    'manajer-sarpras':['manajer','Sarpras','Manajer Sarpras'],
+    'supervisor-sarpras':['supervisor','Sarpras','Supervisor Sarpras'],
+    'keamanan-kebersihan':['staf-muda','Keamanan & Kebersihan','Petugas Keamanan & Kebersihan'],
+    'manajer-keamanan-kebersihan':['manajer','Keamanan & Kebersihan','Manajer Keamanan & Kebersihan'],
+    'supervisor-keamanan-kebersihan':['supervisor','Keamanan & Kebersihan','Supervisor Keamanan & Kebersihan'],
+    'layanan':['staf-muda','Layanan','Tim Layanan'],
+    'manajer-layanan':['manajer','Layanan','Manajer Layanan'],
+    'supervisor-layanan':['supervisor','Layanan','Supervisor Layanan'],
+    'keuangan':['staf-muda','Administrasi & Keuangan','Staf Administrasi & Keuangan'],
+    'manajer-keuangan':['manajer','Administrasi & Keuangan','Manajer Administrasi & Keuangan'],
+    'supervisor-keuangan':['supervisor','Administrasi & Keuangan','Supervisor Administrasi & Keuangan'],
+    'tim-dapur':['staf-muda','Dapur','Tim Dapur'],
+    'manajer-dapur':['manajer','Dapur','Manajer Dapur'],
+    'supervisor-dapur':['supervisor','Dapur','Supervisor Dapur'],
+    'media-digital':['staf-muda','Media & Digital','Tim Media & Digital'],
+    'manajer-media':['manajer','Media & Digital','Manajer Media & Digital'],
+    'supervisor-media':['supervisor','Media & Digital','Supervisor Media & Digital']
   };
   for(const a of assignments){if(!meta[a.role])continue;const [level,division,label]=meta[a.role];out.push({id:`v82-${++n}`,level,division,functionKey:a.role,functionLabel:label,unit:a.unit==='Semua'?'':a.unit,supervisorUsername:'',scopeDivisions:level==='supervisor'?[division]:[],standardId:`${level}__${division.toLowerCase().replace(/\s+/g,'-')}__${a.role}`,active:true})}
   return out;
@@ -167,7 +217,7 @@ window.saveUser=async()=>{
   const assignments=editAssignments.map(normalizeAssignment).filter(a=>a.role);
   if(!username)return alert('Username wajib diisi.'); if(!assignments.length)return alert('Tambahkan minimal satu Divisi & Role.');
   const workspaceRoles=[...new Set(assignments.map(a=>a.role))]; const akses=[...new Set(workspaceRoles.flatMap(compatForRole))]; const operationalAssignments=operationalFrom(assignments); const primary=operationalAssignments[0]||{};
-  const payload={username,label:label||username,workspaceAssignments:assignments,roleAssignmentsV2:assignments,workspaceRoles,defaultWorkspaceRole:workspaceRoles[0]||'',akses,jabatan:akses,role:workspaceRoles[0]||'',operationalAssignments,primaryOperationalRole:primary.standardId||'',levelOperasional:primary.level||'',divisiOperasional:primary.division||'',atasanOperasional:primary.supervisorUsername||'',userSettingsVersion:83,allowedMenus:[],updatedAt:new Date().toISOString()};
+  const payload={username,label:label||username,workspaceAssignments:assignments,roleAssignmentsV2:assignments,workspaceRoles,defaultWorkspaceRole:workspaceRoles[0]||'',akses,jabatan:akses,role:workspaceRoles[0]||'',operationalAssignments,primaryOperationalRole:primary.standardId||'',levelOperasional:primary.level||'',divisiOperasional:primary.division||'',atasanOperasional:primary.supervisorUsername||'',userSettingsVersion:86,allowedMenus:[],updatedAt:new Date().toISOString()};
   $('saveBtn').disabled=true;showLoading(editId?'Menyimpan pengaturan user...':'Membuat user...');
   try{
     if(!editId){if(password.length<6)throw new Error('Password awal minimal 6 karakter.');await secondaryApp.auth().createUserWithEmailAndPassword(`${username}@cahayaapp.id`,password);await secondaryApp.auth().signOut();payload.createdAt=new Date().toISOString();await db.collection('users').doc(username).set(payload,{merge:true});}
