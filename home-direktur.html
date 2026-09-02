@@ -173,7 +173,7 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
 <div class="modal-backdrop" id="periodModal" onclick="if(event.target===this)closeModal('periodModal')"><div class="modal period-modal"><div class="modal-head"><div><h3>Periode Dashboard</h3><small class="detail-meta">Pilih rentang data yang ingin dipantau</small></div><button class="close-btn" onclick="closeModal('periodModal')">✕</button></div><div class="role-sheet" id="periodList"></div></div></div>
 
 <script src="config/master-data.js?v=92"></script>
-<script src="js/cahaya-bandwidth.js?v=95"></script>
+<script src="js/cahaya-bandwidth.js?v=96"></script>
 <script>
 const $=id=>document.getElementById(id), P=window.parent&&window.parent!==window?window.parent:window;
 const iconMap={
@@ -218,6 +218,7 @@ async function compatRead(path,opts={}){
   if(BW?.readCompat)return BW.readCompat(db,path,opts);
   let q=db.ref(path),field=opts.dateField||opts.orderByChild;
   if(field){q=q.orderByChild(field);if(opts.start!==undefined)q=q.startAt(opts.start);if(opts.end!==undefined)q=q.endAt(opts.end)}
+  else if(opts.orderByKey){q=q.orderByKey();if(opts.start!==undefined)q=q.startAt(opts.start);if(opts.end!==undefined)q=q.endAt(opts.end)}
   if(opts.equalTo!==undefined)q=q.equalTo(opts.equalTo);if(opts.limit)q=q.limitToLast(Number(opts.limit));
   return q.once('value');
 }
@@ -289,56 +290,120 @@ function renderMetrics(){
   $('programValue').textContent=p.dist?.total?`Hadir ${p.dist.pH}%`:'—';renderDistPills('programPills',p.dist||{pH:0,pS:0,pI:0,pA:0});$('programFoot').textContent=p.sessions?`${p.sessions} program Naqib tercatat • ${pctx.label.toLowerCase()}`:'Belum ada absensi program Naqib';st=healthLevel(p.dist?.pH||0,90,80);if(!p.dist?.total)st=['att','Data belum masuk'];setStatus('program',st[0],st[1]);
   $('tahfizValue').textContent=q.total?`${q.rate}%`:'—';$('tahfizSub').textContent=q.total?(daily?'Santri Tahfiz yang setor hari ini':`Santri Tahfiz aktif setor ${pctx.label.toLowerCase()} ini`):'Basis santri Tahfiz belum terbaca';$('tahfizTarget').textContent=q.withTarget?`${q.targetRate||0}% mencapai target`:'Target belum tersedia';$('tahfizFoot').textContent=q.total?(daily?'Target berdasarkan baris setoran hari ini':`${q.targetDays||0} hari setoran aktif • target kumulatif`):'Menunggu pemetaan/target Tahfiz';st=healthLevel(q.rate||0,80,60);if(!q.total)st=['att','Basis belum lengkap'];setStatus('tahfiz',st[0],q.total?(q.rate>=80?'Baik':q.rate>=60?'Berjalan':'Perlu Perhatian'):'Basis belum lengkap');
 }
-async function loadData(){
-  const seq=++loadSeq,pctx=periodContext();metrics={period:pctx};attentions=[];summaries={};renderPeriodLabels();document.body.classList.add('period-loading');
+const DIRECTOR_FAST_CACHE='cahaya_director_fast_v96_';
+function directorCacheKey(pctx){return DIRECTOR_FAST_CACHE+pctx.key+'_'+pctx.start+'_'+pctx.end}
+function saveDirectorDisplayCache(){
   try{
-    const rowLimit=pctx.key==='harian'?700:pctx.key==='pekanan'?2600:8500;
-    const tahfizLimit=pctx.key==='harian'?500:pctx.key==='pekanan'?1800:6000;
-    const [kbm,prog,schedules,teacherRows,tahfizPeriod,targetTahfizRaw,masterUsrahRaw]=await Promise.all([
-      rangeRows('cahaya_app/absensi_pembelajaran',pctx,rowLimit),
-      rangeRows('cahaya_app/absensi_program_harian',pctx,rowLimit),
-      scheduleRows(),teacherRowsPeriod(pctx),
-      rangeRows('cahaya_app/setoran_tahfiz',pctx,tahfizLimit),
-      raw('cahaya_app/target_tahfiz',6*60*60000),
-      raw('cahaya_app/master_usrah',12*60*60000)
-    ]);
-    if(seq!==loadSeq)return;
-
-    const due=dueScheduleInstances(schedules,pctx),teacherDetails=due.map(inst=>({schedule:inst,attendance:attendanceForSchedule(inst,teacherRows)})),present=teacherDetails.filter(x=>x.attendance).length,teacherRate=percent(present,due.length);
-    metrics.teacher={due:due.length,present,rate:teacherRate,clock:pctx.clock,rows:teacherDetails};
-    if(pctx.key==='harian'&&due.length&&present<due.length)addAttention({key:'edu-teacher-now',severity:4,count:due.length-present,title:'Kehadiran guru belum lengkap',desc:`Dari ${due.length} jadwal yang sudah mulai sampai ${pctx.clock}, ${due.length-present} belum memiliki presensi guru.`,menu:'menu-monitoring-absen-guru',tone:'red'});
-
-    const learningRows=kbm.filter(r=>inPeriod(dateOf(r),pctx));
-    const learningRecordsFor=(inst)=>{const same=learningRows.filter(r=>dateOf(r)===inst._date),id=scheduleId(inst);let found=id?same.filter(r=>String(r.jadwalId||r.id||'')===id):[];if(found.length)return found;const kls=norm(inst.kelas||inst.rombel),mapel=norm(inst.mapel||inst.mataPelajaran||inst.namaMapel);return same.filter(r=>(!kls||norm(r.kelas||r.rombel)===kls)&&(!mapel||norm(r.mapel||r.mataPelajaran||r.namaMapel)===mapel))};
-    const dueDetail=due.map(inst=>({schedule:inst,records:learningRecordsFor(inst)})),coveredLearn=dueDetail.filter(x=>x.records.length).length,learnDist=distribution(learningRows,finalStudentStatus,(r,nm)=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||'sesi'}|${nameKey(nm)}`);
-    const matched=new Set(dueDetail.flatMap(x=>x.records).map(r=>String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))),orphan=learningRows.filter(r=>!matched.has(String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))).map(r=>({schedule:{id:r.jadwalId||r.id,mapel:r.mapel||r.mataPelajaran||'Pembelajaran',kelas:r.kelas||r.sub||'—',jamMulai:r.jamMulai||'—',_date:dateOf(r)},records:[r]}));
-    metrics.learning={due:due.length,covered:coveredLearn,sessions:new Set(learningRows.map(r=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||''}|${r.mapel||''}`)).size,dist:learnDist,clock:pctx.clock,rows:[...dueDetail,...orphan]};
-    const missingLearn=Math.max(0,due.length-coveredLearn);if(pctx.key==='harian'&&missingLearn)addAttention({key:'edu-learning-cover',severity:3,count:missingLearn,title:'Absensi belajar belum masuk',desc:`Ada ${missingLearn} sesi yang waktunya sudah mulai tetapi absensi santri belum tercatat.`,menu:'menu-kontrol-pendidikan',tone:'blue'});if(learnDist.A>0)addAttention({key:'edu-alpha',severity:3,count:learnDist.A,title:'Status Alfa pada pembelajaran',desc:`Terdapat status Alfa pada data pembelajaran ${pctx.label.toLowerCase()}.`,menu:'menu-kontrol-pendidikan',tone:'amber'});
-
-    const allProgramRows=prog.filter(r=>inPeriod(dateOf(r),pctx)&&countedNaqibProgram(r.program||r.namaProgram||r.nama));
-    const duePrograms=dueProgramInstances(pctx),programRecordsFor=(inst)=>allProgramRows.filter(r=>dateOf(r)===inst._date&&programKey(r.program||r.namaProgram||r.nama)===inst.key),progDetails=duePrograms.map(inst=>({...inst,records:programRecordsFor(inst)})),coveredPrograms=progDetails.filter(x=>x.records.length).length;
-    const progDist=distribution(allProgramRows,programStatus,(r,nm)=>`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${nameKey(nm)}|${norm(r.unit||r.kelompok||r.asrama||'')}`);
-    const dueProgramKeys=new Set(progDetails.flatMap(x=>x.records).map(r=>String(r.id||`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${r.unit||''}`))),orphanProg=allProgramRows.filter(r=>!dueProgramKeys.has(String(r.id||`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${r.unit||''}`))).map(r=>({name:r.program||r.namaProgram||r.nama||'Program Naqib',time:r.jamMulai||'—',_date:dateOf(r),records:[r]}));
-    metrics.program={due:duePrograms.length,covered:coveredPrograms,sessions:new Set(allProgramRows.map(r=>`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}`)).size,dist:progDist,clock:pctx.clock,rows:[...progDetails,...orphanProg]};
-    metrics.scores=computePeriodScores(allProgramRows,due,teacherRows,masterUsrahRaw);
-    if(pctx.key==='harian'&&duePrograms.length>coveredPrograms)addAttention({key:'char-program-cover',severity:3,count:duePrograms.length-coveredPrograms,title:'Absensi program Naqib belum masuk',desc:`Ada ${duePrograms.length-coveredPrograms} program pembinaan yang waktunya sudah berjalan tetapi belum memiliki data absensi.`,menu:'menu-kontrol-pembinaan',tone:'amber'});if(progDist.A>0)addAttention({key:'char-alpha',severity:3,count:progDist.A,title:'Status Alfa pada program',desc:`Terdapat status Alfa pada program Naqib ${pctx.label.toLowerCase()}.`,menu:'menu-kontrol-pembinaan',tone:'red'});
-
-    const roster=buildTahfizRoster(targetTahfizRaw,tahfizPeriod),rosterKeys=new Set(roster.map(x=>x.key)),targetMap=new Map(),periodMap=new Map(),activeDates=new Set();
-    vals(targetTahfizRaw).forEach(r=>{const k=nameKey(r.namaSantri||r.nama);if(k&&rosterKeys.has(k)&&n(r.targetBarisHarian)>0)targetMap.set(k,n(r.targetBarisHarian))});
-    tahfizPeriod.forEach(r=>{if(norm(r.program)!=='tahfiz'||!inPeriod(dateOf(r),pctx))return;const rd=dateOf(r);if(rd)activeDates.add(rd);vals(r.data).forEach(item=>{const nm=item.nama||item.namaSantri||r.namaSantri||r.nama,k=nameKey(nm);if(!k||!rosterKeys.has(k))return;const cur=periodMap.get(k)||{baris:0,records:[],dates:new Set()};cur.baris+=n(item.baris||item.jumlahBaris);cur.records.push({record:r,item});if(rd)cur.dates.add(rd);periodMap.set(k,cur);if(!targetMap.has(k)&&n(item.targetBarisHarian)>0)targetMap.set(k,n(item.targetBarisHarian))})});
-    let targetDays=activeDates.size;if(pctx.key==='harian'&&pctx.minutes>=clockMinutes('07:00'))targetDays=Math.max(1,targetDays);
-    const detail=roster.map(x=>{const pd=periodMap.get(x.key)||{baris:0,records:[],dates:new Set()},targetDaily=targetMap.get(x.key)||0,targetPeriod=targetDaily*(targetDays||0),submitted=pd.baris>0||pd.records.length>0;return{...x,baris:pd.baris,targetDaily,target:targetPeriod,submitted,achieved:targetPeriod>0&&pd.baris>=targetPeriod,records:pd.records,days:pd.dates?.size||0}}).sort((a,b)=>a.unit.localeCompare(b.unit,'id')||a.kelas.localeCompare(b.kelas,'id')||a.name.localeCompare(b.name,'id'));
-    const submitted=detail.filter(x=>x.submitted).length,withTarget=detail.filter(x=>x.target>0).length,achieved=detail.filter(x=>x.achieved).length,tahfizRate=percent(submitted,detail.length),targetRate=percent(achieved,withTarget);metrics.tahfiz={total:detail.length,submitted,rate:tahfizRate,withTarget,achieved,targetRate,targetDays,rows:detail};
-    if(pctx.key==='harian'&&pctx.minutes>=9*60&&detail.length&&tahfizRate<80)addAttention({key:'edu-tahfiz',severity:2,count:detail.length-submitted,title:'Setoran Tahfiz belum merata',desc:`${submitted}/${detail.length} santri Tahfiz terpetakan sudah setor hari ini.`,menu:'menu-dashboard-pendidikan',tone:'amber'});if(withTarget&&achieved<withTarget)addAttention({key:'edu-tahfiz-target',severity:1,count:withTarget-achieved,title:'Target Tahfiz belum tercapai',desc:`Capaian target Tahfiz ${pctx.label.toLowerCase()} perlu dipantau.`,menu:'menu-dashboard-pendidikan',tone:'amber'});
-
-    summaries.pendidikan={value:`${teacherRate}% guru`,label:`kehadiran ${pctx.label.toLowerCase()}`,attention:pctx.key==='harian'?Math.max(0,due.length-present):0};
-    summaries.pembinaan={value:`${progDist.pH||0}% hadir`,label:`program ${pctx.label.toLowerCase()}`,attention:pctx.key==='harian'?Math.max(0,duePrograms.length-coveredPrograms):0};
-    ['kesehatan','sarpras','keamanan','layanan','keuangan','dapur','media'].forEach(k=>summaries[k]={value:'Buka untuk pantau',label:'data dimuat saat dibuka',attention:0,lazy:true});
-
-    renderMetrics();renderScores();renderAttentions();renderDivisionList();renderDivisionMonitor();
-  }catch(e){console.error('Dashboard Direktur Lite gagal dimuat',e)}
-  finally{if(seq===loadSeq)document.body.classList.remove('period-loading')}
+    const pctx=metrics.period||periodContext();
+    const slimMetric=(x={})=>{const y={...x};delete y.rows;return y};
+    const payload={t:Date.now(),period:pctx,teacher:slimMetric(metrics.teacher),learning:slimMetric(metrics.learning),program:slimMetric(metrics.program),tahfiz:slimMetric(metrics.tahfiz),scores:{usrah:(metrics.scores?.usrah||[]).slice(0,20),guru:(metrics.scores?.guru||[]).slice(0,20),santri:(metrics.scores?.santri||[]).slice(0,20)},summaries};
+    localStorage.setItem(directorCacheKey(pctx),JSON.stringify(payload));
+  }catch(_){ }
 }
+function restoreDirectorDisplayCache(pctx){
+  try{
+    const x=JSON.parse(localStorage.getItem(directorCacheKey(pctx))||'null');
+    const maxAge=pctx.key==='harian'?3*60*60*1000:24*60*60*1000;
+    if(!x||Date.now()-Number(x.t||0)>maxAge)return false;
+    metrics={period:pctx,teacher:x.teacher||{},learning:x.learning||{},program:x.program||{},tahfiz:x.tahfiz||{},scores:x.scores||{}};
+    summaries=x.summaries||{};
+    renderMetrics();renderScores();renderDivisionList();renderDivisionMonitor();
+    return true;
+  }catch(_){return false}
+}
+function mergeRowsUnique(a=[],b=[]){const m=new Map();[...a,...b].forEach((r,i)=>{const k=String(r.id||r.key||`${dateOf(r)}|${r.jadwalId||r.programId||r.program||r.kelas||''}|${r.waktuSimpan||r.waktu||i}`);m.set(k,r)});return[...m.values()]}
+function compactIndexRecord(section,r={}){
+  const base={id:r.id||r.key||'',tanggal:dateOf(r),waktuSimpan:r.waktuSimpan||r.waktu||''};
+  if(section==='pembelajaran')return{...base,jadwalId:r.jadwalId||'',mapel:r.mapel||r.mataPelajaran||'',kelas:r.kelas||r.rombel||'',jamMulai:r.jamMulai||r.jadwalMulai||'',guru:r.guru||r.namaGuru||'',unit:r.unitPembelajaran||r.unit||'',data:vals(r.data||r.daftarSantri).map(it=>({nama:it.nama||it.namaSantri||'',namaSantri:it.namaSantri||it.nama||'',statusAwal:it.statusAwal||it.status||'',statusAkhir:it.statusAkhir||it.statusFinal||'',statusFinal:it.statusFinal||it.statusAkhir||''}))};
+  if(section==='program')return{...base,program:r.program||r.namaProgram||r.nama||'',programId:r.programId||'',usrah:r.usrah||'',labelUsrah:r.labelUsrah||'',unit:r.unit||'',data:vals(r.data||r.daftarSantri).map(it=>({nama:it.nama||it.namaSantri||'',namaSantri:it.namaSantri||it.nama||'',status:it.status||it.statusAkhir||'',usrahAsal:it.usrahAsal||it.usrah||''}))};
+  return{...base,program:r.program||'',jenisInput:r.jenisInput||'',kelas:r.kelas||r.kelompok||'',guru:r.guru||'',targetBarisHarian:n(r.targetBarisHarian),data:vals(r.data).map(it=>({nama:it.nama||it.namaSantri||'',namaSantri:it.namaSantri||it.nama||'',baris:n(it.baris||it.jumlahBaris),jumlahBaris:n(it.jumlahBaris||it.baris),targetBarisHarian:n(it.targetBarisHarian||r.targetBarisHarian),setoran:it.setoran||'',nilai:it.nilai||''}))};
+}
+async function backfillIndexSection(section,rows=[]){
+  if(!rows.length)return;
+  try{
+    const db=P.firebase?.database?.();if(!db)return;
+    const updates={};rows.forEach((r,i)=>{const d=dateOf(r);if(!d)return;const compact=compactIndexRecord(section,r),id=String(compact.id||`legacy_${nameKey(section)}_${i}_${Date.now()}`);compact.id=id;updates[`cahaya_app/dashboard_index/${d}/${section}/${id}`]=compact});
+    if(Object.keys(updates).length)db.ref().update(updates).catch(()=>{});
+  }catch(_){ }
+}
+async function readDashboardIndex(pctx){
+  try{
+    const db=P.firebase?.database?.();if(!db)return{pembelajaran:[],program:[],tahfiz:[],has:{}};
+    let snap;
+    if(pctx.key==='harian') snap=await compatRead(`cahaya_app/dashboard_index/${pctx.end}`,{ttl:45000});
+    else snap=await compatRead('cahaya_app/dashboard_index',{orderByKey:true,start:pctx.start,end:pctx.end,ttl:90000});
+    const raw=snap?.val?.()||{},out={pembelajaran:[],program:[],tahfiz:[],has:{}};
+    const takeDay=(day,d)=>['pembelajaran','program','tahfiz'].forEach(sec=>{if(day&&Object.prototype.hasOwnProperty.call(day,sec))out.has[sec]=true;vals(day?.[sec]).forEach(r=>out[sec].push({...r,tanggal:r.tanggal||d}))});
+    if(pctx.key==='harian')takeDay(raw,pctx.end);else Object.entries(raw).forEach(([d,day])=>{if(d>=pctx.start&&d<=pctx.end)takeDay(day,d)});
+    return out;
+  }catch(e){console.warn('dashboard index read',e);return{pembelajaran:[],program:[],tahfiz:[],has:{}}}
+}
+async function recentLegacyRows(path,pctx,limit){
+  try{
+    const snap=await compatRead(path,{dateField:null,orderByChild:null,limit,ttl:pctx.key==='harian'?60000:120000,usePageRange:false});
+    return vals(snap?.val?.()||{}).filter(r=>inPeriod(dateOf(r),pctx));
+  }catch(e){console.warn('legacy bounded read',path,e);return[]}
+}
+async function loadOperationalPeriod(pctx){
+  const idx=await readDashboardIndex(pctx);
+  const limits=pctx.key==='harian'?{pembelajaran:180,program:260,tahfiz:320}:pctx.key==='pekanan'?{pembelajaran:1100,program:1500,tahfiz:1500}:{pembelajaran:4200,program:5000,tahfiz:5200};
+  const need=sec=>pctx.key!=='harian'||!idx.has[sec];
+  const [lp,pp,tp]=await Promise.all([
+    need('pembelajaran')?recentLegacyRows('cahaya_app/absensi_pembelajaran',pctx,limits.pembelajaran):Promise.resolve([]),
+    need('program')?recentLegacyRows('cahaya_app/absensi_program_harian',pctx,limits.program):Promise.resolve([]),
+    need('tahfiz')?recentLegacyRows('cahaya_app/setoran_tahfiz',pctx,limits.tahfiz):Promise.resolve([])
+  ]);
+  const learning=mergeRowsUnique(idx.pembelajaran,lp),program=mergeRowsUnique(idx.program,pp),tahfiz=mergeRowsUnique(idx.tahfiz,tp);
+  if(pctx.key==='harian'){if(lp.length)backfillIndexSection('pembelajaran',lp);if(pp.length)backfillIndexSection('program',pp);if(tp.length)backfillIndexSection('tahfiz',tp)}
+  return{learning,program,tahfiz};
+}
+function applyTeacherMetrics(pctx,schedules,teacherRows){
+  const due=dueScheduleInstances(schedules,pctx),teacherDetails=due.map(inst=>({schedule:inst,attendance:attendanceForSchedule(inst,teacherRows)})),present=teacherDetails.filter(x=>x.attendance).length,teacherRate=percent(present,due.length);
+  metrics.teacher={due:due.length,present,rate:teacherRate,clock:pctx.clock,rows:teacherDetails};
+  summaries.pendidikan={value:`${teacherRate}% guru`,label:`kehadiran ${pctx.label.toLowerCase()}`,attention:pctx.key==='harian'?Math.max(0,due.length-present):0};
+  if(pctx.key==='harian'&&due.length&&present<due.length)addAttention({key:'edu-teacher-now',severity:4,count:due.length-present,title:'Kehadiran guru belum lengkap',desc:`Dari ${due.length} jadwal yang sudah mulai sampai ${pctx.clock}, ${due.length-present} belum memiliki presensi guru.`,menu:'menu-monitoring-absen-guru',tone:'red'});
+  renderMetrics();renderDivisionList();renderDivisionMonitor();renderAttentions();saveDirectorDisplayCache();
+  return{due,teacherRows};
+}
+function applyLearningProgramMetrics(pctx,schedules,ops){
+  const due=dueScheduleInstances(schedules,pctx),learningRows=ops.learning.filter(r=>inPeriod(dateOf(r),pctx));
+  const learningRecordsFor=(inst)=>{const same=learningRows.filter(r=>dateOf(r)===inst._date),id=scheduleId(inst);let found=id?same.filter(r=>String(r.jadwalId||r.id||'')===id):[];if(found.length)return found;const kls=norm(inst.kelas||inst.rombel),mapel=norm(inst.mapel||inst.mataPelajaran||inst.namaMapel);return same.filter(r=>(!kls||norm(r.kelas||r.rombel)===kls)&&(!mapel||norm(r.mapel||r.mataPelajaran||r.namaMapel)===mapel))};
+  const dueDetail=due.map(inst=>({schedule:inst,records:learningRecordsFor(inst)})),coveredLearn=dueDetail.filter(x=>x.records.length).length,learnDist=distribution(learningRows,finalStudentStatus,(r,nm)=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||'sesi'}|${nameKey(nm)}`);
+  const matched=new Set(dueDetail.flatMap(x=>x.records).map(r=>String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))),orphan=learningRows.filter(r=>!matched.has(String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))).map(r=>({schedule:{id:r.jadwalId||r.id,mapel:r.mapel||r.mataPelajaran||'Pembelajaran',kelas:r.kelas||r.sub||'—',jamMulai:r.jamMulai||'—',_date:dateOf(r)},records:[r]}));
+  metrics.learning={due:due.length,covered:coveredLearn,sessions:new Set(learningRows.map(r=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||''}|${r.mapel||''}`)).size,dist:learnDist,clock:pctx.clock,rows:[...dueDetail,...orphan]};
+  const missingLearn=Math.max(0,due.length-coveredLearn);if(pctx.key==='harian'&&missingLearn)addAttention({key:'edu-learning-cover',severity:3,count:missingLearn,title:'Absensi belajar belum masuk',desc:`Ada ${missingLearn} sesi yang waktunya sudah mulai tetapi absensi santri belum tercatat.`,menu:'menu-kontrol-pendidikan',tone:'blue'});if(learnDist.A>0)addAttention({key:'edu-alpha',severity:3,count:learnDist.A,title:'Status Alfa pada pembelajaran',desc:`Terdapat status Alfa pada data pembelajaran ${pctx.label.toLowerCase()}.`,menu:'menu-kontrol-pendidikan',tone:'amber'});
+  const allProgramRows=ops.program.filter(r=>inPeriod(dateOf(r),pctx)&&countedNaqibProgram(r.program||r.namaProgram||r.nama)),duePrograms=dueProgramInstances(pctx),programRecordsFor=(inst)=>allProgramRows.filter(r=>dateOf(r)===inst._date&&programKey(r.program||r.namaProgram||r.nama)===inst.key),progDetails=duePrograms.map(inst=>({...inst,records:programRecordsFor(inst)})),coveredPrograms=progDetails.filter(x=>x.records.length).length;
+  const progDist=distribution(allProgramRows,programStatus,(r,nm)=>`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${nameKey(nm)}|${norm(r.unit||r.kelompok||r.asrama||'')}`),dueProgramKeys=new Set(progDetails.flatMap(x=>x.records).map(r=>String(r.id||`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${r.unit||''}`))),orphanProg=allProgramRows.filter(r=>!dueProgramKeys.has(String(r.id||`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${r.unit||''}`))).map(r=>({name:r.program||r.namaProgram||r.nama||'Program Naqib',time:r.jamMulai||'—',_date:dateOf(r),records:[r]}));
+  metrics.program={due:duePrograms.length,covered:coveredPrograms,sessions:new Set(allProgramRows.map(r=>`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}`)).size,dist:progDist,clock:pctx.clock,rows:[...progDetails,...orphanProg]};
+  summaries.pembinaan={value:`${progDist.pH||0}% hadir`,label:`program ${pctx.label.toLowerCase()}`,attention:pctx.key==='harian'?Math.max(0,duePrograms.length-coveredPrograms):0};
+  if(pctx.key==='harian'&&duePrograms.length>coveredPrograms)addAttention({key:'char-program-cover',severity:3,count:duePrograms.length-coveredPrograms,title:'Absensi program Naqib belum masuk',desc:`Ada ${duePrograms.length-coveredPrograms} program pembinaan yang waktunya sudah berjalan tetapi belum memiliki data absensi.`,menu:'menu-kontrol-pembinaan',tone:'amber'});if(progDist.A>0)addAttention({key:'char-alpha',severity:3,count:progDist.A,title:'Status Alfa pada program',desc:`Terdapat status Alfa pada program Naqib ${pctx.label.toLowerCase()}.`,menu:'menu-kontrol-pembinaan',tone:'red'});
+  renderMetrics();renderDivisionList();renderDivisionMonitor();renderAttentions();saveDirectorDisplayCache();
+  return{due,allProgramRows};
+}
+async function applyTahfizMetrics(pctx,tahfizPeriod){
+  const targetTahfizRaw=await raw('cahaya_app/target_tahfiz',6*60*60000),roster=buildTahfizRoster(targetTahfizRaw,tahfizPeriod),rosterKeys=new Set(roster.map(x=>x.key)),targetMap=new Map(),periodMap=new Map(),activeDates=new Set();
+  vals(targetTahfizRaw).forEach(r=>{const k=nameKey(r.namaSantri||r.nama);if(k&&rosterKeys.has(k)&&n(r.targetBarisHarian)>0)targetMap.set(k,n(r.targetBarisHarian))});
+  tahfizPeriod.forEach(r=>{if(norm(r.program)!=='tahfiz'||!inPeriod(dateOf(r),pctx))return;const rd=dateOf(r);if(rd)activeDates.add(rd);vals(r.data).forEach(item=>{const nm=item.nama||item.namaSantri||r.namaSantri||r.nama,k=nameKey(nm);if(!k||!rosterKeys.has(k))return;const cur=periodMap.get(k)||{baris:0,records:[],dates:new Set()};cur.baris+=n(item.baris||item.jumlahBaris);cur.records.push({record:r,item});if(rd)cur.dates.add(rd);periodMap.set(k,cur);if(!targetMap.has(k)&&n(item.targetBarisHarian)>0)targetMap.set(k,n(item.targetBarisHarian))})});
+  let targetDays=activeDates.size;if(pctx.key==='harian'&&pctx.minutes>=clockMinutes('07:00'))targetDays=Math.max(1,targetDays);
+  const detail=roster.map(x=>{const pd=periodMap.get(x.key)||{baris:0,records:[],dates:new Set()},targetDaily=targetMap.get(x.key)||0,targetPeriod=targetDaily*(targetDays||0),submitted=pd.baris>0||pd.records.length>0;return{...x,baris:pd.baris,targetDaily,target:targetPeriod,submitted,achieved:targetPeriod>0&&pd.baris>=targetPeriod,records:pd.records,days:pd.dates?.size||0}}).sort((a,b)=>a.unit.localeCompare(b.unit,'id')||a.kelas.localeCompare(b.kelas,'id')||a.name.localeCompare(b.name,'id'));
+  const submitted=detail.filter(x=>x.submitted).length,withTarget=detail.filter(x=>x.target>0).length,achieved=detail.filter(x=>x.achieved).length,tahfizRate=percent(submitted,detail.length),targetRate=percent(achieved,withTarget);metrics.tahfiz={total:detail.length,submitted,rate:tahfizRate,withTarget,achieved,targetRate,targetDays,rows:detail};
+  if(pctx.key==='harian'&&pctx.minutes>=9*60&&detail.length&&tahfizRate<80)addAttention({key:'edu-tahfiz',severity:2,count:detail.length-submitted,title:'Setoran Tahfiz belum merata',desc:`${submitted}/${detail.length} santri Tahfiz terpetakan sudah setor hari ini.`,menu:'menu-dashboard-pendidikan',tone:'amber'});if(withTarget&&achieved<withTarget)addAttention({key:'edu-tahfiz-target',severity:1,count:withTarget-achieved,title:'Target Tahfiz belum tercapai',desc:`Capaian target Tahfiz ${pctx.label.toLowerCase()} perlu dipantau.`,menu:'menu-dashboard-pendidikan',tone:'amber'});
+  renderMetrics();renderAttentions();saveDirectorDisplayCache();
+}
+async function loadData(){
+  const seq=++loadSeq,pctx=periodContext();attentions=[];summaries={};renderPeriodLabels();
+  ['kesehatan','sarpras','keamanan','layanan','keuangan','dapur','media'].forEach(k=>summaries[k]={value:'Buka untuk pantau',label:'data dimuat saat dibuka',attention:0,lazy:true});
+  const hadCache=restoreDirectorDisplayCache(pctx);
+  if(!hadCache){metrics={period:pctx};renderMetrics();renderScores();renderDivisionList();renderDivisionMonitor()}
+  else metrics.period=pctx;
+  document.body.classList.remove('period-loading');
+  const schedulesP=scheduleRows();
+  const teacherP=Promise.all([schedulesP,teacherRowsPeriod(pctx)]).then(([schedules,teacherRows])=>{if(seq!==loadSeq)return null;return applyTeacherMetrics(pctx,schedules,teacherRows)}).catch(e=>{console.warn('teacher progressive load',e);return null});
+  const opsP=loadOperationalPeriod(pctx).then(async ops=>{if(seq!==loadSeq)return null;const schedules=await schedulesP;if(seq!==loadSeq)return null;const applied=applyLearningProgramMetrics(pctx,schedules,ops);return{...ops,...applied,schedules}}).catch(e=>{console.warn('operational progressive load',e);return null});
+  Promise.all([teacherP,opsP]).then(([t,o])=>{if(seq!==loadSeq||!t||!o)return;metrics.scores=computePeriodScores(o.allProgramRows,t.due,t.teacherRows,{});renderScores();saveDirectorDisplayCache()});
+  opsP.then(o=>{if(seq!==loadSeq||!o)return;const run=()=>applyTahfizMetrics(pctx,o.tahfiz).catch(e=>console.warn('tahfiz progressive load',e));if('requestIdleCallback'in window)requestIdleCallback(run,{timeout:600});else setTimeout(run,30)});
+}
+
 function listNames(items,statusFn){const g={H:[],S:[],I:[],A:[]};items.forEach(it=>{const st=statusFn(it),nm=it.nama||it.namaSantri;if(st&&nm&&g[st])g[st].push(nm)});return g}
 function detailStatsHtml(arr){return arr.map(([label,value])=>`<div class="detail-stat"><small>${esc(label)}</small><b>${esc(value)}</b></div>`).join('')}
 function detailNamesHtml(g){const labels={H:'Hadir',S:'Sakit',I:'Izin',A:'Alfa'};return Object.entries(labels).map(([k,l])=>g[k]?.length?`<div class="detail-name-line"><strong>${l}:</strong> ${g[k].map(esc).join(', ')}</div>`:'').join('')}

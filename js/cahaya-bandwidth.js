@@ -1,6 +1,6 @@
 (function(global){
   'use strict';
-  const VERSION='2026-09-02-v95';
+  const VERSION='2026-09-02-v96';
   const PREFIX='cahaya_bw_cache_';
   const DAY=86400000;
   const DEFAULT_TTL=5*60000;

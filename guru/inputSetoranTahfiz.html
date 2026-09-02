@@ -2537,9 +2537,19 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
         await update(ref(db,`cahaya_app/target_tahfiz/${targetKey}`),targetPayload);
         cacheTargetTahfiz[targetKey]=targetPayload;
       }
+      const previousDate = editId ? (cacheSetoranTahfiz[editId]?.tanggal || '') : '';
       let recordId = editId;
       if(editId){ await update(ref(db,`cahaya_app/setoran_tahfiz/${editId}`),payload); cacheSetoranTahfiz[editId]=payload; }
       else { const hasilPush=await push(ref(db,'cahaya_app/setoran_tahfiz'),payload); recordId=hasilPush.key; cacheSetoranTahfiz[hasilPush.key]=payload; }
+      if(recordId && payload.tanggal){
+        const idxUpdates={};
+        if(previousDate && previousDate!==payload.tanggal) idxUpdates[`cahaya_app/dashboard_index/${previousDate}/tahfiz/${recordId}`]=null;
+        idxUpdates[`cahaya_app/dashboard_index/${payload.tanggal}/tahfiz/${recordId}`]={
+          id:recordId,tanggal:payload.tanggal,program:payload.program,jenisInput:payload.jenisInput,kelas:payload.kelas,kelompok:payload.kelompok,guru:payload.guru,targetBarisHarian:payload.targetBarisHarian||0,waktuSimpan:payload.waktuSimpan,
+          data:(payload.data||[]).map(item=>({nama:item.nama||item.namaSantri||'',namaSantri:item.namaSantri||item.nama||'',baris:Number(item.baris||item.jumlahBaris||0),jumlahBaris:Number(item.jumlahBaris||item.baris||0),targetBarisHarian:Number(item.targetBarisHarian||payload.targetBarisHarian||0),setoran:item.setoran||'',nilai:item.nilai||''}))
+        };
+        await update(ref(db),idxUpdates);
+      }
       const waliKey = normalizeStudentKey(nama);
       if(waliKey && recordId) await update(ref(db,`cahaya_app/wali_index/${waliKey}/tahfiz/${recordId}`),payload);
       if(waliKey) delete riwayatAllCache[waliKey];
