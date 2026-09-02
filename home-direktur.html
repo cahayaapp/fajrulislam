@@ -100,6 +100,15 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
 .period-loading .summary-card,.period-loading .score-card,.period-loading .division-monitor-card{opacity:.62;pointer-events:none}
 @media(max-width:760px){.division-monitor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.division-monitor-card{min-height:125px;padding:10px;border-radius:15px}.division-monitor-name{font-size:.57rem}.division-monitor-metric b{font-size:.7rem}.division-monitor-metric span{font-size:.43rem}.division-monitor-focus{font-size:.43rem}.brand-subcontrols{gap:4px}.brand-period{padding:4px 7px;font-size:.5rem}}
 @media(max-width:440px){.brand-subcontrols{flex-wrap:wrap;row-gap:3px}.brand-period,.brand-role{font-size:.44rem!important;padding:3px 6px!important}.division-monitor-card{min-height:118px;padding:9px}.division-monitor-icon{width:29px;height:29px;flex-basis:29px}.division-monitor-icon svg{width:15px;height:15px}.division-monitor-name{font-size:.51rem}.division-monitor-status{font-size:.37rem;padding:3px 5px}.division-monitor-metric{margin-top:7px}.division-monitor-metric b{font-size:.62rem}.division-monitor-metric span{font-size:.38rem}.division-monitor-focus{font-size:.38rem;line-height:1.35}.score-winner-name{font-size:.42rem}.score-more{font-size:.34rem;padding:2px 4px}}
+
+/* V97 — Direktur real-time sederhana & ringan */
+.brand-subcontrols{margin-top:5px}.brand-period{display:none!important}
+.division-monitor-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.division-monitor-card.simple{min-height:88px;padding:12px 8px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;background:linear-gradient(150deg,#fff,#f8fbff);box-shadow:0 7px 18px rgba(22,53,98,.055)}
+.division-monitor-card.simple:after{width:68px;height:68px;right:-34px;top:-34px}
+.division-monitor-card.simple .division-monitor-icon{width:36px;height:36px;flex:0 0 36px;border-radius:12px}
+.division-monitor-card.simple .division-monitor-name{font-size:.58rem;line-height:1.2;font-weight:950;white-space:normal}
+@media(max-width:440px){.division-monitor-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.division-monitor-card.simple{min-height:79px;padding:9px 5px;border-radius:15px;gap:6px}.division-monitor-card.simple .division-monitor-icon{width:31px;height:31px;flex-basis:31px}.division-monitor-card.simple .division-monitor-name{font-size:.46rem}}
 </style>
 </head>
 <body>
@@ -107,7 +116,7 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
   <header class="brand-row">
     <div class="brand">
       <img src="assets/cahaya-app/logo-icon.png?v=54" alt="CAHAYA APP" />
-      <div class="brand-copy"><strong>CAHAYA APP</strong><div class="brand-subcontrols"><button class="brand-role" type="button" onclick="openRoleModal()"><b>Direktur</b><svg viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg></button><button class="brand-period" type="button" onclick="openPeriodModal()"><b id="periodButtonText">Harian</b><svg viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg></button></div></div>
+      <div class="brand-copy"><strong>CAHAYA APP</strong><div class="brand-subcontrols"><button class="brand-role" type="button" onclick="openRoleModal()"><b>Direktur</b><svg viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg></button></div></div>
     </div>
     <div class="top-actions">
       <button class="icon-btn" type="button" onclick="openAttentionModal()" aria-label="Perlu perhatian">
@@ -129,7 +138,7 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
   </section>
 
   <section class="section">
-    <div class="section-head"><h2 id="summaryTitle">Ringkasan Harian</h2><button class="link-btn" type="button" onclick="openMenu('menu-dashboard-operasional')">Lihat Detail <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div>
+    <div class="section-head"><h2 id="summaryTitle">Ringkasan Real-time</h2><button class="link-btn" type="button" onclick="openMenu('menu-dashboard-operasional')">Lihat Detail <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div>
     <div class="summary-grid" id="summaryGrid">
       <button class="summary-card teacher" onclick="openSummaryDetail('teacher')">
         <div class="summary-top"><span class="summary-icon" style="--accent:#0d55b7"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M3 20c.5-4 2.6-6 6-6s5.5 2 6 6"/><path d="M17 8v6M14 11h6"/></svg></span><div><div class="summary-title">Kehadiran Guru</div><div class="status-line"><i class="status-dot" id="teacherDot"></i><span id="teacherStatus">Memuat</span></div></div></div>
@@ -151,16 +160,16 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
   </section>
 
   <section class="section">
-    <div class="section-head"><h2 id="scoreSectionTitle">Skor Harian</h2><button class="link-btn" type="button" onclick="openScoreModal('all')">Lihat Semua <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div>
+    <div class="section-head"><h2 id="scoreSectionTitle">Skor Real-time</h2><button class="link-btn" type="button" onclick="openScoreModal('all')">Lihat Semua <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div>
     <div class="score-grid" id="scoreGrid">
       <div class="score-empty">Menyiapkan skor disiplin hari ini...</div>
     </div>
   </section>
 
   <section class="section division-monitor-section">
-    <div class="section-head"><h2>Pantau Divisi</h2><button class="link-btn" type="button" onclick="openMenu('menu-dashboard-operasional')">Overview <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div>
+    <div class="section-head"><h2>Pantau Divisi</h2></div>
     <div class="division-monitor-grid" id="divisionMonitorGrid">
-      <div class="division-monitor-loading">Menyiapkan ringkasan 9 divisi...</div>
+      <div class="division-monitor-loading">Menyiapkan divisi...</div>
     </div>
   </section>
 </main>
@@ -170,10 +179,9 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
 <div class="modal-backdrop" id="scoreModal" onclick="if(event.target===this)closeModal('scoreModal')"><div class="modal detail-modal"><div class="modal-head"><div><h3 id="scoreModalTitle">Skor Harian</h3><small class="detail-meta" id="scoreModalMeta">Peringkat hari ini</small></div><button class="close-btn" onclick="closeModal('scoreModal')">✕</button></div><div class="score-modal-list" id="scoreModalList"></div></div></div>
 <div class="modal-backdrop detail-backdrop" id="summaryDetailModal" onclick="if(event.target===this)closeModal('summaryDetailModal')"><div class="modal detail-modal"><div class="modal-head"><div><h3 id="summaryDetailTitle">Detail Ringkasan</h3><small id="summaryDetailMeta" class="detail-meta">Data hari ini</small></div><button class="close-btn" onclick="closeModal('summaryDetailModal')">✕</button></div><div class="detail-summary" id="summaryDetailSummary"></div><div class="detail-list" id="summaryDetailList"></div><div class="detail-footer"><button class="detail-full-btn" id="summaryDetailFullBtn" type="button">Buka Modul Lengkap</button></div></div></div>
 <div class="modal-backdrop" id="roleModal" onclick="if(event.target===this)closeModal('roleModal')"><div class="modal"><div class="modal-head"><h3>Pilih Homepage / Role Aktif</h3><button class="close-btn" onclick="closeModal('roleModal')">✕</button></div><div class="role-sheet" id="roleList"></div></div></div>
-<div class="modal-backdrop" id="periodModal" onclick="if(event.target===this)closeModal('periodModal')"><div class="modal period-modal"><div class="modal-head"><div><h3>Periode Dashboard</h3><small class="detail-meta">Pilih rentang data yang ingin dipantau</small></div><button class="close-btn" onclick="closeModal('periodModal')">✕</button></div><div class="role-sheet" id="periodList"></div></div></div>
+</div>
 
 <script src="config/master-data.js?v=92"></script>
-<script src="js/cahaya-bandwidth.js?v=96"></script>
 <script>
 const $=id=>document.getElementById(id), P=window.parent&&window.parent!==window?window.parent:window;
 const iconMap={
@@ -190,7 +198,8 @@ const iconMap={
 const divisionDefs=[
  ['pendidikan','Pendidikan','#eaf2ff','#1c64c8'],['pembinaan','Pembinaan Karakter','#e9faf3','#11835f'],['kesehatan','Kesehatan','#e8f9fb','#0a8490'],['sarpras','Sarana & Prasarana','#f1eeff','#7457bd'],['keamanan','Keamanan & Kebersihan','#fff4e4','#b87812'],['layanan','Layanan','#eaf8ff','#1684b9'],['keuangan','Administrasi & Keuangan','#eef4ff','#2856a6'],['dapur','Dapur','#fff1eb','#cc6a38'],['media','Media & Digital','#fff0f7','#b64b8a']
 ];
-let summaries={}, attentions=[], metrics={}, activePeriod='harian', loadSeq=0;
+let summaries={}, attentions=[], metrics={}, loadSeq=0;
+const DASH_CACHE={};
 const NAQIB_PROGRAM_CLOCK=[['Qiyamullail','04:00'],['Shalat Subuh','04:35'],['Zikir Pagi','04:50'],['Piket Pagi','06:00'],['Shalat Zuhur','11:50'],['Shalat Ashar','15:15'],['Piket Sore','15:45'],['Ekstrakurikuler','16:00'],['Shalat Maghrib','17:50'],['Wirid Petang dan Surah Al-Mulk','18:20'],['Mentoring Harian','18:40'],['Shalat Isya','19:10'],['Wirid Sebelum Tidur','19:50']];
 function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
 function vals(v){if(Array.isArray(v))return v.filter(Boolean);return Object.entries(v||{}).map(([id,x])=>({id,...(x||{})}))}
@@ -206,63 +215,35 @@ function clockMinutes(v){const m=String(v||'').match(/(\d{1,2})[:.](\d{2})/);ret
 function jakartaContext(){const date=today();const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());const obj=Object.fromEntries(parts.map(p=>[p.type,p.value]));const clock=`${obj.hour||'00'}:${obj.minute||'00'}`;return{date,clock,minutes:clockMinutes(clock),day:new Date(`${date}T12:00:00+07:00`).getDay()}}
 function isoAdd(date,days){const d=new Date(`${date}T12:00:00+07:00`);d.setDate(d.getDate()+days);return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
 function isoDay(date){return new Date(`${date}T12:00:00+07:00`).getDay()}
-function periodContext(){const now=jakartaContext(),end=now.date;let start=end;if(activePeriod==='pekanan'){const delta=(isoDay(end)+6)%7;start=isoAdd(end,-delta)}else if(activePeriod==='bulanan')start=end.slice(0,8)+'01';const dates=[];for(let d=start;d<=end;d=isoAdd(d,1))dates.push(d);const labels={harian:'Harian',pekanan:'Pekanan',bulanan:'Bulanan'};return{...now,start,end,dates,key:activePeriod,label:labels[activePeriod]||'Harian'}}
+function periodContext(){const now=jakartaContext();return{...now,start:now.date,end:now.date,dates:[now.date],key:'harian',label:'Real-time'}}
 function inPeriod(date,pctx){return Boolean(date)&&date>=pctx.start&&date<=pctx.end}
-function periodDesc(pctx){if(pctx.key==='harian')return 'hari ini';if(pctx.key==='pekanan')return `${pctx.start}–${pctx.end}`;return `bulan berjalan s.d. ${pctx.end}`}
-function renderPeriodLabels(){const labels={harian:'Harian',pekanan:'Pekanan',bulanan:'Bulanan'},label=labels[activePeriod]||'Harian';$('periodButtonText').textContent=label;$('summaryTitle').textContent=`Ringkasan ${label}`;$('scoreSectionTitle').textContent=`Skor ${label}`}
-const BW=window.CahayaBandwidth||null;
-const DASH_CACHE={};
-function periodTtl(pctx){return pctx.key==='harian'?90000:pctx.key==='pekanan'?4*60000:8*60000}
-async function compatRead(path,opts={}){
-  const db=P.firebase?.database?.();if(!db)return null;
-  if(BW?.readCompat)return BW.readCompat(db,path,opts);
-  let q=db.ref(path),field=opts.dateField||opts.orderByChild;
-  if(field){q=q.orderByChild(field);if(opts.start!==undefined)q=q.startAt(opts.start);if(opts.end!==undefined)q=q.endAt(opts.end)}
-  else if(opts.orderByKey){q=q.orderByKey();if(opts.start!==undefined)q=q.startAt(opts.start);if(opts.end!==undefined)q=q.endAt(opts.end)}
-  if(opts.equalTo!==undefined)q=q.equalTo(opts.equalTo);if(opts.limit)q=q.limitToLast(Number(opts.limit));
-  return q.once('value');
-}
-async function rangeRows(path,pctx,limit=1200,field='tanggal'){
-  try{
-    const snap=await compatRead(path,{dateField:field,start:pctx.start,end:pctx.end,limit,ttl:periodTtl(pctx)});
-    return vals(snap?.val?.()||{}).filter(x=>inPeriod(dateOf(x),pctx));
-  }catch(e){console.warn('bounded range read',path,e);return[]}
+function periodDesc(){return 'saat ini'}
+function renderPeriodLabels(){$('summaryTitle').textContent='Ringkasan Real-time';$('scoreSectionTitle').textContent='Skor Real-time'}
+async function todayRecentRows(path,date,limit=360){
+  try{const db=P.firebase?.database?.();if(!db)return[];const snap=await db.ref(path).limitToLast(limit).once('value');return vals(snap.val()||{}).filter(x=>dateOf(x)===date)}catch(e){console.warn('today recent read',path,e);return[]}
 }
 async function teacherRowsPeriod(pctx){
-  const ttl=periodTtl(pctx),out=[],seen=new Set();
-  const snaps=await Promise.all(pctx.dates.map(async d=>{
-    try{return[d,await compatRead(`cahaya_app/absensi_guru/${d}`,{ttl})]}catch(e){console.warn('teacher day read',d,e);return[d,null]}
-  }));
-  snaps.forEach(([d,snap])=>collect(snap?.val?.()||{},x=>Boolean(x.jadwalId)&&Boolean(x.namaGuru||x.guruKey||x.guruKodeKalender)).forEach(r=>{
-    const key=`${d}|${r.jadwalId||''}|${nameKey(r.namaGuru||r.guru||r.guruKey||r.guruKodeKalender)}`;
-    if(!seen.has(key)){seen.add(key);out.push({...r,_date:d})}
-  }));
-  return out;
+  try{const db=P.firebase?.database?.();if(!db)return[];const snap=await db.ref(`cahaya_app/absensi_guru/${pctx.end}`).once('value');return collect(snap.val()||{},x=>Boolean(x.jadwalId)&&Boolean(x.namaGuru||x.guruKey||x.guruKodeKalender)).map(r=>({...r,_date:pctx.end}))}catch(e){console.warn('teacher today read',e);return[]}
 }
-async function recent(path,limit=120,ttl=5*60000){
-  try{const snap=await compatRead(path,{limit,ttl});return vals(snap?.val?.()||{})}catch(e){console.warn('bounded recent read',path,e);return[]}
-}
-async function raw(path,ttl=6*60*60000){
-  try{const snap=await compatRead(path,{ttl});return snap?.val?.()||{}}catch(e){console.warn('cached raw read',path,e);return{}}
-}
-async function byDate(path,date,field='tanggal'){
-  try{const snap=await compatRead(path,{dateField:field,start:date,end:date,limit:1200,ttl:90000});return vals(snap?.val?.()||{}).filter(x=>dateOf(x)===date)}catch(e){console.warn('date read',path,e);return[]}
-}
-async function todayRows(path,date,limit=600){return byDate(path,date)}
+function dueScheduleInstances(rows,pctx){const START=clockMinutes('05:10'),out=[];pctx.dates.forEach(d=>{const day=isoDay(d),cut=d===pctx.end?pctx.minutes:24*60-1;rows.forEach(r=>{if(!r||r.aktif===false||Number(r.hari)!==Number(day))return;const tm=clockMinutes(r.jamMulai||String(r.waktu||'').split(/[–—-]/)[0]);if(Number.isFinite(tm)&&tm>=START&&tm<=cut)out.push({...r,_date:d,_time:tm})})});return out}
+function scheduleId(r){return String(r.id||r.jadwalId||'')}
+function attendanceForSchedule(inst,rows){const id=scheduleId(inst),sameDate=rows.filter(x=>(x._date||dateOf(x))===inst._date);let a=id?sameDate.find(x=>String(x.jadwalId||x.id||'')===id):null;if(a)return a;const guru=nameKey(inst.guruNama||inst.namaGuru||inst.guru||inst.guruKode||'');if(!guru)return null;return sameDate.find(x=>nameKey(x.namaGuru||x.guruNama||x.guru||x.guruKey||x.guruKodeKalender)===guru)||null}
+function programKey(v){let s=norm(v).replace(/[^a-z0-9]+/g,' ');if(/qiyam/.test(s))return'qiyamullail';if(/subuh/.test(s))return'shalat subuh';if(/zikir.*pagi|dzikir.*pagi/.test(s))return'zikir pagi';if(/piket.*pagi/.test(s))return'piket pagi';if(/zuhur|dzuhur/.test(s))return'shalat zuhur';if(/ashar/.test(s))return'shalat ashar';if(/piket.*sore/.test(s))return'piket sore';if(/ekstra/.test(s))return'ekstrakurikuler';if(/maghrib/.test(s))return'shalat maghrib';if(/wirid.*petang|mulk/.test(s))return'wirid petang dan surah al mulk';if(/mentoring/.test(s))return'mentoring harian';if(/isya/.test(s))return'shalat isya';if(/wirid.*tidur/.test(s))return'wirid sebelum tidur';return s.trim()}
+function isOperationalOrLearningProgram(v){const s=norm(v);return /bahasa\s*arab|al[ -]?qur|qur.?an|tahsin|tahfiz|tilawah|muroja|belajar|istirahat|persiapan|sarapan|makan|qailulah|bangun|bersih.?bersih|mandi|tidur/.test(s)}
+function countedNaqibProgram(v){const s=String(v||'').trim();return Boolean(s)&&!isOperationalOrLearningProgram(s)}
+function dueProgramInstances(pctx){const out=[];pctx.dates.forEach(d=>{const cut=d===pctx.end?pctx.minutes:24*60-1;NAQIB_PROGRAM_CLOCK.forEach(([name,time])=>{if(clockMinutes(time)<=cut)out.push({name,time,_date:d,key:programKey(name)})})});return out}
+
+async function recent(path,limit=240){try{const db=P.firebase?.database?.();if(!db)return[];const snap=await db.ref(path).limitToLast(limit).once('value');return vals(snap.val())}catch(e){console.warn('read',path,e);return[]}}
+async function raw(path){try{const db=P.firebase?.database?.();if(!db)return{};return (await db.ref(path).once('value')).val()||{}}catch(e){return{}}}
+async function byDate(path,date,field='tanggal'){try{const db=P.firebase?.database?.();if(!db)return[];const snap=await db.ref(path).orderByChild(field).equalTo(date).once('value');return vals(snap.val())}catch(e){console.warn('date read',path,e);return[]}}
+async function todayRows(path,date,limit=1400){const queried=await byDate(path,date);if(queried.length)return queried.filter(x=>dateOf(x)===date);const latest=await recent(path,limit);const filtered=latest.filter(x=>dateOf(x)===date);if(filtered.length)return filtered;return []}
 function collect(node,test,out=[]){if(!node||typeof node!=='object')return out;if(!Array.isArray(node)&&test(node)){out.push(node);return out}Object.values(node).forEach(v=>collect(v,test,out));return out}
 async function scheduleRows(){
   if(DASH_CACHE.schedules)return DASH_CACHE.schedules;
-  const cacheKey='cahaya_director_schedule_v95';
-  try{const cached=JSON.parse(sessionStorage.getItem(cacheKey)||'null');if(Array.isArray(cached)&&cached.length){DASH_CACHE.schedules=cached;return cached}}catch(_){ }
   let rows=[];
-  try{
-    const res=await fetch('data/jadwal-pelajaran-awal-2026-2027.json',{cache:'force-cache'});
-    if(res.ok){const j=await res.json();rows=Array.isArray(j)?j:vals(j)}
-  }catch(e){console.warn('jadwal lokal',e)}
-  if(!rows.length)rows=collect(await raw('cahaya_app/jadwal_pelajaran',6*60*60000),x=>('hari'in x)&&('jamMulai'in x||'waktu'in x));
-  DASH_CACHE.schedules=rows;
-  try{sessionStorage.setItem(cacheKey,JSON.stringify(rows))}catch(_){ }
-  return rows;
+  try{const res=await fetch('data/jadwal-pelajaran-awal-2026-2027.json',{cache:'force-cache'});if(res.ok){const j=await res.json();rows=Array.isArray(j)?j:vals(j)}}catch(e){console.warn('jadwal lokal',e)}
+  if(!rows.length)rows=collect(await raw('cahaya_app/jadwal_pelajaran'),x=>('hari'in x)&&('jamMulai'in x||'waktu'in x));
+  DASH_CACHE.schedules=rows;return rows
 }
 function dueSchedules(rows,ctx){return dueScheduleInstances(rows,ctx&&ctx.dates?ctx:periodContext())}
 function flattenTeacherAttendance(rawToday){return collect(rawToday,x=>Boolean(x.jadwalId)&&Boolean(x.namaGuru||x.guruKey||x.guruKodeKalender))}
@@ -285,129 +266,64 @@ function buildTahfizRoster(targetRaw,periodRows){const lookup=classLookup(),map=
 function renderDistPills(id,d){$(id).innerHTML=`<span class="metric-pill">H ${d.pH}%</span><span class="metric-pill warn">S ${d.pS}%</span><span class="metric-pill">I ${d.pI}%</span><span class="metric-pill bad">A ${d.pA}%</span>`}
 function renderMetrics(){
   const pctx=metrics.period||periodContext(),t=metrics.teacher||{},l=metrics.learning||{},p=metrics.program||{},q=metrics.tahfiz||{},daily=pctx.key==='harian';
-  $('teacherValue').textContent=t.due?`${t.rate}%`:'—';$('teacherSub').textContent=t.due?`${t.present}/${t.due} jadwal hadir`:'Belum ada jadwal yang masuk periode';$('teacherFoot').textContent=daily?`Sampai pukul ${t.clock||'—'} WIB`:`${pctx.label} • ${pctx.start} s.d. ${pctx.end}`;let st=healthLevel(t.rate||0,90,75);if(!t.due)st=['ok','Belum ada jadwal'];setStatus('teacher',st[0],st[1]);
-  $('learnValue').textContent=l.dist?.total?`Hadir ${l.dist.pH}%`:'—';renderDistPills('learnPills',l.dist||{pH:0,pS:0,pI:0,pA:0});$('learnFoot').textContent=l.sessions?`${l.sessions} sesi tercatat • ${pctx.label.toLowerCase()}`:'Belum ada absensi belajar';st=healthLevel(l.dist?.pH||0,90,80);if(!l.dist?.total)st=['att','Data belum masuk'];setStatus('learn',st[0],st[1]);
-  $('programValue').textContent=p.dist?.total?`Hadir ${p.dist.pH}%`:'—';renderDistPills('programPills',p.dist||{pH:0,pS:0,pI:0,pA:0});$('programFoot').textContent=p.sessions?`${p.sessions} program Naqib tercatat • ${pctx.label.toLowerCase()}`:'Belum ada absensi program Naqib';st=healthLevel(p.dist?.pH||0,90,80);if(!p.dist?.total)st=['att','Data belum masuk'];setStatus('program',st[0],st[1]);
-  $('tahfizValue').textContent=q.total?`${q.rate}%`:'—';$('tahfizSub').textContent=q.total?(daily?'Santri Tahfiz yang setor hari ini':`Santri Tahfiz aktif setor ${pctx.label.toLowerCase()} ini`):'Basis santri Tahfiz belum terbaca';$('tahfizTarget').textContent=q.withTarget?`${q.targetRate||0}% mencapai target`:'Target belum tersedia';$('tahfizFoot').textContent=q.total?(daily?'Target berdasarkan baris setoran hari ini':`${q.targetDays||0} hari setoran aktif • target kumulatif`):'Menunggu pemetaan/target Tahfiz';st=healthLevel(q.rate||0,80,60);if(!q.total)st=['att','Basis belum lengkap'];setStatus('tahfiz',st[0],q.total?(q.rate>=80?'Baik':q.rate>=60?'Berjalan':'Perlu Perhatian'):'Basis belum lengkap');
-}
-const DIRECTOR_FAST_CACHE='cahaya_director_fast_v96_';
-function directorCacheKey(pctx){return DIRECTOR_FAST_CACHE+pctx.key+'_'+pctx.start+'_'+pctx.end}
-function saveDirectorDisplayCache(){
-  try{
-    const pctx=metrics.period||periodContext();
-    const slimMetric=(x={})=>{const y={...x};delete y.rows;return y};
-    const payload={t:Date.now(),period:pctx,teacher:slimMetric(metrics.teacher),learning:slimMetric(metrics.learning),program:slimMetric(metrics.program),tahfiz:slimMetric(metrics.tahfiz),scores:{usrah:(metrics.scores?.usrah||[]).slice(0,20),guru:(metrics.scores?.guru||[]).slice(0,20),santri:(metrics.scores?.santri||[]).slice(0,20)},summaries};
-    localStorage.setItem(directorCacheKey(pctx),JSON.stringify(payload));
-  }catch(_){ }
-}
-function restoreDirectorDisplayCache(pctx){
-  try{
-    const x=JSON.parse(localStorage.getItem(directorCacheKey(pctx))||'null');
-    const maxAge=pctx.key==='harian'?3*60*60*1000:24*60*60*1000;
-    if(!x||Date.now()-Number(x.t||0)>maxAge)return false;
-    metrics={period:pctx,teacher:x.teacher||{},learning:x.learning||{},program:x.program||{},tahfiz:x.tahfiz||{},scores:x.scores||{}};
-    summaries=x.summaries||{};
-    renderMetrics();renderScores();renderDivisionList();renderDivisionMonitor();
-    return true;
-  }catch(_){return false}
-}
-function mergeRowsUnique(a=[],b=[]){const m=new Map();[...a,...b].forEach((r,i)=>{const k=String(r.id||r.key||`${dateOf(r)}|${r.jadwalId||r.programId||r.program||r.kelas||''}|${r.waktuSimpan||r.waktu||i}`);m.set(k,r)});return[...m.values()]}
-function compactIndexRecord(section,r={}){
-  const base={id:r.id||r.key||'',tanggal:dateOf(r),waktuSimpan:r.waktuSimpan||r.waktu||''};
-  if(section==='pembelajaran')return{...base,jadwalId:r.jadwalId||'',mapel:r.mapel||r.mataPelajaran||'',kelas:r.kelas||r.rombel||'',jamMulai:r.jamMulai||r.jadwalMulai||'',guru:r.guru||r.namaGuru||'',unit:r.unitPembelajaran||r.unit||'',data:vals(r.data||r.daftarSantri).map(it=>({nama:it.nama||it.namaSantri||'',namaSantri:it.namaSantri||it.nama||'',statusAwal:it.statusAwal||it.status||'',statusAkhir:it.statusAkhir||it.statusFinal||'',statusFinal:it.statusFinal||it.statusAkhir||''}))};
-  if(section==='program')return{...base,program:r.program||r.namaProgram||r.nama||'',programId:r.programId||'',usrah:r.usrah||'',labelUsrah:r.labelUsrah||'',unit:r.unit||'',data:vals(r.data||r.daftarSantri).map(it=>({nama:it.nama||it.namaSantri||'',namaSantri:it.namaSantri||it.nama||'',status:it.status||it.statusAkhir||'',usrahAsal:it.usrahAsal||it.usrah||''}))};
-  return{...base,program:r.program||'',jenisInput:r.jenisInput||'',kelas:r.kelas||r.kelompok||'',guru:r.guru||'',targetBarisHarian:n(r.targetBarisHarian),data:vals(r.data).map(it=>({nama:it.nama||it.namaSantri||'',namaSantri:it.namaSantri||it.nama||'',baris:n(it.baris||it.jumlahBaris),jumlahBaris:n(it.jumlahBaris||it.baris),targetBarisHarian:n(it.targetBarisHarian||r.targetBarisHarian),setoran:it.setoran||'',nilai:it.nilai||''}))};
-}
-async function backfillIndexSection(section,rows=[]){
-  if(!rows.length)return;
-  try{
-    const db=P.firebase?.database?.();if(!db)return;
-    const updates={};rows.forEach((r,i)=>{const d=dateOf(r);if(!d)return;const compact=compactIndexRecord(section,r),id=String(compact.id||`legacy_${nameKey(section)}_${i}_${Date.now()}`);compact.id=id;updates[`cahaya_app/dashboard_index/${d}/${section}/${id}`]=compact});
-    if(Object.keys(updates).length)db.ref().update(updates).catch(()=>{});
-  }catch(_){ }
-}
-async function readDashboardIndex(pctx){
-  try{
-    const db=P.firebase?.database?.();if(!db)return{pembelajaran:[],program:[],tahfiz:[],has:{}};
-    let snap;
-    if(pctx.key==='harian') snap=await compatRead(`cahaya_app/dashboard_index/${pctx.end}`,{ttl:45000});
-    else snap=await compatRead('cahaya_app/dashboard_index',{orderByKey:true,start:pctx.start,end:pctx.end,ttl:90000});
-    const raw=snap?.val?.()||{},out={pembelajaran:[],program:[],tahfiz:[],has:{}};
-    const takeDay=(day,d)=>['pembelajaran','program','tahfiz'].forEach(sec=>{if(day&&Object.prototype.hasOwnProperty.call(day,sec))out.has[sec]=true;vals(day?.[sec]).forEach(r=>out[sec].push({...r,tanggal:r.tanggal||d}))});
-    if(pctx.key==='harian')takeDay(raw,pctx.end);else Object.entries(raw).forEach(([d,day])=>{if(d>=pctx.start&&d<=pctx.end)takeDay(day,d)});
-    return out;
-  }catch(e){console.warn('dashboard index read',e);return{pembelajaran:[],program:[],tahfiz:[],has:{}}}
-}
-async function recentLegacyRows(path,pctx,limit){
-  try{
-    const snap=await compatRead(path,{dateField:null,orderByChild:null,limit,ttl:pctx.key==='harian'?60000:120000,usePageRange:false});
-    return vals(snap?.val?.()||{}).filter(r=>inPeriod(dateOf(r),pctx));
-  }catch(e){console.warn('legacy bounded read',path,e);return[]}
-}
-async function loadOperationalPeriod(pctx){
-  const idx=await readDashboardIndex(pctx);
-  const limits=pctx.key==='harian'?{pembelajaran:180,program:260,tahfiz:320}:pctx.key==='pekanan'?{pembelajaran:1100,program:1500,tahfiz:1500}:{pembelajaran:4200,program:5000,tahfiz:5200};
-  const need=sec=>pctx.key!=='harian'||!idx.has[sec];
-  const [lp,pp,tp]=await Promise.all([
-    need('pembelajaran')?recentLegacyRows('cahaya_app/absensi_pembelajaran',pctx,limits.pembelajaran):Promise.resolve([]),
-    need('program')?recentLegacyRows('cahaya_app/absensi_program_harian',pctx,limits.program):Promise.resolve([]),
-    need('tahfiz')?recentLegacyRows('cahaya_app/setoran_tahfiz',pctx,limits.tahfiz):Promise.resolve([])
-  ]);
-  const learning=mergeRowsUnique(idx.pembelajaran,lp),program=mergeRowsUnique(idx.program,pp),tahfiz=mergeRowsUnique(idx.tahfiz,tp);
-  if(pctx.key==='harian'){if(lp.length)backfillIndexSection('pembelajaran',lp);if(pp.length)backfillIndexSection('program',pp);if(tp.length)backfillIndexSection('tahfiz',tp)}
-  return{learning,program,tahfiz};
-}
-function applyTeacherMetrics(pctx,schedules,teacherRows){
-  const due=dueScheduleInstances(schedules,pctx),teacherDetails=due.map(inst=>({schedule:inst,attendance:attendanceForSchedule(inst,teacherRows)})),present=teacherDetails.filter(x=>x.attendance).length,teacherRate=percent(present,due.length);
-  metrics.teacher={due:due.length,present,rate:teacherRate,clock:pctx.clock,rows:teacherDetails};
-  summaries.pendidikan={value:`${teacherRate}% guru`,label:`kehadiran ${pctx.label.toLowerCase()}`,attention:pctx.key==='harian'?Math.max(0,due.length-present):0};
-  if(pctx.key==='harian'&&due.length&&present<due.length)addAttention({key:'edu-teacher-now',severity:4,count:due.length-present,title:'Kehadiran guru belum lengkap',desc:`Dari ${due.length} jadwal yang sudah mulai sampai ${pctx.clock}, ${due.length-present} belum memiliki presensi guru.`,menu:'menu-monitoring-absen-guru',tone:'red'});
-  renderMetrics();renderDivisionList();renderDivisionMonitor();renderAttentions();saveDirectorDisplayCache();
-  return{due,teacherRows};
-}
-function applyLearningProgramMetrics(pctx,schedules,ops){
-  const due=dueScheduleInstances(schedules,pctx),learningRows=ops.learning.filter(r=>inPeriod(dateOf(r),pctx));
-  const learningRecordsFor=(inst)=>{const same=learningRows.filter(r=>dateOf(r)===inst._date),id=scheduleId(inst);let found=id?same.filter(r=>String(r.jadwalId||r.id||'')===id):[];if(found.length)return found;const kls=norm(inst.kelas||inst.rombel),mapel=norm(inst.mapel||inst.mataPelajaran||inst.namaMapel);return same.filter(r=>(!kls||norm(r.kelas||r.rombel)===kls)&&(!mapel||norm(r.mapel||r.mataPelajaran||r.namaMapel)===mapel))};
-  const dueDetail=due.map(inst=>({schedule:inst,records:learningRecordsFor(inst)})),coveredLearn=dueDetail.filter(x=>x.records.length).length,learnDist=distribution(learningRows,finalStudentStatus,(r,nm)=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||'sesi'}|${nameKey(nm)}`);
-  const matched=new Set(dueDetail.flatMap(x=>x.records).map(r=>String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))),orphan=learningRows.filter(r=>!matched.has(String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))).map(r=>({schedule:{id:r.jadwalId||r.id,mapel:r.mapel||r.mataPelajaran||'Pembelajaran',kelas:r.kelas||r.sub||'—',jamMulai:r.jamMulai||'—',_date:dateOf(r)},records:[r]}));
-  metrics.learning={due:due.length,covered:coveredLearn,sessions:new Set(learningRows.map(r=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||''}|${r.mapel||''}`)).size,dist:learnDist,clock:pctx.clock,rows:[...dueDetail,...orphan]};
-  const missingLearn=Math.max(0,due.length-coveredLearn);if(pctx.key==='harian'&&missingLearn)addAttention({key:'edu-learning-cover',severity:3,count:missingLearn,title:'Absensi belajar belum masuk',desc:`Ada ${missingLearn} sesi yang waktunya sudah mulai tetapi absensi santri belum tercatat.`,menu:'menu-kontrol-pendidikan',tone:'blue'});if(learnDist.A>0)addAttention({key:'edu-alpha',severity:3,count:learnDist.A,title:'Status Alfa pada pembelajaran',desc:`Terdapat status Alfa pada data pembelajaran ${pctx.label.toLowerCase()}.`,menu:'menu-kontrol-pendidikan',tone:'amber'});
-  const allProgramRows=ops.program.filter(r=>inPeriod(dateOf(r),pctx)&&countedNaqibProgram(r.program||r.namaProgram||r.nama)),duePrograms=dueProgramInstances(pctx),programRecordsFor=(inst)=>allProgramRows.filter(r=>dateOf(r)===inst._date&&programKey(r.program||r.namaProgram||r.nama)===inst.key),progDetails=duePrograms.map(inst=>({...inst,records:programRecordsFor(inst)})),coveredPrograms=progDetails.filter(x=>x.records.length).length;
-  const progDist=distribution(allProgramRows,programStatus,(r,nm)=>`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${nameKey(nm)}|${norm(r.unit||r.kelompok||r.asrama||'')}`),dueProgramKeys=new Set(progDetails.flatMap(x=>x.records).map(r=>String(r.id||`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${r.unit||''}`))),orphanProg=allProgramRows.filter(r=>!dueProgramKeys.has(String(r.id||`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${r.unit||''}`))).map(r=>({name:r.program||r.namaProgram||r.nama||'Program Naqib',time:r.jamMulai||'—',_date:dateOf(r),records:[r]}));
-  metrics.program={due:duePrograms.length,covered:coveredPrograms,sessions:new Set(allProgramRows.map(r=>`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}`)).size,dist:progDist,clock:pctx.clock,rows:[...progDetails,...orphanProg]};
-  summaries.pembinaan={value:`${progDist.pH||0}% hadir`,label:`program ${pctx.label.toLowerCase()}`,attention:pctx.key==='harian'?Math.max(0,duePrograms.length-coveredPrograms):0};
-  if(pctx.key==='harian'&&duePrograms.length>coveredPrograms)addAttention({key:'char-program-cover',severity:3,count:duePrograms.length-coveredPrograms,title:'Absensi program Naqib belum masuk',desc:`Ada ${duePrograms.length-coveredPrograms} program pembinaan yang waktunya sudah berjalan tetapi belum memiliki data absensi.`,menu:'menu-kontrol-pembinaan',tone:'amber'});if(progDist.A>0)addAttention({key:'char-alpha',severity:3,count:progDist.A,title:'Status Alfa pada program',desc:`Terdapat status Alfa pada program Naqib ${pctx.label.toLowerCase()}.`,menu:'menu-kontrol-pembinaan',tone:'red'});
-  renderMetrics();renderDivisionList();renderDivisionMonitor();renderAttentions();saveDirectorDisplayCache();
-  return{due,allProgramRows};
-}
-async function applyTahfizMetrics(pctx,tahfizPeriod){
-  const targetTahfizRaw=await raw('cahaya_app/target_tahfiz',6*60*60000),roster=buildTahfizRoster(targetTahfizRaw,tahfizPeriod),rosterKeys=new Set(roster.map(x=>x.key)),targetMap=new Map(),periodMap=new Map(),activeDates=new Set();
-  vals(targetTahfizRaw).forEach(r=>{const k=nameKey(r.namaSantri||r.nama);if(k&&rosterKeys.has(k)&&n(r.targetBarisHarian)>0)targetMap.set(k,n(r.targetBarisHarian))});
-  tahfizPeriod.forEach(r=>{if(norm(r.program)!=='tahfiz'||!inPeriod(dateOf(r),pctx))return;const rd=dateOf(r);if(rd)activeDates.add(rd);vals(r.data).forEach(item=>{const nm=item.nama||item.namaSantri||r.namaSantri||r.nama,k=nameKey(nm);if(!k||!rosterKeys.has(k))return;const cur=periodMap.get(k)||{baris:0,records:[],dates:new Set()};cur.baris+=n(item.baris||item.jumlahBaris);cur.records.push({record:r,item});if(rd)cur.dates.add(rd);periodMap.set(k,cur);if(!targetMap.has(k)&&n(item.targetBarisHarian)>0)targetMap.set(k,n(item.targetBarisHarian))})});
-  let targetDays=activeDates.size;if(pctx.key==='harian'&&pctx.minutes>=clockMinutes('07:00'))targetDays=Math.max(1,targetDays);
-  const detail=roster.map(x=>{const pd=periodMap.get(x.key)||{baris:0,records:[],dates:new Set()},targetDaily=targetMap.get(x.key)||0,targetPeriod=targetDaily*(targetDays||0),submitted=pd.baris>0||pd.records.length>0;return{...x,baris:pd.baris,targetDaily,target:targetPeriod,submitted,achieved:targetPeriod>0&&pd.baris>=targetPeriod,records:pd.records,days:pd.dates?.size||0}}).sort((a,b)=>a.unit.localeCompare(b.unit,'id')||a.kelas.localeCompare(b.kelas,'id')||a.name.localeCompare(b.name,'id'));
-  const submitted=detail.filter(x=>x.submitted).length,withTarget=detail.filter(x=>x.target>0).length,achieved=detail.filter(x=>x.achieved).length,tahfizRate=percent(submitted,detail.length),targetRate=percent(achieved,withTarget);metrics.tahfiz={total:detail.length,submitted,rate:tahfizRate,withTarget,achieved,targetRate,targetDays,rows:detail};
-  if(pctx.key==='harian'&&pctx.minutes>=9*60&&detail.length&&tahfizRate<80)addAttention({key:'edu-tahfiz',severity:2,count:detail.length-submitted,title:'Setoran Tahfiz belum merata',desc:`${submitted}/${detail.length} santri Tahfiz terpetakan sudah setor hari ini.`,menu:'menu-dashboard-pendidikan',tone:'amber'});if(withTarget&&achieved<withTarget)addAttention({key:'edu-tahfiz-target',severity:1,count:withTarget-achieved,title:'Target Tahfiz belum tercapai',desc:`Capaian target Tahfiz ${pctx.label.toLowerCase()} perlu dipantau.`,menu:'menu-dashboard-pendidikan',tone:'amber'});
-  renderMetrics();renderAttentions();saveDirectorDisplayCache();
+  $('teacherValue').textContent=t.due?`${t.rate}%`:'—';$('teacherSub').textContent=t.due?`${t.present}/${t.due} jadwal hadir`:'Belum ada jadwal yang sudah mulai';$('teacherFoot').textContent=daily?`Sampai pukul ${t.clock||'—'} WIB`:'Data saat ini';let st=healthLevel(t.rate||0,90,75);if(!t.due)st=['ok','Belum ada jadwal'];setStatus('teacher',st[0],st[1]);
+  $('learnValue').textContent=l.dist?.total?`Hadir ${l.dist.pH}%`:'—';renderDistPills('learnPills',l.dist||{pH:0,pS:0,pI:0,pA:0});$('learnFoot').textContent=l.sessions?`${l.sessions} sesi tercatat hari ini`:'Belum ada absensi belajar';st=healthLevel(l.dist?.pH||0,90,80);if(!l.dist?.total)st=['att','Data belum masuk'];setStatus('learn',st[0],st[1]);
+  $('programValue').textContent=p.dist?.total?`Hadir ${p.dist.pH}%`:'—';renderDistPills('programPills',p.dist||{pH:0,pS:0,pI:0,pA:0});$('programFoot').textContent=p.sessions?`${p.sessions} program Naqib tercatat hari ini`:'Belum ada absensi program Naqib';st=healthLevel(p.dist?.pH||0,90,80);if(!p.dist?.total)st=['att','Data belum masuk'];setStatus('program',st[0],st[1]);
+  $('tahfizValue').textContent=q.total?`${q.rate}%`:'—';$('tahfizSub').textContent=q.total?(daily?'Santri Tahfiz yang setor hari ini':'Santri Tahfiz yang setor hari ini'):'Basis santri Tahfiz belum terbaca';$('tahfizTarget').textContent=q.withTarget?`${q.targetRate||0}% mencapai target`:'Target belum tersedia';$('tahfizFoot').textContent=q.total?(daily?'Target berdasarkan baris setoran hari ini':'Target berdasarkan setoran hari ini'):'Menunggu pemetaan/target Tahfiz';st=healthLevel(q.rate||0,80,60);if(!q.total)st=['att','Basis belum lengkap'];setStatus('tahfiz',st[0],q.total?(q.rate>=80?'Baik':q.rate>=60?'Berjalan':'Perlu Perhatian'):'Basis belum lengkap');
 }
 async function loadData(){
-  const seq=++loadSeq,pctx=periodContext();attentions=[];summaries={};renderPeriodLabels();
-  ['kesehatan','sarpras','keamanan','layanan','keuangan','dapur','media'].forEach(k=>summaries[k]={value:'Buka untuk pantau',label:'data dimuat saat dibuka',attention:0,lazy:true});
-  const hadCache=restoreDirectorDisplayCache(pctx);
-  if(!hadCache){metrics={period:pctx};renderMetrics();renderScores();renderDivisionList();renderDivisionMonitor()}
-  else metrics.period=pctx;
-  document.body.classList.remove('period-loading');
-  const schedulesP=scheduleRows();
-  const teacherP=Promise.all([schedulesP,teacherRowsPeriod(pctx)]).then(([schedules,teacherRows])=>{if(seq!==loadSeq)return null;return applyTeacherMetrics(pctx,schedules,teacherRows)}).catch(e=>{console.warn('teacher progressive load',e);return null});
-  const opsP=loadOperationalPeriod(pctx).then(async ops=>{if(seq!==loadSeq)return null;const schedules=await schedulesP;if(seq!==loadSeq)return null;const applied=applyLearningProgramMetrics(pctx,schedules,ops);return{...ops,...applied,schedules}}).catch(e=>{console.warn('operational progressive load',e);return null});
-  Promise.all([teacherP,opsP]).then(([t,o])=>{if(seq!==loadSeq||!t||!o)return;metrics.scores=computePeriodScores(o.allProgramRows,t.due,t.teacherRows,{});renderScores();saveDirectorDisplayCache()});
-  opsP.then(o=>{if(seq!==loadSeq||!o)return;const run=()=>applyTahfizMetrics(pctx,o.tahfiz).catch(e=>console.warn('tahfiz progressive load',e));if('requestIdleCallback'in window)requestIdleCallback(run,{timeout:600});else setTimeout(run,30)});
-}
+  const seq=++loadSeq,pctx=periodContext();metrics={period:pctx};attentions=[];summaries={};renderPeriodLabels();
+  try{
+    const [kbm,prog,schedules,teacherRows,tahfizPeriod,targetTahfizRaw,masterUsrahRaw]=await Promise.all([
+      todayRecentRows('cahaya_app/absensi_pembelajaran',pctx.end,360),
+      todayRecentRows('cahaya_app/absensi_program_harian',pctx.end,280),
+      scheduleRows(),
+      teacherRowsPeriod(pctx),
+      todayRecentRows('cahaya_app/setoran_tahfiz',pctx.end,320),
+      raw('cahaya_app/target_tahfiz'),
+      raw('cahaya_app/master_usrah')
+    ]);
+    if(seq!==loadSeq)return;
 
+    const due=dueScheduleInstances(schedules,pctx),teacherDetails=due.map(inst=>({schedule:inst,attendance:attendanceForSchedule(inst,teacherRows)})),present=teacherDetails.filter(x=>x.attendance).length,teacherRate=percent(present,due.length);
+    metrics.teacher={due:due.length,present,rate:teacherRate,clock:pctx.clock,rows:teacherDetails};
+    if(pctx.key==='harian'&&due.length&&present<due.length)addAttention({key:'edu-teacher-now',severity:4,count:due.length-present,title:'Kehadiran guru belum lengkap',desc:`Dari ${due.length} jadwal yang sudah mulai sampai ${pctx.clock}, ${due.length-present} belum memiliki presensi guru.`,menu:'menu-monitoring-absen-guru',tone:'red'});
+
+    const learningRows=kbm.filter(r=>inPeriod(dateOf(r),pctx));
+    const learningRecordsFor=(inst)=>{const same=learningRows.filter(r=>dateOf(r)===inst._date),id=scheduleId(inst);let found=id?same.filter(r=>String(r.jadwalId||r.id||'')===id):[];if(found.length)return found;const kls=norm(inst.kelas||inst.rombel),mapel=norm(inst.mapel||inst.mataPelajaran||inst.namaMapel);return same.filter(r=>(!kls||norm(r.kelas||r.rombel)===kls)&&(!mapel||norm(r.mapel||r.mataPelajaran||r.namaMapel)===mapel))};
+    const dueDetail=due.map(inst=>({schedule:inst,records:learningRecordsFor(inst)})),coveredLearn=dueDetail.filter(x=>x.records.length).length,learnDist=distribution(learningRows,finalStudentStatus,(r,nm)=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||'sesi'}|${nameKey(nm)}`);
+    const matched=new Set(dueDetail.flatMap(x=>x.records).map(r=>String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))),orphan=learningRows.filter(r=>!matched.has(String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))).map(r=>({schedule:{id:r.jadwalId||r.id,mapel:r.mapel||r.mataPelajaran||'Pembelajaran',kelas:r.kelas||r.sub||'—',jamMulai:r.jamMulai||'—',_date:dateOf(r)},records:[r]}));
+    metrics.learning={due:due.length,covered:coveredLearn,sessions:new Set(learningRows.map(r=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||''}|${r.mapel||''}`)).size,dist:learnDist,clock:pctx.clock,rows:[...dueDetail,...orphan]};
+    const missingLearn=Math.max(0,due.length-coveredLearn);if(pctx.key==='harian'&&missingLearn)addAttention({key:'edu-learning-cover',severity:3,count:missingLearn,title:'Absensi belajar belum masuk',desc:`Ada ${missingLearn} sesi yang waktunya sudah mulai tetapi absensi santri belum tercatat.`,menu:'menu-kontrol-pendidikan',tone:'blue'});if(learnDist.A>0)addAttention({key:'edu-alpha',severity:3,count:learnDist.A,title:'Status Alfa pada pembelajaran',desc:`Terdapat status Alfa pada data pembelajaran ${pctx.label.toLowerCase()}.`,menu:'menu-kontrol-pendidikan',tone:'amber'});
+
+    const allProgramRows=prog.filter(r=>inPeriod(dateOf(r),pctx)&&countedNaqibProgram(r.program||r.namaProgram||r.nama));
+    const duePrograms=dueProgramInstances(pctx),programRecordsFor=(inst)=>allProgramRows.filter(r=>dateOf(r)===inst._date&&programKey(r.program||r.namaProgram||r.nama)===inst.key),progDetails=duePrograms.map(inst=>({...inst,records:programRecordsFor(inst)})),coveredPrograms=progDetails.filter(x=>x.records.length).length;
+    const progDist=distribution(allProgramRows,programStatus,(r,nm)=>`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${nameKey(nm)}|${norm(r.unit||r.kelompok||r.asrama||'')}`);
+    const dueProgramKeys=new Set(progDetails.flatMap(x=>x.records).map(r=>String(r.id||`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${r.unit||''}`))),orphanProg=allProgramRows.filter(r=>!dueProgramKeys.has(String(r.id||`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}|${r.unit||''}`))).map(r=>({name:r.program||r.namaProgram||r.nama||'Program Naqib',time:r.jamMulai||'—',_date:dateOf(r),records:[r]}));
+    metrics.program={due:duePrograms.length,covered:coveredPrograms,sessions:new Set(allProgramRows.map(r=>`${dateOf(r)}|${programKey(r.program||r.namaProgram||r.nama)}`)).size,dist:progDist,clock:pctx.clock,rows:[...progDetails,...orphanProg]};
+    metrics.scores=computePeriodScores(allProgramRows,due,teacherRows,masterUsrahRaw);
+    if(pctx.key==='harian'&&duePrograms.length>coveredPrograms)addAttention({key:'char-program-cover',severity:3,count:duePrograms.length-coveredPrograms,title:'Absensi program Naqib belum masuk',desc:`Ada ${duePrograms.length-coveredPrograms} program pembinaan yang waktunya sudah berjalan tetapi belum memiliki data absensi.`,menu:'menu-kontrol-pembinaan',tone:'amber'});if(progDist.A>0)addAttention({key:'char-alpha',severity:3,count:progDist.A,title:'Status Alfa pada program',desc:`Terdapat status Alfa pada program Naqib ${pctx.label.toLowerCase()}.`,menu:'menu-kontrol-pembinaan',tone:'red'});
+
+    const roster=buildTahfizRoster(targetTahfizRaw,tahfizPeriod),rosterKeys=new Set(roster.map(x=>x.key)),targetMap=new Map(),periodMap=new Map(),activeDates=new Set();
+    vals(targetTahfizRaw).forEach(r=>{const k=nameKey(r.namaSantri||r.nama);if(k&&rosterKeys.has(k)&&n(r.targetBarisHarian)>0)targetMap.set(k,n(r.targetBarisHarian))});
+    tahfizPeriod.forEach(r=>{if(norm(r.program)!=='tahfiz'||!inPeriod(dateOf(r),pctx))return;const rd=dateOf(r);if(rd)activeDates.add(rd);vals(r.data).forEach(item=>{const nm=item.nama||item.namaSantri||r.namaSantri||r.nama,k=nameKey(nm);if(!k||!rosterKeys.has(k))return;const cur=periodMap.get(k)||{baris:0,records:[],dates:new Set()};cur.baris+=n(item.baris||item.jumlahBaris);cur.records.push({record:r,item});if(rd)cur.dates.add(rd);periodMap.set(k,cur);if(!targetMap.has(k)&&n(item.targetBarisHarian)>0)targetMap.set(k,n(item.targetBarisHarian))})});
+    let targetDays=activeDates.size;if(pctx.key==='harian'&&pctx.minutes>=clockMinutes('07:00'))targetDays=Math.max(1,targetDays);
+    const detail=roster.map(x=>{const pd=periodMap.get(x.key)||{baris:0,records:[],dates:new Set()},targetDaily=targetMap.get(x.key)||0,targetPeriod=targetDaily*(targetDays||0),submitted=pd.baris>0||pd.records.length>0;return{...x,baris:pd.baris,targetDaily,target:targetPeriod,submitted,achieved:targetPeriod>0&&pd.baris>=targetPeriod,records:pd.records,days:pd.dates?.size||0}}).sort((a,b)=>a.unit.localeCompare(b.unit,'id')||a.kelas.localeCompare(b.kelas,'id')||a.name.localeCompare(b.name,'id'));
+    const submitted=detail.filter(x=>x.submitted).length,withTarget=detail.filter(x=>x.target>0).length,achieved=detail.filter(x=>x.achieved).length,tahfizRate=percent(submitted,detail.length),targetRate=percent(achieved,withTarget);metrics.tahfiz={total:detail.length,submitted,rate:tahfizRate,withTarget,achieved,targetRate,targetDays,rows:detail};
+    if(pctx.key==='harian'&&pctx.minutes>=9*60&&detail.length&&tahfizRate<80)addAttention({key:'edu-tahfiz',severity:2,count:detail.length-submitted,title:'Setoran Tahfiz belum merata',desc:`${submitted}/${detail.length} santri Tahfiz terpetakan sudah setor hari ini.`,menu:'menu-dashboard-pendidikan',tone:'amber'});if(withTarget&&achieved<withTarget)addAttention({key:'edu-tahfiz-target',severity:1,count:withTarget-achieved,title:'Target Tahfiz belum tercapai',desc:`Capaian target Tahfiz ${pctx.label.toLowerCase()} perlu dipantau.`,menu:'menu-dashboard-pendidikan',tone:'amber'});
+
+    summaries.pendidikan={value:`${teacherRate}% guru`,label:`kehadiran ${pctx.label.toLowerCase()}`,attention:pctx.key==='harian'?Math.max(0,due.length-present):0};
+    summaries.pembinaan={value:`${progDist.pH||0}% hadir`,label:`program ${pctx.label.toLowerCase()}`,attention:pctx.key==='harian'?Math.max(0,duePrograms.length-coveredPrograms):0};
+    ['kesehatan','sarpras','keamanan','layanan','keuangan','dapur','media'].forEach(k=>summaries[k]={value:'Buka untuk pantau',label:'data dimuat saat dibuka',attention:0,lazy:true});
+
+    renderMetrics();renderScores();renderAttentions();renderDivisionList();renderDivisionMonitor();
+  }catch(e){console.error('Dashboard Direktur Lite gagal dimuat',e)}
+  finally{}
+}
 function listNames(items,statusFn){const g={H:[],S:[],I:[],A:[]};items.forEach(it=>{const st=statusFn(it),nm=it.nama||it.namaSantri;if(st&&nm&&g[st])g[st].push(nm)});return g}
 function detailStatsHtml(arr){return arr.map(([label,value])=>`<div class="detail-stat"><small>${esc(label)}</small><b>${esc(value)}</b></div>`).join('')}
 function detailNamesHtml(g){const labels={H:'Hadir',S:'Sakit',I:'Izin',A:'Alfa'};return Object.entries(labels).map(([k,l])=>g[k]?.length?`<div class="detail-name-line"><strong>${l}:</strong> ${g[k].map(esc).join(', ')}</div>`:'').join('')}
-function openSummaryDetail(type){const modal=$('summaryDetailModal'),title=$('summaryDetailTitle'),meta=$('summaryDetailMeta'),sum=$('summaryDetailSummary'),list=$('summaryDetailList'),btn=$('summaryDetailFullBtn');if(!modal)return;const m=metrics[type]||{},pctx=metrics.period||periodContext();let html='',route=()=>{};const rangeMeta=pctx.key==='harian'?`hari ini • sampai ${m.clock||pctx.clock||'—'} WIB`:`${pctx.label} • ${pctx.start} s.d. ${pctx.end}`;
+function openSummaryDetail(type){const modal=$('summaryDetailModal'),title=$('summaryDetailTitle'),meta=$('summaryDetailMeta'),sum=$('summaryDetailSummary'),list=$('summaryDetailList'),btn=$('summaryDetailFullBtn');if(!modal)return;const m=metrics[type]||{},pctx=metrics.period||periodContext();let html='',route=()=>{};const rangeMeta=pctx.key==='harian'?`hari ini • sampai ${m.clock||pctx.clock||'—'} WIB`:'Data saat ini';
 if(type==='teacher'){title.textContent='Detail Kehadiran Guru';meta.textContent=`Jadwal yang sudah masuk hitungan • ${rangeMeta}`;sum.innerHTML=detailStatsHtml([['Jadwal',m.due||0],['Guru hadir',m.present||0],['Belum hadir',(m.due||0)-(m.present||0)],['Kehadiran',`${m.rate||0}%`]]);html=(m.rows||[]).map(({schedule:r,attendance:a})=>{const ok=!!a,nama=a?.namaGuru||a?.guruNama||r.guruNama||r.namaGuru||r.guru||r.guruKode||'Guru belum terbaca',waktu=r.jamMulai||String(r.waktu||'').split(/[–—-]/)[0]||'—',tanggal=r._date||dateOf(a)||'';return`<div class="detail-row"><div class="detail-row-head"><div><div class="detail-row-title">${esc(nama)}</div><div class="detail-row-sub">${esc(tanggal)} • ${esc(r.mapel||r.mataPelajaran||'Pembelajaran')} • ${esc(r.kelas||'—')} • ${esc(waktu)}</div></div><span class="detail-badge ${ok?'':'warn'}">${ok?'Hadir':'Belum Hadir'}</span></div></div>`}).join('')||'<div class="detail-empty">Belum ada jadwal yang masuk hitungan pada periode ini.</div>';route=()=>openMenu('menu-monitoring-absen-guru')}
 else if(type==='learning'){title.textContent='Detail Kehadiran Belajar Santri';meta.textContent=`Pembelajaran mulai Bahasa Arab Pagi • ${rangeMeta}`;const d=m.dist||{};sum.innerHTML=detailStatsHtml([['Hadir',`${d.pH||0}%`],['Sakit',`${d.pS||0}%`],['Izin',`${d.pI||0}%`],['Alfa',`${d.pA||0}%`]]);html=(m.rows||[]).map(({schedule:r,records})=>{const items=(records||[]).flatMap(x=>vals(x.data||x.daftarSantri)),dist=distribution(records||[],finalStudentStatus,(x,nm)=>`${dateOf(x)}|${x.jadwalId||x.id||x.kelas||'sesi'}|${nameKey(nm)}`),names=listNames(items,finalStudentStatus),waktu=r.jamMulai||'—',tanggal=r._date||dateOf(records?.[0])||'';return`<div class="detail-row"><div class="detail-row-head"><div><div class="detail-row-title">${esc(r.mapel||r.mataPelajaran||'Pembelajaran')} • ${esc(r.kelas||'—')}</div><div class="detail-row-sub">${esc(tanggal)} • Mulai ${esc(waktu)} • ${records?.length?'Absensi tercatat':'Belum ada absensi'}</div></div><span class="detail-badge ${records?.length?'':'warn'}">${records?.length?'Tercatat':'Belum Masuk'}</span></div><div class="detail-status-grid"><span class="detail-status"><b>${dist.H}</b>Hadir</span><span class="detail-status"><b>${dist.S}</b>Sakit</span><span class="detail-status"><b>${dist.I}</b>Izin</span><span class="detail-status"><b>${dist.A}</b>Alfa</span></div><div class="detail-names">${detailNamesHtml(names)}</div></div>`}).join('')||'<div class="detail-empty">Belum ada sesi pembelajaran yang masuk hitungan.</div>';route=()=>openMenu('menu-kontrol-pendidikan')}
 else if(type==='program'){title.textContent='Detail Kehadiran Program Santri';meta.textContent=`Hanya program yang diabsensi Naqib • ${rangeMeta}`;const d=m.dist||{};sum.innerHTML=detailStatsHtml([['Hadir',`${d.pH||0}%`],['Sakit',`${d.pS||0}%`],['Izin',`${d.pI||0}%`],['Alfa',`${d.pA||0}%`]]);html=(m.rows||[]).map(({name,time,_date,records})=>{const items=(records||[]).flatMap(x=>vals(x.data||x.daftarSantri)),dist=distribution(records||[],programStatus,(x,nm)=>`${dateOf(x)}|${programKey(x.program||x.namaProgram||x.nama)}|${nameKey(nm)}`),names=listNames(items,programStatus),tanggal=_date||dateOf(records?.[0])||'';return`<div class="detail-row"><div class="detail-row-head"><div><div class="detail-row-title">${esc(name)}</div><div class="detail-row-sub">${esc(tanggal)} • ${time&&time!=='—'?`Mulai ${esc(time)} • `:''}${records?.length?`${records.length} data/unit tercatat`:'Belum ada absensi'}</div></div><span class="detail-badge ${records?.length?'':'warn'}">${records?.length?'Tercatat':'Belum Masuk'}</span></div><div class="detail-status-grid"><span class="detail-status"><b>${dist.H}</b>Hadir</span><span class="detail-status"><b>${dist.S}</b>Sakit</span><span class="detail-status"><b>${dist.I}</b>Izin</span><span class="detail-status"><b>${dist.A}</b>Alfa</span></div><div class="detail-names">${detailNamesHtml(names)}</div></div>`}).join('')||'<div class="detail-empty">Belum ada program Naqib yang masuk hitungan pada periode ini.</div>';route=()=>openMenu('menu-kontrol-pembinaan')}
@@ -429,11 +345,11 @@ function computePeriodScores(programRows,due,teacherRows,rawUsrah){
 function leaderSummary(rows){if(!rows?.length)return{score:null,first:'Belum ada data',more:0,ties:[]};const top=rows[0].score,ties=rows.filter(x=>x.score===top),first=ties[0]?.name||'—';return{score:top,first,more:Math.max(0,ties.length-1),ties}}
 function renderScores(){const d=metrics.scores||{},defs=[['usrah','Usrah Terdisiplin','#0b9a72','<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2.5 19c.5-4 2.4-6 5.5-6s5 2 5.5 6M10.5 19c.5-4 2.4-6 5.5-6s5 2 5.5 6"/></svg>'],['guru','Guru Terdisiplin','#1767cf','<svg viewBox="0 0 24 24"><path d="m3 10 9-5 9 5-9 5-9-5z"/><path d="M7 12.5V17c3 2 7 2 10 0v-4.5"/></svg>'],['santri','Santri Terdisiplin','#8a5bd3','<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-5 3.4-7 8-7s7.2 2 8 7"/></svg>']];$('scoreGrid').innerHTML=defs.map(([k,label,color,icon])=>{const lead=leaderSummary(d[k]);return`<button class="score-card" style="--scoreAccent:${color}" onclick="openScoreModal('${k}')"><div class="score-head"><span class="score-icon">${icon}</span><div class="score-label">${label}</div></div><div class="score-value">${lead.score==null?'—':lead.score+'%'}</div><div class="score-winner-row"><span class="score-winner-name">${esc(lead.first)}</span>${lead.more?`<span class="score-more">dan ${lead.more} lainnya</span>`:''}</div></button>`}).join('')}
 function scoreRowsHtml(rows){if(!rows?.length)return'<div class="detail-empty">Belum ada data disiplin yang dapat dihitung.</div>';const top=rows[0].score;return rows.map((r,i)=>`<div class="score-rank ${r.score===top?'top':''}"><span class="score-rank-num">${i+1}</span><span class="score-rank-copy"><b>${esc(r.name)}</b><small>${r.hadir!=null?`${r.hadir} hadir${r.terlambat?` • ${r.terlambat} terlambat`:''}${r.belum?` • ${r.belum} belum hadir`:''}`:`${r.h||0} hadir${r.t?` • ${r.t} terlambat`:''}${r.a?` • ${r.a} alfa`:''}`}</small></span><span class="score-rank-score">${r.score}%</span></div>`).join('')}
-function openScoreModal(type='all'){const d=metrics.scores||{},pctx=metrics.period||periodContext(),labels={usrah:'Usrah Terdisiplin',guru:'Guru Terdisiplin',santri:'Santri Terdisiplin'},keys=type==='all'?['usrah','guru','santri']:[type];$('scoreModalTitle').textContent=type==='all'?`Skor ${pctx.label}`:labels[type];$('scoreModalMeta').textContent=pctx.key==='harian'?`Data disiplin hari ini • sampai ${metrics.program?.clock||metrics.teacher?.clock||'sekarang'} WIB`:`Data disiplin ${pctx.label.toLowerCase()} • ${pctx.start} s.d. ${pctx.end}`;$('scoreModalList').innerHTML=keys.map(k=>`<section class="score-block"><div class="score-block-head"><b>${labels[k]}</b><span>${d[k]?.length||0} kandidat</span></div>${scoreRowsHtml(d[k]||[])}</section>`).join('');$('scoreModal').classList.add('show')}
+function openScoreModal(type='all'){const d=metrics.scores||{},pctx=metrics.period||periodContext(),labels={usrah:'Usrah Terdisiplin',guru:'Guru Terdisiplin',santri:'Santri Terdisiplin'},keys=type==='all'?['usrah','guru','santri']:[type];$('scoreModalTitle').textContent=type==='all'?'Skor Real-time':labels[type];$('scoreModalMeta').textContent=pctx.key==='harian'?`Data disiplin hari ini • sampai ${metrics.program?.clock||metrics.teacher?.clock||'sekarang'} WIB`:`Data disiplin ${pctx.label.toLowerCase()} • ${pctx.start} s.d. ${pctx.end}`;$('scoreModalList').innerHTML=keys.map(k=>`<section class="score-block"><div class="score-block-head"><b>${labels[k]}</b><span>${d[k]?.length||0} kandidat</span></div>${scoreRowsHtml(d[k]||[])}</section>`).join('');$('scoreModal').classList.add('show')}
 
 function attentionHtml(a,modal=false){const tone=a.tone==='amber'?'amber':a.tone==='blue'?'blue':'';const click=a.menu?`openMenu('${a.menu}')`:a.route?`openRoute('${a.route}')`:'';if(modal)return`<button class="division-row" onclick="closeModal('attentionModal');${click}"><span class="dicon" style="--dsoft:${a.tone==='red'?'#ffe9e7':a.tone==='amber'?'#fff3db':'#eaf4ff'};--dcolor:${a.tone==='red'?'#c53d33':a.tone==='amber'?'#a56d0b':'#236ac6'}">${iconMap[a.key?.startsWith('char')?'pembinaan':a.key?.startsWith('health')?'kesehatan':a.key?.startsWith('sar')?'sarpras':a.key?.startsWith('sec')?'keamanan':a.key?.startsWith('fin')?'keuangan':'pendidikan']}</span><span class="dcopy"><b>${esc(a.title)}</b><small>${esc(a.desc)}</small></span><span class="dstatus ${a.tone==='red'?'bad':a.tone==='amber'?'att':''}">${a.count}</span></button>`;return`<button class="attention-card ${tone}" onclick="${click}"><span class="att-icon">${iconMap[a.key?.startsWith('health')?'kesehatan':a.key?.startsWith('char')?'pembinaan':a.key?.startsWith('sar')?'sarpras':a.key?.startsWith('sec')?'keamanan':a.key?.startsWith('fin')?'keuangan':'pendidikan']}</span><div class="att-count">${a.count}</div><div class="att-title">${esc(a.title)}</div><div class="att-desc">${esc(a.desc)}</div><span class="att-arrow"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span></button>`}
 function renderAttentions(){attentions=attentions.sort((a,b)=>b.severity-a.severity||b.count-a.count);$('notifyBadge').textContent=attentions.length>9?'9+':attentions.length;$('notifyBadge').style.display=attentions.length?'grid':'none';const grid=$('attentionGrid');if(grid)grid.innerHTML=attentions.length?attentions.slice(0,3).map(a=>attentionHtml(a)).join(''):'<div class="att-empty"><b>Belum ada exception strategis yang terdeteksi.</b><br/>Ringkasan akan berubah otomatis mengikuti data operasional yang masuk.</div>';$('attentionList').innerHTML=attentions.length?attentions.map(a=>attentionHtml(a,true)).join(''):'<div class="att-empty">Belum ada hal mendesak yang terdeteksi.</div>'}
-function renderDivisionList(){const defaultText={pendidikan:'Pembelajaran, Qur’an, nilai & tindak lanjut',pembinaan:'Program, pendampingan, asesmen & kasus',kesehatan:'UKS, pemeriksaan, rujukan & obat',sarpras:'Checklist, kerusakan & perbaikan',keamanan:'Keamanan area & kebersihan',layanan:'Tamu, penitipan & layanan',keuangan:'Tagihan, pembayaran & kasir',dapur:'Konsumsi, produksi & distribusi',media:'Publikasi, dokumentasi & kanal digital'};$('divisionList').innerHTML=divisionDefs.map(([k,label,soft,color])=>{const s=summaries[k]||{value:'Buka untuk pantau',attention:0,lazy:true},st=s.lazy?['ok','Pantau']:statusFor(s.attention);return`<button class="division-row" onclick="openDivision('${k}')"><span class="dicon" style="--dsoft:${soft};--dcolor:${color}">${iconMap[k]}</span><span class="dcopy"><b>${label}</b><small>${esc(s.value)} · ${defaultText[k]}</small></span><span class="dstatus ${st[0]==='bad'?'bad':st[0]==='att'?'att':''}">${st[1]}</span></button>`}).join('')}
+function renderDivisionList(){const defaultText={pendidikan:'Pembelajaran, Qur’an, nilai & tindak lanjut',pembinaan:'Program, pendampingan, asesmen & kasus',kesehatan:'UKS, pemeriksaan, rujukan & obat',sarpras:'Checklist, kerusakan & perbaikan',keamanan:'Keamanan area & kebersihan',layanan:'Tamu, penitipan & layanan',keuangan:'Tagihan, pembayaran & kasir',dapur:'Konsumsi, produksi & distribusi',media:'Publikasi, dokumentasi & kanal digital'};$('divisionList').innerHTML=divisionDefs.map(([k,label,soft,color])=>{const s=summaries[k]||{value:'—',attention:0},st=statusFor(s.attention);return`<button class="division-row" onclick="openDivision('${k}')"><span class="dicon" style="--dsoft:${soft};--dcolor:${color}">${iconMap[k]}</span><span class="dcopy"><b>${label}</b><small>${esc(s.value)} · ${defaultText[k]}</small></span><span class="dstatus ${st[0]==='bad'?'bad':st[0]==='att'?'att':''}">${st[1]}</span></button>`}).join('')}
 const directorDivisionFocus={
  pendidikan:'Pastikan pengajaran, Tahsin–Tahfiz berjalan, hasil belajar terbaca, dan masalah akademik mendapat tindak lanjut.',
  pembinaan:'Nilai efektivitas program, pendampingan, target pertumbuhan, asesmen, dan kasus prioritas.',
@@ -445,12 +361,10 @@ const directorDivisionFocus={
  dapur:'Pastikan konsumsi tersedia tepat waktu dan kendala bahan, produksi, atau distribusi cepat diselesaikan.',
  media:'Pastikan publikasi dan sistem digital selaras visi pesantren serta progres pekerjaan utama terpantau.'
 };
-function renderDivisionMonitor(){const grid=$('divisionMonitorGrid');if(!grid)return;grid.innerHTML=divisionDefs.slice(0,9).map(([k,label,soft,color])=>{const s=summaries[k]||{value:'Buka untuk pantau',label:'data dimuat saat dibuka',attention:0,lazy:true},st=s.lazy?['ok','Pantau']:statusFor(s.attention),cls=st[0]==='bad'?'bad':st[0]==='att'?'att':'';return`<button class="division-monitor-card" style="--dsoft:${soft};--dcolor:${color}" onclick="openDivision('${k}')"><div class="division-monitor-head"><span class="division-monitor-icon">${iconMap[k]}</span><span class="division-monitor-name">${esc(label)}</span><span class="division-monitor-status ${cls}">${st[1]}</span></div><div class="division-monitor-metric"><b>${esc(s.value)}</b><span>${esc(s.label||'')}</span></div><div class="division-monitor-focus"><strong>Fokus Direktur:</strong> ${esc(directorDivisionFocus[k]||'Pantau hasil, masalah, dan tindak lanjut divisi.')}</div></button>`}).join('')}
+function renderDivisionMonitor(){const grid=$('divisionMonitorGrid');if(!grid)return;grid.innerHTML=divisionDefs.slice(0,9).map(([k,label,soft,color])=>`<button class="division-monitor-card simple" style="--dsoft:${soft};--dcolor:${color}" onclick="openDivision('${k}')"><span class="division-monitor-icon">${iconMap[k]}</span><span class="division-monitor-name">${esc(label)}</span></button>`).join('')}
 
 function openDivisionModal(){$('divisionModal').classList.add('show')}
 function openAttentionModal(){$('attentionModal').classList.add('show')}
-function openPeriodModal(){const labels={harian:'Harian',pekanan:'Pekanan',bulanan:'Bulanan'},desc={harian:'Data hari ini sampai jam sekarang',pekanan:'Pekan berjalan, Senin sampai hari ini',bulanan:'Bulan berjalan sampai hari ini'};$('periodList').innerHTML=['harian','pekanan','bulanan'].map(k=>`<button class="role-option ${k===activePeriod?'active':''}" onclick="choosePeriod('${k}')"><b>${labels[k]}</b><small style="display:block;margin-top:3px;font-size:.52rem;color:#7d8ca2">${desc[k]}</small></button>`).join('');$('periodModal').classList.add('show')}
-function choosePeriod(k){if(!['harian','pekanan','bulanan'].includes(k))return;activePeriod=k;closeModal('periodModal');renderPeriodLabels();loadData()}
 function openRoleModal(){let user={};try{user=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}catch{}const roles=Array.isArray(user.workspaceRoles)?user.workspaceRoles:(Array.isArray(user.akses)?user.akses:[]);const active=String(user.activeRole||localStorage.getItem('cahayaActiveRole')||'direktur').toLowerCase();const labels={direktur:'Direktur','supervisor-pendidikan':'Supervisor Pendidikan','manajer-pendidikan':'Manajer Pendidikan','supervisor-pembinaan':'Supervisor Pembinaan','manajer-pembinaan':'Manajer Pembinaan','naqib-pendamping':'Naqib Pendamping','naqib-operasional':'Naqib Operasional',guru:'Guru','mentor-quran':'Mentor Qur’an',admin:'Administrator'};const list=[...new Set(roles.length?roles:['direktur'])];$('roleList').innerHTML=list.map(r=>`<button class="role-option ${String(r).toLowerCase()===active?'active':''}" onclick="chooseRole('${esc(String(r).toLowerCase())}')">${esc(labels[String(r).toLowerCase()]||r)}</button>`).join('');$('roleModal').classList.add('show')}
 async function chooseRole(role){closeModal('roleModal');try{if(typeof P.setCahayaActiveRole==='function'){await P.setCahayaActiveRole(role);P.openAuthorizedMenu?.('menu-home')}}catch(e){console.warn(e)}}
 function closeModal(id){$(id)?.classList.remove('show')}

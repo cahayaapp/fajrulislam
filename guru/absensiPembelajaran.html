@@ -3553,31 +3553,6 @@
 
         const savedRef = push(ref(db, "cahaya_app/absensi_pembelajaran"));
         batchUpdates[`cahaya_app/absensi_pembelajaran/${savedRef.key}`] = payload;
-        // V96: indeks harian ringkas untuk Dashboard Direktur.
-        // Menghindari query histori besar hanya untuk ringkasan hari berjalan.
-        if (savedRef.key && payload.tanggal) {
-          batchUpdates[`cahaya_app/dashboard_index/${payload.tanggal}/pembelajaran/${savedRef.key}`] = {
-            id: savedRef.key,
-            tanggal: payload.tanggal,
-            jadwalId: payload.jadwalId || '',
-            mapel: payload.mapel || payload.mataPelajaran || '',
-            kelas: payload.kelas || payload.rombel || '',
-            jamMulai: payload.jamMulai || payload.jadwalMulai || '',
-            jamSelesai: payload.jamSelesai || payload.jadwalSelesai || '',
-            guru: payload.guru || payload.namaGuru || payload.guruPengganti || '',
-            unit: payload.unitPembelajaran || payload.unit || '',
-            tahapAbsensi: payload.tahapAbsensi || '',
-            statusFinalisasi: payload.statusFinalisasi || '',
-            waktuSimpan: payload.waktuSimpan || new Date().toISOString(),
-            data: hasil.map(item => ({
-              nama: item.nama || item.namaSantri || '',
-              namaSantri: item.namaSantri || item.nama || '',
-              statusAwal: item.statusAwal || item.status || '',
-              statusAkhir: item.statusAkhir || item.statusFinal || '',
-              statusFinal: item.statusFinal || item.statusAkhir || ''
-            }))
-          };
-        }
 
         hasil.forEach(item => {
           const waliKey = String(item.nama || "")
