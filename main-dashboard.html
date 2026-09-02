@@ -1881,6 +1881,15 @@
 body.director-home-shell .top-nav{display:none!important}
 body.director-home-shell .cahaya-page-loader{inset:0!important}
 @media(max-width:900px){body.director-home-shell .main-content{height:calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom))!important;flex-basis:calc(100dvh - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom))!important}body.director-home-shell #contentFrame{height:100%!important;flex:1!important}}
+
+/* V90 — bottom navigation Direktur menempel ke bawah, tidak floating */
+@media(max-width:900px){
+ body.director-home-shell .mobile-bottom-nav{padding:0!important;background:#061b3f!important;box-shadow:none!important;overflow:hidden!important}
+ body.director-home-shell .mobile-bottom-nav-inner{height:78px!important;min-height:78px!important;margin:0!important;padding:8px 8px calc(8px + env(safe-area-inset-bottom))!important;border:0!important;border-top:1px solid rgba(255,255,255,.10)!important;border-radius:22px 22px 0 0!important;background:linear-gradient(180deg,#0a2b5e 0%,#061b3f 100%)!important;box-shadow:0 -7px 22px rgba(6,31,73,.14)!important;overflow:hidden!important}
+ body.director-home-shell .mobile-shortcut-btn{border-radius:12px!important;color:rgba(255,255,255,.68)!important}
+ body.director-home-shell .mobile-shortcut-btn.active{color:#fff!important;background:rgba(255,255,255,.055)!important}
+}
+
 </style>
 </head>
 <body class="cahaya-shell-page">
@@ -3484,7 +3493,7 @@ function sinkronkanBadgePintasanMobile() {
 
       const menuId = menuElement?.id || "";
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
-      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=89';
+      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=90';
       document.body.classList.toggle('director-home-shell', menuId === 'menu-home' && activeRoleForPage === 'direktur');
 
       if (!menuId || !bolehAksesMenu(menuId)) {
