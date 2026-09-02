@@ -2724,6 +2724,46 @@ function sinkronkanBadgePintasanMobile() {
       return activeRole;
     }
 
+    // V94: fail-safe bootstrap untuk Beranda Direktur.
+    // Dashboard utama tidak boleh menunggu sinkronisasi rule menu/Firebase untuk menampilkan home.
+    function cahayaIsDirectorContext() {
+      const stored = normalisasiRole(
+        localStorage.getItem(ACTIVE_ROLE_KEY) ||
+        localStorage.getItem("cahayaCurrentRole") ||
+        pUserSafe.activeRole ||
+        pUserSafe.role ||
+        ""
+      );
+      return stored === "direktur" || (myRoles.length === 1 && myRoles[0] === "direktur");
+    }
+
+    function bootstrapDirectorHomeFailSafe(force = false) {
+      if (!cahayaIsDirectorContext()) return false;
+      const frame = document.getElementById("contentFrame");
+      if (!frame) return false;
+      const rawSrc = String(frame.getAttribute("src") || "").trim();
+      const isBlank = !rawSrc || rawSrc === "about:blank";
+      if (!force && !isBlank) return false;
+      frame.removeAttribute("srcdoc");
+      frame.src = "home-direktur.html?v=94";
+      document.body.classList.add("director-home-shell");
+      const title = document.getElementById("currentPageTitle");
+      if (title) title.textContent = "CAHAYA APP";
+      return true;
+    }
+    window.bootstrapDirectorHomeFailSafe = bootstrapDirectorHomeFailSafe;
+
+    // Jalankan segera dari profil lokal agar shell tidak pernah berhenti pada about:blank.
+    bootstrapDirectorHomeFailSafe(false);
+    // Lapisan pengaman kedua untuk perangkat/jaringan lambat.
+    setTimeout(() => {
+      const frame = document.getElementById("contentFrame");
+      const rawSrc = String(frame?.getAttribute("src") || "").trim();
+      if ((!rawSrc || rawSrc === "about:blank") && cahayaIsDirectorContext()) {
+        bootstrapDirectorHomeFailSafe(true);
+      }
+    }, 1200);
+
     function getActiveViewRoles() {
       const role = ensureActiveRole();
       return role === ALL_ROLES_MODE ? [...myRoles] : (role ? [role] : []);
@@ -3176,6 +3216,16 @@ function sinkronkanBadgePintasanMobile() {
     }
 
     function bukaHalamanAwalYangDiizinkan() {
+      const activeNow = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
+      if (activeNow === 'direktur') {
+        const homeMenu = document.getElementById('menu-home');
+        if (homeMenu) {
+          loadPage('home-direktur.html?v=94', homeMenu);
+          return;
+        }
+        bootstrapDirectorHomeFailSafe(true);
+        return;
+      }
       const deepLinkOperasional = new URLSearchParams(window.location.search).get("operasional");
       if (deepLinkOperasional && bolehAksesMenu("menu-dashboard-operasional")) {
         const menuOperasional = document.getElementById("menu-dashboard-operasional");
@@ -3523,7 +3573,7 @@ function sinkronkanBadgePintasanMobile() {
 
       const menuId = menuElement?.id || "";
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
-      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=93';
+      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=94';
       document.body.classList.toggle('director-home-shell', menuId === 'menu-home' && activeRoleForPage === 'direktur');
 
       if (!menuId || !bolehAksesMenu(menuId)) {
