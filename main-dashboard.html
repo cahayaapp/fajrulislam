@@ -1888,6 +1888,12 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
  body.director-home-shell .mobile-bottom-nav-inner{height:78px!important;min-height:78px!important;margin:0!important;padding:8px 8px calc(8px + env(safe-area-inset-bottom))!important;border:0!important;border-top:1px solid rgba(255,255,255,.10)!important;border-radius:22px 22px 0 0!important;background:linear-gradient(180deg,#0a2b5e 0%,#061b3f 100%)!important;box-shadow:0 -7px 22px rgba(6,31,73,.14)!important;overflow:hidden!important}
  body.director-home-shell .mobile-shortcut-btn{border-radius:12px!important;color:rgba(255,255,255,.68)!important}
  body.director-home-shell .mobile-shortcut-btn.active{color:#fff!important;background:rgba(255,255,255,.055)!important}
+ /* V93: Beranda adalah menu utama di tengah, tetapi tetap menyatu dengan bottom bar (tidak melayang). */
+ body.director-home-shell .mobile-shortcut-btn.is-scan{height:62px!important;min-height:62px!important;padding:5px 2px 3px!important;justify-content:center!important;transform:none!important;gap:2px!important;overflow:visible!important}
+ body.director-home-shell .mobile-shortcut-btn.is-scan:active{transform:scale(.97)!important}
+ body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-icon{width:39px!important;height:39px!important;min-width:39px!important;min-height:39px!important;margin-top:0!important;border:2px solid rgba(242,182,50,.65)!important;border-radius:14px!important;background:linear-gradient(145deg,#0f4aa0,#082d6b)!important;color:#f5c84d!important;box-shadow:0 5px 13px rgba(1,18,48,.26)!important}
+ body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-icon svg{width:21px!important;height:21px!important}
+ body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-label{margin-top:0!important;color:#f4c64b!important;font-size:.54rem!important}
 }
 
 </style>
@@ -2429,17 +2435,18 @@ const mobileUtilityIcon = {
   chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>',
   profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22c.7-5 3.5-8 8-8s7.3 3 8 8"/></svg>',
   scan: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/><path d="M8 9h3v3H8zM14 9h2M14 12h2M8 15h2M12 15h4M12 18h4"/></svg>',
-  operations: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19V8"/><path d="M2 19h22"/><circle cx="4" cy="7" r="2"/><circle cx="10" cy="3" r="2"/><circle cx="16" cy="10" r="2"/><circle cx="22" cy="6" r="2"/></svg>'
+  operations: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19V8"/><path d="M2 19h22"/><circle cx="4" cy="7" r="2"/><circle cx="10" cy="3" r="2"/><circle cx="16" cy="10" r="2"/><circle cx="22" cy="6" r="2"/></svg>',
+  kpi: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20V7"/><path d="M2 20h22"/><path d="m4 7 6-4 6 6 6-5"/></svg>'
 };
 
 function getMobileUtilityItems() {
   const active = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
   if (active === 'direktur') {
     const directorItems = [];
-    if (bolehAksesMenu('menu-home')) directorItems.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.home });
-    if (bolehAksesMenu('menu-kalender-pendidikan')) directorItems.push({ id:'menu-kalender-pendidikan', label:'Jadwal', icon:mobileUtilityIcon.calendar });
-    if (bolehAksesMenu('menu-chat')) directorItems.push({ id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' });
-    if (bolehAksesMenu('menu-profil')) directorItems.push({ id:'menu-profil', label:'Profil', icon:mobileUtilityIcon.profile });
+    directorItems.push({ id:'menu-kalender-pendidikan', label:'Jadwal', icon:mobileUtilityIcon.calendar });
+    directorItems.push({ id:'menu-raport-bulanan', label:'KPI', icon:mobileUtilityIcon.kpi });
+    directorItems.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.home, center:true });
+    directorItems.push({ id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' });
     directorItems.push({ id:'utility-menu', label:'Lainnya', icon:mobileUtilityIcon.menu });
     return directorItems;
   }
@@ -2527,7 +2534,11 @@ function sinkronkanBadgePintasanMobile() {
     }
 
     function bolehAksesMenu(menuId) {
-      return authorizationReady && authorizedMenuIds.has(menuId);
+      if (!authorizationReady) return false;
+      const active = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
+      // V93: Direktur memiliki akses penuh ke seluruh data/menu yang tersedia di CAHAYA APP.
+      if (active === 'direktur') return menuId === 'menu-chat' || Boolean(document.getElementById(menuId));
+      return authorizedMenuIds.has(menuId);
     }
 
     function tampilkanPesanTidakBerwenang(menuId = "") {
@@ -3122,8 +3133,9 @@ function sinkronkanBadgePintasanMobile() {
     function organizeSidebarByRole() {
       const nav = document.getElementById("dynamicMenu");
       if (!nav) return;
+      const directorFullAccess = (typeof ensureActiveRole === 'function' ? ensureActiveRole() : '') === 'direktur';
       const items = [...nav.querySelectorAll(".menu-akses")]
-        .filter(item => bolehAksesMenu(item.id) && item.dataset.moduleDisabled !== "true");
+        .filter(item => bolehAksesMenu(item.id) && (directorFullAccess || item.dataset.moduleDisabled !== "true"));
       const fragment = document.createDocumentFragment();
       items.forEach(item => {
         item.style.display = "flex";
@@ -3413,10 +3425,28 @@ function sinkronkanBadgePintasanMobile() {
 
       } catch (error) {
         authorizationReady = true;
-        authorizedMenuIds = new Set();
-        document.querySelectorAll('.menu-group').forEach(group => group.style.display = 'none');
-        terapkanOtorisasiFiturTambahan();
-        tampilkanHalamanTanpaAkses();
+        const active = ensureActiveRoleFromCurrentUser(getCurrentUser());
+        if (active === 'direktur') {
+          authorizedMenuIds = new Set(
+            [...document.querySelectorAll('#dynamicMenu .menu-akses')]
+              .map(menu => menu.id)
+              .filter(Boolean)
+          );
+          authorizedMenuIds.add('menu-chat');
+          document.querySelectorAll('#dynamicMenu .nav-item.menu-akses').forEach(menu => {
+            menu.style.display = 'flex';
+            const group = menu.closest('.menu-group');
+            if (group) group.style.display = 'block';
+          });
+          organizeSidebarByRole();
+          terapkanOtorisasiFiturTambahan();
+          bukaHalamanAwalYangDiizinkan();
+        } else {
+          authorizedMenuIds = new Set();
+          document.querySelectorAll('.menu-group').forEach(group => group.style.display = 'none');
+          terapkanOtorisasiFiturTambahan();
+          tampilkanHalamanTanpaAkses();
+        }
         console.error("Gagal memuat otorisasi menu:", error);
       }
     }
@@ -3493,7 +3523,7 @@ function sinkronkanBadgePintasanMobile() {
 
       const menuId = menuElement?.id || "";
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
-      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=92';
+      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=93';
       document.body.classList.toggle('director-home-shell', menuId === 'menu-home' && activeRoleForPage === 'direktur');
 
       if (!menuId || !bolehAksesMenu(menuId)) {
