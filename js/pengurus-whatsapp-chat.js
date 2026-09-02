@@ -3694,7 +3694,7 @@
     chatHistoryArmed = false;
   });
 
-  function toggleChat() {
+  async function toggleChat() {
     if (
       !bolehAksesMenu(
         "menu-chat"
@@ -3705,6 +3705,11 @@
       );
 
       return;
+    }
+
+    if (window.CAHAYA_CHAT_LAZY === true && !state.listenersInstalled) {
+      try { if (typeof window.ensureCahayaChatReady === "function") await window.ensureCahayaChatReady(); } catch (_) {}
+      bootstrap();
     }
 
     const windowElement =
@@ -4112,16 +4117,11 @@
     state
   };
 
-  if (
-    document.readyState ===
-    "loading"
-  ) {
-    document.addEventListener(
-      "DOMContentLoaded",
-      bootstrap,
-      { once: true }
-    );
-  } else {
-    bootstrap();
+  if (window.CAHAYA_CHAT_LAZY !== true) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
+    } else {
+      bootstrap();
+    }
   }
 })();

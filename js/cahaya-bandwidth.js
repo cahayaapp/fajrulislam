@@ -1,6 +1,6 @@
 (function(global){
   'use strict';
-  const VERSION='2026-07-30-v1';
+  const VERSION='2026-09-02-v95';
   const PREFIX='cahaya_bw_cache_';
   const DAY=86400000;
   const DEFAULT_TTL=5*60000;
@@ -8,6 +8,7 @@
   const registry=[];
   const pathRules={
     'cahaya_app/master_usrah':{ttl:MASTER_TTL},
+    'cahaya_app/target_tahfiz':{ttl:6*60*60000},
     'cahaya_app/master_akademik':{ttl:MASTER_TTL},
     'cahaya_app/data_santri':{ttl:MASTER_TTL},
     'cahaya_app/master_program_harian':{ttl:MASTER_TTL},

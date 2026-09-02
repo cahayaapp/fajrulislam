@@ -2745,7 +2745,7 @@ function sinkronkanBadgePintasanMobile() {
       const isBlank = !rawSrc || rawSrc === "about:blank";
       if (!force && !isBlank) return false;
       frame.removeAttribute("srcdoc");
-      frame.src = "home-direktur.html?v=94";
+      frame.src = "home-direktur.html?v=95";
       document.body.classList.add("director-home-shell");
       const title = document.getElementById("currentPageTitle");
       if (title) title.textContent = "CAHAYA APP";
@@ -3219,10 +3219,16 @@ function sinkronkanBadgePintasanMobile() {
       const activeNow = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
       if (activeNow === 'direktur') {
         const homeMenu = document.getElementById('menu-home');
-        if (homeMenu) {
-          loadPage('home-direktur.html?v=94', homeMenu);
+        const frame = document.getElementById('contentFrame');
+        const currentSrc = String(frame?.getAttribute('src') || '');
+        if (currentSrc.includes('home-direktur.html')) {
+          document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+          homeMenu?.classList.add('active');
+          setMobileBottomActive('menu-home');
+          hideCahayaPageLoader();
           return;
         }
+        if (homeMenu) { loadPage('home-direktur.html?v=95', homeMenu); return; }
         bootstrapDirectorHomeFailSafe(true);
         return;
       }
@@ -3573,7 +3579,7 @@ function sinkronkanBadgePintasanMobile() {
 
       const menuId = menuElement?.id || "";
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
-      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=94';
+      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=95';
       document.body.classList.toggle('director-home-shell', menuId === 'menu-home' && activeRoleForPage === 'direktur');
 
       if (!menuId || !bolehAksesMenu(menuId)) {
@@ -3586,6 +3592,19 @@ function sinkronkanBadgePintasanMobile() {
       setMobileBottomActive(menuId);
 
       const frame = document.getElementById('contentFrame');
+      // CAHAYA_V95_SAME_PAGE_GUARD: jangan reload iframe yang sama dan mengulang seluruh query data.
+      try {
+        const cur = String(frame.getAttribute('src') || '');
+        const curPath = cur ? new URL(cur, location.href).pathname : '';
+        const nextPath = new URL(url, location.href).pathname;
+        if (curPath && curPath === nextPath) {
+          document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+          if (menuElement?.classList?.contains('nav-item')) menuElement.classList.add('active');
+          setMobileBottomActive(menuId);
+          hideCahayaPageLoader();
+          return;
+        }
+      } catch (_) {}
       frame.removeAttribute('srcdoc');
       showCahayaPageLoader("Menyiapkan halaman...");
 
@@ -3606,11 +3625,33 @@ function sinkronkanBadgePintasanMobile() {
       document.querySelector('.mobile-menu-overlay').classList.remove('open');
     }
 
+    // V95 hemat bandwidth: chat dan master user baru dimuat ketika Pesan dibuka.
+    window.CAHAYA_CHAT_LAZY = true;
+    window.__cahayaChatUsersLoaded = false;
     let pListUsers = [];
     let targetAktifLabel = "";
     let targetAktifDisplay = "";
     let pChatListener = null;
     let editModeId = null;
+
+    window.ensureCahayaChatReady = async function () {
+      if (window.__cahayaChatUsersLoaded) return pListUsers;
+      if (window.__cahayaChatUsersPromise) return window.__cahayaChatUsersPromise;
+      window.__cahayaChatUsersPromise = (async () => {
+        try {
+          const snap = await dbFS.collection('users').get();
+          pListUsers = [];
+          snap.forEach(doc => pListUsers.push(doc.data()));
+        } catch (err) {
+          console.error('Gagal memuat master user saat membuka Pesan:', err);
+          pListUsers = Array.isArray(pListUsers) ? pListUsers : [];
+        }
+        window.__cahayaChatUsersLoaded = true;
+        window.dispatchEvent(new CustomEvent('cahaya:chat-users-ready',{detail:{count:pListUsers.length}}));
+        return pListUsers;
+      })();
+      try{return await window.__cahayaChatUsersPromise}finally{window.__cahayaChatUsersPromise=null}
+    };
 
     firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
@@ -3686,54 +3727,9 @@ function sinkronkanBadgePintasanMobile() {
         await refreshUserProfileUI();
 
         if (bolehAksesMenu('menu-chat')) {
-          try {
-            const snap = await dbFS.collection('users').get();
-            pListUsers = [];
-            snap.forEach(doc => pListUsers.push(doc.data()));
-          } catch (err) {
-            console.error("Gagal memuat master user:", err);
-            pListUsers = Array.isArray(pListUsers) ? pListUsers : [];
-          }
-
-          /*
-           * Tandai bahwa master pengguna sudah selesai dimuat. Mesin
-           * WhatsApp CAHAYA akan memakai daftar ini untuk kontak personal,
-           * termasuk akun guru seperti @faiq.
-           */
-          window.__cahayaChatUsersLoaded = true;
-
-          window.dispatchEvent(
-            new CustomEvent('cahaya:chat-users-ready', {
-              detail: { count: pListUsers.length }
-            })
-          );
-
-          /*
-           * Menunggu skrip WhatsApp selesai dimuat. Listener lama tidak
-           * dipasang lagi supaya badge dan isi percakapan memakai sumber
-           * data yang sama.
-           */
-          let chatInitAttempts = 0;
-          const initializeWhatsAppChat = () => {
-            chatInitAttempts += 1;
-
-            if (typeof window.initChatFilter === 'function') {
-              window.initChatFilter();
-            }
-
-            if (
-              typeof window.listenToGlobalMessagesAndNotifs === 'function'
-            ) {
-              window.listenToGlobalMessagesAndNotifs();
-              return;
-            }
-
-            if (chatInitAttempts < 50) {
-              window.setTimeout(initializeWhatsAppChat, 120);
-            }
-          };
-
-          initializeWhatsAppChat();
+          // V95: jangan download seluruh koleksi user dan jangan pasang listener chat saat startup.
+          // Semua baru diaktifkan ketika pengguna benar-benar membuka menu Pesan.
+          window.__cahayaChatUsersLoaded = false;
         }
       } else {
         setCahayaLogoutLock(
