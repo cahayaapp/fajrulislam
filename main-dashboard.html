@@ -2464,7 +2464,8 @@ function getMobileUtilityItems() {
 function renderMobileBottomNav() {
   const nav = document.getElementById('mobileBottomNav');
   if (!nav) return;
-  if (!authorizationReady) { nav.innerHTML=''; nav.classList.remove('ready'); return; }
+  const directorFast = (typeof ensureActiveRole === 'function' ? ensureActiveRole() : '') === 'direktur';
+  if (!authorizationReady && !directorFast) { nav.innerHTML=''; nav.classList.remove('ready'); return; }
   const items = getMobileUtilityItems();
   if (!items.length) { nav.innerHTML=''; nav.classList.remove('ready'); return; }
   nav.style.setProperty('--mobile-shortcut-count', String(items.length));
@@ -2534,10 +2535,10 @@ function sinkronkanBadgePintasanMobile() {
     }
 
     function bolehAksesMenu(menuId) {
-      if (!authorizationReady) return false;
       const active = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
-      // V93: Direktur memiliki akses penuh ke seluruh data/menu yang tersedia di CAHAYA APP.
+      // V99: Direktur tidak perlu menunggu otorisasi Firebase untuk shell/menu utama.
       if (active === 'direktur') return menuId === 'menu-chat' || Boolean(document.getElementById(menuId));
+      if (!authorizationReady) return false;
       return authorizedMenuIds.has(menuId);
     }
 
@@ -2745,7 +2746,7 @@ function sinkronkanBadgePintasanMobile() {
       const isBlank = !rawSrc || rawSrc === "about:blank";
       if (!force && !isBlank) return false;
       frame.removeAttribute("srcdoc");
-      frame.src = "home-direktur.html?v=98";
+      frame.src = "home-direktur.html?v=99";
       document.body.classList.add("director-home-shell");
       const title = document.getElementById("currentPageTitle");
       if (title) title.textContent = "CAHAYA APP";
@@ -2857,6 +2858,10 @@ function sinkronkanBadgePintasanMobile() {
 
     let authorizedMenuIds = new Set();
     let authorizationReady = false;
+    // V99: bottom menu Direktur dirender segera dari role lokal, tidak menunggu Firebase.
+    if (typeof cahayaIsDirectorContext === 'function' && cahayaIsDirectorContext()) {
+      requestAnimationFrame(() => renderMobileBottomNav());
+    }
 
     let isTopLevel = myRoles.some(r => ['admin', 'direktur', 'wakil'].includes(r));
     let isKonselor = myRoles.includes('konselor');
@@ -3228,7 +3233,7 @@ function sinkronkanBadgePintasanMobile() {
           hideCahayaPageLoader();
           return;
         }
-        if (homeMenu) { loadPage('home-direktur.html?v=98', homeMenu); return; }
+        if (homeMenu) { loadPage('home-direktur.html?v=99', homeMenu); return; }
         bootstrapDirectorHomeFailSafe(true);
         return;
       }
@@ -3579,7 +3584,7 @@ function sinkronkanBadgePintasanMobile() {
 
       const menuId = menuElement?.id || "";
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
-      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=98';
+      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=99';
       document.body.classList.toggle('director-home-shell', menuId === 'menu-home' && activeRoleForPage === 'direktur');
 
       if (!menuId || !bolehAksesMenu(menuId)) {
