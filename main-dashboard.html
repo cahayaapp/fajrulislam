@@ -1919,6 +1919,23 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
   body.director-home-shell .main-content{height:calc(100dvh - 74px - env(safe-area-inset-bottom))!important;flex-basis:calc(100dvh - 74px - env(safe-area-inset-bottom))!important}
 }
 </style>
+
+<style id="cahaya-v107-soft-home-director">
+@media(max-width:900px){
+  body.director-home-shell .mobile-shortcut-btn.is-scan{
+    background:linear-gradient(180deg,#edf6ff 0%,#e1effc 100%)!important;
+    color:#4b83bf!important;
+    border:1px solid #d4e6f7!important;
+    box-shadow:0 3px 9px rgba(45,111,177,.10)!important;
+  }
+  body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-icon{
+    background:transparent!important;border:0!important;color:#3979bb!important;box-shadow:none!important;
+    width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;border-radius:8px!important;
+  }
+  body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-icon svg{stroke-width:1.55!important}
+  body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-label{color:#3974b3!important;font-weight:850!important}
+}
+</style>
 </head>
 <body class="cahaya-shell-page">
 
@@ -2769,7 +2786,7 @@ function sinkronkanBadgePintasanMobile() {
       const isBlank = !rawSrc || rawSrc === "about:blank";
       if (!force && !isBlank) return false;
       frame.removeAttribute("srcdoc");
-      frame.src = "home-direktur.html?v=106";
+      frame.src = "home-direktur.html?v=107";
       document.body.classList.add("director-home-shell");
       const title = document.getElementById("currentPageTitle");
       if (title) title.textContent = "CAHAYA APP";
@@ -3256,7 +3273,7 @@ function sinkronkanBadgePintasanMobile() {
           hideCahayaPageLoader();
           return;
         }
-        if (homeMenu) { loadPage('home-direktur.html?v=106', homeMenu); return; }
+        if (homeMenu) { loadPage('home-direktur.html?v=107', homeMenu); return; }
         bootstrapDirectorHomeFailSafe(true);
         return;
       }
@@ -3607,7 +3624,7 @@ function sinkronkanBadgePintasanMobile() {
 
       const menuId = menuElement?.id || "";
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
-      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=106';
+      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=107';
       document.body.classList.toggle('director-home-shell', menuId === 'menu-home' && activeRoleForPage === 'direktur');
 
       if (!menuId || !bolehAksesMenu(menuId)) {
