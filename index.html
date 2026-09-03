@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#f7fbff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="cahaya-build" content="20260904-v114-login-fixed">
+  <meta name="cahaya-build" content="20260904-v115-login-fixed">
   <title>CAHAYA APP — Pesantren Cahaya Fajrul Islam</title>
   <link rel="icon" type="image/x-icon" href="assets/cahaya-app/favicon.ico?v=112">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/cahaya-app/app-icon-32.png?v=112">
@@ -162,7 +162,7 @@
       const dedicatedCashier = roles.includes('kasir') && /kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity);
       const cashierOnly = roles.includes('kasir') && !roles.some(r => ['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','manajer','staf-muda','staf-mula','wali'].includes(r));
       if (dedicatedCashier || cashierOnly) { const unit = /putri/i.test(identity) ? 'putri' : /putra/i.test(identity) ? 'putra' : ''; return unit ? `keuangan/kasir.html?unit=${unit}` : 'keuangan/kasir.html'; }
-      return roles.includes('wali') ? 'wali/dashboard/index.html?v=20260820-v70' : 'main-dashboard.html?v=20260904-v114';
+      return roles.includes('wali') ? 'wali/dashboard/index.html?v=20260820-v70' : 'main-dashboard.html?v=20260904-v116';
     }
     function resetEyeIcon(){const eyeIcon=document.getElementById('eyeIcon');if(!eyeIcon)return;eyeIcon.innerHTML='<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.7" stroke="currentColor" stroke-width="1.7"/>'}
     document.getElementById('togglePassword').addEventListener('click',()=>{const input=document.getElementById('password'),eyeIcon=document.getElementById('eyeIcon');if(input.type==='password'){input.type='text';eyeIcon.innerHTML='<path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16.8 16.8 0 0 1-2.7 3.4M6.1 6.2C3.7 8 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>'}else{input.type='password';resetEyeIcon()}});
