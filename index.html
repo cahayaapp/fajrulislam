@@ -9,12 +9,12 @@
   <meta name="theme-color" content="#087eaa">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="cahaya-build" content="20260904-v119-index-premium">
+  <meta name="cahaya-build" content="20260904-v120-index-fixed-polish">
   <title>CAHAYA APP — Pesantren Cahaya Fajrul Islam</title>
-  <link rel="icon" type="image/x-icon" href="assets/cahaya-app/favicon.ico?v=119">
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/cahaya-app/app-icon-32.png?v=119">
-  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon-v67.png?v=119">
-  <link rel="manifest" href="manifest.json?v=119">
+  <link rel="icon" type="image/x-icon" href="assets/cahaya-app/favicon.ico?v=120">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/cahaya-app/app-icon-32.png?v=120">
+  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon-v67.png?v=120">
+  <link rel="manifest" href="manifest.json?v=120">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -95,6 +95,103 @@
       .install-body{margin-top:1dvh}.install-title{font-size:1.33rem}.install-desc{font-size:.58rem}.feature-row{margin-top:1dvh;gap:6px}.feature{height:56px;font-size:.54rem}.feature svg{width:20px;height:20px}.pwa-install-mainbtn{height:44px;margin-top:1dvh;font-size:.88rem}.pwa-install-hint{font-size:.54rem;min-height:24px}
     }
     @media(min-width:760px){.screen-shell{border-left:1px solid rgba(255,255,255,.42);border-right:1px solid rgba(255,255,255,.42)}}
+
+    /* ---------- v120: fixed-screen proportional polish ---------- */
+    html,body{
+      width:100%;height:100%;height:100dvh;max-height:100dvh;
+      overflow:hidden!important;overscroll-behavior:none!important;
+      position:fixed;inset:0;
+    }
+    body{touch-action:none;}
+    .screen,.screen-shell{height:100dvh!important;min-height:0!important;max-height:100dvh!important;overflow:hidden!important;}
+    .screen-shell{width:min(100%,520px);}
+
+    /* Install screen: compact, centered, and clear of the home indicator. */
+    .pwa-install-gate .install-content{
+      height:100dvh;min-height:0;
+      padding:calc(env(safe-area-inset-top) + clamp(58px,7.2dvh,74px)) 24px
+              calc(env(safe-area-inset-bottom) + 72px);
+      justify-content:flex-start;
+    }
+    .pwa-install-gate .brand-block{width:100%;display:flex;flex-direction:column;align-items:center;}
+    .pwa-install-gate .app-icon{
+      width:clamp(68px,8.8dvh,84px);height:clamp(68px,8.8dvh,84px);
+      border-radius:23%;padding:5px;box-shadow:0 12px 28px rgba(3,70,127,.20);
+    }
+    .pwa-install-gate .wordmark{
+      margin-top:clamp(8px,1.05dvh,11px);
+      font-size:clamp(2rem,4.35dvh,2.7rem);line-height:.98;letter-spacing:.02em;
+    }
+    .pwa-install-gate .org{margin-top:5px;font-size:clamp(.72rem,1.35dvh,.86rem);}
+    .pwa-install-gate .brand-line{margin-top:7px;gap:6px}.pwa-install-gate .brand-line:before,.pwa-install-gate .brand-line:after{width:54px}
+    .pwa-install-gate .install-body{
+      width:100%;max-width:430px;margin-top:clamp(13px,1.7dvh,18px);min-height:0;
+    }
+    .pwa-install-gate .official-chip{padding:5px 11px;font-size:clamp(.56rem,1.02dvh,.65rem);}
+    .pwa-install-gate .install-title{
+      margin:clamp(10px,1.25dvh,13px) 0 0;max-width:390px;
+      font-size:clamp(1.52rem,3.1dvh,1.98rem);line-height:1.03;
+    }
+    .pwa-install-gate .install-desc{
+      margin:clamp(8px,1.05dvh,11px) auto 0;max-width:375px;
+      font-size:clamp(.64rem,1.22dvh,.77rem);line-height:1.42;
+    }
+    .pwa-install-gate .feature-row{gap:8px;margin-top:clamp(12px,1.55dvh,16px);}
+    .pwa-install-gate .feature{
+      height:clamp(62px,7.9dvh,72px);border-radius:15px;gap:4px;
+      font-size:clamp(.55rem,1.02dvh,.64rem);box-shadow:0 6px 14px rgba(31,68,99,.06);
+    }
+    .pwa-install-gate .feature svg{width:22px;height:22px}
+    .pwa-install-gate .pwa-install-mainbtn{
+      height:clamp(50px,6.25dvh,56px);margin-top:clamp(13px,1.7dvh,17px);
+      border-radius:16px;font-size:clamp(.95rem,1.9dvh,1.12rem);gap:10px;
+      box-shadow:0 10px 22px rgba(8,94,150,.20),inset 0 0 0 1px rgba(255,255,255,.20);
+    }
+    .pwa-install-gate .pwa-install-mainbtn svg{width:21px;height:21px}
+    .pwa-install-gate .pwa-install-hint{
+      margin-top:clamp(8px,1.05dvh,11px);min-height:0;max-width:365px;
+      font-size:clamp(.57rem,1.02dvh,.66rem);line-height:1.35;
+    }
+    .pwa-install-gate .landscape{height:clamp(145px,19dvh,180px);max-height:none;opacity:.86;}
+    .pwa-install-gate .footer-security{
+      bottom:calc(env(safe-area-inset-bottom) + 15px);z-index:6;
+      font-size:clamp(.58rem,1.02dvh,.68rem);gap:7px;
+      text-shadow:0 1px 10px rgba(255,255,255,.95);
+    }
+    .pwa-install-gate .footer-security svg{width:17px;height:17px}
+
+    /* Login screen receives the same fixed, proportional rhythm. */
+    .login-page .screen-content{
+      height:100dvh;min-height:0;
+      padding:calc(env(safe-area-inset-top) + clamp(54px,6.8dvh,70px)) 24px
+              calc(env(safe-area-inset-bottom) + 58px);
+    }
+    .login-page .app-icon{width:clamp(66px,8.5dvh,82px);height:clamp(66px,8.5dvh,82px);}
+    .login-page .wordmark{margin-top:8px;font-size:clamp(1.95rem,4.15dvh,2.6rem)}
+    .login-page .org{margin-top:5px;font-size:clamp(.70rem,1.3dvh,.84rem)}
+    .login-page .brand-line{margin-top:7px}.login-page .brand-line:before,.login-page .brand-line:after{width:54px}
+    .login-page .login-panel{max-width:430px;margin-top:clamp(18px,2.25dvh,24px);}
+    .login-page .login-title{font-size:clamp(1.28rem,2.7dvh,1.65rem)}
+    .login-page .login-form{margin-top:clamp(14px,1.8dvh,18px);gap:clamp(10px,1.25dvh,13px)}
+    .login-page .form-group{gap:5px}.login-page label{font-size:clamp(.64rem,1.12dvh,.74rem)}
+    .login-page .form-control{height:clamp(45px,5.6dvh,52px);border-radius:14px;font-size:clamp(.76rem,1.34dvh,.88rem)}
+    .login-page .submit-btn{height:clamp(48px,6dvh,55px);border-radius:15px;font-size:clamp(.88rem,1.65dvh,1rem)}
+    .login-page .secure-note{margin-top:clamp(10px,1.25dvh,13px);font-size:clamp(.58rem,1.02dvh,.67rem)}
+    .login-page .landscape{height:clamp(145px,19dvh,180px);opacity:.86;}
+
+    @media (max-width:390px){
+      .pwa-install-gate .install-content,.login-page .screen-content{padding-left:19px;padding-right:19px}
+      .pwa-install-gate .wordmark,.login-page .wordmark{font-size:1.85rem}
+      .pwa-install-gate .install-title{font-size:1.42rem}
+    }
+    @media (max-height:740px){
+      .pwa-install-gate .install-content{padding-top:calc(env(safe-area-inset-top) + 44px);padding-bottom:calc(env(safe-area-inset-bottom) + 58px)}
+      .pwa-install-gate .app-icon{width:60px;height:60px}.pwa-install-gate .wordmark{font-size:1.72rem;margin-top:6px}.pwa-install-gate .org{font-size:.62rem}.pwa-install-gate .brand-line{display:none}
+      .pwa-install-gate .install-body{margin-top:9px}.pwa-install-gate .official-chip{padding:4px 9px;font-size:.51rem}.pwa-install-gate .install-title{font-size:1.28rem;margin-top:7px}.pwa-install-gate .install-desc{font-size:.55rem;margin-top:6px;line-height:1.3}
+      .pwa-install-gate .feature-row{margin-top:9px;gap:6px}.pwa-install-gate .feature{height:53px;font-size:.50rem}.pwa-install-gate .feature svg{width:18px;height:18px}
+      .pwa-install-gate .pwa-install-mainbtn{height:43px;margin-top:9px;font-size:.84rem;border-radius:13px}.pwa-install-gate .pwa-install-hint{margin-top:6px;font-size:.49rem}
+      .pwa-install-gate .landscape{height:132px}.pwa-install-gate .footer-security{bottom:calc(env(safe-area-inset-bottom) + 10px);font-size:.52rem}
+    }
   </style>
 </head>
 <body>
@@ -107,7 +204,7 @@
       </svg>
       <div class="install-content">
         <div class="brand-block">
-          <img class="app-icon" src="assets/cahaya-app/app-icon-512.png?v=119" alt="Logo CAHAYA APP">
+          <img class="app-icon" src="assets/cahaya-app/app-icon-512.png?v=120" alt="Logo CAHAYA APP">
           <div class="wordmark">CAHAYA <span>APP</span></div>
           <div class="org">Pesantren Cahaya Fajrul Islam</div>
         </div>
@@ -162,7 +259,7 @@
       </svg>
       <div class="screen-content">
         <div class="brand-block">
-          <img class="app-icon" src="assets/cahaya-app/app-icon-512.png?v=119" alt="Logo CAHAYA APP">
+          <img class="app-icon" src="assets/cahaya-app/app-icon-512.png?v=120" alt="Logo CAHAYA APP">
           <div class="wordmark">CAHAYA <span>APP</span></div>
           <div class="org">Pesantren Cahaya Fajrul Islam</div>
           <div class="brand-line"><i>◆</i></div>
@@ -213,7 +310,7 @@
       const dedicatedCashier = roles.includes('kasir') && /kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity);
       const cashierOnly = roles.includes('kasir') && !roles.some(r => ['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','manajer','staf-muda','staf-mula','wali'].includes(r));
       if (dedicatedCashier || cashierOnly) { const unit = /putri/i.test(identity) ? 'putri' : /putra/i.test(identity) ? 'putra' : ''; return unit ? `keuangan/kasir.html?unit=${unit}` : 'keuangan/kasir.html'; }
-      return roles.includes('wali') ? 'wali/dashboard/index.html?v=20260820-v70' : 'main-dashboard.html?v=20260904-v119';
+      return roles.includes('wali') ? 'wali/dashboard/index.html?v=20260820-v70' : 'main-dashboard.html?v=20260904-v120';
     }
     function resetEyeIcon(){const eyeIcon=document.getElementById('eyeIcon');if(!eyeIcon)return;eyeIcon.innerHTML='<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.7" stroke="currentColor" stroke-width="1.7"/>'}
     document.getElementById('togglePassword').addEventListener('click',()=>{const input=document.getElementById('password'),eyeIcon=document.getElementById('eyeIcon');if(input.type==='password'){input.type='text';eyeIcon.innerHTML='<path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16.8 16.8 0 0 1-2.7 3.4M6.1 6.2C3.7 8 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>'}else{input.type='password';resetEyeIcon()}});
