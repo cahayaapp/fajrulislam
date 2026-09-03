@@ -33,3 +33,6 @@ self.addEventListener('notificationclick',event=>{
     return clients.openWindow?clients.openWindow(targetUrl):null;
   }));
 });
+
+// V118 — lightweight fetch hook so the same worker also satisfies legacy PWA installability checks.
+self.addEventListener('fetch',()=>{});
