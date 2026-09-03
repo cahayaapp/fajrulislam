@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#f7f9fc" />
-<title>Beranda Direktur • CAHAYA APP v108</title>
+<title>Beranda Direktur • CAHAYA APP v109</title>
 <style>
 :root{
   --navy:#062a67;--navy2:#0a3e95;--blue:#1264d9;--blue2:#2d86f7;--emerald:#008c68;--teal:#078d9d;
@@ -460,13 +460,25 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
 }
 
 </style>
+
+<style id="cahaya-v109-home-director-refine">
+/* V109 — role dipindahkan ke kartu salam; judul antar-card dibuat lebih bersih. */
+.greeting-row{position:relative;z-index:2;display:flex;align-items:center;gap:9px;min-width:0;flex-wrap:wrap}
+.greeting-row h1{min-width:0}
+.intro-role{border:1px solid #dce8f6;border-radius:999px;padding:6px 9px;background:rgba(255,255,255,.86);color:#1762b9;display:inline-flex;align-items:center;gap:4px;font-size:.58rem;font-weight:900;line-height:1;box-shadow:0 5px 13px rgba(22,78,145,.07);cursor:pointer;white-space:nowrap}
+.intro-role svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.brand-copy{gap:0!important}.brand-subcontrols{display:none!important}
+.summary-section{margin-top:4px!important}.score-section{margin-top:10px!important}
+@media(max-width:620px){.greeting-row{gap:6px}.intro-role{font-size:.48rem;padding:5px 7px}.summary-section{margin-top:2px!important}.score-section{margin-top:7px!important}}
+@media(max-width:440px){.greeting-row{flex-wrap:nowrap}.greeting-row h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 72px)}.intro-role{flex:0 0 auto;font-size:.44rem;padding:4px 6px}}
+</style>
 </head>
 <body>
 <main class="app">
   <header class="brand-row">
     <div class="brand">
       <img src="assets/cahaya-app/logo-icon.png?v=54" alt="CAHAYA APP" />
-      <div class="brand-copy"><strong><span>CAHAYA</span> <em>APP</em></strong><div class="brand-subcontrols"><button class="brand-role" type="button" onclick="openRoleModal()"><b>Direktur</b><svg viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg></button></div></div>
+      <div class="brand-copy"><strong><span>CAHAYA</span> <em>APP</em></strong></div>
     </div>
     <div class="top-actions">
       <button class="icon-btn" type="button" onclick="openAttentionModal()" aria-label="Perlu perhatian">
@@ -478,7 +490,7 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
 
   <section class="intro">
     <div class="greeting">
-      <h1 id="greeting">Assalamu’alaikum</h1>
+      <div class="greeting-row"><h1 id="greeting">Assalamu’alaikum</h1><button class="intro-role" type="button" onclick="openRoleModal()"><b>Direktur</b><svg viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg></button></div>
       <div class="date-line">
         <span><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><b id="dateM">Hari ini</b></span>
         <i class="date-sep hijri-sep"></i>
@@ -492,7 +504,6 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
   </section>
 
   <section class="section summary-section">
-    <div class="section-head"><h2>Ringkasan Real-time</h2><button class="link-btn" type="button" onclick="openMenu('menu-dashboard-operasional')">Lihat Detail <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div>
     <div class="summary-grid" id="summaryGrid">
       <button class="summary-card teacher" onclick="openSummaryDetail('teacher')">
         <div class="summary-top"><span class="summary-icon" style="--accent:#0d55b7"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M3 20c.5-4 2.6-6 6-6s5.5 2 6 6"/><path d="M17 8v6M14 11h6"/></svg></span><div><div class="summary-title">Kehadiran Guru</div><div class="status-line"><i class="status-dot" id="teacherDot"></i><span id="teacherStatus">Memuat</span></div></div></div>
@@ -514,7 +525,6 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
   </section>
 
   <section class="section score-section">
-    <div class="section-head"><h2>Skor Kedisiplinan</h2></div>
     <div class="score-grid" id="scoreGrid">
       <div class="score-empty">Menyiapkan skor disiplin hari ini...</div>
     </div>
