@@ -1911,6 +1911,8 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
   body.director-home-shell .mobile-shortcut-btn.is-scan{height:62px!important;min-height:62px!important;padding:5px 5px 4px!important;border-radius:12px!important;background:linear-gradient(180deg,#47a6ef 0%,#267be0 100%)!important;color:#fff!important;box-shadow:0 7px 15px rgba(35,116,214,.25)!important;transform:none!important;align-self:end!important;justify-content:flex-end!important}
   body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-icon{width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#fff!important;box-shadow:none!important}
   body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-icon svg{width:23px!important;height:23px!important}
+  body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-icon svg{stroke-width:1.65!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+  body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-icon{background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.20)!important;border-radius:10px!important;width:31px!important;height:31px!important;min-width:31px!important;min-height:31px!important}
   body.director-home-shell .mobile-shortcut-btn.is-scan .mobile-shortcut-label{font-size:.5rem!important;color:#fff!important;font-weight:900!important}
   body.director-home-shell .mobile-shortcut-btn.is-scan:active{transform:scale(.98)!important}
   body.director-home-shell .mobile-shortcut-badge{top:2px!important;right:calc(50% - 22px)!important}
@@ -2450,6 +2452,7 @@ function openRoleAwareCasePage(el) {
 
 const mobileUtilityIcon = {
   home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg>',
+  homeDirector: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.8 10.7 12 4.9l7.2 5.8v7.15A1.65 1.65 0 0 1 17.55 19.5H6.45a1.65 1.65 0 0 1-1.65-1.65z"/><path d="M9.2 19.35v-4.7c0-.7.56-1.25 1.25-1.25h3.1c.69 0 1.25.55 1.25 1.25v4.7"/></svg>',
   menu: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
   calendar: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>',
   chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>',
@@ -2465,7 +2468,7 @@ function getMobileUtilityItems() {
     const directorItems = [];
     directorItems.push({ id:'menu-kalender-pendidikan', label:'Jadwal', icon:mobileUtilityIcon.calendar });
     directorItems.push({ id:'menu-raport-bulanan', label:'KPI', icon:mobileUtilityIcon.kpi });
-    directorItems.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.home, center:true });
+    directorItems.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.homeDirector, center:true });
     directorItems.push({ id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' });
     directorItems.push({ id:'utility-menu', label:'Lainnya', icon:mobileUtilityIcon.menu });
     return directorItems;
@@ -2766,7 +2769,7 @@ function sinkronkanBadgePintasanMobile() {
       const isBlank = !rawSrc || rawSrc === "about:blank";
       if (!force && !isBlank) return false;
       frame.removeAttribute("srcdoc");
-      frame.src = "home-direktur.html?v=105";
+      frame.src = "home-direktur.html?v=106";
       document.body.classList.add("director-home-shell");
       const title = document.getElementById("currentPageTitle");
       if (title) title.textContent = "CAHAYA APP";
@@ -3253,7 +3256,7 @@ function sinkronkanBadgePintasanMobile() {
           hideCahayaPageLoader();
           return;
         }
-        if (homeMenu) { loadPage('home-direktur.html?v=105', homeMenu); return; }
+        if (homeMenu) { loadPage('home-direktur.html?v=106', homeMenu); return; }
         bootstrapDirectorHomeFailSafe(true);
         return;
       }
@@ -3604,7 +3607,7 @@ function sinkronkanBadgePintasanMobile() {
 
       const menuId = menuElement?.id || "";
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
-      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=105';
+      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=106';
       document.body.classList.toggle('director-home-shell', menuId === 'menu-home' && activeRoleForPage === 'direktur');
 
       if (!menuId || !bolehAksesMenu(menuId)) {
