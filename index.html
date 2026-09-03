@@ -3,108 +3,158 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <meta name="theme-color" content="#f7fbff">
+  <meta name="theme-color" content="#f8fbff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="cahaya-build" content="20260904-v124-index-visual-rebuild">
+  <meta name="cahaya-build" content="20260904-v125-index-clean-reference">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>CAHAYA APP — Pesantren Cahaya Fajrul Islam</title>
-  <link rel="manifest" href="manifest.json?v=124">
-  <link rel="icon" href="assets/cahaya-app/favicon.ico?v=124">
-  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon-v67.png?v=124">
-  <script src="config/tenant-config.js?v=124"></script>
-  <script src="config/master-data.js?v=124"></script>
-  <script src="js/cahaya-config-runtime.js?v=124" defer></script>
+  <link rel="manifest" href="manifest.json?v=125">
+  <link rel="icon" href="assets/cahaya-app/favicon.ico?v=125">
+  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon-v67.png?v=125">
+  <script src="config/tenant-config.js?v=125"></script>
+  <script src="config/master-data.js?v=125"></script>
+  <script src="js/cahaya-config-runtime.js?v=125" defer></script>
   <style>
-    :root{--navy:#0c3b82;--blue:#1176ed;--cyan:#13a8e6;--teal:#14b1b7;--text:#10386f;--muted:#7085a3;--line:#e1e9f2;--gold:#e4b24e}
+    :root{
+      --navy:#0b3e83;
+      --blue:#1376ed;
+      --cyan:#14b7d1;
+      --teal:#15aeb4;
+      --text:#123c73;
+      --muted:#6e83a0;
+      --line:#dde7f1;
+      --surface:#ffffff;
+      --shadow:0 12px 34px rgba(19,61,108,.10);
+    }
     *{box-sizing:border-box}
-    html,body{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden!important;overscroll-behavior:none;background:#f7fbff}
+    html,body{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden!important;overscroll-behavior:none;background:#eef5fb}
     body{position:fixed;inset:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent}
     button,input{font:inherit}.hidden{display:none!important}button{cursor:pointer}
 
-    .scene{position:fixed;inset:0;display:flex;justify-content:center;overflow:hidden;background:#f8fbff}
-    .shell{position:relative;width:min(100%,500px);height:100dvh;min-height:100dvh;overflow:hidden;padding:calc(env(safe-area-inset-top) + 28px) 24px calc(env(safe-area-inset-bottom) + 94px);display:flex;flex-direction:column;align-items:center;background:
-      radial-gradient(90% 34% at 0% 0%,rgba(63,181,249,.18),transparent 58%),
-      radial-gradient(75% 28% at 100% 0%,rgba(103,203,255,.15),transparent 62%),
-      linear-gradient(180deg,#f9fcff 0%,#ffffff 65%,#f8fbff 100%)}
-    .shell:before,.shell:after{content:"";position:absolute;top:-90px;width:230px;height:190px;border-radius:46% 54% 48% 52%;background:linear-gradient(135deg,rgba(60,159,238,.18),rgba(255,255,255,0) 68%);pointer-events:none}
-    .shell:before{left:-115px;transform:rotate(16deg)}.shell:after{right:-125px;transform:rotate(-19deg)}
+    .scene{position:fixed;inset:0;display:flex;align-items:stretch;justify-content:center;overflow:hidden;background:#eef5fb}
+    .screen{
+      position:relative;
+      width:min(100%,460px);
+      height:100dvh;
+      overflow:hidden;
+      background:
+        radial-gradient(130px 120px at 0 0,rgba(52,165,239,.15),transparent 72%),
+        radial-gradient(150px 130px at 100% 0,rgba(71,186,244,.11),transparent 72%),
+        linear-gradient(180deg,#f8fbff 0%,#ffffff 45%,#fbfdff 100%);
+      padding:max(38px,calc(env(safe-area-inset-top) + 22px)) 28px max(38px,calc(env(safe-area-inset-bottom) + 24px));
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      isolation:isolate;
+    }
+    .screen::before,.screen::after{
+      content:"";position:absolute;z-index:-1;pointer-events:none;border-radius:50%;filter:blur(1px)
+    }
+    .screen::before{width:220px;height:220px;left:-145px;top:-100px;background:rgba(41,151,235,.08)}
+    .screen::after{width:250px;height:250px;right:-165px;top:-120px;background:rgba(94,205,237,.08)}
 
-    .brand{position:relative;z-index:4;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:0 0 auto}
-    .brand img{display:block;width:clamp(56px,7.2dvh,70px);height:clamp(56px,7.2dvh,70px);object-fit:contain;margin:0 auto;border-radius:20%;filter:drop-shadow(0 9px 15px rgba(18,78,147,.12))}
-    .brand-title{margin-top:clamp(7px,1dvh,10px);font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.78rem,3.45dvh,2.24rem);font-weight:800;line-height:1;letter-spacing:.005em;color:#0c3b82;white-space:nowrap}
-    .brand-title span{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif;font-weight:900;background:linear-gradient(90deg,#1376e7,#13afc6);-webkit-background-clip:text;background-clip:text;color:transparent}
-    .brand-sub{margin-top:5px;color:#4f75a2;font-size:clamp(.60rem,1dvh,.70rem);font-weight:700}
+    .brand{width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;flex:0 0 auto;z-index:3}
+    .brand-logo{display:block;width:72px;height:72px;object-fit:contain;margin:0 auto;filter:drop-shadow(0 9px 15px rgba(12,63,131,.13))}
+    .brand-name{margin-top:10px;font-size:30px;line-height:1;font-weight:900;letter-spacing:-.025em;color:var(--navy)}
+    .brand-name span{background:linear-gradient(90deg,#1678ec,#13b7c4);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .brand-sub{margin-top:5px;font-size:11px;line-height:1.25;font-weight:650;color:#5379a2}
 
-    .main{position:relative;z-index:4;width:100%;max-width:408px;display:flex;flex-direction:column;align-items:center;margin-top:clamp(25px,3.2dvh,32px)}
-    .page-title{margin:0;font-size:clamp(1.02rem,1.9dvh,1.24rem);font-weight:900;color:#103c7a;text-align:center;letter-spacing:-.015em}
-    .login-form{width:100%;margin-top:clamp(20px,2.7dvh,27px);display:grid;gap:11px}
+    .content{width:100%;max-width:368px;display:flex;flex-direction:column;align-items:center;z-index:3}
+
+    /* LOGIN */
+    .login-content{margin-top:28px}
+    .login-title{margin:0;font-size:18px;line-height:1.2;font-weight:850;color:#123e80;text-align:center}
+    .form{width:100%;display:grid;gap:12px;margin-top:24px}
     .field{position:relative;width:100%}
-    .field input{width:100%;height:clamp(48px,5.8dvh,55px);border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.97);box-shadow:0 7px 18px rgba(22,65,108,.08);outline:none;color:#173a68;padding:0 48px 0 47px;font-size:clamp(.74rem,1.2dvh,.85rem);font-weight:600;transition:.18s}
-    .field input::placeholder{color:#9aa9bc}.field input:focus{border-color:#69bce8;box-shadow:0 0 0 4px rgba(50,161,226,.10),0 7px 18px rgba(22,65,108,.08)}
-    .field-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:#1878d8}.field-icon svg,.eye svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-    .eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;background:transparent;color:#7388a5;display:grid;place-items:center;border-radius:10px}.eye svg{width:20px;height:20px}
-    .primary{width:100%;height:clamp(49px,5.9dvh,56px);margin-top:5px;border:0;border-radius:999px;background:linear-gradient(100deg,#0f6fee 0%,#0c8bea 60%,#11a8dc 100%);color:#fff;display:flex;align-items:center;justify-content:center;gap:13px;font-size:clamp(.90rem,1.45dvh,1.03rem);font-weight:900;box-shadow:0 11px 24px rgba(15,111,218,.22)}
-    .primary svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-    .error{display:none;padding:8px 10px;border:1px solid #f3c8c4;background:#fff5f3;border-radius:10px;color:#bf433a;font-size:.66rem;font-weight:700;line-height:1.35}
-    .security{margin-top:clamp(13px,1.75dvh,17px);display:flex;align-items:center;justify-content:center;gap:8px;color:#5f7694;font-size:clamp(.56rem,.92dvh,.64rem);font-weight:700;text-align:center}.security svg{width:18px;height:18px;fill:none;stroke:#177cd8;stroke-width:1.8}
+    .field input{width:100%;height:50px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.96);box-shadow:0 8px 22px rgba(30,75,119,.08);outline:none;color:#173e70;padding:0 47px 0 47px;font-size:13px;font-weight:600;transition:.18s}
+    .field input::placeholder{color:#98a9bd;font-weight:500}
+    .field input:focus{border-color:#70bdec;box-shadow:0 0 0 4px rgba(50,161,226,.09),0 8px 22px rgba(30,75,119,.08)}
+    .field-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:#267ede}
+    .field-icon svg,.eye svg,.primary svg,.install-btn svg,.security svg,.benefit svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+    .eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;background:transparent;color:#7187a5;display:grid;place-items:center;border-radius:10px}.eye svg{width:20px;height:20px}
+    .primary{width:100%;height:50px;margin-top:3px;border:0;border-radius:999px;background:linear-gradient(100deg,#0e6ff0 0%,#0b8ce9 56%,#13afd4 100%);color:#fff;display:flex;align-items:center;justify-content:center;gap:13px;font-size:16px;font-weight:900;box-shadow:0 12px 25px rgba(15,111,218,.22)}
+    .primary svg{width:20px;height:20px}
+    .error{display:none;padding:8px 10px;border:1px solid #f3c8c4;background:#fff5f3;border-radius:10px;color:#bf433a;font-size:11px;font-weight:700;line-height:1.35}
+    .security{margin-top:14px;display:flex;align-items:center;justify-content:center;gap:7px;color:#5f7592;font-size:10px;font-weight:700;text-align:center}.security svg{width:18px;height:18px;color:#1f7ed9}
 
-    .official{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:#eef8ff;color:#0c78bc;font-size:clamp(.51rem,.88dvh,.59rem);font-weight:900;letter-spacing:.035em;text-transform:uppercase}.official:before{content:"✦";color:#119add}
-    .install-title{margin:clamp(16px,2dvh,20px) 0 0;text-align:center;color:#103b7b;font-size:clamp(1.26rem,2.45dvh,1.58rem);line-height:1.08;font-weight:900;letter-spacing:-.025em}
-    .install-desc{margin:clamp(9px,1.25dvh,12px) auto 0;max-width:350px;text-align:center;color:#6b819f;font-size:clamp(.60rem,1dvh,.69rem);line-height:1.42;font-weight:600}
-    .benefits{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:clamp(16px,2.05dvh,20px)}
-    .benefit{height:clamp(62px,7.6dvh,72px);border:1px solid #e2e9f1;border-radius:14px;background:#fff;box-shadow:0 7px 17px rgba(30,72,117,.07);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#174077;font-size:clamp(.52rem,.87dvh,.59rem);font-weight:800;text-align:center}.benefit svg{width:22px;height:22px;fill:none;stroke:#147fe0;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-    .install-btn{width:100%;height:clamp(49px,5.85dvh,55px);margin-top:clamp(17px,2.1dvh,21px);border:0;border-radius:11px;background:linear-gradient(100deg,#0d70ec,#0b8bea 60%,#10a7d7);color:#fff;display:flex;align-items:center;justify-content:center;gap:11px;font-size:clamp(.86rem,1.42dvh,1rem);font-weight:900;box-shadow:0 11px 24px rgba(15,111,218,.22)}.install-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    .install-hint{margin:clamp(9px,1.2dvh,12px) auto 0;max-width:350px;text-align:center;color:#7185a1;font-size:clamp(.52rem,.87dvh,.59rem);line-height:1.4;font-weight:600}
+    /* INSTALL */
+    .install-content{margin-top:18px}
+    .official{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:6px 12px;border-radius:999px;background:#eef8ff;color:#0e7abb;font-size:9px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.official::before{content:"✦";color:#1599dc}
+    .install-title{margin:17px 0 0;text-align:center;color:#103b7b;font-size:25px;line-height:1.06;font-weight:900;letter-spacing:-.025em}
+    .install-desc{margin:10px auto 0;max-width:335px;text-align:center;color:#6b819d;font-size:11px;line-height:1.45;font-weight:600}
+    .benefits{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:18px}
+    .benefit{height:74px;border:1px solid #e0e8f0;border-radius:14px;background:rgba(255,255,255,.96);box-shadow:0 8px 20px rgba(30,72,117,.07);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#164079;font-size:9px;font-weight:800;text-align:center}
+    .benefit svg{width:23px;height:23px;color:#1784df}
+    .install-btn{width:100%;height:52px;margin-top:18px;border:0;border-radius:11px;background:linear-gradient(100deg,#12aaa8 0%,#0b8de6 52%,#0d6eda 100%);color:#fff;display:flex;align-items:center;justify-content:center;gap:11px;font-size:16px;font-weight:900;box-shadow:0 12px 25px rgba(15,111,218,.20)}
+    .install-btn svg{width:21px;height:21px}
+    .install-hint{margin:11px auto 0;max-width:330px;text-align:center;color:#6d829f;font-size:9px;line-height:1.45;font-weight:600}
 
-    .bottom-art{position:absolute;left:0;right:0;bottom:-2px;height:clamp(132px,18dvh,174px);z-index:1;pointer-events:none;overflow:hidden}
-    .hill{position:absolute;left:-7%;right:-7%;height:105px;border-radius:52% 48% 0 0/70% 70% 0 0;background:linear-gradient(90deg,#d8efff,#d1f3ee);opacity:.68;bottom:0;transform:rotate(-3deg)}
-    .wave{position:absolute;left:-8%;right:-8%;bottom:-42px;height:95px;border-radius:50% 50% 0 0/70% 70% 0 0}.wave.w1{background:linear-gradient(90deg,#59bdf2,#36a7eb);opacity:.34;bottom:-32px}.wave.w2{background:linear-gradient(90deg,#1e71da,#14a8db);opacity:.77;bottom:-52px;transform:rotate(2deg)}.wave.w3{background:linear-gradient(90deg,#0c56be,#0b8fd2);bottom:-67px;transform:rotate(-1deg)}
-    .mosque{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);width:150px;height:76px;opacity:.78}.mosque svg{width:100%;height:100%}.mosque path,.mosque rect{fill:#edf6f8;stroke:#aac8d1;stroke-width:1.15}
+    /* ARTWORK */
+    .landscape{position:absolute;left:0;right:0;bottom:0;height:175px;pointer-events:none;z-index:1;overflow:hidden}
+    .landscape .mist{position:absolute;left:-5%;right:-5%;bottom:15px;height:105px;background:linear-gradient(180deg,rgba(219,240,248,.18),rgba(191,229,239,.72));clip-path:polygon(0 53%,11% 38%,21% 49%,33% 29%,44% 47%,58% 35%,70% 50%,83% 31%,100% 46%,100% 100%,0 100%)}
+    .mosque{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);width:178px;height:90px;opacity:.94}
+    .mosque svg{width:100%;height:100%}
+    .mosque .fill{fill:#edf7f8}.mosque .line{fill:none;stroke:#9bc7ce;stroke-width:1.15}
+    .wave{position:absolute;left:-8%;right:-8%;border-radius:50% 50% 0 0/65% 65% 0 0}
+    .wave.one{height:73px;bottom:-36px;background:linear-gradient(90deg,#45b9e6,#54c5d9);opacity:.52;transform:rotate(-3deg)}
+    .wave.two{height:70px;bottom:-48px;background:linear-gradient(90deg,#1767d1,#10a4cf);opacity:.9;transform:rotate(2deg)}
+    .wave.three{height:58px;bottom:-53px;background:linear-gradient(90deg,#0b4fb6,#0b83c6);transform:rotate(-1deg)}
+    .security-footer{position:absolute;left:0;right:0;bottom:max(19px,calc(env(safe-area-inset-bottom) + 10px));z-index:4;display:flex;align-items:center;justify-content:center;gap:7px;color:#315b80;font-size:9px;font-weight:800;pointer-events:none}
+    .security-footer svg{width:16px;height:16px;fill:none;stroke:#177cd8;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
-    .splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#f8fbff;transition:.3s}.spinner{width:40px;height:40px;border-radius:50%;border:4px solid #dfeaf2;border-top-color:#138bd6;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    .splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#f8fbff;transition:.25s}.spinner{width:38px;height:38px;border-radius:50%;border:4px solid #dfeaf2;border-top-color:#138bd6;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 
     @media(max-height:760px){
-      .shell{padding-top:calc(env(safe-area-inset-top) + 20px);padding-bottom:calc(env(safe-area-inset-bottom) + 82px)}
-      .brand img{width:50px;height:50px}.brand-title{font-size:1.56rem;margin-top:5px}.brand-sub{font-size:.54rem;margin-top:3px}.main{margin-top:16px}.page-title{font-size:.94rem}.login-form{margin-top:13px;gap:8px}.field input{height:41px}.primary{height:42px}.security{margin-top:9px}.official{padding:4px 9px;font-size:.47rem}.install-title{font-size:1.08rem;margin-top:8px}.install-desc{font-size:.53rem;margin-top:5px;line-height:1.3}.benefits{margin-top:9px;gap:7px}.benefit{height:50px;font-size:.48rem}.benefit svg{width:17px;height:17px}.install-btn{height:42px;margin-top:9px;font-size:.82rem}.install-hint{margin-top:6px;font-size:.48rem}.bottom-art{height:116px}.mosque{width:128px;height:64px;bottom:22px}
+      .screen{padding-top:max(26px,calc(env(safe-area-inset-top) + 14px));padding-left:24px;padding-right:24px}
+      .brand-logo{width:58px;height:58px}.brand-name{font-size:25px;margin-top:7px}.brand-sub{font-size:9px;margin-top:4px}
+      .login-content{margin-top:18px}.login-title{font-size:15px}.form{margin-top:16px;gap:9px}.field input{height:43px;font-size:11px}.primary{height:44px;font-size:14px}.security{margin-top:9px;font-size:9px}
+      .install-content{margin-top:11px}.official{font-size:7.5px;padding:5px 10px}.install-title{font-size:21px;margin-top:11px}.install-desc{font-size:9px;margin-top:7px}.benefits{margin-top:12px;gap:7px}.benefit{height:58px;font-size:8px}.benefit svg{width:19px;height:19px}.install-btn{height:45px;margin-top:12px;font-size:14px}.install-hint{font-size:8px;margin-top:8px}.landscape{height:135px}.mosque{width:145px;height:73px;bottom:19px}.security-footer{font-size:8px}
     }
-    @media(max-width:380px){.shell{padding-left:20px;padding-right:20px}.brand-title{font-size:1.6rem}}
+    @media(max-width:360px){.screen{padding-left:20px;padding-right:20px}.brand-name{font-size:26px}.install-title{font-size:22px}}
   </style>
 </head>
 <body>
   <div id="splash" class="splash"><div class="spinner"></div></div>
 
   <section id="loginScene" class="scene hidden" aria-label="Masuk CAHAYA APP">
-    <div class="shell">
-      <div class="brand">
-        <img src="logofi.png?v=124" alt="Logo Pesantren Cahaya Fajrul Islam">
-        <div class="brand-title">CAHAYA <span>APP</span></div>
+    <div class="screen">
+      <header class="brand">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=125" alt="Logo CAHAYA APP">
+        <div class="brand-name">CAHAYA <span>APP</span></div>
         <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
-      </div>
-      <main class="main">
-        <h1 class="page-title">Masuk ke CAHAYA APP</h1>
-        <form id="loginForm" class="login-form" novalidate>
-          <div class="field"><span class="field-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.3"/><path d="M5.5 20c.5-4.2 2.7-6.4 6.5-6.4s6 2.2 6.5 6.4"/></svg></span><input id="username" type="text" autocomplete="username" placeholder="Username" required></div>
-          <div class="field"><span class="field-icon"><svg viewBox="0 0 24 24"><rect x="5.2" y="10" width="13.6" height="10" rx="2"/><path d="M8.5 10V7.2A3.5 3.5 0 0 1 12 3.7a3.5 3.5 0 0 1 3.5 3.5V10"/></svg></span><input id="password" type="password" autocomplete="current-password" placeholder="Kata Sandi" required><button id="togglePassword" class="eye" type="button" aria-label="Tampilkan kata sandi"><svg id="eyeIcon" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg></button></div>
+      </header>
+      <main class="content login-content">
+        <h1 class="login-title">Masuk ke CAHAYA APP</h1>
+        <form id="loginForm" class="form">
+          <div class="field">
+            <span class="field-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2.3A5.7 5.7 0 0 1 10.7 13h2.6a5.7 5.7 0 0 1 5.7 5.7V21"/></svg></span>
+            <input id="username" type="text" autocomplete="username" placeholder="Username" required>
+          </div>
+          <div class="field">
+            <span class="field-icon"><svg viewBox="0 0 24 24"><rect x="5.2" y="10" width="13.6" height="10" rx="2"/><path d="M8.5 10V7.2A3.5 3.5 0 0 1 12 3.7a3.5 3.5 0 0 1 3.5 3.5V10"/></svg></span>
+            <input id="password" type="password" autocomplete="current-password" placeholder="Kata Sandi" required>
+            <button id="togglePassword" class="eye" type="button" aria-label="Tampilkan kata sandi"><svg id="eyeIcon" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg></button>
+          </div>
           <div id="errorMsg" class="error"></div>
           <button id="btnSubmit" class="primary" type="submit"><span id="btnSubmitText">Masuk</span><svg viewBox="0 0 24 24"><path d="M5 12h13M14 7l5 5-5 5"/></svg></button>
         </form>
         <div class="security"><svg viewBox="0 0 24 24"><path d="M12 3 5.5 5.5v5.8c0 4.1 2.5 7.4 6.5 9.7 4-2.3 6.5-5.6 6.5-9.7V5.5L12 3Z"/><path d="m9 12 2 2 4-4"/></svg>Jaga Kerahasiaan Akun Anda</div>
       </main>
-      <div class="bottom-art" aria-hidden="true"><div class="hill"></div><div class="mosque"><svg viewBox="0 0 180 90"><rect x="54" y="43" width="72" height="39" rx="2"/><path d="M58 43c2-20 14-30 32-30s30 10 32 30Z"/><rect x="29" y="52" width="18" height="30"/><rect x="133" y="52" width="18" height="30"/><path d="M28 52c0-10 5-16 10-16s10 6 10 16Z"/><path d="M132 52c0-10 5-16 10-16s10 6 10 16Z"/><rect x="87" y="8" width="6" height="20"/><path d="M84 8c1-7 4-11 6-13 2 2 5 6 6 13Z"/><path d="M78 82V65c0-8 5-13 12-13s12 5 12 13v17Z"/></svg></div><div class="wave w1"></div><div class="wave w2"></div><div class="wave w3"></div></div>
+      <div class="landscape" aria-hidden="true"><div class="mist"></div><div class="mosque"><svg viewBox="0 0 180 90"><path class="fill" d="M54 43h72v39H54zM29 52h18v30H29zM133 52h18v30h-18z"/><path class="fill" d="M58 43c2-20 14-30 32-30s30 10 32 30Zm-30 9c0-10 5-16 10-16s10 6 10 16Zm104 0c0-10 5-16 10-16s10 6 10 16ZM84 8c1-7 4-11 6-13 2 2 5 6 6 13Z"/><rect class="fill" x="87" y="8" width="6" height="20"/><path class="line" d="M54 43h72v39H54zM58 43c2-20 14-30 32-30s30 10 32 30ZM29 52h18v30H29zM28 52c0-10 5-16 10-16s10 6 10 16ZM133 52h18v30h-18zM132 52c0-10 5-16 10-16s10 6 10 16ZM87 8h6v20M84 8c1-7 4-11 6-13 2 2 5 6 6 13M78 82V65c0-8 5-13 12-13s12 5 12 13v17Z"/></svg></div><div class="wave one"></div><div class="wave two"></div><div class="wave three"></div></div>
     </div>
   </section>
 
   <section id="installScene" class="scene hidden" aria-label="Install CAHAYA APP">
-    <div class="shell">
-      <div class="brand">
-        <img src="logofi.png?v=124" alt="Logo Pesantren Cahaya Fajrul Islam">
-        <div class="brand-title">CAHAYA <span>APP</span></div>
+    <div class="screen">
+      <header class="brand">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=125" alt="Logo CAHAYA APP">
+        <div class="brand-name">CAHAYA <span>APP</span></div>
         <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
-      </div>
-      <main class="main">
+      </header>
+      <main class="content install-content">
         <div class="official">Aplikasi Resmi Pesantren</div>
         <h1 class="install-title">Pasang CAHAYA APP<br>di perangkat Anda</h1>
         <p class="install-desc">Akses dashboard lebih cepat, terasa seperti aplikasi native, dan selalu siap dari layar utama perangkat.</p>
@@ -116,9 +166,11 @@
         <button id="installMainBtn" class="install-btn" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v11m-4-4 4 4 4-4M5 20h14"/></svg><span>Install Cahaya App</span></button>
         <p id="installHint" class="install-hint">Satu kali instalasi untuk akses yang lebih praktis setiap hari.</p>
       </main>
-      <div class="bottom-art" aria-hidden="true"><div class="hill"></div><div class="mosque"><svg viewBox="0 0 180 90"><rect x="54" y="43" width="72" height="39" rx="2"/><path d="M58 43c2-20 14-30 32-30s30 10 32 30Z"/><rect x="29" y="52" width="18" height="30"/><rect x="133" y="52" width="18" height="30"/><path d="M28 52c0-10 5-16 10-16s10 6 10 16Z"/><path d="M132 52c0-10 5-16 10-16s10 6 10 16Z"/><rect x="87" y="8" width="6" height="20"/><path d="M84 8c1-7 4-11 6-13 2 2 5 6 6 13Z"/><path d="M78 82V65c0-8 5-13 12-13s12 5 12 13v17Z"/></svg></div><div class="wave w1"></div><div class="wave w2"></div><div class="wave w3"></div></div>
+      <div class="landscape" aria-hidden="true"><div class="mist"></div><div class="mosque"><svg viewBox="0 0 180 90"><path class="fill" d="M54 43h72v39H54zM29 52h18v30H29zM133 52h18v30h-18z"/><path class="fill" d="M58 43c2-20 14-30 32-30s30 10 32 30Zm-30 9c0-10 5-16 10-16s10 6 10 16Zm104 0c0-10 5-16 10-16s10 6 10 16ZM84 8c1-7 4-11 6-13 2 2 5 6 6 13Z"/><rect class="fill" x="87" y="8" width="6" height="20"/><path class="line" d="M54 43h72v39H54zM58 43c2-20 14-30 32-30s30 10 32 30ZM29 52h18v30H29zM28 52c0-10 5-16 10-16s10 6 10 16ZM133 52h18v30h-18zM132 52c0-10 5-16 10-16s10 6 10 16ZM87 8h6v20M84 8c1-7 4-11 6-13 2 2 5 6 6 13M78 82V65c0-8 5-13 12-13s12 5 12 13v17Z"/></svg></div><div class="wave one"></div><div class="wave two"></div><div class="wave three"></div></div>
+      <div class="security-footer"><svg viewBox="0 0 24 24"><path d="M12 3 5.5 5.5v5.8c0 4.1 2.5 7.4 6.5 9.7 4-2.3 6.5-5.6 6.5-9.7V5.5L12 3Z"/><path d="m9 12 2 2 4-4"/></svg>Jaga Kerahasiaan Akun Anda</div>
     </div>
   </section>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -130,7 +182,7 @@
     const installHint=document.getElementById('installHint');
     let deferredInstallPrompt=null;
 
-    function show(el){loginScene.classList.add('hidden');installScene.classList.add('hidden');el.classList.remove('hidden');requestAnimationFrame(()=>{splash.style.opacity='0';setTimeout(()=>splash.remove(),320)})}
+    function show(el){loginScene.classList.add('hidden');installScene.classList.add('hidden');el.classList.remove('hidden');requestAnimationFrame(()=>{splash.style.opacity='0';setTimeout(()=>splash.remove(),260)})}
     function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
     function isiOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
     function sessionUser(){try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'null')}catch(_){return null}}
@@ -140,12 +192,10 @@
       const dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity);
       const cashierOnly=roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','manajer','staf-muda','staf-mula','wali'].includes(r));
       if(dedicatedCashier||cashierOnly){const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';return unit?`keuangan/kasir.html?unit=${unit}`:'keuangan/kasir.html'}
-      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v124';
+      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v125';
     }
 
-    if(window.CAHAYA_CONFIG?.firebase){
-      if(!firebase.apps.length)firebase.initializeApp(window.CAHAYA_CONFIG.firebase);
-    }
+    if(window.CAHAYA_CONFIG?.firebase){if(!firebase.apps.length)firebase.initializeApp(window.CAHAYA_CONFIG.firebase)}
     const db=firebase.firestore();
 
     document.getElementById('togglePassword').addEventListener('click',()=>{
@@ -184,7 +234,7 @@
     });
     window.addEventListener('appinstalled',()=>{installMainBtn.querySelector('span').textContent='CAHAYA APP Terpasang';setTimeout(()=>show(loginScene),800)});
 
-    if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const r=await navigator.serviceWorker.register('./firebase-messaging-sw.js?v=124',{scope:'./',updateViaCache:'none'});r.update().catch(()=>{})}catch(e){console.warn(e)}})}
+    if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const r=await navigator.serviceWorker.register('./firebase-messaging-sw.js?v=125',{scope:'./',updateViaCache:'none'});r.update().catch(()=>{})}catch(e){console.warn(e)}})}
 
     window.addEventListener('load',()=>{
       if(isStandalone()){const user=sessionUser();if(user?.akses){location.replace(getLoginTarget(user));return}show(loginScene);return}
