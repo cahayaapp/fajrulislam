@@ -538,19 +538,6 @@
         .replace(/'/g, "&#39;");
     }
 
-    function isDirectorView(){
-      try{
-        const role=String(localStorage.getItem("cahayaCurrentRole")||"").toLowerCase();
-        const u=JSON.parse(localStorage.getItem("cahayaCurrentUser")||"{}");
-        return role==="direktur"||String(u.activeRole||u.role||"").toLowerCase()==="direktur";
-      }catch(_){return String(localStorage.getItem("cahayaCurrentRole")||"").toLowerCase()==="direktur"}
-    }
-
-    function isPkbmRecord(record={}){
-      const text=normalizeIdentity([record.jenis,record.unit,record.unitPembelajaran,record.kelas,record.namaRuang,record.sesi,record.sumber,record.sumberJadwal,record.jadwalId,record.id,record.kodeKelas].filter(Boolean).join(" "));
-      return /(^| )pkbm( |$)/.test(text);
-    }
-
     function normalizeIdentity(value = "") {
       return String(value)
         .normalize("NFD")
@@ -893,7 +880,6 @@
 
       return allRecords.filter(
         record => {
-          if (isDirectorView() && isPkbmRecord(record)) return false;
           if (
             unit !== "ALL" &&
             record.unit !== unit

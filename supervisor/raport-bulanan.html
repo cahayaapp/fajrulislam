@@ -417,19 +417,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const directorView = (() => {
-    try {
-      const user = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
-      const role = String(localStorage.getItem('cahayaCurrentRole') || user.activeRole || user.role || '').toLowerCase().trim();
-      return role === 'direktur';
-    } catch (_) { return false; }
-  })();
-  const isPkbmRecord = (r={}) => /(^|\s)pkbm(\s|$)/i.test([
-    r.jenis,r.unit,r.unitPembelajaran,r.unitPendidikan,r.kelas,r.kelas_kelompok,r.rombel,
-    r.namaRuang,r.sesi,r.sumber,r.sumberJadwal,r.program,r.jadwalId,r.id,r.kodeKelas,r.kategori
-  ].filter(Boolean).join(' ').replace(/[^a-z0-9]+/gi,' ').trim());
-  const directorKepondokanOnly = rows => directorView ? (rows || []).filter(r => !isPkbmRecord(r)) : (rows || []);
-
   // Data Hardcode Kelas
   const dataSantri = {
     "Halqah Ilmiyah": {
@@ -602,7 +589,7 @@
         monthQuery('cahaya_app/absensi_pembelajaran','tanggal',1200)
       ]);
 
-      const dataN = directorKepondokanOnly(nilaiSnap.exists() ? Object.values(nilaiSnap.val()) : []);
+      const dataN = nilaiSnap.exists() ? Object.values(nilaiSnap.val()) : [];
       const dataT = tahfizSnap.exists() ? Object.values(tahfizSnap.val()) : [];
       const dataI = inisiatifSnap.exists() ? Object.values(inisiatifSnap.val()) : [];
       const dataPM = poinManSnap.exists() ? Object.values(poinManSnap.val()) : [];
@@ -610,7 +597,7 @@
       const dataA = asesmenSnap.exists() ? Object.values(asesmenSnap.val()) : []; 
       const dataAN = absenNaqibSnap.exists() ? Object.values(absenNaqibSnap.val()) : [];
       const dataAGRaw = absenGuruSnap.exists() ? absenGuruSnap.val() : {};
-      const dataAG = directorKepondokanOnly(Object.values(dedupePembelajaranTerakhir(dataAGRaw)));
+      const dataAG = Object.values(dedupePembelajaranTerakhir(dataAGRaw));
 
       const wrapper = document.getElementById("printArea");
       wrapper.innerHTML = ''; 

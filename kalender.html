@@ -1655,7 +1655,6 @@
     const ACADEMIC_END = new Date(2027, 5, 30);   // 30 Juni 2027
     const TODAY = new Date();
     const READ_ONLY = new URLSearchParams(location.search).get("mode") === "view";
-    const DIRECTOR_VIEW = (()=>{try{const u=JSON.parse(localStorage.getItem("cahayaCurrentUser")||"{}");return String(localStorage.getItem("cahayaCurrentRole")||u.activeRole||u.role||"").toLowerCase()==="direktur"}catch(_){return String(localStorage.getItem("cahayaCurrentRole")||"").toLowerCase()==="direktur"}})();
 
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
@@ -1910,7 +1909,6 @@
     }
 
     function matchesFilter(event) {
-      if (DIRECTOR_VIEW && event.type === "pkbm") return false;
       if (activeFilter === "all") return true;
       if (activeFilter === "libur") return event.type === "libur" || event.type === "hari-besar";
       if (activeFilter === "ujian") return event.type === "ujian" || event.type === "rapor";
@@ -2273,10 +2271,6 @@
       els.syncPill.classList.remove("online", "offline");
       if (status) els.syncPill.classList.add(status);
       els.syncText.textContent = text;
-    }
-
-    if(DIRECTOR_VIEW){
-      document.querySelectorAll('option[value="pkbm"]').forEach(o=>o.remove());
     }
 
     function loadCalendar() {

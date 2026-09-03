@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#f7f9fc" />
-<title>Beranda Direktur • CAHAYA APP v112</title>
+<title>Beranda Direktur • CAHAYA APP v109</title>
 <style>
 :root{
   --navy:#062a67;--navy2:#0a3e95;--blue:#1264d9;--blue2:#2d86f7;--emerald:#008c68;--teal:#078d9d;
@@ -471,16 +471,6 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
 .summary-section{margin-top:4px!important}.score-section{margin-top:10px!important}
 @media(max-width:620px){.greeting-row{gap:6px}.intro-role{font-size:.48rem;padding:5px 7px}.summary-section{margin-top:2px!important}.score-section{margin-top:7px!important}}
 @media(max-width:440px){.greeting-row{flex-wrap:nowrap}.greeting-row h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 72px)}.intro-role{flex:0 0 auto;font-size:.44rem;padding:4px 6px}}
-
-/* V112 — hanya memberi ruang aman untuk bottom navigation shell Direktur.
-   Layout/card kembali ke komposisi stabil sebelum V111. */
-@media(max-width:900px){
-  .app{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}
-  .division-monitor-section{margin-bottom:8px!important}
-}
-@media(max-width:440px){
-  .app{padding-bottom:calc(118px + env(safe-area-inset-bottom))!important}
-}
 </style>
 </head>
 <body>
@@ -619,9 +609,6 @@ function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta'
 function month(){return today().slice(0,7)}
 function n(v){const x=Number(v);return Number.isFinite(x)?x:0}
 function norm(v){return String(v||'').trim().toLowerCase()}
-function pkbmText(r={}){return norm([r.jenis,r.unit,r.unitPembelajaran,r.unitPendidikan,r.kelas,r.kelas_kelompok,r.rombel,r.namaRuang,r.sesi,r.sumber,r.sumberJadwal,r.program,r.jadwalId,r.id,r.kodeKelas,r.kategori,r.judul,r.masalah,r.isu].filter(Boolean).join(' ')).replace(/[^a-z0-9]+/g,' ').trim()}
-function isPkbmRecord(r={}){return /(^| )pkbm( |$)/.test(pkbmText(r))}
-function kepondokanRows(rows=[]){return (rows||[]).filter(r=>!isPkbmRecord(r))}
 function nameKey(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'')}
 function money(v){return new Intl.NumberFormat('id-ID',{maximumFractionDigits:0}).format(n(v))}
 function compactMoney(v){const x=n(v);if(x>=1e9)return`Rp ${(x/1e9).toFixed(x>=10e9?0:1).replace('.',',')} M`;if(x>=1e6)return`Rp ${(x/1e6).toFixed(x>=10e6?0:1).replace('.',',')} jt`;if(x>=1e3)return`Rp ${(x/1e3).toFixed(0)} rb`;return`Rp ${money(x)}`}
@@ -634,7 +621,7 @@ function recapContext(kind='week'){const now=jakartaContext(),days=kind==='month
 function shortDateID(v){try{return new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',year:'numeric'}).format(new Date(v+'T12:00:00+07:00'))}catch{return v}}
 function rangeLabel(pctx){return `${shortDateID(pctx.start)} – ${shortDateID(pctx.end)}`}
 async function rangeRows(path,pctx,field='tanggal'){try{const db=P.firebase?.database?.();if(!db)return[];const snap=await db.ref(path).orderByChild(field).startAt(pctx.start).endAt(pctx.end).once('value');return vals(snap.val()||{}).filter(x=>inPeriod(dateOf(x),pctx))}catch(e){console.warn('range read',path,e);return[]}}
-async function teacherRowsRange(pctx){try{const rows=await rangeRows('cahaya_app/log_absensi_guru',pctx,'tanggal');return kepondokanRows(rows).map(r=>({...r,_date:dateOf(r)}))}catch(e){console.warn('teacher range read',e);return[]}}
+async function teacherRowsRange(pctx){try{const rows=await rangeRows('cahaya_app/log_absensi_guru',pctx,'tanggal');return rows.map(r=>({...r,_date:dateOf(r)}))}catch(e){console.warn('teacher range read',e);return[]}}
 
 function inPeriod(date,pctx){return Boolean(date)&&date>=pctx.start&&date<=pctx.end}
 function periodDesc(){return 'saat ini'}
@@ -643,7 +630,7 @@ async function todayRecentRows(path,date,limit=360){
   try{const db=P.firebase?.database?.();if(!db)return[];const snap=await db.ref(path).limitToLast(limit).once('value');return vals(snap.val()||{}).filter(x=>dateOf(x)===date)}catch(e){console.warn('today recent read',path,e);return[]}
 }
 async function teacherRowsPeriod(pctx){
-  try{const db=P.firebase?.database?.();if(!db)return[];const snap=await db.ref(`cahaya_app/absensi_guru/${pctx.end}`).once('value');return kepondokanRows(collect(snap.val()||{},x=>Boolean(x.jadwalId)&&Boolean(x.namaGuru||x.guruKey||x.guruKodeKalender))).map(r=>({...r,_date:pctx.end}))}catch(e){console.warn('teacher today read',e);return[]}
+  try{const db=P.firebase?.database?.();if(!db)return[];const snap=await db.ref(`cahaya_app/absensi_guru/${pctx.end}`).once('value');return collect(snap.val()||{},x=>Boolean(x.jadwalId)&&Boolean(x.namaGuru||x.guruKey||x.guruKodeKalender)).map(r=>({...r,_date:pctx.end}))}catch(e){console.warn('teacher today read',e);return[]}
 }
 function dueScheduleInstances(rows,pctx){const START=clockMinutes('05:10'),out=[];pctx.dates.forEach(d=>{const day=isoDay(d),cut=d===pctx.end?pctx.minutes:24*60-1;rows.forEach(r=>{if(!r||r.aktif===false||Number(r.hari)!==Number(day))return;const tm=clockMinutes(r.jamMulai||String(r.waktu||'').split(/[–—-]/)[0]);if(Number.isFinite(tm)&&tm>=START&&tm<=cut)out.push({...r,_date:d,_time:tm})})});return out}
 function scheduleId(r){return String(r.id||r.jadwalId||'')}
@@ -682,7 +669,7 @@ async function scheduleRows(){
   if(!rows.length){
     try{const res=await fetch('data/jadwal-pelajaran-awal-2026-2027.json',{cache:'force-cache'});if(res.ok){const j=await res.json();rows=Array.isArray(j)?j:vals(j)}}catch(e){console.warn('jadwal lokal',e)}
   }
-  rows=kepondokanRows(rows).filter(r=>norm(r.jenis)!=='ekskul');DASH_CACHE.schedules=rows;return rows
+  DASH_CACHE.schedules=rows;return rows
 }
 function dueSchedules(rows,ctx){return dueScheduleInstances(rows,ctx&&ctx.dates?ctx:periodContext())}
 function flattenTeacherAttendance(rawToday){return collect(rawToday,x=>Boolean(x.jadwalId)&&Boolean(x.namaGuru||x.guruKey||x.guruKodeKalender))}
@@ -695,7 +682,7 @@ function percent(v,d){return d?Math.round(v*100/d):0}
 function healthLevel(p,good=90,warn=75){return p>=good?['ok','Baik']:p>=warn?['att','Perlu Perhatian']:['bad','Perlu Evaluasi']}
 function openMenu(id){try{if(id==='utility-menu'){P.toggleSidebar?.();return}const el=P.document?.getElementById(id);if(el&&typeof el.click==='function'){el.click();return}if(typeof P.openAuthorizedMenu==='function'){P.openAuthorizedMenu(id);return}}catch(e){console.warn(e)}}
 function openRoute(route){try{if(typeof P.loadPage==='function'){P.loadPage(route,P.document.getElementById('menu-dashboard-operasional'));return}const frame=P.document?.getElementById('contentFrame');if(frame)frame.src=route}catch(e){console.warn(e)}}
-function openDivision(key){closeModal('divisionModal');if(key==='pendidikan'){openMenu('menu-dashboard-pendidikan');return}openRoute(`pimpinan/dashboard-divisi.html?division=${encodeURIComponent(key)}&view=executive&v=112`)}
+function openDivision(key){closeModal('divisionModal');if(key==='pendidikan'){openMenu('menu-dashboard-pendidikan');return}if(key==='pembinaan'){openMenu('menu-dashboard-dua-divisi');return}openRoute(`dashboard-operasional/divisi.html?division=${encodeURIComponent(key)}&view=executive&v=86`)}
 function setStatus(prefix,level,text){const dot=$(prefix+'Dot');if(dot)dot.className='status-dot'+(level==='bad'?' bad':level==='att'?' att':'');$(prefix+'Status').textContent=text}
 function statusFor(att){return att>=5?['bad','Perlu Evaluasi']:att>0?['att','Perlu Perhatian']:['ok','Baik']}
 function addAttention(item){if(item.count>0)attentions.push(item)}
@@ -730,7 +717,7 @@ async function loadData(){
     metrics.teacher={due:due.length,present,rate:teacherRate,clock:pctx.clock,rows:teacherDetails};
     if(pctx.key==='harian'&&due.length&&present<due.length)addAttention({key:'edu-teacher-now',severity:4,count:due.length-present,title:'Kehadiran guru belum lengkap',desc:`Dari ${due.length} jadwal yang sudah mulai sampai ${pctx.clock}, ${due.length-present} belum memiliki presensi guru.`,menu:'menu-monitoring-absen-guru',tone:'red'});
 
-    const learningRows=kepondokanRows(kbm).filter(r=>inPeriod(dateOf(r),pctx));
+    const learningRows=kbm.filter(r=>inPeriod(dateOf(r),pctx));
     const learningRecordsFor=(inst)=>{const same=learningRows.filter(r=>dateOf(r)===inst._date),id=scheduleId(inst);let found=id?same.filter(r=>String(r.jadwalId||r.id||'')===id):[];if(found.length)return found;const kls=norm(inst.kelas||inst.rombel),mapel=norm(inst.mapel||inst.mataPelajaran||inst.namaMapel);return same.filter(r=>(!kls||norm(r.kelas||r.rombel)===kls)&&(!mapel||norm(r.mapel||r.mataPelajaran||r.namaMapel)===mapel))};
     const dueDetail=due.map(inst=>({schedule:inst,records:learningRecordsFor(inst)})),coveredLearn=dueDetail.filter(x=>x.records.length).length,learnDist=distribution(learningRows,finalStudentStatus,(r,nm)=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||'sesi'}|${nameKey(nm)}`);
     const matched=new Set(dueDetail.flatMap(x=>x.records).map(r=>String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))),orphan=learningRows.filter(r=>!matched.has(String(r.id||`${dateOf(r)}|${r.jadwalId||''}|${r.kelas||''}|${r.mapel||''}`))).map(r=>({schedule:{id:r.jadwalId||r.id,mapel:r.mapel||r.mataPelajaran||'Pembelajaran',kelas:r.kelas||r.sub||'—',jamMulai:r.jamMulai||'—',_date:dateOf(r)},records:[r]}));
@@ -826,7 +813,7 @@ async function buildRecapInsight(type,kind){
     return makeSummaryInsightConfig('teacher',m,status)
   }
   if(type==='learning'){
-    const rows=kepondokanRows(await rangeRows('cahaya_app/absensi_pembelajaran',pctx)),dist=distribution(rows,finalStudentStatus,(r,nm)=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||'sesi'}|${nameKey(nm)}`),wrapped=rows.map(r=>({schedule:{mapel:r.mapel||r.mataPelajaran||r.namaMapel||'Pembelajaran',kelas:r.kelas||r.rombel||'—',_date:dateOf(r)},records:[r]})),m={sessions:new Set(rows.map(r=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||''}|${r.mapel||''}`)).size,dist,rows:wrapped};
+    const rows=await rangeRows('cahaya_app/absensi_pembelajaran',pctx),dist=distribution(rows,finalStudentStatus,(r,nm)=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||'sesi'}|${nameKey(nm)}`),wrapped=rows.map(r=>({schedule:{mapel:r.mapel||r.mataPelajaran||r.namaMapel||'Pembelajaran',kelas:r.kelas||r.rombel||'—',_date:dateOf(r)},records:[r]})),m={sessions:new Set(rows.map(r=>`${dateOf(r)}|${r.jadwalId||r.id||r.kelas||''}|${r.mapel||''}`)).size,dist,rows:wrapped};
     return makeSummaryInsightConfig('learning',m,status)
   }
   if(type==='program'){
@@ -840,7 +827,7 @@ async function buildRecapInsight(type,kind){
   }
   if(type.startsWith('score-')){
     const scoreType=type.replace('score-',''),schedules=await scheduleRows();let teacherRows=[],learningRows=[],programRows=[],rawUsrah={};
-    if(scoreType==='guru')teacherRows=await teacherRowsRange(pctx);else [learningRows,programRows,rawUsrah]=await Promise.all([rangeRows('cahaya_app/absensi_pembelajaran',pctx),rangeRows('cahaya_app/absensi_program_harian',pctx),DASH_CACHE.usrah?Promise.resolve(DASH_CACHE.usrah):raw('cahaya_app/master_usrah').then(v=>(DASH_CACHE.usrah=v,v))]);learningRows=kepondokanRows(learningRows);programRows=programRows.filter(r=>countedNaqibProgram(r.program||r.namaProgram||r.nama));const due=scoreType==='guru'?dueScheduleInstances(schedules,pctx):[],scores=computePeriodScores(programRows,learningRows,due,teacherRows,rawUsrah);return makeScoreInsightConfig(scoreType,scores[scoreType]||[],status)
+    if(scoreType==='guru')teacherRows=await teacherRowsRange(pctx);else [learningRows,programRows,rawUsrah]=await Promise.all([rangeRows('cahaya_app/absensi_pembelajaran',pctx),rangeRows('cahaya_app/absensi_program_harian',pctx),DASH_CACHE.usrah?Promise.resolve(DASH_CACHE.usrah):raw('cahaya_app/master_usrah').then(v=>(DASH_CACHE.usrah=v,v))]);programRows=programRows.filter(r=>countedNaqibProgram(r.program||r.namaProgram||r.nama));const due=scoreType==='guru'?dueScheduleInstances(schedules,pctx):[],scores=computePeriodScores(programRows,learningRows,due,teacherRows,rawUsrah);return makeScoreInsightConfig(scoreType,scores[scoreType]||[],status)
   }
   throw new Error('Jenis rekap tidak dikenali')
 }
@@ -903,7 +890,7 @@ const HIJRI_MONTHS=['Muharam','Safar','Rabiul Awal','Rabiul Akhir','Jumadil Awal
 function hijriCivil(date){const g=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(date).split('-').map(Number),Y=g[0],M=g[1],D=g[2],a=Math.floor((14-M)/12),y=Y+4800-a,m=M+12*a-3,jdn=D+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-Math.floor(y/100)+Math.floor(y/400)-32045,l0=jdn-1948440+10632,n0=Math.floor((l0-1)/10631);let l=l0-10631*n0+354,j=(Math.floor((10985-l)/5316))*Math.floor((50*l)/17719)+Math.floor(l/5670)*Math.floor((43*l)/15238);l=l-Math.floor((30-j)/15)*Math.floor((17719*j)/50)-Math.floor(j/16)*Math.floor((15238*j)/43)+29;const hm=Math.floor((24*l)/709),hd=l-Math.floor((709*hm)/24),hy=30*n0+j-30;return`${hd} ${HIJRI_MONTHS[hm-1]||''} ${hy} H`}
 function hijriLabel(date){try{const f=new Intl.DateTimeFormat('en-US-u-ca-islamic',{timeZone:'Asia/Jakarta',day:'numeric',month:'numeric',year:'numeric'});if(String(f.resolvedOptions().calendar||'').startsWith('islamic')){const p={};f.formatToParts(date).forEach(x=>{if(x.type!=='literal')p[x.type]=x.value});const mm=Number(p.month),dd=Number(p.day),yy=Number(p.year);if(mm>=1&&mm<=12&&dd&&yy)return`${dd} ${HIJRI_MONTHS[mm-1]} ${yy} H`}}catch(e){}return hijriCivil(date)}
 function initIdentity(){let u={};try{u=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}catch{}const name=String(u.label||u.nama||u.username||'Pengguna').trim(),first=name.split(/\s+/)[0]||'P';$('greeting').textContent=`Assalamu’alaikum, ${name}`;if(u.fotoProfil){$('avatarBtn').innerHTML=`<img src="${esc(u.fotoProfil)}" alt="Profil">`}else $('avatarBtn').textContent=first.charAt(0).toUpperCase();const now=new Date();$('dateM').textContent=new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(now);$('dateH').textContent=hijriLabel(now)}
-initIdentity();renderDivisionMonitor();loadData().finally(()=>{try{if(sessionStorage.getItem('cahayaDirectorOpenNotif')==='1'){sessionStorage.removeItem('cahayaDirectorOpenNotif');setTimeout(()=>openAttentionModal(),180)}}catch(_){}});
+initIdentity();renderDivisionMonitor();loadData();
 </script>
 </body>
 </html>
