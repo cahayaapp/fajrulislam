@@ -9,12 +9,12 @@
   <meta name="theme-color" content="#087eaa">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="cahaya-build" content="20260904-v120-index-fixed-polish">
+  <meta name="cahaya-build" content="20260904-v121-index-clean-center">
   <title>CAHAYA APP — Pesantren Cahaya Fajrul Islam</title>
-  <link rel="icon" type="image/x-icon" href="assets/cahaya-app/favicon.ico?v=120">
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/cahaya-app/app-icon-32.png?v=120">
-  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon-v67.png?v=120">
-  <link rel="manifest" href="manifest.json?v=120">
+  <link rel="icon" type="image/x-icon" href="assets/cahaya-app/favicon.ico?v=121">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/cahaya-app/app-icon-32.png?v=121">
+  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon-v67.png?v=121">
+  <link rel="manifest" href="manifest.json?v=121">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -192,6 +192,179 @@
       .pwa-install-gate .pwa-install-mainbtn{height:43px;margin-top:9px;font-size:.84rem;border-radius:13px}.pwa-install-gate .pwa-install-hint{margin-top:6px;font-size:.49rem}
       .pwa-install-gate .landscape{height:132px}.pwa-install-gate .footer-security{bottom:calc(env(safe-area-inset-bottom) + 10px);font-size:.52rem}
     }
+  
+
+    /* =========================================================
+       v121 — Clean fixed index inspired by approved reference
+       ========================================================= */
+    html,body{
+      width:100%;height:100%;min-height:100%;margin:0;overflow:hidden!important;
+      overscroll-behavior:none;touch-action:manipulation;background:#f8fbff;
+    }
+    body{position:fixed;inset:0}
+    .screen{
+      position:fixed;inset:0;width:100%;height:100dvh;min-height:100dvh;overflow:hidden!important;
+      display:flex;justify-content:center;background:
+        radial-gradient(58% 35% at -5% -4%,rgba(70,179,255,.20),transparent 70%),
+        radial-gradient(48% 30% at 104% 1%,rgba(116,201,255,.15),transparent 72%),
+        linear-gradient(180deg,#fbfdff 0%,#fff 68%,#f5fbff 100%);
+    }
+    .screen:before{display:none!important}
+    .screen-shell{
+      position:relative;width:min(100%,520px);height:100dvh;min-height:100dvh;max-height:100dvh;
+      overflow:hidden!important;background:transparent;box-shadow:none;
+    }
+    .screen-shell:before,
+    .screen-shell:after{
+      content:"";position:absolute;z-index:0;pointer-events:none;border-radius:50%;filter:blur(2px)
+    }
+    .screen-shell:before{width:270px;height:190px;left:-135px;top:-72px;background:radial-gradient(circle,rgba(57,164,244,.18),rgba(57,164,244,0) 72%)}
+    .screen-shell:after{width:250px;height:170px;right:-125px;top:-58px;background:radial-gradient(circle,rgba(85,193,238,.13),rgba(85,193,238,0) 72%)}
+    .arch-illustration{display:none!important}
+
+    /* Brand: always optically centered */
+    .brand-block{
+      width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+      margin:0 auto;transform:none!important;
+    }
+    .app-icon{
+      display:block!important;margin:0 auto!important;width:clamp(58px,7.3dvh,76px)!important;height:clamp(58px,7.3dvh,76px)!important;
+      padding:0!important;border-radius:20%!important;object-fit:contain!important;background:transparent!important;
+      box-shadow:0 9px 24px rgba(25,101,177,.13)!important;
+    }
+    .wordmark{
+      margin:clamp(8px,1dvh,11px) 0 0!important;font-family:"DM Sans","Nunito",system-ui,sans-serif!important;
+      font-size:clamp(1.85rem,3.8dvh,2.55rem)!important;font-weight:900!important;letter-spacing:.015em!important;
+      line-height:1!important;color:#0a3f93!important;white-space:nowrap;text-align:center!important;
+    }
+    .wordmark span{background:linear-gradient(90deg,#1476dd 5%,#12a7c5 95%);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .org{margin:5px 0 0!important;color:#55749b!important;font-size:clamp(.62rem,1.15dvh,.76rem)!important;font-weight:700!important;text-align:center!important}
+    .brand-line{display:none!important}
+
+    /* Bottom art: clean blue waves + small centered masjid */
+    .landscape{
+      position:absolute!important;z-index:1!important;left:0!important;right:0!important;bottom:-1px!important;
+      height:clamp(155px,22dvh,210px)!important;min-height:0!important;max-height:none!important;opacity:1!important;pointer-events:none!important;
+    }
+    .landscape:before{
+      content:"";position:absolute;inset:auto 0 0;height:72%;z-index:-1;
+      background:
+        radial-gradient(100% 90% at 50% 100%,rgba(32,137,217,.08),transparent 66%),
+        linear-gradient(160deg,transparent 0 28%,rgba(104,194,246,.12) 28% 45%,transparent 45% 100%);
+    }
+    .landscape svg{width:100%;height:100%;display:block}
+    .footer-security{display:none!important}
+
+    /* LOGIN — fixed one-screen composition */
+    .login-page .screen-content{
+      position:relative;z-index:3;height:100dvh;min-height:0;overflow:hidden!important;
+      display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+      padding:calc(env(safe-area-inset-top) + clamp(44px,5.8dvh,62px)) 28px calc(env(safe-area-inset-bottom) + 126px)!important;
+    }
+    .login-page .brand-block{flex:none}
+    .login-page .login-panel{
+      width:100%;max-width:420px;margin:clamp(24px,3.5dvh,34px) auto 0!important;padding:0!important;flex:none;
+    }
+    .login-page .login-title{
+      margin:0 0 clamp(18px,2.5dvh,25px)!important;text-align:center!important;color:#163d80!important;
+      font-size:clamp(1.05rem,2.15dvh,1.3rem)!important;font-weight:800!important;letter-spacing:-.015em!important;
+    }
+    .login-page .login-title strong{color:#163d80!important;background:none!important;-webkit-text-fill-color:initial!important}
+    .login-page .login-form{margin:0!important;display:grid!important;gap:clamp(11px,1.55dvh,15px)!important}
+    .login-page .form-group{gap:0!important}
+    .login-page .form-group label{display:none!important}
+    .login-page .input-shell{position:relative}
+    .login-page .form-control{
+      width:100%;height:clamp(50px,6.3dvh,58px)!important;border:1px solid #dce5ef!important;border-radius:14px!important;
+      background:rgba(255,255,255,.96)!important;padding:0 50px 0 50px!important;color:#163e71!important;
+      font-size:clamp(.75rem,1.32dvh,.88rem)!important;font-weight:600!important;box-shadow:0 7px 18px rgba(38,78,123,.07)!important;
+    }
+    .login-page .form-control::placeholder{color:#8da0b9!important;font-weight:600!important}
+    .login-page .input-badge{
+      left:11px!important;width:31px!important;height:31px!important;background:#edf6ff!important;color:#1671d8!important;
+      border-radius:10px!important;
+    }
+    .login-page .toggle-password{right:7px!important;color:#6d83a4!important}
+    .login-page #errorMsg{font-size:.65rem!important;padding:8px 10px!important}
+    .login-page .submit-btn{
+      width:100%;height:clamp(49px,6.2dvh,57px)!important;margin-top:2px!important;border-radius:999px!important;
+      background:linear-gradient(100deg,#116fe8 0%,#0a83ea 52%,#13a7d4 100%)!important;
+      box-shadow:0 11px 25px rgba(23,116,210,.20)!important;font-size:clamp(.85rem,1.55dvh,1rem)!important;font-weight:800!important;
+    }
+    .login-page .secure-note{
+      margin:clamp(13px,1.8dvh,18px) auto 0!important;display:flex!important;align-items:center!important;justify-content:center!important;
+      gap:8px!important;text-align:center!important;color:#59708d!important;font-size:clamp(.56rem,1dvh,.66rem)!important;line-height:1.25!important;
+    }
+    .login-page .secure-note svg{width:18px!important;height:18px!important;color:#1778da!important}
+    .login-page .secure-note b{display:inline!important;margin-right:0;color:#49627f!important;font-weight:700!important}
+    .login-page .secure-note b + *{display:none!important}
+    .login-page .secure-note div{font-size:0!important}
+    .login-page .secure-note div b{font-size:clamp(.56rem,1dvh,.66rem)!important}
+    .login-page .install-btn{display:none!important}
+
+    /* INSTALL — same visual language, perfectly centered */
+    .pwa-install-gate .install-content{
+      position:relative;z-index:3;height:100dvh;min-height:0;overflow:hidden!important;
+      display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;
+      padding:calc(env(safe-area-inset-top) + clamp(35px,4.6dvh,48px)) 28px calc(env(safe-area-inset-bottom) + 126px)!important;
+    }
+    .pwa-install-gate .install-body{
+      width:100%;max-width:420px;margin:clamp(16px,2.15dvh,22px) auto 0!important;display:flex;flex-direction:column;align-items:center;
+    }
+    .pwa-install-gate .official-chip{
+      order:0;display:inline-flex;align-items:center;gap:7px;padding:6px 12px!important;border-radius:999px!important;
+      border:0!important;background:#edf7ff!important;color:#0d78bd!important;font-size:clamp(.52rem,.93dvh,.61rem)!important;
+      font-weight:800!important;letter-spacing:.035em!important;box-shadow:none!important;
+    }
+    .pwa-install-gate .official-chip:before{color:#169be0!important}
+    .pwa-install-gate .install-title{
+      margin:clamp(15px,2dvh,19px) 0 0!important;font-family:"DM Sans","Nunito",system-ui,sans-serif!important;
+      color:#123f87!important;font-size:clamp(1.38rem,2.9dvh,1.82rem)!important;line-height:1.08!important;font-weight:900!important;letter-spacing:-.02em!important;
+    }
+    .pwa-install-gate .install-desc{
+      margin:clamp(10px,1.3dvh,13px) auto 0!important;max-width:345px!important;color:#6780a1!important;
+      font-size:clamp(.62rem,1.12dvh,.72rem)!important;line-height:1.45!important;font-weight:600!important;
+    }
+    .pwa-install-gate .feature-row{
+      width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px!important;margin-top:clamp(17px,2.25dvh,22px)!important;
+    }
+    .pwa-install-gate .feature{
+      height:clamp(66px,8.7dvh,80px)!important;border:1px solid #e1e9f1!important;border-radius:15px!important;
+      background:rgba(255,255,255,.98)!important;box-shadow:0 8px 20px rgba(31,76,122,.07)!important;
+      color:#173f76!important;font-size:clamp(.53rem,.94dvh,.61rem)!important;font-weight:800!important;gap:5px!important;
+    }
+    .pwa-install-gate .feature svg{width:23px!important;height:23px!important;color:#127de0!important}
+    .pwa-install-gate .pwa-install-mainbtn{
+      width:100%;height:clamp(50px,6.2dvh,57px)!important;margin-top:clamp(17px,2.25dvh,22px)!important;border-radius:12px!important;
+      background:linear-gradient(100deg,#0871ea 0%,#0b85eb 60%,#10a4d0 100%)!important;border:0!important;
+      color:#fff!important;box-shadow:0 11px 25px rgba(23,116,210,.21)!important;font-family:"DM Sans","Nunito",sans-serif!important;
+      font-size:clamp(.84rem,1.55dvh,1rem)!important;font-weight:800!important;gap:10px!important;
+    }
+    .pwa-install-gate .pwa-install-mainbtn svg{width:20px!important;height:20px!important}
+    .pwa-install-gate .pwa-install-hint{
+      margin-top:clamp(10px,1.35dvh,13px)!important;max-width:350px!important;min-height:0!important;color:#7184a0!important;
+      font-size:clamp(.53rem,.92dvh,.60rem)!important;line-height:1.4!important;font-weight:600!important;
+    }
+    .pwa-install-gate .pwa-install-secure{display:none!important}
+
+    /* true fixed fit on short screens */
+    @media (max-height:760px){
+      .login-page .screen-content{padding-top:calc(env(safe-area-inset-top) + 35px)!important;padding-bottom:calc(env(safe-area-inset-bottom) + 104px)!important}
+      .pwa-install-gate .install-content{padding-top:calc(env(safe-area-inset-top) + 28px)!important;padding-bottom:calc(env(safe-area-inset-bottom) + 104px)!important}
+      .app-icon{width:54px!important;height:54px!important}.wordmark{font-size:1.68rem!important;margin-top:6px!important}.org{font-size:.58rem!important;margin-top:3px!important}
+      .login-page .login-panel{margin-top:18px!important}.login-page .login-title{margin-bottom:13px!important;font-size:.98rem!important}
+      .login-page .form-control{height:44px!important}.login-page .submit-btn{height:44px!important}.login-page .secure-note{margin-top:10px!important}
+      .pwa-install-gate .install-body{margin-top:10px!important}.pwa-install-gate .official-chip{padding:4px 9px!important;font-size:.48rem!important}
+      .pwa-install-gate .install-title{font-size:1.18rem!important;margin-top:9px!important}.pwa-install-gate .install-desc{font-size:.53rem!important;margin-top:7px!important}
+      .pwa-install-gate .feature-row{margin-top:11px!important;gap:7px!important}.pwa-install-gate .feature{height:55px!important;font-size:.48rem!important}.pwa-install-gate .feature svg{width:18px!important;height:18px!important}
+      .pwa-install-gate .pwa-install-mainbtn{height:43px!important;margin-top:11px!important;font-size:.78rem!important}.pwa-install-gate .pwa-install-hint{margin-top:7px!important;font-size:.48rem!important}
+      .landscape{height:136px!important}
+    }
+    @media (max-width:390px){
+      .login-page .screen-content,.pwa-install-gate .install-content{padding-left:22px!important;padding-right:22px!important}
+      .wordmark{font-size:1.72rem!important}.pwa-install-gate .install-title{font-size:1.28rem!important}
+    }
+
   </style>
 </head>
 <body>
@@ -204,7 +377,7 @@
       </svg>
       <div class="install-content">
         <div class="brand-block">
-          <img class="app-icon" src="assets/cahaya-app/app-icon-512.png?v=120" alt="Logo CAHAYA APP">
+          <img class="app-icon" src="assets/cahaya-app/app-icon-512.png?v=121" alt="Logo CAHAYA APP">
           <div class="wordmark">CAHAYA <span>APP</span></div>
           <div class="org">Pesantren Cahaya Fajrul Islam</div>
         </div>
@@ -259,7 +432,7 @@
       </svg>
       <div class="screen-content">
         <div class="brand-block">
-          <img class="app-icon" src="assets/cahaya-app/app-icon-512.png?v=120" alt="Logo CAHAYA APP">
+          <img class="app-icon" src="assets/cahaya-app/app-icon-512.png?v=121" alt="Logo CAHAYA APP">
           <div class="wordmark">CAHAYA <span>APP</span></div>
           <div class="org">Pesantren Cahaya Fajrul Islam</div>
           <div class="brand-line"><i>◆</i></div>
@@ -310,7 +483,7 @@
       const dedicatedCashier = roles.includes('kasir') && /kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity);
       const cashierOnly = roles.includes('kasir') && !roles.some(r => ['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','manajer','staf-muda','staf-mula','wali'].includes(r));
       if (dedicatedCashier || cashierOnly) { const unit = /putri/i.test(identity) ? 'putri' : /putra/i.test(identity) ? 'putra' : ''; return unit ? `keuangan/kasir.html?unit=${unit}` : 'keuangan/kasir.html'; }
-      return roles.includes('wali') ? 'wali/dashboard/index.html?v=20260820-v70' : 'main-dashboard.html?v=20260904-v120';
+      return roles.includes('wali') ? 'wali/dashboard/index.html?v=20260820-v70' : 'main-dashboard.html?v=20260904-v121';
     }
     function resetEyeIcon(){const eyeIcon=document.getElementById('eyeIcon');if(!eyeIcon)return;eyeIcon.innerHTML='<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.7" stroke="currentColor" stroke-width="1.7"/>'}
     document.getElementById('togglePassword').addEventListener('click',()=>{const input=document.getElementById('password'),eyeIcon=document.getElementById('eyeIcon');if(input.type==='password'){input.type='text';eyeIcon.innerHTML='<path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16.8 16.8 0 0 1-2.7 3.4M6.1 6.2C3.7 8 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>'}else{input.type='password';resetEyeIcon()}});
