@@ -2,86 +2,209 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="cahaya-build" content="20260904-v130-simple-index-no-pwa">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#f4f8fd">
+  <meta name="cahaya-build" content="20260904-v131-index-login-install-clean">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>CAHAYA APP</title>
-
-  <script src="config/tenant-config.js?v=130"></script>
-  <script src="config/master-data.js?v=130"></script>
-  <script src="js/cahaya-config-runtime.js?v=130" defer></script>
-
+  <script src="config/tenant-config.js?v=131"></script>
+  <script src="config/master-data.js?v=131"></script>
+  <script src="js/cahaya-config-runtime.js?v=131" defer></script>
   <style>
-    :root{--blue:#0b63d8;--cyan:#10a9d8;--navy:#123b6d;--muted:#71839a;--line:#dfe7ef;--bg:#f6f9fc}
+    :root{
+      --navy:#17448f;
+      --navy-deep:#12386f;
+      --blue:#1068ec;
+      --cyan:#16b8df;
+      --muted:#6f84a1;
+      --line:#e1e8f1;
+      --bg:#eef4fa;
+      --card:#ffffff;
+      --shadow:0 12px 30px rgba(26,70,128,.10);
+    }
     *{box-sizing:border-box}
-    html,body{margin:0;width:100%;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--navy)}
-    body{min-height:100dvh;display:grid;place-items:center;padding:24px}
-    .login{width:min(100%,390px);background:#fff;border:1px solid #e4eaf1;border-radius:24px;padding:34px 28px 30px;box-shadow:0 18px 50px rgba(28,65,108,.10)}
-    .brand{text-align:center;margin-bottom:30px}
-    .brand img{display:block;width:82px;height:82px;object-fit:contain;margin:0 auto 12px}
-    .brand h1{margin:0;font-size:30px;line-height:1;font-weight:900;letter-spacing:-1.3px;color:var(--blue)}
-    .brand h1 span{color:var(--cyan)}
-    .brand p{margin:8px 0 0;font-size:12px;font-weight:650;color:#57789d}
-    .title{margin:0 0 18px;text-align:center;font-size:18px;font-weight:800;color:var(--navy)}
-    .field{position:relative;margin-bottom:12px}
-    .field input{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:0 46px 0 16px;outline:none;font-size:14px;color:#244767;transition:.18s ease}
-    .field input:focus{border-color:#74b5ec;box-shadow:0 0 0 4px rgba(31,126,218,.08)}
-    .eye{position:absolute;right:8px;top:7px;width:38px;height:38px;border:0;background:transparent;color:#72859b;font-size:17px;cursor:pointer;border-radius:10px}
-    .error{display:none;margin:4px 0 12px;padding:10px 12px;border-radius:11px;background:#fff1f0;border:1px solid #ffd2cf;color:#b73730;font-size:12px;font-weight:650}
-    .submit{width:100%;height:52px;border:0;border-radius:14px;background:linear-gradient(100deg,var(--blue),#087fe8 60%,var(--cyan));color:#fff;font-size:16px;font-weight:850;cursor:pointer;box-shadow:0 12px 24px rgba(11,99,216,.20)}
-    .submit:disabled{opacity:.65;cursor:wait}
-    .privacy{margin:15px 0 0;text-align:center;color:var(--muted);font-size:11px;font-weight:650}
-    .version{position:fixed;right:10px;bottom:8px;font-size:9px;color:#a2afbd;user-select:none}
-    @media(max-width:430px){body{padding:18px}.login{padding:30px 22px 26px;border-radius:22px}.brand{margin-bottom:26px}.brand img{width:74px;height:74px}.brand h1{font-size:28px}}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden!important;overscroll-behavior:none;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;color:var(--navy-deep)}
+    body{position:fixed;inset:0}
+    button,input{font:inherit}
+    .hidden{display:none!important}
+    .scene{position:fixed;inset:0;display:grid;place-items:center;padding:0;background:radial-gradient(circle at top left, rgba(161,211,247,.45), transparent 24%), radial-gradient(circle at top right, rgba(187,220,249,.32), transparent 18%), #eef4fa;}
+    .shell{position:relative;width:min(100%,430px);height:100dvh;min-height:100dvh;overflow:hidden;background:linear-gradient(180deg,#f9fcff 0%,#ffffff 62%,#ffffff 100%);display:flex;flex-direction:column;align-items:center;padding:max(20px, calc(env(safe-area-inset-top) + 14px)) 28px max(18px, calc(env(safe-area-inset-bottom) + 12px));}
+    .shell::before{content:"";position:absolute;left:-80px;top:-60px;width:240px;height:210px;background:radial-gradient(circle at 60% 60%, rgba(125,185,241,.20), rgba(125,185,241,.05) 55%, transparent 70%);border-radius:50%;pointer-events:none}
+    .shell::after{content:"";position:absolute;right:-70px;top:-40px;width:240px;height:200px;background:radial-gradient(circle at 30% 45%, rgba(189,218,246,.18), rgba(189,218,246,.04) 55%, transparent 72%);border-radius:50%;pointer-events:none}
+    .brand{position:relative;z-index:3;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;flex:0 0 auto}
+    .brand-logo{width:78px;height:78px;object-fit:contain;display:block;margin:0 auto;filter:drop-shadow(0 10px 18px rgba(22,77,151,.18))}
+    .brand-title{margin-top:12px;font-weight:900;font-size:30px;line-height:1;letter-spacing:-.045em;color:var(--navy)}
+    .brand-title span{color:#16aeca}
+    .brand-sub{margin-top:7px;font-size:12px;font-weight:650;color:#527296}
+    .content{position:relative;z-index:3;width:100%;max-width:364px;display:flex;flex-direction:column;align-items:center;text-align:center;}
+    .login-content{margin-top:40px}
+    .install-content{margin-top:18px}
+    .title{margin:0;color:var(--navy);font-size:18px;font-weight:850;line-height:1.2}
+    .tag{display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:999px;background:#edf6ff;color:#2f7bc7;border:1px solid #dfecfa;font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;box-shadow:0 8px 20px rgba(46,124,203,.08)}
+    .tag::before{content:"✦";font-size:12px;color:#198fda}
+    .install-title{margin:16px 0 0;color:var(--navy);font-size:20px;font-weight:900;line-height:1.15;letter-spacing:-.02em}
+    .install-desc{margin:12px auto 0;max-width:318px;color:#6681a2;font-size:11px;line-height:1.55;font-weight:600}
+    .form{width:100%;display:grid;gap:12px;margin-top:28px}
+    .field{position:relative;width:100%}
+    .field input{width:100%;height:56px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.98);box-shadow:var(--shadow);outline:none;padding:0 52px 0 55px;font-size:14px;font-weight:600;color:#24486f}
+    .field input::placeholder{color:#8ca0b6;font-weight:550}
+    .field input:focus{border-color:#88bdec;box-shadow:0 0 0 4px rgba(32,124,224,.08),var(--shadow)}
+    .field-icon,.eye{position:absolute;top:50%;transform:translateY(-50%);display:grid;place-items:center;color:#245ed2}
+    .field-icon{left:18px;width:20px;height:20px}
+    .eye{right:8px;width:40px;height:40px;border:0;background:transparent;color:#7a8da7;cursor:pointer;border-radius:10px}
+    .field-icon svg,.eye svg,.primary svg,.benefit svg,.install-btn svg,.privacy svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+    .error{display:none;width:100%;text-align:left;padding:10px 13px;border:1px solid #f3d0cc;background:#fff4f3;border-radius:13px;color:#ba453d;font-size:11px;font-weight:700}
+    .primary{width:100%;height:58px;border:0;border-radius:999px;background:linear-gradient(100deg,#0f68eb 0%, #0f78ea 55%, #16b9df 100%);color:#fff;display:flex;align-items:center;justify-content:center;gap:13px;font-size:18px;font-weight:850;box-shadow:0 14px 28px rgba(15,104,235,.24);cursor:pointer;margin-top:2px}
+    .primary:disabled{opacity:.7;cursor:wait}
+    .primary svg,.install-btn svg{width:22px;height:22px}
+    .privacy{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:18px;color:#5c7695;font-size:11px;font-weight:700;white-space:nowrap}
+    .privacy svg{width:18px;height:18px;color:#1a7bdb}
+    .benefits{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+    .benefit{height:90px;border-radius:18px;background:rgba(255,255,255,.98);border:1px solid #e3ebf3;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:#1b4a87;font-size:11px;font-weight:800}
+    .benefit svg{width:24px;height:24px;color:#1687e0}
+    .install-btn{width:100%;height:56px;border:0;border-radius:14px;background:linear-gradient(100deg,#0f68eb 0%, #1080e9 58%, #15b7df 100%);color:#fff;display:flex;align-items:center;justify-content:center;gap:12px;font-size:17px;font-weight:850;box-shadow:0 14px 28px rgba(15,104,235,.24);cursor:pointer;margin-top:18px}
+    .install-hint{margin:13px auto 0;max-width:328px;color:#607d9f;font-size:10.5px;line-height:1.5;font-weight:650}
+    .landscape{position:absolute;left:0;right:0;bottom:0;height:245px;pointer-events:none;z-index:1;overflow:hidden}
+    .sky-wave{position:absolute;inset:auto 0 58px 0;height:150px;background:linear-gradient(180deg, rgba(217,233,249,.10), rgba(233,242,251,.03));}
+    .blob{position:absolute;border-radius:50%;filter:blur(.2px)}
+    .blob.b1{left:-40px;bottom:42px;width:180px;height:110px;background:linear-gradient(180deg, rgba(169,215,247,.35), rgba(169,215,247,.18))}
+    .blob.b2{left:40px;bottom:28px;width:220px;height:120px;background:linear-gradient(180deg, rgba(104,180,239,.16), rgba(104,180,239,.06))}
+    .blob.b3{right:-40px;bottom:48px;width:170px;height:120px;background:linear-gradient(180deg, rgba(195,227,249,.30), rgba(195,227,249,.08))}
+    .blob.b4{right:24px;bottom:18px;width:170px;height:90px;background:linear-gradient(180deg, rgba(129,188,242,.20), rgba(129,188,242,.06))}
+    .mosque-wrap{position:absolute;right:-4px;bottom:24px;width:205px;height:132px;filter:drop-shadow(0 8px 12px rgba(51,92,130,.10));opacity:.98}
+    .mosque-wrap svg{width:100%;height:100%}
+    .mfill{fill:#f7fbfd}.mshade{fill:#dfeff4}.mshade2{fill:#cfe7ef}.mline{fill:none;stroke:#8bb9c6;stroke-width:1.1}.mdome{fill:#8fc3e8}.mdome2{fill:#a8d3ee}.mgold{fill:#d5a54d}.mtree{fill:#90c18a}.mtree2{fill:#78b07c}.mground{fill:#d5eadc}
+    .wave{position:absolute;left:-10%;right:-10%;border-radius:50% 50% 0 0 / 70% 70% 0 0}
+    .wave.w1{height:96px;bottom:20px;background:linear-gradient(90deg,#d4ebfa,#c5e4fb);transform:rotate(-4deg)}
+    .wave.w2{height:82px;bottom:7px;background:linear-gradient(90deg,#7cc8f3,#4ca8eb);transform:rotate(4deg)}
+    .wave.w3{height:72px;bottom:-1px;background:linear-gradient(90deg,#0e6fe7,#1fb6e1);transform:rotate(-3deg)}
+    .wave.w4{height:58px;bottom:-8px;background:linear-gradient(90deg,#0d5bcb,#1283d8)}
+    .version{position:absolute;left:12px;bottom:8px;font-size:9px;color:#b4c0cb;z-index:5}
+    @media (max-height:820px){
+      .shell{padding-top:max(17px, calc(env(safe-area-inset-top) + 10px));padding-left:25px;padding-right:25px}
+      .brand-logo{width:70px;height:70px}.brand-title{font-size:28px}.brand-sub{font-size:11px}
+      .login-content{margin-top:28px}.install-content{margin-top:12px}.title{font-size:17px}.install-title{font-size:18px}.install-desc{font-size:10px}.form{margin-top:22px;gap:10px}.field input{height:51px;font-size:13px}.primary{height:52px;font-size:17px}.privacy{margin-top:14px;font-size:10px}
+      .benefits{gap:10px;margin-top:14px}.benefit{height:78px;font-size:10px}.install-btn{height:52px;font-size:16px;margin-top:14px}.install-hint{font-size:9.5px;margin-top:10px}
+      .landscape{height:205px}.mosque-wrap{width:175px;height:114px;bottom:22px}.wave.w1{height:82px}.wave.w2{height:72px}.wave.w3{height:62px}.wave.w4{height:50px}
+    }
+    @media (max-height:700px){
+      .brand-logo{width:62px;height:62px}.brand-title{font-size:25px}.brand-sub{font-size:10px}.login-content{margin-top:20px}.install-content{margin-top:8px}.form{margin-top:18px}.field input{height:47px;border-radius:15px}.primary{height:48px;font-size:16px}.benefit{height:68px;font-size:9px}.install-btn{height:47px;font-size:15px}.install-title{font-size:16px}.install-desc,.install-hint{font-size:9px}.landscape{height:175px}.mosque-wrap{width:150px;height:98px;bottom:20px}
+    }
+    @media (max-width:370px){.shell{padding-left:20px;padding-right:20px}.brand-title{font-size:27px}.benefits{gap:8px}.benefit{font-size:9px}.install-title{font-size:18px}}
   </style>
 </head>
 <body>
-  <main class="login">
-    <header class="brand">
-      <img src="assets/cahaya-app/app-icon-192.png?v=130" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=130'">
-      <h1>CAHAYA <span>APP</span></h1>
-      <p>Pesantren Cahaya Fajrul Islam</p>
-    </header>
-
-    <h2 class="title">Masuk ke CAHAYA APP</h2>
-
-    <form id="loginForm" autocomplete="on">
-      <div class="field">
-        <input id="username" type="text" autocomplete="username" placeholder="Username" required>
+  <section id="loginScene" class="scene hidden">
+    <div class="shell">
+      <header class="brand">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=131" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=131'">
+        <div class="brand-title">CAHAYA <span>APP</span></div>
+        <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
+      </header>
+      <main class="content login-content">
+        <h1 class="title">Masuk ke CAHAYA APP</h1>
+        <form id="loginForm" class="form" autocomplete="on">
+          <div class="field">
+            <span class="field-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21v-2.3A5.7 5.7 0 0 1 10.7 13h2.6a5.7 5.7 0 0 1 5.7 5.7V21"></path></svg></span>
+            <input id="username" type="text" autocomplete="username" placeholder="Username" required>
+          </div>
+          <div class="field">
+            <span class="field-icon"><svg viewBox="0 0 24 24"><rect x="5.2" y="10" width="13.6" height="10" rx="2"></rect><path d="M8.5 10V7.2A3.5 3.5 0 0 1 12 3.7a3.5 3.5 0 0 1 3.5 3.5V10"></path></svg></span>
+            <input id="password" type="password" autocomplete="current-password" placeholder="Kata Sandi" required>
+            <button id="togglePassword" class="eye" type="button" aria-label="Tampilkan kata sandi"><svg id="eyeIcon" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></button>
+          </div>
+          <div id="errorMsg" class="error"></div>
+          <button id="btnSubmit" class="primary" type="submit"><span id="btnSubmitText">Masuk</span><svg viewBox="0 0 24 24"><path d="M5 12h13M14 7l5 5-5 5"></path></svg></button>
+        </form>
+        <div class="privacy"><svg viewBox="0 0 24 24"><path d="M12 3 5.5 5.5v5.8c0 4.1 2.5 7.4 6.5 9.7 4-2.3 6.5-5.6 6.5-9.7V5.5L12 3Z"></path><path d="m9 12 2 2 4-4"></path></svg>Jaga Kerahasiaan Akun Anda</div>
+      </main>
+      <div class="landscape" aria-hidden="true">
+        <div class="sky-wave"></div>
+        <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+        <div class="mosque-wrap"><svg viewBox="0 0 220 140">
+          <ellipse class="mground" cx="152" cy="118" rx="62" ry="18"></ellipse>
+          <circle class="mtree" cx="58" cy="95" r="17"></circle><circle class="mtree2" cx="78" cy="101" r="15"></circle><rect class="mtree2" x="65" y="102" width="6" height="19" rx="2"></rect>
+          <circle class="mtree2" cx="196" cy="99" r="16"></circle><circle class="mtree" cx="178" cy="104" r="13"></circle><rect class="mtree2" x="188" y="105" width="6" height="16" rx="2"></rect>
+          <rect class="mfill" x="92" y="63" width="86" height="49" rx="2"></rect>
+          <rect class="mfill" x="74" y="72" width="15" height="40" rx="2"></rect><rect class="mfill" x="181" y="72" width="15" height="40" rx="2"></rect>
+          <path class="mdome" d="M100 63c2-24 15-37 35-37 20 0 33 13 35 37Z"></path>
+          <path class="mdome2" d="M76 72c0-10 4.5-18 10.5-18S97 62 97 72ZM172 72c0-10 4.5-18 10.5-18S193 62 193 72Z"></path>
+          <rect class="mshade" x="130" y="34" width="9" height="18"></rect><path class="mgold" d="M132 31c1-5 3-8 2.5-11 4 3 5 6 4.5 11Z"></path>
+          <path class="mfill" d="M118 112v-24c0-10 7.5-17 17-17s17 7 17 17v24Z"></path>
+          <path class="mline" d="M92 63h86v49H92zM100 63c2-24 15-37 35-37 20 0 33 13 35 37ZM118 112V88c0-10 7.5-17 17-17s17 7 17 17v24M74 72h15v40H74zM76 72c0-10 4.5-18 10.5-18S97 62 97 72ZM181 72h15v40h-15zM172 72c0-10 4.5-18 10.5-18S193 62 193 72Z"></path>
+          <path class="mline" d="M104 81h62M104 94h62M82 84h5M185 84h5"></path>
+        </svg></div>
+        <div class="wave w1"></div><div class="wave w2"></div><div class="wave w3"></div><div class="wave w4"></div>
       </div>
-      <div class="field">
-        <input id="password" type="password" autocomplete="current-password" placeholder="Kata Sandi" required>
-        <button id="togglePassword" class="eye" type="button" aria-label="Tampilkan kata sandi">◉</button>
-      </div>
-      <div id="errorMsg" class="error"></div>
-      <button id="btnSubmit" class="submit" type="submit">Masuk</button>
-    </form>
+      <div class="version">v131</div>
+    </div>
+  </section>
 
-    <p class="privacy">Jaga Kerahasiaan Akun Anda</p>
-  </main>
-  <div class="version">v130 simple</div>
+  <section id="installScene" class="scene hidden">
+    <div class="shell">
+      <header class="brand">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=131" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=131'">
+        <div class="brand-title">CAHAYA <span>APP</span></div>
+        <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
+      </header>
+      <main class="content install-content">
+        <div class="tag">Aplikasi Resmi Pesantren</div>
+        <h1 class="install-title">Pasang CAHAYA APP<br>di perangkat Anda</h1>
+        <p class="install-desc">Akses dashboard lebih cepat, terasa seperti aplikasi native, dan selalu siap dari layar utama perangkat.</p>
+        <div class="benefits">
+          <div class="benefit"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"></rect><path d="M10 18.3h4"></path></svg><span>Layar Penuh</span></div>
+          <div class="benefit"><svg viewBox="0 0 24 24"><path d="m13 2-7 12h6l-1 8 7-12h-6Z"></path></svg><span>Akses Cepat</span></div>
+          <div class="benefit"><svg viewBox="0 0 24 24"><path d="M12 3 5.5 5.5v5.8c0 4.1 2.5 7.4 6.5 9.7 4-2.3 6.5-5.6 6.5-9.7V5.5L12 3Z"></path><path d="m9 12 2 2 4-4"></path></svg><span>Aman</span></div>
+        </div>
+        <button id="installMainBtn" class="install-btn" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v11m-4-4 4 4 4-4M5 20h14"></path></svg><span>Install Cahaya App</span></button>
+        <p id="installHint" class="install-hint">Di iPhone/iPad: tekan tombol di bawah, lalu pilih Bagikan → Tambahkan ke Layar Utama.</p>
+      </main>
+      <div class="landscape" aria-hidden="true">
+        <div class="sky-wave"></div>
+        <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+        <div class="mosque-wrap"><svg viewBox="0 0 220 140">
+          <ellipse class="mground" cx="152" cy="118" rx="62" ry="18"></ellipse>
+          <circle class="mtree" cx="58" cy="95" r="17"></circle><circle class="mtree2" cx="78" cy="101" r="15"></circle><rect class="mtree2" x="65" y="102" width="6" height="19" rx="2"></rect>
+          <circle class="mtree2" cx="196" cy="99" r="16"></circle><circle class="mtree" cx="178" cy="104" r="13"></circle><rect class="mtree2" x="188" y="105" width="6" height="16" rx="2"></rect>
+          <rect class="mfill" x="92" y="63" width="86" height="49" rx="2"></rect>
+          <rect class="mfill" x="74" y="72" width="15" height="40" rx="2"></rect><rect class="mfill" x="181" y="72" width="15" height="40" rx="2"></rect>
+          <path class="mdome" d="M100 63c2-24 15-37 35-37 20 0 33 13 35 37Z"></path>
+          <path class="mdome2" d="M76 72c0-10 4.5-18 10.5-18S97 62 97 72ZM172 72c0-10 4.5-18 10.5-18S193 62 193 72Z"></path>
+          <rect class="mshade" x="130" y="34" width="9" height="18"></rect><path class="mgold" d="M132 31c1-5 3-8 2.5-11 4 3 5 6 4.5 11Z"></path>
+          <path class="mfill" d="M118 112v-24c0-10 7.5-17 17-17s17 7 17 17v24Z"></path>
+          <path class="mline" d="M92 63h86v49H92zM100 63c2-24 15-37 35-37 20 0 33 13 35 37ZM118 112V88c0-10 7.5-17 17-17s17 7 17 17v24M74 72h15v40H74zM76 72c0-10 4.5-18 10.5-18S97 62 97 72ZM181 72h15v40h-15zM172 72c0-10 4.5-18 10.5-18S193 62 193 72Z"></path>
+          <path class="mline" d="M104 81h62M104 94h62M82 84h5M185 84h5"></path>
+        </svg></div>
+        <div class="wave w1"></div><div class="wave w2"></div><div class="wave w3"></div><div class="wave w4"></div>
+      </div>
+      <div class="version">v131</div>
+    </div>
+  </section>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script>
-    // Reset legacy PWA state. This page does not register a service worker or manifest.
+    const loginScene=document.getElementById('loginScene');
+    const installScene=document.getElementById('installScene');
+    const installMainBtn=document.getElementById('installMainBtn');
+    const installHint=document.getElementById('installHint');
+    const qs=new URLSearchParams(location.search);
+    let deferredInstallPrompt=null;
+
     (async()=>{
       try{
-        if('serviceWorker' in navigator){
-          const regs=await navigator.serviceWorker.getRegistrations();
-          await Promise.all(regs.map(r=>r.unregister().catch(()=>false)));
-        }
-        if('caches' in window){
-          const keys=await caches.keys();
-          await Promise.all(keys.map(k=>caches.delete(k)));
-        }
-      }catch(e){console.warn('PWA cleanup:',e)}
+        if('serviceWorker' in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister().catch(()=>false)));}
+        if('caches' in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}
+      }catch(e){console.warn('cleanup',e)}
     })();
 
+    function show(scene){loginScene.classList.add('hidden');installScene.classList.add('hidden');scene.classList.remove('hidden');}
+    function isiOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1)}
+    function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true}
+    function sessionUser(){try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'null')}catch(_){return null}}
     function getLoginTarget(user){
       const roles=(Array.isArray(user?.akses)?user.akses:[user?.akses||user?.role].filter(Boolean)).map(r=>String(r||'').toLowerCase());
       const identity=[user?.cashierUnit,user?.unitKasir,user?.username,user?.email,user?.label].filter(Boolean).join(' ');
@@ -91,47 +214,76 @@
         const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';
         return unit?`keuangan/kasir.html?unit=${unit}`:'keuangan/kasir.html';
       }
-      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v130';
+      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v131';
     }
 
-    if(window.CAHAYA_CONFIG?.firebase){
-      if(!firebase.apps.length) firebase.initializeApp(window.CAHAYA_CONFIG.firebase);
-    }
+    if(window.CAHAYA_CONFIG?.firebase){ if(!firebase.apps.length) firebase.initializeApp(window.CAHAYA_CONFIG.firebase); }
     const db=firebase.firestore();
 
     document.getElementById('togglePassword').addEventListener('click',()=>{
-      const p=document.getElementById('password');
-      p.type=p.type==='password'?'text':'password';
+      const input=document.getElementById('password');
+      const eye=document.getElementById('eyeIcon');
+      input.type=input.type==='password'?'text':'password';
+      eye.innerHTML=input.type==='text' ? '<path d="M3 3l18 18"></path><path d="M6.1 6.2C3.7 8 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2"></path><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16.8 16.8 0 0 1-2.7 3.4"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path>' : '<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.7"></circle>';
     });
 
-    document.getElementById('loginForm').addEventListener('submit',async(e)=>{
+    document.getElementById('loginForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
       const username=document.getElementById('username').value.trim().toLowerCase();
       const password=document.getElementById('password').value.trim();
       const btn=document.getElementById('btnSubmit');
+      const txt=document.getElementById('btnSubmitText');
       const err=document.getElementById('errorMsg');
-      btn.disabled=true; btn.textContent='Memeriksa...'; err.style.display='none';
+      btn.disabled=true; txt.textContent='Memeriksa akun...'; err.style.display='none';
       const email=username.includes('@')?username:username+'@cahayaapp.id';
       const uname=email.split('@')[0];
       try{
         const cred=await firebase.auth().signInWithEmailAndPassword(email,password);
         const userDoc=await db.collection('users').doc(uname).get();
         let data;
-        if(userDoc.exists){data=userDoc.data();if(!data.akses)data.akses=['wali'];}
+        if(userDoc.exists){data=userDoc.data(); if(!data.akses)data.akses=['wali'];}
         else{
           const isStaff=uname.includes('admin')||uname.includes('guru')||uname==='multazam';
           data={username:uname,label:isStaff?'Pengurus CAHAYA':'Wali Santri',akses:isStaff?['guru']:['wali'],namaAnak:uname};
         }
-        const session={...data,uid:cred.user.uid};
-        localStorage.setItem('cahayaCurrentUser',JSON.stringify(session));
-        btn.textContent='Membuka...';
-        setTimeout(()=>location.href=getLoginTarget(session),220);
+        const session={...data, uid:cred.user.uid};
+        localStorage.setItem('cahayaCurrentUser', JSON.stringify(session));
+        txt.textContent='Membuka CAHAYA APP...';
+        setTimeout(()=>location.href=getLoginTarget(session),260);
       }catch(ex){
-        console.error(ex);
-        btn.disabled=false; btn.textContent='Masuk';
-        err.textContent='Username atau kata sandi tidak sesuai.';
-        err.style.display='block';
+        console.error(ex); btn.disabled=false; txt.textContent='Masuk'; err.textContent='Username atau kata sandi tidak sesuai.'; err.style.display='block';
       }
+    });
+
+    window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredInstallPrompt=e; if(!isStandalone() && !qs.has('login')) show(installScene); });
+    installMainBtn.addEventListener('click', async ()=>{
+      if(deferredInstallPrompt){
+        deferredInstallPrompt.prompt();
+        const choice=await deferredInstallPrompt.userChoice.catch(()=>({outcome:'dismissed'}));
+        if(choice.outcome==='accepted') installHint.textContent='Instalasi sedang diproses oleh perangkat Anda.';
+        else installHint.textContent='Instalasi belum dilakukan. Anda tetap bisa masuk melalui browser.';
+        deferredInstallPrompt=null; return;
+      }
+      if(isiOS()){ installHint.innerHTML='Di iPhone/iPad: tekan tombol <b>Bagikan</b>, lalu pilih <b>Tambahkan ke Layar Utama</b>.'; return; }
+      installHint.textContent='Jika tombol install tidak muncul, Anda tetap dapat menggunakan tombol masuk melalui browser.';
+      setTimeout(()=>show(loginScene), 350);
+    });
+
+    window.addEventListener('load', ()=>{
+      const mode=qs.get('mode');
+      if(mode==='install'){show(installScene); return;}
+      if(mode==='login'){show(loginScene); return;}
+      if(isStandalone()){
+        const user=sessionUser();
+        if(user?.akses){ location.replace(getLoginTarget(user)); return; }
+        show(loginScene); return;
+      }
+      if(isiOS()){
+        show(installScene);
+        installHint.innerHTML='Di iPhone/iPad: tekan tombol <b>Bagikan</b>, lalu pilih <b>Tambahkan ke Layar Utama</b>.';
+        return;
+      }
+      setTimeout(()=>{ if(deferredInstallPrompt) show(installScene); else show(loginScene); }, 200);
     });
   </script>
 </body>
