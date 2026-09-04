@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <!-- CAHAYA WHITE-LABEL CONFIG -->
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+
+  <meta charset="UTF-8" />
+  <title>CAHAYA APP - Input Nilai Ujian Bulanan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <link rel="stylesheet" href="../css/cahaya-theme.css" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      margin: 0;
+      padding: 18px;
+      background:
+        radial-gradient(circle at 7% 3%, rgba(25,198,230,.11), transparent 23%),
+        radial-gradient(circle at 96% 7%, rgba(118,103,245,.10), transparent 25%),
+        var(--bg-main, #f5f8ff);
+    }
+
+    .page-shell {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    .exam-hero {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 24px;
+      min-height: 190px;
+      margin-bottom: 18px;
+      padding: 30px 32px;
+      color: #fff;
+      border-radius: 27px;
+      background:
+        radial-gradient(circle at 86% 25%, rgba(255,255,255,.22), transparent 22%),
+        linear-gradient(135deg, #1d6ff2 0%, #297eff 47%, #15bddd 100%);
+      box-shadow: 0 20px 48px rgba(40,120,255,.24);
+    }
+
+    .exam-hero::before,
+    .exam-hero::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .exam-hero::before {
+      width: 210px;
+      height: 210px;
+      right: -55px;
+      top: -105px;
+      border: 38px solid rgba(255,255,255,.09);
+      border-radius: 50%;
+    }
+
+    .exam-hero::after {
+      width: 94px;
+      height: 94px;
+      right: 210px;
+      bottom: -58px;
+      border-radius: 25px;
+      background: rgba(255,255,255,.09);
+      transform: rotate(32deg);
+    }
+
+    .hero-copy,
+    .hero-user { position: relative; z-index: 2; }
+
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 12px;
+      padding: 7px 12px;
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 900;
+      letter-spacing: .75px;
+      text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 999px;
+      background: rgba(255,255,255,.14);
+      backdrop-filter: blur(8px);
+    }
+
+    .exam-hero h1 {
+      margin: 0 0 8px;
+      color: #fff;
+      font-size: clamp(1.55rem, 4vw, 2.45rem);
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -.7px;
+    }
+
+    .exam-hero p {
+      max-width: 700px;
+      margin: 0;
+      color: rgba(255,255,255,.88);
+      font-size: .91rem;
+      font-weight: 650;
+      line-height: 1.65;
+    }
+
+    .hero-user {
+      min-width: 220px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 19px;
+      background: rgba(255,255,255,.13);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-user-label {
+      color: rgba(255,255,255,.72);
+      font-size: .65rem;
+      font-weight: 900;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    .hero-user-name {
+      margin-top: 4px;
+      color: #fff;
+      font-size: .96rem;
+      font-weight: 900;
+      line-height: 1.3;
+    }
+
+    .hero-user-role {
+      margin-top: 3px;
+      color: rgba(255,255,255,.78);
+      font-size: .7rem;
+      font-weight: 700;
+    }
+
+    .panel-card {
+      margin-bottom: 18px;
+      padding: 25px;
+      background: rgba(255,255,255,.98);
+      border: 1px solid var(--border, #e5ebf5);
+      border-radius: 23px;
+      box-shadow: var(--shadow-card, 0 12px 35px rgba(35,78,160,.09));
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .section-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-icon {
+      width: 46px;
+      height: 46px;
+      flex: 0 0 46px;
+      display: grid;
+      place-items: center;
+      color: var(--primary, #2878ff);
+      font-size: 1.2rem;
+      border-radius: 15px;
+      background: var(--primary-light, #eaf3ff);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      color: var(--text-heading, #152347);
+      font-size: 1.16rem;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .section-head p {
+      margin: 4px 0 0;
+      color: var(--text-muted, #71809e);
+      font-size: .76rem;
+      font-weight: 650;
+      line-height: 1.5;
+    }
+
+    .academic-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .span-2 { grid-column: span 2; }
+    .span-full { grid-column: 1 / -1; }
+
+    .form-group { margin: 0; }
+
+    .form-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 7px;
+      color: var(--text-heading, #152347);
+      font-size: .73rem;
+      font-weight: 900;
+      letter-spacing: .18px;
+    }
+
+    .form-control {
+      min-height: 49px;
+      background: #f8faff;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary, #2878ff);
+      box-shadow: 0 0 0 4px rgba(40,120,255,.11);
+    }
+
+    .period-highlight {
+      color: var(--primary-dark, #1557d5);
+      border-color: #bdd4f8;
+      background: var(--primary-light, #eaf3ff);
+    }
+
+    .weight-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 20px;
+      border: 1px solid #dce8fb;
+      border-radius: 19px;
+      background: linear-gradient(135deg, #f8fbff, #f1f6ff);
+    }
+
+    .weight-panel::after {
+      content: "%";
+      position: absolute;
+      right: 16px;
+      top: -18px;
+      color: rgba(40,120,255,.06);
+      font-size: 7rem;
+      font-weight: 900;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .weight-head {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 16px;
+    }
+
+    .weight-head h3 {
+      margin: 0;
+      color: var(--text-heading, #152347);
+      font-size: .98rem;
+      font-weight: 900;
+    }
+
+    .weight-head p {
+      margin: 4px 0 0;
+      color: var(--text-muted, #71809e);
+      font-size: .7rem;
+      font-weight: 650;
+    }
+
+    .weight-status {
+      position: relative;
+      z-index: 2;
+      min-width: 135px;
+      padding: 9px 12px;
+      text-align: center;
+      color: var(--green-dark, #169769);
+      font-size: .75rem;
+      font-weight: 900;
+      border: 1px solid #c8efdf;
+      border-radius: 12px;
+      background: var(--green-soft, #e8fbf4);
+    }
+
+    .weight-status.invalid {
+      color: var(--red-dark, #d93b4b);
+      border-color: #ffd0d6;
+      background: var(--red-soft, #fff0f2);
+    }
+
+    .weight-grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .weight-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 9px;
+      min-height: 60px;
+      padding: 11px 12px;
+      cursor: pointer;
+      border: 1.5px solid var(--border, #e5ebf5);
+      border-radius: 15px;
+      background: #fff;
+      transition: .2s ease;
+    }
+
+    .weight-item:hover {
+      border-color: #bcd3f8;
+      transform: translateY(-1px);
+    }
+
+    .weight-item:has(input[type="checkbox"]:checked) {
+      border-color: var(--primary, #2878ff);
+      background: var(--primary-light, #eaf3ff);
+      box-shadow: 0 7px 17px rgba(40,120,255,.09);
+    }
+
+    .weight-check {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary, #2878ff);
+      cursor: pointer;
+    }
+
+    .weight-name {
+      color: var(--text-heading, #152347);
+      font-size: .77rem;
+      font-weight: 900;
+    }
+
+    .weight-number-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted, #71809e);
+      font-size: .75rem;
+      font-weight: 900;
+    }
+
+    .weight-input {
+      width: 58px;
+      height: 36px;
+      padding: 5px 7px;
+      color: var(--primary-dark, #1557d5);
+      font-size: .83rem;
+      font-weight: 900;
+      text-align: center;
+      outline: none;
+      border: 1.5px solid #cbdaf1;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .weight-input:focus {
+      border-color: var(--primary, #2878ff);
+      box-shadow: 0 0 0 3px rgba(40,120,255,.1);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 17px;
+    }
+
+    .stat-mini {
+      min-width: 0;
+      padding: 15px 16px;
+      border: 1px solid var(--border, #e5ebf5);
+      border-radius: 17px;
+      background: #fff;
+      box-shadow: var(--shadow-xs, 0 2px 8px rgba(28,71,148,.05));
+    }
+
+    .stat-mini-label {
+      color: var(--text-muted, #71809e);
+      font-size: .66rem;
+      font-weight: 900;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    .stat-mini-value {
+      margin-top: 4px;
+      color: var(--text-heading, #152347);
+      font-size: 1.35rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .tools-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .search-box {
+      position: relative;
+      width: min(100%, 360px);
+    }
+
+    .search-box input {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 14px 10px 41px;
+      color: var(--text-main, #1f2d4d);
+      font: inherit;
+      font-size: .82rem;
+      font-weight: 700;
+      outline: none;
+      border: 1.5px solid var(--input-border, #dfe7f3);
+      border-radius: 13px;
+      background: #f8faff;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary, #2878ff);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(40,120,255,.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      color: var(--text-muted, #71809e);
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .component-summary {
+      color: var(--text-muted, #71809e);
+      font-size: .72rem;
+      font-weight: 750;
+      text-align: right;
+    }
+
+    .table-wrap {
+      overflow: hidden;
+      border: 1px solid var(--border, #e5ebf5);
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .table-responsive {
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .cahaya-table {
+      min-width: 760px;
+    }
+
+    .cahaya-table th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      padding: 13px 12px;
+      color: #536584;
+      font-size: .68rem;
+      background: #f4f7fc;
+    }
+
+    .cahaya-table td {
+      padding: 12px;
+    }
+
+    .student-no {
+      color: var(--text-muted, #71809e);
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .student-name {
+      min-width: 205px;
+      color: var(--text-heading, #152347);
+      font-size: .82rem;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+
+    .score-input {
+      width: 68px;
+      height: 42px;
+      display: block;
+      margin: auto;
+      padding: 8px;
+      color: var(--text-heading, #152347);
+      font-family: inherit;
+      font-size: .92rem;
+      font-weight: 900;
+      text-align: center;
+      outline: none;
+      border: 1.5px solid var(--input-border, #dfe7f3);
+      border-radius: 11px;
+      background: #f8faff;
+      transition: .18s ease;
+    }
+
+    .score-input:focus {
+      border-color: var(--primary, #2878ff);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(40,120,255,.1);
+    }
+
+    .score-input.invalid {
+      color: var(--red-dark, #d93b4b);
+      border-color: var(--red, #ff5d6c);
+      background: var(--red-soft, #fff0f2);
+    }
+
+    .nilai-total {
+      text-align: center;
+    }
+
+    .total-pill {
+      min-width: 58px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 9px;
+      color: var(--primary-dark, #1557d5);
+      font-size: .84rem;
+      font-weight: 900;
+      border: 1px solid #d0e1fb;
+      border-radius: 999px;
+      background: var(--primary-light, #eaf3ff);
+    }
+
+    .total-pill.filled {
+      color: var(--green-dark, #169769);
+      border-color: #c9efdf;
+      background: var(--green-soft, #e8fbf4);
+    }
+
+    .empty-state-cell {
+      padding: 46px 18px !important;
+      color: var(--text-muted, #71809e) !important;
+      font-size: .83rem;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.65;
+    }
+
+    .save-area {
+      position: sticky;
+      bottom: 0;
+      z-index: 15;
+      margin-top: 17px;
+      padding-top: 11px;
+      background: linear-gradient(180deg, rgba(255,255,255,0), #fff 28%);
+    }
+
+    .save-button {
+      width: 100%;
+      min-height: 53px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      color: #fff;
+      font-family: inherit;
+      font-size: .92rem;
+      font-weight: 900;
+      cursor: pointer;
+      border: 0;
+      border-radius: 15px;
+      background: linear-gradient(135deg, var(--primary, #2878ff), #3c83ff 52%, var(--cyan-dark, #0ca6c6));
+      box-shadow: 0 12px 27px rgba(40,120,255,.25);
+      transition: .2s ease;
+    }
+
+    .save-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 32px rgba(40,120,255,.3);
+    }
+
+    .save-button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .final-button {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid #f2bf73;
+      border-radius: 15px;
+      background: linear-gradient(135deg,#fff8eb,#fff1d2);
+      color: #9a5a00;
+      font-family: inherit;
+      font-size: .88rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+    .final-button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 22px rgba(192,119,12,.14)}
+    .final-button:disabled{opacity:.55;cursor:not-allowed;box-shadow:none;transform:none}
+    .final-lock-note{margin-top:8px;text-align:center;color:#a05d00;font-size:11px;font-weight:800;line-height:1.45}
+
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--text-heading, #152347);
+      text-align: center;
+      background: rgba(245,248,255,.93);
+      backdrop-filter: blur(12px);
+      transition: opacity .35s ease;
+    }
+
+    .loader-icon {
+      width: 74px;
+      height: 74px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 15px;
+      color: #fff;
+      font-size: 2rem;
+      border-radius: 25px;
+      background: linear-gradient(135deg, var(--primary, #2878ff), var(--cyan, #19c6e6));
+      box-shadow: 0 15px 35px rgba(40,120,255,.25);
+      animation: loaderPulse 1.3s ease-in-out infinite alternate;
+    }
+
+    .loader-title {
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .loader-desc {
+      margin-top: 5px;
+      color: var(--text-muted, #71809e);
+      font-size: .74rem;
+      font-weight: 650;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: -120px;
+      z-index: 5000;
+      width: min(calc(100% - 28px), 430px);
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      padding: 14px 15px;
+      color: var(--text-main, #1f2d4d);
+      border: 1px solid var(--border, #e5ebf5);
+      border-radius: 15px;
+      background: #fff;
+      box-shadow: 0 18px 42px rgba(20,45,95,.18);
+      transform: translateX(-50%);
+      transition: bottom .32s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .toast.show { bottom: 22px; }
+
+    .toast-icon {
+      width: 37px;
+      height: 37px;
+      flex: 0 0 37px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--primary-light, #eaf3ff);
+    }
+
+    .toast.success .toast-icon { background: var(--green-soft, #e8fbf4); }
+    .toast.error .toast-icon { background: var(--red-soft, #fff0f2); }
+    .toast-title { font-size: .8rem; font-weight: 900; }
+    .toast-desc { margin-top: 2px; color: var(--text-muted, #71809e); font-size: .7rem; font-weight: 650; line-height: 1.45; }
+
+    @keyframes loaderPulse {
+      from { transform: translateY(3px) scale(.97); }
+      to { transform: translateY(-3px) scale(1.03); }
+    }
+
+    @media (max-width: 1050px) {
+      .academic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .weight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .span-2 { grid-column: span 2; }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 9px; }
+
+      .exam-hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        gap: 17px;
+        padding: 24px 18px;
+        border-radius: 21px;
+      }
+
+      .exam-hero h1 { font-size: 1.55rem; }
+      .exam-hero p { font-size: .79rem; }
+
+      .hero-user {
+        min-width: 0;
+        padding: 13px;
+      }
+
+      .panel-card {
+        padding: 18px 13px;
+        border-radius: 19px;
+      }
+
+      .section-head {
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .section-icon {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+      }
+
+      .academic-grid { grid-template-columns: 1fr; gap: 13px; }
+      .span-2, .span-full { grid-column: auto; }
+
+      .weight-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .weight-status { width: 100%; }
+      .weight-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .weight-item { grid-template-columns: auto minmax(0,1fr) auto; padding: 10px; }
+      .weight-input { width: 51px; }
+
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .stat-mini { padding: 13px; border-radius: 14px; }
+      .stat-mini-value { font-size: 1.15rem; }
+
+      .tools-row {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .search-box { width: 100%; }
+      .component-summary { text-align: left; }
+
+      .table-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+      }
+
+      .table-responsive {
+        overflow: visible;
+        background: transparent;
+      }
+
+      .cahaya-table {
+        min-width: 0;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+      }
+
+      .cahaya-table thead { display: none; }
+      .cahaya-table tbody { display: block; }
+
+      .cahaya-table tr[data-nama] {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 14px;
+        border: 1px solid var(--border, #e5ebf5);
+        border-radius: 17px;
+        background: #fff;
+        box-shadow: 0 7px 19px rgba(35,78,160,.07);
+      }
+
+      .cahaya-table tr[data-nama][hidden] { display: none; }
+
+      .cahaya-table tr:not([data-nama]) {
+        display: block;
+      }
+
+      .cahaya-table td {
+        display: flex;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        background: transparent !important;
+      }
+
+      .cahaya-table td.student-no { display: none; }
+
+      .cahaya-table td.student-name {
+        grid-column: 1 / -1;
+        display: block;
+        min-width: 0;
+        padding-bottom: 10px;
+        font-size: .88rem;
+        border-bottom: 1px solid var(--border-light, #edf2fa);
+      }
+
+      .cahaya-table td.score-cell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        min-height: 43px;
+        padding: 8px 9px;
+        border: 1px solid var(--border-light, #edf2fa);
+        border-radius: 12px;
+        background: #f8faff !important;
+      }
+
+      .cahaya-table td.score-cell::before,
+      .cahaya-table td.nilai-total::before {
+        content: attr(data-label);
+        color: var(--text-muted, #71809e);
+        font-size: .64rem;
+        font-weight: 900;
+      }
+
+      .score-input {
+        width: 58px;
+        height: 38px;
+        margin: 0;
+      }
+
+      .cahaya-table td.nilai-total {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 11px;
+        border-radius: 12px;
+        background: var(--primary-light, #eaf3ff) !important;
+      }
+
+      .empty-state-cell {
+        display: block !important;
+        padding: 38px 14px !important;
+        border: 1px solid var(--border, #e5ebf5) !important;
+        border-radius: 17px;
+        background: #fff !important;
+      }
+
+      .save-area {
+        bottom: 0;
+        margin-right: -4px;
+        margin-left: -4px;
+        padding: 11px 4px 4px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .weight-grid { grid-template-columns: 1fr; }
+      .cahaya-table tr[data-nama] { grid-template-columns: 1fr; }
+      .cahaya-table td.student-name,
+      .cahaya-table td.nilai-total { grid-column: auto; }
+    }
+  </style>
+
+  <!-- Tampilan minimal: header internal dan ringkasan disembunyikan tanpa mengubah sistem -->
+  <style id="cahaya-minimal-cleanup">
+    .exam-hero,
+.stats-grid {
+      display: none !important;
+    }
+  </style>
+
+  <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
+<style id="cahaya-v53-exam-scenes">
+.c53-scene-shell{position:relative;min-height:320px}
+.c53-scene{display:none;opacity:0;transform:translateX(20px)}
+.c53-scene.active{display:block;animation:c53SceneIn .34s cubic-bezier(.2,.75,.25,1) forwards}
+.c53-scene.back.active{animation:c53SceneBack .34s cubic-bezier(.2,.75,.25,1) forwards}
+@keyframes c53SceneIn{from{opacity:0;transform:translateX(28px) scale(.992)}to{opacity:1;transform:none}}
+@keyframes c53SceneBack{from{opacity:0;transform:translateX(-28px) scale(.992)}to{opacity:1;transform:none}}
+.c53-scene-card{padding:24px!important;overflow:hidden;position:relative}
+.c53-scene-card:before{content:'';position:absolute;width:160px;height:160px;border-radius:50%;right:-70px;top:-90px;background:radial-gradient(circle,#fff2b9 0,#fff8dc 35%,transparent 68%);pointer-events:none}
+.c53-scene-nav{display:flex;align-items:center;gap:11px;margin-bottom:20px;position:relative;z-index:1}
+.c53-back{appearance:none;width:39px;height:39px;border:1px solid #dbe7f8;border-radius:13px;background:#fff;color:#1557d5;display:grid;place-items:center;font-size:1.05rem;font-weight:1000;cursor:pointer;box-shadow:0 6px 18px rgba(21,87,213,.08)}
+.c53-scene-copy{min-width:0}.c53-scene-copy small{display:block;color:#9a720d;font-size:.58rem;font-weight:1000;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}.c53-scene-copy h2{margin:0;color:#142b52;font-size:1.2rem;font-weight:1000;letter-spacing:-.02em}.c53-scene-copy p{margin:5px 0 0;color:#74839d;font-size:.69rem;font-weight:750;line-height:1.5}
+.c53-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;position:relative;z-index:1}.c53-choice{appearance:none;text-align:left;padding:17px 16px;border:1px solid #dce7f6;border-radius:18px;background:linear-gradient(145deg,#fff,#fbfdff);cursor:pointer;transition:.18s ease;min-height:92px}.c53-choice b{display:block;color:#17284a;font-size:.86rem;font-weight:1000}.c53-choice span{display:block;margin-top:6px;color:#7787a2;font-size:.63rem;font-weight:760;line-height:1.45}.c53-choice:hover,.c53-choice:active{border-color:#2878ff;background:#edf5ff;box-shadow:0 11px 24px rgba(40,120,255,.12);transform:translateY(-2px)}
+.c53-period-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.c53-period-btn,.c53-subject-btn{appearance:none;border:1px solid #dce7f6;border-radius:15px;background:#fff;color:#29496e;font-weight:950;cursor:pointer;transition:.18s ease}.c53-period-btn{padding:13px 8px;font-size:.72rem}.c53-period-btn:hover,.c53-subject-btn:hover{border-color:#2878ff;background:#edf5ff;color:#1557d5;transform:translateY(-1px)}
+.c53-subject-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.c53-subject-btn{padding:15px;text-align:left}.c53-subject-btn b{display:block;font-size:.78rem}.c53-subject-btn span{display:block;margin-top:5px;color:#8190a9;font-size:.59rem;font-weight:800}
+.c53-weight-wrap{position:relative;z-index:1}.c53-continue{margin-top:16px;width:100%;height:48px;border:0;border-radius:15px;background:linear-gradient(135deg,#2878ff,#1557d5);color:#fff;font-weight:1000;cursor:pointer;box-shadow:0 11px 24px rgba(21,87,213,.21)}
+#scorePanel[hidden]{display:none!important}.c53-score-only{padding-top:0!important}.c53-score-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}.c53-score-title{font-weight:1000;color:#142b52;font-size:1rem}.c53-score-only .stats-grid,.c53-score-only .component-summary{display:none!important}.c53-score-only .section-head{display:none!important}.c53-score-only .tools-row{justify-content:flex-end}.c53-score-only .search-box{max-width:360px}.class-mini{display:inline-flex;margin-left:7px;padding:3px 7px;border-radius:999px;background:#edf5ff;color:#1557d5;font-size:.55rem;font-weight:950;vertical-align:middle}
+body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!important}
+.c74-assessment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.c74-assessment{min-height:96px;align-items:flex-start;text-align:left}
+.c74-assessment b{font-size:.92rem}
+.c74-assessment span{line-height:1.45}
+@media(max-width:720px){.c74-assessment-grid{grid-template-columns:1fr}.c74-assessment{min-height:82px}}
+@media(max-width:720px){.c53-scene-shell{min-height:260px}.c53-scene-card{padding:18px 15px!important}.c53-scene-nav{margin-bottom:16px}.c53-scene-copy h2{font-size:1rem}.c53-choice-grid{grid-template-columns:1fr}.c53-choice{padding:14px;min-height:76px}.c53-period-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.c53-period-btn{padding:11px 5px;font-size:.65rem}.c53-subject-grid{grid-template-columns:1fr}.c53-score-only{padding:12px!important}.c53-score-only .tools-row{margin-top:2px}.c53-score-only .search-box{max-width:none;width:100%}}
+</style>
+
+  <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="loader-icon">📝</div>
+  <div class="loader-title" id="loadingTitle">Menyiapkan lembar nilai</div>
+  <div class="loader-desc">Menghubungkan data kelas, guru, dan mata pelajaran.</div>
+</div>
+
+<div id="toast" class="toast">
+  <div class="toast-icon" id="toastIcon">ℹ️</div>
+  <div>
+    <div class="toast-title" id="toastTitle">Informasi</div>
+    <div class="toast-desc" id="toastDesc"></div>
+  </div>
+</div>
+
+<main class="page-shell">
+  <section class="exam-hero">
+    <div class="hero-copy">
+      <div class="hero-kicker">📊 Evaluasi Akademik 2026/2027</div>
+      <h1>Input Nilai Ujian</h1>
+      <p>Pilih jenis penilaian. Bobot sudah ditetapkan oleh pesantren sehingga guru tinggal memilih periode dan mengisi nilai.</p>
+    </div>
+
+    <div class="hero-user">
+      <div class="hero-user-label">Penguji Aktif</div>
+      <div class="hero-user-name" id="activeTeacherName">Guru CAHAYA</div>
+      <div class="hero-user-role" id="activeTeacherRole">Memuat profil pengguna...</div>
+    </div>
+  </section>
+
+  <section class="c53-scene-shell" id="examWizard">
+    <section class="panel-card c53-scene c53-scene-card active" id="sceneAssessment" data-scene="assessment">
+      <div class="c53-scene-nav"><div class="c53-scene-copy"><small>Mulai dari sini</small><h2>Pilih Jenis Penilaian</h2><p>Bobot nilai sudah tetap. Pilih sesuai jenis pelajaran yang akan dinilai.</p></div></div>
+      <div class="c53-choice-grid c74-assessment-grid">
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('tahfiz')"><b>📖 Tahfiz Al-Qur’an</b><span>Lisan 80% • Tulisan 20%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('kitab_tanpa_praktek')"><b>📚 Kitab Tanpa Praktek</b><span>Lisan 40% • Tulisan 40% • Tashnif 20%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('kitab_dengan_praktek')"><b>🧭 Kitab Dengan Praktek</b><span>Lisan 30% • Tulisan 25% • Praktek 25% • Tashnif 20%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('bahasa_arab')"><b>🗣️ Bahasa Arab</b><span>Lisan 50% • Tulisan 50%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('tahsin_praktek')"><b>🎙️ Tahsin Praktek</b><span>Level 1 &amp; 3 • Praktek 100%</span></button>
+        <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('tahsin_teori')"><b>✍️ Tahsin Teori</b><span>Level 2 • Lisan 50% • Tulisan 30% • Tashnif 20%</span></button>
+      </div>
+    </section>
+
+    <section class="panel-card c53-scene c53-scene-card" id="sceneSubject" data-scene="subject">
+      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="showExamScene('assessment',true)" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Mata pelajaran</small><h2>Pilih Mata Pelajaran</h2><p>Semua mata pelajaran pada jadwal Anda ditampilkan. Pilih mata pelajaran yang akan menggunakan skema penilaian ini.</p></div></div>
+      <div class="c53-subject-grid" id="subjectButtonGrid"></div>
+    </section>
+
+    <section class="panel-card c53-scene c53-scene-card" id="sceneType" data-scene="type">
+      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="backFromExamType()" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Jenis ujian</small><h2>Pilih Jenis Ujian</h2><p>Pilih evaluasi bulanan, triwulan, atau semester.</p></div></div>
+      <div class="c53-choice-grid">
+        <button type="button" class="c53-choice" onclick="selectExamType('Bulanan')"><b>Bulanan</b><span>Evaluasi rutin setiap bulan.</span></button>
+        <button type="button" class="c53-choice" onclick="selectExamType('Triwulan')"><b>Triwulan</b><span>Evaluasi tiap tiga bulan.</span></button>
+        <button type="button" class="c53-choice" onclick="selectExamType('Semester')"><b>Semester</b><span>Evaluasi akhir semester.</span></button>
+      </div>
+    </section>
+
+    <section class="panel-card c53-scene c53-scene-card" id="scenePeriod" data-scene="period">
+      <div class="c53-scene-nav"><button type="button" class="c53-back" onclick="showExamScene('type',true)" aria-label="Kembali">←</button><div class="c53-scene-copy"><small>Periode</small><h2 id="periodSceneTitle">Pilih Periode</h2><p id="periodSceneDesc">Setelah periode dipilih, daftar santri langsung dibuka.</p></div></div>
+      <div class="c53-period-grid" id="periodButtonGrid"></div>
+    </section>
+
+    <div hidden>
+      <input id="assessmentType" value="">
+      <select id="periodChooser"><option value=""></option></select>
+      <select id="mapel"><option value=""></option></select>
+      <select id="tahunAkademik"></select>
+      <select id="semester"><option value="Ganjil">Ganjil</option><option value="Genap">Genap</option></select>
+      <select id="jenisUjian"><option value=""></option></select>
+      <input id="kkmUjian" value="75">
+      <select id="bulanUjian"><option value=""></option></select>
+      <input id="periodeUjian">
+      <input type="date" id="tanggalUjian">
+      <select id="kelasKelompok"><option value=""></option></select>
+      <select id="guruPenguji"><option value=""></option></select>
+      <input id="materiUjian">
+      <div id="subjectClassInfo"></div>
+    </div>
+  </section>
+
+  <section class="panel-card c53-score-only" id="scorePanel" hidden>
+    <div class="c53-score-top"><button type="button" class="c53-back" onclick="backToExamSetup()" aria-label="Kembali">←</button><div class="c53-score-title">Nilai Santri</div></div>
+    <div class="section-head">
+      <div class="section-title-wrap">
+        <div class="section-icon">✍️</div>
+        <div>
+          <h2>Nilai Santri</h2>
+          <p id="headerSubtitle">Pilih jenis penilaian untuk melihat bobot tetap.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-mini">
+        <div class="stat-mini-label">Jumlah Santri</div>
+        <div class="stat-mini-value" id="statTotalStudents">0</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-label">Nilai Terisi</div>
+        <div class="stat-mini-value" id="statFilled">0</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-label">Rata-rata</div>
+        <div class="stat-mini-value" id="statAverage">0</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-label">Nilai Tertinggi</div>
+        <div class="stat-mini-value" id="statHighest">0</div>
+      </div>
+    </div>
+
+    <div class="tools-row">
+      <div class="search-box">
+        <span class="search-icon">🔎</span>
+        <input type="search" id="searchSantri" placeholder="Cari nama santri..." oninput="filterSantri()" disabled />
+      </div>
+      <div class="component-summary" id="componentSummary">Bobot mengikuti jenis penilaian yang dipilih.</div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-responsive">
+        <table class="cahaya-table" id="tabelEvaluasi">
+          <thead>
+            <tr id="tableHeaderRow"></tr>
+          </thead>
+          <tbody id="nilaiSantriBody">
+            <tr><td class="empty-state-cell" colspan="10">Pilih jenis penilaian dan periode terlebih dahulu.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="save-area">
+      <div style="font-size:12px;line-height:1.55;color:#718096;margin-bottom:10px;text-align:center;">Boleh simpan sebagian dulu. Nilai yang sudah tersimpan akan muncul kembali saat pelajaran dan periode yang sama dibuka, dan tetap dapat diedit.</div>
+      <button class="save-button" id="btnSimpan" onclick="simpanNilaiUjian()">
+        ☁️ Simpan Nilai Ini Dulu
+      </button>
+      <button class="final-button" id="btnFinal" onclick="kirimNilaiFinal()">
+        🔒 KIRIM NILAI FINAL (Tidak Bisa Diedit Lagi)
+      </button>
+      <div class="final-lock-note" id="finalLockNote">Gunakan tombol final hanya setelah seluruh komponen nilai selesai diinput.</div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push, get, remove, set, update, query, orderByChild, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  const firebaseConfig = window.CAHAYA_CONFIG.firebase;
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  async function pushIndexRecord(waliKey, recordId, data){
+    try{ await set(ref(db,`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordId}`),data); }
+    catch(error){ console.warn('Indeks wali nilai belum tersimpan:',error); }
+  }
+
+
+  let masterDataAkademik = {};
+  let activeStudentList = [];
+  let scheduleRows = [];
+  let teacherCodeAktif = "";
+  let teacherSubjectClasses = {};
+  let setupConfirmed = false;
+  let toastTimer = null;
+  let currentAssessmentKey = "";
+  let existingScoreRecords = {};
+  let currentSessionFinal = false;
+
+  const ASSESSMENT_TYPES = {
+    tahfiz: {
+      label: "Tahfiz Al-Qur’an", mapel: "Tahfiz Al-Qur’an", requiresSubject: false,
+      matchSubject: value => /tahfiz|al\s*[- ]?qur|qur[’'`]?an|quran/i.test(String(value||"")),
+      components: [{id:"syafawi",nama:"Lisan",bobot:80},{id:"tahriri",nama:"Tulisan",bobot:20}]
+    },
+    kitab_tanpa_praktek: {
+      label: "Pelajaran Kitab tanpa Praktek", requiresSubject: true,
+      components: [{id:"syafawi",nama:"Lisan",bobot:40},{id:"tahriri",nama:"Tulisan",bobot:40},{id:"tashnif",nama:"Tashnif",bobot:20}]
+    },
+    kitab_dengan_praktek: {
+      label: "Pelajaran Kitab dengan Praktek", requiresSubject: true,
+      components: [{id:"syafawi",nama:"Lisan",bobot:30},{id:"tahriri",nama:"Tulisan",bobot:25},{id:"tathbiqi",nama:"Praktek",bobot:25},{id:"tashnif",nama:"Tashnif",bobot:20}]
+    },
+    bahasa_arab: {
+      label: "Bahasa Arab", mapel: "Bahasa Arab", requiresSubject: false,
+      matchSubject: value => /bahasa\s*arab/i.test(String(value||"")),
+      components: [{id:"syafawi",nama:"Lisan",bobot:50},{id:"tahriri",nama:"Tulisan",bobot:50}]
+    },
+    tahsin_praktek: {
+      label: "Tahsin Praktek (Level 1 dan 3)", mapel: "Tahsin", requiresSubject: false,
+      matchSubject: value => /tahsin|al\s*[- ]?qur|qur[’'`]?an|quran/i.test(String(value||"")),
+      components: [{id:"tathbiqi",nama:"Praktek",bobot:100}]
+    },
+    tahsin_teori: {
+      label: "Tahsin Teori (Level 2)", mapel: "Tahsin", requiresSubject: false,
+      matchSubject: value => /tahsin|al\s*[- ]?qur|qur[’'`]?an|quran/i.test(String(value||"")),
+      components: [{id:"syafawi",nama:"Lisan",bobot:50},{id:"tahriri",nama:"Tulisan",bobot:30},{id:"tashnif",nama:"Tashnif",bobot:20}]
+    }
+  };
+
+  const fallbackMapel = [
+    "AQIDAH", "FIQIH", "ADAB", "SHIRAH", "HADITS", "NAHWU SHARAF",
+    "BALAGHAH", "BAHASA ARAB", "TAHSIN", "TAHFIZ", "KEWIRAUSAHAAN"
+  ];
+
+  function safeJson(value, fallback = {}) {
+    try { return JSON.parse(value || "") || fallback; }
+    catch (_) { return fallback; }
+  }
+
+  const activeUser = safeJson(localStorage.getItem("cahayaCurrentUser"), {});
+
+  function normalizeText(value = "") {
+    return String(value).toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function getActiveUserName() {
+    return activeUser.label || activeUser.nama || activeUser.namaTampilan || activeUser.username || "Guru CAHAYA";
+  }
+
+  function getRoleLabel() {
+    let roles = activeUser.akses || activeUser.jabatan || activeUser.role || [];
+    if (!Array.isArray(roles)) roles = [roles];
+    return roles.filter(Boolean).join(" • ") || "Pengguna CAHAYA APP";
+  }
+
+  function showToast(type, title, desc) {
+    const toast = document.getElementById("toast");
+    const icon = document.getElementById("toastIcon");
+    toast.className = `toast ${type || ""}`.trim();
+    icon.textContent = type === "success" ? "✅" : type === "error" ? "⚠️" : "ℹ️";
+    document.getElementById("toastTitle").textContent = title;
+    document.getElementById("toastDesc").textContent = desc;
+    requestAnimationFrame(() => toast.classList.add("show"));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 4200);
+  }
+
+  function hideLoading() {
+    const overlay = document.getElementById("loadingOverlay");
+    overlay.style.opacity = "0";
+    setTimeout(() => { overlay.style.display = "none"; }, 350);
+  }
+
+  const TEACHER_CODE_ALIASES = {
+    MULTAZAM:["multazam","multazam zakaria","abah multazam","dr multazam zakaria"], RASYIDIN:["rasyidin","rosyidin"],
+    NAQIEB:["naqieb","muhammad naqieb"], ZAKY:["zaky","zaki","muhammad zaky"], RAHIEL:["rahiel","mika rahiel","mika rahiel yusuf"],
+    FAIQ:["faiq","muhammad faiq"], FALAH:["falah","al falah","muhammad al falah","m al falah"], FATIMAH:["fatimah"],
+    MEILISA:["meilisa","melisa"], ALAMANDA:["alamanda"], HANIF:["hanif"], AHMAD_IMBRON:["ahmad imbron","imbron"],
+    ANDRIYANI:["andriyani","andriyani kusuma dayanti"], CAPPRY:["cappry","cappry yoda pratama"], DELLA:["della","della gustia"],
+    EDWIN:["edwin","edwin romeo"], EVITA:["evita","evita hardyanti"], FENNY:["fenny","fenny ayu anggraeni"],
+    LAILA:["laila","laila nuzlini"], MANDA:["manda","manda saputra"], MARYANA:["maryana"], NURUL_FADLILAH:["nurul fadlilah"], SHAFIRA:["shafira","shafira ramadanty"]
+  };
+  function normalizeTeacherIdentity(value=""){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\b(abah|abi|ummi|ustadzah|ustadz|ust|muallimah|muallim|guru|bapak|ibu|pak|bu|dr|s pd|m pd|mpd|se)\b/g," ").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim()}
+  function compactTeacherIdentity(value=""){return normalizeTeacherIdentity(value).replace(/\s+/g,"")}
+  function normalizeScheduleRows(value){return Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}))}
+  function detectTeacherCode(rows=[]){
+    const direct=String(activeUser.teacherCode||activeUser.guruKode||"").trim().toUpperCase(); if(direct)return direct;
+    const candidates=[getActiveUserName(),activeUser.username,String(activeUser.email||"").split("@")[0]].filter(Boolean).map(normalizeTeacherIdentity);
+    const known=new Set(rows.map(r=>String(r?.guruKode||"").trim().toUpperCase()).filter(Boolean)); let best={code:"",score:0};
+    Object.entries(TEACHER_CODE_ALIASES).forEach(([code,aliases])=>{if(known.size&&!known.has(code))return;aliases.forEach(alias=>candidates.forEach(c=>{const a=normalizeTeacherIdentity(alias);let score=c===a?100:(c.includes(a)||a.includes(c)?80:0);if(score>best.score)best={code,score}}))}); return best.code;
+  }
+  async function loadLocalSchedule(){try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"no-store"});return r.ok?normalizeScheduleRows(await r.json()):[]}catch(_){return[]}}
+
+  function initPageData() {
+    const today=new Date(), localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    const year=today.getFullYear(), month=today.getMonth(), academicStart=month>=6?year:year-1;
+    document.getElementById("tanggalUjian").value=localDate;
+    document.getElementById("tahunAkademik").innerHTML=`<option value="${academicStart}/${academicStart+1}">${academicStart}/${academicStart+1}</option>`;
+    document.getElementById("semester").value=month>=6?"Ganjil":"Genap";
+    document.getElementById("kkmUjian").value="75";
+    document.getElementById("activeTeacherName").textContent=getActiveUserName();
+    document.getElementById("activeTeacherRole").textContent=getRoleLabel();
+  }
+  window.syncJenisUjian=function(){};
+
+  function normalizeArray(value) {
+    if (Array.isArray(value)) return value.filter(Boolean).map(String);
+    if (value && typeof value === "object") return Object.values(value).filter(Boolean).map(String);
+    return [];
+  }
+  function buildClassSource() {
+    const kelasBaru=masterDataAkademik.kelas&&typeof masterDataAkademik.kelas==="object"?masterDataAkademik.kelas:{};
+    if(Object.keys(kelasBaru).length)return kelasBaru;
+    const halqah=masterDataAkademik.halqah&&typeof masterDataAkademik.halqah==="object"?masterDataAkademik.halqah:{}, hasil={};
+    Object.values(halqah).forEach(kategori=>{if(!kategori||typeof kategori!=="object")return;Object.entries(kategori).forEach(([namaKelas,daftarSantri])=>{hasil[namaKelas]=[...new Set([...(hasil[namaKelas]||[]),...normalizeArray(daftarSantri)])]})});
+    return hasil;
+  }
+  function buildTeacherSubjectMap(){
+    const source=buildClassSource(); teacherSubjectClasses={};
+    scheduleRows.filter(r=>r&&r.aktif!==false&&String(r.jenis||"").toLowerCase()!=="ekskul"&&String(r.guruKode||"").trim().toUpperCase()===teacherCodeAktif).forEach(r=>{
+      const subject=String(r.mapel||"").trim(), cls=String(r.kelas||"").trim(); if(!subject||!cls)return;
+      if(!teacherSubjectClasses[subject])teacherSubjectClasses[subject]=new Set(); teacherSubjectClasses[subject].add(cls);
+    });
+    Object.keys(teacherSubjectClasses).forEach(k=>teacherSubjectClasses[k]=[...teacherSubjectClasses[k]].sort((a,b)=>a.localeCompare(b,"id",{numeric:true})));
+  }
+  function populateMasterOptions(){
+    const teachers=normalizeArray(masterDataAkademik.guru), teacherSelect=document.getElementById("guruPenguji");
+    teacherSelect.innerHTML=""; teacherSelect.add(new Option(getActiveUserName(),getActiveUserName())); teacherSelect.value=getActiveUserName();
+    teacherCodeAktif=detectTeacherCode(scheduleRows); buildTeacherSubjectMap();
+    const mapel=document.getElementById("mapel"); mapel.innerHTML='<option value="">-- Pilih Mata Pelajaran --</option>';
+    Object.keys(teacherSubjectClasses).sort((a,b)=>a.localeCompare(b,"id")).forEach(subject=>mapel.add(new Option(subject,subject)));
+    if(!teacherCodeAktif||!Object.keys(teacherSubjectClasses).length){mapel.disabled=true;showToast("error","Jadwal guru belum terdeteksi","Mata pelajaran hanya ditampilkan dari jadwal guru yang sedang login.");}
+  }
+
+  const examSceneMap={assessment:'sceneAssessment',subject:'sceneSubject',type:'sceneType',period:'scenePeriod'};
+  window.showExamScene=function(name,back=false){
+    document.body.classList.remove('c53-score-focus');
+    const target=document.getElementById(examSceneMap[name]||name); if(!target)return;
+    document.querySelectorAll('#examWizard .c53-scene').forEach(x=>{x.classList.remove('active','back')});
+    target.classList.add('active'); if(back)target.classList.add('back');
+    document.getElementById('scorePanel').hidden=true;
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+
+  function activeAssessment(){ return ASSESSMENT_TYPES[currentAssessmentKey] || null; }
+  function resetExamPeriod(){
+    document.getElementById('jenisUjian').innerHTML='<option value=""></option>';
+    document.getElementById('periodChooser').innerHTML='<option value=""></option>';
+    document.getElementById('periodeUjian').value='';
+    document.getElementById('bulanUjian').innerHTML='<option value=""></option>';
+    setupConfirmed=false;
+    currentSessionFinal=false;
+  }
+  function setMapelValue(value){
+    const mapel=document.getElementById('mapel');
+    mapel.innerHTML=`<option value="${escapeHtml(value||'')}">${escapeHtml(value||'')}</option>`;
+    mapel.value=value||'';
+  }
+  function isDedicatedAssessmentSubject(subject=''){
+    const value=String(subject||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’'`]/g,'');
+    // Mapel yang sudah memiliki skema penilaian khusus tidak ditampilkan lagi pada pilihan Kitab.
+    return /bahasa\s*arab/.test(value) || /tahfiz|tahsin/.test(value) || /al\s*[- ]?qur|quran/.test(value);
+  }
+  function kitabSubjectEntries(){
+    // Hanya mapel yang benar-benar diajar oleh guru aktif sesuai Jadwal Pelajaran.
+    // Al-Qur'an/Tahfiz/Tahsin dan Bahasa Arab dikeluarkan karena memiliki skema penilaian tersendiri.
+    return Object.keys(teacherSubjectClasses)
+      .filter(subject=>!isDedicatedAssessmentSubject(subject))
+      .sort((a,b)=>a.localeCompare(b,'id'));
+  }
+  function classesForActiveAssessment(){
+    const config=activeAssessment(); if(!config)return[];
+    if(config.requiresSubject){return teacherSubjectClasses[document.getElementById('mapel').value]||[];}
+    const classes=[];
+    Object.entries(teacherSubjectClasses).forEach(([subject,list])=>{
+      if(config.matchSubject && config.matchSubject(subject)) classes.push(...(list||[]));
+    });
+    return [...new Set(classes)].sort((a,b)=>a.localeCompare(b,'id',{numeric:true}));
+  }
+
+  window.selectAssessmentType=function(key){
+    const config=ASSESSMENT_TYPES[key]; if(!config)return;
+    currentAssessmentKey=key; document.getElementById('assessmentType').value=key; resetExamPeriod();
+    if(config.requiresSubject){
+      setMapelValue(''); renderSubjectButtons(); showExamScene('subject');
+    }else{
+      setMapelValue(config.mapel); refreshStrukturTabel(); showExamScene('type');
+    }
+  };
+  window.backFromExamType=function(){
+    const config=activeAssessment();
+    showExamScene(config?.requiresSubject?'subject':'assessment',true);
+  };
+  function renderPeriodButtons(type){
+    const grid=document.getElementById('periodButtonGrid'),title=document.getElementById('periodSceneTitle'),items=[];
+    if(type==='Bulanan'){title.textContent='Pilih Bulan';['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'].forEach(x=>items.push([x,x]));}
+    else if(type==='Triwulan'){title.textContent='Pilih Triwulan';[1,2,3,4].forEach(n=>items.push([`Triwulan ${n}`,`Triwulan ${n}`]));}
+    else{title.textContent='Pilih Semester';[1,2].forEach(n=>items.push([`Semester ${n}`,`Semester ${n}`]));}
+    grid.innerHTML=items.map(([label,value])=>`<button type="button" class="c53-period-btn" data-period="${escapeHtml(value)}">${escapeHtml(label)}</button>`).join('');
+    grid.querySelectorAll('[data-period]').forEach(btn=>btn.addEventListener('click',()=>selectExamPeriod(btn.dataset.period)));
+  }
+  function renderSubjectButtons(){
+    const grid=document.getElementById('subjectButtonGrid');
+    const entries=kitabSubjectEntries();
+    grid.innerHTML=entries.length?entries.map(subject=>{const cls=teacherSubjectClasses[subject]||[];return `<button type="button" class="c53-subject-btn" data-subject="${escapeHtml(subject)}"><b>${escapeHtml(subject)}</b><span>${escapeHtml(cls.join(' • ')||'Kelas mengikuti jadwal')}</span></button>`}).join(''):'<div class="empty-state-cell">Pelajaran kitab pada jadwal Anda belum ditemukan.</div>';
+    grid.querySelectorAll('[data-subject]').forEach(btn=>btn.addEventListener('click',()=>selectExamSubject(btn.dataset.subject)));
+  }
+  window.selectExamSubject=function(subject){
+    setMapelValue(subject); examSubjectChanged(); refreshStrukturTabel(); showExamScene('type');
+  };
+  window.examSubjectChanged=function(){
+    const classes=classesForActiveAssessment();
+    const info=document.getElementById('subjectClassInfo'); if(info)info.textContent=classes.length?`Kelas otomatis: ${classes.join(' • ')}`:'Belum ada kelas pada jadwal Anda.';
+    document.getElementById('scorePanel').hidden=true;setupConfirmed=false;currentSessionFinal=false;
+  };
+  window.selectExamType=function(type){
+    document.getElementById('jenisUjian').innerHTML=`<option value="${type}">${type}</option>`;document.getElementById('jenisUjian').value=type;
+    document.getElementById('periodChooser').value='';setupConfirmed=false;
+    renderPeriodButtons(type);showExamScene('period');
+  };
+  window.selectExamPeriod=function(value){
+    if(!value)return;currentSessionFinal=false;const type=document.getElementById('jenisUjian').value;
+    const chooser=document.getElementById('periodChooser');chooser.innerHTML=`<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`;chooser.value=value;
+    document.getElementById('periodeUjian').value=value;
+    document.getElementById('bulanUjian').innerHTML=`<option value="${type==='Bulanan'?escapeHtml(value):''}">${type==='Bulanan'?escapeHtml(value):''}</option>`;
+    if(type==='Semester')document.getElementById('semester').value=value.endsWith('1')?'Ganjil':'Genap';
+    confirmExamSetup();
+  };
+  function buildStudentsForSelectedSubject(){
+    const source=buildClassSource(), classes=classesForActiveAssessment(), result=[];
+    classes.forEach(cls=>normalizeArray(source[cls]).forEach(name=>result.push({name,className:cls})));
+    const seen=new Set(); return result.filter(item=>{const key=`${item.className}|${item.name}`;if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>a.className.localeCompare(b.className,'id',{numeric:true})||a.name.localeCompare(b.name,'id'));
+  }
+  window.confirmExamSetup=async function(){
+    const config=activeAssessment(), jenis=document.getElementById('jenisUjian').value, period=document.getElementById('periodChooser').value, subject=document.getElementById('mapel').value, active=getKomponenAktif(), total=active.reduce((a,b)=>a+b.bobot,0);
+    if(!config||!jenis||!period||!subject){showToast('error','Pilihan belum lengkap','Pilih jenis penilaian, jenis ujian, dan periode.');return}
+    if(!active.length||!isWeightValid(total)){showToast('error','Skema bobot bermasalah','Bobot tetap jenis penilaian harus berjumlah 100%.');return}
+    activeStudentList=buildStudentsForSelectedSubject();
+    if(!activeStudentList.length){showToast('error','Santri belum ditemukan',config.requiresSubject?'Tidak ada santri pada kelas yang terkait dengan mata pelajaran ini.':'Kelas untuk jenis penilaian ini belum ditemukan pada jadwal guru.');return}
+    const classes=[...new Set(activeStudentList.map(x=>x.className))];
+    document.getElementById('kelasKelompok').innerHTML=`<option value="${classes.join(' | ')}">${classes.join(' | ')}</option>`;
+    document.getElementById('kelasKelompok').value=classes.join(' | ');
+    document.getElementById('materiUjian').value=`${config.label} • ${jenis} ${period}`;
+    setupConfirmed=true; currentSessionFinal=false; refreshStrukturTabel(); loadSantri(); document.getElementById('scorePanel').hidden=false; document.body.classList.add('c53-score-focus'); document.getElementById('scorePanel').scrollIntoView({behavior:'smooth',block:'start'});
+    await loadExistingScoresForCurrentSetup();
+  };
+
+  window.backToExamSetup=function(){document.body.classList.remove('c53-score-focus');document.getElementById('scorePanel').hidden=true;showExamScene('period',true);};
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    initPageData(); refreshStrukturTabel();
+    const searchInput=document.getElementById("searchSantri");
+    if(searchInput) searchInput.addEventListener("input", window.filterSantri);
+    try{
+      const [masterSnap,scheduleSnap]=await Promise.all([get(ref(db,"cahaya_app/master_akademik")).catch(()=>null),get(ref(db,"cahaya_app/jadwal_pelajaran")).catch(()=>null)]);
+      masterDataAkademik=masterSnap?.exists?.()?masterSnap.val():{};
+      scheduleRows=scheduleSnap?.exists?.()?normalizeScheduleRows(scheduleSnap.val()):[];
+      if(!scheduleRows.length)scheduleRows=await loadLocalSchedule();
+      populateMasterOptions();
+    }catch(error){console.error(error);showToast("error","Gagal memuat data",error.message||"Data belum dapat dimuat.");}
+    finally{hideLoading();}
+  });
+
+  window.getKomponenAktif = function() {
+    const config=activeAssessment();
+    return config ? config.components.map(component=>({...component})) : [];
+  };
+
+  function isWeightValid(total) {
+    return Math.abs(total - 100) < 0.001;
+  }
+
+  window.refreshStrukturTabel = function() {
+    const active = getKomponenAktif();
+    const totalWeight = active.reduce((sum, item) => sum + item.bobot, 0);
+    const saveButton = document.getElementById("btnSimpan");
+    const valid = isWeightValid(totalWeight) && active.length > 0;
+    saveButton.disabled = !valid;
+
+    const componentText = active.length
+      ? active.map(item => `${item.nama} ${item.bobot}%`).join(" • ")
+      : "Pilih jenis penilaian terlebih dahulu";
+
+    document.getElementById("headerSubtitle").textContent = componentText;
+    document.getElementById("componentSummary").textContent = componentText;
+
+    let header = '<th style="width:52px;text-align:center;">No</th><th>Nama Santri</th>';
+    active.forEach(item => {
+      header += `<th style="text-align:center;">${item.nama}<br><span style="font-weight:700;color:#8b99b0;">${item.bobot}%</span></th>`;
+    });
+    header += '<th style="text-align:center;">Nilai Total</th>';
+    document.getElementById("tableHeaderRow").innerHTML = header;
+
+    if (setupConfirmed) loadSantri();
+  };
+
+  function getStudents(className) {
+    const source = buildClassSource();
+    const value = source?.[className];
+    return normalizeArray(value).sort((a, b) => a.localeCompare(b, "id"));
+  }
+
+  function cleanStudentDisplayName(value = "") {
+    return String(value)
+      .replace(/^\s*\d+\s*[.):-]\s*/, "")
+      .trim();
+  }
+
+  function escapeHtml(value = "") {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function renderEmpty(message) {
+    document.getElementById("nilaiSantriBody").innerHTML =
+      `<tr><td class="empty-state-cell" colspan="10">${escapeHtml(message)}</td></tr>`;
+    document.getElementById("searchSantri").disabled = true;
+    const finalButton = document.getElementById("btnFinal");
+    if (finalButton) finalButton.disabled = true;
+  }
+
+  window.loadSantri = function() {
+    const tbody=document.getElementById("nilaiSantriBody");
+    if(!setupConfirmed||!activeStudentList.length){renderEmpty("Selesaikan pilihan ujian terlebih dahulu.");updateStats();return;}
+    const activeComponents=getKomponenAktif();
+    tbody.innerHTML=activeStudentList.map((item,index)=>{
+      const name=item.name||item, className=item.className||"", displayName=cleanStudentDisplayName(name);
+      const componentCells=activeComponents.map(component=>`<td class="score-cell" data-label="${escapeHtml(component.nama)}"><input type="number" inputmode="decimal" min="0" max="100" step="0.1" class="score-input input-dinamis" data-id="${component.id}" data-bobot="${component.bobot}" aria-label="Nilai ${escapeHtml(component.nama)} ${escapeHtml(displayName)}" oninput="markScoreDirty(this);hitungTotal(this)" placeholder="0" /></td>`).join("");
+      return `<tr data-nama="${escapeHtml(name)}" data-kelas="${escapeHtml(className)}" data-search="${escapeHtml(normalizeSearchText(displayName+" "+className))}"><td class="student-no">${index+1}</td><td class="student-name">${escapeHtml(displayName)}<span class="class-mini">${escapeHtml(className)}</span></td>${componentCells}<td class="nilai-total" data-label="Nilai Total"><span class="total-pill">0</span></td></tr>`;
+    }).join("");
+    const search=document.getElementById("searchSantri"); search.disabled=false; search.value="";
+    const finalButton=document.getElementById("btnFinal"); if(finalButton) finalButton.disabled=false;
+    updateStats();
+  };
+
+
+  function normalizeSearchText(value = "") {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function stableKey(value = "") {
+    const text = String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    let hash = 5381;
+    for (let i = 0; i < text.length; i++) hash = ((hash << 5) + hash) ^ text.charCodeAt(i);
+    return "k" + (hash >>> 0).toString(36);
+  }
+
+  function normalizeSessionText(value = "") {
+    return String(value || "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().replace(/[’'`]/g, "")
+      .replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function classScopeFromParams(params = {}) {
+    const raw = Array.isArray(params.kelasList)
+      ? params.kelasList
+      : String(params.kelas || "").split("|");
+    return [...new Set(raw.map(item => String(item || "").trim()).filter(Boolean))]
+      .sort((a,b) => a.localeCompare(b, "id", {numeric:true}));
+  }
+
+  function currentExamParams() {
+    const kelasElement = document.getElementById("kelasKelompok");
+    const kelas = String(kelasElement?.value || classesForActiveAssessment().join(" | ") || "").trim();
+    const kelasList = kelas.split("|").map(item => item.trim()).filter(Boolean);
+    const guru = document.getElementById("guruPenguji").value;
+    return {
+      jenis: document.getElementById("jenisUjian").value || "Bulanan",
+      jenisPenilaian: activeAssessment()?.label || "",
+      kodePenilaian: currentAssessmentKey,
+      tahun: document.getElementById("tahunAkademik").value,
+      semester: document.getElementById("semester").value,
+      bulan: document.getElementById("bulanUjian").value,
+      periode: document.getElementById("periodeUjian").value,
+      mapel: document.getElementById("mapel").value,
+      guru,
+      guruKode: String(teacherCodeAktif || "").trim().toUpperCase(),
+      guruKey: String(teacherCodeAktif || "").trim().toUpperCase() || normalizeTeacherIdentity(guru),
+      kelas,
+      kelasList
+    };
+  }
+
+  // V80.5: identitas sesi FINAL harus spesifik sampai guru + mapel + jenis penilaian + periode + cakupan kelas.
+  function scoreSessionKey(params = currentExamParams()) {
+    const classScope = classScopeFromParams(params).map(normalizeSessionText).join("~");
+    return stableKey([
+      "v805",
+      params.tahun,
+      params.semester,
+      params.jenis,
+      params.periode || params.bulan,
+      params.kodePenilaian,
+      normalizeSessionText(params.mapel),
+      String(params.guruKode || params.guruKey || normalizeTeacherIdentity(params.guru || "")),
+      classScope
+    ].join("|"));
+  }
+
+  // Hanya untuk membaca indeks V75–V80.4 agar nilai lama tetap dapat dimigrasikan ke sesi baru.
+  function legacyScoreSessionKeyV77(params = currentExamParams()) {
+    return stableKey([params.tahun, params.semester, params.jenis, params.periode, params.kodePenilaian, params.mapel, params.guru].join("|"));
+  }
+
+  function scoreStudentKey(name, className = "") {
+    return stableKey(`${className}|${name}`);
+  }
+
+  function scoreIndexPath(params = currentExamParams()) {
+    return `cahaya_app/nilai_input_index/${scoreSessionKey(params)}`;
+  }
+
+  function legacyScoreIndexPathV77(params = currentExamParams()) {
+    return `cahaya_app/nilai_input_index/${legacyScoreSessionKeyV77(params)}`;
+  }
+
+  function scoreFinalPath(params = currentExamParams()) {
+    return `cahaya_app/nilai_input_final/${scoreSessionKey(params)}`;
+  }
+
+  function teacherMatchesSession(value, params = {}) {
+    const source = normalizeTeacherIdentity(value || "");
+    if (!source) return false;
+    const target = normalizeTeacherIdentity(params.guru || "");
+    if (source === target) return true;
+    const code = String(params.guruKode || "").trim().toUpperCase();
+    const aliases = (TEACHER_CODE_ALIASES[code] || []).map(normalizeTeacherIdentity).filter(Boolean);
+    return aliases.includes(source);
+  }
+
+  function recordMatchesSession(record, params, options = {}) {
+    if (!record) return false;
+    const subject = normalizeSessionText(record.mata_pelajaran || record.mataPelajaran || record.mapel || "");
+    const sameSubject = subject && subject === normalizeSessionText(params.mapel || "");
+
+    const oldAssessmentCode = String(record.kode_penilaian || "").trim();
+    const oldAssessmentLabel = normalizeSessionText(record.jenis_penilaian || "");
+    const sameAssessment = oldAssessmentCode
+      ? oldAssessmentCode === String(params.kodePenilaian || "")
+      : (!oldAssessmentLabel || oldAssessmentLabel === normalizeSessionText(params.jenisPenilaian || ""));
+
+    const oldYear = String(record.tahun_akademik || record.tahunAjaran || "").trim();
+    const sameYear = !oldYear || oldYear === String(params.tahun || "").trim();
+
+    const oldPeriod = normalizeSessionText(record.periode_ujian || record.periode || record.bulan || "");
+    const targetPeriod = normalizeSessionText(params.periode || params.bulan || "");
+    const samePeriod = oldPeriod && oldPeriod === targetPeriod;
+
+    const oldExamType = normalizeSessionText(record.jenis_ujian || "");
+    const sameExamType = !oldExamType || oldExamType === normalizeSessionText(params.jenis || "");
+
+    const oldSemester = normalizeSessionText(record.semester || "");
+    const sameSemester = !oldSemester || oldSemester === normalizeSessionText(params.semester || "");
+
+    const oldTeacherRaw = record.guru_penguji || record.guru || record.nama_guru || "";
+    const sameTeacher = String(oldTeacherRaw || "").trim()
+      ? teacherMatchesSession(oldTeacherRaw, params)
+      : Boolean(options.allowMissingTeacher);
+
+    const recordClass = String(record.kelas_kelompok || record.kelas || "").trim();
+    const scope = classScopeFromParams(params).map(normalizeSessionText);
+    const sameClass = !recordClass || !scope.length || scope.includes(normalizeSessionText(recordClass));
+
+    return sameSubject && sameAssessment && sameYear && samePeriod && sameExamType && sameSemester && sameTeacher && sameClass;
+  }
+
+  function markerMatchesSession(marker, params) {
+    if (!marker || String(marker.status || "").toUpperCase() !== "FINAL") return false;
+    if (String(marker.sessionVersion || "") !== "v805") return false;
+    const sameMapel = normalizeSessionText(marker.mapel || "") === normalizeSessionText(params.mapel || "");
+    const sameGuru = teacherMatchesSession(marker.guru || "", params);
+    const sameJenis = normalizeSessionText(marker.jenisUjian || "") === normalizeSessionText(params.jenis || "");
+    const samePeriode = normalizeSessionText(marker.periode || "") === normalizeSessionText(params.periode || params.bulan || "");
+    const samePenilaian = String(marker.kodePenilaian || "") === String(params.kodePenilaian || "");
+    const sameTahun = String(marker.tahunAkademik || "") === String(params.tahun || "");
+    const markerClasses = String(marker.kelasScope || "").split("|").map(x=>normalizeSessionText(x)).filter(Boolean).sort();
+    const currentClasses = classScopeFromParams(params).map(normalizeSessionText).sort();
+    const sameClasses = markerClasses.length === currentClasses.length && markerClasses.every((x,i)=>x===currentClasses[i]);
+    return sameMapel && sameGuru && sameJenis && samePeriode && samePenilaian && sameTahun && sameClasses;
+  }
+
+  async function loadLegacySessionRecords(params) {
+    const monthly = params.jenis === "Bulanan";
+    const dbPath = monthly ? "cahaya_app/nilai_ujian_bulanan" : "cahaya_app/nilai_ujian";
+    const activeKeys = new Set(activeStudentList.map(item => scoreStudentKey(item.name, item.className)));
+    try {
+      // Fallback data lama dibuat ketat: guru, mapel, jenis ujian, periode, tahun, dan kelas harus cocok.
+      const snap = await get(query(ref(db, dbPath), limitToLast(monthly ? 1800 : 1200)));
+      const data = snap.val() || {};
+      const result = {};
+      Object.entries(data).forEach(([recordKey, record]) => {
+        if (!recordMatchesSession(record, params)) return;
+        const name = String(record.nama_santri || record.namaSantri || record.nama || "");
+        const cls = String(record.kelas_kelompok || record.kelas || "");
+        if (!name || !cls) return;
+        const studentKey = scoreStudentKey(name, cls);
+        if (activeKeys.size && !activeKeys.has(studentKey)) return;
+        result[studentKey] = { recordKey, dbPath, data: record };
+      });
+      return result;
+    } catch (error) {
+      console.warn("Data nilai lama belum dapat dimuat:", error);
+      return {};
+    }
+  }
+
+  async function loadExistingScoresForCurrentSetup() {
+    existingScoreRecords = {};
+    currentSessionFinal = false;
+    applyFinalState();
+    if (!setupConfirmed) return;
+    const params = currentExamParams();
+    const activeKeys = new Set(activeStudentList.map(item => scoreStudentKey(item.name, item.className)));
+
+    const acceptIndexedData = (indexed = {}) => {
+      Object.entries(indexed || {}).forEach(([studentKey, item]) => {
+        if (!item || !item.data) return;
+        const record = item.data;
+        if (!recordMatchesSession(record, params)) return;
+        const name = String(record.nama_santri || record.namaSantri || record.nama || "");
+        const cls = String(record.kelas_kelompok || record.kelas || "");
+        const exactKey = name && cls ? scoreStudentKey(name, cls) : studentKey;
+        if (activeKeys.size && !activeKeys.has(exactKey)) return;
+        existingScoreRecords[exactKey] = item;
+      });
+    };
+
+    try {
+      // 1) Indeks sesi baru V80.5.
+      const indexSnap = await get(ref(db, scoreIndexPath(params))).catch(()=>null);
+      if (indexSnap?.exists?.()) acceptIndexedData(indexSnap.val() || {});
+
+      // 2) Migrasi aman dari indeks lama V75–V80.4. Data tetap wajib lolos pencocokan sesi yang ketat.
+      if (!Object.keys(existingScoreRecords).length) {
+        const legacyIndexSnap = await get(ref(db, legacyScoreIndexPathV77(params))).catch(()=>null);
+        if (legacyIndexSnap?.exists?.()) acceptIndexedData(legacyIndexSnap.val() || {});
+      }
+
+      // 3) Fallback record lama apabila indeks belum tersedia.
+      if (!Object.keys(existingScoreRecords).length) {
+        existingScoreRecords = await loadLegacySessionRecords(params);
+      }
+
+      let loadedCount = 0;
+      document.querySelectorAll("#nilaiSantriBody tr[data-nama]").forEach(row => {
+        const studentKey = scoreStudentKey(row.dataset.nama, row.dataset.kelas || "");
+        let item = existingScoreRecords[studentKey];
+        if (!item) {
+          // Hanya izinkan fallback nama bila kelas record juga sama / record lama benar-benar tidak memiliki kelas.
+          item = Object.values(existingScoreRecords).find(candidate => {
+            const d = candidate?.data || {};
+            const sameName = String(d.nama_santri || d.namaSantri || d.nama || "") === String(row.dataset.nama || "");
+            const candidateClass = String(d.kelas_kelompok || d.kelas || "").trim();
+            const sameClass = !candidateClass || normalizeSessionText(candidateClass) === normalizeSessionText(row.dataset.kelas || "");
+            return sameName && sameClass && recordMatchesSession(d, params);
+          });
+        }
+        if (!item) return;
+        const record = item.data || {};
+        row.dataset.recordKey = item.recordKey || "";
+        row.dataset.recordPath = item.dbPath || (params.jenis === "Bulanan" ? "cahaya_app/nilai_ujian_bulanan" : "cahaya_app/nilai_ujian");
+        row.dataset.studentKey = studentKey;
+        row.querySelectorAll(".input-dinamis").forEach(input => {
+          const field = `nilai_${input.dataset.id}`;
+          if (Object.prototype.hasOwnProperty.call(record, field) && record[field] !== null && record[field] !== "") {
+            input.value = record[field];
+          } else {
+            input.value = "";
+          }
+          input.dataset.dirty = "0";
+        });
+        const anyFilled = [...row.querySelectorAll(".input-dinamis")].some(input => input.value !== "");
+        if (anyFilled) loadedCount++;
+        recalcScoreRow(row);
+      });
+
+      // Marker FINAL lama tidak lagi dipercaya untuk mengunci sesi baru.
+      // Marker V80.5 harus membawa identitas sesi lengkap dan cocok dengan guru/mapel/periode/kelas saat ini.
+      const finalSnap = await get(ref(db, scoreFinalPath(params))).catch(()=>null);
+      const marker = finalSnap?.exists?.() ? finalSnap.val() : null;
+      const markerFinal = markerMatchesSession(marker, params);
+
+      // Kompatibilitas FINAL lama: hanya dianggap final bila SETIAP santri aktif memiliki record FINAL
+      // yang benar-benar cocok dengan sesi ini. Jumlah record lain tidak boleh mengunci sesi.
+      const rosterFinal = activeStudentList.length > 0 && activeStudentList.every(student => {
+        const studentKey = scoreStudentKey(student.name, student.className);
+        const item = existingScoreRecords[studentKey];
+        return Boolean(item?.data && recordMatchesSession(item.data, params) && String(item.data.status_nilai || "").toUpperCase() === "FINAL");
+      });
+
+      currentSessionFinal = Boolean(markerFinal || rosterFinal);
+      applyFinalState();
+      updateStats();
+      if (currentSessionFinal) showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
+      else if (loadedCount) showToast("success", "Nilai sebelumnya dimuat", `${loadedCount} data santri sudah terisi dan dapat dilanjutkan atau diedit.`);
+    } catch (error) {
+      currentSessionFinal = false;
+      applyFinalState();
+      console.warn("Nilai sebelumnya belum dapat dimuat:", error);
+      showToast("error", "Status nilai gagal diperiksa", "Sesi tidak dikunci otomatis. Muat ulang halaman sebelum mengirim nilai final.");
+    }
+  }
+
+  function applyFinalState() {
+    const saveButton = document.getElementById("btnSimpan");
+    const finalButton = document.getElementById("btnFinal");
+    const note = document.getElementById("finalLockNote");
+    document.querySelectorAll("#nilaiSantriBody .input-dinamis").forEach(input => { input.disabled = currentSessionFinal; });
+    if (saveButton) {
+      saveButton.disabled = currentSessionFinal || !isWeightValid(getKomponenAktif().reduce((sum,item)=>sum+item.bobot,0));
+      saveButton.innerHTML = currentSessionFinal ? "🔒 Nilai Sudah FINAL" : "☁️ Simpan Nilai Ini Dulu";
+    }
+    if (finalButton) {
+      finalButton.disabled = currentSessionFinal;
+      finalButton.innerHTML = currentSessionFinal ? "✅ NILAI FINAL — TERKUNCI" : "🔒 KIRIM NILAI FINAL (Tidak Bisa Diedit Lagi)";
+    }
+    if (note) note.textContent = currentSessionFinal ? "Nilai telah dikirim final dan dikunci." : "Gunakan tombol final hanya setelah seluruh komponen nilai selesai diinput.";
+  }
+
+  window.markScoreDirty = function(input) {
+    if (currentSessionFinal) return;
+    if (input) input.dataset.dirty = "1";
+  };
+
+  function recalcScoreRow(row) {
+    if (!row) return;
+    let total = 0;
+    let hasInput = false;
+    row.querySelectorAll(".input-dinamis").forEach(input => {
+      if (input.value !== "") hasInput = true;
+      const score = Number(input.value) || 0;
+      const weight = Number(input.dataset.bobot) || 0;
+      total += score * (weight / 100);
+    });
+    const pill = row.querySelector(".total-pill");
+    if (pill) {
+      pill.textContent = total.toFixed(1);
+      pill.classList.toggle("filled", hasInput);
+    }
+  }
+
+  function validateScore(input) {
+    if (input.value === "") {
+      input.classList.remove("invalid");
+      return true;
+    }
+
+    const value = Number(input.value);
+    const valid = Number.isFinite(value) && value >= 0 && value <= 100;
+    input.classList.toggle("invalid", !valid);
+    return valid;
+  }
+
+  window.hitungTotal = function(element) {
+    validateScore(element);
+    recalcScoreRow(element.closest("tr"));
+    updateStats();
+  };
+
+  window.filterSantri = function() {
+    const input = document.getElementById("searchSantri");
+    const keyword = normalizeSearchText(input?.value || "");
+    document.querySelectorAll("#nilaiSantriBody tr[data-nama]").forEach(row => {
+      const haystack = normalizeSearchText(`${row.dataset.nama || ""} ${row.dataset.kelas || ""} ${row.textContent || ""}`);
+      const visible = !keyword || haystack.includes(keyword);
+      row.hidden = !visible;
+      row.style.display = visible ? "" : "none";
+    });
+  };
+
+  function updateStats() {
+    const rows = [...document.querySelectorAll("#nilaiSantriBody tr[data-nama]")];
+    const totals = [];
+    let filled = 0;
+
+    rows.forEach(row => {
+      const hasInput = [...row.querySelectorAll(".input-dinamis")].some(input => input.value !== "");
+      if (hasInput) {
+        filled++;
+        totals.push(Number(row.querySelector(".total-pill")?.textContent) || 0);
+      }
+    });
+
+    const average = totals.length ? totals.reduce((sum, value) => sum + value, 0) / totals.length : 0;
+    const highest = totals.length ? Math.max(...totals) : 0;
+
+    document.getElementById("statTotalStudents").textContent = rows.length;
+    document.getElementById("statFilled").textContent = filled;
+    document.getElementById("statAverage").textContent = average.toFixed(1);
+    document.getElementById("statHighest").textContent = highest.toFixed(1);
+  }
+
+  function findInvalidScore() {
+    return [...document.querySelectorAll(".input-dinamis")]
+      .find(input => !validateScore(input));
+  }
+
+  window.simpanNilaiUjian = async function(options = {}) {
+    const button = document.getElementById("btnSimpan");
+    if (currentSessionFinal) {
+      if (!options.silent) showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
+      return false;
+    }
+    const activeComponents = getKomponenAktif();
+    const totalWeight = activeComponents.reduce((sum, item) => sum + item.bobot, 0);
+
+    if (!isWeightValid(totalWeight) || !activeComponents.length) {
+      showToast("error", "Bobot belum valid", "Total bobot komponen harus tepat 100%.");
+      return false;
+    }
+
+    const invalidInput = findInvalidScore();
+    if (invalidInput) {
+      showToast("error", "Nilai tidak valid", "Nilai hanya dapat diisi dari 0 sampai 100.");
+      invalidInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      invalidInput.focus();
+      return false;
+    }
+
+    const jenis = document.getElementById("jenisUjian").value || "Bulanan";
+    const kkm = 75;
+    const params = {
+      ...currentExamParams(),
+      kkm,
+      kelas: document.getElementById("kelasKelompok").value,
+      materi: document.getElementById("materiUjian").value.trim(),
+      tanggal: document.getElementById("tanggalUjian").value
+    };
+
+    if (!params.tahun || !params.periode || !params.mapel || !params.guru || !params.tanggal || !params.jenisPenilaian || !setupConfirmed) {
+      showToast("error", "Data belum lengkap", "Selesaikan pilihan jenis penilaian, jenis ujian, dan periode.");
+      return false;
+    }
+
+    const rows = [...document.querySelectorAll("#nilaiSantriBody tr[data-nama]")];
+    const rowsToSave = rows.filter(row => {
+      const inputs = [...row.querySelectorAll(".input-dinamis")];
+      const dirty = inputs.some(input => input.dataset.dirty === "1");
+      const newWithValue = !row.dataset.recordKey && inputs.some(input => input.value !== "");
+      return dirty || newWithValue;
+    });
+
+    if (!rowsToSave.length) {
+      if (!options.silent) showToast("info", "Tidak ada perubahan", "Nilai yang tampil sudah tersimpan. Silakan ubah atau isi nilai yang belum ada.");
+      return true;
+    }
+
+    button.innerHTML = "⏳ Menyimpan...";
+    button.disabled = true;
+
+    try {
+      const monthly = jenis === "Bulanan";
+      const dbPath = monthly ? "cahaya_app/nilai_ujian_bulanan" : "cahaya_app/nilai_ujian";
+      const indexBase = scoreIndexPath(params);
+      let count = 0;
+      let partialCount = 0;
+
+      for (const row of rowsToSave) {
+        const studentName = row.dataset.nama;
+        const className = row.dataset.kelas || params.kelas;
+        const studentKey = scoreStudentKey(studentName, className);
+        const existingItem = existingScoreRecords[studentKey] || {};
+        const oldData = { ...(existingItem.data || {}) };
+        let recordKey = row.dataset.recordKey || existingItem.recordKey || "";
+
+        const finalData = {
+          ...oldData,
+          jenis_ujian: jenis,
+          jenis_penilaian: params.jenisPenilaian,
+          kode_penilaian: params.kodePenilaian,
+          kkm: params.kkm,
+          tahun_akademik: params.tahun,
+          semester: params.semester,
+          bulan: params.bulan,
+          nama_santri: studentName,
+          kelas_kelompok: className,
+          kelas: className,
+          periode_ujian: params.periode,
+          mata_pelajaran: params.mapel,
+          materi_ujian: params.materi,
+          guru_penguji: params.guru,
+          tanggal: params.tanggal,
+          tanggal_ujian: params.tanggal,
+          komponen_aktif: activeComponents.map(component => component.nama),
+          skema_bobot: activeComponents.reduce((acc, component) => { acc[component.nama] = component.bobot; return acc; }, {}),
+          tahunAjaran: params.tahun,
+          timestamp: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        activeComponents.forEach(component => {
+          const input = row.querySelector(`.input-dinamis[data-id="${component.id}"]`);
+          const field = `nilai_${component.id}`;
+          if (!input) return;
+          if (input.dataset.dirty === "1") {
+            if (input.value === "") delete finalData[field];
+            else finalData[field] = Number(input.value);
+          } else if (!Object.prototype.hasOwnProperty.call(finalData, field) && input.value !== "") {
+            finalData[field] = Number(input.value);
+          }
+          finalData[`bobot_${component.id}_persen`] = component.bobot;
+        });
+
+        const filledComponents = activeComponents.filter(component => Object.prototype.hasOwnProperty.call(finalData, `nilai_${component.id}`));
+        const total = activeComponents.reduce((sum, component) => {
+          const field = `nilai_${component.id}`;
+          return sum + (Object.prototype.hasOwnProperty.call(finalData, field) ? Number(finalData[field] || 0) * (component.bobot / 100) : 0);
+        }, 0);
+        finalData.nilai = Number(total.toFixed(2));
+        finalData.nilai_total = Number(total.toFixed(2));
+        finalData.komponen_terisi = filledComponents.map(component => component.nama);
+        finalData.komponen_belum_terisi = activeComponents.filter(component => !Object.prototype.hasOwnProperty.call(finalData, `nilai_${component.id}`)).map(component => component.nama);
+        finalData.status_input = filledComponents.length === activeComponents.length ? "lengkap" : "parsial";
+        if (finalData.status_input === "parsial") partialCount++;
+
+        if (!recordKey) {
+          const savedRef = await push(ref(db, dbPath));
+          recordKey = savedRef.key;
+        }
+        await set(ref(db, `${dbPath}/${recordKey}`), finalData);
+
+        const indexData = { recordKey, dbPath, data: finalData, updatedAt: new Date().toISOString() };
+        await set(ref(db, `${indexBase}/${studentKey}`), indexData);
+        existingScoreRecords[studentKey] = indexData;
+        row.dataset.recordKey = recordKey;
+        row.dataset.recordPath = dbPath;
+        row.dataset.studentKey = studentKey;
+        row.querySelectorAll(".input-dinamis").forEach(input => { input.dataset.dirty = "0"; });
+
+        if (monthly) {
+          const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          if(waliKey && recordKey) await set(ref(db,`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordKey}`),finalData);
+        }
+        count++;
+      }
+
+      if (!options.silent) showToast("success", "Nilai berhasil disimpan", partialCount ? `${count} data tersimpan. ${partialCount} masih parsial dan bisa dilanjutkan kapan saja.` : `${count} data tersimpan lengkap dan tetap dapat diedit.`);
+      button.innerHTML = "✅ Tersimpan — Tetap Bisa Diedit";
+      setTimeout(() => { if (document.body.contains(button) && !currentSessionFinal) button.innerHTML = "☁️ Simpan Nilai Ini Dulu"; }, 1800);
+      updateStats();
+      return true;
+    } catch (error) {
+      console.error("Gagal menyimpan nilai:", error);
+      showToast("error", "Gagal menyimpan", error.message || "Terjadi kesalahan saat mengirim data ke Firebase.");
+      return false;
+    } finally {
+      if (document.body.contains(button)) {
+        const total = getKomponenAktif().reduce((sum, item) => sum + item.bobot, 0);
+        button.disabled = currentSessionFinal || !isWeightValid(total);
+      }
+    }
+  };
+
+  window.kirimNilaiFinal = async function() {
+    if (currentSessionFinal) {
+      showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
+      return;
+    }
+    const rows = [...document.querySelectorAll("#nilaiSantriBody tr[data-nama]")];
+    if (!rows.length) {
+      showToast("error", "Belum ada data", "Tampilkan daftar santri terlebih dahulu.");
+      return;
+    }
+    const incomplete = rows.find(row => [...row.querySelectorAll(".input-dinamis")].some(input => input.value === ""));
+    if (incomplete) {
+      incomplete.scrollIntoView({behavior:"smooth",block:"center"});
+      showToast("error", "Nilai belum lengkap", `Lengkapi seluruh komponen nilai ${cleanStudentDisplayName(incomplete.dataset.nama || "santri")} sebelum dikirim final.`);
+      return;
+    }
+    const invalidInput = findInvalidScore();
+    if (invalidInput) {
+      showToast("error", "Nilai tidak valid", "Nilai hanya dapat diisi dari 0 sampai 100.");
+      invalidInput.focus();
+      return;
+    }
+    const ok = window.confirm("Kirim NILAI FINAL? Setelah dikirim, nilai pada pelajaran dan periode ini tidak dapat diedit lagi dari CAHAYA App.");
+    if (!ok) return;
+
+    const finalButton = document.getElementById("btnFinal");
+    finalButton.disabled = true;
+    finalButton.innerHTML = "⏳ Mengirim nilai final...";
+    const saved = await window.simpanNilaiUjian({silent:true});
+    if (!saved) {
+      finalButton.disabled = false;
+      finalButton.innerHTML = "🔒 KIRIM NILAI FINAL (Tidak Bisa Diedit Lagi)";
+      return;
+    }
+
+    try {
+      const params = currentExamParams();
+      const monthly = params.jenis === "Bulanan";
+      const nowIso = new Date().toISOString();
+      const finalBy = getActiveUserName();
+      const updates = {};
+      const nextIndexRecords = {};
+      for (const row of rows) {
+        const studentKey = scoreStudentKey(row.dataset.nama, row.dataset.kelas || "");
+        let item = existingScoreRecords[studentKey];
+        if (!item) {
+          item = Object.values(existingScoreRecords).find(candidate => String(candidate?.data?.nama_santri || "") === String(row.dataset.nama || ""));
+        }
+        if (!item?.recordKey || !item?.dbPath || !item?.data) throw new Error(`Data ${row.dataset.nama || "santri"} belum tersimpan.`);
+        const finalData = {...item.data, status_nilai:"FINAL", status_input:"lengkap", locked:true, final_at:nowIso, final_by:finalBy, updated_at:nowIso};
+        const indexData = {...item, data:finalData, updatedAt:nowIso, status:"FINAL"};
+        updates[`${item.dbPath}/${item.recordKey}`] = finalData;
+        updates[`${scoreIndexPath(params)}/${studentKey}`] = indexData;
+        nextIndexRecords[studentKey] = indexData;
+        if (monthly) {
+          const waliKey = String(row.dataset.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${item.recordKey}`] = finalData;
+        }
+      }
+      updates[scoreFinalPath(params)] = {
+        status:"FINAL", locked:true, finalAt:nowIso, finalBy,
+        sessionVersion:"v805", sessionKey:scoreSessionKey(params),
+        jenisPenilaian:params.jenisPenilaian, kodePenilaian:params.kodePenilaian,
+        jenisUjian:params.jenis, periode:params.periode, mapel:params.mapel,
+        tahunAkademik:params.tahun, semester:params.semester,
+        guru:params.guru, guruKode:params.guruKode || "",
+        kelasScope:classScopeFromParams(params).join(" | "),
+        rosterHash:stableKey(activeStudentList.map(item=>`${item.className}|${item.name}`).sort().join("||")),
+        jumlahSantri:rows.length
+      };
+      // Satu multi-location update: seluruh nilai menjadi FINAL sekaligus atau gagal sekaligus.
+      await update(ref(db), updates);
+      Object.assign(existingScoreRecords, nextIndexRecords);
+      currentSessionFinal = true;
+      applyFinalState();
+      showToast("success", "Nilai FINAL terkirim", `${rows.length} nilai santri telah dikunci. Nilai tidak dapat diedit lagi dari CAHAYA App.`);
+    } catch (error) {
+      console.error("Gagal finalisasi nilai:", error);
+      finalButton.disabled = false;
+      finalButton.innerHTML = "🔒 KIRIM NILAI FINAL (Tidak Bisa Diedit Lagi)";
+      showToast("error", "Gagal mengirim nilai final", error.message || "Nilai belum berhasil dikunci.");
+    }
+  };
+</script>
+
+  <script src="../js/cahaya-responsive-v24.js?v=42" defer></script>
+<button type="button" onclick="location.href='../pendidikan/tindak-lanjut-akademik.html'" style="position:fixed;right:16px;bottom:18px;z-index:9999;border:0;border-radius:999px;padding:11px 15px;background:#173f78;color:#fff;font-weight:900;box-shadow:0 10px 28px rgba(23,63,120,.25);cursor:pointer">🎓 Tindak Lanjut Akademik</button>
+</body>
+</html>

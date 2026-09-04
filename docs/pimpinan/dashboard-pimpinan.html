@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#f5f8ff">
+<script src="../config/tenant-config.js"></script>
+<script src="../config/master-data.js"></script>
+<script src="../js/cahaya-config-runtime.js"></script>
+<title>Dashboard Pimpinan • CAHAYA APP</title>
+<style>
+:root{
+  --blue:#2878ff;--blue-dark:#1557d5;--cyan:#19c6e6;--green:#29c58d;--orange:#ff9f43;--purple:#7667f5;
+  --ink:#152347;--text:#273654;--muted:#74819b;--line:#e4ebf5;--soft:#f5f8ff;--card:#fff;
+  --shadow:0 16px 42px rgba(35,78,160,.09);--shadow-soft:0 8px 24px rgba(35,78,160,.06)
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Nunito,Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:linear-gradient(180deg,#f8fbff 0,#f4f7fc 100%);-webkit-tap-highlight-color:transparent}button,input,select{font:inherit}.page{max-width:1380px;margin:auto;padding:22px 22px 56px}
+.hidden{display:none!important}
+/* MENU UTAMA — pola dashboard utama / mobile banking */
+.menu-home{animation:fadeUp .24s ease}.menu-surface{background:#fff;border:1px solid rgba(226,234,245,.92);border-radius:25px;padding:20px;box-shadow:var(--shadow-soft)}
+.menu-caption{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 2px 15px}.menu-caption strong{font-size:.82rem;color:var(--ink);font-weight:1000}.menu-caption span{font-size:.65rem;color:#8793a8;font-weight:800}
+.menu-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.menu-card{position:relative;display:flex;align-items:center;gap:14px;min-height:110px;padding:18px;text-align:left;cursor:pointer;background:linear-gradient(145deg,#fff,#fbfdff);border:1px solid #e2eaf5;border-radius:22px;box-shadow:0 8px 24px rgba(32,67,124,.055);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;overflow:hidden}.menu-card:before{content:"";position:absolute;width:100px;height:100px;border-radius:50%;right:-52px;bottom:-58px;background:var(--bubble,#eef5ff)}.menu-card:hover{transform:translateY(-3px);border-color:#cbdcf6;box-shadow:0 16px 32px rgba(32,67,124,.10)}.menu-card:active{transform:scale(.985)}
+.menu-icon{width:58px;height:58px;flex:0 0 58px;display:grid;place-items:center;border-radius:19px;color:#fff;background:var(--accent);box-shadow:0 10px 22px color-mix(in srgb,var(--accent) 26%,transparent)}.menu-icon svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.menu-copy{position:relative;z-index:1;min-width:0}.menu-copy b{display:block;color:var(--ink);font-size:.92rem;line-height:1.25;font-weight:1000}.menu-copy small{display:block;margin-top:5px;color:#7d8aa0;font-size:.65rem;line-height:1.45;font-weight:750}.menu-arrow{margin-left:auto;position:relative;z-index:1;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#f4f7fb;color:#7790b1;font-size:1rem;font-weight:1000}
+.menu-card.nilai{--accent:linear-gradient(145deg,#1557d5,#2878ff);--bubble:#edf5ff}.menu-card.asesmen{--accent:linear-gradient(145deg,#d58a12,#f5b53f);--bubble:#fff6df}.menu-card.hasil{--accent:linear-gradient(145deg,#0f8f83,#25bfa8);--bubble:#e9fbf7}.menu-card.observasi{--accent:linear-gradient(145deg,#6757e8,#8b7cf7);--bubble:#f0edff}.menu-card.jurnal{--accent:linear-gradient(145deg,#0b9a78,#29c58d);--bubble:#eafaf4}
+/* MODULE */
+.module-view{animation:fadeUp .24s ease}.module-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}.back-btn{width:39px;height:39px;display:grid;place-items:center;border:1px solid #dfe7f2;background:#fff;border-radius:13px;color:#4f6482;cursor:pointer;box-shadow:0 5px 16px rgba(32,67,124,.055);font-size:1rem;font-weight:1000}.module-title{min-width:0}.module-title b{display:block;font-size:.98rem;color:var(--ink);font-weight:1000}.module-title span{display:block;margin-top:2px;font-size:.62rem;color:#8793a7;font-weight:750}
+.module{display:none}.module.active{display:block}.panel{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-soft);overflow:hidden}.panel-head{padding:18px 20px 14px;border-bottom:1px solid #edf1f6}.panel-head h2{margin:0;color:var(--ink);font-size:1.06rem;font-weight:1000;letter-spacing:-.02em}.panel-head p{margin:5px 0 0;color:#7d8aa0;font-size:.68rem;line-height:1.55;font-weight:700;max-width:900px}
+.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:10px;padding:14px 18px;background:#f8faff;border-bottom:1px solid #edf1f6}.filters.cols4{grid-template-columns:repeat(3,minmax(0,1fr)) auto}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:.55rem;color:#72819a;font-weight:1000;text-transform:uppercase;letter-spacing:.06em}.control{width:100%;min-height:42px;border:1px solid #d9e3ef;border-radius:12px;background:#fff;color:#253653;padding:9px 11px;font-size:.69rem;font-weight:800;outline:none}.control:focus{border-color:#4a8de8;box-shadow:0 0 0 4px rgba(40,120,255,.10)}.load-btn{align-self:end;min-height:42px;border:0;border-radius:12px;padding:10px 18px;background:linear-gradient(145deg,#1557d5,#2878ff);color:#fff;font-size:.68rem;font-weight:1000;cursor:pointer;box-shadow:0 8px 18px rgba(40,120,255,.22)}
+.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:15px 18px}.metric{position:relative;overflow:hidden;min-height:88px;padding:13px 14px;border:1px solid #e2e9f2;border-radius:16px;background:linear-gradient(180deg,#fff,#fcfdff)}.metric:after{content:"";position:absolute;width:52px;height:52px;border-radius:50%;right:-18px;bottom:-24px;background:#eef4fd}.metric b{display:block;position:relative;z-index:1;color:var(--ink);font-size:1.35rem;line-height:1;font-weight:1000;letter-spacing:-.04em}.metric span{display:block;position:relative;z-index:1;margin-top:7px;color:#78869b;font-size:.56rem;line-height:1.3;font-weight:900}.metric.featured{background:linear-gradient(145deg,#1557d5,#2878ff);border-color:transparent}.metric.featured b{color:#fff}.metric.featured span{color:#dfeaff}.metric.featured:after{background:rgba(255,255,255,.12)}
+.section{padding:2px 18px 18px}.section-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 11px}.section-tools h3{margin:0;color:var(--ink);font-size:.82rem;font-weight:1000}.search{width:min(360px,100%)}.table-wrap{overflow:auto;border:1px solid #e2e9f2;border-radius:15px}.data-table{width:100%;border-collapse:collapse;min-width:930px}.data-table th,.data-table td{padding:10px 9px;border-bottom:1px solid #edf1f5;text-align:left;vertical-align:middle;font-size:.62rem}.data-table th{position:sticky;top:0;z-index:2;background:#f1f6fc;color:#455a78;font-size:.54rem;font-weight:1000;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}.data-table tbody tr:hover td{background:#fbfdff}.teacher{font-weight:1000;color:#203454;font-size:.69rem}.sub{display:block;margin-top:3px;color:#8390a4;font-size:.53rem;line-height:1.4}.pct{font-size:.72rem;color:#203454;font-weight:1000}.progress{width:140px;height:7px;border-radius:999px;background:#e8edf4;overflow:hidden;margin-top:4px}.progress i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2878ff,#19c6e6)}.badge{display:inline-flex;align-items:center;padding:5px 7px;border-radius:999px;font-size:.52rem;font-weight:1000;white-space:nowrap}.done{background:#e8f8f1;color:#147353}.near{background:#edf4ff;color:#1b61c7}.run{background:#fff4dd;color:#98640f}.none{background:#fff0f1;color:#a23c49}.purple{background:#f0edff;color:#6556cf}.empty{text-align:center!important;padding:34px!important;color:#8a96a8!important;font-weight:800}.note{margin:0 18px 18px;padding:11px 13px;border:1px solid #e7edf4;border-radius:13px;background:#f9fbfd;color:#6e7d93;font-size:.59rem;line-height:1.55;font-weight:700}.mobile-list{display:none}.mobile-card{border:1px solid #e2e9f2;border-radius:16px;background:#fff;padding:13px}.mobile-card+.mobile-card{margin-top:8px}.mc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.mc-title{font-size:.72rem;font-weight:1000;color:#203454}.mc-meta{margin-top:4px;color:#7f8ca0;font-size:.56rem;line-height:1.45;font-weight:750}.mc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:11px}.mc-box{padding:8px 9px;background:#f7f9fc;border-radius:11px}.mc-box small{display:block;color:#8894a7;font-size:.49rem;font-weight:900;text-transform:uppercase}.mc-box b{display:block;margin-top:3px;font-size:.66rem;color:#293c5c}.mc-note{margin-top:9px;color:#5f6f87;font-size:.57rem;line-height:1.5;font-weight:700}
+/* report specific */
+.report-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border-radius:999px;background:#f1f5fb;color:#4e6587;font-size:.51rem;font-weight:1000}.score-dot{width:8px;height:8px;border-radius:50%;background:#29c58d}.score-dot.warn{background:#ffb43c}.score-dot.bad{background:#ff6675}.report-filter-row{display:grid;grid-template-columns:1.1fr 1fr 1fr 1.2fr auto;gap:10px;padding:14px 18px;background:#f8faff;border-bottom:1px solid #edf1f6}
+
+/* HASIL ASESMEN CAHAYA — gaya laporan perkembangan karakter wali */
+.hasil-list{display:grid;gap:14px}.hasil-usrah{border:1px solid #e1e9f3;border-radius:18px;background:#fff;overflow:hidden}.hasil-usrah-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 15px;background:linear-gradient(135deg,#f6fbff,#f8fffd);border-bottom:1px solid #e8eef5}.hasil-usrah-title{display:flex;align-items:center;gap:10px;min-width:0}.hasil-usrah-icon{width:38px;height:38px;display:grid;place-items:center;flex:0 0 38px;border-radius:13px;background:linear-gradient(145deg,#0f8f83,#25bfa8);color:#fff;font-weight:1000}.hasil-usrah-title b{display:block;color:#193252;font-size:.76rem;font-weight:1000}.hasil-usrah-title small{display:block;margin-top:2px;color:#7c8aa0;font-size:.53rem;font-weight:800}.hasil-usrah-progress{text-align:right}.hasil-usrah-progress b{display:block;color:#0d7d70;font-size:.78rem;font-weight:1000}.hasil-usrah-progress small{display:block;margin-top:2px;color:#7e8b9e;font-size:.49rem;font-weight:800}.hasil-student-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}.hasil-student{position:relative;padding:12px;border:1px solid #e5ebf3;border-radius:15px;background:linear-gradient(180deg,#fff,#fcfdff)}.hasil-student.missing{background:#fafbfc}.hasil-student-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.hasil-student-name{color:#1f3556;font-size:.68rem;font-weight:1000;line-height:1.3}.hasil-student-meta{margin-top:5px;color:#7c899c;font-size:.52rem;line-height:1.45;font-weight:750}.hasil-mini-dims{display:flex;gap:4px;flex-wrap:wrap;margin-top:9px}.hasil-mini-dim{width:24px;height:24px;display:grid;place-items:center;border-radius:8px;background:#f1f5f9;font-size:.65rem}.hasil-detail-btn{width:100%;margin-top:10px;min-height:34px;border:0;border-radius:10px;background:linear-gradient(145deg,#0f8f83,#25bfa8);color:#fff;font-size:.56rem;font-weight:1000;cursor:pointer}.hasil-detail-btn:disabled{background:#edf1f5;color:#9aa6b7;cursor:not-allowed}.hasil-period-note{margin:0 18px 15px;padding:10px 12px;border:1px solid #d8eee9;border-radius:12px;background:#f2fbf9;color:#4f716c;font-size:.57rem;line-height:1.55;font-weight:750}
+#hasilModal{position:fixed;inset:0;z-index:120;display:none;align-items:flex-start;justify-content:center;padding:24px;background:rgba(10,26,52,.54);backdrop-filter:blur(5px);overflow:auto}#hasilModal.show{display:flex}.hasil-modal-card{width:min(920px,100%);margin:auto;border-radius:24px;background:#f8fbff;box-shadow:0 28px 80px rgba(7,24,54,.28);overflow:hidden}.hasil-modal-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 17px;background:rgba(255,255,255,.96);border-bottom:1px solid #e5ebf3;backdrop-filter:blur(12px)}.hasil-modal-head b{display:block;color:#172d50;font-size:.82rem;font-weight:1000}.hasil-modal-head span{display:block;margin-top:2px;color:#7d899c;font-size:.53rem;font-weight:800}.hasil-close{width:36px;height:36px;display:grid;place-items:center;border:1px solid #dce5ef;border-radius:11px;background:#fff;color:#60728e;font-size:1.15rem;cursor:pointer}.hasil-report{padding:18px}.hasil-report-identity{display:grid;grid-template-columns:1.25fr .75fr .75fr;gap:9px;margin-bottom:12px}.hasil-id-box{padding:11px 12px;border:1px solid #e2e8f1;border-radius:13px;background:#fff}.hasil-id-box small{display:block;color:#8490a3;font-size:.48rem;font-weight:1000;text-transform:uppercase;letter-spacing:.04em}.hasil-id-box b{display:block;margin-top:4px;color:#243a5b;font-size:.64rem;line-height:1.4;font-weight:1000}.hasil-analysis-note{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;padding:11px 12px;border:1px solid #d9e7f5;border-radius:13px;background:#f5f9ff;color:#5b6c84;font-size:.58rem;line-height:1.55;font-weight:750}.hasil-analysis-note i{font-style:normal;font-size:1rem}.hasil-dimensi{margin-bottom:10px;padding:12px 13px;border-radius:15px;border:1px solid}.hasil-dimensi-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}.hasil-dimensi-icon{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;color:#fff;font-size:.82rem}.hasil-dimensi h4{margin:0;font-size:.65rem;font-weight:1000}.hasil-dimensi p{margin:0;color:#465a75;font-size:.59rem;line-height:1.62;font-weight:700}.hasil-dimensi.spiritual{background:linear-gradient(135deg,#ecfdf5,#f6fffb);border-color:#b7ecd5}.hasil-dimensi.spiritual .hasil-dimensi-icon{background:linear-gradient(135deg,#34d399,#10b981)}.hasil-dimensi.spiritual h4{color:#047857}.hasil-dimensi.relasional{background:linear-gradient(135deg,#eff6ff,#f8fbff);border-color:#c9defc}.hasil-dimensi.relasional .hasil-dimensi-icon{background:linear-gradient(135deg,#60a5fa,#3b82f6)}.hasil-dimensi.relasional h4{color:#1d4ed8}.hasil-dimensi.emosional{background:linear-gradient(135deg,#fffbeb,#fffdf5);border-color:#f7df91}.hasil-dimensi.emosional .hasil-dimensi-icon{background:linear-gradient(135deg,#facc15,#f59e0b)}.hasil-dimensi.emosional h4{color:#b76a05}.hasil-dimensi.intelektual{background:linear-gradient(135deg,#f8fafc,#fff);border-color:#d6dde6}.hasil-dimensi.intelektual .hasil-dimensi-icon{background:linear-gradient(135deg,#94a3b8,#64748b)}.hasil-dimensi.intelektual h4{color:#334155}.hasil-dimensi.fisik{background:linear-gradient(135deg,#fff1f2,#fff8f8);border-color:#f8c8d0}.hasil-dimensi.fisik .hasil-dimensi-icon{background:linear-gradient(135deg,#fb7185,#e11d48)}.hasil-dimensi.fisik h4{color:#be123c}.hasil-follow{margin-top:12px;padding:13px;border:1px solid #e7dcfb;border-radius:15px;background:linear-gradient(135deg,#fbf8ff,#fff)}.hasil-follow h4{margin:0 0 9px;color:#6b3fc7;font-size:.67rem;font-weight:1000}.hasil-follow-item+.hasil-follow-item{margin-top:9px}.hasil-follow-label{color:#7d66a8;font-size:.49rem;font-weight:1000;text-transform:uppercase}.hasil-follow-text{margin-top:3px;color:#4c5b72;font-size:.58rem;line-height:1.55;font-weight:700}.hasil-focus{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}.hasil-focus span{padding:5px 7px;border-radius:999px;background:#eee8fb;color:#6848aa;font-size:.5rem;font-weight:900}
+@media(max-width:1100px){.menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hasil-student-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){#hasilModal{padding:0}.hasil-modal-card{min-height:100vh;border-radius:0;margin:0}.hasil-report{padding:11px}.hasil-report-identity{grid-template-columns:1fr 1fr}.hasil-report-identity .hasil-id-box:first-child{grid-column:1/-1}.hasil-student-grid{grid-template-columns:1fr;padding:9px}.hasil-usrah-head{padding:11px}.hasil-period-note{margin:0 12px 12px}}
+.loading{display:none;position:fixed;inset:0;z-index:50;place-items:center;background:rgba(246,249,253,.70);backdrop-filter:blur(3px)}.loading.show{display:grid}.loader-card{display:flex;align-items:center;gap:10px;padding:13px 16px;border-radius:15px;background:#fff;box-shadow:0 18px 45px rgba(28,55,101,.16);font-size:.68rem;font-weight:1000;color:#1557d5}.spinner{width:24px;height:24px;border:3px solid #dce8f8;border-top-color:#2878ff;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@media(max-width:900px){.page{padding:12px 10px 90px}.menu-surface{padding:14px;border-radius:20px}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.menu-card{min-height:96px;padding:13px;gap:10px;border-radius:18px}.menu-icon{width:49px;height:49px;flex-basis:49px;border-radius:16px}.menu-icon svg{width:23px;height:23px}.menu-copy b{font-size:.78rem}.menu-copy small{font-size:.58rem}.menu-arrow{display:none}.panel{border-radius:19px}.filters,.filters.cols4,.report-filter-row{grid-template-columns:1fr 1fr}.load-btn{width:100%}.summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px}.metric{min-height:80px}.metric:last-child{grid-column:1/-1}.section{padding:2px 12px 14px}.section-tools{display:block}.section-tools .search{width:100%;margin-top:8px}.table-wrap{display:none}.mobile-list{display:block}.note{margin:0 12px 14px}.panel-head{padding:15px 15px 12px}}
+@media(max-width:620px){.menu-caption{margin-bottom:12px}.menu-caption span{display:none}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.menu-card{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;min-height:128px;padding:12px 6px 10px;border-radius:18px;gap:8px}.menu-card:before{display:none}.menu-icon{width:52px;height:52px;flex:0 0 52px;border-radius:17px}.menu-copy b{font-size:.68rem;line-height:1.25}.menu-copy small{display:none}.module-nav{margin-bottom:9px}.module-title b{font-size:.88rem}.filters,.filters.cols4,.report-filter-row{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.metric b{font-size:1.22rem}.panel-head p{font-size:.63rem}.mc-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:360px){.menu-copy b{font-size:.62rem}.menu-card{min-height:120px}.menu-icon{width:47px;height:47px;flex-basis:47px}}
+</style>
+
+  <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
+</head>
+<body>
+<main class="page">
+  <section id="menuView" class="menu-home">
+    <div class="menu-surface">
+      <div class="menu-caption"><strong>Menu Pimpinan</strong><span>Pilih modul yang ingin dipantau</span></div>
+      <div class="menu-grid">
+        <button class="menu-card nilai" data-open="nilai">
+          <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2"/></svg></span>
+          <span class="menu-copy"><b>Pantau Input Nilai</b><small>Progres guru kepondokan menginput nilai ujian.</small></span><span class="menu-arrow">›</span>
+        </button>
+        <button class="menu-card asesmen" data-open="asesmen">
+          <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M7.5 6.5A4.5 4.5 0 0 0 12 11M16.5 6.5A4.5 4.5 0 0 1 12 11M7 15a5 5 0 0 0 5 5M17 15a5 5 0 0 1-5 5"/></svg></span>
+          <span class="menu-copy"><b>Pantau Asesmen CAHAYA</b><small>Progres pengisian asesmen santri per usrah.</small></span><span class="menu-arrow">›</span>
+        </button>
+        <button class="menu-card hasil" data-open="hasil">
+          <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h5M8 16h7"/><path d="m16 15 1.4 1.4L20 13.8"/></svg></span>
+          <span class="menu-copy"><b>Hasil Asesmen CAHAYA</b><small>Laporan perkembangan karakter seluruh santri per usrah.</small></span><span class="menu-arrow">›</span>
+        </button>
+        <button class="menu-card observasi" data-open="observasi">
+          <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.7"/></svg></span>
+          <span class="menu-copy"><b>Laporan Observasi</b><small>Mutu pengasuhan, pembelajaran, sarpras, dapur, UKS, dan kebersihan.</small></span><span class="menu-arrow">›</span>
+        </button>
+        <button class="menu-card jurnal" data-open="jurnal">
+          <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M6 3.5h11a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2V5.5a2 2 0 0 1 1-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+          <span class="menu-copy"><b>Laporan Jurnal</b><small>Rekap jurnal tugas harian unit kepondokan.</small></span><span class="menu-arrow">›</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section id="moduleView" class="module-view hidden">
+    <div class="module-nav"><button id="backBtn" class="back-btn" aria-label="Kembali">‹</button><div class="module-title"><b id="moduleTitle">Dashboard Pimpinan</b><span id="moduleSubtitle">Monitoring kepondokan</span></div></div>
+
+    <section id="module-nilai" class="module">
+      <div class="panel">
+        <div class="panel-head"><h2>Pantau Input Nilai</h2><p>Memantau ketuntasan input nilai guru kepondokan. Guru dan jadwal PKBM tidak dihitung.</p></div>
+        <div class="filters cols4">
+          <div class="field"><label>Jenis Ujian</label><select id="examType" class="control"><option value="Bulanan">Bulanan</option><option value="Triwulan">Triwulan</option><option value="Semester">Semester</option></select></div>
+          <div class="field"><label id="periodLabel">Bulan</label><select id="period" class="control"></select></div>
+          <div class="field"><label>Tahun Akademik</label><select id="year" class="control"></select></div>
+          <button class="load-btn" id="loadBtn">Tampilkan</button>
+        </div>
+        <div class="summary">
+          <div class="metric"><b id="mTeacher">0</b><span>Guru Kepondokan</span></div><div class="metric"><b id="mAssignment">0</b><span>Guru × Mapel</span></div><div class="metric"><b id="mExpected">0</b><span>Nilai Seharusnya</span></div><div class="metric"><b id="mComplete">0</b><span>Nilai Lengkap</span></div><div class="metric featured"><b id="mProgress">0%</b><span>Progres Keseluruhan</span></div>
+        </div>
+        <div class="section"><div class="section-tools"><h3>Progres Guru & Mata Pelajaran</h3><input id="searchNilai" class="control search" placeholder="Cari guru, mapel, atau kelas..."></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>No.</th><th>Guru</th><th>Mata Pelajaran</th><th>Kelas</th><th>Seharusnya</th><th>Lengkap</th><th>Parsial</th><th>Progres</th><th>Status</th></tr></thead><tbody id="rowsNilai"><tr><td colspan="9" class="empty">Pilih periode lalu tekan Tampilkan.</td></tr></tbody></table></div>
+          <div class="mobile-list" id="mobileNilai"><div class="empty">Pilih periode lalu tekan Tampilkan.</div></div>
+        </div>
+        <div class="note">Progres dihitung dari jumlah santri dengan nilai <b>lengkap</b> dibanding jumlah santri yang seharusnya dinilai pada kelas kepondokan yang diampu guru.</div>
+      </div>
+    </section>
+
+    <section id="module-asesmen" class="module">
+      <div class="panel">
+        <div class="panel-head"><h2>Pantau Asesmen CAHAYA</h2><p>Memantau ketuntasan pengisian Asesmen CAHAYA Santri per usrah. Status lengkap dihitung bila 12 indikator observasi telah terisi.</p></div>
+        <div class="filters cols4">
+          <div class="field"><label>Bulan Asesmen</label><select id="asMonth" class="control"></select></div>
+          <div class="field"><label>Tahun</label><select id="asYear" class="control"></select></div>
+          <div class="field"><label>Unit</label><select id="asUnit" class="control"><option value="">Semua Unit</option><option value="Putra">Putra</option><option value="Putri">Putri</option></select></div>
+          <button class="load-btn" id="loadAsBtn">Tampilkan</button>
+        </div>
+        <div class="summary">
+          <div class="metric"><b id="aUsrah">0</b><span>Usrah Terpantau</span></div><div class="metric"><b id="aExpected">0</b><span>Santri Seharusnya</span></div><div class="metric"><b id="aComplete">0</b><span>Asesmen Lengkap</span></div><div class="metric"><b id="aPartial">0</b><span>Asesmen Parsial</span></div><div class="metric featured"><b id="aProgress">0%</b><span>Progres Keseluruhan</span></div>
+        </div>
+        <div class="section"><div class="section-tools"><h3>Progres Pengisian per Usrah</h3><input id="searchAsesmen" class="control search" placeholder="Cari usrah atau pengasesmen..."></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>No.</th><th>Usrah</th><th>Unit</th><th>Pengasesmen</th><th>Seharusnya</th><th>Lengkap</th><th>Parsial</th><th>Belum</th><th>Progres</th><th>Status</th></tr></thead><tbody id="rowsAsesmen"><tr><td colspan="10" class="empty">Pilih bulan lalu tekan Tampilkan.</td></tr></tbody></table></div>
+          <div class="mobile-list" id="mobileAsesmen"><div class="empty">Pilih bulan lalu tekan Tampilkan.</div></div>
+        </div>
+        <div class="note">Satu santri dihitung <b>Lengkap</b> bila 12 indikator CAHAYA terisi. Bila sudah ada record asesmen tetapi indikatornya belum lengkap, statusnya <b>Parsial</b>. <b>Periode efektif:</b> data dengan periode eksplisit mengikuti periode tersebut; untuk data lama tanpa periode, input tanggal <b>1–10</b> dianggap asesmen bulan sebelumnya, sedangkan tanggal <b>11–akhir bulan</b> dianggap bulan berjalan.</div>
+      </div>
+    </section>
+
+    <section id="module-hasil" class="module">
+      <div class="panel">
+        <div class="panel-head"><h2>Hasil Asesmen CAHAYA</h2><p>Laporan perkembangan karakter seluruh santri berdasarkan hasil Asesmen CAHAYA, dikelompokkan per usrah. Tampilan detail mengikuti gaya laporan perkembangan karakter pada Portal Wali.</p></div>
+        <div class="filters">
+          <div class="field"><label>Bulan Asesmen</label><select id="hsMonth" class="control"></select></div>
+          <div class="field"><label>Tahun</label><select id="hsYear" class="control"></select></div>
+          <div class="field"><label>Unit</label><select id="hsUnit" class="control"><option value="">Semua Unit</option><option value="Putra">Putra</option><option value="Putri">Putri</option></select></div>
+          <div class="field"><label>Usrah</label><select id="hsUsrah" class="control"><option value="">Semua Usrah</option></select></div>
+          <button class="load-btn" id="loadHsBtn">Tampilkan</button>
+        </div>
+        <div class="summary">
+          <div class="metric"><b id="hUsrah">0</b><span>Usrah</span></div><div class="metric"><b id="hExpected">0</b><span>Total Santri</span></div><div class="metric"><b id="hReady">0</b><span>Sudah Ada Hasil</span></div><div class="metric"><b id="hMissing">0</b><span>Belum Ada Hasil</span></div><div class="metric featured"><b id="hProgress">0%</b><span>Ketersediaan Laporan</span></div>
+        </div>
+        <div class="hasil-period-note" id="hasilPeriodNote">Periode laporan mengikuti bulan asesmen, bukan semata-mata tanggal input.</div>
+        <div class="section"><div class="section-tools"><h3>Laporan Santri per Usrah</h3><input id="searchHasil" class="control search" placeholder="Cari santri, usrah, atau pengasesmen..."></div>
+          <div id="hasilUsrahList" class="hasil-list"><div class="empty">Pilih periode lalu tekan Tampilkan.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module-observasi" class="module">
+      <div class="panel">
+        <div class="panel-head"><h2>Laporan Observasi</h2><p>Ringkasan observasi mutu lapangan dari berbagai bidang kepondokan. Pilih periode dan jenis observasi untuk melihat temuan terbaru.</p></div>
+        <div class="report-filter-row">
+          <div class="field"><label>Dari Tanggal</label><input type="date" id="obsFrom" class="control"></div>
+          <div class="field"><label>Sampai Tanggal</label><input type="date" id="obsTo" class="control"></div>
+          <div class="field"><label>Jenis Observasi</label><select id="obsType" class="control"><option value="">Semua Observasi</option><option value="pengasuhan">Pengasuhan</option><option value="pembelajaran">Pembelajaran</option><option value="sarpras">Sarpras</option><option value="kebersihan">Kebersihan</option><option value="dapur">Dapur</option><option value="uks">Kesehatan / UKS</option></select></div>
+          <div class="field"><label>Cari</label><input id="obsSearch" class="control" placeholder="Program, lokasi, observer..."></div>
+          <button class="load-btn" id="loadObsBtn">Tampilkan</button>
+        </div>
+        <div class="summary">
+          <div class="metric"><b id="oTotal">0</b><span>Total Observasi</span></div><div class="metric"><b id="oKinds">0</b><span>Jenis Terpantau</span></div><div class="metric"><b id="oAttention">0</b><span>Perlu Perhatian</span></div><div class="metric"><b id="oPending">0</b><span>Menunggu Validasi</span></div><div class="metric featured"><b id="oAvg">0%</b><span>Rata-rata Mutu</span></div>
+        </div>
+        <div class="section"><div class="section-tools"><h3>Riwayat Observasi</h3><span class="report-chip" id="obsPeriodChip">Bulan berjalan</span></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>Tanggal</th><th>Jenis</th><th>Program / Lokasi</th><th>Observer</th><th>Mutu</th><th>Temuan</th><th>Validasi</th></tr></thead><tbody id="rowsObs"><tr><td colspan="7" class="empty">Pilih menu untuk memuat observasi.</td></tr></tbody></table></div>
+          <div class="mobile-list" id="mobileObs"><div class="empty">Pilih menu untuk memuat observasi.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module-jurnal" class="module">
+      <div class="panel">
+        <div class="panel-head"><h2>Laporan Jurnal</h2><p>Rekap jurnal pelaksanaan tugas harian unit kepondokan: Naqib, Sarpras, Kesehatan, serta Keamanan & Kebersihan.</p></div>
+        <div class="report-filter-row">
+          <div class="field"><label>Dari Tanggal</label><input type="date" id="jrFrom" class="control"></div>
+          <div class="field"><label>Sampai Tanggal</label><input type="date" id="jrTo" class="control"></div>
+          <div class="field"><label>Jenis Jurnal</label><select id="jrType" class="control"><option value="">Semua Jurnal</option><option value="naqib">Jurnal Piket Naqib</option><option value="sarpras">Jurnal Sarpras</option><option value="kesehatan">Jurnal Kesehatan</option><option value="keamanan">Jurnal Keamanan & Kebersihan</option></select></div>
+          <div class="field"><label>Cari</label><input id="jrSearch" class="control" placeholder="Personil, area, catatan..."></div>
+          <button class="load-btn" id="loadJrBtn">Tampilkan</button>
+        </div>
+        <div class="summary">
+          <div class="metric"><b id="jTotal">0</b><span>Total Jurnal</span></div><div class="metric"><b id="jPeople">0</b><span>Personil Tercatat</span></div><div class="metric"><b id="jDone">0</b><span>Tugas Selesai</span></div><div class="metric"><b id="jPending">0</b><span>Menunggu Verifikasi</span></div><div class="metric featured"><b id="jAvg">0%</b><span>Rata-rata Kinerja</span></div>
+        </div>
+        <div class="section"><div class="section-tools"><h3>Riwayat Jurnal</h3><span class="report-chip" id="jrPeriodChip">Bulan berjalan</span></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>Tanggal</th><th>Jenis Jurnal</th><th>Personil</th><th>Area / Unit</th><th>Kinerja</th><th>Pelaksanaan</th><th>Catatan / Verifikasi</th></tr></thead><tbody id="rowsJr"><tr><td colspan="7" class="empty">Pilih menu untuk memuat jurnal.</td></tr></tbody></table></div>
+          <div class="mobile-list" id="mobileJr"><div class="empty">Pilih menu untuk memuat jurnal.</div></div>
+        </div>
+      </div>
+    </section>
+  </section>
+</main>
+<div id="hasilModal" aria-hidden="true">
+  <div class="hasil-modal-card" role="dialog" aria-modal="true" aria-labelledby="hasilModalTitle">
+    <div class="hasil-modal-head"><div><b id="hasilModalTitle">Hasil Asesmen CAHAYA</b><span id="hasilModalSub">Laporan perkembangan karakter</span></div><button type="button" class="hasil-close" id="hasilClose" aria-label="Tutup">×</button></div>
+    <div id="hasilModalBody" class="hasil-report"></div>
+  </div>
+</div>
+<div id="loading" class="loading"><div class="loader-card"><span class="spinner"></span> Memuat data...</div></div>
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import{getDatabase,ref,get,query,orderByChild,equalTo,startAt,endAt}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+const $=id=>document.getElementById(id);const app=initializeApp(window.CAHAYA_CONFIG.firebase);const db=getDatabase(app);
+const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const ALIASES={MULTAZAM:['multazam','multazam zakaria'],ALVIN:['alvin','alvin dwianto'],RASYIDIN:['rasyidin','rosyidin'],NAQIEB:['naqieb','naqib'],FALAH:['falah','m al falah','muhammad al falah'],FAHMI:['fahmi'],KHAIZURAN:['khaizuran','ade khaizuran utsman'],RAHIEL:['rahiel','mika rahiel yusuf'],ZAKY:['zaky'],FAIQ:['faiq','faiq akbar firdaus'],KAMAL:['kamal','kamal izudin ahmad mundhofi'],MEILISA:['meilisa'],FATIMAH:['fatimah'],EVITA:['evita','evita hardyanti'],AHMAD_IMBRON:['ahmad imbron','imbron'],ANDRIYANI:['andriyani'],CAPPRY:['cappry'],DELLA:['della'],EDWIN:['edwin'],FENNY:['fenny'],LAILA:['laila'],MANDA:['manda'],MARYANA:['maryana'],NURUL_FADLILAH:['nurul fadlilah'],SHAFIRA:['shafira']};
+let allRows=[],asRows=[],hasilRows=[],hasilMaster={},hasilRecords=[],obsRows=[],jrRows=[];const hasilDetailMap=new Map();
+function norm(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim()}
+function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
+function arr(v){return Array.isArray(v)?v.filter(Boolean):v&&typeof v==='object'?Object.values(v).filter(Boolean):[]}
+function objRows(v){return Array.isArray(v)?v.filter(Boolean):Object.entries(v||{}).map(([id,row])=>({id,...(row||{})}))}
+function prettyTeacher(code){return String(code||'').replaceAll('_',' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())}
+function teacherMatch(name,code){const n=norm(name),c=norm(code);if(!n)return false;if(n===c||n.includes(c)||c.includes(n))return true;return(ALIASES[String(code||'').toUpperCase()]||[]).some(a=>{const x=norm(a);return n===x||n.includes(x)||x.includes(n)})}
+function academicYear(){const d=new Date(),y=d.getFullYear(),start=d.getMonth()>=6?y:y-1;return `${start}/${start+1}`}
+function localDate(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
+function startOfMonth(){const d=new Date();return localDate(new Date(d.getFullYear(),d.getMonth(),1))}
+function showLoading(v=true){$('loading').classList.toggle('show',v)}
+function fmtDate(v){if(!v)return'-';const d=new Date(String(v).length===10?`${v}T00:00:00`:v);if(Number.isNaN(d.getTime()))return String(v);return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
+function first(o,keys,f=''){for(const k of keys){const parts=k.split('.');let v=o;for(const p of parts)v=v?.[p];if(v!==undefined&&v!==null&&String(v)!=='')return v}return f}
+function setDefaultDates(prefix){$(`${prefix}From`).value=startOfMonth();$(`${prefix}To`).value=localDate()}
+/* navigation */
+const MODULE_META={nilai:['Pantau Input Nilai','Progres input nilai guru kepondokan'],asesmen:['Pantau Asesmen CAHAYA','Progres pengisian asesmen santri per usrah'],hasil:['Hasil Asesmen CAHAYA','Laporan perkembangan karakter seluruh santri'],observasi:['Laporan Observasi','Mutu pelaksanaan program kepondokan'],jurnal:['Laporan Jurnal','Pelaksanaan tugas harian unit kepondokan']};
+function openModule(id){$('menuView').classList.add('hidden');$('moduleView').classList.remove('hidden');document.querySelectorAll('.module').forEach(x=>x.classList.remove('active'));$(`module-${id}`).classList.add('active');$('moduleTitle').textContent=MODULE_META[id][0];$('moduleSubtitle').textContent=MODULE_META[id][1];window.scrollTo({top:0,behavior:'smooth'});if(id==='asesmen'&&!asRows.length)loadAsesmen();if(id==='hasil'&&!hasilRows.length)loadHasil();if(id==='observasi'&&!obsRows.length)loadObservasi();if(id==='jurnal'&&!jrRows.length)loadJurnal()}
+document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openModule(b.dataset.open));$('backBtn').onclick=()=>{$('moduleView').classList.add('hidden');$('menuView').classList.remove('hidden');document.querySelectorAll('.module').forEach(x=>x.classList.remove('active'));window.scrollTo({top:0,behavior:'smooth'})};
+/* INPUT NILAI */
+function populateYear(){const cur=academicYear(),start=Number(cur.slice(0,4));$('year').innerHTML=[start-1,start,start+1].map(y=>`<option value="${y}/${y+1}" ${y===start?'selected':''}>${y}/${y+1}</option>`).join('')}
+function populatePeriod(){const t=$('examType').value,items=t==='Bulanan'?MONTHS:t==='Triwulan'?[1,2,3,4].map(n=>`Triwulan ${n}`):[1,2].map(n=>`Semester ${n}`);$('periodLabel').textContent=t==='Bulanan'?'Bulan':t==='Triwulan'?'Triwulan':'Semester';$('period').innerHTML=items.map(x=>`<option value="${x}">${x}</option>`).join('');const now=new Date();if(t==='Bulanan')$('period').value=MONTHS[now.getMonth()];else if(t==='Triwulan')$('period').value=`Triwulan ${Math.floor(now.getMonth()/3)+1}`;else $('period').value=`Semester ${now.getMonth()>=6?1:2}`}
+async function localSchedule(){try{const r=await fetch('../data/jadwal-pelajaran-awal-2026-2027.json',{cache:'no-store'});return r.ok?objRows(await r.json()):[]}catch{return[]}}
+function classSource(master){const k=master?.kelas&&typeof master.kelas==='object'?master.kelas:{};if(Object.keys(k).length)return k;const h=master?.halqah&&typeof master.halqah==='object'?master.halqah:{},out={};Object.values(h).forEach(cat=>{if(!cat||typeof cat!=='object')return;Object.entries(cat).forEach(([cls,list])=>out[cls]=[...new Set([...(out[cls]||[]),...arr(list).map(String)])])});if(Object.keys(out).length)return out;return window.CAHAYA_MASTER_DATA?.santriByClass||window.dataSantri||{}}
+function isPkbmSchedule(r){const text=norm(`${r?.jenis||''} ${r?.unit||''} ${r?.unitPembelajaran||''} ${r?.kelas||''} ${r?.sesi||''} ${r?.sumber||''} ${r?.sumberJadwal||''}`);return /(^| )pkbm( |$)/.test(text)}
+function isPkbmScore(r){return /(^| )pkbm( |$)/.test(norm(`${r?.jenis||''} ${r?.unit||''} ${r?.unitPembelajaran||''} ${r?.kelas||''} ${r?.kelas_kelompok||''} ${r?.sumber||''} ${r?.jadwalId||''}`))}
+function buildAssignments(schedule,classes,year){const m=new Map();schedule.filter(r=>r&&r.aktif!==false&&norm(r.jenis)!=='ekskul'&&!isPkbmSchedule(r)&&!/^pkbm\b/i.test(String(r.kelas||'').trim())&&String(r.tahunAjaran||r.tahun_ajaran||year)===year).forEach(r=>{const guru=String(r.guruKode||r.guru||'').trim().toUpperCase(),mapel=String(r.mapel||r.mata_pelajaran||'').trim(),cls=String(r.kelas||'').trim();if(!guru||!mapel||!cls||!classes[cls])return;const k=`${guru}|${norm(mapel)}`,o=m.get(k)||{guru,mapel,classes:new Set()};o.classes.add(cls);m.set(k,o)});return[...m.values()].map(o=>{o.classes=[...o.classes].sort((a,b)=>a.localeCompare(b,'id',{numeric:true}));o.students=new Set();o.classes.forEach(c=>arr(classes[c]).forEach(n=>o.students.add(`${c}|${String(n)}`)));return o})}
+function inferExamType(r){const explicit=r.jenis_ujian||r.jenisUjian;if(explicit)return String(explicit);const p=String(r.periode_ujian||r.periode||r.bulan||'');if(/^triwulan/i.test(p))return'Triwulan';if(/^semester/i.test(p))return'Semester';return r._sourceType||'Bulanan'}
+function matchPeriod(r,type,period,year){return norm(inferExamType(r))===norm(type)&&String(r.periode_ujian||r.periode||r.bulan||'')===period&&String(r.tahun_akademik||r.tahunAjaran||'')===year}
+function recStatus(r){const s=norm(r.status_input);if(s==='lengkap')return'lengkap';if(s==='parsial')return'parsial';if(Array.isArray(r.komponen_belum_terisi))return r.komponen_belum_terisi.length?'parsial':'lengkap';if(r.nilai_total!==undefined||r.nilai!==undefined)return'lengkap';return'parsial'}
+function recordKey(r){return `${String(r.kelas_kelompok||r.kelas||'')}|${String(r.nama_santri||r.namaSantri||r.nama||'')}`}
+function timestamp(r){return Date.parse(r.updated_at||r.timestamp||r.tanggal_ujian||r.tanggal||'')||0}
+function subjectMatch(a0,b0){const a=norm(a0),b=norm(b0);if(a===b)return true;const aq=x=>/al quran|quran|qur an|tahfiz|tahsin/.test(x);return aq(a)&&aq(b)}
+function evaluate(assignments,records){return assignments.map(a=>{const cls=new Set(a.classes),matched=records.filter(r=>subjectMatch(r.mata_pelajaran||r.mataPelajaran||r.mapel,a.mapel)&&cls.has(String(r.kelas_kelompok||r.kelas||''))&&teacherMatch(r.guru_penguji||r.guru||'',a.guru));const latest=new Map();matched.forEach(r=>{const k=recordKey(r),old=latest.get(k);if(!old||timestamp(r)>=timestamp(old))latest.set(k,r)});let complete=0,partial=0;latest.forEach(r=>recStatus(r)==='lengkap'?complete++:partial++);const expected=a.students.size,pct=expected?Math.min(100,Math.round(complete/expected*100)):0;return{...a,expected,complete,partial,pct}}).sort((a,b)=>a.pct-b.pct||a.guru.localeCompare(b.guru)||a.mapel.localeCompare(b.mapel))}
+async function fetchScores(type,period){const path=type==='Bulanan'?'cahaya_app/nilai_ujian_bulanan':'cahaya_app/nilai_ujian';try{const snap=await get(query(ref(db,path),orderByChild('periode_ujian'),equalTo(period)));return Object.values(snap.val()||{}).map(r=>({...r,_sourceType:type}))}catch(err){console.warn(err);const snap=await get(ref(db,path));return Object.values(snap.val()||{}).map(r=>({...r,_sourceType:type}))}}
+async function loadNilai(){const type=$('examType').value,period=$('period').value,year=$('year').value;showLoading();try{const[masterSnap,scheduleSnap,rawScores]=await Promise.all([get(ref(db,'cahaya_app/master_akademik')).catch(()=>null),get(ref(db,'cahaya_app/jadwal_pelajaran')).catch(()=>null),fetchScores(type,period)]),master=masterSnap?.exists?.()?masterSnap.val():{},classes=classSource(master);let schedule=scheduleSnap?.exists?.()?objRows(scheduleSnap.val()):[];if(!schedule.length)schedule=await localSchedule();allRows=evaluate(buildAssignments(schedule,classes,year),rawScores.filter(r=>!isPkbmScore(r)&&matchPeriod(r,type,period,year)));renderNilai();const teachers=new Set(allRows.map(x=>x.guru)).size,expected=allRows.reduce((s,x)=>s+x.expected,0),complete=allRows.reduce((s,x)=>s+x.complete,0);$('mTeacher').textContent=teachers;$('mAssignment').textContent=allRows.length;$('mExpected').textContent=expected;$('mComplete').textContent=complete;$('mProgress').textContent=(expected?Math.round(complete/expected*100):0)+'%'}catch(e){$('rowsNilai').innerHTML=`<tr><td colspan="9" class="empty">Data gagal dimuat: ${esc(e.message)}</td></tr>`;$('mobileNilai').innerHTML=`<div class="empty">Data gagal dimuat.</div>`}finally{showLoading(false)}}
+function valueStatus(x){if(x.pct>=100)return['Selesai','done'];if(x.pct>=75)return['Hampir Selesai','near'];if(x.pct>0||x.partial>0)return['Berjalan','run'];return['Belum Input','none']}
+function renderNilai(){const q=norm($('searchNilai').value),list=q?allRows.filter(x=>norm(`${x.guru} ${x.mapel} ${x.classes.join(' ')}`).includes(q)):allRows;$('rowsNilai').innerHTML=list.length?list.map((x,i)=>{const[s,c]=valueStatus(x);return`<tr><td>${i+1}</td><td><span class="teacher">${esc(prettyTeacher(x.guru))}</span><span class="sub">${esc(x.guru)}</span></td><td><b>${esc(x.mapel)}</b></td><td>${esc(x.classes.join(' • '))}</td><td>${x.expected}</td><td><b>${x.complete}</b></td><td>${x.partial}</td><td><span class="pct">${x.pct}%</span><div class="progress"><i style="width:${x.pct}%"></i></div><span class="sub">${x.complete}/${x.expected} lengkap</span></td><td><span class="badge ${c}">${s}</span></td></tr>`}).join(''):'<tr><td colspan="9" class="empty">Tidak ada data pada filter ini.</td></tr>';$('mobileNilai').innerHTML=list.length?list.map(x=>{const[s,c]=valueStatus(x);return`<article class="mobile-card"><div class="mc-top"><div><div class="mc-title">${esc(prettyTeacher(x.guru))}</div><div class="mc-meta">${esc(x.mapel)} • ${esc(x.classes.join(' • '))}</div></div><span class="badge ${c}">${s}</span></div><div class="mc-grid"><div class="mc-box"><small>Seharusnya</small><b>${x.expected}</b></div><div class="mc-box"><small>Lengkap / Parsial</small><b>${x.complete} / ${x.partial}</b></div></div><div class="mc-note"><b>${x.pct}% selesai</b><div class="progress" style="width:100%"><i style="width:${x.pct}%"></i></div></div></article>`}).join(''):'<div class="empty">Tidak ada data pada filter ini.</div>'}
+/* PANTAU ASESMEN CAHAYA */
+const ASSESSMENT_EARLY_MONTH_CUTOFF=10;
+function periodParts(period){const [y,m]=String(period||'').split('-').map(Number);return{y,m}}
+function shiftPeriod(period,delta){const {y,m}=periodParts(period),d=new Date(y,m-1+delta,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+function defaultAssessmentPeriod(){const d=new Date();if(d.getDate()<=ASSESSMENT_EARLY_MONTH_CUTOFF)d.setMonth(d.getMonth()-1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+function populateAsesmenPeriod(){
+  const def=defaultAssessmentPeriod(),dy=Number(def.slice(0,4)),dm=def.slice(5,7);
+  const monthOptions=MONTHS.map((m,i)=>`<option value="${String(i+1).padStart(2,'0')}" ${String(i+1).padStart(2,'0')===dm?'selected':''}>${m}</option>`).join('');
+  const yearOptions=[dy-1,dy,dy+1].map(n=>`<option value="${n}" ${n===dy?'selected':''}>${n}</option>`).join('');
+  $('asMonth').innerHTML=monthOptions;$('asYear').innerHTML=yearOptions;$('hsMonth').innerHTML=monthOptions;$('hsYear').innerHTML=yearOptions;
+}
+function explicitAssessmentPeriod(r){
+  const raw=String(r?.periodeBulan||r?.periodeAsesmen||r?.bulanAsesmen||r?.periode?.bulan||'').trim();
+  if(/^\d{4}-\d{2}$/.test(raw))return raw;
+  if(/^\d{4}\/\d{2}$/.test(raw))return raw.replace('/','-');
+  if(raw){const mi=MONTHS.findIndex(m=>norm(m)===norm(raw));const y=Number(r?.tahunAsesmen||r?.tahun||r?.periode?.tahun||String(r?.tanggalAsesmen||'').slice(0,4));if(mi>=0&&y)return `${y}-${String(mi+1).padStart(2,'0')}`}
+  return''
+}
+function effectiveAssessmentPeriod(r){
+  const explicit=explicitAssessmentPeriod(r);if(explicit)return explicit;
+  const raw=String(r?.tanggalAsesmen||r?.tanggal||r?.timestamp||r?.updated_at||'');
+  const mt=raw.match(/^(\d{4})-(\d{2})-(\d{2})/);let y,m,d;
+  if(mt){y=Number(mt[1]);m=Number(mt[2]);d=Number(mt[3])}else{const dt=new Date(raw);if(Number.isNaN(dt.getTime()))return'';y=dt.getFullYear();m=dt.getMonth()+1;d=dt.getDate()}
+  let period=`${y}-${String(m).padStart(2,'0')}`;if(d<=ASSESSMENT_EARLY_MONTH_CUTOFF)period=shiftPeriod(period,-1);return period
+}
+function periodLabel(period){const {y,m}=periodParts(period);return `${MONTHS[m-1]||period} ${y}`}
+function usrahNo(v){const m=String(v||'').match(/\d+/);return m?Number(m[0]):999}
+function usrahUnit(v){return usrahNo(v)>=7?'Putri':'Putra'}
+function normalizeStudent(v){return norm(v).replace(/\b(bin|binti)\b/g,' ').replace(/\s+/g,' ').trim()}
+function usrahList(v){return [...new Set(arr(v).map(x=>typeof x==='string'?x:String(x?.nama||x?.namaSantri||x?.label||'')).map(x=>x.trim()).filter(Boolean))]}
+function canonicalUsrah(value,keys){
+  const raw=String(value||'').trim(),n=usrahNo(raw);
+  if(raw){const exact=keys.find(k=>norm(k)===norm(raw));if(exact)return exact}
+  if(Number.isFinite(n)&&n<999){const byNum=keys.find(k=>usrahNo(k)===n);if(byNum)return byNum}
+  return'';
+}
+function assessmentCount(r){
+  const o=r?.observasiPilihan||{};
+  const vals=[o.spiritual?.sp1,o.spiritual?.sp2,o.spiritual?.sp3,o.relasional?.re1,o.relasional?.re2,o.relasional?.re3,o.emosional?.em1,o.emosional?.em2,o.intelektual?.in1,o.intelektual?.in2,o.fisik?.fi1,o.fisik?.fi2];
+  return vals.filter(v=>v!==undefined&&v!==null&&String(v).trim()!=='').length
+}
+function assessmentTime(r){return Date.parse(r.timestamp||r.updated_at||r.tanggalAsesmen||'')||0}
+function assessmentPerson(r){return String(r.namaPengasesmen||r.namaNaqib||r.penginput||'-').trim()||'-'}
+async function fetchAssessmentRecords(period){
+  const path='cahaya_app/asesmen_cahaya_santri',merged=new Map(),next=shiftPeriod(period,1);
+  const add=s=>objRows(s?.val?.()||{}).forEach(r=>merged.set(r.id||`${assessmentTime(r)}|${normalizeStudent(r.namaSantri)}`,r));
+  const {y,m}=periodParts(period),last=new Date(y,m,0).getDate(),from=`${period}-01`,to=`${period}-${String(last).padStart(2,'0')}`;
+  try{add(await get(query(ref(db,path),orderByChild('periodeBulan'),equalTo(period))))}catch(e){console.warn('Query periodeBulan:',e)}
+  try{add(await get(query(ref(db,path),orderByChild('tanggalAsesmen'),startAt(from),endAt(to))))}catch(e){console.warn('Query bulan input:',e)}
+  try{add(await get(query(ref(db,path),orderByChild('tanggalAsesmen'),startAt(`${next}-01`),endAt(`${next}-${String(ASSESSMENT_EARLY_MONTH_CUTOFF).padStart(2,'0')}`))))}catch(e){console.warn('Query awal bulan berikutnya:',e)}
+  if(!merged.size){const full=await get(ref(db,path));add(full)}
+  return[...merged.values()].filter(r=>effectiveAssessmentPeriod(r)===period)
+}
+function buildAssessmentRows(master,records,unitFilter){
+  const keys=Object.keys(master||{}).sort((a,b)=>usrahNo(a)-usrahNo(b)||String(a).localeCompare(String(b),'id'));
+  const studentToUsrah=new Map();
+  keys.forEach(k=>usrahList(master[k]).forEach(n=>studentToUsrah.set(normalizeStudent(n),k)));
+  const grouped=new Map(keys.map(k=>[k,[]]));
+  records.forEach(r=>{
+    const hinted=canonicalUsrah(r.usrah||r.usrahDipilih||r.labelUsrah,keys),inferred=studentToUsrah.get(normalizeStudent(r.namaSantri)),key=hinted||inferred;
+    if(key&&grouped.has(key))grouped.get(key).push(r)
+  });
+  return keys.filter(k=>!unitFilter||usrahUnit(k)===unitFilter).map(k=>{
+    const students=usrahList(master[k]),expectedSet=new Set(students.map(normalizeStudent)),latest=new Map();
+    grouped.get(k).forEach(r=>{const sn=normalizeStudent(r.namaSantri);if(!sn||!expectedSet.has(sn))return;const old=latest.get(sn);if(!old||assessmentTime(r)>=assessmentTime(old))latest.set(sn,r)});
+    let complete=0,partial=0,lastTime=0;const people=new Set();
+    latest.forEach(r=>{assessmentCount(r)>=12?complete++:partial++;people.add(assessmentPerson(r));lastTime=Math.max(lastTime,assessmentTime(r))});
+    const expected=expectedSet.size,missing=Math.max(0,expected-complete-partial),pct=expected?Math.min(100,Math.round(complete/expected*100)):0;
+    return{usrah:k,unit:usrahUnit(k),expected,complete,partial,missing,pct,people:[...people].filter(x=>x&&x!=='-'),lastTime}
+  }).sort((a,b)=>a.pct-b.pct||usrahNo(a.usrah)-usrahNo(b.usrah))
+}
+function assessmentStatus(x){if(x.pct>=100)return['Lengkap','done'];if(x.pct>=75)return['Hampir Lengkap','near'];if(x.complete>0||x.partial>0)return['Berjalan','run'];return['Belum Input','none']}
+async function loadAsesmen(){
+  const period=`${$('asYear').value}-${$('asMonth').value}`,unit=$('asUnit').value;showLoading();
+  try{
+    const[usrahSnap,records]=await Promise.all([get(ref(db,'cahaya_app/master_usrah')),fetchAssessmentRecords(period)]);
+    const master=usrahSnap.exists()?usrahSnap.val():{};
+    asRows=buildAssessmentRows(master,records,unit);
+    renderAsesmen();
+    const expected=asRows.reduce((s,x)=>s+x.expected,0),complete=asRows.reduce((s,x)=>s+x.complete,0),partial=asRows.reduce((s,x)=>s+x.partial,0);
+    $('aUsrah').textContent=asRows.length;$('aExpected').textContent=expected;$('aComplete').textContent=complete;$('aPartial').textContent=partial;$('aProgress').textContent=(expected?Math.round(complete/expected*100):0)+'%';
+  }catch(e){
+    $('rowsAsesmen').innerHTML=`<tr><td colspan="10" class="empty">Data gagal dimuat: ${esc(e.message)}</td></tr>`;$('mobileAsesmen').innerHTML='<div class="empty">Data gagal dimuat.</div>'
+  }finally{showLoading(false)}
+}
+function renderAsesmen(){
+  const q=norm($('searchAsesmen').value),list=q?asRows.filter(x=>norm(`${x.usrah} ${x.unit} ${x.people.join(' ')}`).includes(q)):asRows;
+  $('rowsAsesmen').innerHTML=list.length?list.map((x,i)=>{const[s,c]=assessmentStatus(x),people=x.people.length?x.people.join(', '):'-';return`<tr><td>${i+1}</td><td><span class="teacher">${esc(x.usrah)}</span></td><td><span class="badge ${x.unit==='Putri'?'purple':'near'}">${esc(x.unit)}</span></td><td>${esc(people)}${x.lastTime?`<span class="sub">Terakhir ${esc(fmtDate(new Date(x.lastTime).toISOString()))}</span>`:''}</td><td>${x.expected}</td><td><b>${x.complete}</b></td><td>${x.partial}</td><td>${x.missing}</td><td><span class="pct">${x.pct}%</span><div class="progress"><i style="width:${x.pct}%"></i></div><span class="sub">${x.complete}/${x.expected} lengkap</span></td><td><span class="badge ${c}">${s}</span></td></tr>`}).join(''):'<tr><td colspan="10" class="empty">Tidak ada usrah pada filter ini.</td></tr>';
+  $('mobileAsesmen').innerHTML=list.length?list.map(x=>{const[s,c]=assessmentStatus(x),people=x.people.length?x.people.join(', '):'Belum ada pengasesmen';return`<article class="mobile-card"><div class="mc-top"><div><div class="mc-title">${esc(x.usrah)} • ${esc(x.unit)}</div><div class="mc-meta">${esc(people)}</div></div><span class="badge ${c}">${s}</span></div><div class="mc-grid"><div class="mc-box"><small>Santri</small><b>${x.expected}</b></div><div class="mc-box"><small>Lengkap / Parsial</small><b>${x.complete} / ${x.partial}</b></div><div class="mc-box"><small>Belum</small><b>${x.missing}</b></div><div class="mc-box"><small>Progres</small><b>${x.pct}%</b></div></div><div class="mc-note"><div class="progress" style="width:100%"><i style="width:${x.pct}%"></i></div>${x.lastTime?`Terakhir diisi ${esc(fmtDate(new Date(x.lastTime).toISOString()))}`:'Belum ada asesmen pada periode ini.'}</div></article>`}).join(''):'<div class="empty">Tidak ada usrah pada filter ini.</div>'
+}
+
+
+/* HASIL ASESMEN CAHAYA */
+function buildHasilRows(master,records){
+  const keys=Object.keys(master||{}).sort((a,b)=>usrahNo(a)-usrahNo(b)||String(a).localeCompare(String(b),'id'));
+  const studentToUsrah=new Map();keys.forEach(k=>usrahList(master[k]).forEach(n=>studentToUsrah.set(normalizeStudent(n),k)));
+  const grouped=new Map(keys.map(k=>[k,[]]));
+  records.forEach(r=>{const hinted=canonicalUsrah(r.usrah||r.usrahDipilih||r.labelUsrah,keys),inferred=studentToUsrah.get(normalizeStudent(r.namaSantri)),key=hinted||inferred;if(key&&grouped.has(key))grouped.get(key).push(r)});
+  return keys.map(k=>{
+    const students=usrahList(master[k]),expectedSet=new Set(students.map(normalizeStudent)),latest=new Map();
+    grouped.get(k).forEach(r=>{const sn=normalizeStudent(r.namaSantri);if(!sn||!expectedSet.has(sn))return;const old=latest.get(sn);if(!old||assessmentTime(r)>=assessmentTime(old))latest.set(sn,r)});
+    const items=students.map(name=>{const r=latest.get(normalizeStudent(name))||null,count=r?assessmentCount(r):0;return{name,record:r,count,status:!r?'Belum':count>=12?'Lengkap':'Parsial'}});
+    const ready=items.filter(x=>x.record).length,complete=items.filter(x=>x.status==='Lengkap').length;
+    return{usrah:k,unit:usrahUnit(k),expected:items.length,ready,complete,missing:Math.max(0,items.length-ready),items}
+  })
+}
+function populateHasilUsrah(){
+  const unit=$('hsUnit').value,current=$('hsUsrah').value,keys=Object.keys(hasilMaster||{}).sort((a,b)=>usrahNo(a)-usrahNo(b)||String(a).localeCompare(String(b),'id')).filter(k=>!unit||usrahUnit(k)===unit);
+  $('hsUsrah').innerHTML='<option value="">Semua Usrah</option>'+keys.map(k=>`<option value="${esc(k)}">${esc(k)} • ${usrahUnit(k)}</option>`).join('');if(keys.includes(current))$('hsUsrah').value=current
+}
+async function loadHasil(){
+  const period=`${$('hsYear').value}-${$('hsMonth').value}`;showLoading();
+  try{const[usrahSnap,records]=await Promise.all([get(ref(db,'cahaya_app/master_usrah')),fetchAssessmentRecords(period)]);hasilMaster=usrahSnap.exists()?usrahSnap.val():{};hasilRecords=records;hasilRows=buildHasilRows(hasilMaster,records);populateHasilUsrah();renderHasil();$('hasilPeriodNote').innerHTML=`Menampilkan <b>${esc(periodLabel(period))}</b>. Untuk data lama tanpa periode eksplisit, input tanggal <b>1–10 bulan berikutnya</b> tetap dihitung sebagai asesmen ${esc(periodLabel(period))}.`}
+  catch(e){$('hasilUsrahList').innerHTML=`<div class="empty">Data gagal dimuat: ${esc(e.message)}</div>`}finally{showLoading(false)}
+}
+function hasilBaseFilter(){const unit=$('hsUnit').value,usrah=$('hsUsrah').value;return hasilRows.filter(g=>(!unit||g.unit===unit)&&(!usrah||g.usrah===usrah))}
+function renderHasil(){
+  const base=hasilBaseFilter(),q=norm($('searchHasil').value),allItems=base.flatMap(g=>g.items),ready=allItems.filter(x=>x.record).length,missing=allItems.filter(x=>!x.record).length,list=base.map(g=>({...g,visibleItems:q?g.items.filter(x=>norm(`${x.name} ${g.usrah} ${assessmentPerson(x.record||{})}`).includes(q)):g.items})).filter(g=>!q||g.visibleItems.length);
+  $('hUsrah').textContent=base.length;$('hExpected').textContent=allItems.length;$('hReady').textContent=ready;$('hMissing').textContent=missing;$('hProgress').textContent=(allItems.length?Math.round(ready/allItems.length*100):0)+'%';hasilDetailMap.clear();
+  if(!list.length){$('hasilUsrahList').innerHTML='<div class="empty">Tidak ada santri pada pencarian/filter ini.</div>';return}
+  $('hasilUsrahList').innerHTML=list.map(g=>{
+    const groupReady=g.ready,pct=g.expected?Math.round(groupReady/g.expected*100):0;
+    const cards=g.visibleItems.map(x=>{const key=encodeURIComponent(`${g.usrah}|${normalizeStudent(x.name)}`);if(x.record)hasilDetailMap.set(key,{group:g,student:x});const r=x.record,person=r?assessmentPerson(r):'-',date=r?(r.tanggalAsesmen||r.tanggal||r.timestamp):'',badge=!r?'none':x.status==='Lengkap'?'done':'run';return`<article class="hasil-student ${!r?'missing':''}"><div class="hasil-student-top"><div><div class="hasil-student-name">${esc(x.name)}</div><div class="hasil-student-meta">${r?`${esc(person)} • Input ${esc(fmtDate(date))}`:'Belum ada asesmen untuk periode ini.'}</div></div><span class="badge ${badge}">${x.status}</span></div>${r?`<div class="hasil-mini-dims"><span class="hasil-mini-dim">🌙</span><span class="hasil-mini-dim">🤝</span><span class="hasil-mini-dim">💛</span><span class="hasil-mini-dim">🧠</span><span class="hasil-mini-dim">💪</span></div>`:''}<button class="hasil-detail-btn" data-hasil-key="${key}" ${r?'':'disabled'}>${r?'Lihat Laporan Perkembangan':'Belum Tersedia'}</button></article>`}).join('');
+    return`<section class="hasil-usrah"><div class="hasil-usrah-head"><div class="hasil-usrah-title"><span class="hasil-usrah-icon">${usrahNo(g.usrah)<999?usrahNo(g.usrah):'U'}</span><div><b>${esc(g.usrah)}</b><small>${esc(g.unit)} • ${g.expected} santri</small></div></div><div class="hasil-usrah-progress"><b>${pct}%</b><small>${groupReady}/${g.expected} ada hasil</small></div></div><div class="hasil-student-grid">${cards}</div></section>`
+  }).join('');
+  document.querySelectorAll('[data-hasil-key]').forEach(btn=>{if(!btn.disabled)btn.onclick=()=>bukaHasilDetail(btn.dataset.hasilKey)})
+}
+function reportNarrative(r,key){return String(r?.narasi?.[key]||'Belum ada narasi.')}
+function bukaHasilDetail(key){
+  const data=hasilDetailMap.get(key);if(!data)return;const {group,student}=data,r=student.record,period=effectiveAssessmentPeriod(r),focus=arr(r?.tindakLanjut?.fokusBulanDepan);
+  $('hasilModalTitle').textContent=student.name;$('hasilModalSub').textContent=`${group.usrah} • ${group.unit} • ${periodLabel(period)}`;
+  $('hasilModalBody').innerHTML=`<div class="hasil-report-identity"><div class="hasil-id-box"><small>Nama Santri</small><b>${esc(student.name)}</b></div><div class="hasil-id-box"><small>Usrah</small><b>${esc(group.usrah)} • ${esc(group.unit)}</b></div><div class="hasil-id-box"><small>Periode</small><b>${esc(periodLabel(period))}</b></div><div class="hasil-id-box"><small>Pengasesmen</small><b>${esc(assessmentPerson(r))}</b></div><div class="hasil-id-box"><small>Tanggal Input</small><b>${esc(fmtDate(r.tanggalAsesmen||r.tanggal||r.timestamp))}</b></div><div class="hasil-id-box"><small>Kelengkapan</small><b>${student.count}/12 indikator • ${esc(student.status)}</b></div></div><div class="hasil-analysis-note"><i>💡</i><div><b>Keterangan Analisis:</b> Narasi berikut merupakan hasil observasi perkembangan santri pada lima dimensi CAHAYA. Periode laporan mengikuti periode asesmen efektif, bukan hanya tanggal input.</div></div><section class="hasil-dimensi spiritual"><div class="hasil-dimensi-head"><span class="hasil-dimensi-icon">🌙</span><h4>1. Cinta Allah (Spiritual)</h4></div><p>${esc(reportNarrative(r,'spiritual'))}</p></section><section class="hasil-dimensi relasional"><div class="hasil-dimensi-head"><span class="hasil-dimensi-icon">🤝</span><h4>2. Akhlak Mulia (Relasional)</h4></div><p>${esc(reportNarrative(r,'relasional'))}</p></section><section class="hasil-dimensi emosional"><div class="hasil-dimensi-head"><span class="hasil-dimensi-icon">💛</span><h4>3. Hati Bersih (Emosional)</h4></div><p>${esc(reportNarrative(r,'emosional'))}</p></section><section class="hasil-dimensi intelektual"><div class="hasil-dimensi-head"><span class="hasil-dimensi-icon">🧠</span><h4>4. Akal Cerdas (Intelektual)</h4></div><p>${esc(reportNarrative(r,'intelektual'))}</p></section><section class="hasil-dimensi fisik"><div class="hasil-dimensi-head"><span class="hasil-dimensi-icon">💪</span><h4>5. Fisik Berdaya (Physical)</h4></div><p>${esc(reportNarrative(r,'fisik'))}</p></section><section class="hasil-follow"><h4>📈 Rencana Tindak Lanjut</h4><div class="hasil-follow-item"><div class="hasil-follow-label">Evaluasi Perkembangan</div><div class="hasil-follow-text">${esc(r?.tindakLanjut?.evaluasiBulanIni||'Tidak ada catatan.')}</div></div><div class="hasil-follow-item"><div class="hasil-follow-label">Fokus Perbaikan Bulan Depan</div><div class="hasil-focus">${focus.length?focus.map(f=>`<span>${esc(f)}</span>`).join(''):'<span>Belum ditentukan</span>'}</div></div><div class="hasil-follow-item"><div class="hasil-follow-label">Pesan untuk Wali Santri</div><div class="hasil-follow-text">${esc(r?.tindakLanjut?.pesanWaliSantri||'Tidak ada pesan khusus.')}</div></div></section>`;
+  $('hasilModal').classList.add('show');$('hasilModal').setAttribute('aria-hidden','false');document.body.style.overflow='hidden'
+}
+function tutupHasilDetail(){$('hasilModal').classList.remove('show');$('hasilModal').setAttribute('aria-hidden','true');document.body.style.overflow=''}
+
+/* OBSERVASI */
+const OBS_LABEL={pengasuhan:'Pengasuhan',pembelajaran:'Pembelajaran',sarpras:'Sarpras',kebersihan:'Kebersihan',dapur:'Dapur',uks:'Kesehatan / UKS'};
+function obsScore(r){return Number(r.persentase??r.mutuProgram?.persentase??r.mutuPembelajaran?.persentase??0)||0}
+function obsStatus(r){return String(r.status||r.mutuProgram?.kategori||r.mutuPembelajaran?.kategori||'-')}
+function attentionObs(r){const s=obsScore(r),urg=norm(r.urgensi),st=norm(obsStatus(r));return s<75||/tinggi|kritis|darurat/.test(urg)||/perlu|kurang|tindakan/.test(st)}
+async function loadObservasi(){showLoading();try{const snap=await get(ref(db,'observasi_lapangan'));obsRows=objRows(snap.val()).sort((a,b)=>String(b.tanggal||'').localeCompare(String(a.tanggal||'')));renderObservasi()}catch(e){$('rowsObs').innerHTML=`<tr><td colspan="7" class="empty">Data gagal dimuat: ${esc(e.message)}</td></tr>`;$('mobileObs').innerHTML='<div class="empty">Data gagal dimuat.</div>'}finally{showLoading(false)}}
+function isPkbmObservation(r){return /(^| )pkbm( |$)/.test(norm(`${r.program||''} ${r.lokasi||''} ${r.dataUtama?.program||''} ${r.dataUtama?.kelas||''} ${r.dataUtama?.area||''} ${r.pihakTerkait||''}`))}
+function filteredObs(){const from=$('obsFrom').value,to=$('obsTo').value,type=$('obsType').value,q=norm($('obsSearch').value);return obsRows.filter(r=>!isPkbmObservation(r)&&(!from||String(r.tanggal||'')>=from)&&(!to||String(r.tanggal||'')<=to)&&(!type||String(r.jenis||'')===type)&&(!q||norm(`${r.jenisLabel||''} ${r.jenis||''} ${r.program||''} ${r.lokasi||''} ${r.observer?.nama||''} ${r.temuanPositif||''} ${r.temuanPerbaikan||''} ${r.rekomendasi||''}`).includes(q)))}
+function renderObservasi(){const list=filteredObs(),scores=list.map(obsScore).filter(x=>x>0),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;$('oTotal').textContent=list.length;$('oKinds').textContent=new Set(list.map(r=>r.jenis).filter(Boolean)).size;$('oAttention').textContent=list.filter(attentionObs).length;$('oPending').textContent=list.filter(r=>norm(r.validasi?.status||'').includes('menunggu')).length;$('oAvg').textContent=avg+'%';$('obsPeriodChip').textContent=`${fmtDate($('obsFrom').value)} — ${fmtDate($('obsTo').value)}`;const rows=list.map(r=>{const score=obsScore(r),temuan=r.temuanPerbaikan||r.temuanPositif||r.rekomendasi||'-',status=obsStatus(r),valid=r.validasi?.status||'-',obj=r.program||r.lokasi||r.dataUtama?.program||r.dataUtama?.area||r.dataUtama?.kelas||'-';return{r,score,temuan,status,valid,obj}});$('rowsObs').innerHTML=rows.length?rows.map(x=>`<tr><td>${esc(fmtDate(x.r.tanggal))}<span class="sub">${esc(x.r.waktu||'')}</span></td><td><span class="badge purple">${esc(OBS_LABEL[x.r.jenis]||x.r.jenisLabel||x.r.jenis||'-')}</span></td><td><b>${esc(x.obj)}</b><span class="sub">${esc(x.r.pihakTerkait||'')}</span></td><td>${esc(x.r.observer?.nama||'-')}</td><td><b>${x.score}%</b><span class="sub">${esc(x.status)}</span></td><td>${esc(x.temuan)}</td><td>${esc(x.valid)}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">Belum ada observasi pada periode/filter ini.</td></tr>';$('mobileObs').innerHTML=rows.length?rows.map(x=>`<article class="mobile-card"><div class="mc-top"><div><div class="mc-title">${esc(OBS_LABEL[x.r.jenis]||x.r.jenisLabel||x.r.jenis||'Observasi')}</div><div class="mc-meta">${esc(fmtDate(x.r.tanggal))} • ${esc(x.obj)}</div></div><span class="badge ${x.score>=80?'done':x.score>=70?'run':'none'}">${x.score}%</span></div><div class="mc-grid"><div class="mc-box"><small>Observer</small><b>${esc(x.r.observer?.nama||'-')}</b></div><div class="mc-box"><small>Validasi</small><b>${esc(x.valid)}</b></div></div><div class="mc-note">${esc(x.temuan)}</div></article>`).join(''):'<div class="empty">Belum ada observasi pada periode/filter ini.</div>'}
+/* JURNAL */
+const JOURNALS=[{key:'naqib',label:'Jurnal Piket Naqib',path:'cahaya_app/jurnal_piket_naqib'},{key:'sarpras',label:'Jurnal Sarpras',path:'cahaya_app/jurnal_sarpras'},{key:'kesehatan',label:'Jurnal Kesehatan',path:'cahaya_app/jurnal_kesehatan'},{key:'keamanan',label:'Jurnal Keamanan & Kebersihan',path:'cahaya_app/jurnal_keamanan_kebersihan'}];
+async function loadJurnal(){showLoading();try{const selected=$('jrType').value,defs=selected?JOURNALS.filter(x=>x.key===selected):JOURNALS;const snaps=await Promise.all(defs.map(async d=>{const s=await get(ref(db,d.path));return objRows(s.val()).map(r=>({...r,_journalKey:d.key,_journalLabel:d.label}))}));jrRows=snaps.flat().sort((a,b)=>String(b.tanggal||'').localeCompare(String(a.tanggal||'')));renderJurnal()}catch(e){$('rowsJr').innerHTML=`<tr><td colspan="7" class="empty">Data gagal dimuat: ${esc(e.message)}</td></tr>`;$('mobileJr').innerHTML='<div class="empty">Data gagal dimuat.</div>'}finally{showLoading(false)}}
+function jrPerson(r){return first(r,['naqib','namaPersonil','petugas','penginput'],'-')}function jrArea(r){return first(r,['unitPengawasan','wilayahTugas','unitLayanan','areaTugas','blokPiket','labelBlok'],'-')}function jrScore(r){return Number(r.persentaseKinerja??r.persentasePengawasan??r.persentase??0)||0}
+function filteredJr(){const from=$('jrFrom').value,to=$('jrTo').value,q=norm($('jrSearch').value),type=$('jrType').value;return jrRows.filter(r=>(!from||String(r.tanggal||'')>=from)&&(!to||String(r.tanggal||'')<=to)&&(!type||r._journalKey===type)&&(!q||norm(`${jrPerson(r)} ${jrArea(r)} ${r.catatanKejadian||''} ${r._journalLabel||''}`).includes(q)))}
+function renderJurnal(){const list=filteredJr(),scores=list.map(jrScore).filter(x=>x>=0),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;$('jTotal').textContent=list.length;$('jPeople').textContent=new Set(list.map(jrPerson).filter(x=>x&&x!=='-')).size;$('jDone').textContent=list.reduce((s,r)=>s+(Number(r.tugasSelesai)||0),0);$('jPending').textContent=list.filter(r=>norm(r.statusVerifikasiSupervisor||'').includes('menunggu')).length;$('jAvg').textContent=avg+'%';$('jrPeriodChip').textContent=`${fmtDate($('jrFrom').value)} — ${fmtDate($('jrTo').value)}`;$('rowsJr').innerHTML=list.length?list.map(r=>{const score=jrScore(r),done=Number(r.tugasSelesai)||0,active=Number(r.indikatorAktif||r.totalTugas)||0;return`<tr><td>${esc(fmtDate(r.tanggal))}</td><td><span class="report-chip">${esc(r._journalLabel)}</span></td><td><span class="teacher">${esc(jrPerson(r))}</span><span class="sub">${esc(r.penginput||'')}</span></td><td>${esc(jrArea(r))}</td><td><b>${score}%</b><span class="sub">${esc(r.predikatKinerja||'')}</span></td><td>${done}/${active||0}<span class="sub">tugas selesai</span></td><td>${esc(r.catatanKejadian||'Nihil')}<span class="sub">${esc(r.statusVerifikasiSupervisor||'-')}</span></td></tr>`}).join(''):'<tr><td colspan="7" class="empty">Belum ada jurnal pada periode/filter ini.</td></tr>';$('mobileJr').innerHTML=list.length?list.map(r=>{const score=jrScore(r),done=Number(r.tugasSelesai)||0,active=Number(r.indikatorAktif||r.totalTugas)||0;return`<article class="mobile-card"><div class="mc-top"><div><div class="mc-title">${esc(jrPerson(r))}</div><div class="mc-meta">${esc(r._journalLabel)} • ${esc(fmtDate(r.tanggal))}</div></div><span class="badge ${score>=80?'done':score>=60?'run':'none'}">${score}%</span></div><div class="mc-grid"><div class="mc-box"><small>Area / Unit</small><b>${esc(jrArea(r))}</b></div><div class="mc-box"><small>Tugas Selesai</small><b>${done}/${active||0}</b></div></div><div class="mc-note">${esc(r.catatanKejadian||'Nihil')}<br><span class="sub">${esc(r.statusVerifikasiSupervisor||'-')}</span></div></article>`}).join(''):'<div class="empty">Belum ada jurnal pada periode/filter ini.</div>'}
+/* listeners */
+$('examType').onchange=populatePeriod;$('loadBtn').onclick=loadNilai;$('searchNilai').oninput=renderNilai;
+$('loadAsBtn').onclick=loadAsesmen;$('asUnit').onchange=()=>{if(asRows.length)loadAsesmen()};$('searchAsesmen').oninput=renderAsesmen;$('loadHsBtn').onclick=loadHasil;$('hsUnit').onchange=()=>{populateHasilUsrah();if(hasilRows.length)renderHasil()};$('hsUsrah').onchange=renderHasil;$('searchHasil').oninput=renderHasil;$('hasilClose').onclick=tutupHasilDetail;$('hasilModal').onclick=e=>{if(e.target===$('hasilModal'))tutupHasilDetail()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('hasilModal').classList.contains('show'))tutupHasilDetail()});
+$('loadObsBtn').onclick=loadObservasi;$('obsType').onchange=renderObservasi;$('obsSearch').oninput=renderObservasi;$('obsFrom').onchange=renderObservasi;$('obsTo').onchange=renderObservasi;
+$('loadJrBtn').onclick=loadJurnal;$('jrType').onchange=loadJurnal;$('jrSearch').oninput=renderJurnal;$('jrFrom').onchange=renderJurnal;$('jrTo').onchange=renderJurnal;
+populateYear();populatePeriod();populateAsesmenPeriod();setDefaultDates('obs');setDefaultDates('jr');
+</script>
+</body>
+</html>

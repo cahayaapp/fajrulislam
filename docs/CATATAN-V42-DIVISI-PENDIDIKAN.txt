@@ -1,0 +1,42 @@
+CAHAYA APP V42 — DASHBOARD PIMPINAN: DIVISI PENDIDIKAN
+18 Agustus 2026
+
+Fokus versi ini adalah menambahkan Divisi Pendidikan pada Dashboard Pimpinan tanpa mengubah konsep Divisi Pembinaan Karakter yang sudah disetujui.
+
+INDIKATOR DIVISI PENDIDIKAN
+1. Kehadiran Guru
+   - Sumber jadwal: cahaya_app/jadwal_pelajaran
+   - Sumber presensi: cahaya_app/log_absensi_guru
+   - Denominator mengikuti sesi terjadwal yang sudah selesai, kalender pendidikan, dan hari aktif.
+2. Ketepatan Waktu Guru
+   - Dari log kehadiran guru yang tercatat.
+   - TEPAT_WAKTU vs TERLAMBAT; detail keterlambatan dapat dibuka.
+3. KKM Ujian Harian
+   - Sumber: cahaya_app/nilai_ujian
+   - Input Nilai Ujian kini dapat memilih Harian/Bulanan dan KKM (default 70).
+4. KKM Ujian Bulanan
+   - Sumber: cahaya_app/nilai_ujian_bulanan
+   - Data lama tetap kompatibel; KKM yang tidak tersimpan menggunakan fallback 70.
+5. Target Hafalan
+   - Form Tahfiz menambahkan Target Baris/Hari per santri.
+   - Target tersimpan di cahaya_app/target_tahfiz/{santriKey} dan juga dicatat pada record setoran.
+   - Target periode = target baris/hari × hari aktif Al-Qur’an dari jadwal + kalender pendidikan.
+   - Daftar setoran tidak dibuka otomatis. Tombol “Lihat daftar setoran” memuat riwayat per santri secara lazy dari wali_index dan mengelompokkan riwayat per bulan.
+6. Mutu Pembelajaran
+   - Form Observasi Pembelajaran kini menggunakan kategori mutu otomatis dari indikator:
+     >=90 Sangat Baik; >=75 Baik; >=60 Cukup; <60 Perlu Peningkatan.
+   - Detail mutu, temuan, rekomendasi, dan indikator dapat dibuka dari Dashboard Pimpinan.
+7. Evaluasi & Tindak Lanjut
+   - Form baru: pimpinan/rapat-evaluasi-pendidikan.html
+   - Path: cahaya_app/evaluasi_tindak_lanjut/pendidikan
+
+FILE UTAMA YANG DIUBAH
+- pimpinan/dashboard-pimpinan.html
+- pimpinan/rapat-evaluasi-pendidikan.html (baru)
+- observer/pembelajaran.html
+- observer/observer-common.js
+- guru/inputNilaiUjian.html
+- guru/inputSetoranTahfiz.html
+- main-dashboard.html
+
+Catatan: Divisi lain belum dikloning. V42 tetap berfokus pada validasi konsep Divisi Pendidikan terlebih dahulu.

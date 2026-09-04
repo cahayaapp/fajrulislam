@@ -1,0 +1,36 @@
+CAHAYA APP V41 — DASHBOARD PIMPINAN: DIVISI PEMBINAAN KARAKTER
+
+Fokus V41:
+1. Dashboard Pimpinan disederhanakan dan saat ini hanya menampilkan Divisi Pembinaan Karakter sebagai model awal sebelum dikloning ke divisi lain.
+2. Kehadiran Santri:
+   - Sumber: cahaya_app/absensi_pembelajaran + cahaya_app/absensi_program_harian
+   - Hadir = Hadir + Terlambat
+   - Izin = Izin + Sakit
+   - Alfa = Alfa/Alpha/tanpa keterangan
+3. Ketepatan Waktu:
+   - Hanya menghitung santri yang hadir.
+   - Tepat waktu = status Hadir
+   - Terlambat = status Terlambat
+   - Tersedia daftar program/mapel-kelas dengan tingkat keterlambatan tertinggi.
+4. Mutu Program:
+   - Sumber: observasi_lapangan jenis pengasuhan.
+   - Kategori otomatis dari persentase indikator:
+     Sangat Baik >= 90%
+     Baik >= 75%
+     Cukup >= 60%
+     Perlu Peningkatan < 60%
+   - Program dengan data observasi dapat dibuka untuk melihat temuan, rekomendasi, rata-rata indikator dan riwayat observasi.
+   - Program yang belum diobservasi ditandai Belum Dinilai.
+5. Form Observasi Pengasuhan diperbarui:
+   - Status mutu program tidak dipilih manual lagi.
+   - Observer menilai seluruh indikator, sistem menghitung kategori mutu otomatis.
+   - Data menyimpan mutuProgram.kategori dan mutuProgram.persentase serta tetap menjaga field status/persentase lama untuk kompatibilitas.
+6. Evaluasi & Tindak Lanjut:
+   - Halaman baru: pimpinan/rapat-evaluasi-pembinaan-karakter.html
+   - Path: cahaya_app/evaluasi_tindak_lanjut/pembinaan_karakter
+   - Mencatat hasil rapat, temuan, prioritas, keputusan, tindakan, PIC, target dan indikator keberhasilan.
+   - Status tindak lanjut bisa diperbarui: Direncanakan / Berjalan / Selesai.
+   - Dashboard menampilkan progres penyelesaian tindakan.
+7. main-dashboard.html diarahkan ke Dashboard Pimpinan v41 dan Laporan Observasi menuju bagian Mutu Program.
+
+Tidak mengubah skema absensi yang sudah berjalan, data wali_index, chat, login, maupun modul lain.

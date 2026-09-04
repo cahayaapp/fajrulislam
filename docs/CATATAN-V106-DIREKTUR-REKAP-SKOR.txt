@@ -1,0 +1,15 @@
+CAHAYA APP v106 — Direktur Rekap & Skor
+
+Fokus perubahan:
+1. Tombol Lihat Rekap di seluruh popup Direktur kini membuka mode rekap dengan pilihan Pekanan (7 hari terakhir) dan Bulanan (30 hari terakhir). Data rekap hanya diambil saat diminta dan disimpan cache memori singkat untuk menghemat bandwidth.
+2. Skor Santri dan Usrah memakai gabungan Kehadiran Belajar + Kehadiran Program Naqib. Status hadir=100, terlambat=70, alfa=0, izin/sakit tidak menjadi pembagi. Skor Usrah adalah rata-rata skor anggota yang memiliki data sehingga satu anggota alfa menurunkan skor Usrah.
+3. Ranking memakai dense ranking: skor sama memperoleh peringkat sama. Semua skor tertinggi berstatus Peringkat 1. Card menampilkan “dan x lainnya” bila pemenang lebih dari satu.
+4. Ikon Beranda khusus Direktur diganti dengan ikon rumah minimal/elegan dan styling lebih halus.
+5. Cache route Homepage Direktur dinaikkan ke v106.
+
+QA:
+- JavaScript syntax home-direktur.html PASS
+- JavaScript syntax main-dashboard.html PASS
+- HTML duplicate id: none
+- Synthetic score test: anggota Alfa menurunkan skor Usrah (contoh 75%, bukan 100%)
+- Synthetic tie test: 100/100 = rank 1/1; 80/80 = rank 2/2

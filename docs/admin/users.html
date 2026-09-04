@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js?v=83" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Pengaturan User • CAHAYA APP</title>
+  <link rel="stylesheet" href="../css/cahaya-theme.css">
+  <style>
+    :root{--blue:#2878ff;--blue2:#1557d5;--ink:#17294b;--text:#334766;--muted:#7d8ca2;--line:#e1e9f3;--soft:#f5f8fd;--green:#19a974;--amber:#e99a18;--red:#df4f60}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#f8fbff,#f3f7fc);color:var(--text);font-family:Nunito,Inter,system-ui,-apple-system,"Segoe UI",sans-serif}.page{max-width:1280px;margin:auto;padding:20px 20px 58px}.hero{background:linear-gradient(125deg,#173d75,#2878ff 58%,#36a8f2);color:#fff;border-radius:26px;padding:23px 25px;box-shadow:0 18px 48px rgba(31,89,182,.18)}.hero-row{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.eyebrow{font-size:.62rem;letter-spacing:.11em;text-transform:uppercase;font-weight:1000;color:#cfe1ff}.hero h1{margin:5px 0 0;font-size:1.55rem}.hero p{margin:8px 0 0;color:#e6efff;max-width:790px;font-size:.78rem;line-height:1.55;font-weight:700}.hero .btn{background:#fff;color:#1557d5;white-space:nowrap}.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:950;cursor:pointer}.btn.primary{color:#fff;background:linear-gradient(145deg,#1557d5,#2878ff);box-shadow:0 8px 18px rgba(40,120,255,.18)}.btn.soft{background:#edf4ff;color:#235fae}.btn.red{background:#ffedf0;color:#b83b4b}.btn:disabled{opacity:.55;cursor:not-allowed}.toolbar{display:flex;gap:10px;align-items:center;margin:14px 0}.search{flex:1;min-width:0;border:1px solid #d9e3ef;border-radius:13px;background:#fff;padding:11px 13px;outline:none}.search:focus{border-color:#69a3f4;box-shadow:0 0 0 4px rgba(40,120,255,.08)}.note{padding:11px 13px;border:1px solid #dbe7f5;border-radius:13px;background:#f8fbff;color:#647a98;font-size:.69rem;line-height:1.55}.card{background:#fff;border:1px solid var(--line);border-radius:21px;box-shadow:0 9px 28px rgba(35,78,160,.055);overflow:hidden}.card-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:15px 17px;border-bottom:1px solid #edf1f6}.card-head h2{margin:0;color:var(--ink);font-size:.95rem}.card-head p{margin:4px 0 0;color:#8390a4;font-size:.62rem}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:11px 12px;border-bottom:1px solid #edf1f5;text-align:left;vertical-align:top;font-size:.68rem}th{background:#f6f9fd;color:#70819a;text-transform:uppercase;letter-spacing:.04em;font-size:.53rem}.user-name b{display:block;color:#253b5e;font-size:.76rem}.user-name span{display:block;margin-top:2px;color:#8794a6}.chips{display:flex;gap:5px;flex-wrap:wrap}.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#eef5ff;color:#205fac;font-size:.56rem;font-weight:900;border:1px solid #d2e3fb}.chip.green{background:#e9f9f2;color:#167454;border-color:#ccefe1}.chip.purple{background:#f2efff;color:#6253c8;border-color:#ded8ff}.chip.gray{background:#f3f5f8;color:#66768d;border-color:#e1e6ed}.actions{display:flex;gap:6px}.icon-btn{width:34px;height:34px;border:0;border-radius:10px;cursor:pointer;font-weight:900}.icon-btn.edit{background:#edf4ff;color:#1c63b7}.icon-btn.delete{background:#ffedf0;color:#b93d4d}.empty{padding:34px;text-align:center;color:#8996a8;font-size:.7rem}
+    .modal{position:fixed;inset:0;z-index:2000;background:rgba(12,28,52,.58);display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}.modal.show{display:flex}.modal-card{width:min(780px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:23px;box-shadow:0 28px 80px rgba(0,0,0,.24)}.modal-head{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid #e9eef5;background:#fff}.modal-head h3{margin:0;color:var(--ink);font-size:1rem}.close{width:34px;height:34px;border:0;border-radius:10px;background:#f0f3f8;color:#64758d;cursor:pointer}.modal-body{padding:17px 18px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:grid;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:.57rem;font-weight:1000;text-transform:uppercase;letter-spacing:.04em;color:#70819a}.field input,.field select{width:100%;border:1px solid #d9e3ef;border-radius:12px;background:#fff;padding:10px 11px;color:#273b5c;outline:none}.field input:focus,.field select:focus{border-color:#69a3f4;box-shadow:0 0 0 4px rgba(40,120,255,.08)}.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 8px}.section-title h4{margin:0;color:#213a60;font-size:.82rem}.section-title small{display:block;margin-top:2px;color:#8492a5;font-size:.61rem}.assignment-list{display:grid;gap:8px}.assignment{display:grid;grid-template-columns:1.1fr 1.1fr 40px;gap:8px;align-items:end;padding:11px;border:1px solid #dfe8f3;border-radius:14px;background:#fbfdff}.assignment .remove{height:40px;border:0;border-radius:10px;background:#ffedf0;color:#bb4050;font-weight:1000;cursor:pointer}.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 18px;border-top:1px solid #e9eef5;background:#fbfcfe;position:sticky;bottom:0}.loading{position:fixed;inset:0;z-index:3000;background:rgba(255,255,255,.88);display:none;place-items:center}.loading.show{display:grid}.loading-card{padding:18px 22px;border:1px solid #dce7f3;border-radius:16px;background:#fff;box-shadow:0 18px 50px rgba(25,55,95,.15);font-weight:900;color:#25456f}.legacy{margin-top:14px;padding:10px 11px;border:1px dashed #d5dfeb;border-radius:12px;color:#7a899d;font-size:.61rem;line-height:1.5;background:#fafcff}
+    @media(max-width:720px){.page{padding:12px 11px 44px}.hero{padding:19px;border-radius:21px}.hero-row{display:block}.hero .btn{margin-top:12px}.toolbar{align-items:stretch;flex-direction:column}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.assignment{grid-template-columns:1fr 1fr 38px}.modal-body{padding:14px}.card-head{align-items:flex-start}.note{font-size:.65rem}}
+    @media(max-width:520px){.assignment{grid-template-columns:1fr 38px}.assignment .role-field{grid-column:1/2}.assignment .remove{grid-column:2;grid-row:1/3;height:100%}}
+  </style>
+
+<style id="users-v83-responsive-polish">
+html,body{overflow-x:hidden}.page{width:100%}.modal-card{overscroll-behavior:contain}.table-wrap{-webkit-overflow-scrolling:touch}
+@media(max-width:480px){.page{padding:10px 9px 40px}.hero{padding:17px 15px;border-radius:18px}.hero h1{font-size:1.32rem}.hero p{font-size:.7rem}.hero .btn{width:100%}.toolbar{gap:8px}.toolbar .btn{width:100%}.modal{padding:8px}.modal-card{border-radius:18px;max-height:96vh}.modal-head,.modal-foot{padding:12px}.modal-body{padding:12px}.assignment{grid-template-columns:1fr 36px;padding:9px}.assignment .role-field{grid-column:1/2}.assignment .remove{grid-column:2;grid-row:1/3;height:100%}.modal-foot .btn{flex:1}.search,.field input,.field select{font-size:16px}.card{border-radius:18px}}
+</style>
+
+<link rel="stylesheet" href="../css/cahaya-premium-v85.css?v=85">
+
+  <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
+</head>
+<body class="v84-purple">
+<main class="page">
+  <section class="hero"><div class="hero-row"><div><div class="eyebrow">CAHAYA APP • Pengaturan</div><h1>Pengaturan User</h1><p>Struktur akses cukup <b>User → Divisi → Role</b>. Setiap user boleh memiliki beberapa role; Dashboard Operasional otomatis menyesuaikan role aktif tanpa membuat akun baru.</p></div><button class="btn" type="button" onclick="openAdd()">+ Tambah User</button></div></section>
+  <div class="toolbar"><input class="search" id="search" placeholder="Cari nama atau username..." oninput="render()"><button class="btn soft" onclick="loadUsers()">Muat Ulang</button></div>
+  <div class="note">Menu aplikasi ditentukan otomatis oleh role. Role tersedia per divisi. Untuk Pendidikan/Pembinaan gunakan role khusus seperti <b>Manajer Pendidikan, Supervisor Pendidikan, Naqib Operasional, Naqib Pendamping, Asisten Naqib, Manajer Pembinaan Karakter</b>, dan <b>Supervisor Pembinaan Karakter</b>.</div>
+  <section class="card" style="margin-top:12px"><div class="card-head"><div><h2>User & Role</h2><p id="countLabel">Memuat data...</p></div></div><div class="table-wrap"><table><thead><tr><th>User</th><th>Divisi</th><th>Role</th><th>Aksi</th></tr></thead><tbody id="rows"><tr><td colspan="4" class="empty">Memuat pengguna...</td></tr></tbody></table></div></section>
+</main>
+
+<div class="modal" id="modal"><section class="modal-card"><div class="modal-head"><h3 id="modalTitle">Pengaturan User</h3><button class="close" onclick="closeModal()">×</button></div><div class="modal-body">
+  <div class="form-grid">
+    <div class="field"><label>Username</label><input id="username" autocomplete="off" placeholder="contoh: doni"></div>
+    <div class="field"><label>Nama User</label><input id="label" placeholder="Nama yang tampil"></div>
+    <div class="field full" id="passwordField"><label>Password Awal</label><input id="password" type="password" placeholder="Minimal 6 karakter"></div>
+  </div>
+  <div class="section-title"><div><h4>Divisi & Role</h4><small>Tambahkan satu baris untuk setiap Divisi & Role yang dimiliki user.</small></div><button class="btn soft" type="button" onclick="addAssignment()">+ Tambah Role</button></div>
+  <div class="assignment-list" id="assignments"></div>
+  <div class="legacy">Kompatibilitas fitur lama tetap dijaga otomatis. Anda tidak perlu lagi mengatur “hak akses sistem”, “jenjang”, “fungsi spesifik”, dan centang menu satu per satu.</div>
+</div><div class="modal-foot"><button class="btn soft" onclick="closeModal()">Batal</button><button class="btn primary" id="saveBtn" onclick="saveUser()">Simpan User</button></div></section></div>
+<div class="loading" id="loading"><div class="loading-card" id="loadingText">Memuat...</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script>
+'use strict';
+const firebaseConfig = window.CAHAYA_CONFIG?.firebase || {};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+let secondaryApp;
+try { secondaryApp = firebase.app('SecondaryApp'); } catch (_) { secondaryApp = firebase.initializeApp(firebaseConfig,'SecondaryApp'); }
+const DIVISIONS = [
+  'Pimpinan',
+  'Pendidikan Putra','Pendidikan Putri','Pendidikan Putra & Putri',
+  'Pembinaan Karakter Putra','Pembinaan Karakter Putri','Pembinaan Karakter Putra & Putri',
+  'Kesehatan','Sarpras','Keamanan & Kebersihan','Layanan','Administrasi & Keuangan','Dapur','Media & Digital','Wali Santri'
+];
+const ROLE_OPTIONS = {
+  'Pimpinan':[
+    ['direktur','Direktur'],['admin','Administrator'],['wakil','Wakil Direktur'],['yayasan','Yayasan']
+  ],
+  'Pendidikan':[
+    ['guru','Guru'],['mentor-quran','Mentor Tahsin/Tahfiz'],['manajer-pendidikan','Manajer Pendidikan'],['supervisor-pendidikan','Supervisor Pendidikan'],['kepala-sekolah','Kepala Sekolah'],['cla','CLA']
+  ],
+  'Pembinaan Karakter':[
+    ['naqib-operasional','Naqib Operasional'],['asisten-naqib','Asisten Naqib Pendamping'],['naqib-pendamping','Naqib Pendamping'],['manajer-pembinaan','Manajer Pembinaan Karakter'],['supervisor-pembinaan','Supervisor Pembinaan Karakter']
+  ],
+  'Kesehatan':[['kesehatan','Petugas Kesehatan'],['manajer-kesehatan','Manajer Kesehatan'],['supervisor-kesehatan','Supervisor Kesehatan']],
+  'Sarpras':[['sarpras','Pelaksana / Kepala Sarpras'],['manajer-sarpras','Manajer Sarpras'],['supervisor-sarpras','Supervisor Sarpras']],
+  'Keamanan & Kebersihan':[['keamanan-kebersihan','Petugas Keamanan & Kebersihan'],['manajer-keamanan-kebersihan','Manajer Keamanan & Kebersihan'],['supervisor-keamanan-kebersihan','Supervisor Keamanan & Kebersihan']],
+  'Layanan':[['layanan','Tim Layanan'],['manajer-layanan','Manajer Layanan'],['supervisor-layanan','Supervisor Layanan']],
+  'Administrasi & Keuangan':[['keuangan','Staf Administrasi & Keuangan'],['manajer-keuangan','Manajer Administrasi & Keuangan'],['supervisor-keuangan','Supervisor Administrasi & Keuangan'],['kasir','Kasir']],
+  'Dapur':[['tim-dapur','Tim Dapur'],['manajer-dapur','Manajer Dapur'],['supervisor-dapur','Supervisor Dapur']],
+  'Media & Digital':[['media-digital','Tim Media & Digital'],['manajer-media','Manajer Media & Digital'],['supervisor-media','Supervisor Media & Digital']],
+  'Wali Santri':[['wali','Wali Santri']]
+};
+const ROLE_LABEL = Object.fromEntries(Object.values(ROLE_OPTIONS).flat());
+let users=[], editId=null, editAssignments=[];
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function showLoading(text='Memuat...'){ $('loadingText').textContent=text; $('loading').classList.add('show'); }
+function hideLoading(){ $('loading').classList.remove('show'); }
+function baseDivision(label=''){
+  if(label.startsWith('Pendidikan')) return 'Pendidikan';
+  if(label.startsWith('Pembinaan Karakter')) return 'Pembinaan Karakter';
+  return label;
+}
+function unitFromDivision(label=''){
+  if(label.includes('Putra & Putri')) return 'Semua';
+  if(label.includes('Putra')) return 'Putra';
+  if(label.includes('Putri')) return 'Putri';
+  return '';
+}
+function divisionLabel(base='',unit=''){
+  if(base==='Pendidikan'||base==='Pembinaan Karakter') return `${base}${unit&&unit!=='Semua'?' '+unit:unit==='Semua'?' Putra & Putri':''}`;
+  return base||'Pimpinan';
+}
+function normalizeAssignment(a={}){
+  const d=a.divisionLabel||divisionLabel(a.division,a.unit)||'Pimpinan';
+  const base=baseDivision(d);
+  const allowed=ROLE_OPTIONS[base]||[];
+  const role=allowed.some(x=>x[0]===a.role)?a.role:(allowed[0]?.[0]||'');
+  return {divisionLabel:d,division:base,unit:unitFromDivision(d),role};
+}
+function legacyAssignments(u={}){
+  if(Array.isArray(u.workspaceAssignments)&&u.workspaceAssignments.length) return u.workspaceAssignments.map(normalizeAssignment);
+  const out=[];
+  const roles=Array.isArray(u.workspaceRoles)&&u.workspaceRoles.length?u.workspaceRoles:(Array.isArray(u.akses)?u.akses:[u.akses||u.role].filter(Boolean));
+  const push=(d,r)=>{if(!r||out.some(x=>x.role===r))return;out.push(normalizeAssignment({divisionLabel:d,role:r}))};
+  for(const raw of roles){const r=String(raw||'').toLowerCase();
+    if(r==='direktur'||r==='admin'||r==='wakil'||r==='yayasan') push('Pimpinan',r);
+    else if(r==='guru') push('Pendidikan Putra & Putri','guru');
+    else if(r==='kepala-sekolah'||r==='cla') push('Pendidikan Putra & Putri',r);
+    else if(r==='naqib') push('Pembinaan Karakter Putra & Putri','naqib-operasional');
+    else if(r==='konselor') push('Pembinaan Karakter Putra & Putri','manajer-pembinaan');
+    else if(['kesehatan','manajer-kesehatan','supervisor-kesehatan'].includes(r)) push('Kesehatan',r);
+    else if(['sarpras','manajer-sarpras','supervisor-sarpras'].includes(r))push('Sarpras',r);
+    else if(['keamanan-kebersihan','manajer-keamanan-kebersihan','supervisor-keamanan-kebersihan'].includes(r))push('Keamanan & Kebersihan',r);
+    else if(['keuangan','manajer-keuangan','supervisor-keuangan','kasir'].includes(r))push('Administrasi & Keuangan',r);
+    else if(['layanan','manajer-layanan','supervisor-layanan'].includes(r))push('Layanan',r);
+    else if(['tim-dapur','manajer-dapur','supervisor-dapur'].includes(r))push('Dapur',r);
+    else if(['media-digital','manajer-media','supervisor-media'].includes(r))push('Media & Digital',r);
+    else if(r==='wali')push('Wali Santri',r);
+  }
+  const ops=Array.isArray(u.operationalAssignments)?u.operationalAssignments:[];
+  for(const a of ops){const f=String(a.functionKey||'').toLowerCase(); const d=String(a.division||''); const unit=a.unit||'Semua';
+    if(f.includes('guru'))push(divisionLabel('Pendidikan',unit),'guru');
+    if(f.includes('naqib'))push(divisionLabel('Pembinaan Karakter',unit),'naqib-operasional');
+    if(a.level==='manajer'&&/pendidikan|pengajaran|tah/i.test(d))push(divisionLabel('Pendidikan',unit),'manajer-pendidikan');
+    if(a.level==='supervisor'&&/pendidikan|pengajaran|tah/i.test(d))push(divisionLabel('Pendidikan',unit),'supervisor-pendidikan');
+    if(a.level==='manajer'&&/karakter|asrama|konsel/i.test(d))push(divisionLabel('Pembinaan Karakter',unit),'manajer-pembinaan');
+    if(a.level==='supervisor'&&/karakter|asrama|konsel/i.test(d))push(divisionLabel('Pembinaan Karakter',unit),'supervisor-pembinaan');
+  }
+  return out.length?out:[normalizeAssignment({divisionLabel:'Pendidikan Putra & Putri',role:'guru'})];
+}
+function compatForRole(r){return ({
+  'mentor-quran':['mentor-quran','guru'],
+  'manajer-pendidikan':['manajer-pendidikan','manajer','operasional'],
+  'supervisor-pendidikan':['supervisor-pendidikan','supervisor','operasional'],
+  'naqib-operasional':['naqib-operasional','naqib'],
+  'asisten-naqib':['asisten-naqib','naqib'],
+  'naqib-pendamping':['naqib-pendamping','naqib'],
+  'manajer-pembinaan':['manajer-pembinaan','manajer','operasional','konselor'],
+  'supervisor-pembinaan':['supervisor-pembinaan','supervisor','operasional','konselor'],
+  'manajer-kesehatan':['manajer-kesehatan','kesehatan','manajer','operasional'],
+  'supervisor-kesehatan':['supervisor-kesehatan','kesehatan','supervisor','operasional'],
+  'manajer-sarpras':['manajer-sarpras','sarpras','manajer','operasional'],
+  'supervisor-sarpras':['supervisor-sarpras','sarpras','supervisor','operasional'],
+  'keamanan-kebersihan':['keamanan-kebersihan','layanan'],
+  'manajer-keamanan-kebersihan':['manajer-keamanan-kebersihan','layanan','manajer','operasional'],
+  'supervisor-keamanan-kebersihan':['supervisor-keamanan-kebersihan','layanan','supervisor','operasional'],
+  'manajer-layanan':['manajer-layanan','layanan','manajer','operasional'],
+  'supervisor-layanan':['supervisor-layanan','layanan','supervisor','operasional'],
+  'manajer-keuangan':['manajer-keuangan','keuangan','manajer','operasional'],
+  'supervisor-keuangan':['supervisor-keuangan','keuangan','supervisor','operasional'],
+  'tim-dapur':['tim-dapur','operasional'],
+  'manajer-dapur':['manajer-dapur','manajer','operasional'],
+  'supervisor-dapur':['supervisor-dapur','supervisor','operasional'],
+  'media-digital':['media-digital','operasional'],
+  'manajer-media':['manajer-media','manajer','operasional'],
+  'supervisor-media':['supervisor-media','supervisor','operasional']
+}[r]||[r]).filter(Boolean)}
+function operationalFrom(assignments){
+  const out=[]; let n=0;
+  const meta={
+    'manajer-pendidikan':['manajer','Pendidikan','Manajer Pendidikan'],
+    'supervisor-pendidikan':['supervisor','Pendidikan','Supervisor Pendidikan'],
+    'naqib-operasional':['staf-muda','Pembinaan Karakter','Naqib Operasional'],
+    'manajer-pembinaan':['manajer','Pembinaan Karakter','Manajer Pembinaan Karakter'],
+    'supervisor-pembinaan':['supervisor','Pembinaan Karakter','Supervisor Pembinaan Karakter'],
+    'kesehatan':['staf-muda','Kesehatan','Petugas Kesehatan'],
+    'manajer-kesehatan':['manajer','Kesehatan','Manajer Kesehatan'],
+    'supervisor-kesehatan':['supervisor','Kesehatan','Supervisor Kesehatan'],
+    'sarpras':['staf-muda','Sarpras','Pelaksana Sarpras'],
+    'manajer-sarpras':['manajer','Sarpras','Manajer Sarpras'],
+    'supervisor-sarpras':['supervisor','Sarpras','Supervisor Sarpras'],
+    'keamanan-kebersihan':['staf-muda','Keamanan & Kebersihan','Petugas Keamanan & Kebersihan'],
+    'manajer-keamanan-kebersihan':['manajer','Keamanan & Kebersihan','Manajer Keamanan & Kebersihan'],
+    'supervisor-keamanan-kebersihan':['supervisor','Keamanan & Kebersihan','Supervisor Keamanan & Kebersihan'],
+    'layanan':['staf-muda','Layanan','Tim Layanan'],
+    'manajer-layanan':['manajer','Layanan','Manajer Layanan'],
+    'supervisor-layanan':['supervisor','Layanan','Supervisor Layanan'],
+    'keuangan':['staf-muda','Administrasi & Keuangan','Staf Administrasi & Keuangan'],
+    'manajer-keuangan':['manajer','Administrasi & Keuangan','Manajer Administrasi & Keuangan'],
+    'supervisor-keuangan':['supervisor','Administrasi & Keuangan','Supervisor Administrasi & Keuangan'],
+    'tim-dapur':['staf-muda','Dapur','Tim Dapur'],
+    'manajer-dapur':['manajer','Dapur','Manajer Dapur'],
+    'supervisor-dapur':['supervisor','Dapur','Supervisor Dapur'],
+    'media-digital':['staf-muda','Media & Digital','Tim Media & Digital'],
+    'manajer-media':['manajer','Media & Digital','Manajer Media & Digital'],
+    'supervisor-media':['supervisor','Media & Digital','Supervisor Media & Digital']
+  };
+  for(const a of assignments){if(!meta[a.role])continue;const [level,division,label]=meta[a.role];out.push({id:`v82-${++n}`,level,division,functionKey:a.role,functionLabel:label,unit:a.unit==='Semua'?'':a.unit,supervisorUsername:'',scopeDivisions:level==='supervisor'?[division]:[],standardId:`${level}__${division.toLowerCase().replace(/\s+/g,'-')}__${a.role}`,active:true})}
+  return out;
+}
+function roleOptions(d,selected=''){const base=baseDivision(d);return (ROLE_OPTIONS[base]||[]).map(([v,l])=>`<option value="${esc(v)}" ${v===selected?'selected':''}>${esc(l)}</option>`).join('')}
+function assignmentRow(a,index){a=normalizeAssignment(a);return `<div class="assignment" data-index="${index}"><div class="field"><label>Divisi</label><select class="division-field" onchange="assignmentDivisionChanged(${index},this.value)">${DIVISIONS.map(d=>`<option value="${esc(d)}" ${d===a.divisionLabel?'selected':''}>${esc(d)}</option>`).join('')}</select></div><div class="field role-field"><label>Role</label><select class="role-field-select" onchange="assignmentRoleChanged(${index},this.value)">${roleOptions(a.divisionLabel,a.role)}</select></div><button class="remove" type="button" onclick="removeAssignment(${index})">×</button></div>`}
+function renderAssignments(){if(!editAssignments.length)editAssignments=[normalizeAssignment({divisionLabel:'Pendidikan Putra & Putri',role:'guru'})];$('assignments').innerHTML=editAssignments.map(assignmentRow).join('')}
+window.assignmentDivisionChanged=(i,d)=>{const allowed=ROLE_OPTIONS[baseDivision(d)]||[];editAssignments[i]=normalizeAssignment({divisionLabel:d,role:allowed[0]?.[0]||''});renderAssignments()};
+window.assignmentRoleChanged=(i,r)=>{editAssignments[i].role=r};
+window.removeAssignment=i=>{editAssignments.splice(i,1);renderAssignments()};
+window.addAssignment=()=>{editAssignments.push(normalizeAssignment({divisionLabel:'Pendidikan Putra & Putri',role:'guru'}));renderAssignments()};
+async function loadUsers(){showLoading('Memuat user...');try{const snap=await db.collection('users').get();users=[];snap.forEach(doc=>users.push({...doc.data(),id:doc.id}));users.sort((a,b)=>String(a.label||a.username||a.id).localeCompare(String(b.label||b.username||b.id),'id'));render()}catch(e){alert('Gagal memuat user: '+e.message)}finally{hideLoading()}}
+window.loadUsers=loadUsers;
+function render(){const q=String($('search').value||'').toLowerCase();const list=users.filter(u=>`${u.username||u.id} ${u.label||u.nama||''}`.toLowerCase().includes(q));$('countLabel').textContent=`${list.length} user ditampilkan`;$('rows').innerHTML=list.length?list.map(u=>{const as=legacyAssignments(u);const divs=[...new Set(as.map(a=>a.divisionLabel))];return `<tr><td><div class="user-name"><b>${esc(u.label||u.nama||u.username||u.id)}</b><span>@${esc(u.username||u.id)}</span></div></td><td><div class="chips">${divs.map(d=>`<span class="chip gray">${esc(d)}</span>`).join('')}</div></td><td><div class="chips">${as.map(a=>`<span class="chip ${a.division==='Pembinaan Karakter'?'green':a.division==='Pimpinan'?'purple':''}">${esc(ROLE_LABEL[a.role]||a.role)}</span>`).join('')}</div></td><td><div class="actions"><button class="icon-btn edit" onclick="openEdit('${esc(u.id)}')">✎</button><button class="icon-btn delete" onclick="deleteUser('${esc(u.id)}')">×</button></div></td></tr>`}).join(''):'<tr><td colspan="4" class="empty">Tidak ada user pada pencarian ini.</td></tr>'}
+window.openAdd=()=>{editId=null;$('modalTitle').textContent='Tambah User';$('username').disabled=false;$('username').value='';$('label').value='';$('password').value='';$('passwordField').style.display='grid';editAssignments=[normalizeAssignment({divisionLabel:'Pendidikan Putra & Putri',role:'guru'})];renderAssignments();$('modal').classList.add('show')};
+window.openEdit=id=>{const u=users.find(x=>x.id===id);if(!u)return;editId=id;$('modalTitle').textContent='Edit User & Role';$('username').disabled=true;$('username').value=u.username||u.id;$('label').value=u.label||u.nama||u.username||u.id;$('password').value='';$('passwordField').style.display='none';editAssignments=legacyAssignments(u);renderAssignments();$('modal').classList.add('show')};
+window.closeModal=()=>$('modal').classList.remove('show');
+window.saveUser=async()=>{
+  const username=String($('username').value||'').trim().toLowerCase(),label=String($('label').value||'').trim(),password=String($('password').value||'');
+  const assignments=editAssignments.map(normalizeAssignment).filter(a=>a.role);
+  if(!username)return alert('Username wajib diisi.'); if(!assignments.length)return alert('Tambahkan minimal satu Divisi & Role.');
+  const workspaceRoles=[...new Set(assignments.map(a=>a.role))]; const akses=[...new Set(workspaceRoles.flatMap(compatForRole))]; const operationalAssignments=operationalFrom(assignments); const primary=operationalAssignments[0]||{};
+  const payload={username,label:label||username,workspaceAssignments:assignments,roleAssignmentsV2:assignments,workspaceRoles,defaultWorkspaceRole:workspaceRoles[0]||'',akses,jabatan:akses,role:workspaceRoles[0]||'',operationalAssignments,primaryOperationalRole:primary.standardId||'',levelOperasional:primary.level||'',divisiOperasional:primary.division||'',atasanOperasional:primary.supervisorUsername||'',userSettingsVersion:86,allowedMenus:[],updatedAt:new Date().toISOString()};
+  $('saveBtn').disabled=true;showLoading(editId?'Menyimpan pengaturan user...':'Membuat user...');
+  try{
+    if(!editId){if(password.length<6)throw new Error('Password awal minimal 6 karakter.');await secondaryApp.auth().createUserWithEmailAndPassword(`${username}@cahayaapp.id`,password);await secondaryApp.auth().signOut();payload.createdAt=new Date().toISOString();await db.collection('users').doc(username).set(payload,{merge:true});}
+    else await db.collection('users').doc(editId).set(payload,{merge:true});
+    closeModal();await loadUsers();
+  }catch(e){alert(e.message||String(e))}finally{$('saveBtn').disabled=false;hideLoading()}
+};
+window.deleteUser=async id=>{if(!confirm('Hapus akses user ini dari CAHAYA APP? Akun Firebase Auth tidak ikut dihapus.'))return;showLoading('Menghapus akses...');try{await db.collection('users').doc(id).delete();await loadUsers()}catch(e){alert(e.message)}finally{hideLoading()}};
+$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
+loadUsers();
+</script>
+</body>
+</html>
