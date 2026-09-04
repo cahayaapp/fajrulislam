@@ -1,5 +1,5 @@
-/* CAHAYA APP v135 — PWA + Firebase Messaging */
-const CAHAYA_SW_BUILD='v135';
+/* CAHAYA APP v136 — PWA + Firebase Messaging */
+const CAHAYA_SW_BUILD='v136';
 self.addEventListener('install',event=>{self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(self.clients.claim());});
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
@@ -15,7 +15,7 @@ try{
     const relativeLink=roomId?`main-dashboard.html?openChat=1&room=${encodeURIComponent(roomId)}`:'main-dashboard.html';
     const requestedLink=data.link||relativeLink;
     const resolvedLink=new URL(requestedLink,self.registration.scope).href;
-    const iconUrl=new URL('assets/cahaya-app/app-icon-192.png',self.registration.scope).href;
+    const iconUrl=new URL('assets/cahaya-app/app-icon-maskable-192.png',self.registration.scope).href;
     return self.registration.showNotification(title,{
       body:notification.body||data.body||'Ada pemberitahuan baru.',icon:iconUrl,badge:iconUrl,
       tag:data.tag||roomId||data.notificationId||'cahaya-global',renotify:true,

@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#f4f8fd">
-  <meta name="cahaya-build" content="20260904-v135-unified-install">
+  <meta name="cahaya-build" content="20260904-v136-unified-install">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>CAHAYA APP</title>
-  <link rel="manifest" href="manifest.json?v=135">
-  <link rel="icon" href="assets/cahaya-app/favicon.ico?v=135">
-  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon.png?v=135">
-  <script src="config/tenant-config.js?v=135"></script>
-  <script src="config/master-data.js?v=135"></script>
-  <script src="js/cahaya-config-runtime.js?v=135" defer></script>
+  <link rel="manifest" href="manifest.json?v=136">
+  <link rel="icon" href="assets/cahaya-app/favicon.ico?v=136">
+  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon.png?v=136">
+  <script src="config/tenant-config.js?v=136"></script>
+  <script src="config/master-data.js?v=136"></script>
+  <script src="js/cahaya-config-runtime.js?v=136" defer></script>
   <style>
     :root{
       --navy:#17448f;
@@ -104,7 +104,7 @@
   <section id="loginScene" class="scene hidden">
     <div class="shell">
       <header class="brand">
-        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=135" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=135'">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=136" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=136'">
         <div class="brand-title">CAHAYA <span>APP</span></div>
         <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
       </header>
@@ -149,14 +149,14 @@
   <section id="installScene" class="scene hidden">
     <div class="shell">
       <header class="brand">
-        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=135" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=135'">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=136" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=136'">
         <div class="brand-title">CAHAYA <span>APP</span></div>
         <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
       </header>
       <main class="content install-content">
         <div class="tag">Aplikasi Resmi Pesantren</div>
         <h1 class="install-title">Pasang CAHAYA APP<br>di perangkat Anda</h1>
-        <p class="install-desc">Akses dashboard lebih cepat, terasa seperti aplikasi native, dan selalu siap dari layar utama perangkat.</p>
+        <p class="install-desc">Akses dashboard lebih cepat dan selalu siap dari layar utama perangkat.</p>
         <div class="benefits">
           <div class="benefit"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"></rect><path d="M10 18.3h4"></path></svg><span>Layar Penuh</span></div>
           <div class="benefit"><svg viewBox="0 0 24 24"><path d="m13 2-7 12h6l-1 8 7-12h-6Z"></path></svg><span>Akses Cepat</span></div>
@@ -224,7 +224,7 @@
         const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';
         return unit?`keuangan/kasir.html?unit=${unit}`:'keuangan/kasir.html';
       }
-      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v135';
+      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v136';
     }
 
     // Tentukan layar terlebih dahulu, tanpa menunggu Firebase / event install.
@@ -267,7 +267,7 @@
       setInstallStatus('');
     });
 
-    function waitForInstallPrompt(ms=3200){
+    function waitForInstallPrompt(ms=8000){
       if(deferredInstallPrompt) return Promise.resolve(deferredInstallPrompt);
       return new Promise(resolve=>{
         let done=false;
@@ -281,7 +281,7 @@
       if(!('serviceWorker' in navigator)) return null;
       if(!swReadyPromise){
         swReadyPromise=(async()=>{
-          const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js?v=135',{scope:'./',updateViaCache:'none'});
+          const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js?v=136',{scope:'./',updateViaCache:'none'});
           await reg.update().catch(()=>{});
           await navigator.serviceWorker.ready.catch(()=>reg);
           return reg;
@@ -289,6 +289,9 @@
       }
       return swReadyPromise;
     }
+
+    // Siapkan PWA sejak halaman instalasi dibuka agar tombol Android langsung memunculkan native install prompt.
+    ensurePwaReady().catch(()=>{});
 
     installMainBtn.addEventListener('click',async()=>{
       installMainBtn.classList.add('clicked');
@@ -303,7 +306,7 @@
       // macOS desktop: unduh paket aplikasi untuk dipindahkan ke folder Applications.
       if(isMacDesktop()){
         const a=document.createElement('a');
-        a.href='downloads/CAHAYA-APP-Mac.zip?v=135';
+        a.href='downloads/CAHAYA-APP-Mac.zip?v=136';
         a.download='CAHAYA-APP-Mac.zip';
         document.body.appendChild(a);
         a.click();
@@ -318,7 +321,7 @@
       setInstallStatus('Menyiapkan instalasi CAHAYA APP...',true);
 
       await ensurePwaReady();
-      let promptEvent=deferredInstallPrompt || await waitForInstallPrompt(3500);
+      let promptEvent=deferredInstallPrompt || await waitForInstallPrompt(8000);
 
       if(promptEvent){
         try{
@@ -326,7 +329,7 @@
           const choice=await promptEvent.userChoice;
           deferredInstallPrompt=null;
           if(choice?.outcome==='accepted'){
-            setInstallStatus('Instalasi sedang diproses. Setelah selesai, buka CAHAYA APP dari layar utama perangkat.',true);
+            setInstallStatus('Tunggu beberapa saat hingga ada notifikasi aplikasi selesai dipasang.',true);
             label.textContent='Memasang CAHAYA APP...';
             return;
           }
@@ -340,18 +343,27 @@
         return;
       }
 
+      // Jangan membuat shortcut browser biasa pada Chromium/Android karena itu dapat menampilkan badge Chrome.
+      // Hanya lanjutkan instalasi jika browser menyediakan native PWA install prompt.
+      const chromiumLike=/Chrome|Chromium|CriOS|Edg|SamsungBrowser/i.test(navigator.userAgent);
+      if(chromiumLike){
+        setInstallStatus('Pemasangan aplikasi belum siap. Tunggu beberapa saat lalu tekan Install Cahaya App kembali.',true);
+        installMainBtn.disabled=false;
+        label.textContent=oldLabel;
+        return;
+      }
+
       // Safari/iOS/macOS Safari tidak menyediakan beforeinstallprompt.
-      // Satu klik tetap membuka UI native terdekat bila Web Share tersedia.
       if(navigator.share){
         try{
           await navigator.share({title:'CAHAYA APP',text:'Pasang CAHAYA APP di perangkat Anda',url:location.origin+location.pathname});
           setInstallStatus('Pada menu yang terbuka, pilih <b>Tambahkan ke Layar Utama</b> atau <b>Tambahkan ke Dock</b>.',true);
         }catch(err){
           if(err?.name!=='AbortError') console.warn('Share install fallback:',err);
-          setInstallStatus('Browser ini tidak menyediakan instalasi satu-klik dari halaman web. Gunakan menu browser lalu pilih <b>Install / Tambahkan ke Layar Utama / Tambahkan ke Dock</b>.',true);
+          setInstallStatus('Gunakan menu browser lalu pilih <b>Tambahkan ke Layar Utama</b> atau <b>Tambahkan ke Dock</b>.',true);
         }
       }else{
-        setInstallStatus('Browser ini belum memberikan tombol instalasi langsung. Gunakan ikon instalasi di address bar atau menu browser → <b>Install CAHAYA APP</b>.',true);
+        setInstallStatus('Gunakan menu browser lalu pilih <b>Install CAHAYA APP</b>.',true);
       }
       installMainBtn.disabled=false;
       label.textContent=oldLabel;
@@ -360,8 +372,8 @@
     window.addEventListener('appinstalled',()=>{
       deferredInstallPrompt=null;
       installMainBtn.disabled=false;
-      installMainBtn.querySelector('span').textContent='CAHAYA APP Terpasang';
-      setInstallStatus('CAHAYA APP berhasil terpasang. Silakan buka dari layar utama perangkat.',true);
+      installMainBtn.querySelector('span').textContent='Menunggu selesai...';
+      setInstallStatus('Tunggu beberapa saat hingga ada notifikasi aplikasi selesai dipasang.',true);
     });
 
     document.getElementById('togglePassword').addEventListener('click',()=>{
