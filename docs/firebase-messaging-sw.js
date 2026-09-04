@@ -1,44 +1,37 @@
-/* CAHAYA APP V128 — Firebase Cloud Messaging + clean PWA lifecycle */
-const CAHAYA_SW_BUILD='v128';
+/* CAHAYA APP v132 — PWA + Firebase Messaging */
+const CAHAYA_SW_BUILD='v132';
 self.addEventListener('install',event=>{self.skipWaiting();});
-self.addEventListener('activate',event=>{event.waitUntil((async()=>{
-  try{const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}catch(e){}
-  await self.clients.claim();
-})());});
+self.addEventListener('activate',event=>{event.waitUntil(self.clients.claim());});
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
 importScripts('config/firebase-worker-config.js');
-
-firebase.initializeApp(self.CAHAYA_FIREBASE_CONFIG);
-const messaging=firebase.messaging();
-
-messaging.onBackgroundMessage(payload=>{
-  const data=payload.data||{};const notification=payload.notification||{};
-  const title=notification.title||data.title||'Notifikasi CAHAYA';
-  const roomId=data.roomId||'';
-  const relativeLink=roomId?`main-dashboard.html?openChat=1&room=${encodeURIComponent(roomId)}`:'main-dashboard.html';
-  const requestedLink=data.link||relativeLink;
-  const resolvedLink=new URL(requestedLink,self.registration.scope).href;
-  const iconUrl=new URL('assets/cahaya-app/app-icon-v67-192.png',self.registration.scope).href;
-  return self.registration.showNotification(title,{
-    body:notification.body||data.body||'Ada pemberitahuan baru.',
-    icon:iconUrl,badge:iconUrl,
-    tag:data.tag||roomId||data.notificationId||'cahaya-global',renotify:true,
-    data:{link:resolvedLink,roomId,notificationId:data.notificationId||''}
+try{
+  firebase.initializeApp(self.CAHAYA_FIREBASE_CONFIG);
+  const messaging=firebase.messaging();
+  messaging.onBackgroundMessage(payload=>{
+    const data=payload.data||{};const notification=payload.notification||{};
+    const title=notification.title||data.title||'Notifikasi CAHAYA';
+    const roomId=data.roomId||'';
+    const relativeLink=roomId?`main-dashboard.html?openChat=1&room=${encodeURIComponent(roomId)}`:'main-dashboard.html';
+    const requestedLink=data.link||relativeLink;
+    const resolvedLink=new URL(requestedLink,self.registration.scope).href;
+    const iconUrl=new URL('assets/cahaya-app/app-icon-192.png',self.registration.scope).href;
+    return self.registration.showNotification(title,{
+      body:notification.body||data.body||'Ada pemberitahuan baru.',icon:iconUrl,badge:iconUrl,
+      tag:data.tag||roomId||data.notificationId||'cahaya-global',renotify:true,
+      data:{link:resolvedLink,roomId,notificationId:data.notificationId||''}
+    });
   });
-});
-
+}catch(e){console.warn('FCM SW init',e);}
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
   const targetUrl=event.notification?.data?.link||new URL('main-dashboard.html',self.registration.scope).href;
   event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(windowClients=>{
     for(const client of windowClients){
-      if('navigate'in client)client.navigate(targetUrl);
-      if('focus'in client)return client.focus();
+      if('navigate' in client) client.navigate(targetUrl);
+      if('focus' in client) return client.focus();
     }
     return clients.openWindow?clients.openWindow(targetUrl):null;
   }));
 });
-
-// V118 — lightweight fetch hook so the same worker also satisfies legacy PWA installability checks.
 self.addEventListener('fetch',()=>{});

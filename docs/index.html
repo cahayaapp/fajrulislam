@@ -4,14 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#f4f8fd">
-  <meta name="cahaya-build" content="20260904-v131-index-login-install-clean">
+  <meta name="cahaya-build" content="20260904-v132-pwa-install-fix">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>CAHAYA APP</title>
-  <script src="config/tenant-config.js?v=131"></script>
-  <script src="config/master-data.js?v=131"></script>
-  <script src="js/cahaya-config-runtime.js?v=131" defer></script>
+  <link rel="manifest" href="manifest.json?v=132">
+  <link rel="icon" href="assets/cahaya-app/favicon.ico?v=132">
+  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon.png?v=132">
+  <script src="config/tenant-config.js?v=132"></script>
+  <script src="config/master-data.js?v=132"></script>
+  <script src="js/cahaya-config-runtime.js?v=132" defer></script>
   <style>
     :root{
       --navy:#17448f;
@@ -81,7 +84,8 @@
     .wave.w2{height:82px;bottom:7px;background:linear-gradient(90deg,#7cc8f3,#4ca8eb);transform:rotate(4deg)}
     .wave.w3{height:72px;bottom:-1px;background:linear-gradient(90deg,#0e6fe7,#1fb6e1);transform:rotate(-3deg)}
     .wave.w4{height:58px;bottom:-8px;background:linear-gradient(90deg,#0d5bcb,#1283d8)}
-    .version{position:absolute;left:12px;bottom:8px;font-size:9px;color:#b4c0cb;z-index:5}
+    .install-hint.action{margin-top:12px;padding:10px 12px;border-radius:12px;background:#f1f7ff;border:1px solid #dceaff;color:#416a9d;box-shadow:0 8px 20px rgba(28,86,150,.06)}
+    .install-btn.clicked{transform:translateY(1px);filter:saturate(.96)}
     @media (max-height:820px){
       .shell{padding-top:max(17px, calc(env(safe-area-inset-top) + 10px));padding-left:25px;padding-right:25px}
       .brand-logo{width:70px;height:70px}.brand-title{font-size:28px}.brand-sub{font-size:11px}
@@ -99,7 +103,7 @@
   <section id="loginScene" class="scene hidden">
     <div class="shell">
       <header class="brand">
-        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=131" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=131'">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=132" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=132'">
         <div class="brand-title">CAHAYA <span>APP</span></div>
         <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
       </header>
@@ -138,14 +142,13 @@
         </svg></div>
         <div class="wave w1"></div><div class="wave w2"></div><div class="wave w3"></div><div class="wave w4"></div>
       </div>
-      <div class="version">v131</div>
     </div>
   </section>
 
   <section id="installScene" class="scene hidden">
     <div class="shell">
       <header class="brand">
-        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=131" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=131'">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=132" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=132'">
         <div class="brand-title">CAHAYA <span>APP</span></div>
         <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
       </header>
@@ -179,7 +182,6 @@
         </svg></div>
         <div class="wave w1"></div><div class="wave w2"></div><div class="wave w3"></div><div class="wave w4"></div>
       </div>
-      <div class="version">v131</div>
     </div>
   </section>
 
@@ -193,18 +195,22 @@
     const installHint=document.getElementById('installHint');
     const qs=new URLSearchParams(location.search);
     let deferredInstallPrompt=null;
+    let db=null;
 
-    (async()=>{
-      try{
-        if('serviceWorker' in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister().catch(()=>false)));}
-        if('caches' in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}
-      }catch(e){console.warn('cleanup',e)}
-    })();
-
-    function show(scene){loginScene.classList.add('hidden');installScene.classList.add('hidden');scene.classList.remove('hidden');}
-    function isiOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1)}
-    function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true}
-    function sessionUser(){try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'null')}catch(_){return null}}
+    function show(scene){
+      loginScene.classList.add('hidden');
+      installScene.classList.add('hidden');
+      scene.classList.remove('hidden');
+    }
+    function isiOS(){
+      return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+    }
+    function isStandalone(){
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+    }
+    function sessionUser(){
+      try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'null')}catch(_){return null}
+    }
     function getLoginTarget(user){
       const roles=(Array.isArray(user?.akses)?user.akses:[user?.akses||user?.role].filter(Boolean)).map(r=>String(r||'').toLowerCase());
       const identity=[user?.cashierUnit,user?.unitKasir,user?.username,user?.email,user?.label].filter(Boolean).join(' ');
@@ -214,11 +220,71 @@
         const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';
         return unit?`keuangan/kasir.html?unit=${unit}`:'keuangan/kasir.html';
       }
-      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v131';
+      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v132';
     }
 
-    if(window.CAHAYA_CONFIG?.firebase){ if(!firebase.apps.length) firebase.initializeApp(window.CAHAYA_CONFIG.firebase); }
-    const db=firebase.firestore();
+    // Tentukan layar terlebih dahulu, tanpa menunggu Firebase / event install.
+    // Semua browser biasa diarahkan ke halaman instalasi; PWA terpasang masuk ke login/dashboard.
+    (function chooseInitialScene(){
+      const mode=qs.get('mode');
+      if(mode==='login'){show(loginScene);return;}
+      if(mode==='install'){show(installScene);return;}
+      if(isStandalone()){
+        const user=sessionUser();
+        if(user?.akses){location.replace(getLoginTarget(user));return;}
+        show(loginScene);return;
+      }
+      show(installScene);
+      if(isiOS()){
+        installHint.innerHTML='Di iPhone/iPad: tekan tombol <b>Bagikan</b>, lalu pilih <b>Tambahkan ke Layar Utama</b>.';
+      }
+    })();
+
+    // Tangkap native install prompt bila Chrome/Edge menyediakannya.
+    window.addEventListener('beforeinstallprompt',(e)=>{
+      e.preventDefault();
+      deferredInstallPrompt=e;
+      if(!isStandalone() && qs.get('mode')!=='login') show(installScene);
+      installHint.textContent='CAHAYA APP siap dipasang di perangkat ini.';
+    });
+
+    // Listener tombol dipasang SEBELUM inisialisasi Firebase agar tidak pernah mati bila Firebase gagal.
+    installMainBtn.addEventListener('click',async()=>{
+      installMainBtn.classList.add('clicked');
+      setTimeout(()=>installMainBtn.classList.remove('clicked'),180);
+
+      if(deferredInstallPrompt){
+        try{
+          deferredInstallPrompt.prompt();
+          const choice=await deferredInstallPrompt.userChoice;
+          if(choice.outcome==='accepted'){
+            installHint.classList.add('action');
+            installHint.textContent='Instalasi sedang diproses. Setelah terpasang, buka CAHAYA APP dari layar utama.';
+          }else{
+            installHint.classList.add('action');
+            installHint.textContent='Instalasi belum dilakukan. Tekan tombol Install Cahaya App kapan saja saat siap.';
+          }
+        }catch(err){
+          installHint.classList.add('action');
+          installHint.textContent='Gunakan menu browser lalu pilih “Install CAHAYA APP” atau “Tambahkan ke layar utama”.';
+        }
+        deferredInstallPrompt=null;
+        return;
+      }
+
+      installHint.classList.add('action');
+      if(isiOS()){
+        installHint.innerHTML='Di Safari iPhone/iPad: tekan <b>Bagikan</b> (ikon kotak dengan panah ke atas) → <b>Tambahkan ke Layar Utama</b> → <b>Tambah</b>.';
+      }else{
+        installHint.innerHTML='Jika dialog belum muncul: buka menu browser <b>⋮</b> atau ikon instalasi di address bar, lalu pilih <b>Install CAHAYA APP</b>.';
+      }
+    });
+
+    window.addEventListener('appinstalled',()=>{
+      installHint.classList.add('action');
+      installHint.textContent='CAHAYA APP berhasil terpasang. Silakan buka dari layar utama perangkat.';
+      installMainBtn.querySelector('span').textContent='CAHAYA APP Terpasang';
+    });
 
     document.getElementById('togglePassword').addEventListener('click',()=>{
       const input=document.getElementById('password');
@@ -227,64 +293,54 @@
       eye.innerHTML=input.type==='text' ? '<path d="M3 3l18 18"></path><path d="M6.1 6.2C3.7 8 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2"></path><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16.8 16.8 0 0 1-2.7 3.4"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path>' : '<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.7"></circle>';
     });
 
-    document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+    // Firebase dibuat terisolasi: bila init gagal, install UI tetap berfungsi.
+    try{
+      if(window.CAHAYA_CONFIG?.firebase){
+        if(!firebase.apps.length) firebase.initializeApp(window.CAHAYA_CONFIG.firebase);
+        db=firebase.firestore();
+      }
+    }catch(e){console.warn('Firebase init:',e);}
+
+    document.getElementById('loginForm').addEventListener('submit',async(e)=>{
       e.preventDefault();
       const username=document.getElementById('username').value.trim().toLowerCase();
       const password=document.getElementById('password').value.trim();
       const btn=document.getElementById('btnSubmit');
       const txt=document.getElementById('btnSubmitText');
       const err=document.getElementById('errorMsg');
-      btn.disabled=true; txt.textContent='Memeriksa akun...'; err.style.display='none';
+      btn.disabled=true;txt.textContent='Memeriksa akun...';err.style.display='none';
+      if(!firebase.apps.length || !db){
+        btn.disabled=false;txt.textContent='Masuk';err.textContent='Koneksi aplikasi belum siap. Muat ulang halaman lalu coba lagi.';err.style.display='block';return;
+      }
       const email=username.includes('@')?username:username+'@cahayaapp.id';
       const uname=email.split('@')[0];
       try{
         const cred=await firebase.auth().signInWithEmailAndPassword(email,password);
         const userDoc=await db.collection('users').doc(uname).get();
         let data;
-        if(userDoc.exists){data=userDoc.data(); if(!data.akses)data.akses=['wali'];}
+        if(userDoc.exists){data=userDoc.data();if(!data.akses)data.akses=['wali'];}
         else{
           const isStaff=uname.includes('admin')||uname.includes('guru')||uname==='multazam';
           data={username:uname,label:isStaff?'Pengurus CAHAYA':'Wali Santri',akses:isStaff?['guru']:['wali'],namaAnak:uname};
         }
-        const session={...data, uid:cred.user.uid};
-        localStorage.setItem('cahayaCurrentUser', JSON.stringify(session));
+        const session={...data,uid:cred.user.uid};
+        localStorage.setItem('cahayaCurrentUser',JSON.stringify(session));
         txt.textContent='Membuka CAHAYA APP...';
         setTimeout(()=>location.href=getLoginTarget(session),260);
       }catch(ex){
-        console.error(ex); btn.disabled=false; txt.textContent='Masuk'; err.textContent='Username atau kata sandi tidak sesuai.'; err.style.display='block';
+        console.error(ex);btn.disabled=false;txt.textContent='Masuk';err.textContent='Username atau kata sandi tidak sesuai.';err.style.display='block';
       }
     });
 
-    window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredInstallPrompt=e; if(!isStandalone() && !qs.has('login')) show(installScene); });
-    installMainBtn.addEventListener('click', async ()=>{
-      if(deferredInstallPrompt){
-        deferredInstallPrompt.prompt();
-        const choice=await deferredInstallPrompt.userChoice.catch(()=>({outcome:'dismissed'}));
-        if(choice.outcome==='accepted') installHint.textContent='Instalasi sedang diproses oleh perangkat Anda.';
-        else installHint.textContent='Instalasi belum dilakukan. Anda tetap bisa masuk melalui browser.';
-        deferredInstallPrompt=null; return;
-      }
-      if(isiOS()){ installHint.innerHTML='Di iPhone/iPad: tekan tombol <b>Bagikan</b>, lalu pilih <b>Tambahkan ke Layar Utama</b>.'; return; }
-      installHint.textContent='Jika tombol install tidak muncul, Anda tetap dapat menggunakan tombol masuk melalui browser.';
-      setTimeout(()=>show(loginScene), 350);
-    });
-
-    window.addEventListener('load', ()=>{
-      const mode=qs.get('mode');
-      if(mode==='install'){show(installScene); return;}
-      if(mode==='login'){show(loginScene); return;}
-      if(isStandalone()){
-        const user=sessionUser();
-        if(user?.akses){ location.replace(getLoginTarget(user)); return; }
-        show(loginScene); return;
-      }
-      if(isiOS()){
-        show(installScene);
-        installHint.innerHTML='Di iPhone/iPad: tekan tombol <b>Bagikan</b>, lalu pilih <b>Tambahkan ke Layar Utama</b>.';
-        return;
-      }
-      setTimeout(()=>{ if(deferredInstallPrompt) show(installScene); else show(loginScene); }, 200);
-    });
+    // PWA aktif kembali. Tidak ada unregister/cache wipe pada setiap buka.
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',async()=>{
+        try{
+          const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js?v=132',{scope:'./',updateViaCache:'none'});
+          await reg.update().catch(()=>{});
+        }catch(e){console.warn('Service worker:',e);}
+      });
+    }
   </script>
 </body>
 </html>
