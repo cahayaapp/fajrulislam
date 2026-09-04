@@ -6,17 +6,17 @@
   <meta name="theme-color" content="#f8fbff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="cahaya-build" content="20260904-v127-index-clean-reference">
+  <meta name="cahaya-build" content="20260904-v128-clean-deploy">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>CAHAYA APP — Pesantren Cahaya Fajrul Islam</title>
-  <link rel="manifest" href="manifest.json?v=127">
-  <link rel="icon" href="assets/cahaya-app/favicon.ico?v=127">
-  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon-v67.png?v=127">
-  <script src="config/tenant-config.js?v=127"></script>
-  <script src="config/master-data.js?v=127"></script>
-  <script src="js/cahaya-config-runtime.js?v=127" defer></script>
+  <link rel="manifest" href="manifest.json?v=128">
+  <link rel="icon" href="assets/cahaya-app/favicon.ico?v=128">
+  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon-v67.png?v=128">
+  <script src="config/tenant-config.js?v=128"></script>
+  <script src="config/master-data.js?v=128"></script>
+  <script src="js/cahaya-config-runtime.js?v=128" defer></script>
   <style>
     :root{
       --navy:#0b3f82;
@@ -84,6 +84,7 @@
 
     .splash{position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:#f8fbff;transition:.2s ease}
     .spinner{width:34px;height:34px;border-radius:50%;border:4px solid #e1eaf3;border-top-color:#1489da;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    .build-badge{position:absolute;right:10px;bottom:max(8px,env(safe-area-inset-bottom));z-index:12;font-size:8px;line-height:1;font-weight:800;letter-spacing:.04em;color:rgba(20,65,120,.46);background:rgba(255,255,255,.68);border:1px solid rgba(142,176,212,.26);border-radius:999px;padding:4px 6px;backdrop-filter:blur(8px);pointer-events:none}
 
     @media (max-height:780px){
       .app-shell{padding-top:max(22px,calc(env(safe-area-inset-top) + 9px));padding-left:26px;padding-right:26px}
@@ -104,8 +105,9 @@
 
 <section id="loginScene" class="scene hidden">
   <div class="app-shell">
+    <div class="build-badge">v128</div>
     <header class="brand">
-      <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=127" alt="Logo CAHAYA APP">
+      <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=128" alt="Logo CAHAYA APP">
       <div class="brand-name">CAHAYA <span>APP</span></div>
       <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
     </header>
@@ -138,8 +140,9 @@
 
 <section id="installScene" class="scene hidden">
   <div class="app-shell">
+    <div class="build-badge">v128</div>
     <header class="brand">
-      <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=127" alt="Logo CAHAYA APP">
+      <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=128" alt="Logo CAHAYA APP">
       <div class="brand-name">CAHAYA <span>APP</span></div>
       <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
     </header>
@@ -175,6 +178,20 @@
   const installMainBtn=document.getElementById('installMainBtn');
   const installHint=document.getElementById('installHint');
   let deferredInstallPrompt=null;
+  const BUILD_VERSION='v128';
+
+  async function migrateLegacyPWAOnce(){
+    const marker='cahayaPwaMigrationV128';
+    if(localStorage.getItem(marker)==='done') return false;
+    try{
+      if('caches' in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}
+      if('serviceWorker' in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister().catch(()=>false)));}
+    }catch(e){console.warn('PWA cleanup v128',e)}
+    localStorage.setItem(marker,'done');
+    const u=new URL(location.href);u.searchParams.set('v','128');u.searchParams.set('clean','1');
+    location.replace(u.pathname+'?'+u.searchParams.toString()+u.hash);
+    return true;
+  }
 
   function show(el){loginScene.classList.add('hidden');installScene.classList.add('hidden');el.classList.remove('hidden');requestAnimationFrame(()=>{splash.style.opacity='0';setTimeout(()=>splash.remove(),230)})}
   function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
@@ -186,7 +203,7 @@
     const dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity);
     const cashierOnly=roles.includes('kasir')&&!roles.some(r=>['admin','direktur','wakil','keuangan','guru','naqib','konselor','kesehatan','sarpras','supervisor','observer','manajer','staf-muda','staf-mula','wali'].includes(r));
     if(dedicatedCashier||cashierOnly){const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';return unit?`keuangan/kasir.html?unit=${unit}`:'keuangan/kasir.html'}
-    return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v127';
+    return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v128';
   }
 
   if(window.CAHAYA_CONFIG?.firebase){if(!firebase.apps.length)firebase.initializeApp(window.CAHAYA_CONFIG.firebase)}
@@ -228,9 +245,14 @@
   });
   window.addEventListener('appinstalled',()=>{installMainBtn.querySelector('span').textContent='CAHAYA APP Terpasang';setTimeout(()=>show(loginScene),700)});
 
-  if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.update().catch(()=>{})));const r=await navigator.serviceWorker.register('./firebase-messaging-sw.js?v=127',{scope:'./',updateViaCache:'none'});await r.update().catch(()=>{})}catch(e){console.warn(e)}})}
+  async function registerV128ServiceWorker(){
+    if(!('serviceWorker' in navigator)) return;
+    try{const r=await navigator.serviceWorker.register('./firebase-messaging-sw.js?v=128',{scope:'./',updateViaCache:'none'});await r.update().catch(()=>{});}catch(e){console.warn(e)}
+  }
 
-  window.addEventListener('load',()=>{
+  window.addEventListener('load',async()=>{
+    if(await migrateLegacyPWAOnce()) return;
+    await registerV128ServiceWorker();
     if(isStandalone()){const user=sessionUser();if(user?.akses){location.replace(getLoginTarget(user));return}show(loginScene);return}
     if(isiOS()){show(installScene);installHint.innerHTML='Di iPhone/iPad: tekan tombol <b>Bagikan</b>, lalu pilih <b>Tambahkan ke Layar Utama</b>.';return}
     setTimeout(()=>{if(!deferredInstallPrompt)show(loginScene)},750);

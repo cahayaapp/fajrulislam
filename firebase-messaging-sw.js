@@ -1,4 +1,10 @@
-/* CAHAYA APP V68 — Firebase Cloud Messaging Service Worker Global */
+/* CAHAYA APP V128 — Firebase Cloud Messaging + clean PWA lifecycle */
+const CAHAYA_SW_BUILD='v128';
+self.addEventListener('install',event=>{self.skipWaiting();});
+self.addEventListener('activate',event=>{event.waitUntil((async()=>{
+  try{const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}catch(e){}
+  await self.clients.claim();
+})());});
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
 importScripts('config/firebase-worker-config.js');
