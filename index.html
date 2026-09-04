@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#f4f8fd">
-  <meta name="cahaya-build" content="20260904-v132-pwa-install-fix">
+  <meta name="cahaya-build" content="20260904-v134-unified-install">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>CAHAYA APP</title>
-  <link rel="manifest" href="manifest.json?v=132">
-  <link rel="icon" href="assets/cahaya-app/favicon.ico?v=132">
-  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon.png?v=132">
-  <script src="config/tenant-config.js?v=132"></script>
-  <script src="config/master-data.js?v=132"></script>
-  <script src="js/cahaya-config-runtime.js?v=132" defer></script>
+  <link rel="manifest" href="manifest.json?v=134">
+  <link rel="icon" href="assets/cahaya-app/favicon.ico?v=134">
+  <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon.png?v=134">
+  <script src="config/tenant-config.js?v=134"></script>
+  <script src="config/master-data.js?v=134"></script>
+  <script src="js/cahaya-config-runtime.js?v=134" defer></script>
   <style>
     :root{
       --navy:#17448f;
@@ -103,7 +103,7 @@
   <section id="loginScene" class="scene hidden">
     <div class="shell">
       <header class="brand">
-        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=132" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=132'">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=134" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=134'">
         <div class="brand-title">CAHAYA <span>APP</span></div>
         <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
       </header>
@@ -148,7 +148,7 @@
   <section id="installScene" class="scene hidden">
     <div class="shell">
       <header class="brand">
-        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=132" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=132'">
+        <img class="brand-logo" src="assets/cahaya-app/app-icon-192.png?v=134" alt="Logo CAHAYA APP" onerror="this.src='logofi.png?v=134'">
         <div class="brand-title">CAHAYA <span>APP</span></div>
         <div class="brand-sub">Pesantren Cahaya Fajrul Islam</div>
       </header>
@@ -162,7 +162,7 @@
           <div class="benefit"><svg viewBox="0 0 24 24"><path d="M12 3 5.5 5.5v5.8c0 4.1 2.5 7.4 6.5 9.7 4-2.3 6.5-5.6 6.5-9.7V5.5L12 3Z"></path><path d="m9 12 2 2 4-4"></path></svg><span>Aman</span></div>
         </div>
         <button id="installMainBtn" class="install-btn" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v11m-4-4 4 4 4-4M5 20h14"></path></svg><span>Install Cahaya App</span></button>
-        <p id="installHint" class="install-hint">Di iPhone/iPad: tekan tombol di bawah, lalu pilih Bagikan → Tambahkan ke Layar Utama.</p>
+        <p id="installHint" class="install-hint">Klik tombol Install Cahaya App. Browser akan menyiapkan proses instalasi secara otomatis.</p>
       </main>
       <div class="landscape" aria-hidden="true">
         <div class="sky-wave"></div>
@@ -220,7 +220,7 @@
         const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';
         return unit?`keuangan/kasir.html?unit=${unit}`:'keuangan/kasir.html';
       }
-      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v132';
+      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260904-v134';
     }
 
     // Tentukan layar terlebih dahulu, tanpa menunggu Firebase / event install.
@@ -235,55 +235,118 @@
         show(loginScene);return;
       }
       show(installScene);
-      if(isiOS()){
-        installHint.innerHTML='Di iPhone/iPad: tekan tombol <b>Bagikan</b>, lalu pilih <b>Tambahkan ke Layar Utama</b>.';
-      }
     })();
 
-    // Tangkap native install prompt bila Chrome/Edge menyediakannya.
+    // Satu alur instalasi untuk semua perangkat.
+    // Chromium (Android, Windows, macOS, ChromeOS): tombol memanggil native install prompt.
+    // Browser WebKit yang tidak menyediakan beforeinstallprompt: tombol mencoba membuka native Share Sheet.
+    let swReadyPromise=null;
+    const promptWaiters=[];
+
+    function setInstallStatus(message, action=false){
+      installHint.classList.toggle('action', !!action);
+      installHint.innerHTML=message;
+    }
+
+    function resolvePromptWaiters(){
+      while(promptWaiters.length){
+        const fn=promptWaiters.shift();
+        try{fn(deferredInstallPrompt)}catch(_){ }
+      }
+    }
+
     window.addEventListener('beforeinstallprompt',(e)=>{
       e.preventDefault();
       deferredInstallPrompt=e;
+      resolvePromptWaiters();
       if(!isStandalone() && qs.get('mode')!=='login') show(installScene);
-      installHint.textContent='CAHAYA APP siap dipasang di perangkat ini.';
+      setInstallStatus('CAHAYA APP siap dipasang. Cukup tekan tombol Install Cahaya App.');
     });
 
-    // Listener tombol dipasang SEBELUM inisialisasi Firebase agar tidak pernah mati bila Firebase gagal.
+    function waitForInstallPrompt(ms=3200){
+      if(deferredInstallPrompt) return Promise.resolve(deferredInstallPrompt);
+      return new Promise(resolve=>{
+        let done=false;
+        const finish=(value)=>{if(done)return;done=true;resolve(value||null)};
+        promptWaiters.push(finish);
+        setTimeout(()=>finish(null),ms);
+      });
+    }
+
+    async function ensurePwaReady(){
+      if(!('serviceWorker' in navigator)) return null;
+      if(!swReadyPromise){
+        swReadyPromise=(async()=>{
+          const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js?v=134',{scope:'./',updateViaCache:'none'});
+          await reg.update().catch(()=>{});
+          await navigator.serviceWorker.ready.catch(()=>reg);
+          return reg;
+        })().catch(err=>{console.warn('Service worker:',err);return null});
+      }
+      return swReadyPromise;
+    }
+
     installMainBtn.addEventListener('click',async()=>{
       installMainBtn.classList.add('clicked');
       setTimeout(()=>installMainBtn.classList.remove('clicked'),180);
 
-      if(deferredInstallPrompt){
+      if(isStandalone()){
+        const user=sessionUser();
+        if(user?.akses){ location.href=getLoginTarget(user); return; }
+        show(loginScene); return;
+      }
+
+      const label=installMainBtn.querySelector('span');
+      const oldLabel=label.textContent;
+      label.textContent='Menyiapkan Instalasi...';
+      installMainBtn.disabled=true;
+      setInstallStatus('Menyiapkan instalasi CAHAYA APP...',true);
+
+      await ensurePwaReady();
+      let promptEvent=deferredInstallPrompt || await waitForInstallPrompt(3500);
+
+      if(promptEvent){
         try{
-          deferredInstallPrompt.prompt();
-          const choice=await deferredInstallPrompt.userChoice;
-          if(choice.outcome==='accepted'){
-            installHint.classList.add('action');
-            installHint.textContent='Instalasi sedang diproses. Setelah terpasang, buka CAHAYA APP dari layar utama.';
-          }else{
-            installHint.classList.add('action');
-            installHint.textContent='Instalasi belum dilakukan. Tekan tombol Install Cahaya App kapan saja saat siap.';
+          await promptEvent.prompt();
+          const choice=await promptEvent.userChoice;
+          deferredInstallPrompt=null;
+          if(choice?.outcome==='accepted'){
+            setInstallStatus('Instalasi sedang diproses. Setelah selesai, buka CAHAYA APP dari layar utama perangkat.',true);
+            label.textContent='Memasang CAHAYA APP...';
+            return;
           }
+          setInstallStatus('Instalasi dibatalkan. Tekan Install Cahaya App untuk mencoba lagi.',true);
         }catch(err){
-          installHint.classList.add('action');
-          installHint.textContent='Gunakan menu browser lalu pilih “Install CAHAYA APP” atau “Tambahkan ke layar utama”.';
+          console.warn('Native install prompt:',err);
+        }finally{
+          installMainBtn.disabled=false;
+          label.textContent=oldLabel;
         }
-        deferredInstallPrompt=null;
         return;
       }
 
-      installHint.classList.add('action');
-      if(isiOS()){
-        installHint.innerHTML='Di Safari iPhone/iPad: tekan <b>Bagikan</b> (ikon kotak dengan panah ke atas) → <b>Tambahkan ke Layar Utama</b> → <b>Tambah</b>.';
+      // Safari/iOS/macOS Safari tidak menyediakan beforeinstallprompt.
+      // Satu klik tetap membuka UI native terdekat bila Web Share tersedia.
+      if(navigator.share){
+        try{
+          await navigator.share({title:'CAHAYA APP',text:'Pasang CAHAYA APP di perangkat Anda',url:location.origin+location.pathname});
+          setInstallStatus('Pada menu yang terbuka, pilih <b>Tambahkan ke Layar Utama</b> atau <b>Tambahkan ke Dock</b>.',true);
+        }catch(err){
+          if(err?.name!=='AbortError') console.warn('Share install fallback:',err);
+          setInstallStatus('Browser ini tidak menyediakan instalasi satu-klik dari halaman web. Gunakan menu browser lalu pilih <b>Install / Tambahkan ke Layar Utama / Tambahkan ke Dock</b>.',true);
+        }
       }else{
-        installHint.innerHTML='Jika dialog belum muncul: buka menu browser <b>⋮</b> atau ikon instalasi di address bar, lalu pilih <b>Install CAHAYA APP</b>.';
+        setInstallStatus('Browser ini belum memberikan tombol instalasi langsung. Gunakan ikon instalasi di address bar atau menu browser → <b>Install CAHAYA APP</b>.',true);
       }
+      installMainBtn.disabled=false;
+      label.textContent=oldLabel;
     });
 
     window.addEventListener('appinstalled',()=>{
-      installHint.classList.add('action');
-      installHint.textContent='CAHAYA APP berhasil terpasang. Silakan buka dari layar utama perangkat.';
+      deferredInstallPrompt=null;
+      installMainBtn.disabled=false;
       installMainBtn.querySelector('span').textContent='CAHAYA APP Terpasang';
+      setInstallStatus('CAHAYA APP berhasil terpasang. Silakan buka dari layar utama perangkat.',true);
     });
 
     document.getElementById('togglePassword').addEventListener('click',()=>{
@@ -332,15 +395,8 @@
       }
     });
 
-    // PWA aktif kembali. Tidak ada unregister/cache wipe pada setiap buka.
-    if('serviceWorker' in navigator){
-      window.addEventListener('load',async()=>{
-        try{
-          const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js?v=132',{scope:'./',updateViaCache:'none'});
-          await reg.update().catch(()=>{});
-        }catch(e){console.warn('Service worker:',e);}
-      });
-    }
+    // Mulai menyiapkan installability segera, tanpa menunggu tombol ditekan.
+    ensurePwaReady();
   </script>
 </body>
 </html>

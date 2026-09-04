@@ -1,5 +1,5 @@
-/* CAHAYA APP v132 — PWA + Firebase Messaging */
-const CAHAYA_SW_BUILD='v132';
+/* CAHAYA APP v134 — PWA + Firebase Messaging */
+const CAHAYA_SW_BUILD='v134';
 self.addEventListener('install',event=>{self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(self.clients.claim());});
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
