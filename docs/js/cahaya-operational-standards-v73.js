@@ -96,15 +96,8 @@
         j('g_score','Input nilai ujian/asesmen','weekly','Nilai masuk maksimal H+3 setelah penilaian.'),
         j('g_follow','Tindak lanjut santri yang membutuhkan bantuan akademik','weekly','Ada intervensi sederhana dan terpantau.')
       ],[
-        k('g_punctual','Kedisiplinan hadir tepat waktu','%',95),
-        k('g_attendance','Kedisiplinan memenuhi seluruh jadwal mengajar','%',95),
-        k('g_kkm','Santri mencapai KKM pada ujian bulanan','%',85),
-        k('g_tahfiz','Santri Tahfiz dari kelas yang diajar aktif setoran','%',85),
-        k('g_score_input','Disiplin input nilai bulanan','%',95),
-        k('g_clean','Kebersihan kelas setelah pembelajaran','%',90),
-        k('g_order','Ketertiban santri selama pembelajaran','%',90),
-        k('g_plan','Ketercapaian materi sesuai target kurikulum','%',90)
-      ],['Meningkatkan ketuntasan materi dan hasil belajar kelas','Meningkatkan disiplin, mutu kelas, dan administrasi pembelajaran']),
+        k('g_kbm','KBM terlaksana sesuai jadwal','%',95),k('g_absen','Absensi KBM tepat waktu','%',98),k('g_score','Nilai masuk maksimal H+3','%',90),k('g_plan','Ketuntasan kalender materi','%',90),k('g_quality','Mutu observasi pembelajaran','%',85)
+      ],['Meningkatkan ketuntasan materi kelas','Meningkatkan ketepatan administrasi pembelajaran']),
 
     'staf-muda__pembinaan-karakter__naqib':p('staf-muda__pembinaan-karakter__naqib','staf-muda','Pembinaan Karakter & Asrama','naqib','Naqib/Naqibah','Staf Muda Pembinaan Karakter — Naqib',
       'Mendampingi kehidupan harian santri, memastikan program asrama terawasi, melakukan mentoring, serta melaporkan kondisi dan pelanggaran secara tepat tanpa mengambil alih fungsi penindakan kasus.',[
