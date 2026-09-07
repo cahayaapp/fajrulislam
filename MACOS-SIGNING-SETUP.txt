@@ -1,0 +1,31 @@
+CAHAYA APP — macOS Professional Installer Setup
+
+Tujuan:
+- CAHAYA APP menjadi aplikasi native macOS berbasis WKWebView (tidak bergantung pada Chrome).
+- Universal binary: Apple Silicon + Intel.
+- Developer ID signed, Hardened Runtime, Apple notarized, dan stapled.
+- DMG berisi CAHAYA APP + shortcut Applications untuk drag-and-drop.
+- Installer unsigned/ad-hoc lama sengaja TIDAK digunakan lagi.
+
+GitHub Secrets yang wajib diisi:
+1. MACOS_CERTIFICATE_P12_BASE64
+   Developer ID Application certificate (.p12) yang sudah di-Base64.
+2. MACOS_CERTIFICATE_PASSWORD
+   Password file .p12.
+3. APPLE_ID
+   Apple ID anggota Apple Developer Program yang memiliki akses notarization.
+4. APPLE_APP_SPECIFIC_PASSWORD
+   App-specific password untuk Apple ID tersebut.
+5. APPLE_TEAM_ID
+   Team ID Apple Developer.
+
+Cara menjalankan setelah secrets siap:
+GitHub > Actions > Build notarized CAHAYA APP for macOS > Run workflow.
+
+Hasil sukses:
+- downloads/CAHAYA-APP-Mac.dmg
+- docs/downloads/CAHAYA-APP-Mac.dmg
+- downloads/CAHAYA-APP-Mac.json (penanda notarized)
+
+PENTING:
+Jangan mendistribusikan installer Mac lama yang unsigned/ad-hoc.
