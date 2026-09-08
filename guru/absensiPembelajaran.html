@@ -1531,6 +1531,7 @@
 
   <link rel="stylesheet" href="guru-theme-v151.css?v=151">
   <link rel="stylesheet" href="guru-theme-v152.css?v=152">
+  <link rel="stylesheet" href="guru-theme-v153.css?v=153">
 </head>
 <body class="cahaya-guru-executive">
   <div id="loadingOverlay">
@@ -2509,7 +2510,7 @@
     const mobile = window.matchMedia("(max-width: 720px)").matches;
     let cols;
     if (mobile) {
-      cols = count <= 6 ? 2 : 3;
+      cols = 1;
     } else {
       cols = count <= 2 ? 2 : count <= 6 ? 3 : 4;
     }
@@ -2569,20 +2570,25 @@
         top.appendChild(combined);
       }
 
+      const iconTile = document.createElement("span");
+      iconTile.className = "v153-schedule-icon";
+      iconTile.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5z"/></svg>';
+
       const body = document.createElement("div");
+      body.className = "v153-schedule-copy";
       const mapel = document.createElement("strong");
       mapel.className = "v55-schedule-mapel";
       mapel.textContent = item.subject || "Pelajaran";
       const kelas = document.createElement("span");
       kelas.className = "v55-schedule-class";
       kelas.textContent = labelKelasJadwal(item);
-      body.append(mapel, kelas);
+      body.append(top, mapel, kelas);
 
       const arrow = document.createElement("span");
       arrow.className = "v55-schedule-arrow";
       arrow.textContent = "›";
 
-      button.append(top, body, arrow);
+      button.append(iconTile, body, arrow);
       button.addEventListener("click", () => pilihJadwalKbm(item.id));
       host.appendChild(button);
     });
