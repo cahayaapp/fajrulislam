@@ -1,6 +1,6 @@
-/* CAHAYA APP v149 — PWA + Firebase Messaging + on-demand app-shell cache */
-const CAHAYA_SW_BUILD='v149';
-const STATIC_CACHE='cahaya-static-v149';
+/* CAHAYA APP v150 — PWA + Firebase Messaging + on-demand app-shell cache */
+const CAHAYA_SW_BUILD='v150';
+const STATIC_CACHE='cahaya-static-v150';
 self.addEventListener('install',event=>{self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{
   const keys=await caches.keys();

@@ -11,7 +11,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="guru-theme-v150.css?v=150" />
 
   <style>
     :root {
@@ -1527,7 +1527,7 @@
 
   <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
 <link rel="stylesheet" href="../css/guru-director-theme-v147.css?v=147"></head>
-<body>
+<body class="cahaya-guru-executive">
   <div id="loadingOverlay">
     <div class="loading-card">
       <div class="loading-logo">📚</div>
@@ -1705,6 +1705,77 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+
+  // ===== CAHAYA LITE CACHE v150 =====
+  // Gunakan cache milik shell utama agar pindah/back tidak mengunduh data yang sama lagi.
+  const PARENT_APP = (() => { try { return window.parent && window.parent !== window ? window.parent : window; } catch (_) { return window; } })();
+  const SHARED_CACHE = PARENT_APP.CahayaDataCache || {
+    get(key, ttl = 300000) {
+      try { const x = JSON.parse(sessionStorage.getItem('cahaya:data:' + key) || 'null'); return x && Date.now() - x.t < ttl ? x.v : null; } catch (_) { return null; }
+    },
+    set(key, value, persist = false) {
+      try { (persist ? localStorage : sessionStorage).setItem('cahaya:data:' + key, JSON.stringify({ t: Date.now(), v: value })); } catch (_) {}
+      return value;
+    },
+    clear(prefix = '') {
+      try {
+        for (let i = sessionStorage.length - 1; i >= 0; i--) { const k = sessionStorage.key(i); if (k && k.startsWith('cahaya:data:' + prefix)) sessionStorage.removeItem(k); }
+      } catch (_) {}
+    }
+  };
+  const cacheGet = (key, ttl) => SHARED_CACHE.get(key, ttl);
+  const cacheSet = (key, value, persist = false) => SHARED_CACHE.set(key, value, persist);
+
+  function localMasterAkademik() {
+    const m = window.CAHAYA_MASTER_DATA || PARENT_APP.CAHAYA_MASTER_DATA || {};
+    return {
+      kelas: m.santriByClass || {},
+      guru: Array.isArray(m.teachers) ? m.teachers : [],
+      mapel: Array.isArray(m.subjects) ? m.subjects : []
+    };
+  }
+
+  function normalizeLiteScheduleRows(value) {
+    const rows = Array.isArray(value) ? value.filter(Boolean) : Object.entries(value || {}).map(([id, row]) => ({ id, ...(row || {}) }));
+    return rows.map(row => {
+      const copy = { ...(row || {}) };
+      if (["Kelas 3 Putra", "Kelas 4 Putra", "Kelas 5 Putra"].includes(copy.kelas) && String(copy.mapel || '').trim().toLowerCase() === 'bahasa arab' && String(copy.guruKode || '').trim().toUpperCase() === 'MULTAZAM') {
+        copy.jamMulai = '05:10'; copy.jamSelesai = '06:00'; copy.sesi = copy.sesi || 'Sesi Pagi';
+      }
+      return copy;
+    });
+  }
+
+  async function loadLiteSchedule() {
+    const key = 'guru:schedule:2026-2027';
+    const shared = cacheGet(key, 12 * 60 * 60 * 1000);
+    if (shared) return normalizeLiteScheduleRows(shared);
+    // kompatibel dengan cache beranda Guru v148/v149
+    try {
+      const legacy = JSON.parse(sessionStorage.getItem('cahaya_guru_schedule_v148') || localStorage.getItem('cahaya_guru_schedule_v148') || 'null');
+      if (legacy && legacy.v) { cacheSet(key, legacy.v, true); return normalizeLiteScheduleRows(legacy.v); }
+    } catch (_) {}
+    try {
+      const response = await fetch('../data/jadwal-pelajaran-awal-2026-2027.json', { cache: 'force-cache' });
+      if (!response.ok) return [];
+      const value = await response.json();
+      cacheSet(key, value, true);
+      return normalizeLiteScheduleRows(value);
+    } catch (error) { console.warn('Jadwal lokal belum tersedia:', error); return []; }
+  }
+
+  async function loadReplacementRowsToday() {
+    const tanggal = tanggalLokalHariIni();
+    const key = `guru:replacement:${tanggal}`;
+    const cached = cacheGet(key, 60000);
+    if (cached !== null) return cached;
+    try {
+      const snap = await get(query(ref(db, 'cahaya_app/guru_berhalangan'), orderByChild('tanggal'), equalTo(tanggal)));
+      const rows = Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...(v || {}) }));
+      cacheSet(key, rows);
+      return rows;
+    } catch (error) { console.warn('Guru berhalangan hari ini belum dapat dimuat:', error); return []; }
+  }
 
   function bacaJsonAman(value, fallback = {}) {
     try {
@@ -2909,79 +2980,27 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     syncRealtimeKbmDate();
-
     tampilkanIdentitasGuru();
+    document.getElementById("kbmKelas").classList.add("auto-field");
+    document.getElementById("kbmMapel").addEventListener("change", applySelectedSchedule);
 
-    document
-      .getElementById("kbmKelas")
-      .classList.add("auto-field");
+    // Master santri/guru/mapel bersumber dari file lokal 22 KB yang sudah ikut aplikasi,
+    // sehingga membuka Presensi Santri tidak lagi mengunduh master_akademik Firebase.
+    masterDataAkademik = localMasterAkademik();
+    isiPilihanKelas();
+    document.getElementById("kbmKelas").disabled = true;
 
-    document
-      .getElementById("kbmMapel")
-      .addEventListener(
-        "change",
-        applySelectedSchedule
-      );
-
+    // Tampilkan kerangka halaman secepat mungkin. Jadwal lokal dan guru pengganti dimuat setelah UI siap.
+    sembunyikanLoading();
     try {
-      const [snapshot, scheduleSnapshot, replacementSnapshot] = await Promise.all([
-        get(ref(db, "cahaya_app/master_akademik")),
-        get(ref(db, "cahaya_app/jadwal_pelajaran")),
-        get(ref(db, "cahaya_app/guru_berhalangan"))
-      ]);
-      replacementTeacherRows = replacementSnapshot.exists() ? Object.entries(replacementSnapshot.val() || {}).map(([id,v])=>({id,...(v||{})})) : [];
-
-      const dataFirebase = snapshot.exists()
-        ? snapshot.val()
-        : {};
-
-      if (scheduleSnapshot.exists()) {
-        const value = scheduleSnapshot.val();
-        onlineScheduleRows = Array.isArray(value)
-          ? value.filter(Boolean).map(row=>{
-            const copy={...(row||{})};
-            if(["Kelas 3 Putra","Kelas 4 Putra","Kelas 5 Putra"].includes(copy.kelas)&&String(copy.mapel||"").trim().toLowerCase()==="bahasa arab"&&String(copy.guruKode||"").trim().toUpperCase()==="MULTAZAM"){
-              copy.jamMulai="05:10";copy.jamSelesai="06:00";copy.sesi=copy.sesi||"Sesi Pagi";
-            }
-            return copy;
-          })
-          : Object.entries(value || {}).map(([id,row]) => ({ id, ...(row || {}) })).map(row=>{
-            const copy={...(row||{})};
-            if(["Kelas 3 Putra","Kelas 4 Putra","Kelas 5 Putra"].includes(copy.kelas)&&String(copy.mapel||"").trim().toLowerCase()==="bahasa arab"&&String(copy.guruKode||"").trim().toUpperCase()==="MULTAZAM"){
-              copy.jamMulai="05:10";copy.jamSelesai="06:00";copy.sesi=copy.sesi||"Sesi Pagi";
-            }
-            return copy;
-          });
-      }
-
-      masterDataAkademik = {
-        ...dataFirebase,
-        kelas: { ...(window.CAHAYA_MASTER_DATA?.santriByClass||{}), ...ambilStrukturKelas(dataFirebase) },
-        guru: Array.isArray(dataFirebase.guru)
-          ? dataFirebase.guru
-          : [],
-        mapel: Array.isArray(dataFirebase.mapel)
-          ? dataFirebase.mapel
-          : []
-      };
-
-      isiPilihanKelas();
-
-      document.getElementById("kbmKelas").disabled =
-        true;
-
-      loadTeacherScheduleForDate({
-        notify: true
-      });
-
-      sembunyikanLoading();
+      const [schedule, replacements] = await Promise.all([loadLiteSchedule(), loadReplacementRowsToday()]);
+      onlineScheduleRows = schedule;
+      replacementTeacherRows = replacements;
+      loadTeacherScheduleForDate({ notify: true });
     } catch (error) {
-      console.error(
-        "Gagal mengambil master akademik:",
-        error
-      );
-
-      tampilkanErrorLoading(error.message);
+      console.warn("Data tambahan presensi belum lengkap:", error);
+      // Fallback jadwal bawaan tetap bisa dipakai tanpa menahan halaman.
+      loadTeacherScheduleForDate({ notify: false });
     }
   });
 
@@ -3274,15 +3293,36 @@
   }
 
 
-  async function loadTodayAttendanceRecords() {
+  async function loadTodayAttendanceRecords({ force = false } = {}) {
     const tanggal = tanggalLokalHariIni();
-    try {
-      const snap = await get(query(ref(db, "cahaya_app/absensi_pembelajaran"), orderByChild("tanggal"), equalTo(tanggal)));
-      return Object.entries(snap.val() || {}).map(([id, value]) => ({ id, ...(value || {}) }));
-    } catch (e) {
-      const snap = await get(ref(db, "cahaya_app/absensi_pembelajaran"));
-      return Object.entries(snap.val() || {}).map(([id, value]) => ({ id, ...(value || {}) })).filter(x => x.tanggal === tanggal);
+    const key = `guru:kbm-attendance:${tanggal}`;
+    if (!force) {
+      const cached = cacheGet(key, 120000);
+      if (cached !== null) return cached;
     }
+    try {
+      // WAJIB query tanggal terindeks. Tidak ada lagi fallback membaca seluruh absensi_pembelajaran.
+      const snap = await get(query(ref(db, "cahaya_app/absensi_pembelajaran"), orderByChild("tanggal"), equalTo(tanggal)));
+      const rows = Object.entries(snap.val() || {}).map(([id, value]) => ({ id, ...(value || {}) }));
+      cacheSet(key, rows);
+      return rows;
+    } catch (error) {
+      console.warn("Absensi hari ini belum dapat dimuat tanpa full-read:", error);
+      return cacheGet(key, 24 * 60 * 60 * 1000) || [];
+    }
+  }
+
+  function writeTodayAttendanceCache(rows) {
+    const tanggal = tanggalLokalHariIni();
+    cacheSet(`guru:kbm-attendance:${tanggal}`, rows || []);
+  }
+
+  function mergeTodayAttendanceCache(nextRows = []) {
+    const tanggal = tanggalLokalHariIni();
+    const current = cacheGet(`guru:kbm-attendance:${tanggal}`, 24 * 60 * 60 * 1000) || [];
+    const map = new Map(current.map(item => [String(item.id || item.jadwalId || Math.random()), item]));
+    nextRows.forEach(item => map.set(String(item.id || item.jadwalId || Math.random()), item));
+    writeTodayAttendanceCache([...map.values()]);
   }
 
   function setTwoStageLabels(mode) {
@@ -3364,6 +3404,7 @@
       unresolved[0].scrollIntoView({behavior:"smooth",block:"center"}); return false;
     }
     const updates = {};
+    const finalizedRows = [];
     assignments.forEach(a => {
       const rec = existingAttendanceByAssignment.get(a.id); if (!rec?.id) return;
       const classRows = [...document.querySelectorAll('.santri-row')].filter(row => row.dataset.assignmentId === a.id || row.dataset.kelas === a.className);
@@ -3376,10 +3417,15 @@
         return {...old, statusAwal:awal, statusAkhir:akhir, statusFinal:akhir, status:akhir, final:true, poin:hitungPoin(akhir,mapel), waktuFinalisasi:new Date().toISOString()};
       });
       const patch = {data:newData,catatan:catatan||rec.catatan||"",tahapAbsensi:"FINAL",statusFinalisasi:"FINAL",waktuFinalisasi:new Date().toISOString(),waktuSimpan:new Date().toISOString()};
-      updates[`cahaya_app/absensi_pembelajaran/${rec.id}`] = {...rec,...patch};
+      const finalizedRecord = {...rec,...patch};
+      updates[`cahaya_app/absensi_pembelajaran/${rec.id}`] = finalizedRecord;
+      finalizedRows.push({ id: rec.id, ...finalizedRecord });
+      existingAttendanceByAssignment.set(a.id, { id: rec.id, ...finalizedRecord });
       newData.forEach(item => { const waliKey=String(item.nama||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,""); if(waliKey) updates[`cahaya_app/wali_index/${waliKey}/pembelajaran/${rec.id}`] = {...rec,...patch,data:[item]}; });
     });
-    await update(ref(db), updates); showToast("Absensi akhir berhasil difinalisasi. Status Belum Hadir sudah ditetapkan secara faktual.","success","Finalisasi selesai");
+    await update(ref(db), updates);
+    mergeTodayAttendanceCache(finalizedRows);
+    showToast("Absensi akhir berhasil difinalisasi. Status Belum Hadir sudah ditetapkan secara faktual.","success","Finalisasi selesai");
     setTwoStageLabels("FINAL_VIEW"); return true;
   }
 
@@ -3408,7 +3454,7 @@
     }
     if (attendanceStageMode === "FINAL") {
       setSaveButtonLoading(true);
-      try { const ok = await finalizeExistingAttendance(assignments, catatan, mapel); if (ok) setTimeout(()=>location.reload(),900); }
+      try { await finalizeExistingAttendance(assignments, catatan, mapel); }
       catch(error){ console.error(error); showToast(error.message||"Gagal finalisasi absensi.","error","Gagal finalisasi"); }
       finally { setSaveButtonLoading(false); }
       return;
@@ -3501,6 +3547,7 @@
         ? `gabungan-${tanggal}-${compactIdentity(mapel)}-${String(assignment.scheduleStart || "").replace(":", "")}`
         : "";
       const batchUpdates = {};
+      const savedAttendanceRows = [];
 
       assignments.forEach(itemAssignment => {
         const hasil = hasilSemua
@@ -3532,7 +3579,7 @@
           unitPembelajaran: itemAssignment.section,
           nomorKelasJadwal: itemAssignment.classNumber,
           sumberJadwal: onlineScheduleRows.length
-            ? "Firebase • cahaya_app/jadwal_pelajaran"
+            ? "Jadwal lokal ter-cache 2026/2027"
             : "Jadwal bawaan 2026/2027",
           tahunAjaran: "2026/2027",
           jumlahSantri: hasil.length,
@@ -3553,6 +3600,7 @@
 
         const savedRef = push(ref(db, "cahaya_app/absensi_pembelajaran"));
         batchUpdates[`cahaya_app/absensi_pembelajaran/${savedRef.key}`] = payload;
+        savedAttendanceRows.push({ id: savedRef.key, ...payload });
 
         hasil.forEach(item => {
           const waliKey = String(item.nama || "")
@@ -3569,6 +3617,9 @@
       });
 
       await update(ref(db), batchUpdates);
+      mergeTodayAttendanceCache(savedAttendanceRows);
+      // Perbarui state layar tanpa location.reload() agar tidak mengunduh data ulang.
+      await restoreTwoStageAttendance();
 
       const suksesGabungan = assignment.isCombined
         ? `${assignments.length} kelas dan ${hasilSemua.length} santri berhasil disimpan sekaligus.`
@@ -3582,7 +3633,7 @@
         assignment.isCombined ? "Absensi gabungan berhasil" : "Penyimpanan berhasil"
       );
 
-      setTimeout(() => location.reload(), 1100);
+      setSaveButtonLoading(false);
     } catch (error) {
       console.error("Gagal menyimpan absensi:", error);
       showToast(

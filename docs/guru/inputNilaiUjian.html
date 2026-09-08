@@ -10,6 +10,7 @@
   <title>CAHAYA APP - Input Nilai Ujian Bulanan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
+  <link rel="stylesheet" href="guru-theme-v150.css?v=150" />
 
   <style>
     * { box-sizing: border-box; }
@@ -929,9 +930,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 </style>
 
   <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
-<link rel="stylesheet" href="../css/guru-director-theme-v146.css?v=146"><link rel="stylesheet" href="../css/guru-director-theme-v147.css?v=147">
-</head>
-<body>
+<link rel="stylesheet" href="../css/guru-director-theme-v147.css?v=147"></head>
+<body class="cahaya-guru-executive">
 
 <div id="loadingOverlay">
   <div class="loader-icon">📝</div>
@@ -1079,12 +1079,58 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, get, remove, set, update, query, orderByChild, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, get, remove, set, update, query, orderByChild, equalTo, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+
+  // ===== CAHAYA LITE CACHE v150 =====
+  const PARENT_APP = (() => { try { return window.parent && window.parent !== window ? window.parent : window; } catch (_) { return window; } })();
+  const SHARED_CACHE = PARENT_APP.CahayaDataCache || {
+    get(key, ttl = 300000) {
+      try { const x = JSON.parse(sessionStorage.getItem('cahaya:data:' + key) || 'null'); return x && Date.now() - x.t < ttl ? x.v : null; } catch (_) { return null; }
+    },
+    set(key, value, persist = false) {
+      try { (persist ? localStorage : sessionStorage).setItem('cahaya:data:' + key, JSON.stringify({ t: Date.now(), v: value })); } catch (_) {}
+      return value;
+    },
+    clear(prefix = '') {
+      try {
+        for (let i = sessionStorage.length - 1; i >= 0; i--) { const k = sessionStorage.key(i); if (k && k.startsWith('cahaya:data:' + prefix)) sessionStorage.removeItem(k); }
+      } catch (_) {}
+    }
+  };
+  const cacheGet = (key, ttl) => SHARED_CACHE.get(key, ttl);
+  const cacheSet = (key, value, persist = false) => SHARED_CACHE.set(key, value, persist);
+  function cachePathKey(prefix, path) { return `${prefix}:${stableKey(path)}`; }
+
+  async function cachedPathValue(path, ttl = 300000) {
+    const key = cachePathKey('guru:nilai:path', path);
+    const cached = cacheGet(key, ttl);
+    if (cached !== null) return cached;
+    try {
+      const snap = await get(ref(db, path));
+      const value = snap.exists() ? snap.val() : null;
+      cacheSet(key, value);
+      return value;
+    } catch (error) {
+      console.warn('Data nilai belum dapat dimuat:', path, error);
+      return cacheGet(key, 24 * 60 * 60 * 1000);
+    }
+  }
+
+  function setCachedPathValue(path, value) { cacheSet(cachePathKey('guru:nilai:path', path), value); }
+
+  function localMasterAkademik() {
+    const m = window.CAHAYA_MASTER_DATA || PARENT_APP.CAHAYA_MASTER_DATA || {};
+    return {
+      kelas: m.santriByClass || {},
+      guru: Array.isArray(m.teachers) ? m.teachers : [],
+      mapel: Array.isArray(m.subjects) ? m.subjects : []
+    };
+  }
   async function pushIndexRecord(waliKey, recordId, data){
     try{ await set(ref(db,`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordId}`),data); }
     catch(error){ console.warn('Indeks wali nilai belum tersimpan:',error); }
@@ -1195,7 +1241,16 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     const known=new Set(rows.map(r=>String(r?.guruKode||"").trim().toUpperCase()).filter(Boolean)); let best={code:"",score:0};
     Object.entries(TEACHER_CODE_ALIASES).forEach(([code,aliases])=>{if(known.size&&!known.has(code))return;aliases.forEach(alias=>candidates.forEach(c=>{const a=normalizeTeacherIdentity(alias);let score=c===a?100:(c.includes(a)||a.includes(c)?80:0);if(score>best.score)best={code,score}}))}); return best.code;
   }
-  async function loadLocalSchedule(){try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"no-store"});return r.ok?normalizeScheduleRows(await r.json()):[]}catch(_){return[]}}
+  async function loadLocalSchedule(){
+    const key='guru:schedule:2026-2027';
+    const cached=cacheGet(key,12*60*60*1000);
+    if(cached)return normalizeScheduleRows(cached);
+    try{
+      const legacy=JSON.parse(sessionStorage.getItem('cahaya_guru_schedule_v148')||localStorage.getItem('cahaya_guru_schedule_v148')||'null');
+      if(legacy&&legacy.v){cacheSet(key,legacy.v,true);return normalizeScheduleRows(legacy.v)}
+    }catch(_){}
+    try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"force-cache"});if(!r.ok)return[];const value=await r.json();cacheSet(key,value,true);return normalizeScheduleRows(value)}catch(_){return[]}
+  }
 
   function initPageData() {
     const today=new Date(), localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
@@ -1357,14 +1412,18 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     initPageData(); refreshStrukturTabel();
     const searchInput=document.getElementById("searchSantri");
     if(searchInput) searchInput.addEventListener("input", window.filterSantri);
+
+    // Master kelas/santri berasal dari file lokal aplikasi, bukan full-read Firebase.
+    masterDataAkademik=localMasterAkademik();
+    // Loading overlay dilepas lebih dulu supaya halaman terasa langsung terbuka.
+    hideLoading();
     try{
-      const [masterSnap,scheduleSnap]=await Promise.all([get(ref(db,"cahaya_app/master_akademik")).catch(()=>null),get(ref(db,"cahaya_app/jadwal_pelajaran")).catch(()=>null)]);
-      masterDataAkademik=masterSnap?.exists?.()?masterSnap.val():{};
-      scheduleRows=scheduleSnap?.exists?.()?normalizeScheduleRows(scheduleSnap.val()):[];
-      if(!scheduleRows.length)scheduleRows=await loadLocalSchedule();
+      scheduleRows=await loadLocalSchedule();
       populateMasterOptions();
-    }catch(error){console.error(error);showToast("error","Gagal memuat data",error.message||"Data belum dapat dimuat.");}
-    finally{hideLoading();}
+    }catch(error){
+      console.error(error);
+      showToast("error","Jadwal belum tersedia","Muat ulang hanya bila jadwal guru belum muncul.");
+    }
   });
 
   window.getKomponenAktif = function() {
@@ -1599,9 +1658,14 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
     const monthly = params.jenis === "Bulanan";
     const dbPath = monthly ? "cahaya_app/nilai_ujian_bulanan" : "cahaya_app/nilai_ujian";
     const activeKeys = new Set(activeStudentList.map(item => scoreStudentKey(item.name, item.className)));
+    const period = String(params.periode || params.bulan || '').trim();
+    if (!period) return {};
+    const cacheKey = `guru:nilai:legacy:${stableKey([dbPath,period,params.guruKode||params.guru,params.mapel].join('|'))}`;
+    const cached = cacheGet(cacheKey, 15 * 60 * 1000);
+    if (cached !== null) return cached;
     try {
-      // Fallback data lama dibuat ketat: guru, mapel, jenis ujian, periode, tahun, dan kelas harus cocok.
-      const snap = await get(query(ref(db, dbPath), limitToLast(monthly ? 1800 : 1200)));
+      // Fallback data lama hanya mengambil periode yang dipilih (maks 600 record), bukan 1.200–1.800 record terbaru seluruh database.
+      const snap = await get(query(ref(db, dbPath), orderByChild("periode_ujian"), equalTo(period), limitToLast(600)));
       const data = snap.val() || {};
       const result = {};
       Object.entries(data).forEach(([recordKey, record]) => {
@@ -1613,9 +1677,10 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         if (activeKeys.size && !activeKeys.has(studentKey)) return;
         result[studentKey] = { recordKey, dbPath, data: record };
       });
+      cacheSet(cacheKey, result);
       return result;
     } catch (error) {
-      console.warn("Data nilai lama belum dapat dimuat:", error);
+      console.warn("Data nilai lama tidak dimuat agar tidak melakukan full-read:", error);
       return {};
     }
   }
@@ -1643,13 +1708,13 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 
     try {
       // 1) Indeks sesi baru V80.5.
-      const indexSnap = await get(ref(db, scoreIndexPath(params))).catch(()=>null);
-      if (indexSnap?.exists?.()) acceptIndexedData(indexSnap.val() || {});
+      const indexedValue = await cachedPathValue(scoreIndexPath(params), 10 * 60 * 1000);
+      if (indexedValue) acceptIndexedData(indexedValue || {});
 
       // 2) Migrasi aman dari indeks lama V75–V80.4. Data tetap wajib lolos pencocokan sesi yang ketat.
       if (!Object.keys(existingScoreRecords).length) {
-        const legacyIndexSnap = await get(ref(db, legacyScoreIndexPathV77(params))).catch(()=>null);
-        if (legacyIndexSnap?.exists?.()) acceptIndexedData(legacyIndexSnap.val() || {});
+        const legacyIndexedValue = await cachedPathValue(legacyScoreIndexPathV77(params), 10 * 60 * 1000);
+        if (legacyIndexedValue) acceptIndexedData(legacyIndexedValue || {});
       }
 
       // 3) Fallback record lama apabila indeks belum tersedia.
@@ -1692,8 +1757,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 
       // Marker FINAL lama tidak lagi dipercaya untuk mengunci sesi baru.
       // Marker V80.5 harus membawa identitas sesi lengkap dan cocok dengan guru/mapel/periode/kelas saat ini.
-      const finalSnap = await get(ref(db, scoreFinalPath(params))).catch(()=>null);
-      const marker = finalSnap?.exists?.() ? finalSnap.val() : null;
+      const marker = await cachedPathValue(scoreFinalPath(params), 10 * 60 * 1000);
       const markerFinal = markerMatchesSession(marker, params);
 
       // Kompatibilitas FINAL lama: hanya dianggap final bila SETIAP santri aktif memiliki record FINAL
@@ -1871,6 +1935,11 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
       let count = 0;
       let partialCount = 0;
 
+      // Satu multi-location update untuk seluruh santri: jauh lebih cepat daripada set() berulang per baris.
+      const updates = {};
+      const nextIndexRecords = {};
+      const changedRows = [];
+
       for (const row of rowsToSave) {
         const studentName = row.dataset.nama;
         const className = row.dataset.kelas || params.kelas;
@@ -1879,6 +1948,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         const oldData = { ...(existingItem.data || {}) };
         let recordKey = row.dataset.recordKey || existingItem.recordKey || "";
 
+        const nowIso = new Date().toISOString();
         const finalData = {
           ...oldData,
           jenis_ujian: jenis,
@@ -1900,8 +1970,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
           komponen_aktif: activeComponents.map(component => component.nama),
           skema_bobot: activeComponents.reduce((acc, component) => { acc[component.nama] = component.bobot; return acc; }, {}),
           tahunAjaran: params.tahun,
-          timestamp: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          timestamp: oldData.timestamp || nowIso,
+          updated_at: nowIso
         };
 
         activeComponents.forEach(component => {
@@ -1929,26 +1999,30 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         finalData.status_input = filledComponents.length === activeComponents.length ? "lengkap" : "parsial";
         if (finalData.status_input === "parsial") partialCount++;
 
-        if (!recordKey) {
-          const savedRef = await push(ref(db, dbPath));
-          recordKey = savedRef.key;
-        }
-        await set(ref(db, `${dbPath}/${recordKey}`), finalData);
+        if (!recordKey) recordKey = push(ref(db, dbPath)).key;
+        if (!recordKey) throw new Error(`ID nilai ${studentName} gagal dibuat.`);
 
-        const indexData = { recordKey, dbPath, data: finalData, updatedAt: new Date().toISOString() };
-        await set(ref(db, `${indexBase}/${studentKey}`), indexData);
-        existingScoreRecords[studentKey] = indexData;
+        const indexData = { recordKey, dbPath, data: finalData, updatedAt: nowIso };
+        updates[`${dbPath}/${recordKey}`] = finalData;
+        updates[`${indexBase}/${studentKey}`] = indexData;
+        if (monthly) {
+          const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordKey}`] = finalData;
+        }
+        nextIndexRecords[studentKey] = indexData;
+        changedRows.push({ row, recordKey, dbPath, studentKey });
+        count++;
+      }
+
+      await update(ref(db), updates);
+      Object.assign(existingScoreRecords, nextIndexRecords);
+      changedRows.forEach(({row,recordKey,dbPath,studentKey}) => {
         row.dataset.recordKey = recordKey;
         row.dataset.recordPath = dbPath;
         row.dataset.studentKey = studentKey;
         row.querySelectorAll(".input-dinamis").forEach(input => { input.dataset.dirty = "0"; });
-
-        if (monthly) {
-          const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-          if(waliKey && recordKey) await set(ref(db,`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordKey}`),finalData);
-        }
-        count++;
-      }
+      });
+      setCachedPathValue(indexBase, existingScoreRecords);
 
       if (!options.silent) showToast("success", "Nilai berhasil disimpan", partialCount ? `${count} data tersimpan. ${partialCount} masih parsial dan bisa dilanjutkan kapan saja.` : `${count} data tersimpan lengkap dan tetap dapat diedit.`);
       button.innerHTML = "✅ Tersimpan — Tetap Bisa Diedit";
@@ -2040,6 +2114,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
       // Satu multi-location update: seluruh nilai menjadi FINAL sekaligus atau gagal sekaligus.
       await update(ref(db), updates);
       Object.assign(existingScoreRecords, nextIndexRecords);
+      setCachedPathValue(scoreIndexPath(params), existingScoreRecords);
+      setCachedPathValue(scoreFinalPath(params), updates[scoreFinalPath(params)] || null);
       currentSessionFinal = true;
       applyFinalState();
       showToast("success", "Nilai FINAL terkirim", `${rows.length} nilai santri telah dikunci. Nilai tidak dapat diedit lagi dari CAHAYA App.`);
