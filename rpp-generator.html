@@ -1,19 +1,18 @@
 <!DOCTYPE html>
+
 <html lang="id">
 <head>
-  <!-- CAHAYA WHITE-LABEL CONFIG -->
-  <script src="config/tenant-config.js"></script>
-  <script src="config/master-data.js"></script>
-  <script src="js/cahaya-config-runtime.js" defer></script>
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Kalender Materi Pembelajaran | Pesantren Cahaya Fajrul Islam</title>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
@@ -1245,9 +1244,6 @@
     }
   </style>
 
-  <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
-
-  <link rel="stylesheet" href="css/cahaya-signature-v87.css?v=87" />
 </head>
 
 <body>
@@ -1261,111 +1257,112 @@
         </div>
       </div>
 
-      <div class="pill">Tahun Ajaran 2026/2027</div>
+  <div class="pill">Tahun Ajaran 2026/2027</div>
+</div>
+
+<header class="hero">
+  <div>
+    <p class="eyebrow">Kalender Akademik • Jadwal Guru • Materi Per Pertemuan</p>
+    <h1>Kalender Materi Pembelajaran</h1>
+  </div>
+
+</header>
+
+<div class="notice" id="statusNotice" aria-live="polite" style="display:none;"></div>
+
+<main class="main-grid">
+  <aside class="card side-panel sticky">
+    <div class="card-head">
+      <h2>Pilih Kalender</h2>
     </div>
 
-    <header class="hero">
-      <div>
-        <p class="eyebrow">Kalender Akademik • Jadwal Guru • Materi Per Pertemuan</p>
-        <h1>Kalender Materi Pembelajaran</h1>
+    <div class="card-body">
+      <div class="form-stack">
+        <div>
+          <label class="field-label" for="teacherSelect">Nama Guru</label>
+          <select class="field" id="teacherSelect">
+            <option value="">— Pilih nama guru —</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="field-label" for="assignmentSelect">Mapel, Unit, Kelas & Hari</label>
+          <select class="field" id="assignmentSelect" disabled>
+            <option value="">Pilih nama guru terlebih dahulu</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="field-label" for="semesterSelect">Semester</label>
+          <select class="field" id="semesterSelect">
+            <option value="1">Semester 1 • Juli–Desember 2026</option>
+            <option value="2">Semester 2 • Januari–Juni 2027</option>
+          </select>
+        </div>
+
+        <div class="assignment-info" id="assignmentInfo"></div>
       </div>
 
-    </header>
+      <div class="btn-row">
+        <button class="btn" type="button" id="showMeetingsBtn">Tampilkan Kalender</button>
+        <button class="btn green" type="button" id="loadFirebaseBtn">Muat Data Tersimpan</button>
+      </div>
 
-    <div class="notice" id="statusNotice" aria-live="polite" style="display:none;"></div>
+      <div class="btn-row">
+        <button class="btn blue" type="button" id="saveAllBtn">Simpan Semua Terisi</button>
+        <button class="btn secondary" type="button" id="exportCsvBtn">Unduh CSV</button>
+        <button class="btn secondary" type="button" id="downloadPdfBtn">Unduh PDF</button>
+        <button class="btn secondary" type="button" id="printBtn">Cetak</button>
+      </div>
+    </div>
+  </aside>
 
-    <main class="main-grid">
-      <aside class="card side-panel sticky">
-        <div class="card-head">
-          <h2>Pilih Kalender</h2>
+  <section class="content">
+    <section class="card" id="meetingCard">
+      <div class="card-head">
+        <h2>Daftar Pertemuan & Materi</h2>
+        <p id="meetingIntro">Pilih guru dan mapel untuk mulai mengisi materi.</p>
+      </div>
+
+      <div class="summary-grid" id="meetingSummary" style="display:none;"></div>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-line">
+          <div class="progress-fill" id="progressFill"></div>
         </div>
-
-        <div class="card-body">
-          <div class="form-stack">
-            <div>
-              <label class="field-label" for="teacherSelect">Nama Guru</label>
-              <select class="field" id="teacherSelect">
-                <option value="">— Pilih nama guru —</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="field-label" for="assignmentSelect">Mapel, Unit, Kelas & Hari</label>
-              <select class="field" id="assignmentSelect" disabled>
-                <option value="">Pilih nama guru terlebih dahulu</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="field-label" for="semesterSelect">Semester</label>
-              <select class="field" id="semesterSelect">
-                <option value="1">Semester 1 • Juli–Desember 2026</option>
-                <option value="2">Semester 2 • Januari–Juni 2027</option>
-              </select>
-            </div>
-
-            <div class="assignment-info" id="assignmentInfo"></div>
-          </div>
-
-          <div class="btn-row">
-            <button class="btn" type="button" id="showMeetingsBtn">Tampilkan Kalender</button>
-            <button class="btn green" type="button" id="loadFirebaseBtn">Muat Data Tersimpan</button>
-          </div>
-
-          <div class="btn-row">
-            <button class="btn blue" type="button" id="saveAllBtn">Simpan Semua Terisi</button>
-            <button class="btn secondary" type="button" id="exportCsvBtn">Unduh CSV</button>
-            <button class="btn secondary" type="button" id="downloadPdfBtn">Unduh PDF</button>
-            <button class="btn secondary" type="button" id="printBtn">Cetak</button>
-          </div>
+        <div class="progress-text">
+          <span id="progressLabel">Belum ada data materi.</span>
+          <span id="progressPercent">0%</span>
         </div>
-      </aside>
+      </div>
 
-      <section class="content">
-        <section class="card" id="meetingCard">
-          <div class="card-head">
-            <h2>Daftar Pertemuan & Materi</h2>
-            <p id="meetingIntro">Pilih guru dan mapel untuk mulai mengisi materi.</p>
-          </div>
+      <div class="toolbar" id="meetingToolbar">
+        <div class="toolbar-note" id="toolbarNote">
+          Materi yang sudah disimpan akan ditandai otomatis.
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn secondary" type="button" id="refreshBtn">Muat Ulang</button>
+          <button class="btn green" type="button" id="saveAllTopBtn">Simpan Semua</button>
+        </div>
+      </div>
 
-          <div class="summary-grid" id="meetingSummary" style="display:none;"></div>
+      <div class="table-wrap" id="meetingTableWrap">
+        <div class="empty">
+          Silakan pilih guru, mapel, kelas, dan semester terlebih dahulu.
+        </div>
+      </div>
 
-          <div class="progress-wrap" id="progressWrap">
-            <div class="progress-line">
-              <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <div class="progress-text">
-              <span id="progressLabel">Belum ada data materi.</span>
-              <span id="progressPercent">0%</span>
-            </div>
-          </div>
+      <div class="poster-toolbar" id="posterToolbar">
+        <div class="poster-title">
+          <b>PDF Mading Santri</b>
+          <span>Berisi materi yang sudah tersimpan, siap dicetak dan ditempel di mading.</span>
+        </div>
+        <button class="btn secondary" type="button" id="downloadPdfTopBtn">Unduh PDF Mading</button>
+      </div>
+    </section>
+  </section>
+</main>
 
-          <div class="toolbar" id="meetingToolbar">
-            <div class="toolbar-note" id="toolbarNote">
-              Materi yang sudah disimpan akan ditandai otomatis.
-            </div>
-            <div class="btn-row" style="margin-top:0;">
-              <button class="btn secondary" type="button" id="refreshBtn">Muat Ulang</button>
-              <button class="btn green" type="button" id="saveAllTopBtn">Simpan Semua</button>
-            </div>
-          </div>
-
-          <div class="table-wrap" id="meetingTableWrap">
-            <div class="empty">
-              Silakan pilih guru, mapel, kelas, dan semester terlebih dahulu.
-            </div>
-          </div>
-
-          <div class="poster-toolbar" id="posterToolbar">
-            <div class="poster-title">
-              <b>PDF Mading Santri</b>
-              <span>Berisi materi yang sudah tersimpan, siap dicetak dan ditempel di mading.</span>
-            </div>
-            <button class="btn secondary" type="button" id="downloadPdfTopBtn">Unduh PDF Mading</button>
-          </div>
-        </section>
-      </section>
-    </main>
   </div>
 
   <div class="pdf-mount" id="pdfMount" aria-hidden="true"></div>
@@ -1375,7 +1372,12 @@
        1. KONFIGURASI FIREBASE
        ========================================================== */
 
-    const firebaseConfig = window.CAHAYA_CONFIG.firebase;
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Eza852WuQL2R8U-yHpVnM3o8NMxZolI",
+      authDomain: "absensi-santri-fajrul-islam.firebaseapp.com",
+      databaseURL: "https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com",
+      projectId: "absensi-santri-fajrul-islam"
+    };
 
     const TAHUN_AJARAN_LABEL = "2026/2027";
     const TAHUN_AJARAN_KEY = "2026_2027";
@@ -1449,48 +1451,49 @@
     };
 
     const EXTRA_DAILY_SUBJECTS = {
-  putra: {
-    1: [
-      { subject: "Bahasa Arab", teacher: "ZAKY" },
-      { subject: "Al-Qur’an", teacher: "ZAKY" }
-    ],
-    2: [
-      { subject: "Bahasa Arab", teacher: "RAHIEL" },
-      { subject: "Bahasa Arab", teacher: "FAIQ" },
-      { subject: "Al-Qur’an", teacher: "FALAH" }
-    ],
-    3: [
-      { subject: "Bahasa Arab", teacher: "MULTAZAM" },
-      { subject: "Al-Qur’an", teacher: "RAHIEL" }
-    ],
-    4: [
-      { subject: "Bahasa Arab", teacher: "MULTAZAM" },
-      { subject: "Al-Qur’an", teacher: "FAIQ" }
-    ],
-    5: [
-      { subject: "Bahasa Arab", teacher: "MULTAZAM" },
-      { subject: "Al-Qur’an", teacher: "MULTAZAM" }
-    ]
-  },
-  putri: {
-    1: [
-      { subject: "Bahasa Arab", teacher: "FATIMAH" },
-      { subject: "Al-Qur’an", teacher: "FATIMAH" }
-    ],
-    2: [
-      { subject: "Bahasa Arab", teacher: "MEILISA" },
-      { subject: "Al-Qur’an", teacher: "MEILISA" }
-    ],
-    3: [
-      { subject: "Bahasa Arab", teacher: "ALAMANDA" },
-      { subject: "Al-Qur’an", teacher: "ALAMANDA" }
-    ],
-    4: [
-      { subject: "Bahasa Arab", teacher: "ALAMANDA" },
-      { subject: "Al-Qur’an", teacher: "ALAMANDA" }
-    ]
-  }
-};
+      putra: {
+        1: [
+          { subject: "Bahasa Arab", teacher: "HANIF" },
+          { subject: "Al-Qur’an", teacher: "HANIF" }
+        ],
+        2: [
+          // Bahasa Arab kelas II dibina bersama oleh Rahiel dan Faiq.
+          { subject: "Bahasa Arab", teacher: "RAHIEL" },
+          { subject: "Bahasa Arab", teacher: "FAIQ" },
+          { subject: "Al-Qur’an", teacher: "FALAH" }
+        ],
+        3: [
+          { subject: "Bahasa Arab", teacher: "ZAKY" },
+          { subject: "Al-Qur’an", teacher: "RAHIEL" }
+        ],
+        4: [
+          { subject: "Bahasa Arab", teacher: "MULTAZAM" },
+          { subject: "Al-Qur’an", teacher: "ZAKY" }
+        ],
+        5: [
+          { subject: "Bahasa Arab", teacher: "MULTAZAM" },
+          { subject: "Al-Qur’an", teacher: "MULTAZAM" }
+        ]
+      },
+      putri: {
+        1: [
+          { subject: "Bahasa Arab", teacher: "FATIMAH" },
+          { subject: "Al-Qur’an", teacher: "FATIMAH" }
+        ],
+        2: [
+          { subject: "Bahasa Arab", teacher: "MEILISA" },
+          { subject: "Al-Qur’an", teacher: "MEILISA" }
+        ],
+        3: [
+          { subject: "Bahasa Arab", teacher: "ALAMANDA" },
+          { subject: "Al-Qur’an", teacher: "ALAMANDA" }
+        ],
+        4: [
+          { subject: "Bahasa Arab", teacher: "ALAMANDA" },
+          { subject: "Al-Qur’an", teacher: "ALAMANDA" }
+        ]
+      }
+    };
 
     const SCHEDULE_SECTIONS = [
       {
@@ -1516,7 +1519,6 @@
     let EVENTS = [];
     let calendarMode = "loading";
     let ASSIGNMENTS = [];
-    let onlineScheduleRows = [];
     let currentAssignment = null;
     let currentMeetings = [];
 
@@ -1728,26 +1730,6 @@
     }
 
     function buildAssignmentsFromSchedule() {
-      if (onlineScheduleRows.length) {
-        const grouped = new Map();
-        onlineScheduleRows.filter(r => r && r.aktif !== false).forEach((r, index) => {
-          const sectionId = String(r.unit || "PUTRA").toLowerCase();
-          const section = String(r.unit || "PUTRA").toUpperCase() === "PUTRI" ? "Putri" : "Putra";
-          const kelas = String(r.nomorKelas || String(r.kelas || "").match(/\d+/)?.[0] || "");
-          const subject = r.mapel || "Pelajaran";
-          const teacher = String(r.guruKode || "").toUpperCase();
-          const groupKey = `${sectionId}|${kelas}|${subject}|${teacher}`;
-          if (!grouped.has(groupKey)) grouped.set(groupKey,{sectionId,section,kelas,subject,teacher,days:[]});
-          grouped.get(groupKey).days.push(Number(r.hari));
-        });
-        return [...grouped.values()].map(item => ({
-          ...item,
-          id: `${item.sectionId}|${item.kelas}|${slug(item.subject)}|${slug(item.teacher)}`,
-          day: Math.min(...item.days),
-          dayLabel: formatDays(item.days)
-        }));
-      }
-
       return SCHEDULE_SECTIONS.flatMap(section => {
         return Object.keys(section.schedule).flatMap(kelas => {
           const grouped = new Map();
@@ -2057,11 +2039,6 @@
        ========================================================== */
 
     async function init() {
-      try {
-        const snap = await db.ref("cahaya_app/jadwal_pelajaran").once("value");
-        const value = snap.val();
-        onlineScheduleRows = Array.isArray(value) ? value.filter(Boolean) : Object.entries(value || {}).map(([id,row]) => ({id,...(row||{})}));
-      } catch (error) { console.warn("Jadwal Firebase belum tersedia, memakai jadwal bawaan.", error); }
       ASSIGNMENTS = buildAssignmentsFromSchedule();
 
       populateTeachers();
@@ -2242,424 +2219,424 @@
                     data-index="${index}"
                     placeholder="Tulis materi atau pokok bahasan pertemuan ini…"
                   >${escapeHtml(item.material || "")}</textarea>
-                </td>
-                <td class="row-action" data-label="Aksi">
-                  <button type="button" class="btn green small save-meeting-btn" data-index="${index}">
-                    Simpan
-                  </button>
-                </td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      `;
 
-      bindMeetingTableEvents();
+            </td>
+            <td class="row-action" data-label="Aksi">
+              <button type="button" class="btn green small save-meeting-btn" data-index="${index}">
+                Simpan
+              </button>
+            </td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+
+  bindMeetingTableEvents();
+  updateProgress();
+}
+
+function bindMeetingTableEvents() {
+  document.querySelectorAll(".meeting-material").forEach(area => {
+    area.addEventListener("input", event => {
+      const index = Number(event.target.dataset.index);
+      currentMeetings[index].material = event.target.value;
+      currentMeetings[index].firebaseStatus = "unsaved";
+      setRowStatus(index, "unsaved", "Belum disimpan");
       updateProgress();
+    });
+  });
+
+  document.querySelectorAll(".save-meeting-btn").forEach(button => {
+    button.addEventListener("click", async () => {
+      await saveSingleMeeting(Number(button.dataset.index));
+    });
+  });
+}
+
+function getCurrentMaterialFromTextarea(index) {
+  const textarea = document.querySelector(`.meeting-material[data-index="${index}"]`);
+  return textarea ? textarea.value.trim() : "";
+}
+
+function setRowStatus(index, status, label) {
+  const pill = document.querySelector(`.status-pill[data-index="${index}"]`);
+  if (!pill) return;
+
+  pill.classList.remove("saved", "unsaved");
+
+  if (status === "saved") pill.classList.add("saved");
+  if (status === "unsaved") pill.classList.add("unsaved");
+
+  pill.textContent = label;
+}
+
+function updateProgress() {
+  if (!currentMeetings.length) {
+    els.progressWrap.classList.remove("show");
+    els.meetingToolbar.classList.remove("show");
+    els.posterToolbar.classList.remove("show");
+    els.progressFill.style.width = "0%";
+    els.progressLabel.textContent = "Belum ada data materi.";
+    els.progressPercent.textContent = "0%";
+    return;
+  }
+
+  const filled = currentMeetings.filter(item => String(item.material || "").trim()).length;
+  const saved = currentMeetings.filter(item => item.firebaseStatus === "saved").length;
+  const percent = Math.round((filled / currentMeetings.length) * 100);
+
+  els.progressWrap.classList.add("show");
+  els.meetingToolbar.classList.add("show");
+  els.posterToolbar.classList.add("show");
+  els.progressFill.style.width = `${percent}%`;
+  els.progressLabel.textContent = `${filled} dari ${currentMeetings.length} pertemuan sudah terisi • ${saved} tersimpan`;
+  els.progressPercent.textContent = `${percent}%`;
+
+  els.toolbarNote.textContent = `Materi terisi: ${filled}/${currentMeetings.length} • Tersimpan: ${saved}/${currentMeetings.length}`;
+}
+
+/* ==========================================================
+   10. SIMPAN DAN PANGGIL FIREBASE
+   ========================================================== */
+
+function buildMeetingPayload(index) {
+  const meeting = currentMeetings[index];
+  const material = getCurrentMaterialFromTextarea(index);
+
+  return {
+    tahunAjaran: TAHUN_AJARAN_LABEL,
+    tahunAjaranKey: TAHUN_AJARAN_KEY,
+    semester: els.semesterSelect.value,
+    assignmentId: currentAssignment.id,
+    assignmentKey: getAssignmentKey(),
+    teacher: currentAssignment.teacher,
+    sectionId: currentAssignment.sectionId,
+    section: currentAssignment.section,
+    kelas: currentAssignment.kelas,
+    subject: currentAssignment.subject,
+    days: currentAssignment.days,
+    dayLabel: currentAssignment.dayLabel,
+    meetingNo: meeting.number,
+    date: meeting.date,
+    longDate: meeting.longDate,
+    notes: meeting.notes || [],
+    material,
+    updatedAt: nowIso(),
+    source: "kalender_materi_pembelajaran"
+  };
+}
+
+async function saveSingleMeeting(index) {
+  if (!currentAssignment || !currentMeetings[index]) return;
+
+  const meeting = currentMeetings[index];
+  const material = getCurrentMaterialFromTextarea(index);
+
+  if (!material) {
+    alert("Isi materi terlebih dahulu sebelum disimpan.");
+    return;
+  }
+
+  const payload = buildMeetingPayload(index);
+
+  await getMaterialRef(currentAssignment, els.semesterSelect.value, meeting.number).set(payload);
+
+  currentMeetings[index].material = material;
+  currentMeetings[index].firebaseStatus = "saved";
+  currentMeetings[index].updatedAt = payload.updatedAt;
+
+  setRowStatus(index, "saved", "Tersimpan");
+  updateProgress();
+
+  showNotice("Materi tersimpan.", `Pertemuan ${meeting.number} berhasil disimpan.`);
+}
+
+async function saveAllFilledMeetings() {
+  if (!currentAssignment) {
+    alert("Pilih guru dan penugasan mengajar terlebih dahulu.");
+    return;
+  }
+
+  if (!currentMeetings.length) {
+    currentMeetings = generateMeetings(currentAssignment, els.semesterSelect.value);
+    renderMeetingShell();
+  }
+
+  const updates = {};
+  let filledCount = 0;
+
+  currentMeetings.forEach((meeting, index) => {
+    const material = getCurrentMaterialFromTextarea(index);
+
+    if (!material) return;
+
+    const payload = buildMeetingPayload(index);
+    updates[`pertemuan_${meeting.number}`] = payload;
+    filledCount += 1;
+
+    currentMeetings[index].material = material;
+    currentMeetings[index].firebaseStatus = "saved";
+    currentMeetings[index].updatedAt = payload.updatedAt;
+  });
+
+  if (!filledCount) {
+    alert("Belum ada materi yang terisi untuk disimpan.");
+    return;
+  }
+
+  await getMaterialFolderRef(MATERIAL_PATH, currentAssignment, els.semesterSelect.value).update(updates);
+
+  currentMeetings.forEach((meeting, index) => {
+    if (meeting.material) setRowStatus(index, "saved", "Tersimpan");
+  });
+
+  updateProgress();
+  showNotice("Materi tersimpan.", `${filledCount} materi berhasil disimpan.`);
+}
+
+async function loadMaterialsFromFirebase(showAlert = true) {
+  if (!currentAssignment) {
+    alert("Pilih guru dan penugasan mengajar terlebih dahulu.");
+    return;
+  }
+
+  if (!currentMeetings.length) {
+    currentMeetings = generateMeetings(currentAssignment, els.semesterSelect.value);
+    renderMeetingShell();
+  }
+
+  const semester = els.semesterSelect.value;
+
+  let snap = await getMaterialFolderRef(MATERIAL_PATH, currentAssignment, semester).once("value");
+  let saved = snap.val() || {};
+  let sourcePath = MATERIAL_PATH;
+
+  // Cadangan untuk membaca data lama dari versi Guru Kits.
+  if (!Object.keys(saved).length) {
+    const oldSnap = await getMaterialFolderRef(OLD_MATERIAL_PATH, currentAssignment, semester).once("value");
+    const oldSaved = oldSnap.val() || {};
+
+    if (Object.keys(oldSaved).length) {
+      saved = oldSaved;
+      sourcePath = OLD_MATERIAL_PATH;
     }
+  }
 
-    function bindMeetingTableEvents() {
-      document.querySelectorAll(".meeting-material").forEach(area => {
-        area.addEventListener("input", event => {
-          const index = Number(event.target.dataset.index);
-          currentMeetings[index].material = event.target.value;
-          currentMeetings[index].firebaseStatus = "unsaved";
-          setRowStatus(index, "unsaved", "Belum disimpan");
-          updateProgress();
-        });
-      });
+  currentMeetings.forEach((meeting, index) => {
+    const data = saved[`pertemuan_${meeting.number}`];
 
-      document.querySelectorAll(".save-meeting-btn").forEach(button => {
-        button.addEventListener("click", async () => {
-          await saveSingleMeeting(Number(button.dataset.index));
-        });
-      });
-    }
+    if (data && data.material) {
+      meeting.material = data.material;
+      meeting.firebaseStatus = "saved";
+      meeting.updatedAt = data.updatedAt || "";
 
-    function getCurrentMaterialFromTextarea(index) {
       const textarea = document.querySelector(`.meeting-material[data-index="${index}"]`);
-      return textarea ? textarea.value.trim() : "";
-    }
-
-    function setRowStatus(index, status, label) {
-      const pill = document.querySelector(`.status-pill[data-index="${index}"]`);
-      if (!pill) return;
-
-      pill.classList.remove("saved", "unsaved");
-
-      if (status === "saved") pill.classList.add("saved");
-      if (status === "unsaved") pill.classList.add("unsaved");
-
-      pill.textContent = label;
-    }
-
-    function updateProgress() {
-      if (!currentMeetings.length) {
-        els.progressWrap.classList.remove("show");
-        els.meetingToolbar.classList.remove("show");
-        els.posterToolbar.classList.remove("show");
-        els.progressFill.style.width = "0%";
-        els.progressLabel.textContent = "Belum ada data materi.";
-        els.progressPercent.textContent = "0%";
-        return;
-      }
-
-      const filled = currentMeetings.filter(item => String(item.material || "").trim()).length;
-      const saved = currentMeetings.filter(item => item.firebaseStatus === "saved").length;
-      const percent = Math.round((filled / currentMeetings.length) * 100);
-
-      els.progressWrap.classList.add("show");
-      els.meetingToolbar.classList.add("show");
-      els.posterToolbar.classList.add("show");
-      els.progressFill.style.width = `${percent}%`;
-      els.progressLabel.textContent = `${filled} dari ${currentMeetings.length} pertemuan sudah terisi • ${saved} tersimpan`;
-      els.progressPercent.textContent = `${percent}%`;
-
-      els.toolbarNote.textContent = `Materi terisi: ${filled}/${currentMeetings.length} • Tersimpan: ${saved}/${currentMeetings.length}`;
-    }
-
-    /* ==========================================================
-       10. SIMPAN DAN PANGGIL FIREBASE
-       ========================================================== */
-
-    function buildMeetingPayload(index) {
-      const meeting = currentMeetings[index];
-      const material = getCurrentMaterialFromTextarea(index);
-
-      return {
-        tahunAjaran: TAHUN_AJARAN_LABEL,
-        tahunAjaranKey: TAHUN_AJARAN_KEY,
-        semester: els.semesterSelect.value,
-        assignmentId: currentAssignment.id,
-        assignmentKey: getAssignmentKey(),
-        teacher: currentAssignment.teacher,
-        sectionId: currentAssignment.sectionId,
-        section: currentAssignment.section,
-        kelas: currentAssignment.kelas,
-        subject: currentAssignment.subject,
-        days: currentAssignment.days,
-        dayLabel: currentAssignment.dayLabel,
-        meetingNo: meeting.number,
-        date: meeting.date,
-        longDate: meeting.longDate,
-        notes: meeting.notes || [],
-        material,
-        updatedAt: nowIso(),
-        source: "kalender_materi_pembelajaran"
-      };
-    }
-
-    async function saveSingleMeeting(index) {
-      if (!currentAssignment || !currentMeetings[index]) return;
-
-      const meeting = currentMeetings[index];
-      const material = getCurrentMaterialFromTextarea(index);
-
-      if (!material) {
-        alert("Isi materi terlebih dahulu sebelum disimpan.");
-        return;
-      }
-
-      const payload = buildMeetingPayload(index);
-
-      await getMaterialRef(currentAssignment, els.semesterSelect.value, meeting.number).set(payload);
-
-      currentMeetings[index].material = material;
-      currentMeetings[index].firebaseStatus = "saved";
-      currentMeetings[index].updatedAt = payload.updatedAt;
+      if (textarea) textarea.value = data.material;
 
       setRowStatus(index, "saved", "Tersimpan");
-      updateProgress();
-
-      showNotice("Materi tersimpan.", `Pertemuan ${meeting.number} berhasil disimpan.`);
+    } else {
+      meeting.material = getCurrentMaterialFromTextarea(index);
+      meeting.firebaseStatus = meeting.material ? "unsaved" : "empty";
+      setRowStatus(index, meeting.material ? "unsaved" : "empty", meeting.material ? "Belum disimpan" : "Belum disimpan");
     }
+  });
 
-    async function saveAllFilledMeetings() {
-      if (!currentAssignment) {
-        alert("Pilih guru dan penugasan mengajar terlebih dahulu.");
-        return;
-      }
+  updateProgress();
 
-      if (!currentMeetings.length) {
-        currentMeetings = generateMeetings(currentAssignment, els.semesterSelect.value);
-        renderMeetingShell();
-      }
-
-      const updates = {};
-      let filledCount = 0;
-
-      currentMeetings.forEach((meeting, index) => {
-        const material = getCurrentMaterialFromTextarea(index);
-
-        if (!material) return;
-
-        const payload = buildMeetingPayload(index);
-        updates[`pertemuan_${meeting.number}`] = payload;
-        filledCount += 1;
-
-        currentMeetings[index].material = material;
-        currentMeetings[index].firebaseStatus = "saved";
-        currentMeetings[index].updatedAt = payload.updatedAt;
-      });
-
-      if (!filledCount) {
-        alert("Belum ada materi yang terisi untuk disimpan.");
-        return;
-      }
-
-      await getMaterialFolderRef(MATERIAL_PATH, currentAssignment, els.semesterSelect.value).update(updates);
-
-      currentMeetings.forEach((meeting, index) => {
-        if (meeting.material) setRowStatus(index, "saved", "Tersimpan");
-      });
-
-      updateProgress();
-      showNotice("Materi tersimpan.", `${filledCount} materi berhasil disimpan.`);
-    }
-
-    async function loadMaterialsFromFirebase(showAlert = true) {
-      if (!currentAssignment) {
-        alert("Pilih guru dan penugasan mengajar terlebih dahulu.");
-        return;
-      }
-
-      if (!currentMeetings.length) {
-        currentMeetings = generateMeetings(currentAssignment, els.semesterSelect.value);
-        renderMeetingShell();
-      }
-
-      const semester = els.semesterSelect.value;
-
-      let snap = await getMaterialFolderRef(MATERIAL_PATH, currentAssignment, semester).once("value");
-      let saved = snap.val() || {};
-      let sourcePath = MATERIAL_PATH;
-
-      // Cadangan untuk membaca data lama dari versi Guru Kits.
-      if (!Object.keys(saved).length) {
-        const oldSnap = await getMaterialFolderRef(OLD_MATERIAL_PATH, currentAssignment, semester).once("value");
-        const oldSaved = oldSnap.val() || {};
-
-        if (Object.keys(oldSaved).length) {
-          saved = oldSaved;
-          sourcePath = OLD_MATERIAL_PATH;
-        }
-      }
-
-      currentMeetings.forEach((meeting, index) => {
-        const data = saved[`pertemuan_${meeting.number}`];
-
-        if (data && data.material) {
-          meeting.material = data.material;
-          meeting.firebaseStatus = "saved";
-          meeting.updatedAt = data.updatedAt || "";
-
-          const textarea = document.querySelector(`.meeting-material[data-index="${index}"]`);
-          if (textarea) textarea.value = data.material;
-
-          setRowStatus(index, "saved", "Tersimpan");
-        } else {
-          meeting.material = getCurrentMaterialFromTextarea(index);
-          meeting.firebaseStatus = meeting.material ? "unsaved" : "empty";
-          setRowStatus(index, meeting.material ? "unsaved" : "empty", meeting.material ? "Belum disimpan" : "Belum disimpan");
-        }
-      });
-
-      updateProgress();
-
-      if (showAlert) {
-        showNotice(
-          "Data dipanggil.",
-          sourcePath === OLD_MATERIAL_PATH
-            ? "Materi yang sudah tersimpan berhasil dimuat ulang."
-            : "Materi yang sudah tersimpan berhasil dimuat ulang."
-        );
-      }
-    }
+  if (showAlert) {
+    showNotice(
+      "Data dipanggil.",
+      sourcePath === OLD_MATERIAL_PATH
+        ? "Materi yang sudah tersimpan berhasil dimuat ulang."
+        : "Materi yang sudah tersimpan berhasil dimuat ulang."
+    );
+  }
+}
 
 
 
-    /* ==========================================================
-       11. PDF MADING SANTRI
-       ========================================================== */
+/* ==========================================================
+   11. PDF MADING SANTRI
+   ========================================================== */
 
-    function getSavedMaterialsForPoster() {
-      currentMeetings.forEach((meeting, index) => {
-        const textareaMaterial = getCurrentMaterialFromTextarea(index);
-        if (textareaMaterial) meeting.material = textareaMaterial;
-      });
+function getSavedMaterialsForPoster() {
+  currentMeetings.forEach((meeting, index) => {
+    const textareaMaterial = getCurrentMaterialFromTextarea(index);
+    if (textareaMaterial) meeting.material = textareaMaterial;
+  });
 
-      return currentMeetings.filter(item => {
-        return item.firebaseStatus === "saved" && String(item.material || "").trim();
-      });
-    }
+  return currentMeetings.filter(item => {
+    return item.firebaseStatus === "saved" && String(item.material || "").trim();
+  });
+}
 
-    function chunkArray(items, size) {
-      const chunks = [];
-      for (let i = 0; i < items.length; i += size) {
-        chunks.push(items.slice(i, i + size));
-      }
-      return chunks;
-    }
+function chunkArray(items, size) {
+  const chunks = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
 
-    function renderPosterSheets(savedItems) {
-      const assignment = currentAssignment;
-      const sem = semesterRange(els.semesterSelect.value);
-      const chunks = chunkArray(savedItems, 8);
-      const totalPages = Math.max(chunks.length, 1);
+function renderPosterSheets(savedItems) {
+  const assignment = currentAssignment;
+  const sem = semesterRange(els.semesterSelect.value);
+  const chunks = chunkArray(savedItems, 8);
+  const totalPages = Math.max(chunks.length, 1);
 
-      els.pdfMount.innerHTML = chunks.map((items, pageIndex) => {
-        const rows = items.map(item => `
-          <div class="mading-row">
-            <div class="mading-no">${escapeHtml(item.number)}</div>
-            <div class="mading-date">
-              ${escapeHtml(shortDate(item.date))}
-              <span>Pertemuan ke-${escapeHtml(item.number)}</span>
-            </div>
-            <div class="mading-material">${escapeHtml(item.material)}</div>
+  els.pdfMount.innerHTML = chunks.map((items, pageIndex) => {
+    const rows = items.map(item => `
+      <div class="mading-row">
+        <div class="mading-no">${escapeHtml(item.number)}</div>
+        <div class="mading-date">
+          ${escapeHtml(shortDate(item.date))}
+          <span>Pertemuan ke-${escapeHtml(item.number)}</span>
+        </div>
+        <div class="mading-material">${escapeHtml(item.material)}</div>
+      </div>
+    `).join("");
+
+    return `
+      <section class="mading-sheet">
+        <div class="mading-inner">
+          <div class="mading-kicker">
+            <span>Kalender Materi Pembelajaran</span>
+            <span class="mading-brand">Pesantren Cahaya Fajrul Islam</span>
           </div>
-        `).join("");
 
-        return `
-          <section class="mading-sheet">
-            <div class="mading-inner">
-              <div class="mading-kicker">
-                <span>Kalender Materi Pembelajaran</span>
-                <span class="mading-brand">Pesantren Cahaya Fajrul Islam</span>
-              </div>
+          <h1 class="mading-title">Materi yang Akan Dipelajari</h1>
+          <p class="mading-subtitle">
+            Daftar ini membantu santri mengetahui arah belajar pada setiap pertemuan.
+          </p>
 
-              <h1 class="mading-title">Materi yang Akan Dipelajari</h1>
-              <p class="mading-subtitle">
-                Daftar ini membantu santri mengetahui arah belajar pada setiap pertemuan.
-              </p>
+          <div class="mading-meta">
+            <div class="mading-meta-box"><span>Mapel</span><b>${escapeHtml(assignment.subject)}</b></div>
+            <div class="mading-meta-box"><span>Kelas / Unit</span><b>${escapeHtml(assignment.section)} Kelas ${escapeHtml(assignment.kelas)}</b></div>
+            <div class="mading-meta-box"><span>Semester</span><b>${escapeHtml(sem.label)}</b></div>
+            <div class="mading-meta-box"><span>Guru</span><b>${escapeHtml(assignment.teacher)}</b></div>
+            <div class="mading-meta-box"><span>Hari</span><b>${escapeHtml(assignment.dayLabel)}</b></div>
+            <div class="mading-meta-box"><span>Tahun Ajaran</span><b>${escapeHtml(TAHUN_AJARAN_LABEL)}</b></div>
+          </div>
 
-              <div class="mading-meta">
-                <div class="mading-meta-box"><span>Mapel</span><b>${escapeHtml(assignment.subject)}</b></div>
-                <div class="mading-meta-box"><span>Kelas / Unit</span><b>${escapeHtml(assignment.section)} Kelas ${escapeHtml(assignment.kelas)}</b></div>
-                <div class="mading-meta-box"><span>Semester</span><b>${escapeHtml(sem.label)}</b></div>
-                <div class="mading-meta-box"><span>Guru</span><b>${escapeHtml(assignment.teacher)}</b></div>
-                <div class="mading-meta-box"><span>Hari</span><b>${escapeHtml(assignment.dayLabel)}</b></div>
-                <div class="mading-meta-box"><span>Tahun Ajaran</span><b>${escapeHtml(TAHUN_AJARAN_LABEL)}</b></div>
-              </div>
+          <div class="mading-list">
+            ${rows || `<div class="mading-empty">Belum ada materi yang tersimpan.</div>`}
+          </div>
+        </div>
 
-              <div class="mading-list">
-                ${rows || `<div class="mading-empty">Belum ada materi yang tersimpan.</div>`}
-              </div>
-            </div>
+        <div class="mading-footer">
+          <span>Halaman ${pageIndex + 1} dari ${totalPages}</span>
+          <span>Dicetak dari Kalender Materi Pembelajaran</span>
+        </div>
+      </section>
+    `;
+  }).join("");
 
-            <div class="mading-footer">
-              <span>Halaman ${pageIndex + 1} dari ${totalPages}</span>
-              <span>Dicetak dari Kalender Materi Pembelajaran</span>
-            </div>
-          </section>
-        `;
-      }).join("");
+  return Array.from(els.pdfMount.querySelectorAll(".mading-sheet"));
+}
 
-      return Array.from(els.pdfMount.querySelectorAll(".mading-sheet"));
-    }
+async function downloadSavedMaterialsPdf() {
+  if (!currentAssignment || !currentMeetings.length) {
+    alert("Tampilkan kalender materi terlebih dahulu.");
+    return;
+  }
 
-    async function downloadSavedMaterialsPdf() {
-      if (!currentAssignment || !currentMeetings.length) {
-        alert("Tampilkan kalender materi terlebih dahulu.");
-        return;
-      }
+  await loadMaterialsFromFirebase(false);
 
-      await loadMaterialsFromFirebase(false);
+  const savedItems = getSavedMaterialsForPoster();
 
-      const savedItems = getSavedMaterialsForPoster();
+  if (!savedItems.length) {
+    alert("Belum ada materi tersimpan untuk dibuat PDF mading.");
+    return;
+  }
 
-      if (!savedItems.length) {
-        alert("Belum ada materi tersimpan untuk dibuat PDF mading.");
-        return;
-      }
+  if (!window.html2canvas || !window.jspdf?.jsPDF) {
+    alert("Library PDF belum termuat. Pastikan perangkat terhubung internet, lalu coba lagi.");
+    return;
+  }
 
-      if (!window.html2canvas || !window.jspdf?.jsPDF) {
-        alert("Library PDF belum termuat. Pastikan perangkat terhubung internet, lalu coba lagi.");
-        return;
-      }
+  const sheets = renderPosterSheets(savedItems);
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
 
-      const sheets = renderPosterSheets(savedItems);
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+  for (let i = 0; i < sheets.length; i += 1) {
+    const canvas = await html2canvas(sheets[i], {
+      scale: 2,
+      backgroundColor: "#ffffff",
+      useCORS: true
+    });
 
-      for (let i = 0; i < sheets.length; i += 1) {
-        const canvas = await html2canvas(sheets[i], {
-          scale: 2,
-          backgroundColor: "#ffffff",
-          useCORS: true
-        });
+    const imgData = canvas.toDataURL("image/jpeg", 0.96);
 
-        const imgData = canvas.toDataURL("image/jpeg", 0.96);
+    if (i > 0) pdf.addPage();
+    pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight);
+  }
 
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight);
-      }
+  const filename = `mading_materi_${slug(currentAssignment.subject)}_${slug(currentAssignment.section)}_kelas_${slug(currentAssignment.kelas)}_semester_${els.semesterSelect.value}.pdf`;
+  pdf.save(filename);
 
-      const filename = `mading_materi_${slug(currentAssignment.subject)}_${slug(currentAssignment.section)}_kelas_${slug(currentAssignment.kelas)}_semester_${els.semesterSelect.value}.pdf`;
-      pdf.save(filename);
-
-      els.pdfMount.innerHTML = "";
-      showNotice("PDF siap.", "PDF mading materi berhasil dibuat.");
-    }
+  els.pdfMount.innerHTML = "";
+  showNotice("PDF siap.", "PDF mading materi berhasil dibuat.");
+}
 
 
-    /* ==========================================================
-       12. EXPORT CSV
-       ========================================================== */
+/* ==========================================================
+   12. EXPORT CSV
+   ========================================================== */
 
-    function exportPlanCsv() {
-      if (!currentAssignment || !currentMeetings.length) {
-        alert("Tampilkan kalender materi terlebih dahulu.");
-        return;
-      }
+function exportPlanCsv() {
+  if (!currentAssignment || !currentMeetings.length) {
+    alert("Tampilkan kalender materi terlebih dahulu.");
+    return;
+  }
 
-      currentMeetings.forEach((meeting, index) => {
-        meeting.material = getCurrentMaterialFromTextarea(index);
-      });
+  currentMeetings.forEach((meeting, index) => {
+    meeting.material = getCurrentMaterialFromTextarea(index);
+  });
 
-      const rows = [
-        [
-          "Tahun Ajaran",
-          "Semester",
-          "Guru",
-          "Unit",
-          "Kelas",
-          "Mapel",
-          "Hari Mengajar",
-          "Pertemuan",
-          "Tanggal",
-          "Catatan Kalender",
-          "Materi",
-          "Status",
-          "Terakhir Diubah"
-        ],
-        ...currentMeetings.map(item => [
-          TAHUN_AJARAN_LABEL,
-          els.semesterSelect.value,
-          currentAssignment.teacher,
-          currentAssignment.section,
-          currentAssignment.kelas,
-          currentAssignment.subject,
-          currentAssignment.dayLabel,
-          item.number,
-          item.longDate,
-          (item.notes || []).join(" | "),
-          item.material || "",
-          item.firebaseStatus === "saved" ? "Tersimpan" : "Belum Tersimpan",
-          item.updatedAt || ""
-        ])
-      ];
+  const rows = [
+    [
+      "Tahun Ajaran",
+      "Semester",
+      "Guru",
+      "Unit",
+      "Kelas",
+      "Mapel",
+      "Hari Mengajar",
+      "Pertemuan",
+      "Tanggal",
+      "Catatan Kalender",
+      "Materi",
+      "Status",
+      "Terakhir Diubah"
+    ],
+    ...currentMeetings.map(item => [
+      TAHUN_AJARAN_LABEL,
+      els.semesterSelect.value,
+      currentAssignment.teacher,
+      currentAssignment.section,
+      currentAssignment.kelas,
+      currentAssignment.subject,
+      currentAssignment.dayLabel,
+      item.number,
+      item.longDate,
+      (item.notes || []).join(" | "),
+      item.material || "",
+      item.firebaseStatus === "saved" ? "Tersimpan" : "Belum Tersimpan",
+      item.updatedAt || ""
+    ])
+  ];
 
-      const csv = rows.map(row => row.map(csvEscape).join(";")).join("\n");
-      const filename = `kalender_materi_${slug(currentAssignment.teacher)}_${slug(currentAssignment.subject)}_kelas_${slug(currentAssignment.kelas)}_semester_${els.semesterSelect.value}.csv`;
+  const csv = rows.map(row => row.map(csvEscape).join(";")).join("\n");
+  const filename = `kalender_materi_${slug(currentAssignment.teacher)}_${slug(currentAssignment.subject)}_kelas_${slug(currentAssignment.kelas)}_semester_${els.semesterSelect.value}.csv`;
 
-      downloadTextFile(filename, csv, "text/csv;charset=utf-8");
-    }
+  downloadTextFile(filename, csv, "text/csv;charset=utf-8");
+}
 
-    init();
+init();
+
   </script>
-
-  <script src="js/cahaya-responsive-v24.js?v=37" defer></script>
 </body>
 </html>
