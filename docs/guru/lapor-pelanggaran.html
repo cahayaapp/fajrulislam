@@ -5,6 +5,7 @@
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
+  <script src="../js/data-pusat.js"></script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -870,10 +871,10 @@
   </style>
 
   <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
-<link rel="stylesheet" href="../css/guru-director-theme-v146.css?v=146"><link rel="stylesheet" href="../css/guru-director-theme-v147.css?v=147">
+  <link rel="stylesheet" href="guru-theme-v151.css?v=151">
 </head>
 
-<body>
+<body class="cahaya-guru-executive">
   <div id="loadingOverlay">
     <div class="loader-mark">📢</div>
     <div id="loadingText">Menyiapkan data pelaporan...</div>
@@ -1271,49 +1272,25 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       isiProfil();
-
       try {
-        const snapshot = await get(
-          ref(db, "cahaya_app/master_usrah")
-        );
-
-        const dataUsrah = snapshot.exists()
-          ? snapshot.val()
-          : {};
-
+        // v151 hemat kuota: daftar santri memakai master lokal yang sudah ikut bundle aplikasi.
+        // Tidak ada lagi pembacaan master_usrah Firebase setiap halaman dibuka/back.
+        const sumber = window.CAHAYA_MASTER_DATA?.santriByClass || window.dataSantri || {};
         const namaSet = new Set();
-
-        Object.values(dataUsrah || {}).forEach(list => {
-          normalisasiDaftar(list).forEach(nama => {
-            namaSet.add(nama);
-          });
+        Object.values(sumber || {}).forEach(list => {
+          normalisasiDaftar(list).forEach(nama => namaSet.add(nama));
         });
-
-        const daftarSantri = [...namaSet].sort((a, b) =>
-          a.localeCompare(b, "id")
-        );
-
+        const daftarSantri = [...namaSet].sort((a,b)=>a.localeCompare(b,"id"));
         daftarSantriMaster = daftarSantri;
-
-        const pelapor =
-          document.getElementById("lp_namaPelapor");
-
-        daftarSantri.forEach(nama => {
-          pelapor.add(new Option(nama, nama));
-        });
-
+        const pelapor = document.getElementById("lp_namaPelapor");
+        daftarSantri.forEach(nama => pelapor.add(new Option(nama,nama)));
         const search = document.getElementById("lp_searchSantri");
-        search?.addEventListener("input", event => {
-          renderPilihanSantri(event.target.value);
-        });
+        search?.addEventListener("input", event => renderPilihanSantri(event.target.value));
         renderPilihanSantri();
         sembunyikanLoading();
       } catch (error) {
-        console.error("Gagal memuat daftar santri:", error);
-
-        tampilkanErrorLoading(
-          error?.message || "Terjadi kesalahan ketika membaca Firebase."
-        );
+        console.error("Gagal memuat daftar santri lokal:", error);
+        tampilkanErrorLoading(error?.message || "Data santri lokal tidak terbaca.");
       }
     });
 
@@ -1327,7 +1304,7 @@
           image.onload = () => {
             let width = image.width;
             let height = image.height;
-            const maxSize = 1000;
+            const maxSize = 720;
             if (Math.max(width, height) > maxSize) {
               const ratio = maxSize / Math.max(width, height);
               width = Math.round(width * ratio);
@@ -1337,7 +1314,7 @@
             canvas.width = width;
             canvas.height = height;
             canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-            resolve(canvas.toDataURL("image/jpeg", 0.62));
+            resolve(canvas.toDataURL("image/jpeg", 0.48));
           };
           image.src = reader.result;
         };
@@ -1543,6 +1520,6 @@
       }
     };  </script>
 
-  <script src="../js/cahaya-responsive-v24.js?v=37" defer></script>
+  <script src="../js/cahaya-responsive-v24.js?v=151" defer></script>
 </body>
 </html>

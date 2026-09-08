@@ -1648,10 +1648,10 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
 </style>
 
   <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
-<link rel="stylesheet" href="../css/guru-director-theme-v146.css?v=146"><link rel="stylesheet" href="../css/guru-director-theme-v147.css?v=147">
+  <link rel="stylesheet" href="guru-theme-v151.css?v=151">
 </head>
 
-<body>
+<body class="cahaya-guru-executive">
   <div id="loadingOverlay">
     <div class="loader-mark">📖</div>
     <strong>Menyiapkan Data Santri</strong>
@@ -1800,7 +1800,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
   function normalizeScheduleRowsQuran(value){return Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}))}
   async function refreshAutoQuranClasses(scheduleRows=[]){
     let rows=scheduleRows;
-    if(!rows.length){try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"no-store"});if(r.ok)rows=normalizeScheduleRowsQuran(await r.json())}catch(_){}}
+    if(!rows.length){try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"force-cache"});if(r.ok)rows=normalizeScheduleRowsQuran(await r.json())}catch(_){}}
     const code=detectTeacherCodeQuran(rows);
     autoQuranClasses=[...new Set(rows.filter(r=>r&&r.aktif!==false&&String(r.guruKode||"").trim().toUpperCase()===code&&/qur|tahsin|tahfiz/i.test(String(r.mapel||""))).map(r=>String(r.kelas||"").trim()).filter(k=>k&&dataKelasCloud[k]))];
     const order=k=>{const i=URUTAN_KELAS.indexOf(k);return i<0?999:i};autoQuranClasses.sort((a,b)=>order(a)-order(b)||a.localeCompare(b,"id",{numeric:true}));
@@ -1835,19 +1835,31 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
   const getTargetRecord = nama => cacheTargetTahfiz[normalizeStudentKey(nama)] || {};
   const getTargetBaris = nama => Number(getTargetRecord(nama).targetBarisHarian || getTargetRecord(nama).targetBaris || 0) || 0;
 
+  let cacheMetaQuranSiap = false;
   async function ensureTahfizMeta(){
+    if(cacheMetaQuranSiap) return;
+    try{
+      const [jadwalRes,kalenderRes]=await Promise.all([
+        fetch('../data/jadwal-pelajaran-awal-2026-2027.json',{cache:'force-cache'}).catch(()=>null),
+        fetch('../data/kalender-pendidikan-2026-2027.json',{cache:'force-cache'}).catch(()=>null)
+      ]);
+      if(jadwalRes?.ok) cacheJadwalQuran=objectValues(await jadwalRes.json());
+      if(kalenderRes?.ok) cacheKalenderQuran=objectValues(await kalenderRes.json());
+    }catch(e){console.warn('Meta Al-Quran lokal tidak lengkap:',e)}
+    cacheMetaQuranSiap=true;
+  }
+  async function ensureTahfizTargets(){
     if(cacheTargetSiap) return;
-    const [targetResult, jadwalResult, kalenderResult] = await Promise.allSettled([
-      get(ref(db,'cahaya_app/target_tahfiz')),
-      get(ref(db,'cahaya_app/jadwal_pelajaran')),
-      get(ref(db,'kalender_pendidikan/ta_2026_2027/events'))
-    ]);
-    if(targetResult.status==='fulfilled' && targetResult.value.exists()) cacheTargetTahfiz=targetResult.value.val()||{};
-    if(jadwalResult.status==='fulfilled' && jadwalResult.value.exists()) cacheJadwalQuran=objectValues(jadwalResult.value.val());
-    if(kalenderResult.status==='fulfilled' && kalenderResult.value.exists()) cacheKalenderQuran=objectValues(kalenderResult.value.val());
-    if(!cacheKalenderQuran.length){
-      try{const r=await fetch('../data/kalender-pendidikan-2026-2027.json',{cache:'force-cache'});if(r.ok)cacheKalenderQuran=objectValues(await r.json());}catch(_){}
-    }
+    const ck='cahaya:guru:tahfiz:targets:v151';
+    try{
+      const local=JSON.parse(sessionStorage.getItem(ck)||'null');
+      if(local&&Date.now()-local.t<15*60*1000){cacheTargetTahfiz=local.v||{};cacheTargetSiap=true;return;}
+    }catch(_){}
+    try{
+      const snap=await get(ref(db,'cahaya_app/target_tahfiz'));
+      cacheTargetTahfiz=snap.exists()?snap.val()||{}:{};
+      try{sessionStorage.setItem(ck,JSON.stringify({t:Date.now(),v:cacheTargetTahfiz}))}catch(_){}
+    }catch(e){console.warn('Target tahfiz tidak dimuat:',e);cacheTargetTahfiz={};}
     cacheTargetSiap=true;
   }
 
@@ -1998,14 +2010,10 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
   document.addEventListener('DOMContentLoaded', async () => {
     if(window.daftarSurat) window.daftarSurat.forEach((surat,i)=>{window.opsiSuratHTML+=`<option value="${i}">${i+1}. ${surat.nama} (${surat.ayat} Ayat)</option>`});
     try{
-      const [masterSnap,scheduleSnap]=await Promise.all([get(ref(db,'cahaya_app/master_akademik')).catch(()=>null),get(ref(db,'cahaya_app/jadwal_pelajaran')).catch(()=>null)]);
-      const masterAkademik=masterSnap?.exists?.()?masterSnap.val():{};
-      dataKelasCloud=masterAkademik.kelas||{};
-      if(!Object.keys(dataKelasCloud).length&&masterAkademik.halqah?.["Halqah Ilmiyah"])dataKelasCloud=masterAkademik.halqah["Halqah Ilmiyah"];
-      const scheduleRows=scheduleSnap?.exists?.()?normalizeScheduleRowsQuran(scheduleSnap.val()):[];
-      await refreshAutoQuranClasses(scheduleRows);
+      dataKelasCloud=window.CAHAYA_MASTER_DATA?.santriByClass||window.dataSantri||{};
       await ensureTahfizMeta();
-    }catch(e){console.error("Gagal memuat master/jadwal:",e)}
+      await refreshAutoQuranClasses(cacheJadwalQuran);
+    }catch(e){console.error("Gagal memuat data lokal Al-Qur'an:",e)}
     document.getElementById('loadingOverlay').style.display='none';
   });
 
@@ -2029,6 +2037,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     if(program!=='Murojaah'){document.getElementById('tfzJenisMurojaah').value='';document.querySelectorAll('[data-muro-type]').forEach(btn=>btn.classList.remove('active'))}
     document.getElementById('statProgram').textContent=program;
     if(program==='Murojaah'){showQuranScene('murojaah');return;}
+    if(program==='Tahfiz') await ensureTahfizTargets();
     showQuranScene('workspace');await renderSantriCards();
   };
   window.selectMurojaahType = async type => {
@@ -2050,17 +2059,9 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     container.innerHTML =
       '<div class="initial-state"><div><div class="initial-state-icon">⏳</div><strong>Memuat lembar setoran</strong><span>Mengambil capaian dan riwayat setoran seluruh santri.</span></div></div>';
 
-    let preloadedDb = {};
-    try {
-      await ensureTahfizMeta();
-      const snap = await get(recentTahfizQuery());
-      preloadedDb = snap.exists() ? snap.val() : {};
-      simpanCacheSetoran(preloadedDb);
-    } catch(e) {
-      console.error("DB Fetch Error:", e);
-      cacheSetoranSiap = false;
-    }
-
+    // v151: kartu dibuka langsung dari data lokal. Riwayat Firebase hanya dimuat
+    // untuk santri yang benar-benar dibuka, bukan ratusan/seribuan setoran sekaligus.
+    const preloadedDb = null;
     container.innerHTML = '';
     const todayStr = localDateKey();
 
@@ -2074,7 +2075,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
       const hariEfektifQuran = countEffectiveQuranDays(kelas);
 
       const cardHtml = `
-        <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal" data-kelas="${escapeHtml(kelas)}">
+        <div class="santri-card" id="card_${safeId}" style="background-color: ${theme.bg}; border-left: 6px solid ${theme.border};" data-mode="tunggal" data-kelas="${escapeHtml(kelas)}" data-nama="${namaHtml}" data-history-loaded="0">
           
           <div class="santri-card-header" onclick="toggleCard('${safeId}')">
             <h3>${i+1}. ${namaHtml}<span class="class-mini-quran">${escapeHtml(kelas)}</span></h3>
@@ -2195,7 +2196,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
       setModeCard('tunggal', safeId);
       terapkanModeProgramCard(safeId, prog);
       siapkanBarisTahsinAwal(safeId);
-      fetchRiwayatSantri(nama, safeId, preloadedDb);
+      const badge=document.getElementById(`badge_info_${safeId}`);if(badge)badge.innerText='Buka untuk melihat riwayat';
       updateTargetTahfizInfo(safeId);
     });
   };
@@ -2312,8 +2313,16 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     if (predEl) predEl.value = predikat;
   };
 
-  window.toggleCard = (safeId) => {
-    document.getElementById(`card_${safeId}`).classList.toggle('card-open');
+  window.toggleCard = async (safeId) => {
+    const card=document.getElementById(`card_${safeId}`);if(!card)return;
+    const opening=!card.classList.contains('card-open');
+    card.classList.toggle('card-open');
+    if(opening&&card.dataset.historyLoaded!=='1'){
+      card.dataset.historyLoaded='loading';
+      const nama=card.dataset.nama||'';
+      await window.fetchRiwayatSantri(nama,safeId,null);
+      card.dataset.historyLoaded='1';
+    }
   };
 
   window.setModeCard = (mode, safeId) => {
@@ -2543,8 +2552,10 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
       else { const hasilPush=await push(ref(db,'cahaya_app/setoran_tahfiz'),payload); recordId=hasilPush.key; cacheSetoranTahfiz[hasilPush.key]=payload; }
       const waliKey = normalizeStudentKey(nama);
       if(waliKey && recordId) await update(ref(db,`cahaya_app/wali_index/${waliKey}/tahfiz/${recordId}`),payload);
-      if(waliKey) delete riwayatAllCache[waliKey];
-      simpanCacheSetoran(cacheSetoranTahfiz); window.batalEditCard(safeId); await window.fetchRiwayatSantri(nama,safeId,cacheSetoranTahfiz);
+      if(waliKey){delete riwayatAllCache[waliKey];try{sessionStorage.removeItem(`cahaya:tahfiz:history:${waliKey}`)}catch(_){}}
+      simpanCacheSetoran(cacheSetoranTahfiz); window.batalEditCard(safeId);
+      const savedCard=document.getElementById(`card_${safeId}`);if(savedCard){savedCard.dataset.historyLoaded='0';savedCard.classList.remove('card-open');}
+      const badge=document.getElementById(`badge_info_${safeId}`);if(badge)badge.innerText='Data tersimpan • buka untuk riwayat';
       if(window.showPageToast) window.showPageToast(
         editId ? (isTahsin?'Talaqqi diperbarui':isMurojaah?'Muroja’ah diperbarui':'Setoran diperbarui') : (isTahsin?'Talaqqi tersimpan':isMurojaah?'Muroja’ah tersimpan':'Setoran tersimpan'),
         `Data ${nama} berhasil disimpan${isTahsin ? '.' : ` dengan ${barisMeta.baris || 0} baris yang diisi manual oleh guru.`}`
@@ -2563,18 +2574,25 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
 
     try {
       let dataObj = preloadedData;
+      const waliKey=normalizeStudentKey(nama);
       if (dataObj === null) {
-        if (cacheSetoranSiap) {
-          dataObj = cacheSetoranTahfiz;
-        } else {
-          const snapshot = await get(recentTahfizQuery());
-          dataObj = snapshot.exists() ? snapshot.val() : {};
-          simpanCacheSetoran(dataObj);
+        let rows=riwayatAllCache[waliKey];
+        if(!rows){
+          const ck=`cahaya:tahfiz:history:${waliKey}`;
+          try{const c=JSON.parse(sessionStorage.getItem(ck)||'null');if(c&&Date.now()-c.t<10*60*1000)rows=c.v||[]}catch(_){}
+          if(!rows){
+            const snapshot=await get(ref(db,`cahaya_app/wali_index/${waliKey}/tahfiz`));
+            const obj=snapshot.exists()?snapshot.val()||{}:{};
+            rows=Object.entries(obj).map(([id,r])=>({id,...r}));
+            try{sessionStorage.setItem(ck,JSON.stringify({t:Date.now(),v:rows}))}catch(_){}
+          }
+          riwayatAllCache[waliKey]=rows;
         }
+        indexSetoranPerSantri[nama]=rows;
+        dataObj={};
+      } else if (dataObj !== cacheSetoranTahfiz) {
+        bangunIndexSetoran(dataObj);
       }
-
-      // Pakai indeks nama agar tidak memindai seluruh database pada setiap card.
-      if (dataObj !== cacheSetoranTahfiz) bangunIndexSetoran(dataObj);
       const programAktif = document.getElementById('tfzProgram').value;
       const semuaRiwayatSantri = (indexSetoranPerSantri[nama] || []).filter(r => !r.program || r.program === programAktif);
       const riwayatBulanIni = [];
@@ -2767,10 +2785,10 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
         await remove(ref(db, `cahaya_app/setoran_tahfiz/${idNode}`));
         const waliKey = normalizeStudentKey(nama);
         if(waliKey) await remove(ref(db,`cahaya_app/wali_index/${waliKey}/tahfiz/${idNode}`));
-        if(waliKey) delete riwayatAllCache[waliKey];
+        if(waliKey){delete riwayatAllCache[waliKey];try{sessionStorage.removeItem(`cahaya:tahfiz:history:${waliKey}`)}catch(_){}}
         delete cacheSetoranTahfiz[idNode];
         simpanCacheSetoran(cacheSetoranTahfiz);
-        window.fetchRiwayatSantri(nama, safeId, cacheSetoranTahfiz);
+        window.fetchRiwayatSantri(nama, safeId, null);
         if (window.showPageToast) {
           window.showPageToast("Setoran dihapus", `Riwayat setoran ${nama} berhasil dihapus.`, "warning");
         }
@@ -2949,6 +2967,6 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
 </script>
 
 
-  <script src="../js/cahaya-responsive-v24.js?v=42" defer></script>
+  <script src="../js/cahaya-responsive-v24.js?v=151" defer></script>
 </body>
 </html>

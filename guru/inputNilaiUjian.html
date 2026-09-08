@@ -10,7 +10,6 @@
   <title>CAHAYA APP - Input Nilai Ujian Bulanan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
-  <link rel="stylesheet" href="guru-theme-v150.css?v=150" />
 
   <style>
     * { box-sizing: border-box; }
@@ -930,7 +929,8 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 </style>
 
   <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
-<link rel="stylesheet" href="../css/guru-director-theme-v147.css?v=147"></head>
+  <link rel="stylesheet" href="guru-theme-v151.css?v=151">
+</head>
 <body class="cahaya-guru-executive">
 
 <div id="loadingOverlay">
@@ -1551,6 +1551,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
       guru,
       guruKode: String(teacherCodeAktif || "").trim().toUpperCase(),
       guruKey: String(teacherCodeAktif || "").trim().toUpperCase() || normalizeTeacherIdentity(guru),
+      kkm: 70,
       kelas,
       kelasList
     };
@@ -1579,6 +1580,16 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
 
   function scoreStudentKey(name, className = "") {
     return stableKey(`${className}|${name}`);
+  }
+
+  function guruRingkasPath(params = currentExamParams()) {
+    const teacherNode = stableKey(String(params.guruKode || params.guruKey || params.guru || 'guru'));
+    const yearNode = stableKey(String(params.tahun || '2026/2027'));
+    const periodNode = stableKey(String(params.periode || params.bulan || 'periode'));
+    return `cahaya_app/guru_nilai_ringkas/${teacherNode}/${yearNode}/${periodNode}`;
+  }
+  function guruRingkasKey(name, className, subject) {
+    return stableKey(`${className}|${name}|${subject}`);
   }
 
   function scoreIndexPath(params = currentExamParams()) {
@@ -2008,6 +2019,12 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         if (monthly) {
           const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
           if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordKey}`] = finalData;
+          const ringkasKey=guruRingkasKey(studentName,className,params.mapel);
+          updates[`${guruRingkasPath(params)}/${ringkasKey}`]={
+            namaSantri:studentName,kelas:className,mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||70),
+            periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
+            statusInput:finalData.status_input||'',statusNilai:finalData.status_nilai||'',recordKey,updatedAt:nowIso
+          };
         }
         nextIndexRecords[studentKey] = indexData;
         changedRows.push({ row, recordKey, dbPath, studentKey });
@@ -2098,6 +2115,12 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
         if (monthly) {
           const waliKey = String(row.dataset.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
           if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${item.recordKey}`] = finalData;
+          const ringkasKey=guruRingkasKey(row.dataset.nama,row.dataset.kelas||'',params.mapel);
+          updates[`${guruRingkasPath(params)}/${ringkasKey}`]={
+            namaSantri:row.dataset.nama,kelas:row.dataset.kelas||'',mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||70),
+            periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
+            statusInput:'lengkap',statusNilai:'FINAL',recordKey:item.recordKey,updatedAt:nowIso
+          };
         }
       }
       updates[scoreFinalPath(params)] = {
@@ -2128,7 +2151,7 @@ body.c53-score-focus .exam-hero,body.c53-score-focus #examWizard{display:none!im
   };
 </script>
 
-  <script src="../js/cahaya-responsive-v24.js?v=42" defer></script>
-<button type="button" onclick="location.href='../pendidikan/tindak-lanjut-akademik.html'" style="position:fixed;right:16px;bottom:18px;z-index:9999;border:0;border-radius:999px;padding:11px 15px;background:#173f78;color:#fff;font-weight:900;box-shadow:0 10px 28px rgba(23,63,120,.25);cursor:pointer">🎓 Tindak Lanjut Akademik</button>
+  <script src="../js/cahaya-responsive-v24.js?v=151" defer></script>
+<button type="button" onclick="location.href='tindak-lanjut.html'" style="position:fixed;right:16px;bottom:18px;z-index:9999;border:0;border-radius:999px;padding:11px 15px;background:#173f78;color:#fff;font-weight:900;box-shadow:0 10px 28px rgba(23,63,120,.25);cursor:pointer">🎯 Tindak Lanjut</button>
 </body>
 </html>
