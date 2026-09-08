@@ -718,6 +718,12 @@
       border: 0;
     }
 
+    .cahaya-page-frame {
+      width:100%; min-height:0; flex:1; position:relative; z-index:1;
+      background:transparent; border:0;
+    }
+    .cahaya-frame-hidden { display:none !important; }
+
     /* =========================================================
        OVERLAY
        ========================================================= */
@@ -2403,18 +2409,18 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
       <div class="menu-group">
         <div class="group-label">Akademik (Guru)</div>
 
-        <a class="nav-item menu-akses" id="menu-absen-guru" style="display: none;" onclick="loadPage('guru/absenguru.html?v=147', this)">📍 Absen Guru</a>
+        <a class="nav-item menu-akses" id="menu-absen-guru" style="display: none;" onclick="loadPage('guru/absenguru.html?v=149', this)">📍 Absen Guru</a>
 
-        <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html?v=147', this)">📋 Presensi Santri</a>
+        <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html?v=149', this)">📋 Presensi Santri</a>
 
-        <a class="nav-item menu-akses" id="menu-guru-menulis" style="display: none;" onclick="loadPage('guru/gurumenulis.html?v=147', this)">✍️ Tulis Materi</a>
-        <a class="nav-item menu-akses" id="menu-kalender-materi" style="display: none;" onclick="loadPage('guru/capaian-materi.html?v=147', this)">✅ Capaian Materi</a>
-        <a class="nav-item menu-akses" id="menu-kpi-guru" style="display: none;" onclick="loadPage('pendidikan/kpi-guru.html?v=147', this)">📊 KPI Guru</a>
+        <a class="nav-item menu-akses" id="menu-guru-menulis" style="display: none;" onclick="loadPage('guru/gurumenulis.html?v=149', this)">✍️ Tulis Materi</a>
+        <a class="nav-item menu-akses" id="menu-kalender-materi" style="display: none;" onclick="loadPage('guru/capaian-materi.html?v=149', this)">📚 Materi Pembelajaran</a>
+        <a class="nav-item menu-akses" id="menu-kpi-guru" style="display: none;" onclick="loadPage('pendidikan/kpi-guru.html?v=149', this)">📊 KPI Guru</a>
 
-        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html?v=147', this)">📖 Tahsin & Tahfiz</a>
-        <a class="nav-item menu-akses" id="menu-laporan-murojaah" style="display: none;" onclick="loadPage('guru/lapor-pelanggaran.html?v=147', this)">⚠️ Lapor Pelanggaran</a>
+        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html?v=149', this)">📖 Tahsin & Tahfiz</a>
+        <a class="nav-item menu-akses" id="menu-laporan-murojaah" style="display: none;" onclick="loadPage('guru/lapor-pelanggaran.html?v=149', this)">⚠️ Lapor Pelanggaran</a>
 
-        <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html?v=147', this)">📝 Nilai Ujian</a>
+        <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html?v=149', this)">📝 Nilai Ujian</a>
       </div>
 
       <div class="menu-group">
@@ -2431,7 +2437,7 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
       <div class="menu-group">
         <div class="group-label">Pusat Asesmen</div>
         <a class="nav-item menu-akses" id="menu-asesmen-naqib" style="display: none;" onclick="loadPage('pusat-asesmen/naqib.html', this)">🧘 Asesmen Mandiri Naqib</a>
-        <a class="nav-item menu-akses" id="menu-asesmen-guru" style="display: none;" onclick="loadPage('pusat-asesmen/guru.html?v=147', this)">🧘 Self Asesmen</a>
+        <a class="nav-item menu-akses" id="menu-asesmen-guru" style="display: none;" onclick="loadPage('pusat-asesmen/guru.html?v=149', this)">🧘 Self Asesmen</a>
         <a class="nav-item menu-akses" id="menu-asesmen-santri" style="display: none;" onclick="loadPage('pusat-asesmen/santri.html?v=59', this)">📊 Asesmen CAHAYA Santri</a>
         <a class="nav-item menu-akses" id="menu-pantau-asesmen" style="display: none;" onclick="loadPage('pembinaan/pantau-asesmen.html?v=84', this)">📈 Pantau Asesmen CAHAYA</a>
       </div>
@@ -2569,9 +2575,9 @@ function getMobileUtilityItems() {
   }
   if (active === 'guru') {
     return [
-      { id:'menu-kalender-pendidikan', label:'Jadwal', icon:mobileUtilityIcon.calendar },
-      { id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.homeDirector },
-      { id:'guru-absen-quick', label:'Absen Guru', icon:mobileUtilityIcon.scan, center:true },
+      { id:'menu-kalender-pendidikan', label:'Kaldik', icon:mobileUtilityIcon.calendar },
+      { id:'guru-absen-quick', label:'Absen Guru', icon:mobileUtilityIcon.scan },
+      { id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.homeDirector, center:true },
       { id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' },
       { id:'utility-menu', label:'Lainnya', icon:mobileUtilityIcon.menu }
     ];
@@ -2625,7 +2631,7 @@ function openMobileShortcut(menuId) {
       const fn = frame?.contentWindow?.openScheduleModal;
       if (typeof fn === 'function') { fn('attendance'); return; }
     } catch(e) { console.warn(e); }
-    loadPage('home-guru.html?v=147&openSchedule=1', document.getElementById('menu-home'));
+    loadPage('home-guru.html?v=149&openSchedule=1', document.getElementById('menu-home'));
     return;
   }
   if (menuId === 'utility-menu') { toggleSidebar(); return; }
@@ -3207,6 +3213,34 @@ function sinkronkanBadgePintasanMobile() {
     // Samakan struktur sesi lama dan baru sejak halaman dibuka.
     terapkanProfilAktif(pUserSafe);
 
+    // V149: Guru tidak perlu menunggu sinkronisasi Firestore untuk melihat Beranda.
+    // Hak akses inti dibangun dari sesi lokal yang sudah tervalidasi saat login;
+    // sinkronisasi server tetap berjalan di belakang layar dan dapat memperbarui profil.
+    function bootstrapGuruInstantWorkspace() {
+      const active = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
+      if (active !== 'guru') return false;
+      const ids = [
+        'menu-home','menu-kalender-pendidikan','menu-absen-guru','menu-absen-kbm',
+        'menu-guru-menulis','menu-kalender-materi','menu-tahfiz','menu-laporan-murojaah',
+        'menu-nilai','menu-asesmen-guru','menu-kpi-guru','menu-chat','menu-profil'
+      ];
+      document.getElementById('dynamicMenu').innerHTML = allMenuHTML;
+      authorizedMenuIds = new Set(ids);
+      authorizationReady = true;
+      document.querySelectorAll('.menu-group').forEach(group => group.style.display='none');
+      document.querySelectorAll('#dynamicMenu .menu-akses').forEach(menu => {
+        const ok = authorizedMenuIds.has(menu.id);
+        menu.style.display = ok ? 'flex' : 'none';
+        if (ok) menu.closest('.menu-group')?.style && (menu.closest('.menu-group').style.display='block');
+      });
+      organizeSidebarByRole();
+      terapkanOtorisasiFiturTambahan();
+      renderMobileBottomNav();
+      bukaHalamanAwalYangDiizinkan();
+      return true;
+    }
+    requestAnimationFrame(() => bootstrapGuruInstantWorkspace());
+
     function kirimProfilKeFrame() {
       if (
         cahayaLogoutInProgress ||
@@ -3389,7 +3423,7 @@ function sinkronkanBadgePintasanMobile() {
           hideCahayaPageLoader();
           return;
         }
-        if (homeMenu) { loadPage('home-guru.html?v=147', homeMenu); return; }
+        if (homeMenu) { loadPage('home-guru.html?v=149', homeMenu); return; }
       }
       const deepLinkOperasional = new URLSearchParams(window.location.search).get("operasional");
       if (deepLinkOperasional && bolehAksesMenu("menu-dashboard-operasional")) {
@@ -3486,10 +3520,20 @@ function sinkronkanBadgePintasanMobile() {
 
         let roleMenuRules = roleMenuRulesCache;
         if (!roleMenuRules) {
+          try {
+            const cached = JSON.parse(localStorage.getItem('cahayaRoleMenuRulesCache') || 'null');
+            if (cached && Date.now() - Number(cached.t||0) < 21600000 && cached.v) roleMenuRules = cached.v;
+          } catch (_) {}
+        }
+        // Untuk workspace Guru, menu inti sudah pasti dari kebijakan aplikasi sehingga
+        // dokumen role_menus tidak perlu menjadi blocking request pada setiap buka app.
+        if (!roleMenuRules && ensureActiveRole() === 'guru') roleMenuRules = {};
+        if (!roleMenuRules) {
           const roleMenuDoc = await dbFS.collection("settings").doc("role_menus").get();
           roleMenuRules = roleMenuDoc.exists ? roleMenuDoc.data() : {};
-          roleMenuRulesCache = roleMenuRules;
+          try { localStorage.setItem('cahayaRoleMenuRulesCache', JSON.stringify({t:Date.now(),v:roleMenuRules})); } catch (_) {}
         }
+        roleMenuRulesCache = roleMenuRules;
         const gabunganMenu = [];
         const rolesUntukMenu = getActiveViewRoles();
 
@@ -3731,6 +3775,112 @@ function sinkronkanBadgePintasanMobile() {
     }
     window.CahayaLoading = { show: showCahayaPageLoader, hide: hideCahayaPageLoader };
 
+    // =========================================================
+    // V149 FAST NAVIGATION + LOW-BANDWIDTH PAGE CACHE
+    // Halaman yang sudah dibuka disimpan sebagai iframe hidup. Saat kembali,
+    // halaman tidak dimuat ulang sehingga query Firebase dan state form tidak berulang.
+    // =========================================================
+    const CAHAYA_PAGE_CACHE_MAX = 10;
+    const cahayaPageFrames = new Map();
+
+    function cahayaPageKey(url, role='') {
+      try {
+        const u = new URL(url, location.href);
+        // parameter versi/cache-buster tidak membuat halaman dianggap baru
+        ['v','_','ts','cacheBust'].forEach(k => u.searchParams.delete(k));
+        // openSchedule adalah action pada Beranda Guru, bukan identitas halaman
+        if (u.pathname.endsWith('/home-guru.html') || u.pathname.endsWith('home-guru.html')) {
+          u.searchParams.delete('openSchedule');
+        }
+        const pairs = [...u.searchParams.entries()].sort((a,b)=>a[0].localeCompare(b[0]) || String(a[1]).localeCompare(String(b[1])));
+        const qs = new URLSearchParams(pairs).toString();
+        return `${role}|${u.pathname}${qs ? '?'+qs : ''}${u.hash || ''}`;
+      } catch (_) { return `${role}|${String(url).replace(/([?&])v=[^&#]*/g,'$1')}`; }
+    }
+
+    function isGuruWorkPage(url='') {
+      try {
+        const path = new URL(url, location.href).pathname;
+        return /\/guru\//.test(path) || /\/pendidikan\/kpi-guru\.html$/.test(path) || /\/pusat-asesmen\/guru\.html$/.test(path);
+      } catch (_) { return false; }
+    }
+
+    function enhanceGuruFrame(frame, url='') {
+      if (!frame || !isGuruWorkPage(url)) return;
+      try {
+        const doc = frame.contentDocument;
+        if (!doc || !doc.head || !doc.body) return;
+        doc.body.classList.add('cahaya-guru-executive');
+        if (!doc.getElementById('cahayaGuruExecutiveTheme')) {
+          const link = doc.createElement('link');
+          link.id = 'cahayaGuruExecutiveTheme';
+          link.rel = 'stylesheet';
+          link.href = new URL('guru/guru-theme-v149.css', location.href).href;
+          doc.head.appendChild(link);
+        }
+      } catch (_) {}
+    }
+
+    function currentContentFrame() { return document.getElementById('contentFrame'); }
+
+    function parkCurrentFrame() {
+      const frame = currentContentFrame();
+      if (!frame) return;
+      const key = frame.dataset.cahayaPageKey || '';
+      const src = String(frame.getAttribute('src') || '');
+      if (!key || !src || src === 'about:blank') return;
+      frame.removeAttribute('id');
+      frame.classList.add('cahaya-page-frame','cahaya-frame-hidden');
+      frame.setAttribute('aria-hidden','true');
+      frame.style.display = 'none';
+      cahayaPageFrames.set(key, {frame, usedAt: Date.now()});
+    }
+
+    function trimPageFrameCache() {
+      if (cahayaPageFrames.size <= CAHAYA_PAGE_CACHE_MAX) return;
+      const entries = [...cahayaPageFrames.entries()].sort((a,b)=>(a[1].usedAt||0)-(b[1].usedAt||0));
+      while (entries.length && cahayaPageFrames.size > CAHAYA_PAGE_CACHE_MAX) {
+        const [key, item] = entries.shift();
+        try { item.frame.remove(); } catch (_) {}
+        cahayaPageFrames.delete(key);
+      }
+    }
+
+    function activateCachedFrame(key, menuId, url) {
+      const cached = cahayaPageFrames.get(key);
+      if (!cached?.frame) return false;
+      parkCurrentFrame();
+      cahayaPageFrames.delete(key);
+      const frame = cached.frame;
+      frame.id = 'contentFrame';
+      frame.classList.remove('cahaya-frame-hidden');
+      frame.removeAttribute('aria-hidden');
+      frame.style.display = '';
+      frame.dataset.cahayaPageKey = key;
+      frame.dataset.cahayaUrl = url;
+      enhanceGuruFrame(frame, url);
+      try {
+        frame.contentWindow?.dispatchEvent(new CustomEvent('cahaya:resume', {detail:{url, menuId, resumedAt:Date.now()}}));
+        frame.contentWindow?.postMessage({type:'CAHAYA_PAGE_RESUME',url,menuId}, location.origin);
+      } catch (_) {}
+      kirimProfilKeFrame();
+      hideCahayaPageLoader();
+      return true;
+    }
+
+    // Cache data ringan lintas halaman. Tahap berikutnya setiap modul Guru akan memakai cache ini.
+    window.CahayaDataCache = window.CahayaDataCache || {
+      _m:new Map(),
+      get(key, ttl=300000){
+        const x=this._m.get(key); if(x && Date.now()-x.t<ttl) return x.v;
+        try{const y=JSON.parse(sessionStorage.getItem('cahaya:data:'+key)||'null');if(y&&Date.now()-y.t<ttl){this._m.set(key,y);return y.v}}catch(_){}
+        return null;
+      },
+      set(key,v,persist=false){const x={t:Date.now(),v};this._m.set(key,x);try{(persist?localStorage:sessionStorage).setItem('cahaya:data:'+key,JSON.stringify(x))}catch(_){}return v;},
+      async getOrLoad(key, loader, ttl=300000){const c=this.get(key,ttl);if(c!==null)return c;const v=await loader();return this.set(key,v);},
+      clear(prefix=''){for(const k of [...this._m.keys()])if(!prefix||k.startsWith(prefix))this._m.delete(k)}
+    };
+
     function loadPage(url, el) {
       const menuElement = (el && el.classList && el.classList.contains('menu-akses'))
         ? el
@@ -3739,7 +3889,7 @@ function sinkronkanBadgePintasanMobile() {
       const menuId = menuElement?.id || "";
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
       if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=118';
-      if (menuId === 'menu-home' && activeRoleForPage === 'guru') url = 'home-guru.html?v=147';
+      if (menuId === 'menu-home' && activeRoleForPage === 'guru') url = 'home-guru.html?v=149';
       const premiumHome = menuId === 'menu-home' && (activeRoleForPage === 'direktur' || activeRoleForPage === 'guru');
       document.body.classList.toggle('director-home-shell', premiumHome);
       document.body.classList.toggle('director-role-shell', activeRoleForPage === 'direktur' || activeRoleForPage === 'guru');
@@ -3753,30 +3903,49 @@ function sinkronkanBadgePintasanMobile() {
       if (menuElement.classList.contains('nav-item')) menuElement.classList.add('active');
       setMobileBottomActive(menuId);
 
-      const frame = document.getElementById('contentFrame');
-      // CAHAYA_V95_SAME_PAGE_GUARD: jangan reload iframe yang sama dan mengulang seluruh query data.
-      try {
-        const cur = String(frame.getAttribute('src') || '');
-        const curPath = cur ? new URL(cur, location.href).pathname : '';
-        const nextPath = new URL(url, location.href).pathname;
-        if (curPath && curPath === nextPath) {
-          document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-          if (menuElement?.classList?.contains('nav-item')) menuElement.classList.add('active');
-          setMobileBottomActive(menuId);
-          hideCahayaPageLoader();
-          return;
+      const key = cahayaPageKey(url, activeRoleForPage);
+      const activeFrame = currentContentFrame();
+      if (activeFrame?.dataset?.cahayaPageKey === key) {
+        enhanceGuruFrame(activeFrame, url);
+        hideCahayaPageLoader();
+        return;
+      }
+
+      if (activateCachedFrame(key, menuId, url)) {
+        document.getElementById('currentPageTitle').textContent = "CAHAYA APP";
+        if (window.innerWidth <= 900) {
+          document.getElementById('mainSidebar').classList.remove('open');
+          document.body.classList.remove('mobile-sidebar-open');
         }
-      } catch (_) {}
-      frame.removeAttribute('srcdoc');
+        document.querySelector('.mobile-menu-overlay')?.classList.remove('open');
+        return;
+      }
+
+      // Halaman baru: simpan halaman lama tanpa menghancurkan state/data.
+      const previousFrame = currentContentFrame();
+      parkCurrentFrame();
+      // iframe awal about:blank tidak perlu dipertahankan.
+      if (previousFrame && previousFrame.id === 'contentFrame') {
+        try { previousFrame.remove(); } catch (_) {}
+      }
+      const holder = document.querySelector('main.main-content');
+      const frame = document.createElement('iframe');
+      frame.id = 'contentFrame';
+      frame.className = 'cahaya-page-frame';
+      frame.title = 'Konten CAHAYA APP';
+      frame.dataset.cahayaPageKey = key;
+      frame.dataset.cahayaUrl = url;
+      holder.appendChild(frame);
       showCahayaPageLoader("Menyiapkan halaman...");
 
       frame.onload = () => {
+        enhanceGuruFrame(frame, url);
         kirimProfilKeFrame();
         hideCahayaPageLoader();
       };
       frame.onerror = () => hideCahayaPageLoader();
-
       frame.src = url;
+      trimPageFrameCache();
 
       document.getElementById('currentPageTitle').textContent = "CAHAYA APP";
 
@@ -3784,7 +3953,7 @@ function sinkronkanBadgePintasanMobile() {
         document.getElementById('mainSidebar').classList.remove('open');
         document.body.classList.remove('mobile-sidebar-open');
       }
-      document.querySelector('.mobile-menu-overlay').classList.remove('open');
+      document.querySelector('.mobile-menu-overlay')?.classList.remove('open');
     }
 
     // V95 hemat bandwidth: chat dan master user baru dimuat ketika Pesan dibuka.
