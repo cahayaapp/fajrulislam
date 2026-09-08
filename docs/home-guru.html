@@ -40,14 +40,171 @@ button{font:inherit}.app{width:min(1060px,100%);margin:0 auto;padding:18px 18px 
 @media(max-width:390px),(max-height:700px){
   .app{padding:7px 10px;grid-template-rows:38px 104px minmax(164px,1fr) 53px minmax(156px,1fr) 58px;gap:6px}.brand-row{height:38px}.brand img{width:35px;height:35px}.brand-copy strong{font-size:.94rem}.brand-copy small{font-size:.45rem}.icon-btn,.avatar{width:33px;height:33px}.hero-greeting{height:104px;padding-top:10px}.hero-name{font-size:1.12rem}.hero-quote{margin-top:5px}.summary-grid{gap:6px}.summary-card{padding:8px 9px}.summary-top{gap:7px;padding-right:18px}.summary-icon{width:34px;height:34px;flex-basis:34px}.summary-title{font-size:.50rem;padding-top:2px;white-space:nowrap}.metric-value{left:50px;top:31px;font-size:1.26rem}.metric-sub{left:50px;right:10px;bottom:8px;font-size:.40rem}.score-section{height:53px}.menu-section{grid-template-rows:19px minmax(0,1fr);gap:5px}.division-monitor-grid{gap:5px}.division-monitor-icon{width:28px;height:28px}.division-monitor-name{font-size:.41rem}.activity-card{height:58px;grid-template-columns:32px minmax(0,1fr) 48px 80px}.activity-icon{width:32px;height:32px}.activity-art{width:48px;height:40px}.activity-note{font-size:.34rem}
 }
-.score-card:nth-child(2) .score-icon svg{fill:currentColor;stroke:currentColor}</style>
+.score-card:nth-child(2) .score-icon svg{fill:currentColor;stroke:currentColor}
+
+/* V157 — Guru Home: summary cards anti-overlap + premium menu + stronger brand. */
+.brand-copy{display:flex;align-items:center;min-height:40px}
+.brand-copy strong{font-size:1.22rem!important;line-height:1!important;letter-spacing:-.045em!important;white-space:nowrap}
+.brand-copy small{display:none!important}
+
+@media(max-width:900px){
+  .brand{gap:9px!important}
+  .brand img{width:40px!important;height:40px!important}
+  .brand-copy{min-height:40px}
+  .brand-copy strong{font-size:1.16rem!important}
+
+  /* Grid intrinsik: judul, angka, dan keterangan tidak lagi memakai koordinat absolut. */
+  .summary-card{
+    display:grid!important;
+    grid-template-columns:39px minmax(0,1fr) 15px!important;
+    grid-template-rows:auto auto minmax(0,1fr)!important;
+    column-gap:9px!important;
+    row-gap:0!important;
+    align-items:center!important;
+    padding:10px 10px!important;
+  }
+  .summary-top{display:contents!important}
+  .summary-icon{
+    grid-column:1!important;
+    grid-row:1 / 4!important;
+    align-self:center!important;
+    width:39px!important;
+    height:39px!important;
+    flex:0 0 39px!important;
+    border-radius:12px!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 5px 12px rgba(0,0,0,.04)!important;
+  }
+  .summary-title{
+    grid-column:2!important;
+    grid-row:1!important;
+    position:static!important;
+    align-self:end!important;
+    min-width:0!important;
+    max-width:100%!important;
+    padding:0!important;
+    margin:0 0 1px!important;
+    font-size:.56rem!important;
+    line-height:1.12!important;
+    font-weight:850!important;
+    letter-spacing:-.012em!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .metric-value{
+    grid-column:2!important;
+    grid-row:2!important;
+    position:static!important;
+    left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;
+    align-self:center!important;
+    min-width:0!important;
+    margin:1px 0 0!important;
+    font-size:1.43rem!important;
+    line-height:.96!important;
+    font-weight:950!important;
+    letter-spacing:-.045em!important;
+    white-space:nowrap!important;
+  }
+  .metric-sub{
+    grid-column:2!important;
+    grid-row:3!important;
+    position:static!important;
+    left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;
+    align-self:end!important;
+    min-width:0!important;
+    margin:3px 0 0!important;
+    font-size:.43rem!important;
+    line-height:1.12!important;
+    font-weight:680!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .summary-chevron{
+    grid-column:3!important;
+    grid-row:1 / 4!important;
+    position:static!important;
+    right:auto!important;top:auto!important;
+    align-self:start!important;
+    justify-self:end!important;
+    width:15px!important;
+    height:15px!important;
+    margin-top:1px!important;
+  }
+
+  /* Menu guru: putih lembut, depth halus, ikon berwarna, tetap ringan. */
+  .division-monitor-card.simple{
+    position:relative!important;
+    isolation:isolate!important;
+    overflow:hidden!important;
+    border:1px solid rgba(211,225,241,.92)!important;
+    background:linear-gradient(145deg,rgba(255,255,255,.98) 0%,rgba(255,255,255,.86) 42%,var(--dsoft,#f2f7ff) 100%)!important;
+    box-shadow:0 7px 18px rgba(20,67,126,.065),inset 0 1px 0 rgba(255,255,255,.98)!important;
+    border-radius:15px!important;
+    gap:6px!important;
+    transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease!important;
+  }
+  .division-monitor-card.simple::before{
+    content:"";
+    position:absolute;
+    z-index:-1;
+    width:54px;height:54px;
+    right:-18px;top:-20px;
+    border-radius:50%;
+    background:var(--dcolor,#2686e8);
+    opacity:.075;
+  }
+  .division-monitor-card.simple::after{
+    content:"";
+    position:absolute;
+    left:12%;right:12%;bottom:0;
+    height:2px;
+    border-radius:99px 99px 0 0;
+    background:linear-gradient(90deg,transparent,var(--dcolor,#2686e8),transparent);
+    opacity:.24;
+  }
+  .division-monitor-card.simple:active{transform:scale(.975)!important;box-shadow:0 3px 10px rgba(20,67,126,.07)!important}
+  .division-monitor-icon{
+    width:34px!important;height:34px!important;
+    border-radius:11px!important;
+    background:linear-gradient(145deg,#fff,rgba(255,255,255,.74))!important;
+    border:1px solid rgba(255,255,255,.98)!important;
+    box-shadow:0 5px 12px rgba(27,78,137,.09),inset 0 0 0 1px rgba(220,232,246,.42)!important;
+  }
+  .division-monitor-icon svg{width:22px!important;height:22px!important;stroke-width:1.9!important}
+  .division-monitor-name{
+    font-size:.46rem!important;
+    line-height:1.14!important;
+    font-weight:850!important;
+    letter-spacing:-.008em!important;
+    color:#123f78!important;
+  }
+}
+
+@media(max-width:390px),(max-height:700px){
+  .brand img{width:36px!important;height:36px!important}
+  .brand-copy{min-height:36px}
+  .brand-copy strong{font-size:1.05rem!important}
+  .summary-card{grid-template-columns:35px minmax(0,1fr) 13px!important;column-gap:8px!important;padding:8px 9px!important}
+  .summary-icon{width:35px!important;height:35px!important;flex-basis:35px!important}
+  .summary-title{font-size:.50rem!important}
+  .metric-value{font-size:1.28rem!important}
+  .metric-sub{font-size:.39rem!important;margin-top:2px!important}
+  .summary-chevron{width:13px!important;height:13px!important}
+  .division-monitor-card.simple{border-radius:13px!important;gap:4px!important}
+  .division-monitor-icon{width:29px!important;height:29px!important;border-radius:9px!important}
+  .division-monitor-icon svg{width:19px!important;height:19px!important}
+  .division-monitor-name{font-size:.41rem!important}
+}
+
+</style>
 </head>
 <body>
 <main class="app">
   <header class="brand-row">
     <div class="brand">
       <img src="assets/cahaya-app/logo-icon.png?v=54" alt="CAHAYA APP">
-      <div class="brand-copy"><strong>CAHAYA <em>APP</em></strong><small>Ilmu • Akhlak • Masa Depan</small></div>
+      <div class="brand-copy"><strong>CAHAYA <em>APP</em></strong></div>
     </div>
     <div class="top-actions">
       <button class="icon-btn" type="button" onclick="openAttentionModal()" aria-label="Notifikasi"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span class="notify-dot" id="notifyBadge">0</span></button>
