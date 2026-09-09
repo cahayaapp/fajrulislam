@@ -1531,6 +1531,20 @@
   #kbmAttendanceScene[hidden]{display:none!important}
   /* Saat presensi aktif, fokuskan layar pada daftar santri. */
   body.cahaya-guru-executive.cahaya-attendance-active .kbm-hero{display:none!important}
+  .material-picker-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+  .btn-pilih-materi,.btn-target-materi{min-height:44px;border-radius:14px;padding:0 16px;font-weight:900;font-size:.78rem}
+  .btn-pilih-materi{border:0;color:#fff;background:linear-gradient(135deg,#1678e8,#19a9d4);box-shadow:0 8px 18px rgba(22,120,232,.18)}
+  .btn-target-materi{border:1px solid #cfe0f2;color:#1764b0;background:#f8fbff}
+  .material-picker-panel{display:none;margin-top:12px;padding:10px;border:1px solid #dce8f4;border-radius:16px;background:#f8fbff}
+  .material-picker-panel.show{display:grid;gap:8px}
+  .material-choice{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;padding:11px;border:1px solid #dfe9f4;border-radius:13px;background:#fff;cursor:pointer}
+  .material-choice input{width:18px;height:18px;margin:1px 0;accent-color:#1686e8}
+  .material-choice b{display:block;color:#173f70;font-size:.75rem;line-height:1.35}
+  .material-choice small{display:block;margin-top:4px;color:#7488a4;font-size:.63rem;line-height:1.4}
+  .material-choice.completed{opacity:.68;background:#f2faf7}
+  .material-empty{padding:14px;border:1px dashed #adccec;border-radius:13px;color:#607c9d;background:#fff;font-size:.7rem;line-height:1.5;text-align:center}
+  .selected-materials{display:grid;gap:6px;margin-top:10px}
+  .selected-material-chip{padding:8px 10px;border-radius:11px;background:#eaf8f3;color:#167c5c;font-size:.68rem;font-weight:800}
 </style>
 
   <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
@@ -1676,19 +1690,19 @@
         <div class="panel-title-wrap" style="margin-bottom:14px;">
           <div class="panel-icon">📝</div>
           <div>
-            <h3 style="margin:0;color:var(--kbm-navy);font-size:1.05rem;font-weight:900;">Jurnal Mengajar</h3>
-            <p style="margin:4px 0 0;color:var(--kbm-muted);font-size:.76rem;font-weight:650;">Tuliskan pokok materi yang disampaikan hari ini.</p>
+            <h3 style="margin:0;color:var(--kbm-navy);font-size:1.05rem;font-weight:900;">Materi</h3>
+            <p style="margin:4px 0 0;color:var(--kbm-muted);font-size:.76rem;font-weight:650;">Pilih dan centang target materi yang diajarkan pada pertemuan ini.</p>
           </div>
         </div>
-
-        <textarea
-          class="form-control"
-          id="kbmCatatan"
-          rows="4"
-          maxlength="1000"
-          placeholder="Contoh: Bab thaharah — pengertian najis dan cara menyucikannya."
-        ></textarea>
-        <div class="helper-text">Maksimal 1.000 karakter.</div>
+        <input type="hidden" id="kbmCatatan" value="" />
+        <div class="material-picker-actions">
+          <button type="button" class="btn-pilih-materi" id="btnPilihMateri" onclick="toggleMaterialPicker()">✓ Pilih Materi</button>
+          <button type="button" class="btn-target-materi" onclick="bukaTargetMateri()">Atur Target Materi</button>
+        </div>
+        <div class="selected-materials" id="selectedMaterials"></div>
+        <div class="material-picker-panel" id="materialPickerPanel">
+          <div class="material-empty">Pilih jadwal terlebih dahulu untuk memuat target materi.</div>
+        </div>
       </div>
 
       <div class="save-panel">
@@ -1886,6 +1900,12 @@
   ];
   let attendanceStageMode = "AWAL";
   let existingAttendanceByAssignment = new Map();
+  const MATERIAL_TARGET_PATH = "kalender_materi_pembelajaran/ta_2026_2027";
+  const MATERIAL_COMPLETION_PATH = "cahaya_app/capaian_materi_guru";
+  let materialTargetRows = [];
+  let materialCompletionRows = [];
+  let currentMaterialRows = [];
+  let selectedMaterialKeys = new Set();
 
   /* ==========================================================
      JADWAL PELAJARAN 2026/2027
@@ -2242,6 +2262,215 @@
 
   function compactIdentity(value = "") {
     return normalizeIdentity(value).replace(/\s+/g, "");
+  }
+
+  function collectMaterialRows(node, out = []) {
+    if (!node || typeof node !== "object") return out;
+    if (!Array.isArray(node) && node.date && node.subject && String(node.material || "").trim()) {
+      out.push(node);
+      return out;
+    }
+    Object.values(node).forEach(value => collectMaterialRows(value, out));
+    return out;
+  }
+
+  function materialTargetKey(row = {}) {
+    return compactIdentity([
+      row.assignmentId || row.assignmentKey || "",
+      row.sectionId || row.kelas || "",
+      row.subject || row.mapel || "",
+      row.meetingNo || row.date || ""
+    ].join("|"));
+  }
+
+  function materialCompletionId(row = {}) {
+    return `${compactIdentity(teacherCodeAktif || namaGuruAktif() || "guru")}__${materialTargetKey(row)}`.slice(0, 220);
+  }
+
+  function classNumberOf(value = "") {
+    return String(value || "").match(/\d+/)?.[0] || String(value || "").trim();
+  }
+
+  function materialMatchesAssignment(row = {}, assignment = {}) {
+    const sameSubject = normalizeIdentity(row.subject || row.mapel || "") === normalizeIdentity(assignment.subject || "");
+    const sameClass = classNumberOf(row.kelas) === classNumberOf(assignment.classNumber || assignment.className);
+    const rowSection = normalizeIdentity(row.sectionId || row.section || row.unit || row.kelas || "");
+    const assignmentSection = normalizeIdentity(assignment.sectionId || assignment.section || assignment.className || "");
+    const sameSection = !rowSection || !assignmentSection ||
+      (rowSection.includes("putri") === assignmentSection.includes("putri") && rowSection.includes("putra") === assignmentSection.includes("putra"));
+    const rowTeacher = compactIdentity(row.teacher || row.guruKode || row.guru || "");
+    const sameTeacher = !rowTeacher || rowTeacher === compactIdentity(teacherCodeAktif) || rowTeacher === compactIdentity(namaGuruAktif());
+    return sameSubject && sameClass && sameSection && sameTeacher;
+  }
+
+  function isMaterialCompleted(row = {}) {
+    const key = materialTargetKey(row);
+    return materialCompletionRows.some(item => item && item.statusAktif !== false && compactIdentity(item.materialKey || item.idMaterial || item.targetId || "") === key);
+  }
+
+  function selectedMaterials() {
+    return currentMaterialRows.filter(row => selectedMaterialKeys.has(materialTargetKey(row)));
+  }
+
+  function updateSelectedMaterialSummary() {
+    const host = document.getElementById("selectedMaterials");
+    const hidden = document.getElementById("kbmCatatan");
+    const rows = selectedMaterials();
+    if (hidden) hidden.value = rows.map(row => row.material).join(" • ");
+    if (!host) return;
+    host.innerHTML = "";
+    rows.forEach(row => {
+      const chip = document.createElement("div");
+      chip.className = "selected-material-chip";
+      chip.textContent = `✓ ${row.material} • ${row.kelas || "Kelas"}`;
+      host.appendChild(chip);
+    });
+  }
+
+  function renderMaterialPicker() {
+    const panel = document.getElementById("materialPickerPanel");
+    const button = document.getElementById("btnPilihMateri");
+    if (!panel || !button) return;
+    const assignments = daftarJadwalTerpilih(selectedAssignment || getSelectedAssignment());
+    const today = tanggalLokalHariIni();
+    const relevantRows = materialTargetRows.filter(row => assignments.some(assignment => materialMatchesAssignment(row, assignment)));
+    currentMaterialRows = assignments.flatMap(assignment => {
+      const rows = relevantRows
+        .filter(row => materialMatchesAssignment(row, assignment))
+        .filter(row => !isMaterialCompleted(row) || selectedMaterialKeys.has(materialTargetKey(row)))
+        .sort((a, b) => {
+          const dateA = String(a.date || ""), dateB = String(b.date || "");
+          const rankA = dateA === today ? 0 : dateA < today ? 1 : 2;
+          const rankB = dateB === today ? 0 : dateB < today ? 1 : 2;
+          if (rankA !== rankB) return rankA - rankB;
+          if (rankA === 1) return dateB.localeCompare(dateA);
+          return dateA.localeCompare(dateB) || Number(a.meetingNo || 0) - Number(b.meetingNo || 0);
+        });
+      const selected = rows.filter(row => selectedMaterialKeys.has(materialTargetKey(row)));
+      const nearby = rows.filter(row => !selectedMaterialKeys.has(materialTargetKey(row))).slice(0, 6);
+      return [...selected, ...nearby];
+    }).filter((row, index, rows) => rows.findIndex(item => materialTargetKey(item) === materialTargetKey(row)) === index);
+
+    panel.innerHTML = "";
+    if (!assignments.length) {
+      panel.innerHTML = '<div class="material-empty">Pilih jadwal terlebih dahulu untuk memuat target materi.</div>';
+      button.disabled = true;
+      updateSelectedMaterialSummary();
+      return;
+    }
+    button.disabled = false;
+    if (!currentMaterialRows.length) {
+      panel.innerHTML = '<div class="material-empty"><strong>Target materi belum tersedia.</strong><br>Guru wajib membuat target materi untuk kelas dan mapel ini sebelum menyimpan presensi.</div>';
+      updateSelectedMaterialSummary();
+      return;
+    }
+
+    currentMaterialRows.forEach(row => {
+      const key = materialTargetKey(row);
+      const completed = isMaterialCompleted(row);
+      const label = document.createElement("label");
+      label.className = `material-choice${completed ? " completed" : ""}`;
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = key;
+      checkbox.checked = selectedMaterialKeys.has(key) || completed;
+      checkbox.disabled = completed;
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) selectedMaterialKeys.add(key);
+        else selectedMaterialKeys.delete(key);
+        updateSelectedMaterialSummary();
+      });
+      const copy = document.createElement("span");
+      const title = document.createElement("b");
+      title.textContent = row.material;
+      const meta = document.createElement("small");
+      meta.textContent = `${row.subject || "Mapel"} • ${row.kelas || "Kelas"} • Target ${String(row.date || "-").slice(0, 10)}${completed ? " • Sudah tercapai" : ""}`;
+      copy.append(title, meta);
+      label.append(checkbox, copy);
+      panel.appendChild(label);
+    });
+    updateSelectedMaterialSummary();
+  }
+
+  window.toggleMaterialPicker = function() {
+    const panel = document.getElementById("materialPickerPanel");
+    if (!panel) return;
+    panel.classList.toggle("show");
+    renderMaterialPicker();
+  };
+
+  window.bukaTargetMateri = function() {
+    const url = "guru/capaian-materi.html?v=164&mode=target";
+    try {
+      if (PARENT_APP?.loadPage) PARENT_APP.loadPage(url, PARENT_APP.document?.getElementById("menu-kalender-materi"));
+      else location.href = "capaian-materi.html?v=164&mode=target";
+    } catch (_) {
+      location.href = "capaian-materi.html?v=164&mode=target";
+    }
+  };
+
+  async function loadMaterialData() {
+    try {
+      const [targetSnap, completionSnap] = await Promise.all([
+        get(ref(db, MATERIAL_TARGET_PATH)),
+        get(ref(db, MATERIAL_COMPLETION_PATH))
+      ]);
+      materialTargetRows = collectMaterialRows(targetSnap.val() || {});
+      materialCompletionRows = Object.entries(completionSnap.val() || {}).map(([id, value]) => ({ id, ...(value || {}) }));
+    } catch (error) {
+      console.warn("Target materi belum dapat dimuat:", error);
+      materialTargetRows = [];
+      materialCompletionRows = [];
+    }
+    renderMaterialPicker();
+  }
+
+  function validateMaterialRequirement(assignments = []) {
+    const missingTargets = assignments.filter(assignment => !materialTargetRows.some(row => materialMatchesAssignment(row, assignment)));
+    if (missingTargets.length) {
+      showToast(`Target materi belum dibuat untuk ${missingTargets.map(item => item.className).join(", ")}. Buka Atur Target Materi terlebih dahulu.`, "error", "Target materi wajib");
+      document.getElementById("materialPickerPanel")?.classList.add("show");
+      renderMaterialPicker();
+      return false;
+    }
+    const missingSelections = assignments.filter(assignment => !selectedMaterials().some(row => materialMatchesAssignment(row, assignment)));
+    if (missingSelections.length) {
+      showToast(`Centang materi yang diajarkan untuk ${missingSelections.map(item => item.className).join(", ")}.`, "error", "Materi belum dipilih");
+      document.getElementById("materialPickerPanel")?.classList.add("show");
+      renderMaterialPicker();
+      return false;
+    }
+    return true;
+  }
+
+  function materialCompletionUpdates() {
+    const updates = {};
+    const now = new Date().toISOString();
+    selectedMaterials().forEach(row => {
+      const id = materialCompletionId(row);
+      updates[`${MATERIAL_COMPLETION_PATH}/${id}`] = {
+        id,
+        targetId: materialTargetKey(row),
+        materialKey: materialTargetKey(row),
+        teacherKey: compactIdentity(teacherCodeAktif || namaGuruAktif()),
+        teacher: namaGuruAktif(),
+        guruKode: teacherCodeAktif,
+        assignmentId: row.assignmentId || "",
+        assignmentKey: row.assignmentKey || "",
+        kelas: row.kelas || "",
+        subject: row.subject || row.mapel || "",
+        meetingNo: row.meetingNo || "",
+        targetDate: String(row.date || "").slice(0, 10),
+        material: row.material || "",
+        completedDate: tanggalLokalHariIni(),
+        checkedAt: now,
+        updatedAt: now,
+        status: "TERCAPAI",
+        statusAktif: true,
+        source: "Absensi KBM • Pilih Materi"
+      };
+    });
+    return updates;
   }
 
   function kandidatIdentitasGuru() {
@@ -2714,6 +2943,8 @@
     );
 
     updateContextChip();
+    selectedMaterialKeys = new Set();
+    renderMaterialPicker();
     window.tampilkanSantri();
     renderScheduleCards();
     switchKbmScene("attendance");
@@ -3027,7 +3258,7 @@
     // Tampilkan kerangka halaman secepat mungkin. Jadwal lokal dan guru pengganti dimuat setelah UI siap.
     sembunyikanLoading();
     try {
-      const [schedule, replacements] = await Promise.all([loadLiteSchedule(), loadReplacementRowsToday()]);
+      const [schedule, replacements] = await Promise.all([loadLiteSchedule(), loadReplacementRowsToday(), loadMaterialData()]);
       onlineScheduleRows = schedule;
       replacementTeacherRows = replacements;
       loadTeacherScheduleForDate({ notify: true });
@@ -3323,7 +3554,7 @@
     btn.disabled = isLoading;
     btn.innerHTML = isLoading
       ? '<span>⏳</span><span>Menyimpan...</span>'
-      : `<span>💾</span><span>${attendanceStageMode === "FINAL" ? "Finalisasi Absensi" : attendanceStageMode === "FINAL_VIEW" ? "Absensi Sudah Final" : "Simpan Absensi Awal"}</span>`;
+      : `<span>💾</span><span>${attendanceStageMode === "FINAL" ? "Finalisasi Absensi & Nilai" : attendanceStageMode === "FINAL_VIEW" ? "Simpan Nilai & Materi" : "Simpan Absensi Awal"}</span>`;
   }
 
 
@@ -3374,13 +3605,13 @@
     if (h3) h3.textContent = "Izin";
     if (h4) h4.textContent = "Sakit";
     const stageBadge = document.getElementById("absensiStageBadge");
-    if (stageBadge) stageBadge.textContent = mode === "AWAL" ? "Tahap 1 • Absensi Pembukaan" : mode === "FINAL" ? "Tahap 2 • Finalisasi Absensi" : "Absensi • Sudah Final";
+    if (stageBadge) stageBadge.textContent = mode === "AWAL" ? "Tahap 1 • Absensi Pembukaan" : mode === "FINAL" ? "Tahap 2 • Finalisasi Absensi + Nilai" : "Absensi final • Nilai & materi masih dapat diperbarui";
     const markAll = document.getElementById("btnMarkAll");
     if (markAll) { markAll.disabled = mode !== "AWAL"; markAll.textContent = mode === "AWAL" ? "✓ Semua Hadir" : "Finalisasi status tertunda"; }
     const btn = document.getElementById("btnSimpan");
     if (btn) {
-      btn.disabled = mode === "FINAL_VIEW";
-      btn.innerHTML = mode === "FINAL" ? '<span>✅</span><span>Finalisasi Absensi</span>' : mode === "FINAL_VIEW" ? '<span>🔒</span><span>Absensi Sudah Final</span>' : '<span>💾</span><span>Simpan Absensi Awal</span>';
+      btn.disabled = false;
+      btn.innerHTML = mode === "FINAL" ? '<span>✅</span><span>Finalisasi Absensi & Nilai</span>' : mode === "FINAL_VIEW" ? '<span>💾</span><span>Simpan Nilai & Materi</span>' : '<span>💾</span><span>Simpan Absensi Awal</span>';
     }
   }
 
@@ -3422,11 +3653,13 @@
       if (!item) return;
       const awal = item.statusAwal || item.status || "Hadir";
       const akhir = item.statusAkhir || item.statusFinal || (awal !== "Belum Hadir" ? awal : "");
-      const score = row.querySelector(".daily-score-input"); if (score && item.nilaiUlanganHarian != null) score.value = item.nilaiUlanganHarian; if (score && needsFinal) score.disabled = true;
+      const score = row.querySelector(".daily-score-input"); if (score && item.nilaiUlanganHarian != null) score.value = item.nilaiUlanganHarian; if (score) score.disabled = false;
       if (needsFinal && awal === "Belum Hadir") rebuildActionGroup(row, FINAL_STATUS_LIST, akhir, false);
       else rebuildActionGroup(row, [{value: akhir || awal, label: akhir || awal}], akhir || awal, true);
       row.dataset.statusAwal = awal;
     });
+    selectedMaterialKeys = new Set(records.flatMap(record => record.materiTargetKeys || record.materialTargetKeys || []));
+    renderMaterialPicker();
     updateSummary();
   }
 
@@ -3448,19 +3681,49 @@
         const awal = old.statusAwal || old.status || "Hadir";
         const selected = row.querySelector('input[type="radio"]:checked');
         const akhir = awal === "Belum Hadir" ? selected?.value : (old.statusAkhir || old.statusFinal || awal);
-        return {...old, statusAwal:awal, statusAkhir:akhir, statusFinal:akhir, status:akhir, final:true, poin:hitungPoin(akhir,mapel), waktuFinalisasi:new Date().toISOString()};
+        const nilaiRaw = row.querySelector(".daily-score-input")?.value.trim() || "";
+        return {...old, statusAwal:awal, statusAkhir:akhir, statusFinal:akhir, status:akhir, final:true, poin:hitungPoin(akhir,mapel), nilaiUlanganHarian:nilaiRaw===""?null:Number(nilaiRaw), nilaiUlanganHarianDiisi:nilaiRaw!=="", waktuFinalisasi:new Date().toISOString()};
       });
-      const patch = {data:newData,catatan:catatan||rec.catatan||"",tahapAbsensi:"FINAL",statusFinalisasi:"FINAL",waktuFinalisasi:new Date().toISOString(),waktuSimpan:new Date().toISOString()};
+      const nilaiTerisi = newData.map(item=>item.nilaiUlanganHarian).filter(Number.isFinite);
+      const materi = selectedMaterials().filter(row=>materialMatchesAssignment(row,a));
+      const patch = {data:newData,catatan:catatan||rec.catatan||"",materiDiajarkan:materi.map(item=>item.material),materiTargetKeys:materi.map(materialTargetKey),adaNilaiUlanganHarian:nilaiTerisi.length>0,jumlahNilaiUlanganHarian:nilaiTerisi.length,rataRataNilaiUlanganHarian:nilaiTerisi.length?Number((nilaiTerisi.reduce((sum,nilai)=>sum+nilai,0)/nilaiTerisi.length).toFixed(2)):null,tahapAbsensi:"FINAL",statusFinalisasi:"FINAL",waktuFinalisasi:new Date().toISOString(),waktuSimpan:new Date().toISOString()};
       const finalizedRecord = {...rec,...patch};
       updates[`cahaya_app/absensi_pembelajaran/${rec.id}`] = finalizedRecord;
       finalizedRows.push({ id: rec.id, ...finalizedRecord });
       existingAttendanceByAssignment.set(a.id, { id: rec.id, ...finalizedRecord });
       newData.forEach(item => { const waliKey=String(item.nama||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,""); if(waliKey) updates[`cahaya_app/wali_index/${waliKey}/pembelajaran/${rec.id}`] = {...rec,...patch,data:[item]}; });
     });
+    Object.assign(updates, materialCompletionUpdates());
     await update(ref(db), updates);
     mergeTodayAttendanceCache(finalizedRows);
     showToast("Absensi akhir berhasil difinalisasi. Status Belum Hadir sudah ditetapkan secara faktual.","success","Finalisasi selesai");
     setTwoStageLabels("FINAL_VIEW"); return true;
+  }
+
+  async function updateFinalizedAttendance(assignments, catatan) {
+    const updates = {};
+    const savedRows = [];
+    assignments.forEach(assignment => {
+      const rec = existingAttendanceByAssignment.get(assignment.id); if (!rec?.id) return;
+      const classRows = [...document.querySelectorAll(".santri-row")].filter(row => row.dataset.assignmentId === assignment.id || row.dataset.kelas === assignment.className);
+      const rowByName = new Map(classRows.map(row => [normalizeIdentity(row.dataset.nama), row]));
+      const data = (rec.data || []).map(item => {
+        const row = rowByName.get(normalizeIdentity(item.nama)); if (!row) return item;
+        const raw = row.querySelector(".daily-score-input")?.value.trim() || "";
+        return {...item,nilaiUlanganHarian:raw===""?null:Number(raw),nilaiUlanganHarianDiisi:raw!==""};
+      });
+      const nilaiTerisi=data.map(item=>item.nilaiUlanganHarian).filter(Number.isFinite);
+      const materi=selectedMaterials().filter(row=>materialMatchesAssignment(row,assignment));
+      const patch={...rec,data,catatan:catatan||rec.catatan||"",materiDiajarkan:materi.map(item=>item.material),materiTargetKeys:materi.map(materialTargetKey),adaNilaiUlanganHarian:nilaiTerisi.length>0,jumlahNilaiUlanganHarian:nilaiTerisi.length,rataRataNilaiUlanganHarian:nilaiTerisi.length?Number((nilaiTerisi.reduce((sum,nilai)=>sum+nilai,0)/nilaiTerisi.length).toFixed(2)):null,waktuSimpan:new Date().toISOString()};
+      updates[`cahaya_app/absensi_pembelajaran/${rec.id}`]=patch;
+      savedRows.push({id:rec.id,...patch});
+      data.forEach(item=>{const waliKey=String(item.nama||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");if(waliKey)updates[`cahaya_app/wali_index/${waliKey}/pembelajaran/${rec.id}`]={...patch,data:[item]}});
+    });
+    Object.assign(updates,materialCompletionUpdates());
+    await update(ref(db),updates);
+    mergeTodayAttendanceCache(savedRows);
+    showToast("Nilai ulangan harian dan capaian materi berhasil diperbarui.","success","Data pembelajaran tersimpan");
+    return true;
   }
 
   window.simpanKehadiran = async function() {
@@ -3479,18 +3742,6 @@
         "error",
         "Jadwal belum dipilih"
       );
-      return;
-    }
-
-    if (attendanceStageMode === "FINAL_VIEW") {
-      showToast("Absensi untuk jadwal ini sudah difinalisasi.", "success", "Sudah final");
-      return;
-    }
-    if (attendanceStageMode === "FINAL") {
-      setSaveButtonLoading(true);
-      try { await finalizeExistingAttendance(assignments, catatan, mapel); }
-      catch(error){ console.error(error); showToast(error.message||"Gagal finalisasi absensi.","error","Gagal finalisasi"); }
-      finally { setSaveButtonLoading(false); }
       return;
     }
 
@@ -3527,6 +3778,23 @@
       );
       barisPertama.scrollIntoView({ behavior: "smooth", block: "center" });
       setTimeout(() => inputPertama?.focus(), 350);
+      return;
+    }
+
+    if (!validateMaterialRequirement(assignments)) return;
+
+    if (attendanceStageMode === "FINAL_VIEW") {
+      setSaveButtonLoading(true);
+      try { await updateFinalizedAttendance(assignments, catatan); }
+      catch(error){ console.error(error); showToast(error.message||"Gagal memperbarui nilai dan materi.","error","Pembaruan gagal"); }
+      finally { setSaveButtonLoading(false); }
+      return;
+    }
+    if (attendanceStageMode === "FINAL") {
+      setSaveButtonLoading(true);
+      try { await finalizeExistingAttendance(assignments, catatan, mapel); }
+      catch(error){ console.error(error); showToast(error.message||"Gagal finalisasi absensi.","error","Gagal finalisasi"); }
+      finally { setSaveButtonLoading(false); }
       return;
     }
 
@@ -3601,6 +3869,8 @@
           sub: itemAssignment.className,
           mapel: itemAssignment.subject,
           catatan,
+          materiDiajarkan: selectedMaterials().filter(row => materialMatchesAssignment(row, itemAssignment)).map(row => row.material),
+          materiTargetKeys: selectedMaterials().filter(row => materialMatchesAssignment(row, itemAssignment)).map(materialTargetKey),
           guru: namaGuruAktif(),
           guruKodeKalender: teacherCodeAktif,
           guruUid: user?.uid || "",
@@ -3650,6 +3920,7 @@
         });
       });
 
+      Object.assign(batchUpdates, materialCompletionUpdates());
       await update(ref(db), batchUpdates);
       mergeTodayAttendanceCache(savedAttendanceRows);
       // Perbarui state layar tanpa location.reload() agar tidak mengunduh data ulang.
