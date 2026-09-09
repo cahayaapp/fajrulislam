@@ -1,0 +1,28 @@
+CAHAYA APP — BUILD V170
+Tanggal: 09 September 2026
+
+PERUBAHAN UTAMA
+1. Presensi Bahasa Arab Multazam dipisahkan menjadi dua pilihan jadwal:
+   - Juz 1: 18 santri sesuai daftar yang ditetapkan.
+   - Juz 2: otomatis berisi seluruh santri gabungan Kelas 3, 4, dan 5 Putra yang tidak termasuk Juz 1 (17 santri pada master data saat build ini).
+2. Juz 1 dan Juz 2 disimpan sebagai presensi terpisah tanpa mengubah jadwalId asli yang dipakai sistem monitoring.
+   Metadata tambahan: jadwalIdPresensi, jadwalIdAsli, kelompokBahasaArabJuzKode, kelompokBahasaArabJuz.
+3. Jika Presensi Bahasa Arab dibuka dari Jadwal Saya, pengguna diarahkan memilih Juz 1 atau Juz 2 terlebih dahulu agar tidak salah kelompok.
+4. UI daftar santri Absen Awal dirombak menjadi kartu premium: nomor, nama, tombol status berikon, aksen status, responsif.
+5. UI Absen Akhir dirombak menjadi kartu premium dua-area: status final + Nilai Ulangan Harian, dengan info tahap akhir dan responsif.
+6. Cache-busting absensiPembelajaran dinaikkan dari v169 ke v170 pada home-guru dan main-dashboard.
+7. Perbaikan Role Popup Unified dari build sebelumnya tetap dipertahankan.
+
+FILE TERUBAH
+- guru/absensiPembelajaran.html
+- docs/guru/absensiPembelajaran.html
+- home-guru.html
+- docs/home-guru.html
+- main-dashboard.html
+- docs/main-dashboard.html
+
+QA
+- Sintaks JavaScript module: OK (node --check)
+- Root dan docs absensiPembelajaran sinkron.
+- Semua 18 nama Juz 1 cocok dengan master data.
+- Roster gabungan Bahasa Arab saat build: 35 santri = Juz 1 (18) + Juz 2 (17).
