@@ -1529,6 +1529,8 @@
   /* Pastikan layar pemilih jadwal benar-benar hilang setelah jadwal dipilih. */
   #kbmScheduleScene[hidden],
   #kbmAttendanceScene[hidden]{display:none!important}
+  /* Saat presensi aktif, fokuskan layar pada daftar santri. */
+  body.cahaya-guru-executive.cahaya-attendance-active .kbm-hero{display:none!important}
 </style>
 
   <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
@@ -2518,6 +2520,7 @@
     picker.hidden = showAttendance;
     attendance.hidden = !showAttendance;
     document.body.classList.toggle("v56-schedule-picker", !showAttendance);
+    document.body.classList.toggle("cahaya-attendance-active", showAttendance);
     if (!showAttendance) {
       requestAnimationFrame(fitScheduleGrid);
     }
