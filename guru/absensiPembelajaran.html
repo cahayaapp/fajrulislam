@@ -1624,6 +1624,28 @@
       body.cahaya-guru-executive .daily-score-input{min-height:40px!important}
     }
   </style>
+  <style id="cahaya-v166-focused-success">
+    body.cahaya-guru-executive .v55-attendance-nav,
+    body.cahaya-guru-executive .v55-kbm-attendance>.panel-card>.panel-head,
+    body.cahaya-guru-executive .v55-kbm-attendance>.panel-card>.attendance-toolbar{display:none!important}
+    body.cahaya-guru-executive:not(.cahaya-attendance-final) .score-field,
+    body.cahaya-guru-executive:not(.cahaya-attendance-final) .score-head{display:none!important}
+    body.cahaya-guru-executive:not(.cahaya-attendance-final) .journal-card>.form-group{display:none!important}
+    body.cahaya-guru-executive:not(.cahaya-attendance-final) .journal-card{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+    body.cahaya-guru-executive:not(.cahaya-attendance-final) .journal-card .save-panel{margin-top:0!important}
+    body.cahaya-guru-executive:not(.cahaya-attendance-final) .list-header,
+    body.cahaya-guru-executive:not(.cahaya-attendance-final) .santri-row{grid-template-columns:minmax(210px,.78fr) minmax(480px,1.15fr)!important}
+    .attendance-success-overlay{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:24px;background:rgba(13,43,82,.3);backdrop-filter:blur(8px);opacity:0;visibility:hidden;transition:opacity .24s ease,visibility .24s ease}
+    .attendance-success-overlay.show{opacity:1;visibility:visible}
+    .attendance-success-card{width:min(390px,100%);padding:30px 24px 25px;border:1px solid rgba(255,255,255,.9);border-radius:28px;background:linear-gradient(155deg,#fff,#f2fbf8);box-shadow:0 26px 70px rgba(10,53,95,.23);text-align:center;transform:translateY(12px) scale(.96);transition:transform .28s cubic-bezier(.2,.9,.25,1.2)}
+    .attendance-success-overlay.show .attendance-success-card{transform:none}
+    .attendance-success-check{width:82px;height:82px;margin:0 auto 18px;display:grid;place-items:center;border-radius:50%;color:#fff;background:linear-gradient(145deg,#25ca8d,#0ba86e);box-shadow:0 13px 27px rgba(16,177,117,.28),inset 0 0 0 7px rgba(255,255,255,.18);font-size:42px;font-weight:1000;line-height:1}
+    .attendance-success-card h2{margin:0;color:#123d75;font-size:1.28rem;font-weight:1000;letter-spacing:-.025em}
+    .attendance-success-card p{margin:9px auto 0;max-width:310px;color:#7189a7;font-size:.76rem;font-weight:750;line-height:1.55}
+    .attendance-success-return{display:inline-flex;align-items:center;gap:7px;margin-top:18px;color:#18825f;font-size:.64rem;font-weight:900}
+    .attendance-success-return::before{content:"";width:7px;height:7px;border-radius:50%;background:#23bb82;box-shadow:0 0 0 4px rgba(35,187,130,.12)}
+    @media(max-width:760px){body.cahaya-guru-executive:not(.cahaya-attendance-final) .santri-row{display:block!important}.attendance-success-card{padding:27px 20px 23px;border-radius:25px}.attendance-success-check{width:74px;height:74px;font-size:38px}}
+  </style>
 </head>
 <body class="cahaya-guru-executive">
   <div id="loadingOverlay">
@@ -1642,6 +1664,15 @@
         <span class="toast-title" id="toastTitle">Informasi</span>
         <span class="toast-message" id="toastMessage"></span>
       </div>
+    </div>
+  </div>
+
+  <div class="attendance-success-overlay" id="attendanceSuccessOverlay" role="dialog" aria-modal="true" aria-labelledby="attendanceSuccessTitle" aria-hidden="true">
+    <div class="attendance-success-card">
+      <div class="attendance-success-check">✓</div>
+      <h2 id="attendanceSuccessTitle">Absensi Berhasil Disimpan</h2>
+      <p id="attendanceSuccessMessage">Selamat mengajar.</p>
+      <span class="attendance-success-return">Kembali ke beranda…</span>
     </div>
   </div>
 
@@ -3162,6 +3193,28 @@
     toastTimer = setTimeout(() => toast.classList.remove("show"), 3600);
   }
 
+  function showAttendanceSuccess(stage = "AWAL") {
+    const overlay = document.getElementById("attendanceSuccessOverlay");
+    const isFinal = stage !== "AWAL";
+    document.getElementById("attendanceSuccessTitle").textContent = isFinal
+      ? "Absensi dan Nilai Berhasil Disimpan"
+      : "Absensi Berhasil Disimpan";
+    document.getElementById("attendanceSuccessMessage").textContent = isFinal
+      ? "Terima kasih sudah mengajar hari ini."
+      : "Selamat mengajar.";
+    overlay.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(() => overlay.classList.add("show"));
+    setTimeout(() => {
+      try {
+        if (PARENT_APP !== window && typeof PARENT_APP.loadPage === "function") {
+          PARENT_APP.loadPage("home-guru.html?v=167", PARENT_APP.document.getElementById("menu-home"));
+          return;
+        }
+      } catch (_) {}
+      window.location.href = "../home-guru.html?v=167";
+    }, 2100);
+  }
+
   function sembunyikanLoading() {
     const overlay = document.getElementById("loadingOverlay");
     overlay.style.opacity = "0";
@@ -3672,6 +3725,7 @@
 
   function setTwoStageLabels(mode) {
     attendanceStageMode = mode;
+    document.body.classList.toggle("cahaya-attendance-final", mode !== "AWAL");
     const p = document.getElementById("sumLabelPending");
     const a = document.getElementById("sumLabelAlfa");
     const h1 = document.getElementById("headStatus1");
@@ -3777,6 +3831,7 @@
     await update(ref(db), updates);
     mergeTodayAttendanceCache(finalizedRows);
     showToast("Absensi akhir berhasil difinalisasi. Status Belum Hadir sudah ditetapkan secara faktual.","success","Finalisasi selesai");
+    showAttendanceSuccess("FINAL");
     setTwoStageLabels("FINAL_VIEW"); return true;
   }
 
@@ -3803,6 +3858,7 @@
     await update(ref(db),updates);
     mergeTodayAttendanceCache(savedRows);
     showToast("Nilai ulangan harian dan capaian materi berhasil diperbarui.","success","Data pembelajaran tersimpan");
+    showAttendanceSuccess("FINAL");
     return true;
   }
 
@@ -3861,7 +3917,7 @@
       return;
     }
 
-    if (!validateMaterialRequirement(assignments)) return;
+    if (attendanceStageMode !== "AWAL" && !validateMaterialRequirement(assignments)) return;
 
     if (attendanceStageMode === "FINAL_VIEW") {
       setSaveButtonLoading(true);
@@ -4017,6 +4073,7 @@
         "success",
         assignment.isCombined ? "Absensi gabungan berhasil" : "Penyimpanan berhasil"
       );
+      showAttendanceSuccess("AWAL");
 
       setSaveButtonLoading(false);
     } catch (error) {
