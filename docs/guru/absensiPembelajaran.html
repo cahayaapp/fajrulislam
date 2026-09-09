@@ -2093,8 +2093,17 @@
   let selectedAssignment = null;
   let toastTimer = null;
 
-  function akunMendukungAbsensiGabungan() {
-    return teacherCodeAktif === "MULTAZAM";
+  function jadwalMendukungAbsensiGabungan(item = {}) {
+    if (teacherCodeAktif === "MULTAZAM") return true;
+
+    if (teacherCodeAktif !== "ALAMANDA") return false;
+
+    const subject = compactIdentity(item.subject || "");
+    const className = String(item.className || "").trim();
+    const isTargetSubject = subject === "bahasaarab" || subject === "alquran";
+    const isTargetClass = className === "Kelas 3 Putri" || className === "Kelas 4 Putri";
+
+    return isTargetSubject && isTargetClass;
   }
 
   function kunciSesiGabungan(item = {}) {
@@ -2114,19 +2123,20 @@
       classNames: [item.className]
     }));
 
-    if (!akunMendukungAbsensiGabungan()) {
-      return normalized;
-    }
-
     const groups = new Map();
+    const standalone = [];
 
     normalized.forEach(item => {
+      if (!jadwalMendukungAbsensiGabungan(item)) {
+        standalone.push(item);
+        return;
+      }
       const key = kunciSesiGabungan(item);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(item);
     });
 
-    return [...groups.entries()].map(([key, members]) => {
+    const combined = [...groups.entries()].map(([key, members]) => {
       const first = members[0];
       const classNames = [...new Set(members.map(item => item.className))];
       const sections = [...new Set(members.map(item => item.section).filter(Boolean))];
@@ -2146,6 +2156,11 @@
         classNumber: members.map(item => item.classNumber).join(",")
       };
     });
+
+    return [...standalone, ...combined].sort((a, b) =>
+      String(a.scheduleStart || "").localeCompare(String(b.scheduleStart || "")) ||
+      a.className.localeCompare(b.className, "id")
+    );
   }
 
   function daftarJadwalTerpilih(assignment) {
