@@ -459,6 +459,21 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
   .brand-copy strong{font-size:1.20rem!important}.brand-copy{gap:6px!important}.brand-role{font-size:.43rem!important;padding:4px 6px!important}.brand img{width:39px!important;height:39px!important}.brand-row{height:53px!important;min-height:53px!important}.intro{height:65px!important;min-height:65px!important}.greeting h1{font-size:.72rem!important}.attention-modal{padding-left:13px!important;padding-right:13px!important}.attention-title-wrap small{max-width:220px}.attention-stats{gap:6px}.attention-stat{padding:8px 7px;gap:6px}.attention-stat-icon{width:27px;height:27px;flex-basis:27px}.attention-stat b{font-size:.9rem}.attention-stat small{font-size:.41rem}.attention-item-copy small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 }
 
+/* V119 — Role switcher konsisten dengan Beranda Guru. */
+#roleModal{padding:14px!important;background:rgba(15,40,76,.34)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;align-items:center!important}
+#roleModal .role-modal-sheet{width:min(520px,100%)!important;max-height:none!important;overflow:visible!important;padding:13px 18px 20px!important;border:1px solid rgba(255,255,255,.9)!important;border-radius:30px!important;background:linear-gradient(155deg,rgba(255,255,255,.98),rgba(244,250,255,.97))!important;box-shadow:0 30px 85px rgba(7,35,72,.25)!important;animation:directorRoleIn .26s cubic-bezier(.2,.9,.25,1.12)}
+@keyframes directorRoleIn{from{opacity:.3;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
+.role-grabber{width:47px;height:5px;margin:0 auto 17px;border-radius:999px;background:#c5d3e5}
+#roleModal .modal-head{align-items:flex-start!important;padding:0 3px 16px!important;margin:0!important}
+.role-head-copy{min-width:0;flex:1}.role-head-copy h3{margin:0!important;color:#103a73!important;font-size:1.22rem!important;line-height:1.1!important;font-weight:1000!important;letter-spacing:-.03em!important}.role-head-copy p{margin:7px 0 0;color:#7489a6;font-size:.67rem;font-weight:700;line-height:1.4}
+#roleModal .close-btn{width:43px!important;height:43px!important;flex:0 0 43px!important;background:#f1f5fb!important;border:1px solid #e8eef6!important;color:#587293!important;font-size:1.05rem!important;box-shadow:0 6px 15px rgba(30,68,113,.06)!important}
+#roleModal .role-sheet{gap:11px!important;margin:0!important}
+#roleModal .role-option{position:relative;min-height:108px;display:grid;grid-template-columns:66px minmax(0,1fr) 38px;align-items:center;gap:16px;padding:15px 16px!important;border:1px solid #e0e9f4!important;border-radius:22px!important;background:rgba(255,255,255,.92)!important;box-shadow:0 9px 24px rgba(27,67,116,.06)!important;text-align:left!important;color:#113b74!important}
+#roleModal .role-option.active{border-color:#79baf4!important;background:linear-gradient(145deg,#fff,#eef8ff)!important;box-shadow:0 10px 26px rgba(39,135,225,.14)!important}
+.role-option-icon{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,#48b4f5,#227ce8);box-shadow:0 10px 20px rgba(34,124,232,.22)}.role-option:nth-child(2n) .role-option-icon{background:linear-gradient(145deg,#55cfbd,#24aa91);box-shadow:0 10px 20px rgba(36,170,145,.19)}.role-option-icon svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.role-option-copy b{display:block;color:#113b74;font-size:.92rem;font-weight:1000;line-height:1.1;text-transform:capitalize}.role-option-copy small{display:block;margin-top:7px;color:#758aa7;font-size:.61rem;font-weight:680;line-height:1.4}.role-option-state{width:34px;height:34px;border:2px solid #cfdaea;border-radius:50%;display:grid;place-items:center;color:transparent;font-size:.95rem}.role-option.active .role-option-state{border-color:#2d8ded;background:linear-gradient(145deg,#42a4f5,#217ce6);color:#fff;box-shadow:0 7px 16px rgba(33,124,230,.22)}
+@media(max-width:430px){#roleModal{padding:11px!important}#roleModal .role-modal-sheet{padding:11px 13px 16px!important;border-radius:26px!important}.role-head-copy h3{font-size:1.08rem!important}#roleModal .role-option{min-height:92px;grid-template-columns:55px minmax(0,1fr) 32px;gap:12px;padding:12px!important;border-radius:19px!important}.role-option-icon{width:54px;height:54px;border-radius:17px}.role-option-icon svg{width:29px;height:29px}.role-option-copy b{font-size:.82rem}.role-option-copy small{font-size:.55rem}.role-option-state{width:30px;height:30px}}
+
 </style>
 
 <style id="cahaya-v109-home-director-refine">
@@ -1030,7 +1045,7 @@ button{font:inherit}.app{width:min(1120px,100%);margin:0 auto;padding:24px 26px 
     <footer class="sheet-footer"><button class="sheet-recap" id="insightRecap" type="button"><svg viewBox="0 0 24 24"><path d="M4 19h16M6 16l4-5 3 3 5-8"/></svg><span>Lihat Rekap</span></button></footer>
   </section>
 </div>
-<div class="modal-backdrop" id="roleModal" onclick="if(event.target===this)closeModal('roleModal')"><div class="modal"><div class="modal-head"><h3>Pilih Homepage / Role Aktif</h3><button class="close-btn" onclick="closeModal('roleModal')">✕</button></div><div class="role-sheet" id="roleList"></div></div></div>
+<div class="modal-backdrop" id="roleModal" onclick="if(event.target===this)closeModal('roleModal')"><div class="modal role-modal-sheet"><div class="role-grabber"></div><div class="modal-head"><div class="role-head-copy"><h3>Pilih Role Aktif</h3><p>Pilih tampilan kerja yang ingin digunakan.</p></div><button class="close-btn" onclick="closeModal('roleModal')" aria-label="Tutup">✕</button></div><div class="role-sheet" id="roleList"></div></div></div>
 </div>
 
 <script src="config/master-data.js?v=92"></script>
