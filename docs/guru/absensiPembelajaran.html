@@ -2319,6 +2319,8 @@
   ];
 
   const MAPEL_QURAN = new Set([
+    "ALQURAN",
+    "QURAN",
     "TAHSIN",
     "TAHFIZ",
     "MUROJAAH",
@@ -2793,16 +2795,46 @@
     return String(value || "").match(/\d+/)?.[0] || String(value || "").trim();
   }
 
+  function isQuranMaterialExempt(assignment = {}) {
+    const subject = compactIdentity(assignment.subject || assignment.mapel || "");
+    return MAPEL_QURAN.has(subject.toUpperCase()) || subject.includes("alquran") || subject.includes("tahfiz") || subject.includes("tahsin") || subject.includes("murojaah") || subject.includes("murajaah");
+  }
+
   function materialMatchesAssignment(row = {}, assignment = {}) {
     const sameSubject = normalizeIdentity(row.subject || row.mapel || "") === normalizeIdentity(assignment.subject || "");
+    if (!sameSubject) return false;
+
+    const rowTeacher = compactIdentity(row.teacher || row.guruKode || row.guru || "");
+    const sameTeacher = !rowTeacher || rowTeacher === compactIdentity(teacherCodeAktif) || rowTeacher === compactIdentity(namaGuruAktif());
+    if (!sameTeacher) return false;
+
+    const rowJuz = String(row.virtualJuz || row.kelompokBahasaArabJuzKode || "").toUpperCase();
+    const assignmentJuz = String(assignment.virtualJuz || "").toUpperCase();
+    if (assignmentJuz) {
+      // Target Bahasa Arab Multazam wajib benar-benar spesifik Juz 1 / Juz 2.
+      // Target lama yang belum memiliki penanda Juz tidak dipaksakan ke salah satu kelompok.
+      if (!rowJuz || rowJuz !== assignmentJuz) return false;
+    } else if (rowJuz) {
+      return false;
+    }
+
+    const assignmentIdCandidates = [assignment.id, assignment.sourceScheduleId].map(compactIdentity).filter(Boolean);
+    const sourceIds = Array.isArray(row.sourceAssignmentIds) ? row.sourceAssignmentIds.map(compactIdentity) : [];
+    if (sourceIds.length && assignmentIdCandidates.some(id => sourceIds.includes(id))) return true;
+
+    const rowClasses = Array.isArray(row.classNames) ? row.classNames.map(normalizeIdentity) : [];
+    if (rowClasses.length) {
+      const className = normalizeIdentity(assignment.className || "");
+      return rowClasses.includes(className);
+    }
+
+    // Kompatibilitas target lama yang masih disimpan per kelas.
     const sameClass = classNumberOf(row.kelas) === classNumberOf(assignment.classNumber || assignment.className);
     const rowSection = normalizeIdentity(row.sectionId || row.section || row.unit || row.kelas || "");
     const assignmentSection = normalizeIdentity(assignment.sectionId || assignment.section || assignment.className || "");
     const sameSection = !rowSection || !assignmentSection ||
       (rowSection.includes("putri") === assignmentSection.includes("putri") && rowSection.includes("putra") === assignmentSection.includes("putra"));
-    const rowTeacher = compactIdentity(row.teacher || row.guruKode || row.guru || "");
-    const sameTeacher = !rowTeacher || rowTeacher === compactIdentity(teacherCodeAktif) || rowTeacher === compactIdentity(namaGuruAktif());
-    return sameSubject && sameClass && sameSection && sameTeacher;
+    return sameClass && sameSection;
   }
 
   function isMaterialCompleted(row = {}) {
@@ -2862,7 +2894,10 @@
     }
     button.disabled = false;
     if (!currentMaterialRows.length) {
-      panel.innerHTML = '<div class="material-empty"><strong>Target materi belum tersedia.</strong><br>Guru wajib membuat target materi untuk kelas dan mapel ini sebelum menyimpan presensi.</div>';
+      const exemptQuran = assignments.length && assignments.every(isQuranMaterialExempt);
+      panel.innerHTML = exemptQuran
+        ? '<div class="material-empty"><strong>Materi tidak diwajibkan untuk pembelajaran Al-Qur’an.</strong><br>Presensi tetap dapat disimpan tanpa memilih target materi, termasuk untuk Tahsin/Tahfiz.</div>'
+        : '<div class="material-empty"><strong>Target materi belum tersedia.</strong><br>Presensi tetap dapat disimpan. Jika target materi sudah dibuat, pemilihan materi akan menjadi syarat saat finalisasi.</div>';
       updateSelectedMaterialSummary();
       return;
     }
@@ -2911,12 +2946,12 @@
   };
 
   window.bukaTargetMateri = function() {
-    const url = "guru/capaian-materi.html?v=164&mode=target";
+    const url = "guru/capaian-materi.html?v=171&mode=target";
     try {
       if (PARENT_APP?.loadPage) PARENT_APP.loadPage(url, PARENT_APP.document?.getElementById("menu-kalender-materi"));
-      else location.href = "capaian-materi.html?v=164&mode=target";
+      else location.href = "capaian-materi.html?v=171&mode=target";
     } catch (_) {
-      location.href = "capaian-materi.html?v=164&mode=target";
+      location.href = "capaian-materi.html?v=171&mode=target";
     }
   };
 
@@ -2937,16 +2972,23 @@
   }
 
   function validateMaterialRequirement(assignments = []) {
-    const missingTargets = assignments.filter(assignment => !materialTargetRows.some(row => materialMatchesAssignment(row, assignment)));
-    if (missingTargets.length) {
-      showToast(`Target materi belum dibuat untuk ${missingTargets.map(item => item.className).join(", ")}. Buka Atur Target Materi terlebih dahulu.`, "error", "Target materi wajib");
-      document.getElementById("materialPickerPanel")?.classList.add("show");
-      renderMaterialPicker();
-      return false;
-    }
-    const missingSelections = assignments.filter(assignment => !selectedMaterials().some(row => materialMatchesAssignment(row, assignment)));
+    // Al-Qur'an/Tahsin/Tahfiz tidak pernah diwajibkan memilih materi.
+    const wajibMateri = assignments.filter(assignment => !isQuranMaterialExempt(assignment));
+    if (!wajibMateri.length) return true;
+
+    // Bila target belum pernah dibuat, presensi tetap boleh disimpan.
+    // Kewajiban baru aktif pada penugasan yang memang sudah memiliki target.
+    const assignmentsWithTargets = wajibMateri.filter(assignment =>
+      materialTargetRows.some(row => materialMatchesAssignment(row, assignment))
+    );
+    if (!assignmentsWithTargets.length) return true;
+
+    const missingSelections = assignmentsWithTargets.filter(assignment =>
+      !selectedMaterials().some(row => materialMatchesAssignment(row, assignment))
+    );
     if (missingSelections.length) {
-      showToast(`Centang materi yang diajarkan untuk ${missingSelections.map(item => item.className).join(", ")}.`, "error", "Materi belum dipilih");
+      const labels = [...new Set(missingSelections.map(item => item.virtualJuzLabel || item.className))];
+      showToast(`Target materi sudah tersedia. Pilih materi yang diajarkan untuk ${labels.join(", ")} sebelum menyimpan.`, "error", "Materi wajib dipilih");
       document.getElementById("materialPickerPanel")?.classList.add("show");
       renderMaterialPicker();
       return false;
@@ -4100,7 +4142,7 @@
 
   function hitungPoin(status, mapel) {
     if (status === "Hadir") {
-      return MAPEL_QURAN.has(mapel.toUpperCase()) ? 40 : 30;
+      return MAPEL_QURAN.has(compactIdentity(mapel).toUpperCase()) ? 40 : 30;
     }
 
     if (status === "Terlambat") return -20;

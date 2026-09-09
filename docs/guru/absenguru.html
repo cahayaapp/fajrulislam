@@ -1543,8 +1543,8 @@
       <div class="notice">
         Saat pertama kali digunakan, browser akan meminta izin kamera
         dan lokasi. Pilih <b>Izinkan</b>. Jangan menutup permintaan lokasi
-        sebelum posisi berhasil ditemukan. Khusus <b>Kelas 4 Putri</b>,
-        lokasi tidak diminta karena pembelajarannya dapat dilakukan secara online.
+        sebelum posisi berhasil ditemukan. Setiap presensi guru tetap diverifikasi
+        berdasarkan zona lokasi dan jarak yang ditetapkan.
       </div>
     </section>
   </main>
@@ -1748,11 +1748,7 @@
         kodeKelas: "K4W-7391",
         qrToken: "CAHAYA-QR-K4W-7391",
     
-        bebasRadius: true,
         jenisPembelajaran: "ONLINE",
-        alasanBebasRadius:
-          "Kelas online dengan guru dari luar lokasi pesantren.",
-    
         aktif: true
       }
     };
@@ -2863,8 +2859,9 @@
         return;
       }
 
-      const radiusExempt =
-        room.bebasRadius === true;
+      // V171: presensi guru wajib menggunakan verifikasi area/jarak untuk semua ruang.
+      // Konfigurasi bebasRadius lama sengaja tidak lagi membypass geofence.
+      const radiusExempt = false;
 
       showResult(
         "",
