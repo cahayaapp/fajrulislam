@@ -599,7 +599,7 @@ button{font:inherit}.app{width:min(1060px,100%);margin:0 auto;padding:18px 18px 
     <button class="material-action-close" type="button" onclick="closeMateriMenu()">Tutup</button>
   </section>
 </div>
-<script src="config/tenant-config.js?v=149"></script><script src="config/master-data.js?v=149"></script><script src="js/guru-kpi-v144.js?v=153"></script>
+<script src="config/tenant-config.js?v=149"></script><script src="config/master-data.js?v=149"></script><script src="js/guru-kpi-v144.js?v=154"></script>
 <script type="module">
 import{initializeApp,getApps}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';import{getDatabase,ref,get,query,orderByChild,startAt,endAt,equalTo,limitToLast,update,push,serverTimestamp,onValue}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 const P=window.parent&&window.parent!==window?window.parent:window,CFG=(window.CAHAYA_CONFIG&&window.CAHAYA_CONFIG.firebase)||(P.CAHAYA_CONFIG&&P.CAHAYA_CONFIG.firebase),K=window.CahayaGuruKPI||P.CahayaGuruKPI,$=id=>document.getElementById(id);if(P===window){location.replace('main-dashboard.html?v=20260909-v155')}if(!CFG)throw new Error('Konfigurasi Firebase CAHAYA tidak tersedia');if(!K)throw new Error('Modul KPI Guru tidak tersedia');const app=getApps().length?getApps()[0]:initializeApp(CFG),db=getDatabase(app),USER=(()=>{try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}catch{return{}}})();const D={schedule:[],attendance:[],scores:[],tahfiz:[],obs:[],learning:[],materials:{},completions:[],health:[],permits:[]};let KPI=null,IDENT={},TODAY_SCHEDULE=[],TODAY_LEAVES=[],WEEK={occ:[],present:0,onTime:0,late:0},stopTodayAttendance=null;
@@ -722,19 +722,20 @@ async function load(){
   // KPI/Mutu/Capaian aktif: dimuat setelah beranda tampil agar UI tetap cepat.
   // Query dibatasi periode berjalan untuk data transaksi yang mendukung indeks tanggal.
   const monthStart=now.month+'-01';
-  const [attLog,scores,tahfiz,obs,materials,completions]=await Promise.all([
+  const [attLog,scores,tahfiz,obs,materials,completions,calendar]=await Promise.all([
     periodVal('cahaya_app/log_absensi_guru','tanggal',monthStart,now.date,900,180000),
     periodVal('cahaya_app/nilai_ujian_bulanan','tanggal_ujian',monthStart,now.date,1200,300000),
     periodVal('cahaya_app/setoran_tahfiz','tanggal',monthStart,now.date,1400,300000),
     periodVal('observasi_lapangan','tanggal',monthStart,now.date,500,300000),
     val('kalender_materi_pembelajaran/ta_2026_2027'),
-    val('cahaya_app/capaian_materi_guru')
+    val('cahaya_app/capaian_materi_guru'),
+    val('kalender_pendidikan/ta_2026_2027/events')
   ]);
   const kpiAttendance=K.records(attLog).filter(r=>K.teacherMatches(r,IDENT));
   D.scores=K.records(scores);D.tahfiz=K.records(tahfiz);D.obs=K.records(obs);D.completions=K.records(completions);
   const combos=K.assignedCombos(D.schedule,IDENT),materialRows=K.collect(materials||{},x=>x&&x.source==='kalender_materi_pembelajaran'&&x.date&&x.subject);
   const materialCopy={rows:materialRows.map(r=>{const own=K.teacherMatches({guru:r.teacher},IDENT)||combos.has(`${K.norm(r.kelas)}|${K.norm(r.subject)}`);return own?{...r,teacher:IDENT.display||r.teacher}:r})};D.materials=materialCopy;
-  KPI=K.compute({month:now.month,profile:USER,identity:IDENT,schedule:D.schedule,attendance:kpiAttendance,scores:D.scores,tahfiz:D.tahfiz,observations:D.obs,materials:D.materials,completions:D.completions});
+  KPI=K.compute({month:now.month,profile:USER,identity:IDENT,schedule:D.schedule,attendance:kpiAttendance,scores:D.scores,tahfiz:D.tahfiz,observations:D.obs,materials:D.materials,completions:D.completions,calendar:K.records(calendar)});
   render();
   // v155: home guru fixed-screen + score ringkas aktif.
 }
