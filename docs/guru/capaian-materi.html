@@ -126,8 +126,74 @@ function mergeSavedIntoMeetings(meetings,a,semester){const saved=currentFolder(a
 function loadEditorCalendar(){if(!currentAssignment){$('meetingList').innerHTML='<div class="calendar-empty">Belum ada pelajaran pada jadwal Anda.</div>';return}const sem=$('semesterSelect').value,current=generateMeetings(currentAssignment,sem);currentMeetings=mergeSavedIntoMeetings(current,currentAssignment,sem);renderEditorHero();renderMeetings();}
 function renderEditorHero(){const sem=$('semesterSelect').value,filled=currentMeetings.filter(m=>String(m.material||'').trim()).length,pct=currentMeetings.length?Math.round(filled*100/currentMeetings.length):0;$('editorHero').innerHTML=`<div class="editor-hero-top"><span class="editor-hero-icon">${bookIcon()}</span><span><b>${esc(currentAssignment?.subject||'-')} • ${esc(assignmentGroupLabel(currentAssignment))}</b><small>${esc(currentAssignment?.dayLabel||'')} • ${currentMeetings.length} pertemuan efektif${currentAssignment?.isCombined?' • Target gabungan':''}</small></span><span class="semester-chip">Semester ${sem}</span></div><div class="editor-progress"><div class="progress-track"><div class="progress-bar" style="width:${pct}%"></div></div><strong>${filled}/${currentMeetings.length} terisi</strong></div>`;$('deleteCalendarBtn').disabled=savedCount(currentAssignment,sem)===0}
 function renderMeetings(){const host=$('meetingList');if(!currentMeetings.length){host.innerHTML='<div class="calendar-empty">Tidak ada pertemuan efektif untuk penugasan dan semester ini.</div>';return}host.innerHTML=currentMeetings.map((m,i)=>`<article class="meeting-row ${m.status}"><div class="meeting-head"><span class="meeting-no">${m.number}</span><span class="meeting-date"><b>${esc(m.longDate)}</b><small>${m.notes?.length?esc(m.notes.join(' • ')):`Pertemuan ke-${m.number}`}</small></span><span class="meeting-state ${m.status}">${m.status==='saved'?'Tersimpan':m.status==='dirty'?'Belum disimpan':'Belum diisi'}</span></div><div class="meeting-body"><textarea class="meeting-material" data-index="${i}" placeholder="Tulis target materi / pokok bahasan untuk pertemuan ini…">${esc(m.material||'')}</textarea><div class="meeting-actions"><button class="small-btn remove" ${m.status==='saved'?'':'style="visibility:hidden"'} onclick="deleteMeeting(${i})">Hapus</button><button class="small-btn save" onclick="saveMeeting(${i})">Simpan</button></div></div></article>`).join('');document.querySelectorAll('.meeting-material').forEach(el=>el.addEventListener('input',e=>{const i=Number(e.target.dataset.index);currentMeetings[i].material=e.target.value;currentMeetings[i].status='dirty';const row=e.target.closest('.meeting-row'),state=row?.querySelector('.meeting-state');row?.classList.remove('saved','empty');row?.classList.add('dirty');if(state){state.className='meeting-state dirty';state.textContent='Belum disimpan'}renderEditorHero()}))}
-function meetingPayload(i){const m=currentMeetings[i],material=String(m.material||'').trim(),a=currentAssignment;return{tahunAjaran:TA_LABEL,tahunAjaranKey:TA_KEY,semester:$('semesterSelect').value,assignmentId:a.id,assignmentKey:a.assignmentKey,materialGroupKey:a.groupKey||a.assignmentKey,teacher:a.teacher,sectionId:a.sectionId,section:a.section,kelas:a.kelas,kelasLabel:a.kelasLabel||'',classNames:a.classNames||[],classNumbers:a.classNumbers||[],isCombined:Boolean(a.isCombined),sourceAssignmentIds:a.sourceAssignmentIds||[],virtualJuz:a.virtualJuz||'',virtualJuzLabel:a.virtualJuzLabel||'',scheduleStart:a.scheduleStart||'',scheduleEnd:a.scheduleEnd||'',sessionLabel:a.sessionLabel||'',subject:a.subject,days:a.days,dayLabel:a.dayLabel,meetingNo:m.number,date:m.date,longDate:m.longDate,notes:m.notes||[],material,updatedAt:nowIso(),source:'kalender_materi_pembelajaran'}}
+function meetingPayloadFor(a,semester,m,materialValue=''){const material=String(materialValue||m.material||'').trim();return{tahunAjaran:TA_LABEL,tahunAjaranKey:TA_KEY,semester:String(semester),assignmentId:a.id,assignmentKey:a.assignmentKey,materialGroupKey:a.groupKey||a.assignmentKey,teacher:a.teacher,sectionId:a.sectionId,section:a.section,kelas:a.kelas,kelasLabel:a.kelasLabel||'',classNames:a.classNames||[],classNumbers:a.classNumbers||[],isCombined:Boolean(a.isCombined),sourceAssignmentIds:a.sourceAssignmentIds||[],virtualJuz:a.virtualJuz||'',virtualJuzLabel:a.virtualJuzLabel||'',scheduleStart:a.scheduleStart||'',scheduleEnd:a.scheduleEnd||'',sessionLabel:a.sessionLabel||'',subject:a.subject,days:a.days,dayLabel:a.dayLabel,meetingNo:m.number,date:m.date,longDate:m.longDate,notes:m.notes||[],material,updatedAt:nowIso(),source:'kalender_materi_pembelajaran'}}
+function meetingPayload(i){const m=currentMeetings[i],a=currentAssignment;return meetingPayloadFor(a,$('semesterSelect').value,m,m.material)}
 function folderPath(a=currentAssignment,semester=$('semesterSelect').value){return`${MATERIAL_PATH}/${a.assignmentKey}/semester_${semester}`}
+
+const MULTAZAM_ARAB_SEED_ID='v174_multazam_bahasa_arab_active_week_sequence_20260907';
+function mondayOfWeekKey(dateKey){
+  const d=dateFromKey(dateKey),day=d.getDay(),offset=day===0?-6:1-day;
+  d.setDate(d.getDate()+offset);
+  return isoDate(d);
+}
+function multazamArabicTeachingWeekMap(a,semester='1'){
+  const weeks=[];
+  generateMeetings(a,semester).forEach(m=>{
+    if(m.date<'2026-09-07'||m.date>'2026-12-31')return;
+    const wk=mondayOfWeekKey(m.date);
+    if(!weeks.includes(wk))weeks.push(wk);
+  });
+  return new Map(weeks.map((wk,index)=>[wk,index]));
+}
+function multazamArabicAutoMaterial(a,dateKey,teachingWeekMap){
+  if(!isMultazamBahasaArab(a)||!a.virtualJuz||dateKey<'2026-09-07'||dateKey>'2026-12-31')return'';
+  const d=dateFromKey(dateKey),day=d.getDay();
+  const patternJuz1={1:'Pembahasan',2:'Kosa Kata',3:'Tamrin',4:'Hiwar'};
+  const patternJuz2={1:'Kosa Kata',2:'Pembahasan',3:'Hiwar',4:'Tamrin'};
+  const topic=(a.virtualJuz==='JUZ_1'?patternJuz1:patternJuz2)[day];
+  if(!topic)return'';
+  const weekIndex=teachingWeekMap?.get(mondayOfWeekKey(dateKey));
+  if(weekIndex===undefined)return'';
+  const dars=(a.virtualJuz==='JUZ_1'?17:5)+weekIndex;
+  return`${topic} Dars ${dars}`;
+}
+async function seedMultazamBahasaArabTargets(){
+  const arabAssignments=assignments.filter(a=>isMultazamBahasaArab(a)&&['JUZ_1','JUZ_2'].includes(a.virtualJuz));
+  if(!arabAssignments.length)return;
+  const rootUpdates={},localWrites=[];
+  const seededAt=nowIso();
+  arabAssignments.forEach(a=>{
+    const sem='1',semKey='semester_1',existing=materialRoot?.[a.assignmentKey]?.[semKey]||{};
+    if(existing?._seedInfo?.id===MULTAZAM_ARAB_SEED_ID)return;
+    const generated=generateMeetings(a,sem);
+    const teachingWeekMap=multazamArabicTeachingWeekMap(a,sem);
+    generated.forEach(m=>{
+      const material=multazamArabicAutoMaterial(a,m.date,teachingWeekMap);
+      if(!material)return;
+      const rowKey=`pertemuan_${m.number}`;
+      const oldRow=existing?.[rowKey]||{};
+      const oldMaterial=String(oldRow?.material||'').trim();
+      const wasAutoGenerated=oldRow?.autoGenerated===true||/^v17[3-4]_multazam_bahasa_arab/.test(String(oldRow?.autoSeedId||''));
+      // Target yang pernah diedit manual tidak disentuh. Target otomatis versi lama diperbaiki.
+      if(oldMaterial&&!wasAutoGenerated)return;
+      const payload={...meetingPayloadFor(a,sem,m,material),autoGenerated:true,autoSeedId:MULTAZAM_ARAB_SEED_ID};
+      rootUpdates[`${MATERIAL_PATH}/${a.assignmentKey}/${semKey}/${rowKey}`]=payload;
+      localWrites.push({a,semKey,rowKey,value:payload});
+    });
+    const seedInfo={id:MULTAZAM_ARAB_SEED_ID,seededAt,startDate:'2026-09-07',semester:'1',subject:'Bahasa Arab',virtualJuz:a.virtualJuz,virtualJuzLabel:a.virtualJuzLabel||'',note:'Target otomatis Senin–Kamis; nomor Dars naik satu setiap PEKAN KBM AKTIF. Pekan libur/jeda kalender tidak menaikkan nomor Dars.'};
+    rootUpdates[`${MATERIAL_PATH}/${a.assignmentKey}/${semKey}/_seedInfo`]=seedInfo;
+    localWrites.push({a,semKey,rowKey:'_seedInfo',value:seedInfo});
+  });
+  if(!Object.keys(rootUpdates).length)return;
+  try{
+    await update(ref(db),rootUpdates);
+    localWrites.forEach(({a,semKey,rowKey,value})=>{
+      if(!materialRoot[a.assignmentKey])materialRoot[a.assignmentKey]={};
+      if(!materialRoot[a.assignmentKey][semKey])materialRoot[a.assignmentKey][semKey]={};
+      materialRoot[a.assignmentKey][semKey][rowKey]=value;
+    });
+  }catch(e){console.warn('Auto target Bahasa Arab Multazam gagal disimpan',e)}
+}
 window.saveMeeting=async function(i){const m=currentMeetings[i];if(!m)return;const material=String(m.material||'').trim();if(!material){toast('Isi target materi terlebih dahulu.');return}try{const p=meetingPayload(i);await set(ref(db,`${folderPath()}/pertemuan_${m.number}`),p);if(!materialRoot[currentAssignment.assignmentKey])materialRoot[currentAssignment.assignmentKey]={};if(!materialRoot[currentAssignment.assignmentKey][`semester_${$('semesterSelect').value}`])materialRoot[currentAssignment.assignmentKey][`semester_${$('semesterSelect').value}`]={};materialRoot[currentAssignment.assignmentKey][`semester_${$('semesterSelect').value}`][`pertemuan_${m.number}`]=p;m.status='saved';m.updatedAt=p.updatedAt;renderMeetings();renderEditorHero();toast(`Target pertemuan ${m.number} tersimpan.`)}catch(e){console.error(e);toast('Gagal menyimpan target materi.')}};
 window.saveAllFilled=async function(){if(!currentAssignment)return;const updates={};currentMeetings.forEach((m,i)=>{if(String(m.material||'').trim())updates[`pertemuan_${m.number}`]=meetingPayload(i)});const count=Object.keys(updates).length;if(!count){toast('Belum ada target materi yang diisi.');return}const btn=$('saveAllBtn');btn.disabled=true;btn.textContent='Menyimpan...';try{await update(ref(db,folderPath()),updates);if(!materialRoot[currentAssignment.assignmentKey])materialRoot[currentAssignment.assignmentKey]={};materialRoot[currentAssignment.assignmentKey][`semester_${$('semesterSelect').value}`]={...(materialRoot[currentAssignment.assignmentKey][`semester_${$('semesterSelect').value}`]||{}),...updates};currentMeetings.forEach(m=>{if(String(m.material||'').trim())m.status='saved'});renderMeetings();renderEditorHero();renderTarget();toast(`${count} target materi tersimpan.`)}catch(e){console.error(e);toast('Gagal menyimpan target materi.')}finally{btn.disabled=false;btn.textContent='Simpan Semua Terisi'}};
 window.deleteMeeting=async function(i){const m=currentMeetings[i];if(!m||!confirm(`Hapus target materi pertemuan ${m.number}?`))return;try{const sem=$('semesterSelect').value,updates={};updates[`${folderPath()}/pertemuan_${m.number}`]=null;if(!currentAssignment.virtualJuz)(currentAssignment.legacyAssignmentKeys||[]).forEach(k=>updates[`${MATERIAL_PATH}/${k}/semester_${sem}/pertemuan_${m.number}`]=null);await update(ref(db),updates);const semKey=`semester_${sem}`;[currentAssignment.assignmentKey,...(!currentAssignment.virtualJuz?(currentAssignment.legacyAssignmentKeys||[]):[])].forEach(k=>{if(materialRoot?.[k]?.[semKey])delete materialRoot[k][semKey][`pertemuan_${m.number}`]});m.material='';m.status='empty';renderMeetings();renderEditorHero();renderTarget();toast('Target materi dihapus.')}catch(e){console.error(e);toast('Gagal menghapus target.')}};
@@ -143,7 +209,7 @@ function completionId(r){return`${key(ident.code||ident.display||USER.username||
 window.saveReport=async function(){const r=findReportMaterial(reportMaterialKey);if(!r){toast('Pilih materi terlebih dahulu.');return}if(!reportStatus){toast('Pilih status capaian.');return}const cause=$('analysisCause').value.trim(),plan=$('followUpPlan').value.trim();if(reportStatus==='BELUM_TERCAPAI'&&(!cause||!plan)){toast('Lengkapi analisa penyebab dan rencana tindak lanjut.');return}const id=completionId(r),btn=$('saveReportBtn');btn.disabled=true;btn.textContent='Menyimpan...';try{const rec={id,targetId:reportRowId(r),materialKey:K.materialKey(r),teacherKey:key(ident.code||ident.display||USER.username||'guru'),teacher:ident.display||r.teacher||USER.label||USER.username||'',guruKode:ident.code||r.teacher||'',assignmentId:r.assignmentId||'',assignmentKey:r.assignmentKey||'',materialGroupKey:r.materialGroupKey||'',kelas:r.kelas||'',kelasLabel:r.kelasLabel||'',classNames:r.classNames||[],virtualJuz:r.virtualJuz||'',virtualJuzLabel:r.virtualJuzLabel||'',subject:r.subject||'',meetingNo:r.meetingNo||'',targetDate:String(r.date||'').slice(0,10),material:r.material||'',completedDate:reportStatus==='TERCAPAI'?today():'',checkedAt:nowIso(),updatedAt:nowIso(),status:reportStatus,statusAktif:reportStatus==='TERCAPAI',analisaPenyebab:reportStatus==='BELUM_TERCAPAI'?cause:'',rencanaTindakLanjut:reportStatus==='BELUM_TERCAPAI'?plan:'',source:'Guru Capaian Materi'};await set(ref(db,`cahaya_app/capaian_materi_guru/${id}`),rec);completions=K.records(completions).filter(c=>String(c.id||c._id)!==id);completions.push(rec);renderSuccess(r,rec);showView('success')}catch(e){console.error(e);toast('Gagal menyimpan laporan.')}finally{btn.disabled=false;btn.textContent='Simpan Laporan'}};
 function renderSuccess(r,c){$('successSummary').innerHTML=`<div class="summary-line"><span class="summary-line-icon">${bookIcon()}</span><span><small>Pelajaran</small><b>${esc(r.subject||'-')} • ${esc(r.virtualJuzLabel?`${r.virtualJuzLabel} • ${(r.classNames||[]).join(' + ')||r.kelas||'-'}`:((r.classNames||[]).join(' + ')||`${r.section||''} Kelas ${r.kelas||'-'}`))}</b></span></div><div class="summary-line"><span class="summary-line-icon">${bookIcon()}</span><span><small>Materi</small><b>${esc(r.material||'-')}</b></span></div><div class="summary-line"><span class="summary-line-icon green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="m8 12 3 3 5-6"/></svg></span><span><small>Status</small><b>${c.status==='TERCAPAI'?'Tercapai':'Belum Tercapai'}</b></span></div><div class="summary-line"><span class="summary-line-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></span><span><small>Waktu Laporan</small><b>${esc(new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short'}).format(new Date(c.checkedAt)))}</b></span></div>`}
 window.showHistory=function(){const rows=K.records(completions).filter(c=>K.teacherMatches({guru:c.teacher||c.guruKode},ident)).sort((a,b)=>String(b.checkedAt||b.updatedAt||'').localeCompare(String(a.checkedAt||a.updatedAt||'')));$('historyList').innerHTML=rows.length?rows.map(c=>`<article class="history-card"><div class="history-head"><b>${esc(c.material||'-')}</b><span class="history-status ${c.statusAktif===false?'bad':''}">${c.statusAktif===false?'Belum Tercapai':'Tercapai'}</span></div><small>${esc(c.subject||'-')} • Target ${esc(c.targetDate||'-')} • Dilaporkan ${esc(String(c.checkedAt||c.updatedAt||'').slice(0,10))}</small>${c.analisaPenyebab?`<small><b>Penyebab:</b> ${esc(c.analisaPenyebab)}</small>`:''}${c.rencanaTindakLanjut?`<small><b>Tindak lanjut:</b> ${esc(c.rencanaTindakLanjut)}</small>`:''}</article>`).join(''):'<div class="empty-box">Belum ada laporan capaian materi.</div>';showView('history')};
-async function load(){const[local,remote,events,mats,oldMats,comp]=await Promise.all([loadLocalSchedule(),val('cahaya_app/jadwal_pelajaran'),val(CALENDAR_PATH),val(MATERIAL_PATH),val(OLD_MATERIAL_PATH),val('cahaya_app/capaian_materi_guru')]);schedule=sanitizeSchedule(K.records(local).length?local:remote);ident=K.identityFromProfile(USER,schedule);assignments=buildAssignments();calendarEvents=K.records(events).map(normalizeEvent);materialRoot=mats||{};oldMaterialRoot=oldMats||{};completions=K.records(comp);populateAssignmentSelects();renderTarget();renderReportMaterials();const mode=new URLSearchParams(location.search).get('mode')||'target';showView(mode==='report'?'report':'target')}
+async function load(){const[local,remote,events,mats,oldMats,comp]=await Promise.all([loadLocalSchedule(),val('cahaya_app/jadwal_pelajaran'),val(CALENDAR_PATH),val(MATERIAL_PATH),val(OLD_MATERIAL_PATH),val('cahaya_app/capaian_materi_guru')]);schedule=sanitizeSchedule(K.records(local).length?local:remote);ident=K.identityFromProfile(USER,schedule);assignments=buildAssignments();calendarEvents=K.records(events).map(normalizeEvent);materialRoot=mats||{};oldMaterialRoot=oldMats||{};completions=K.records(comp);await seedMultazamBahasaArabTargets();populateAssignmentSelects();renderTarget();renderReportMaterials();const mode=new URLSearchParams(location.search).get('mode')||'target';showView(mode==='report'?'report':'target')}
 load().catch(e=>{console.error(e);toast('Data materi belum dapat dimuat.')});
 </script>
 </body>
