@@ -3781,6 +3781,7 @@ function sinkronkanBadgePintasanMobile() {
     // Halaman yang sudah dibuka disimpan sebagai iframe hidup. Saat kembali,
     // halaman tidak dimuat ulang sehingga query Firebase dan state form tidak berulang.
     // =========================================================
+    const CAHAYA_RELEASE = '20260910-v182';
     const CAHAYA_PAGE_CACHE_MAX = 10;
     const cahayaPageFrames = new Map();
 
@@ -3946,7 +3947,7 @@ function sinkronkanBadgePintasanMobile() {
         hideCahayaPageLoader();
       };
       frame.onerror = () => hideCahayaPageLoader();
-      frame.src = url;
+      try{const freshUrl=new URL(url,location.href);freshUrl.searchParams.set('release',CAHAYA_RELEASE);frame.src=freshUrl.href}catch(_){frame.src=url}
       trimPageFrameCache();
 
       document.getElementById('currentPageTitle').textContent = "CAHAYA APP";
@@ -4095,5 +4096,27 @@ function sinkronkanBadgePintasanMobile() {
     );
   </script>
   <script src="js/cahaya-responsive-v24.js?v=37" defer></script>
+  <script>
+    /* V182: pemeriksa rilis kecil. HTML tidak lagi dikunci cache lama. */
+    (()=>{
+      if(!('serviceWorker' in navigator))return;
+      const build='v162',storageKey='cahaya:active-sw-build';
+      const activateBuild=next=>{
+        const previous=sessionStorage.getItem(storageKey)||'';
+        sessionStorage.setItem(storageKey,next);
+        if(previous&&previous!==next){
+          try{sessionStorage.setItem('cahaya:release-refresh',String(Date.now()))}catch(_){}
+          location.reload();
+        }
+      };
+      navigator.serviceWorker.addEventListener('message',event=>{
+        if(event.data?.type==='CAHAYA_RELEASE_READY')activateBuild(String(event.data.build||build));
+      });
+      const check=()=>navigator.serviceWorker.register('./firebase-messaging-sw.js?v=162',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().then(()=>reg).catch(()=>reg)).catch(()=>null);
+      check().then(()=>activateBuild(build));
+      document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
+      setInterval(check,300000);
+    })();
+  </script>
 </body>
 </html>

@@ -1,11 +1,17 @@
-/* CAHAYA APP v159 — PWA + Firebase Messaging + on-demand app-shell cache */
-const CAHAYA_SW_BUILD='v159';
-const STATIC_CACHE='cahaya-static-v161';
+/* CAHAYA APP v162 — HTML selalu diperiksa ke jaringan; aset versi tetap hemat cache */
+const CAHAYA_SW_BUILD='v162';
+const STATIC_CACHE='cahaya-static-v162';
 self.addEventListener('install',event=>{self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{
   const keys=await caches.keys();
   await Promise.all(keys.filter(k=>k.startsWith('cahaya-static-')&&k!==STATIC_CACHE).map(k=>caches.delete(k)));
   await self.clients.claim();
+  const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  windows.forEach(client=>{
+    client.postMessage({type:'CAHAYA_RELEASE_READY',build:CAHAYA_SW_BUILD});
+    // Klien lama belum mengenal pesan rilis; navigasi sekali memastikan shell terbaru aktif.
+    if('navigate' in client)client.navigate(client.url).catch(()=>{});
+  });
 })());});
 
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
@@ -63,8 +69,8 @@ self.addEventListener('fetch',event=>{
   if(url.searchParams.get('noCache')==='1')return;
   const path=url.pathname.toLowerCase();
   const staticAsset=/\.(?:css|js|json|png|jpe?g|webp|svg|ico|woff2?|ttf)$/i.test(path);
-  const versionedHtml=path.endsWith('.html')&&url.searchParams.has('v');
+  const html=path.endsWith('.html')||req.mode==='navigate';
   const shellNavigation=req.mode==='navigate'&&(path==='/'||path.endsWith('/index.html')||path.endsWith('/main-dashboard.html'));
-  if(staticAsset||versionedHtml){event.respondWith(cacheFirst(req));return;}
-  if(shellNavigation){event.respondWith(networkFirst(req));}
+  if(html||shellNavigation){event.respondWith(networkFirst(req));return;}
+  if(staticAsset){event.respondWith(cacheFirst(req));}
 });
