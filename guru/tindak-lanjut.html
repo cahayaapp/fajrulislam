@@ -9,6 +9,7 @@
   <script src="../config/master-data.js"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
   <script src="../js/data-pusat.js"></script>
+  <script src="../js/guru-kpi-v144.js?v=181"></script>
   <style>
     :root{
       --navy:#0b397a;--navy2:#123f83;--blue:#1879ef;--cyan:#25b9d8;
@@ -91,7 +92,7 @@
       <span class="kicker">🎯 Tindak Lanjut Akademik</span>
       <h1 id="heroPeriod">Nilai Ujian Bulanan</h1>
       <p>Santri dengan nilai <strong>0–75</strong> otomatis masuk daftar tindak lanjut berdasarkan mata pelajaran dan kelas yang diampu guru.</p>
-      <div class="hero-meta"><span class="meta-pill">📚 Sumber: Nilai Ujian</span><span class="meta-pill" id="userBadge">Guru aktif</span></div>
+      <div class="hero-meta"><span class="meta-pill">📚 Sumber: Nilai Ujian Bulanan (sama dengan KPI KKM)</span><span class="meta-pill" id="userBadge">Guru aktif</span><span class="meta-pill" id="sourceStats">Memeriksa data...</span></div>
     </div>
     <svg class="hero-art" viewBox="0 0 140 110" fill="none" aria-hidden="true">
       <rect x="20" y="22" width="92" height="72" rx="18" fill="#E8F6FF" stroke="#7CC7F1" stroke-width="3"/>
@@ -152,13 +153,15 @@
 
 <script type="module">
 import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {getDatabase,ref,get,update,query,orderByChild,equalTo,limitToLast} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {getDatabase,ref,get,update} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const CFG=window.CAHAYA_CONFIG?.firebase;
 if(!CFG) throw new Error('Konfigurasi Firebase tidak tersedia.');
 const app=getApps().length?getApps()[0]:initializeApp(CFG);
 const db=getDatabase(app);
 const $=id=>document.getElementById(id);
+const K=window.CahayaGuruKPI;
+if(!K) throw new Error('Mesin KPI Guru tidak tersedia.');
 const USER=(()=>{try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}catch{return{}}})();
 const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const TEACHER_ALIASES={MULTAZAM:['multazam','multazam zakaria','abah multazam','dr multazam zakaria'],RASYIDIN:['rasyidin','rosyidin'],NAQIEB:['naqieb','muhammad naqieb'],ZAKY:['zaky','zaki','muhammad zaky'],RAHIEL:['rahiel','mika rahiel','mika rahiel yusuf'],FAIQ:['faiq','muhammad faiq'],FALAH:['falah','al falah','muhammad al falah','m al falah'],FATIMAH:['fatimah'],MEILISA:['meilisa','melisa'],ALAMANDA:['alamanda'],HANIF:['hanif'],AHMAD_IMBRON:['ahmad imbron','imbron'],ANDRIYANI:['andriyani','andriyani kusuma dayanti'],CAPPRY:['cappry','cappry yoda pratama'],DELLA:['della','della gustia'],EDWIN:['edwin','edwin romeo'],EVITA:['evita','evita hardyanti'],FENNY:['fenny','fenny ayu anggraeni'],LAILA:['laila','laila nuzlini'],MANDA:['manda','manda saputra'],MARYANA:['maryana'],NURUL_FADLILAH:['nurul fadlilah'],SHAFIRA:['shafira','shafira ramadanty']};
@@ -175,89 +178,105 @@ function academicYear(){const d=new Date(),y=d.getFullYear(),m=d.getMonth();retu
 function smartDefaultPeriod(){const d=new Date();let m=d.getMonth();if(d.getDate()<=7)m=(m+11)%12;return MONTHS[m]}
 async function localSchedule(){const ck='cahaya:guru:schedule:v151',c=cacheGet(ck,12*3600000);if(c)return c;try{const r=await fetch('../data/jadwal-pelajaran-awal-2026-2027.json',{cache:'force-cache'});if(r.ok){const v=await r.json();cacheSet(ck,v);return v}}catch(_){}return[]}
 function detectTeacherCode(schedule=[]){const direct=String(USER.teacherCode||USER.guruKode||'').trim().toUpperCase();if(direct)return direct;const names=[teacherName(),USER.username,String(USER.email||'').split('@')[0]].map(norm).filter(Boolean);for(const [code,aliases] of Object.entries(TEACHER_ALIASES)){if(aliases.some(a=>names.some(n=>n===norm(a)||n.includes(norm(a))||norm(a).includes(n))))return code}const match=rows(schedule).find(r=>names.some(n=>{const g=norm(r.guru||r.namaGuru||'');return g&&(g===n||g.includes(n)||n.includes(g))}));return String(match?.guruKode||'').trim().toUpperCase()||stable(teacherName())}
-function sameTeacher(record,code){const rc=String(record.guruKode||record.guru_kode||'').trim().toUpperCase();if(rc&&code&&rc===code)return true;const source=norm(record.guru_penguji||record.guru||record.nama_guru||'');const targets=[teacherName(),...(TEACHER_ALIASES[code]||[])].map(norm).filter(Boolean);return source&&targets.some(t=>source===t||source.includes(t)||t.includes(source))}
+function sameTeacher(record,code){
+  const codes=[record.guruKode,record.guru_kode,record.guruKodeKalender,record.teacherCode,record.kodeGuru].map(v=>String(v||'').trim().toUpperCase()).filter(Boolean);
+  if(code&&codes.includes(code))return true;
+  if(record.guruUid&&USER.uid&&String(record.guruUid)===String(USER.uid))return true;
+  const source=norm(record.guru_penguji||record.guru||record.nama_guru||record.namaGuru||record.teacher||'');
+  const targets=[teacherName(),USER.nama,USER.name,USER.username,...(TEACHER_ALIASES[code]||[])].map(norm).filter(Boolean);
+  return source&&targets.some(t=>source===t||source.includes(t)||t.includes(source));
+}
 function yearNode(){return stable($('academic').value)}
 function periodNode(){return stable($('period').value)}
-let TEACHER_CODE='',SCORES=[],FOLLOW={},SCHEDULE=[];
-function summaryPath(){return `cahaya_app/guru_nilai_ringkas/${stable(TEACHER_CODE)}/${yearNode()}/${periodNode()}`}
+let TEACHER_CODE='',SCORES=[],FOLLOW={},SCHEDULE=[],IDENT=null;
 function followPath(){return `cahaya_app/tindak_lanjut_guru/${stable(TEACHER_CODE)}/${yearNode()}/${periodNode()}`}
-function tindakIndexPath(){return `cahaya_app/guru_tindak_lanjut_index/${stable(TEACHER_CODE)}/${yearNode()}/${periodNode()}`}
-function recordKey(r){return stable(`${r.kelas||''}|${r.namaSantri||r.nama_santri||r.nama||''}|${r.mapel||r.mata_pelajaran||''}`)}
-function statusOf(r){return FOLLOW[recordKey(r)]?.status||'Belum Ditindaklanjuti'}
-function recordMonth(r){return String(r.periode||r.periode_ujian||r.bulan||'').trim()}
-function isCompleteScore(r){return true} // V176: tindak lanjut membaca semua nilai yang SUDAH TERSIMPAN, termasuk parsial/belum FINAL
-function teacherScheduleAllows(r){
-  const teacherRows=rows(SCHEDULE).filter(x=>String(x.guruKode||'').trim().toUpperCase()===TEACHER_CODE && x.aktif!==false);
-  if(!teacherRows.length)return true;
-  const subject=norm(r.mapel||r.mata_pelajaran||'');
-  const cls=norm(r.kelas||r.kelas_kelompok||'');
-  return teacherRows.some(x=>{
-    if(norm(x.mapel)!==subject)return false;
-    const scheduledClass=norm(x.kelas||'');
-    return !cls||!scheduledClass||cls===scheduledClass||cls.includes(scheduledClass)||scheduledClass.includes(cls);
-  });
+function legacyRecordKey(r){return stable(`${r.kelas||''}|${r.namaSantri||r.nama_santri||r.nama||''}|${r.mapel||r.mata_pelajaran||''}`)}
+function assessmentIdentity(r){
+  const saved=String(r.recordKey||r.firebaseKey||r.sourceRecordKey||r.id||'').trim();
+  if(saved)return saved;
+  return `${r.jenisUjian||r.jenis_ujian||''}|${r.kodePenilaian||r.kode_penilaian||''}|${r.tanggalUjian||r.tanggal_ujian||r.tanggal||''}|${r.sourcePath||''}`;
 }
-async function fallbackScores(force=false){
-  const period=$('period').value,cacheKey=`cahaya:tl:fallback:v182:${TEACHER_CODE}:${$('academic').value}:${period}`;
-  if(!force){const cached=cacheGet(cacheKey,2*60*1000);if(cached!==null)return cached}
-  try{
-    // V182: tindak lanjut membaca KEDUA jalur nilai (bulanan + non-bulanan),
-    // termasuk data parsial/belum FINAL. Jadwal tidak lagi dipakai untuk membuang
-    // record yang sudah jelas milik guru aktif.
-    const paths=['cahaya_app/nilai_ujian_bulanan','cahaya_app/nilai_ujian'];
-    // Jangan batasi 1.000 record: satu periode seluruh pesantren dapat melampaui angka itu
-    // dan record guru tertentu bisa terpotong dari hasil query.
-    const snaps=await Promise.all(paths.map(dbPath=>
-      get(query(ref(db,dbPath),orderByChild('periode_ujian'),equalTo(period))).catch(()=>null)
-    ));
-    const merged=new Map();
-    snaps.forEach((snap,i)=>{
-      const dbPath=paths[i];
-      Object.entries(snap?.val?.()||{}).forEach(([firebaseKey,r])=>merged.set(`${dbPath}|${firebaseKey}`,{firebaseKey,dbPath,...(r||{})}));
-    });
-    const out=[...merged.values()]
-      .filter(r=>sameTeacher(r,TEACHER_CODE))
-      .filter(r=>!r.tahun_akademik||String(r.tahun_akademik)===$('academic').value)
-      .map(r=>({
-        namaSantri:r.nama_santri||r.namaSantri||r.nama,kelas:r.kelas_kelompok||r.kelas||'',mapel:r.mata_pelajaran||r.mapel||'',
-        nilai:Number(r.nilai_total??r.nilai),kkm:Number(r.kkm||75),periode:r.periode_ujian||r.periode||r.bulan||period,bulan:r.bulan||r.periode_ujian||period,
-        tahunAkademik:r.tahun_akademik||r.tahunAjaran||$('academic').value,guru:r.guru_penguji||r.guru||'',guruKode:r.guruKode||TEACHER_CODE,
-        statusInput:r.status_input||r.statusInput||'',statusNilai:r.status_nilai||r.statusNilai||'',recordKey:r.firebaseKey||r.id||'',sourcePath:r.dbPath||'',updatedAt:r.updated_at||r.updatedAt||r.timestamp||'',
-        keterangan:r.keterangan||r.catatan||'',tanggalUjian:r.tanggal_ujian||r.tanggal||'',tanggalInput:r.updated_at||r.updatedAt||r.timestamp||'',jenisUjian:r.jenis_ujian||r.jenisUjian||(r.dbPath?.endsWith('nilai_ujian_bulanan')?'Bulanan':'Ujian'),kodePenilaian:r.kode_penilaian||r.kodePenilaian||''
-      })).filter(r=>Number.isFinite(r.nilai));
-    cacheSet(cacheKey,out);return out;
-  }catch(e){console.warn('Fallback nilai gagal:',e);return[]}
+function recordKey(r){return stable(`${r.kelas||''}|${r.namaSantri||r.nama_santri||r.nama||''}|${r.mapel||r.mata_pelajaran||''}|${assessmentIdentity(r)}`)}
+function followData(r){return FOLLOW[recordKey(r)]||FOLLOW[legacyRecordKey(r)]||{}}
+function statusOf(r){return followData(r)?.status||'Belum Ditindaklanjuti'}
+function monthInfo(){
+  const monthIndex=Math.max(0,MONTHS.indexOf($('period').value));
+  const parts=String($('academic').value||'').split('/').map(Number);
+  const startYear=parts[0]||new Date().getFullYear(),endYear=parts[1]||startYear+1;
+  const year=monthIndex>=6?startYear:endYear;
+  const mm=String(monthIndex+1).padStart(2,'0');
+  const last=String(new Date(year,monthIndex+1,0).getDate()).padStart(2,'0');
+  return {year,monthIndex,mm,start:`${year}-${mm}-01`,end:`${year}-${mm}-${last}`,prefix:`${year}-${mm}`};
+}
+function periodMatchesRecord(r){return K.monthMatch?K.monthMatch(r,monthInfo().prefix):true}
+function latestRowsExactlyLikeKpi(rows){
+  const latest=new Map();
+  rows.forEach(r=>{
+    const nm=K.key(r.nama_santri||r.namaSantri||r.nama),cls=K.norm(r.kelas_kelompok||r.kelas),sub=K.norm(r.mata_pelajaran||r.mapel);
+    if(!nm||!cls||!sub)return;
+    const k=`${nm}|${cls}|${sub}`,prev=latest.get(k);
+    if(!prev||String(K.dateOf(r)||'')>=String(K.dateOf(prev)||''))latest.set(k,r);
+  });
+  return [...latest.values()];
+}
+function normalizeExamRow(r){
+  return {
+    namaSantri:r.nama_santri||r.namaSantri||r.nama,
+    kelas:r.kelas_kelompok||r.kelas||'',
+    mapel:r.mata_pelajaran||r.mataPelajaran||r.mapel||'',
+    nilai:Number(r.nilai_total??r.nilai),
+    kkm:Number(r.kkm??r.nilai_kkm??r.KKM??75),
+    periode:r.periode_ujian||r.periode||r.bulan||$('period').value,
+    bulan:r.bulan||r.periode_ujian||$('period').value,
+    tahunAkademik:r.tahun_akademik||r.tahunAjaran||$('academic').value,
+    guru:r.guru_penguji||r.guru||r.namaGuru||'',
+    guruKode:r.guruKode||r.guruKodeKalender||TEACHER_CODE,
+    statusInput:r.status_input||r.statusInput||'',
+    statusNilai:r.status_nilai||r.statusNilai||'',
+    recordKey:r.id||r.firebaseKey||'',
+    sourcePath:'cahaya_app/nilai_ujian_bulanan',
+    updatedAt:r.updated_at||r.updatedAt||r.timestamp||r.createdAt||'',
+    keterangan:r.keterangan||r.catatan||'',
+    tanggalUjian:r.tanggal_ujian||r.tanggalUjian||r.tanggal||'',
+    tanggalInput:r.updated_at||r.updatedAt||r.timestamp||r.createdAt||'',
+    jenisUjian:r.jenis_ujian||r.jenisUjian||'Bulanan',
+    kodePenilaian:r.kode_penilaian||r.kodePenilaian||'',
+    sumberData:'Nilai Ujian Bulanan'
+  };
+}
+async function loadKpiSource(force=false){
+  const scheduleCache='cahaya:tl:v184:kpi-schedule';
+  const scoreCache='cahaya:tl:v184:nilai-ujian-bulanan';
+  if(force){clearCache(scheduleCache);clearCache(scoreCache)}
+  let scheduleVal=cacheGet(scheduleCache,5*60*1000),scoreVal=cacheGet(scoreCache,2*60*1000);
+  if(scheduleVal===null){scheduleVal=(await get(ref(db,'cahaya_app/jadwal_pelajaran'))).val()||{};cacheSet(scheduleCache,scheduleVal)}
+  if(scoreVal===null){scoreVal=(await get(ref(db,'cahaya_app/nilai_ujian_bulanan'))).val()||{};cacheSet(scoreCache,scoreVal)}
+  SCHEDULE=K.collect(scheduleVal,x=>x&&('hari' in x)&&('mapel' in x||'mataPelajaran' in x));
+  IDENT=K.identityFromProfile(USER,SCHEDULE);
+  TEACHER_CODE=IDENT.code||detectTeacherCode(SCHEDULE);
+  const kpi=K.compute({month:monthInfo().prefix,identity:IDENT,profile:USER,schedule:SCHEDULE,scores:K.records(scoreVal),attendance:[],tahfiz:[],observations:[],materials:{},learning:[],completions:[],calendar:[],residentSettings:[],worshipAttendance:[]});
+  return latestRowsExactlyLikeKpi(kpi.score.rows||[]).map(normalizeExamRow).filter(r=>Number.isFinite(r.nilai));
 }
 async function loadData(force=false){
-  $('list').innerHTML='<div class="loading">Memuat nilai ujian periode '+esc($('period').value)+'...</div>';
-  const scoreCache=`cahaya:tl:scores:${summaryPath()}`,indexCache=`cahaya:tl:index:${tindakIndexPath()}`,followCache=`cahaya:tl:follow:${followPath()}`;
-  if(force){clearCache(scoreCache);clearCache(indexCache);clearCache(followCache);clearCache(`cahaya:tl:fallback:v182:${TEACHER_CODE}:${$('academic').value}:${$('period').value}`)}
+  $('list').innerHTML='<div class="loading">Memuat Nilai Ujian Bulanan periode '+esc($('period').value)+'...</div>';
   try{
-    let scoreVal=cacheGet(scoreCache),indexVal=cacheGet(indexCache),followVal=cacheGet(followCache);
-    if(scoreVal===null){const snap=await get(ref(db,summaryPath()));scoreVal=snap.val()||{};cacheSet(scoreCache,scoreVal)}
-    if(indexVal===null){const snap=await get(ref(db,tindakIndexPath()));indexVal=snap.val()||{};cacheSet(indexCache,indexVal)}
+    SCORES=await loadKpiSource(force);
+    const followCache=`cahaya:tl:follow:${followPath()}`;
+    if(force)clearCache(followCache);
+    let followVal=cacheGet(followCache);
     if(followVal===null){const snap=await get(ref(db,followPath()));followVal=snap.val()||{};cacheSet(followCache,followVal)}
     FOLLOW=followVal||{};
-    // Indeks khusus menjadi sumber utama. Ringkasan bulanan + raw data tetap dibaca
-    // sebagai kompatibilitas agar nilai yang sudah tersimpan sebelum V182 langsung muncul.
-    const fallback=await fallbackScores(force);
-    SCORES=[...rows(indexVal),...rows(scoreVal),...fallback];
+    const low=SCORES.filter(r=>Number(r.nilai)>=0&&Number(r.nilai)<=75).length;
+    $('sourceStats').textContent=`KPI membaca ${SCORES.length} nilai • ${low} nilai 0–75`;
     $('heroPeriod').textContent=`Tindak Lanjut • ${$('period').value}`;
     render();
-  }catch(e){console.error(e);$('list').innerHTML='<div class="empty"><div class="empty-icon">!</div>Data belum dapat dimuat. Tekan Segarkan Data.</div>';toast('Gagal memuat data tindak lanjut.')}
+  }catch(e){console.error(e);$('list').innerHTML='<div class="empty"><div class="empty-icon">!</div>Data belum dapat dimuat. Tekan Segarkan Data.</div>';toast('Gagal memuat Nilai Ujian Bulanan.')}
 }
 function actionableScores(){
-  const latest=new Map();
-  SCORES.forEach(r=>{
-    const n=Number(r.nilai??r.nilai_total);if(!Number.isFinite(n)||n<0)return;
-    if(recordMonth(r)&&recordMonth(r)!==$ ('period').value)return;
-    const k=recordKey(r),old=latest.get(k),stamp=String(r.updatedAt||r.updated_at||r.timestamp||r.tanggalInput||'');
-    const oldStamp=String(old?.updatedAt||old?.updated_at||old?.timestamp||old?.tanggalInput||'');
-    if(!old||stamp>=oldStamp)latest.set(k,{...r,nilai:n,kkm:75});
-  });
-  // Tentukan record TERBARU terlebih dahulu, baru cek ambang 0–75.
-  // Dengan demikian nilai remedial/perbaikan >75 tidak meninggalkan nilai rendah lama di daftar.
-  return [...latest.values()].filter(r=>r.nilai<=75).sort((a,b)=>a.nilai-b.nilai||String(a.namaSantri||'').localeCompare(String(b.namaSantri||''),'id'));
+  return SCORES
+    .filter(r=>Number.isFinite(Number(r.nilai))&&Number(r.nilai)>=0&&Number(r.nilai)<=75)
+    .map(r=>({...r,nilai:Number(r.nilai)}))
+    .sort((a,b)=>a.nilai-b.nilai||String(a.namaSantri||'').localeCompare(String(b.namaSantri||''),'id'));
 }
 function render(){
   const all=actionableScores(),st=$('status').value,sub=$('subject').value,q=norm($('search').value);
@@ -265,7 +284,7 @@ function render(){
   const cur=$('subject').value;$('subject').innerHTML='<option value="">Semua Mapel</option>'+subjects.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if(subjects.includes(cur))$('subject').value=cur;
   const filtered=all.filter(r=>(!sub||r.mapel===sub)&&(!st||statusOf(r)===st)&&(!q||norm(`${r.namaSantri} ${r.kelas} ${r.mapel}`).includes(q)));
   const critical=all.filter(r=>r.nilai<=60).length,belum=all.filter(r=>statusOf(r)==='Belum Ditindaklanjuti').length,proses=all.filter(r=>statusOf(r)==='Dalam Proses').length,done=all.filter(r=>statusOf(r)==='Selesai').length;
-  $('metrics').innerHTML=`<div class="metric red"><div class="metric-icon">!</div><small>Nilai Tersimpan 0–75</small><b>${all.length}</b></div><div class="metric amber"><div class="metric-icon">↓</div><small>Prioritas ≤60</small><b>${critical}</b></div><div class="metric"><div class="metric-icon">↻</div><small>Dalam Proses</small><b>${proses}</b></div><div class="metric green"><div class="metric-icon">✓</div><small>Selesai</small><b>${done}</b></div>`;
+  $('metrics').innerHTML=`<div class="metric red"><div class="metric-icon">!</div><small>Nilai 0–75</small><b>${all.length}</b></div><div class="metric amber"><div class="metric-icon">↓</div><small>Prioritas ≤60</small><b>${critical}</b></div><div class="metric"><div class="metric-icon">↻</div><small>Dalam Proses</small><b>${proses}</b></div><div class="metric green"><div class="metric-icon">✓</div><small>Selesai</small><b>${done}</b></div>`;
   $('list').innerHTML=filtered.length?filtered.map(r=>{
     const status=statusOf(r),tagClass=status==='Selesai'?'green':status==='Dalam Proses'?'amber':'red';
     const note=String(r.keterangan||'').trim();
@@ -273,15 +292,15 @@ function render(){
     const finalStage=String(r.statusNilai||r.status_nilai||'').toUpperCase();
     const scoreStage=finalStage==='FINAL'?'FINAL':(inputStage==='parsial'?'Nilai Parsial':'Belum Final');
     const stageClass=finalStage==='FINAL'?'green':(inputStage==='parsial'?'amber':'');
-    return `<article class="student"><div class="student-main"><div class="score ${r.nilai>60?'mid':''}">${Number(r.nilai).toFixed(Number(r.nilai)%1?1:0)}</div><div class="student-copy"><h3>${esc(r.namaSantri||r.nama_santri||r.nama)}</h3><div class="context">${esc(r.kelas||'Tanpa kelas')} • ${esc(r.mapel||'Mata pelajaran')}</div><div class="tags"><span class="tag red">Nilai ${Number(r.nilai).toFixed(1)}</span><span class="tag">Periode ${esc($('period').value)}</span><span class="tag">${esc(r.jenisUjian||'Ujian')}</span><span class="tag ${stageClass}">${esc(scoreStage)}</span><span class="tag ${tagClass}">${esc(status)}</span></div>${note?`<div class="exam-note"><strong>Keterangan guru saat input nilai:</strong> ${esc(note)}</div>`:''}</div></div><div class="student-actions"><button class="btn primary" data-key="${esc(recordKey(r))}">${status==='Belum Ditindaklanjuti'?'Tindak Lanjut':'Perbarui'}</button></div></article>`
-  }).join(''):`<div class="empty"><div class="empty-icon">✓</div>Tidak ada nilai tersimpan 0–75 pada filter ini, termasuk data yang belum FINAL.${belum===0&&all.length?' Semua data yang ada sudah ditindaklanjuti.':''}</div>`;
+    return `<article class="student"><div class="student-main"><div class="score ${r.nilai>60?'mid':''}">${Number(r.nilai).toFixed(Number(r.nilai)%1?1:0)}</div><div class="student-copy"><h3>${esc(r.namaSantri||r.nama_santri||r.nama)}</h3><div class="context">${esc(r.kelas||'Tanpa kelas')} • ${esc(r.mapel||'Mata pelajaran')}</div><div class="tags"><span class="tag red">Nilai ${Number(r.nilai).toFixed(1)}</span><span class="tag">Periode ${esc($('period').value)}</span><span class="tag">${esc(r.jenisUjian||'Ujian')}</span><span class="tag">${esc(r.sumberData||'Nilai Ujian')}</span><span class="tag ${stageClass}">${esc(scoreStage)}</span><span class="tag ${tagClass}">${esc(status)}</span></div>${note?`<div class="exam-note"><strong>Keterangan guru saat input nilai:</strong> ${esc(note)}</div>`:''}</div></div><div class="student-actions"><button class="btn primary" data-key="${esc(recordKey(r))}">${status==='Belum Ditindaklanjuti'?'Tindak Lanjut':'Perbarui'}</button></div></article>`
+  }).join(''):`<div class="empty"><div class="empty-icon">✓</div>Tidak ada Nilai Ujian Bulanan 0–75 pada periode dan filter ini.${belum===0&&all.length?' Semua data yang ada sudah ditindaklanjuti.':''}</div>`;
   document.querySelectorAll('.student-actions button[data-key]').forEach(btn=>btn.onclick=()=>openModal(btn.dataset.key));
 }
 function openModal(k){
-  const r=actionableScores().find(x=>recordKey(x)===k);if(!r)return;const fu=FOLLOW[k]||{};
+  const r=actionableScores().find(x=>recordKey(x)===k);if(!r)return;const fu=followData(r);
   $('recordKey').value=k;
   $('summary').innerHTML=`<div class="summary-score">${Number(r.nilai).toFixed(Number(r.nilai)%1?1:0)}</div><div><b>${esc(r.namaSantri||r.nama_santri||r.nama)}</b><p>${esc(r.kelas||'')} • ${esc(r.mapel||'')} • Periode ${esc($('period').value)}</p></div>`;
-  const note=String(r.keterangan||'').trim();$('sourceNote').hidden=!note;$('sourceNote').innerHTML=note?`<b>Keterangan dari Nilai Ujian</b>${esc(note)}`:'';
+  const note=String(r.keterangan||'').trim();$('sourceNote').hidden=!note;$('sourceNote').innerHTML=note?`<b>Keterangan dari ${esc(r.sumberData||r.jenisUjian||'Nilai Ujian')}</b>${esc(note)}`:'';
   $('clarification').value=fu.klarifikasiSebab??fu.analisaPenyebab??'';
   $('improvementTarget').value=fu.targetPerbaikan??'';
   $('strategy').value=fu.strategiPerbaikan??fu.rencanaTindakLanjut??'';
@@ -294,7 +313,7 @@ $('form').onsubmit=async e=>{
     namaSantri:r.namaSantri||r.nama_santri||r.nama,kelas:r.kelas||'',mapel:r.mapel||'',nilaiAwal:Number(r.nilai),kkm:75,
     periode:$('period').value,tahunAjaran:$('academic').value,klarifikasiSebab:$('clarification').value.trim(),
     targetPerbaikan:$('improvementTarget').value.trim(),strategiPerbaikan:$('strategy').value.trim(),status:$('followStatus').value,
-    keteranganNilai:r.keterangan||'',tanggalUjian:r.tanggalUjian||'',sourceRecordKey:r.recordKey||'',sumberData:'Nilai Ujian',
+    keteranganNilai:r.keterangan||'',tanggalUjian:r.tanggalUjian||'',sourceRecordKey:r.recordKey||'',sumberData:r.sumberData||r.jenisUjian||'Nilai Ujian',jenisUjian:r.jenisUjian||'',kodePenilaian:r.kodePenilaian||'',
     guru:teacherName(),guruKode:TEACHER_CODE,updatedAt:new Date().toISOString(),
     analisaPenyebab:$('clarification').value.trim(),rencanaTindakLanjut:$('strategy').value.trim()
   };
@@ -307,7 +326,7 @@ $('period').onchange=()=>loadData();$('academic').onchange=()=>loadData();
 (async()=>{
   $('userBadge').textContent=teacherName();$('period').innerHTML=MONTHS.map(x=>`<option>${x}</option>`).join('');$('period').value=smartDefaultPeriod();
   const ay=academicYear(), years=[...new Set([ay,'2026/2027'])];$('academic').innerHTML=years.map(y=>`<option>${y}</option>`).join('');$('academic').value=years.includes('2026/2027')?'2026/2027':years[0];
-  SCHEDULE=await localSchedule();TEACHER_CODE=detectTeacherCode(SCHEDULE);await loadData();
+  await loadData();
 })().catch(e=>{console.error(e);$('list').innerHTML='<div class="empty"><div class="empty-icon">!</div>Halaman gagal disiapkan.</div>'});
 </script>
 </body>
