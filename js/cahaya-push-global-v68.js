@@ -2,7 +2,8 @@
 (function(){
   'use strict';
 
-  const VERSION='68';
+  const VERSION='69';
+  const SERVICE_WORKER_VERSION='164';
   const state={registration:null,messaging:null,ready:false,currentToken:''};
   const db=()=>firebase.database();
   const clean=(v='')=>String(v??'').trim();
@@ -40,7 +41,7 @@
     return /\/keuangan\//i.test(location.pathname)?'../':'';
   }
 
-  function serviceWorkerUrl(){return `${basePath()}firebase-messaging-sw.js?v=${VERSION}`}
+  function serviceWorkerUrl(){return `${basePath()}firebase-messaging-sw.js?v=${SERVICE_WORKER_VERSION}`}
   function serviceWorkerScope(){return basePath()||'./'}
 
   function hidePrompt(){document.getElementById('cahayaPushGlobalPromptV68')?.remove()}

@@ -3781,7 +3781,7 @@ function sinkronkanBadgePintasanMobile() {
     // Halaman yang sudah dibuka disimpan sebagai iframe hidup. Saat kembali,
     // halaman tidak dimuat ulang sehingga query Firebase dan state form tidak berulang.
     // =========================================================
-    const CAHAYA_RELEASE = '20260910-v183';
+    const CAHAYA_RELEASE = '20260910-v184';
     const CAHAYA_PAGE_CACHE_MAX = 10;
     const cahayaPageFrames = new Map();
 
@@ -4078,7 +4078,7 @@ function sinkronkanBadgePintasanMobile() {
        agar pesan tidak ditimpa, room tidak terhapus, dan inbox tetap sinkron. */
   </script>
   <script src="js/pengurus-whatsapp-chat.js?v=39"></script>
-  <script src="js/cahaya-push-global-v68.js?v=68"></script>
+  <script src="js/cahaya-push-global-v68.js?v=69"></script>
 
   <script>
     window.addEventListener(
@@ -4100,7 +4100,7 @@ function sinkronkanBadgePintasanMobile() {
     /* V182: pemeriksa rilis kecil. HTML tidak lagi dikunci cache lama. */
     (()=>{
       if(!('serviceWorker' in navigator))return;
-      const build='v163',storageKey='cahaya:active-sw-build';
+      const build='v164',storageKey='cahaya:active-sw-build';
       const activateBuild=next=>{
         const previous=sessionStorage.getItem(storageKey)||'';
         sessionStorage.setItem(storageKey,next);
@@ -4112,7 +4112,7 @@ function sinkronkanBadgePintasanMobile() {
       navigator.serviceWorker.addEventListener('message',event=>{
         if(event.data?.type==='CAHAYA_RELEASE_READY')activateBuild(String(event.data.build||build));
       });
-      const check=()=>navigator.serviceWorker.register('./firebase-messaging-sw.js?v=163',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().then(()=>reg).catch(()=>reg)).catch(()=>null);
+      const check=()=>navigator.serviceWorker.register('./firebase-messaging-sw.js?v=164',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().then(()=>reg).catch(()=>reg)).catch(()=>null);
       check().then(()=>activateBuild(build));
       document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
       setInterval(check,300000);

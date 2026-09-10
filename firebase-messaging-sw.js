@@ -1,17 +1,13 @@
-/* CAHAYA APP v163 — HTML selalu diperiksa ke jaringan; aset versi tetap hemat cache */
-const CAHAYA_SW_BUILD='v163';
-const STATIC_CACHE='cahaya-static-v163';
+/* CAHAYA APP v164 — HTML selalu diperiksa ke jaringan; aset versi tetap hemat cache */
+const CAHAYA_SW_BUILD='v164';
+const STATIC_CACHE='cahaya-static-v164';
 self.addEventListener('install',event=>{self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{
   const keys=await caches.keys();
   await Promise.all(keys.filter(k=>k.startsWith('cahaya-static-')&&k!==STATIC_CACHE).map(k=>caches.delete(k)));
   await self.clients.claim();
   const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-  windows.forEach(client=>{
-    client.postMessage({type:'CAHAYA_RELEASE_READY',build:CAHAYA_SW_BUILD});
-    // Klien lama belum mengenal pesan rilis; navigasi sekali memastikan shell terbaru aktif.
-    if('navigate' in client)client.navigate(client.url).catch(()=>{});
-  });
+  windows.forEach(client=>client.postMessage({type:'CAHAYA_RELEASE_READY',build:CAHAYA_SW_BUILD}));
 })());});
 
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
