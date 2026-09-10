@@ -181,6 +181,7 @@ function periodNode(){return stable($('period').value)}
 let TEACHER_CODE='',SCORES=[],FOLLOW={},SCHEDULE=[];
 function summaryPath(){return `cahaya_app/guru_nilai_ringkas/${stable(TEACHER_CODE)}/${yearNode()}/${periodNode()}`}
 function followPath(){return `cahaya_app/tindak_lanjut_guru/${stable(TEACHER_CODE)}/${yearNode()}/${periodNode()}`}
+function tindakIndexPath(){return `cahaya_app/guru_tindak_lanjut_index/${stable(TEACHER_CODE)}/${yearNode()}/${periodNode()}`}
 function recordKey(r){return stable(`${r.kelas||''}|${r.namaSantri||r.nama_santri||r.nama||''}|${r.mapel||r.mata_pelajaran||''}`)}
 function statusOf(r){return FOLLOW[recordKey(r)]?.status||'Belum Ditindaklanjuti'}
 function recordMonth(r){return String(r.periode||r.periode_ujian||r.bulan||'').trim()}
@@ -196,43 +197,51 @@ function teacherScheduleAllows(r){
     return !cls||!scheduledClass||cls===scheduledClass||cls.includes(scheduledClass)||scheduledClass.includes(cls);
   });
 }
-async function fallbackScores(){
-  const period=$('period').value,cacheKey=`cahaya:tl:fallback:v176:${TEACHER_CODE}:${$('academic').value}:${period}`;
-  const cached=cacheGet(cacheKey,15*60*1000);if(cached)return cached;
+async function fallbackScores(force=false){
+  const period=$('period').value,cacheKey=`cahaya:tl:fallback:v182:${TEACHER_CODE}:${$('academic').value}:${period}`;
+  if(!force){const cached=cacheGet(cacheKey,2*60*1000);if(cached!==null)return cached}
   try{
-    // V176: baca nilai bulanan yang tersimpan walau sesi belum FINAL.
-    // Query ganda menjaga kompatibilitas data lama yang menyimpan periode pada `bulan`.
-    const [snapPeriode,snapBulan]=await Promise.all([
-      get(query(ref(db,'cahaya_app/nilai_ujian_bulanan'),orderByChild('periode_ujian'),equalTo(period),limitToLast(1000))),
-      get(query(ref(db,'cahaya_app/nilai_ujian_bulanan'),orderByChild('bulan'),equalTo(period),limitToLast(1000))).catch(()=>null)
-    ]);
-    const raw={...(snapBulan?.val?.()||{}),...(snapPeriode?.val?.()||{})};
-    const out=Object.entries(raw).map(([firebaseKey,r])=>({firebaseKey,...(r||{})}))
+    // V182: tindak lanjut membaca KEDUA jalur nilai (bulanan + non-bulanan),
+    // termasuk data parsial/belum FINAL. Jadwal tidak lagi dipakai untuk membuang
+    // record yang sudah jelas milik guru aktif.
+    const paths=['cahaya_app/nilai_ujian_bulanan','cahaya_app/nilai_ujian'];
+    // Jangan batasi 1.000 record: satu periode seluruh pesantren dapat melampaui angka itu
+    // dan record guru tertentu bisa terpotong dari hasil query.
+    const snaps=await Promise.all(paths.map(dbPath=>
+      get(query(ref(db,dbPath),orderByChild('periode_ujian'),equalTo(period))).catch(()=>null)
+    ));
+    const merged=new Map();
+    snaps.forEach((snap,i)=>{
+      const dbPath=paths[i];
+      Object.entries(snap?.val?.()||{}).forEach(([firebaseKey,r])=>merged.set(`${dbPath}|${firebaseKey}`,{firebaseKey,dbPath,...(r||{})}));
+    });
+    const out=[...merged.values()]
       .filter(r=>sameTeacher(r,TEACHER_CODE))
       .filter(r=>!r.tahun_akademik||String(r.tahun_akademik)===$('academic').value)
       .map(r=>({
         namaSantri:r.nama_santri||r.namaSantri||r.nama,kelas:r.kelas_kelompok||r.kelas||'',mapel:r.mata_pelajaran||r.mapel||'',
         nilai:Number(r.nilai_total??r.nilai),kkm:Number(r.kkm||75),periode:r.periode_ujian||r.periode||r.bulan||period,bulan:r.bulan||r.periode_ujian||period,
         tahunAkademik:r.tahun_akademik||r.tahunAjaran||$('academic').value,guru:r.guru_penguji||r.guru||'',guruKode:r.guruKode||TEACHER_CODE,
-        statusInput:r.status_input||r.statusInput||'',statusNilai:r.status_nilai||r.statusNilai||'',recordKey:r.firebaseKey||r.id||'',updatedAt:r.updated_at||r.updatedAt||r.timestamp||'',
-        keterangan:r.keterangan||r.catatan||'',tanggalUjian:r.tanggal_ujian||r.tanggal||'',tanggalInput:r.updated_at||r.updatedAt||r.timestamp||'',jenisUjian:r.jenis_ujian||r.jenisUjian||'Bulanan'
+        statusInput:r.status_input||r.statusInput||'',statusNilai:r.status_nilai||r.statusNilai||'',recordKey:r.firebaseKey||r.id||'',sourcePath:r.dbPath||'',updatedAt:r.updated_at||r.updatedAt||r.timestamp||'',
+        keterangan:r.keterangan||r.catatan||'',tanggalUjian:r.tanggal_ujian||r.tanggal||'',tanggalInput:r.updated_at||r.updatedAt||r.timestamp||'',jenisUjian:r.jenis_ujian||r.jenisUjian||(r.dbPath?.endsWith('nilai_ujian_bulanan')?'Bulanan':'Ujian'),kodePenilaian:r.kode_penilaian||r.kodePenilaian||''
       })).filter(r=>Number.isFinite(r.nilai));
     cacheSet(cacheKey,out);return out;
   }catch(e){console.warn('Fallback nilai gagal:',e);return[]}
 }
 async function loadData(force=false){
   $('list').innerHTML='<div class="loading">Memuat nilai ujian periode '+esc($('period').value)+'...</div>';
-  const scoreCache=`cahaya:tl:scores:${summaryPath()}`,followCache=`cahaya:tl:follow:${followPath()}`;
-  if(force){clearCache(scoreCache);clearCache(followCache)}
+  const scoreCache=`cahaya:tl:scores:${summaryPath()}`,indexCache=`cahaya:tl:index:${tindakIndexPath()}`,followCache=`cahaya:tl:follow:${followPath()}`;
+  if(force){clearCache(scoreCache);clearCache(indexCache);clearCache(followCache);clearCache(`cahaya:tl:fallback:v182:${TEACHER_CODE}:${$('academic').value}:${$('period').value}`)}
   try{
-    let scoreVal=cacheGet(scoreCache),followVal=cacheGet(followCache);
+    let scoreVal=cacheGet(scoreCache),indexVal=cacheGet(indexCache),followVal=cacheGet(followCache);
     if(scoreVal===null){const snap=await get(ref(db,summaryPath()));scoreVal=snap.val()||{};cacheSet(scoreCache,scoreVal)}
+    if(indexVal===null){const snap=await get(ref(db,tindakIndexPath()));indexVal=snap.val()||{};cacheSet(indexCache,indexVal)}
     if(followVal===null){const snap=await get(ref(db,followPath()));followVal=snap.val()||{};cacheSet(followCache,followVal)}
     FOLLOW=followVal||{};
-    // V176: selalu gabungkan indeks ringkas dengan data Nilai Ujian mentah.
-    // Ini penting karena data lama/parsial/belum FINAL tidak selalu lengkap di indeks ringkas.
-    const fallback=await fallbackScores();
-    SCORES=[...rows(scoreVal),...fallback];
+    // Indeks khusus menjadi sumber utama. Ringkasan bulanan + raw data tetap dibaca
+    // sebagai kompatibilitas agar nilai yang sudah tersimpan sebelum V182 langsung muncul.
+    const fallback=await fallbackScores(force);
+    SCORES=[...rows(indexVal),...rows(scoreVal),...fallback];
     $('heroPeriod').textContent=`Tindak Lanjut • ${$('period').value}`;
     render();
   }catch(e){console.error(e);$('list').innerHTML='<div class="empty"><div class="empty-icon">!</div>Data belum dapat dimuat. Tekan Segarkan Data.</div>';toast('Gagal memuat data tindak lanjut.')}
@@ -240,14 +249,15 @@ async function loadData(force=false){
 function actionableScores(){
   const latest=new Map();
   SCORES.forEach(r=>{
-    const n=Number(r.nilai??r.nilai_total);if(!Number.isFinite(n)||n<0||n>75)return;
+    const n=Number(r.nilai??r.nilai_total);if(!Number.isFinite(n)||n<0)return;
     if(recordMonth(r)&&recordMonth(r)!==$ ('period').value)return;
-    if(!teacherScheduleAllows(r))return;
     const k=recordKey(r),old=latest.get(k),stamp=String(r.updatedAt||r.updated_at||r.timestamp||r.tanggalInput||'');
     const oldStamp=String(old?.updatedAt||old?.updated_at||old?.timestamp||old?.tanggalInput||'');
     if(!old||stamp>=oldStamp)latest.set(k,{...r,nilai:n,kkm:75});
   });
-  return [...latest.values()].sort((a,b)=>a.nilai-b.nilai||String(a.namaSantri||'').localeCompare(String(b.namaSantri||''),'id'));
+  // Tentukan record TERBARU terlebih dahulu, baru cek ambang 0–75.
+  // Dengan demikian nilai remedial/perbaikan >75 tidak meninggalkan nilai rendah lama di daftar.
+  return [...latest.values()].filter(r=>r.nilai<=75).sort((a,b)=>a.nilai-b.nilai||String(a.namaSantri||'').localeCompare(String(b.namaSantri||''),'id'));
 }
 function render(){
   const all=actionableScores(),st=$('status').value,sub=$('subject').value,q=norm($('search').value);
@@ -263,7 +273,7 @@ function render(){
     const finalStage=String(r.statusNilai||r.status_nilai||'').toUpperCase();
     const scoreStage=finalStage==='FINAL'?'FINAL':(inputStage==='parsial'?'Nilai Parsial':'Belum Final');
     const stageClass=finalStage==='FINAL'?'green':(inputStage==='parsial'?'amber':'');
-    return `<article class="student"><div class="student-main"><div class="score ${r.nilai>60?'mid':''}">${Number(r.nilai).toFixed(Number(r.nilai)%1?1:0)}</div><div class="student-copy"><h3>${esc(r.namaSantri||r.nama_santri||r.nama)}</h3><div class="context">${esc(r.kelas||'Tanpa kelas')} • ${esc(r.mapel||'Mata pelajaran')}</div><div class="tags"><span class="tag red">Nilai ${Number(r.nilai).toFixed(1)}</span><span class="tag">Periode ${esc($('period').value)}</span><span class="tag ${stageClass}">${esc(scoreStage)}</span><span class="tag ${tagClass}">${esc(status)}</span></div>${note?`<div class="exam-note"><strong>Keterangan guru saat input nilai:</strong> ${esc(note)}</div>`:''}</div></div><div class="student-actions"><button class="btn primary" data-key="${esc(recordKey(r))}">${status==='Belum Ditindaklanjuti'?'Tindak Lanjut':'Perbarui'}</button></div></article>`
+    return `<article class="student"><div class="student-main"><div class="score ${r.nilai>60?'mid':''}">${Number(r.nilai).toFixed(Number(r.nilai)%1?1:0)}</div><div class="student-copy"><h3>${esc(r.namaSantri||r.nama_santri||r.nama)}</h3><div class="context">${esc(r.kelas||'Tanpa kelas')} • ${esc(r.mapel||'Mata pelajaran')}</div><div class="tags"><span class="tag red">Nilai ${Number(r.nilai).toFixed(1)}</span><span class="tag">Periode ${esc($('period').value)}</span><span class="tag">${esc(r.jenisUjian||'Ujian')}</span><span class="tag ${stageClass}">${esc(scoreStage)}</span><span class="tag ${tagClass}">${esc(status)}</span></div>${note?`<div class="exam-note"><strong>Keterangan guru saat input nilai:</strong> ${esc(note)}</div>`:''}</div></div><div class="student-actions"><button class="btn primary" data-key="${esc(recordKey(r))}">${status==='Belum Ditindaklanjuti'?'Tindak Lanjut':'Perbarui'}</button></div></article>`
   }).join(''):`<div class="empty"><div class="empty-icon">✓</div>Tidak ada nilai tersimpan 0–75 pada filter ini, termasuk data yang belum FINAL.${belum===0&&all.length?' Semua data yang ada sudah ditindaklanjuti.':''}</div>`;
   document.querySelectorAll('.student-actions button[data-key]').forEach(btn=>btn.onclick=()=>openModal(btn.dataset.key));
 }

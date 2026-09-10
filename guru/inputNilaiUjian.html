@@ -1995,6 +1995,18 @@ body.cahaya-guru-executive:before{
     return stableKey(`${className}|${name}|${subject}`);
   }
 
+  // V182: indeks ringan khusus menu Tindak Lanjut. Berlaku untuk semua jenis ujian
+  // dan tetap diperbarui saat nilai masih parsial, sehingga tidak bergantung pada FINAL.
+  function guruTindakLanjutPath(params = currentExamParams()) {
+    const teacherNode = stableKey(String(params.guruKode || params.guruKey || params.guru || 'guru'));
+    const yearNode = stableKey(String(params.tahun || '2026/2027'));
+    const periodNode = stableKey(String(params.periode || params.bulan || 'periode'));
+    return `cahaya_app/guru_tindak_lanjut_index/${teacherNode}/${yearNode}/${periodNode}`;
+  }
+  function guruTindakLanjutKey(name, className, subject, params = currentExamParams()) {
+    return stableKey(`${className}|${name}|${subject}|${params.jenis||''}|${params.kodePenilaian||''}`);
+  }
+
   function scoreIndexPath(params = currentExamParams()) {
     return `cahaya_app/nilai_input_index/${scoreSessionKey(params)}`;
   }
@@ -2390,6 +2402,7 @@ body.cahaya-guru-executive:before{
           mata_pelajaran: params.mapel,
           materi_ujian: params.materi,
           guru_penguji: params.guru,
+          guruKode: params.guruKode || "",
           tanggal: params.tanggal,
           tanggal_ujian: params.tanggal,
           komponen_aktif: activeComponents.map(component => component.nama),
@@ -2439,6 +2452,13 @@ body.cahaya-guru-executive:before{
         const indexData = { recordKey, dbPath, data: finalData, updatedAt: nowIso };
         updates[`${dbPath}/${recordKey}`] = finalData;
         updates[`${indexBase}/${studentKey}`] = indexData;
+        const tindakKey = guruTindakLanjutKey(studentName,className,params.mapel,params);
+        updates[`${guruTindakLanjutPath(params)}/${tindakKey}`] = {
+          namaSantri:studentName,kelas:className,mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||75),
+          periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
+          statusInput:finalData.status_input||'',statusNilai:finalData.status_nilai||'',recordKey,sourcePath:dbPath,updatedAt:nowIso,
+          keterangan:finalData.keterangan||'',jenisUjian:jenis,tanggalUjian:params.tanggal,tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
+        };
         if (monthly) {
           const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
           if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordKey}`] = finalData;
@@ -2466,7 +2486,10 @@ body.cahaya-guru-executive:before{
         if (noteInput) noteInput.dataset.dirty = "0";
       });
       setCachedPathValue(indexBase, existingScoreRecords);
-      try { sessionStorage.removeItem(`cahaya:tl:scores:${guruRingkasPath(params)}`); } catch (_) {}
+      try {
+        sessionStorage.removeItem(`cahaya:tl:scores:${guruRingkasPath(params)}`);
+        sessionStorage.removeItem(`cahaya:tl:index:${guruTindakLanjutPath(params)}`);
+      } catch (_) {}
 
       if (!options.silent) showToast("success", "Nilai berhasil disimpan", partialCount ? `${count} data tersimpan. ${partialCount} masih parsial dan bisa dilanjutkan kapan saja.` : `${count} data tersimpan lengkap dan tetap dapat diedit.`);
       button.innerHTML = "✅ Tersimpan — Tetap Bisa Diedit";
@@ -2538,6 +2561,13 @@ body.cahaya-guru-executive:before{
         const indexData = {...item, data:finalData, updatedAt:nowIso, status:"FINAL"};
         updates[`${item.dbPath}/${item.recordKey}`] = finalData;
         updates[`${scoreIndexPath(params)}/${studentKey}`] = indexData;
+        const tindakKey = guruTindakLanjutKey(row.dataset.nama,row.dataset.kelas||'',params.mapel,params);
+        updates[`${guruTindakLanjutPath(params)}/${tindakKey}`] = {
+          namaSantri:row.dataset.nama,kelas:row.dataset.kelas||'',mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||75),
+          periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
+          statusInput:'lengkap',statusNilai:'FINAL',recordKey:item.recordKey,sourcePath:item.dbPath,updatedAt:nowIso,
+          keterangan:finalData.keterangan||'',jenisUjian:params.jenis,tanggalUjian:finalData.tanggal_ujian||params.tanggal||'',tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
+        };
         nextIndexRecords[studentKey] = indexData;
         if (monthly) {
           const waliKey = String(row.dataset.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -2567,7 +2597,10 @@ body.cahaya-guru-executive:before{
       Object.assign(existingScoreRecords, nextIndexRecords);
       setCachedPathValue(scoreIndexPath(params), existingScoreRecords);
       setCachedPathValue(scoreFinalPath(params), updates[scoreFinalPath(params)] || null);
-      try { sessionStorage.removeItem(`cahaya:tl:scores:${guruRingkasPath(params)}`); } catch (_) {}
+      try {
+        sessionStorage.removeItem(`cahaya:tl:scores:${guruRingkasPath(params)}`);
+        sessionStorage.removeItem(`cahaya:tl:index:${guruTindakLanjutPath(params)}`);
+      } catch (_) {}
       currentSessionFinal = true;
       applyFinalState();
       showToast("success", "Nilai FINAL terkirim", `${rows.length} nilai santri telah dikunci. Nilai tidak dapat diedit lagi dari CAHAYA App.`);

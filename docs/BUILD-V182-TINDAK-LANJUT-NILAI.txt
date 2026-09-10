@@ -1,0 +1,20 @@
+CAHAYA APP BUILD V182 — FIX TINDAK LANJUT NILAI
+Tanggal: 10 September 2026
+
+Perbaikan utama:
+1. Menu Guru > Tindak Lanjut sekarang membaca dua sumber nilai:
+   - cahaya_app/nilai_ujian_bulanan
+   - cahaya_app/nilai_ujian
+   sehingga Bulanan, Triwulan, Semester, nilai parsial, dan nilai belum FINAL dapat terdeteksi.
+2. Batas limitToLast(1000) pada fallback dihapus. Sebelumnya data satu periode seluruh pesantren dapat melebihi 1.000 record sehingga nilai guru tertentu bisa terpotong.
+3. Filter ulang berdasarkan jadwal guru dihapus dari daftar actionable. Record sudah dibatasi oleh identitas guru; perbedaan format nama kelas/mapel tidak lagi membuang nilai valid.
+4. Refresh Tindak Lanjut benar-benar menghapus cache fallback periode aktif.
+5. Perhitungan daftar diperbaiki: ambil record terbaru per santri+kelas+mapel terlebih dahulu, lalu cek apakah nilainya 0–75. Nilai remedial terbaru >75 tidak meninggalkan nilai rendah lama.
+6. Ditambahkan indeks baru cahaya_app/guru_tindak_lanjut_index per guru/tahun/periode. Mulai V182 setiap Simpan Nilai dan Kirim FINAL memperbarui indeks ini untuk semua jenis ujian.
+7. Raw record nilai baru juga menyimpan guruKode untuk pencocokan yang lebih stabil.
+8. main-dashboard membump versi Input Nilai dan Tindak Lanjut ke v=182 untuk cache busting.
+9. File runtime perubahan V181/V182 disinkronkan ke mirror /docs agar deployment dari folder docs tidak tertinggal.
+
+Catatan kompatibilitas:
+- Nilai lama tidak perlu diinput ulang. Tindak Lanjut tetap membaca raw data lama sebagai fallback.
+- Nilai baru akan jauh lebih ringan dibaca karena menggunakan indeks khusus per guru.
