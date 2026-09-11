@@ -3844,7 +3844,9 @@
     // Tampilkan kerangka halaman secepat mungkin. Jadwal lokal dan guru pengganti dimuat setelah UI siap.
     sembunyikanLoading();
     try {
-      const [schedule, replacements] = await Promise.all([loadLiteSchedule(), loadReplacementRowsToday(), loadMaterialData()]);
+      const [schedule,replacements,,classSnap]=await Promise.all([loadLiteSchedule(),loadReplacementRowsToday(),loadMaterialData(),get(ref(db,'cahaya_app/master_akademik/kelas'))]);
+      if(classSnap.exists())masterDataAkademik={...masterDataAkademik,kelas:classSnap.val()||masterDataAkademik.kelas};
+      isiPilihanKelas();
       onlineScheduleRows = schedule;
       replacementTeacherRows = replacements;
       loadTeacherScheduleForDate({ notify: true });

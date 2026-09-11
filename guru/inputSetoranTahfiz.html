@@ -1787,6 +1787,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
   }
 
   let dataKelasCloud = {};
+  let quranProgramByStudent = {};
   let autoQuranClasses = [];
   window.getAutoQuranClasses=()=>autoQuranClasses.slice();
   let studentClassMap = new Map();
@@ -2014,6 +2015,9 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     if(window.daftarSurat) window.daftarSurat.forEach((surat,i)=>{window.opsiSuratHTML+=`<option value="${i}">${i+1}. ${surat.nama} (${surat.ayat} Ayat)</option>`});
     try{
       dataKelasCloud=window.CAHAYA_MASTER_DATA?.santriByClass||window.dataSantri||{};
+      const [classSnap,programSnap]=await Promise.all([get(ref(db,'cahaya_app/master_akademik/kelas')),get(ref(db,'cahaya_app/program_quran_santri'))]);
+      if(classSnap.exists())dataKelasCloud=classSnap.val()||dataKelasCloud;
+      quranProgramByStudent=programSnap.val()||{};
       await ensureTahfizMeta();
       await refreshAutoQuranClasses(cacheJadwalQuran);
     }catch(e){console.error("Gagal memuat data lokal Al-Qur'an:",e)}
@@ -2056,7 +2060,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     if(!prog || (prog==='Murojaah'&&!jenisMurojaah)){container.innerHTML='<div class="initial-state"><div><div class="initial-state-icon">📖</div><strong>Pilih jenis input</strong><span>Pilih Tahsin, Tahfiz, atau Muroja’ah terlebih dahulu.</span></div></div>';return}
     if(!autoQuranClasses.length){container.innerHTML='<div class="initial-state"><div><div class="initial-state-icon">📅</div><strong>Jadwal Al-Qur’an belum ditemukan</strong><span>Kelas otomatis mengikuti jadwal guru yang login.</span></div></div>';return}
     const listSantri=[];studentClassMap=new Map();
-    autoQuranClasses.forEach(kelas=>{const list=Array.isArray(dataKelasCloud?.[kelas])?dataKelasCloud[kelas]:[];list.forEach(nama=>listSantri.push({nama,kelas}))});
+    autoQuranClasses.forEach(kelas=>{const list=Array.isArray(dataKelasCloud?.[kelas])?dataKelasCloud[kelas]:[];list.forEach(nama=>{const assigned=quranProgramByStudent[normalizeStudentKey(nama)]?.programQuran;if((prog==='Tahsin'||prog==='Tahfiz')&&assigned&&assigned!==prog)return;listSantri.push({nama,kelas})})});
     listSantri.sort((a,b)=>a.kelas.localeCompare(b.kelas,'id',{numeric:true})||a.nama.localeCompare(b.nama,'id'));
     if(!listSantri.length){container.innerHTML='<div class="initial-state"><div><div class="initial-state-icon">👤</div><strong>Data santri belum tersedia</strong><span>Belum ada santri pada kelas jadwal Anda.</span></div></div>';return}
     container.innerHTML =
@@ -2162,6 +2166,10 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
               <div class="tahsin-only" id="tahsin_area_${safeId}">
                 <div class="form-group">
                   <label>Surat dan Rentang Ayat</label>
+                  <div class="mode-switch tahsin-mode-switch">
+                    <button type="button" class="mode-btn active" id="tahsin_mode_tunggal_${safeId}" onclick="setTahsinModeCard('tunggal','${safeId}')">SATU / MANUAL</button>
+                    <button type="button" class="mode-btn" id="tahsin_mode_banyak_${safeId}" onclick="setTahsinModeCard('banyak','${safeId}')">BANYAK SURAT</button>
+                  </div>
                   <div id="tahsin_wadah_surat_${safeId}"></div>
                   <button class="btn-tambah-surat" type="button" id="tahsin_btn_tambah_${safeId}" onclick="tambahBarisTahsinCard('${safeId}')">➕ Tambah Surat Talaqqi</button>
                   <small style="display:block;margin-top:-6px;color:var(--tfz-muted);font-weight:650;line-height:1.45;">Bisa memasukkan beberapa surat dalam satu kali talaqqi.</small>
@@ -2197,6 +2205,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
       const nama=student.nama, kelas=student.kelas;
       const safeId = (nama+"_"+kelas).replace(/[^a-zA-Z0-9]/g, '') + "_" + i;
       setModeCard('tunggal', safeId);
+      setTahsinModeCard('tunggal', safeId);
       terapkanModeProgramCard(safeId, prog);
       siapkanBarisTahsinAwal(safeId);
       const badge=document.getElementById(`badge_info_${safeId}`);if(badge)badge.innerText='Buka untuk melihat riwayat';
@@ -2241,6 +2250,13 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     if (wadah && !wadah.children.length) tambahBarisTahsinCard(safeId);
   };
 
+  window.setTahsinModeCard=(mode,safeId)=>{
+    const area=document.getElementById(`tahsin_area_${safeId}`),wadah=document.getElementById(`tahsin_wadah_surat_${safeId}`),add=document.getElementById(`tahsin_btn_tambah_${safeId}`);if(!area||!wadah)return;
+    area.dataset.mode=mode;document.getElementById(`tahsin_mode_tunggal_${safeId}`)?.classList.toggle('active',mode==='tunggal');document.getElementById(`tahsin_mode_banyak_${safeId}`)?.classList.toggle('active',mode==='banyak');add.style.display=mode==='tunggal'?'block':'none';wadah.innerHTML='';
+    if(mode==='tunggal')tambahBarisTahsinCard(safeId);else wadah.innerHTML=`<div class="surat-row tahsin-range-${safeId}" style="border-left:4px solid var(--gold-main)"><div class="col-surat"><label>Dari Surat</label><select class="form-control tahsin-sel-awal" onchange="hitungTotalAyatTahsinCard('${safeId}')">${window.opsiSuratHTML}</select></div><div class="col-surat"><label>Sampai Surat</label><select class="form-control tahsin-sel-akhir" onchange="hitungTotalAyatTahsinCard('${safeId}')">${window.opsiSuratHTML}</select></div><div class="col-ayat"><label>Ayat Terakhir</label><input type="number" min="1" class="form-control tahsin-ayat-akhir" value="1" oninput="hitungTotalAyatTahsinCard('${safeId}')"></div></div>`;
+    hitungTotalAyatTahsinCard(safeId);
+  };
+
   window.tambahBarisTahsinCard = (safeId, valMulai = "", valSampai = "", valSurat = "") => {
     const wadah = document.getElementById(`tahsin_wadah_surat_${safeId}`);
     if (!wadah) return;
@@ -2266,6 +2282,8 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
   };
 
   window.hitungTotalAyatTahsinCard = (safeId) => {
+    const area=document.getElementById(`tahsin_area_${safeId}`);
+    if(area?.dataset.mode==='banyak'){const a=Number(area.querySelector('.tahsin-sel-awal')?.value),b=Number(area.querySelector('.tahsin-sel-akhir')?.value),last=Number(area.querySelector('.tahsin-ayat-akhir')?.value)||0;let total=0;if(Number.isInteger(a)&&Number.isInteger(b)&&window.daftarSurat){const step=b>=a?1:-1;for(let i=a;;i+=step){if(i===b){total+=last;break}total+=Number(window.daftarSurat[i]?.ayat)||0}}const output=document.getElementById(`tahsin_total_ayat_${safeId}`);if(output)output.value=total||'';return total}
     let total = 0;
     document.querySelectorAll(`.tahsin-row-${safeId}`).forEach(row => {
       const mulai = Number(row.querySelector('.tahsin-inp-mulai')?.value || 0);
@@ -2278,6 +2296,8 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
   };
 
   window.ambilMateriTahsinCard = (safeId) => {
+    const area=document.getElementById(`tahsin_area_${safeId}`);
+    if(area?.dataset.mode==='banyak'){const aRaw=area.querySelector('.tahsin-sel-awal')?.value??'',bRaw=area.querySelector('.tahsin-sel-akhir')?.value??'',last=Number(area.querySelector('.tahsin-ayat-akhir')?.value||0),a=Number(aRaw),b=Number(bRaw),end=window.daftarSurat?.[b];if(aRaw===''||bRaw===''||!Number.isInteger(last)||last<1)throw new Error('Lengkapi surat awal, surat terakhir, dan ayat terakhir talaqqi.');if(!end||last>Number(end.ayat))throw new Error(`Ayat terakhir maksimal ${end?.ayat||0} untuk Surat ${end?.nama||''}.`);const out=[],step=b>=a?1:-1;for(let i=a;;i+=step){const s=window.daftarSurat[i];out.push({surat:s.nama,ayatMulai:1,ayatSelesai:i===b?last:s.ayat});if(i===b)break}return out}
     const materiList = [];
     const rows = [...document.querySelectorAll(`.tahsin-row-${safeId}`)];
     for (const row of rows) {

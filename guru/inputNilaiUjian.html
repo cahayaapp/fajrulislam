@@ -1836,7 +1836,9 @@ body.cahaya-guru-executive:before{
     // Loading overlay dilepas lebih dulu supaya halaman terasa langsung terbuka.
     hideLoading();
     try{
-      scheduleRows=await loadLocalSchedule();
+      const [loadedSchedule,classSnap]=await Promise.all([loadLocalSchedule(),get(ref(db,'cahaya_app/master_akademik/kelas'))]);
+      scheduleRows=loadedSchedule;
+      if(classSnap.exists())masterDataAkademik={...masterDataAkademik,kelas:classSnap.val()||masterDataAkademik.kelas};
       populateMasterOptions();
     }catch(error){
       console.error(error);
