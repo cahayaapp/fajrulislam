@@ -1,6 +1,6 @@
-/* CAHAYA APP v166 — HTML selalu diperiksa ke jaringan; aset versi tetap hemat cache */
-const CAHAYA_SW_BUILD='v166';
-const STATIC_CACHE='cahaya-static-v166';
+/* CAHAYA APP v167 — HTML selalu diperiksa ke jaringan; aset versi tetap hemat cache */
+const CAHAYA_SW_BUILD='v167';
+const STATIC_CACHE='cahaya-static-v167';
 self.addEventListener('install',event=>{self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{
   const keys=await caches.keys();

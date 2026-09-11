@@ -1629,7 +1629,7 @@
 .c52-murojaah-choice{margin-top:14px;padding-top:14px;border-top:1px solid #edf2f8}.c52-murojaah-choice[hidden]{display:none!important}.c52-murojaah-choice>strong{display:block;margin-bottom:9px;color:#142b52;font-size:.75rem}.c52-muro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.c52-muro-grid button{appearance:none;padding:10px;border:1px solid #dce7f6;border-radius:12px;background:#fff;color:#385275;font-weight:900;cursor:pointer}.c52-muro-grid button.active{background:#fff7e1;border-color:#f2b632;color:#805e08}
 .c52-bottom-overview{margin-top:14px}.class-mini-quran{display:inline-flex;margin-left:8px;padding:3px 7px;border-radius:999px;background:#edf5ff;color:#1557d5;font-size:.55rem;font-weight:950;vertical-align:middle}
 .santri-card-body .input-section{order:1}.santri-card-body .resume-container-v52{order:2}.santri-card-body .riwayat-section{order:3}.santri-card.card-open .santri-card-body{display:flex;flex-direction:column}
-.santri-card-body .mode-switch{display:none!important}
+.santri-card-body .mode-switch{display:grid!important;grid-template-columns:1fr 1fr!important}
 @media(max-width:720px){.c52-quran-selector{padding:15px!important}.c52-quran-title{align-items:flex-start;flex-direction:column;gap:4px}.c52-quran-title span{text-align:left}.c52-program-grid{grid-template-columns:1fr}.c52-program-btn{padding:12px}.c52-muro-grid{grid-template-columns:repeat(3,1fr);gap:6px}.c52-muro-grid button{padding:9px 5px;font-size:.65rem}}
 
 /* V53 separate-scene navigation */
@@ -1788,6 +1788,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
 
   let dataKelasCloud = {};
   let autoQuranClasses = [];
+  window.getAutoQuranClasses=()=>autoQuranClasses.slice();
   let studentClassMap = new Map();
   const TEACHER_CODE_ALIASES_QURAN = {
     MULTAZAM:["multazam","multazam zakaria","abah multazam"],ZAKY:["zaky","zaki","muhammad zaky"],RAHIEL:["rahiel","mika rahiel","mika rahiel yusuf"],
@@ -1995,9 +1996,9 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
              let idxStart = cariIndexSurat(matchBanyak[1]); let idxEnd = cariIndexSurat(matchBanyak[2]);
              let endAyat = parseInt(matchBanyak[3]);
              if (idxStart !== -1 && idxEnd !== -1) {
-                 let minIdx = Math.min(idxStart, idxEnd); let maxIdx = Math.max(idxStart, idxEnd);
-                 for(let i = minIdx; i < maxIdx; i++) arrayTarget[i] = quranDb[i].ayat; 
-                 arrayTarget[maxIdx] = Math.max(arrayTarget[maxIdx], endAyat);
+                 const step=idxEnd>=idxStart?1:-1;
+                 for(let i=idxStart;i!==idxEnd;i+=step)arrayTarget[i]=quranDb[i].ayat;
+                 arrayTarget[idxEnd]=Math.max(arrayTarget[idxEnd],endAyat);
              }
              return;
          }
@@ -2107,12 +2108,12 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
 
               <div id="area_input_${safeId}" class="tahfiz-only">
                 <div class="mode-switch" id="mode_switch_${safeId}">
-                  <button class="mode-btn active" id="btn_mode_tunggal_${safeId}" onclick="setModeCard('tunggal', '${safeId}')">SATU SURAT / MANUAL</button>
-                  <button class="mode-btn" id="btn_mode_banyak_${safeId}" onclick="setModeCard('banyak', '${safeId}')">BANYAK SURAT</button>
+                  <button type="button" class="mode-btn active" id="btn_mode_tunggal_${safeId}" onclick="setModeCard('tunggal', '${safeId}')">SATU SURAT / MANUAL</button>
+                  <button type="button" class="mode-btn" id="btn_mode_banyak_${safeId}" onclick="setModeCard('banyak', '${safeId}')">BANYAK SURAT</button>
                 </div>
 
                 <div id="wadah_surat_${safeId}"></div>
-                <button class="btn-tambah-surat" id="btn_tambah_${safeId}" onclick="tambahBarisSuratCard('${safeId}')">➕ Tambah Baris Surat</button>
+                <button type="button" class="btn-tambah-surat" id="btn_tambah_${safeId}" onclick="tambahBarisSuratCard('${safeId}')">➕ Tambah Baris Surat</button>
               </div>
               <div class="form-group target-tahfiz-only" id="target_shell_${safeId}">
                 <label>🎯 Target Hafalan Harian</label>
@@ -2383,10 +2384,9 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
       const eIdx = parseInt(document.querySelector(`.sel-akhir-${safeId}`).value);
       const lAyat = parseInt(document.querySelector(`.inp-ayat-akhir-${safeId}`).value) || 0;
 
-      if(!isNaN(sIdx) && !isNaN(eIdx) && eIdx >= sIdx && window.daftarSurat) {
-        for(let i = sIdx; i <= eIdx; i++) {
-          if(i === eIdx) tot += lAyat; else tot += window.daftarSurat[i].ayat; 
-        }
+      if(!isNaN(sIdx) && !isNaN(eIdx) && window.daftarSurat) {
+        const step=eIdx>=sIdx?1:-1;
+        for(let i=sIdx;;i+=step){if(i===eIdx){tot+=lAyat;break}tot+=window.daftarSurat[i].ayat}
       }
     }
     document.getElementById(`ayat_${safeId}`).value = tot || "";
@@ -2507,8 +2507,12 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
           });
           strSetoran = parts.join(', ');
         } else {
-          const sIdx = document.querySelector(`.sel-awal-${safeId}`).value, eIdx = document.querySelector(`.sel-akhir-${safeId}`).value, lAyt = document.querySelector(`.inp-ayat-akhir-${safeId}`).value;
-          if(sIdx !== '' && eIdx !== '' && lAyt) strSetoran = sIdx === eIdx ? `${window.daftarSurat[sIdx].nama} (1-${lAyt})` : `${window.daftarSurat[sIdx].nama} s/d ${window.daftarSurat[eIdx].nama} (Ayat ${lAyt})`;
+          const sIdxRaw = document.querySelector(`.sel-awal-${safeId}`).value, eIdxRaw = document.querySelector(`.sel-akhir-${safeId}`).value, lAytRaw = document.querySelector(`.inp-ayat-akhir-${safeId}`).value;
+          const sIdx=Number(sIdxRaw),eIdx=Number(eIdxRaw),lAyt=Number(lAytRaw),lastSurah=window.daftarSurat[eIdx];
+          if(sIdxRaw===''||eIdxRaw===''||!Number.isInteger(lAyt)||lAyt<1){alert(`Lengkapi surat awal, surat terakhir, dan ayat terakhir untuk ${nama}.`);return}
+          if(!lastSurah||lAyt>Number(lastSurah.ayat)){alert(`Ayat terakhir maksimal ${lastSurah?.ayat||0} untuk surat ${lastSurah?.nama||''}.`);return}
+          strSetoran = sIdx === eIdx ? `${window.daftarSurat[sIdx].nama} (1-${lAyt})` : `${window.daftarSurat[sIdx].nama} s/d ${lastSurah.nama} (Ayat ${lAyt})`;
+          detailData.rentangSurat={mode:'banyak_surat',suratAwal:window.daftarSurat[sIdx].nama,suratAkhir:lastSurah.nama,nomorSuratAwal:sIdx+1,nomorSuratAkhir:eIdx+1,ayatTerakhir:lAyt};
         }
         if(!strSetoran) { alert(`Lengkapi data surat/ayat untuk ${nama}!`); return; }
 
@@ -2850,7 +2854,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
 
     function updateContextStats() {
       const program = $('tfzProgram')?.value || '';
-      const kelas = autoQuranClasses.join(' • ');
+      const kelas = (window.getAutoQuranClasses?.()||[]).join(' • ');
       const cards = getCards();
 
       $('statProgram').textContent = program || 'Belum dipilih';

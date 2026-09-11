@@ -2419,10 +2419,10 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
         <a class="nav-item menu-akses" id="menu-kalender-materi" style="display: none;" onclick="loadPage('guru/capaian-materi.html?v=181', this)">📚 Materi Pembelajaran</a>
         <a class="nav-item menu-akses" id="menu-kpi-guru" style="display: none;" onclick="loadPage('pendidikan/kpi-guru.html?v=154', this)">📊 KPI Guru</a>
 
-        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html?v=153', this)">📖 Tahsin & Tahfiz</a>
+        <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html?v=154', this)">📖 Tahsin & Tahfiz</a>
         <a class="nav-item menu-akses" id="menu-laporan-murojaah" style="display: none;" onclick="loadPage('guru/lapor-pelanggaran.html?v=153', this)">⚠️ Lapor Pelanggaran</a>
 
-        <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html?v=182', this)">📝 Nilai Ujian</a>
+        <a class="nav-item menu-akses" id="menu-nilai" style="display: none;" onclick="loadPage('guru/inputNilaiUjian.html?v=183', this)">📝 Nilai Ujian</a>
         <a class="nav-item menu-akses" id="menu-tindak-lanjut-guru" style="display: none;" onclick="loadPage('guru/tindak-lanjut.html?v=184', this)">🎯 Tindak Lanjut</a>
       </div>
 
@@ -3787,7 +3787,7 @@ function sinkronkanBadgePintasanMobile() {
     // Halaman yang sudah dibuka disimpan sebagai iframe hidup. Saat kembali,
     // halaman tidak dimuat ulang sehingga query Firebase dan state form tidak berulang.
     // =========================================================
-    const CAHAYA_RELEASE = '20260910-v188';
+    const CAHAYA_RELEASE = '20260911-v189';
     const CAHAYA_PAGE_CACHE_MAX = 10;
     const cahayaPageFrames = new Map();
 
@@ -4106,7 +4106,7 @@ function sinkronkanBadgePintasanMobile() {
     /* V182: pemeriksa rilis kecil. HTML tidak lagi dikunci cache lama. */
     (()=>{
       if(!('serviceWorker' in navigator))return;
-      const build='v166',storageKey='cahaya:active-sw-build';
+      const build='v167',storageKey='cahaya:active-sw-build';
       const activateBuild=next=>{
         const previous=sessionStorage.getItem(storageKey)||'';
         sessionStorage.setItem(storageKey,next);
@@ -4118,7 +4118,7 @@ function sinkronkanBadgePintasanMobile() {
       navigator.serviceWorker.addEventListener('message',event=>{
         if(event.data?.type==='CAHAYA_RELEASE_READY')activateBuild(String(event.data.build||build));
       });
-      const check=()=>navigator.serviceWorker.register('./firebase-messaging-sw.js?v=166',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().then(()=>reg).catch(()=>reg)).catch(()=>null);
+      const check=()=>navigator.serviceWorker.register('./firebase-messaging-sw.js?v=167',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().then(()=>reg).catch(()=>reg)).catch(()=>null);
       check().then(()=>activateBuild(build));
       document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
       setInterval(check,300000);
