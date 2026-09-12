@@ -2586,6 +2586,15 @@ function getMobileUtilityItems() {
       { id:'utility-menu', label:'Lainnya', icon:mobileUtilityIcon.menu }
     ];
   }
+  if (active === 'manajer-pendidikan') {
+    return [
+      { id:'menu-kalender-pendidikan', label:'Kaldik', icon:mobileUtilityIcon.calendar },
+      { id:'menu-kpi-guru', label:'KPI', icon:mobileUtilityIcon.kpi },
+      { id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.homeDirector, center:true },
+      { id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' },
+      { id:'utility-menu', label:'Lainnya', icon:mobileUtilityIcon.menu }
+    ];
+  }
   const items = [];
   if (bolehAksesMenu('menu-home')) items.push({ id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.home });
   items.push({ id:'utility-menu', label:'Menu', icon:mobileUtilityIcon.menu });
@@ -2602,7 +2611,7 @@ function renderMobileBottomNav() {
   if (!nav) return;
   const roleNow = (typeof ensureActiveRole === 'function' ? ensureActiveRole() : '');
   const directorFast = roleNow === 'direktur';
-  const premiumRoleShell = roleNow === 'direktur' || roleNow === 'guru';
+  const premiumRoleShell = roleNow === 'direktur' || roleNow === 'guru' || roleNow === 'manajer-pendidikan';
   document.body.classList.toggle('director-role-shell', premiumRoleShell);
   if (!premiumRoleShell) document.body.classList.remove('director-home-shell');
   if (!authorizationReady && !directorFast) { nav.innerHTML=''; nav.classList.remove('ready'); return; }
