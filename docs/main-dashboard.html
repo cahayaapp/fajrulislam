@@ -718,6 +718,15 @@
       border: 0;
     }
 
+    .manager-workspace-nav{display:none;flex:0 0 auto;align-items:center;gap:7px;padding:9px 12px 10px;overflow-x:auto;scrollbar-width:none;background:rgba(248,251,255,.96);border-bottom:1px solid #e4edf7;box-shadow:0 5px 18px rgba(25,68,120,.045);position:relative;z-index:4}
+    .manager-workspace-nav::-webkit-scrollbar{display:none}
+    .manager-workspace-nav.ready{display:flex}
+    .manager-workspace-tab{flex:0 0 auto;min-height:38px;padding:8px 12px;border:1px solid #dce8f5;border-radius:12px;background:#fff;color:#31577f;font:850 .68rem/1.1 'Nunito',sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(27,72,126,.045);white-space:nowrap;transition:.18s ease}
+    .manager-workspace-tab:hover{transform:translateY(-1px);border-color:#a9cff5;color:#176ec8}
+    .manager-workspace-tab.active{border-color:transparent;background:linear-gradient(135deg,#278af0,#22b8ca);color:#fff;box-shadow:0 7px 17px rgba(31,126,213,.2)}
+    .manager-workspace-tab span{margin-right:5px}
+    @media(max-width:900px){.manager-workspace-nav{padding:7px 9px 8px;gap:6px}.manager-workspace-tab{min-height:36px;padding:7px 10px;border-radius:11px;font-size:.62rem}}
+
     .cahaya-page-frame {
       width:100%; min-height:0; flex:1; position:relative; z-index:1;
       background:transparent; border:0;
@@ -2093,6 +2102,8 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
       </div>
     </div>
 
+    <nav class="manager-workspace-nav" id="managerWorkspaceNav" aria-label="Menu kerja Manajer Pendidikan"></nav>
+
     <iframe id="contentFrame" src="about:blank" title="Konten CAHAYA APP"></iframe>
   </main>
 
@@ -2606,10 +2617,35 @@ function getMobileUtilityItems() {
   return items;
 }
 
+const managerWorkspaceItems = [
+  {id:'menu-home',label:'Beranda',icon:'⌂',url:'manajer/command-center-pendidikan.html?v=193'},
+  {id:'menu-kontrol-pendidikan',label:'Pelaksanaan KBM',icon:'▣',url:'manajer/kontrol-pendidikan.html?v=193'},
+  {id:'manager-guru-berhalangan',label:'Guru Berhalangan',icon:'↻',url:'manajer/kontrol-pendidikan.html?v=193&open=absent',auth:'menu-kontrol-pendidikan'},
+  {id:'menu-kalender-materi',label:'Materi',icon:'▤',url:'guru/capaian-materi.html?v=193'},
+  {id:'menu-nilai',label:'Nilai',icon:'◎',url:'guru/inputNilaiUjian.html?v=193'},
+  {id:'menu-observasi-pembelajaran',label:'Observasi',icon:'◉',url:'observer/pembelajaran.html?v=193'},
+  {id:'menu-kpi-guru',label:'KPI Guru',icon:'⌁',url:'pendidikan/kpi-guru.html?v=193'},
+  {id:'menu-manajemen-kelas',label:'Manajemen Kelas',icon:'♙',url:'pendidikan/manajemen-kelas.html?v=193'}
+];
+function renderManagerWorkspaceNav(activeId=''){
+  const nav=document.getElementById('managerWorkspaceNav');if(!nav)return;
+  const role=typeof ensureActiveRole==='function'?ensureActiveRole():'';
+  if(role!=='manajer-pendidikan'){nav.innerHTML='';nav.classList.remove('ready');return}
+  nav.innerHTML=managerWorkspaceItems.map(x=>`<button type="button" class="manager-workspace-tab${x.id===activeId?' active':''}" data-manager-tab="${x.id}" onclick="openManagerWorkspace('${x.id}')"><span>${x.icon}</span>${x.label}</button>`).join('');
+  nav.classList.add('ready');
+  requestAnimationFrame(()=>nav.querySelector('.manager-workspace-tab.active')?.scrollIntoView({block:'nearest',inline:'nearest'}));
+}
+function openManagerWorkspace(id){
+  const item=managerWorkspaceItems.find(x=>x.id===id);if(!item)return;
+  const authId=item.auth||item.id;if(!bolehAksesMenu(authId)){tampilkanPesanTidakBerwenang(authId);return}
+  const el=document.getElementById(authId);loadPage(item.url,el);renderManagerWorkspaceNav(id);
+}
+
 function renderMobileBottomNav() {
   const nav = document.getElementById('mobileBottomNav');
   if (!nav) return;
   const roleNow = (typeof ensureActiveRole === 'function' ? ensureActiveRole() : '');
+  renderManagerWorkspaceNav();
   const directorFast = roleNow === 'direktur';
   const premiumRoleShell = roleNow === 'direktur' || roleNow === 'guru' || roleNow === 'manajer-pendidikan';
   document.body.classList.toggle('director-role-shell', premiumRoleShell);
@@ -3922,6 +3958,11 @@ function sinkronkanBadgePintasanMobile() {
       document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
       if (menuElement.classList.contains('nav-item')) menuElement.classList.add('active');
       setMobileBottomActive(menuId);
+      if (activeRoleForPage === 'manajer-pendidikan') {
+        const managerActive = /open=absent/.test(url) ? 'manager-guru-berhalangan'
+          : (managerWorkspaceItems.find(x => x.id === menuId)?.id || menuId);
+        renderManagerWorkspaceNav(managerActive);
+      } else renderManagerWorkspaceNav('');
 
       const key = cahayaPageKey(url, activeRoleForPage);
       const activeFrame = currentContentFrame();
