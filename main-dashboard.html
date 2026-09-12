@@ -2476,7 +2476,7 @@ function openOperationalDashboard(el) {
   const routes = {
     'guru': 'workspace/guru.html?v=85',
     'mentor-quran': 'workspace/mentor-quran.html?v=85',
-    'manajer-pendidikan': 'manajer/kontrol-pendidikan.html?v=191',
+    'manajer-pendidikan': 'manajer/command-center-pendidikan.html?v=192',
     'supervisor-pendidikan': 'supervisor/review-pendidikan.html?v=191',
     'kepala-sekolah': 'manajer/kontrol-pendidikan.html?v=85',
     'cla': 'manajer/kontrol-pendidikan.html?v=85',
@@ -3900,9 +3900,10 @@ function sinkronkanBadgePintasanMobile() {
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
       if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=120';
       if (menuId === 'menu-home' && activeRoleForPage === 'guru') url = 'home-guru.html?v=180';
-      const premiumHome = menuId === 'menu-home' && (activeRoleForPage === 'direktur' || activeRoleForPage === 'guru');
+      if (menuId === 'menu-home' && activeRoleForPage === 'manajer-pendidikan') url = 'manajer/command-center-pendidikan.html?v=192';
+      const premiumHome = menuId === 'menu-home' && (activeRoleForPage === 'direktur' || activeRoleForPage === 'guru' || activeRoleForPage === 'manajer-pendidikan');
       document.body.classList.toggle('director-home-shell', premiumHome);
-      document.body.classList.toggle('director-role-shell', activeRoleForPage === 'direktur' || activeRoleForPage === 'guru');
+      document.body.classList.toggle('director-role-shell', activeRoleForPage === 'direktur' || activeRoleForPage === 'guru' || activeRoleForPage === 'manajer-pendidikan');
 
       if (!menuId || !bolehAksesMenu(menuId)) {
         tampilkanPesanTidakBerwenang(menuId);
