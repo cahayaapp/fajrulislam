@@ -2630,7 +2630,7 @@ const managerWorkspaceItems = [
 function renderManagerWorkspaceNav(activeId=''){
   const nav=document.getElementById('managerWorkspaceNav');if(!nav)return;
   const role=typeof ensureActiveRole==='function'?ensureActiveRole():'';
-  if(role!=='manajer-pendidikan'){nav.innerHTML='';nav.classList.remove('ready');return}
+  if(role!=='manajer-pendidikan'||!activeId||activeId==='menu-home'){nav.innerHTML='';nav.classList.remove('ready');return}
   nav.innerHTML=managerWorkspaceItems.map(x=>`<button type="button" class="manager-workspace-tab${x.id===activeId?' active':''}" data-manager-tab="${x.id}" onclick="openManagerWorkspace('${x.id}')"><span>${x.icon}</span>${x.label}</button>`).join('');
   nav.classList.add('ready');
   requestAnimationFrame(()=>nav.querySelector('.manager-workspace-tab.active')?.scrollIntoView({block:'nearest',inline:'nearest'}));
