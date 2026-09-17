@@ -155,19 +155,29 @@
     },220);
   }
 
+  // Guru Home is a navigation hub: token/config refresh starts with Pesan
+  // or the existing explicit enable action, never merely by opening Home.
+  function deferGuruPush(){
+    return (localStorage.getItem('cahayaActiveRole')||localStorage.getItem('cahayaCurrentRole'))==='guru'
+      && window.__cahayaChatUsersLoaded!==true;
+  }
   function boot(){
     setTimeout(async()=>{
       try{
         if(!('Notification'in window))return;
-        if(Notification.permission==='granted')await enable(false);
-        else if(Notification.permission==='default')showPrompt();
+        if(!deferGuruPush()){
+          if(Notification.permission==='granted')await enable(false);
+          else if(Notification.permission==='default')showPrompt();
+        }
       }catch(err){console.warn('Push Global CAHAYA belum siap:',err)}
       openChatFromQuery();
     },1350);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-  window.addEventListener('pageshow',()=>{if(!('Notification'in window))return;if(Notification.permission==='granted')enable(false).catch(()=>{});else if(Notification.permission==='default')showPrompt()});
+  function resumePush(){if(deferGuruPush()||!('Notification'in window))return;if(Notification.permission==='granted')enable(false).catch(()=>{});else if(Notification.permission==='default')showPrompt()}
+  window.addEventListener('pageshow',resumePush);
+  window.addEventListener('cahaya:chat-users-ready',resumePush);
 
   window.CahayaPushGlobal={enable,registerToken,deactivateCurrentDevice,showPrompt,showToast,profile,rolesOf};
 })();

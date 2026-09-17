@@ -1741,7 +1741,7 @@
         <h1>Manajemen Kasus Santri</h1>
         <p>
           Kasus kemarin dicetak dan diselesaikan hari ini. Kedisiplinan serta
-          kebersihan dan kerapian harian ditangani Naqib Operasional; kasus berulang, moral/etika, sedang, dan kritis ditangani Manajer atau Supervisor Pembinaan Karakter.
+          kebersihan, kerapian, dan kedisiplinan dasar ditangani Konselor Pemula; kasus berulang, etika, kritis, dan berat ditangani Konselor Muda.
         </p>
       </div>
 
@@ -1766,7 +1766,7 @@
       </article>
 
       <article class="summary-card konselor">
-        <span class="summary-label">Manajer / Supervisor</span>
+        <span class="summary-label">Konselor Muda</span>
         <strong class="summary-value" id="sumKonselor">0</strong>
       </article>
 
@@ -1840,7 +1840,7 @@
             <select class="form-control" id="filterRoute" onchange="renderQueue()">
               <option value="">Semua Penindak</option>
               <option value="NAQIB">Tindak Naqib</option>
-              <option value="KONSELOR">Manajer / Supervisor</option>
+              <option value="KONSELOR">Konselor Muda</option>
             </select>
           </div>
 
@@ -1972,7 +1972,7 @@
 
           <article class="print-card konselor">
             <div class="print-card-icon">🧠</div>
-            <h3>Manajer / Supervisor</h3>
+            <h3>Konselor Muda</h3>
             <p>
               Moral, etika, perilaku berisiko, dan seluruh kasus yang
               ditandai KRITIS.
@@ -1983,7 +1983,7 @@
             </div>
             <div class="print-actions">
               <button class="print-button cons" onclick="printCases('KONSELOR')">
-                🖨️ Cetak Manajer / Supervisor
+                🖨️ Cetak Konselor Muda
               </button>
             </div>
           </article>
@@ -2247,7 +2247,7 @@
             <select class="form-control" id="historyRoute" onchange="renderActionHistory()">
               <option value="">Semua Penindak</option>
               <option value="NAQIB">Tindak Naqib</option>
-              <option value="KONSELOR">Manajer / Supervisor</option>
+              <option value="KONSELOR">Konselor Muda</option>
             </select>
           </div>
 
@@ -2394,6 +2394,7 @@
     const NAQIB_MODE =
       new URLSearchParams(window.location.search).get("mode") === "naqib" ||
       localStorage.getItem("cahayaDirectorViewRole") === "naqib";
+    const COUNSELOR_LEVEL = (() => { const q=new URLSearchParams(window.location.search).get("level"); if(q) return q; const r=String(localStorage.getItem("cahayaActiveRole")||localStorage.getItem("cahayaCurrentRole")||"").toLowerCase(); return r.includes("pemula")?"pemula":r.includes("muda")?"muda":""; })();
     let naqibActionMode = "single";
 
     function naqibUnitGender() {
@@ -3192,6 +3193,16 @@
         );
 
       return allCases.filter(item => {
+        if (COUNSELOR_LEVEL === "pemula") {
+          const c=normalizeText(item.category||item.description||"");
+          const basic=c.includes("kedisiplin")||c.includes("kebersihan")||c.includes("kerapian");
+          if (!basic || item.repeated || item.route === "KONSELOR") return false;
+        }
+        if (COUNSELOR_LEVEL === "muda") {
+          const c=normalizeText(item.category||item.description||"");
+          const advanced=item.repeated||item.route === "KONSELOR"||c.includes("etika")||c.includes("moral")||c.includes("kritis")||c.includes("berat")||c.includes("sedang");
+          if (!advanced) return false;
+        }
         if (NAQIB_MODE) {
           if (item.route !== "NAQIB") return false;
           if (item.gender !== naqibUnitGender()) return false;
@@ -3326,7 +3337,7 @@
             <div class="case-meta">
               <span class="case-badge">${escapeHtml(item.sourceBadge)}</span>
               <span class="case-badge ${routeClass}">
-                Tindak ${item.route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor"}
+                Tindak ${item.route === "NAQIB" ? "Konselor Pemula" : "Manajer/Supervisor"}
               </span>
               ${
                 isOverdue(item)
@@ -3385,7 +3396,7 @@
               `).join("")}
               ${routes.map(route => `
                 <span class="case-badge ${route === "NAQIB" ? "naqib" : "konselor"}">
-                  ${route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor"}
+                  ${route === "NAQIB" ? "Konselor Pemula" : "Manajer/Supervisor"}
                 </span>
               `).join("")}
             </div>
@@ -3450,7 +3461,7 @@
           showToast(
             "error",
             "Jalur penindak berbeda",
-            "Kasus Tindak Naqib dan Manajer / Supervisor harus dibuat dalam laporan terpisah."
+            "Kasus Tindak Naqib dan Konselor Muda harus dibuat dalam laporan terpisah."
           );
 
           return;
@@ -3479,7 +3490,7 @@
 
       document.getElementById("batchSubtitle").textContent =
         route
-          ? `Laporan akan dibuat sebagai Tindak ${route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor"}.`
+          ? `Laporan akan dibuat sebagai Tindak ${route === "NAQIB" ? "Konselor Pemula" : "Manajer/Supervisor"}.`
           : "Pilih kasus dari jalur penindak yang sama.";
     }
 
@@ -3595,7 +3606,7 @@
 
         empty.innerHTML = `
           <div class="empty-icon">⚠️</div>
-          Tindak Naqib dan Manajer / Supervisor harus dilaporkan secara terpisah.
+          Tindak Naqib dan Konselor Muda harus dilaporkan secara terpisah.
         `;
 
         return;
@@ -3608,7 +3619,7 @@
       const title =
         route === "NAQIB"
           ? "Laporan Tindak Naqib"
-          : "Laporan Manajer / Supervisor";
+          : "Laporan Konselor Muda";
 
       document.getElementById("actionRouteTitle").textContent =
         title;
@@ -3924,7 +3935,7 @@
 
             <div class="student-group-summary">
               <span class="case-badge ${routeClass}">
-                Tindak ${batch.route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor"}
+                Tindak ${batch.route === "NAQIB" ? "Konselor Pemula" : "Manajer/Supervisor"}
               </span>
               <span class="case-badge">
                 ${batch.cases.length} kasus
@@ -4562,7 +4573,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}
         showToast(
           "error",
           "Jalur penindak berbeda",
-          "Pisahkan laporan Tindak Naqib dan Manajer / Supervisor."
+          "Pisahkan laporan Tindak Naqib dan Konselor Muda."
         );
         return;
       }
@@ -4606,7 +4617,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}
         showToast(
           "error",
           "Pelaksana belum diisi",
-          "Tuliskan nama Naqib Operasional, Manajer, atau Supervisor yang melakukan penanganan."
+          "Tuliskan nama Konselor Pemula, Manajer, atau Supervisor yang melakukan penanganan."
         );
         return;
       }
@@ -4715,7 +4726,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}
           kelompokKasus: item.category,
           jalurPenindakan: route,
           jalurPenangananV2: route === "NAQIB" ? "NAQIB_OPERASIONAL" : "MANAJER_SUPERVISOR",
-          penanggungJawabFungsi: route === "NAQIB" ? "Naqib Operasional" : "Manajer/Supervisor Pembinaan Karakter",
+          penanggungJawabFungsi: route === "NAQIB" ? "Konselor Pemula" : "Manajer/Supervisor Pembinaan Karakter",
           statusPembinaan: "SELESAI",
           penindak: actionOfficer,
           dicatatOleh: recorder,

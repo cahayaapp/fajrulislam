@@ -3223,7 +3223,8 @@
     }
 
     function startArticleListener() {
-      if (!currentTeacherCode) return;
+      if (!currentTeacherCode || writingSuspended) return;
+      if (articleListener && articlesRef) articlesRef.off('value', articleListener);
 
       articlesRef = db.ref(`${WRITING_PATH}/${currentTeacherCode}`);
       articleListener = snapshot => {
@@ -3243,6 +3244,18 @@
         `;
       });
     }
+
+    let writingSuspended = false;
+    window.addEventListener('cahaya:suspend', () => {
+      writingSuspended = true;
+      if (articleListener && articlesRef) articlesRef.off('value', articleListener);
+      articleListener = null;
+    });
+    window.addEventListener('cahaya:resume', () => {
+      if (!writingSuspended) return;
+      writingSuspended = false;
+      startArticleListener();
+    });
 
     function renderArticles() {
       const query = normalizeText(els.searchArticles.value);
