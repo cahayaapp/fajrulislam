@@ -3829,7 +3829,7 @@
 
       // Guru Home is a navigation hub. Messaging starts only after Pesan is opened.
       const activeRole = localStorage.getItem('cahayaActiveRole') || localStorage.getItem('cahayaCurrentRole');
-      if (activeRole === 'guru' && window.__cahayaChatUsersLoaded !== true) {
+      if (['guru', 'direktur'].includes(activeRole) && window.__cahayaChatUsersLoaded !== true) {
         if (timer) clearInterval(timer);
         return;
       }

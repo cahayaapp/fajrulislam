@@ -158,7 +158,7 @@
   // Guru Home is a navigation hub: token/config refresh starts with Pesan
   // or the existing explicit enable action, never merely by opening Home.
   function deferGuruPush(){
-    return (localStorage.getItem('cahayaActiveRole')||localStorage.getItem('cahayaCurrentRole'))==='guru'
+    return ['guru','direktur'].includes(localStorage.getItem('cahayaActiveRole')||localStorage.getItem('cahayaCurrentRole'))
       && window.__cahayaChatUsersLoaded!==true;
   }
   function boot(){

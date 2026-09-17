@@ -3040,7 +3040,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       const isBlank = !rawSrc || rawSrc === "about:blank";
       if (!force && !isBlank) return false;
       frame.removeAttribute("srcdoc");
-      frame.src = "home-direktur.html?v=193";
+      frame.src = "home-direktur.html?v=202";
       document.body.classList.add("director-home-shell");
       document.body.classList.add("director-role-shell");
       const title = document.getElementById("currentPageTitle");
@@ -3571,7 +3571,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
           hideCahayaPageLoader();
           return;
         }
-        if (homeMenu) { loadPage('home-direktur.html?v=193', homeMenu); return; }
+        if (homeMenu) { loadPage('home-direktur.html?v=202', homeMenu); return; }
         bootstrapDirectorHomeFailSafe(true);
         return;
       }
@@ -3691,7 +3691,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
         }
         // Untuk workspace Guru, menu inti sudah pasti dari kebijakan aplikasi sehingga
         // dokumen role_menus tidak perlu menjadi blocking request pada setiap buka app.
-        if (!roleMenuRules && ensureActiveRole() === 'guru') roleMenuRules = {};
+        if (!roleMenuRules && ['guru','direktur'].includes(ensureActiveRole())) roleMenuRules = {};
         if (!roleMenuRules) {
           const roleMenuDoc = await dbFS.collection("settings").doc("role_menus").get();
           roleMenuRules = roleMenuDoc.exists ? roleMenuDoc.data() : {};
@@ -4067,7 +4067,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
 
       const menuId = menuElement?.id || "";
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
-      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=193';
+      if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=202';
       if (menuId === 'menu-home' && activeRoleForPage === 'guru') url = 'home-guru.html?v=201';
       const premiumHome = menuId === 'menu-home';
       document.body.classList.toggle('director-home-shell', premiumHome);
@@ -4260,8 +4260,8 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     /* Chat legacy dihapus. Seluruh chat pengurus memakai js/pengurus-whatsapp-chat.js
        agar pesan tidak ditimpa, room tidak terhapus, dan inbox tetap sinkron. */
   </script>
-  <script src="js/pengurus-whatsapp-chat.js?v=201"></script>
-  <script src="js/cahaya-push-global-v68.js?v=201"></script>
+  <script src="js/pengurus-whatsapp-chat.js?v=202"></script>
+  <script src="js/cahaya-push-global-v68.js?v=202"></script>
 
   <script>
     window.addEventListener(

@@ -1,27 +1,52 @@
-
-import{initializeApp,getApps}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';import{getDatabase,ref,get,query,orderByChild,startAt,endAt,equalTo,limitToLast,update,push,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-const P=window.parent&&window.parent!==window?window.parent:window,CFG=(window.CAHAYA_CONFIG&&window.CAHAYA_CONFIG.firebase)||(P.CAHAYA_CONFIG&&P.CAHAYA_CONFIG.firebase),K=window.CahayaGuruKPI||P.CahayaGuruKPI,$=id=>document.getElementById(id);if(!CFG)throw new Error('Konfigurasi Firebase CAHAYA tidak tersedia');if(!K)throw new Error('Modul KPI Guru tidak tersedia');const app=getApps().length?getApps()[0]:initializeApp(CFG),db=getDatabase(app),USER=window.CahayaGuruHub.profile();const D={schedule:[],attendance:[],scores:[],tahfiz:[],obs:[],learning:[],materials:{},completions:[],health:[],permits:[]};let KPI=null,KPI_ATTENDANCE=[],IDENT={},TODAY_SCHEDULE=[],TODAY_LEAVES=[],WEEK={occ:[],present:0,onTime:0,late:0},stopTodayAttendance=null;
+// Imported only after a quick-access click. Firebase is deferred past local paint.
+let db,ref,get,query,orderByChild,startAt,endAt,equalTo,limitToLast,update,push,serverTimestamp,sdkPromise;
+function ensureFirebase(){
+  if(!sdkPromise)sdkPromise=Promise.all([
+    import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'),
+    import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js')
+  ]).then(([a,d])=>{({ref,get,query,orderByChild,startAt,endAt,equalTo,limitToLast,update,push,serverTimestamp}=d);db=d.getDatabase(a.getApps().length?a.getApps()[0]:a.initializeApp(CFG));}).catch(e=>{sdkPromise=null;throw e});
+  return sdkPromise;
+}
+const P=window.parent&&window.parent!==window?window.parent:window,CFG=(window.CAHAYA_CONFIG&&window.CAHAYA_CONFIG.firebase)||(P.CAHAYA_CONFIG&&P.CAHAYA_CONFIG.firebase),K=window.CahayaGuruKPI||P.CahayaGuruKPI,$=id=>document.getElementById(id);if(!CFG)throw new Error('Konfigurasi Firebase CAHAYA tidak tersedia');if(!K)throw new Error('Modul KPI Guru tidak tersedia');const USER=window.CahayaGuruHub.profile();const D={schedule:[],attendance:[],scores:[],tahfiz:[],obs:[],learning:[],materials:{},completions:[],health:[],permits:[]};let KPI=null,KPI_ATTENDANCE=[],IDENT={},TODAY_SCHEDULE=[],TODAY_LEAVES=[],WEEK={occ:[],present:0,onTime:0,late:0},stopTodayAttendance=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const pct=v=>Number.isFinite(v)?v+'%':'—';function status(v){if(!Number.isFinite(v))return['Belum ada data','att'];if(v>=90)return['Sangat Baik',''];if(v>=80)return['Baik',''];if(v>=70)return['Perlu Penguatan','att'];return['Perlu Perhatian','bad']}function setStatus(prefix,v){const s=status(v),dot=$(prefix+'Dot');$(prefix+'Status').textContent=s[0];dot.classList.toggle('att',s[1]==='att');dot.classList.toggle('bad',s[1]==='bad')}
 function cacheRead(key,ttl=300000){try{const x=JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null');return x&&Date.now()-x.t<ttl?x.v:null}catch{return null}}function cacheWrite(key,v,persist=false){try{(persist?localStorage:sessionStorage).setItem(key,JSON.stringify({t:Date.now(),v}))}catch{}}async function val(path){try{return(await get(ref(db,path))).val()||{}}catch(e){console.warn(path,e);return{}}}async function rangeVal(path,field,start,end,limit=120,ttl=90000){const ck=`cgv148:${path}:${start}:${end}:${limit}`,c=cacheRead(ck,ttl);if(c!==null)return c;try{const snap=await get(query(ref(db,path),orderByChild(field),startAt(start),endAt(end),limitToLast(limit))),v=snap.val()||{};cacheWrite(ck,v);return v}catch(e){console.warn(path,e);return{}}}async function periodVal(path,field,start,end,limit=120,ttl=90000){const v=await rangeVal(path,field,start,end,limit,ttl);if(K.records(v).length)return v;const ck=`cgv155:fallback:${path}:${start}:${end}`,c=cacheRead(ck,ttl);if(c!==null)return c;const full=await val(path);cacheWrite(ck,full);return full}function canonicalAttendanceRows(node){return K.collect(node||{},x=>x&&typeof x==='object'&&x.jadwalId&&x.tanggal)}
-async function attendanceDay(date){
-  const ck=`cgv165:absensi-guru:${date}`,isToday=date===K.jakartaNow().date,ttl=6*3600000;
-  if(!isToday){const c=cacheRead(ck,ttl);if(c!==null)return canonicalAttendanceRows(c)}
-  try{
-    const primaryPromise=get(ref(db,`cahaya_app/absensi_guru/${date}`)).then(s=>s.val()||{}).catch(e=>{console.warn('absensi_guru/'+date,e);return{}});
-    const logPromise=get(query(ref(db,'cahaya_app/log_absensi_guru'),orderByChild('tanggal'),equalTo(date),limitToLast(250))).then(s=>s.val()||{}).catch(e=>{console.warn('log_absensi_guru/'+date,e);return{}});
-    const[primary,logs]=await Promise.all([primaryPromise,logPromise]),rows=[...canonicalAttendanceRows(primary),...canonicalAttendanceRows(logs)],uniq=new Map();
-    rows.forEach((r,i)=>{const rowKey=[r.tanggal||date,r.jadwalId||'',r.guruKodeKalender||r.guruKode||r.guruKey||r.namaGuru||'',r.mapel||'',r.kelas||''].map(K.key).join('|')||String(i);uniq.set(rowKey,r)});
-    const merged=[...uniq.values()];if(!isToday)cacheWrite(ck,merged);return merged;
-  }catch(e){console.warn('attendanceDay',date,e);return[]}
-}function addDays(date,days){const d=new Date(date+'T12:00:00+07:00');d.setDate(d.getDate()+days);return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}async function fastSchedule(){const c=cacheRead('cahaya_guru_schedule_v148',12*3600000);if(c)return c;try{const r=await fetch('data/jadwal-pelajaran-awal-2026-2027.json',{cache:'force-cache'});if(r.ok){const v=await r.json();cacheWrite('cahaya_guru_schedule_v148',v,true);return v}}catch(e){console.warn('schedule local',e)}return[]}function dayNo(date){return new Date(date+'T12:00:00Z').getUTCDay()}function clock(v){const m=String(v||'').match(/(\d{1,2})[:.](\d{2})/);return m?Number(m[1])*60+Number(m[2]):NaN}function startClock(r){return clock(r.jamMulai||String(r.waktu||r.jadwalLabel||'').split(/[–—-]/)[0])}function timeText(r){const a=r.jamMulai||String(r.waktu||r.jadwalLabel||'').split(/[–—-]/)[0]||'—',b=r.jamSelesai||String(r.waktu||r.jadwalLabel||'').split(/[–—-]/)[1]||'';return b?`${a}–${b}`:a}function classText(r){return String(r.kelas||r.rombel||r.kelas_kelompok||'-')}function subjectText(r){return String(r.mapel||r.mataPelajaran||r.namaMapel||'-')}
+function addDays(date,days){const d=new Date(date+'T12:00:00+07:00');d.setDate(d.getDate()+days);return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
+let schedulePromise;
+async function fastSchedule(){
+  const c=cacheRead('cahaya_guru_schedule_v148',12*3600000)||P.CahayaDataCache?.get('guru:schedule:2026-2027',12*3600000);
+  if(c)return c;
+  if(!schedulePromise)schedulePromise=fetch('data/jadwal-pelajaran-awal-2026-2027.json',{cache:'force-cache'}).then(async r=>{if(!r.ok)throw Error('Jadwal lokal belum tersedia');const v=await r.json();cacheWrite('cahaya_guru_schedule_v148',v,true);return v}).finally(()=>{schedulePromise=null});
+  return schedulePromise;
+}
+const sourceCache=new Map(),sourceFlights=new Map();
+function sourceState(key){const v=sourceCache.get(key);return v&&Date.now()-v.t<120000?v:null}
+async function sourceRead(key,read){
+  const cached=sourceState(key),ttl=key.startsWith('permits:')?120000:30000;if(cached&&Date.now()-cached.t<ttl)return {value:cached.value,cached:true};
+  if(sourceFlights.has(key))return sourceFlights.get(key);
+  const promise=ensureFirebase().then(read).then(snap=>{const value=snap.val()||{};sourceCache.set(key,{value,t:Date.now()});return{value,cached:false}}).finally(()=>sourceFlights.delete(key));
+  sourceFlights.set(key,promise);return promise;
+}
+let attendanceReady=false;
+function mergeAttendance(primary,logs){
+  const uniq=new Map();
+  [...canonicalAttendanceRows(primary),...canonicalAttendanceRows(logs)].forEach((r,i)=>{const key=[r.tanggal,r.jadwalId,r.guruKodeKalender||r.guruKode||r.guruKey||r.namaGuru,r.mapel,r.kelas].map(K.key).join('|')||String(i);uniq.set(key,r)});
+  return [...uniq.values()];
+}
+function dayNo(date){return new Date(date+'T12:00:00Z').getUTCDay()}function clock(v){const m=String(v||'').match(/(\d{1,2})[:.](\d{2})/);return m?Number(m[1])*60+Number(m[2]):NaN}function startClock(r){return clock(r.jamMulai||String(r.waktu||r.jadwalLabel||'').split(/[–—-]/)[0])}function timeText(r){const a=r.jamMulai||String(r.waktu||r.jadwalLabel||'').split(/[–—-]/)[0]||'—',b=r.jamSelesai||String(r.waktu||r.jadwalLabel||'').split(/[–—-]/)[1]||'';return b?`${a}–${b}`:a}function classText(r){return String(r.kelas||r.rombel||r.kelas_kelompok||'-')}function subjectText(r){return String(r.mapel||r.mataPelajaran||r.namaMapel||'-')}
 function matchAttendance(r,date){const rows=K.onlyKepondokan(D.attendance).filter(a=>K.dateOf(a)===date),sid=String(r.id||r.jadwalId||'').trim();if(sid){const exact=rows.find(x=>String(x.jadwalId||'').trim()===sid);if(exact)return exact}const cls=K.norm(classText(r)),sub=K.norm(subjectText(r)),start=String(r.jamMulai||r.jadwalMulai||r.scheduleStart||'').trim();return rows.find(x=>{if(!K.teacherMatches(x,IDENT))return false;if(cls&&K.norm(x.kelas||x.rombel)!==cls)return false;if(sub&&K.norm(x.mapel||x.mataPelajaran||x.namaMapel)!==sub)return false;const xs=String(x.jadwalMulai||x.jamMulai||x.scheduleStart||'').trim();return !start||!xs||xs===start})||null}
 function todaySchedules(){const now=K.jakartaNow();return K.assignedSchedule(D.schedule,IDENT).filter(r=>Number(r.hari)===dayNo(now.date)).sort((a,b)=>(startClock(a)||9999)-(startClock(b)||9999))}
 function studentClassMap(){const m=new Map();Object.entries(window.CAHAYA_MASTER_DATA?.santriByClass||{}).forEach(([c,n])=>(n||[]).forEach(x=>m.set(K.key(x),c)));return m}function classParts(v){const n=K.norm(v),m=n.match(/kelas\s*(\d+)/);return{num:m?m[1]:'',unit:n.includes('putri')?'putri':n.includes('putra')?'putra':''}}function classMatches(a,b){const x=classParts(a),y=classParts(b);if(x.num&&y.num&&x.num!==y.num)return false;if(x.unit&&y.unit&&x.unit!==y.unit)return false;return Boolean((x.num&&y.num)||K.norm(a)===K.norm(b))}function todayLeaves(health,permits){const today=K.jakartaNow().date,classes=TODAY_SCHEDULE.map(r=>`${classText(r)} ${r.unit||''}`),dir=studentClassMap(),m=new Map(),add=(r,type)=>{const name=String(r.namaSantri||r.santri?.nama||r.nama||'').trim();if(!name)return;const cls=String(r.kelas||dir.get(K.key(name))||'').trim();if(classes.length&&(!cls||!classes.some(c=>classMatches(c,cls))))return;m.set(K.key(name),{name,kelas:cls||'Kelas belum terdata',type,detail:r.keteranganGuru||r.jenisIzin||r.alasan||r.keperluan||r.lokasiIstirahat||''})};K.records(health).filter(r=>r.statusAktif!==false&&r.bolehTidakMengikutiPembelajaranHariIni===true).forEach(r=>add(r,'Sakit'));K.records(permits).filter(r=>{const st=String(r.status||'').toUpperCase();if(st&&!['DISETUJUI','SELESAI'].includes(st))return false;const s=String(r.tanggalMulai||r.tanggalPengajuan||'').slice(0,10),e=String(r.rencanaKembali||r.tanggalKembaliRencana||r.berlakuSampai||s).slice(0,10);return(!s||s<=today)&&(!e||e>=today)}).forEach(r=>add(r,/sakit|medis/i.test(String(r.jenisIzin||r.alasan||''))?'Sakit':'Izin'));return[...m.values()].sort((a,b)=>a.name.localeCompare(b.name,'id'))}
 function render(){TODAY_SCHEDULE=todaySchedules()}
+function updateScheduleList(html){
+  const list=$('teacherSheetList'),template=document.createElement('template');template.innerHTML=html;
+  const next=[...template.content.children];
+  if(list.children.length!==next.length){list.replaceChildren(...next);return}
+  next.forEach((node,i)=>{if(list.children[i].outerHTML!==node.outerHTML)list.children[i].replaceWith(node)});
+}
 function stat(v,l,c=''){
   const icon=c==='success'?'<svg viewBox="0 0 24 24"><path d="m7 12 3 3 7-7"/></svg>':c==='danger'?'<svg viewBox="0 0 24 24"><path d="M12 7v6M12 17h.01"/></svg>':'<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>';
   return`<div class="sheet-stat ${c}"><span class="sheet-stat-icon">${icon}</span><span class="sheet-stat-copy"><b>${v}</b><small>${l}</small></span></div>`
-}function showSheet(){$('teacherSheet').classList.add('show')}function renderScheduleSheet(){const date=K.jakartaNow().date,started=TODAY_SCHEDULE.filter(r=>!Number.isFinite(startClock(r))||startClock(r)<=K.jakartaNow().minutes).length,att=TODAY_SCHEDULE.filter(r=>matchAttendance(r,date)).length;$('teacherSheetIcon').className='sheet-head-icon schedule';$('teacherSheetTitle').textContent='Jadwal Hari Ini';$('teacherSheetSub').textContent='Jadwal pengajaran kepondokan Anda hari ini';$('teacherSheetStats').innerHTML=stat(TODAY_SCHEDULE.length,'Total Jadwal')+stat(att,'Sudah Absen','success')+stat(Math.max(0,started-att),'Perlu Absen','danger');$('teacherSheetListTitle').textContent='Jadwal Pengajaran';$('teacherSheetCount').textContent=`${TODAY_SCHEDULE.length} jadwal`;$('teacherSheetList').innerHTML=TODAY_SCHEDULE.length?TODAY_SCHEDULE.map((r,i)=>{const a=matchAttendance(r,date),future=Number.isFinite(startClock(r))&&startClock(r)>K.jakartaNow().minutes,label=a?'Sudah Absen':future?'Belum Waktunya':'Belum Absen',cl=a?'success':future?'warn':'danger';return`<div class="sheet-row"><span class="sheet-avatar ${cl}">${String(timeText(r)).split(/[:.]/)[0]}</span><span class="sheet-row-copy"><b>${esc(subjectText(r))}</b><small>${esc(timeText(r))} • ${esc(classText(r))}</small></span><span class="sheet-row-meta"><span class="sheet-badge ${a?'':future?'warn':'danger'}">${label}</span>${a?'':`<button class="sheet-row-action ${future?'future':''}" onclick="openAutoAttendance(${i})">Absen</button>`}</span></div>`}).join(''):'<div class="sheet-empty">Tidak ada jadwal mengajar hari ini.</div>';showSheet()};function firebaseSafeKey(v){const k=K.norm(v).replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'');return k||'data'}
+}function showSheet(){$('teacherSheet').classList.add('show')}function renderScheduleSheet(){const date=K.jakartaNow().date,started=TODAY_SCHEDULE.filter(r=>!Number.isFinite(startClock(r))||startClock(r)<=K.jakartaNow().minutes).length,att=TODAY_SCHEDULE.filter(r=>matchAttendance(r,date)).length;$('teacherSheetIcon').className='sheet-head-icon schedule';$('teacherSheetTitle').textContent='Jadwal Hari Ini';$('teacherSheetSub').textContent='Jadwal pengajaran kepondokan Anda hari ini';$('teacherSheetStats').innerHTML=stat(TODAY_SCHEDULE.length,'Total Jadwal')+stat(attendanceReady?att:'—','Sudah Absen','success')+stat(attendanceReady?Math.max(0,started-att):'—','Perlu Absen','danger');$('teacherSheetListTitle').textContent='Jadwal Pengajaran';$('teacherSheetCount').textContent=`${TODAY_SCHEDULE.length} jadwal`;updateScheduleList(TODAY_SCHEDULE.length?TODAY_SCHEDULE.map((r,i)=>{const a=matchAttendance(r,date),future=Number.isFinite(startClock(r))&&startClock(r)>K.jakartaNow().minutes,label=a?'Sudah Absen':!attendanceReady?'Memperbarui…':future?'Belum Waktunya':'Belum Absen',cl=a?'success':future?'warn':'danger';return`<div class="sheet-row"><span class="sheet-avatar ${cl}">${String(timeText(r)).split(/[:.]/)[0]}</span><span class="sheet-row-copy"><b>${esc(subjectText(r))}</b><small>${esc(timeText(r))} • ${esc(classText(r))}</small></span><span class="sheet-row-meta"><span class="sheet-badge ${a?'':future?'warn':'danger'}">${label}</span>${a?'':`<button class="sheet-row-action ${future?'future':''}" onclick="openAutoAttendance(${i})">Absen</button>`}</span></div>`}).join('') :'<div class="sheet-empty">Tidak ada jadwal mengajar hari ini.</div>');showSheet()};function firebaseSafeKey(v){const k=K.norm(v).replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'');return k||'data'}
 function jakartaClock(){return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date())}
 function directAttendanceStatus(r){const now=K.jakartaNow().minutes,start=startClock(r),late=Number.isFinite(start)?Math.max(0,now-start):0;return{status:late>0?'TERLAMBAT':'TEPAT_WAKTU',label:late>0?`Terlambat ${late} menit`:'Tepat Waktu',late}}
 function teacherDisplayName(){return String(USER.label||USER.nama||USER.namaTampilan||USER.displayName||USER.name||USER.username||USER.email||IDENT.display||'Guru CAHAYA').trim()}
@@ -52,6 +77,7 @@ window.openAutoAttendance=async i=>{
   if(btn){btn.disabled=true;btn.textContent='Memproses…'}
   const teacherName=teacherDisplayName(),teacherKey=firebaseSafeKey(USER.uid||USER.email||USER.username||teacherName),jadwalId=String(r.id||r.jadwalId||firebaseSafeKey([date,classText(r),subjectText(r),r.jamMulai].join('-'))),path=`cahaya_app/absensi_guru/${date}/${teacherKey}/${jadwalId}`;
   try{
+    await ensureFirebase();
     const snap=await get(ref(db,path));let record=snap.exists()?snap.val():null;
     if(!record){
       const verifiedLocation=await verifyTeacherLocation(r);
@@ -65,6 +91,7 @@ window.openAutoAttendance=async i=>{
     const localRecord={...record,tanggal:date,jadwalId,namaGuru:record.namaGuru||teacherName,guruKodeKalender:record.guruKodeKalender||IDENT.code||r.guruKode||'',mapel:record.mapel||subjectText(r),kelas:record.kelas||classText(r)};
     D.attendance=D.attendance.filter(x=>!(K.dateOf(x)===date&&String(x.jadwalId||'')===jadwalId&&K.teacherMatches(x,IDENT)));
     D.attendance.push(localRecord);
+    sourceCache.delete('primary:'+date);sourceCache.delete('logs:'+date);
     try{sessionStorage.removeItem(`cgv154:absensi-guru:${date}`);sessionStorage.removeItem(`cgv165:absensi-guru:${date}`)}catch{}
     render();
     showDirectAttendanceResult('success',r,localRecord,snap.exists()?'Kehadiran untuk jadwal ini sudah tercatat.':'Kehadiran berhasil disimpan.')
@@ -73,22 +100,36 @@ window.openAutoAttendance=async i=>{
     showDirectAttendanceResult('error',r,null,e?.message||'Gagal menyimpan absensi. Periksa koneksi lalu coba lagi.')
   }finally{if(btn){btn.disabled=false;btn.textContent='Absen'}}
 };function renderLeaveSheet(){$('teacherSheetIcon').className='sheet-head-icon leave';$('teacherSheetTitle').textContent='Izin / Sakit Hari Ini';$('teacherSheetSub').textContent='Santri dari kelas yang Anda ajar hari ini';const s=TODAY_LEAVES.filter(x=>x.type==='Sakit').length,i=TODAY_LEAVES.filter(x=>x.type==='Izin').length;$('teacherSheetStats').innerHTML=stat(TODAY_LEAVES.length,'Total')+stat(s,'Sakit','danger')+stat(i,'Izin','success');$('teacherSheetListTitle').textContent='Santri Tidak Mengikuti Pembelajaran';$('teacherSheetCount').textContent=`${TODAY_LEAVES.length} santri`;$('teacherSheetList').innerHTML=TODAY_LEAVES.length?TODAY_LEAVES.map((x,n)=>`<div class="sheet-row"><span class="sheet-avatar ${x.type==='Sakit'?'danger':'warn'}">${n+1}</span><span class="sheet-row-copy"><b>${esc(x.name)}</b><small>${esc(x.kelas)}${x.detail?' • '+esc(x.detail):''}</small></span><span class="sheet-badge ${x.type==='Sakit'?'danger':'warn'}">${x.type}</span></div>`).join(''):'<div class="sheet-empty">Tidak ada santri izin/sakit dari kelas Anda hari ini.</div>';showSheet()};
-export async function openPanel(kind, shouldRender = () => window.CahayaGuruHub.isActive()) {
-  const now=K.jakartaNow();
-  const schedule=await fastSchedule();
+
+export async function openPanel(kind, shouldRender = () => window.CahayaGuruHub.isActive(), timing = () => {}) {
+  const now=K.jakartaNow(),keys=kind==='leave'?['health:'+now.date,'permits:'+now.date]:['primary:'+now.date,'logs:'+now.date];
+  const schedule=await fastSchedule();if(!shouldRender())return;
   D.schedule=K.collect(schedule,x=>x&&('hari'in x)&&('mapel'in x||'mataPelajaran'in x));
-  IDENT=K.identityFromProfile(USER,D.schedule);
+  IDENT=K.identityFromProfile(window.CahayaGuruHub.profile(),D.schedule);
   TODAY_SCHEDULE=todaySchedules();
-  if(kind==='leave'){
-    const [health,permits]=await Promise.all([
-      val('cahaya_app/izin_sakit_harian/'+now.date),
-      rangeVal('cahaya_app/perizinan_ringkas','tanggalPengajuan',addDays(now.date,-30),now.date,120,120000)
-    ]);
-    D.health=K.records(health);D.permits=K.records(permits);
-    TODAY_LEAVES=todayLeaves(D.health,D.permits);
-    if(shouldRender())renderLeaveSheet();
-  }else{
-    D.attendance=await attendanceDay(now.date);
-    if(shouldRender())renderScheduleSheet();
+  const values=keys.map(key=>sourceState(key)?.value),states=keys.map((key,i)=>values[i]!==undefined?'cached':'pending');
+  function paint(){
+    if(!shouldRender())return;
+    const complete=states.every(x=>x==='fresh'||x==='cached');
+    if(kind==='leave'){
+      D.health=K.records(values[0]||{});D.permits=K.records(values[1]||{});
+      TODAY_LEAVES=todayLeaves(D.health,D.permits);renderLeaveSheet();
+      if(!complete){$('teacherSheetCount').textContent=TODAY_LEAVES.length?TODAY_LEAVES.length+' santri • data sebagian':'—';$('teacherSheetStats').innerHTML=stat('—','Total')+stat('—','Sakit','danger')+stat('—','Izin','success');if(!TODAY_LEAVES.length)$('teacherSheetList').innerHTML='<div class="sheet-empty">Data izin/sakit belum lengkap. Memuat sumber yang tersedia…</div>'}
+    }else{
+      D.attendance=mergeAttendance(values[0]||{},values[1]||{});attendanceReady=complete;renderScheduleSheet();
+    }
+    const error=states.includes('error'),pending=states.includes('pending'),cached=states.includes('cached');
+    $('teacherSheetSub').textContent=error?'Pembaruan gagal. Data tersimpan/lokal belum terkonfirmasi; tutup dan buka untuk mencoba lagi.':pending?'Memperbarui data hari ini…':cached?'Data tersimpan sementara • diperbarui saat cache berakhir.':'Data hari ini telah dimuat.';
   }
+  paint();timing('local');
+  await Promise.all(keys.map(async(key,i)=>{
+    try{
+      const result=await sourceRead(key,()=>kind==='leave'
+        ?i===0?get(ref(db,'cahaya_app/izin_sakit_harian/'+now.date)):get(query(ref(db,'cahaya_app/perizinan_ringkas'),orderByChild('tanggalPengajuan'),startAt(addDays(now.date,-30)),endAt(now.date),limitToLast(120)))
+        :i===0?get(ref(db,'cahaya_app/absensi_guru/'+now.date)):get(query(ref(db,'cahaya_app/log_absensi_guru'),orderByChild('tanggal'),equalTo(now.date),limitToLast(250))));
+      values[i]=result.value;states[i]=result.cached?'cached':'fresh';if(!result.cached)timing('firebase');
+    }catch(e){states[i]='error';console.warn('Quick access source unavailable',key,e)}
+    paint();
+  }));
+  timing(states.includes('error')?'error':'complete');
 }
