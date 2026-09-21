@@ -35,7 +35,7 @@
     'menu-kontrol-pendidikan':'Pantau pendidikan hari ini','menu-materi-pembelajaran':'Target dan realisasi materi','menu-tindak-akademik':'Tuntaskan temuan pendidikan','menu-absensi-ibadah-guru':'Guru mukim & keteladanan',
   };
   const supporting={GURU_PONDOK:'Siap mengajar, mendampingi, dan menebar cahaya hari ini.',GURU_PKBM:'Dampingi pembelajaran dan tumbuhkan potensi santri.',NAQIB:'Dampingi santri dan hadirkan keteladanan setiap hari.',NAQIBAH:'Dampingi santri dan hadirkan keteladanan setiap hari.',MENTOR_USRAH:'Dampingi langkah kecil pertumbuhan santri setiap pekan.',KONSELOR:'Dengarkan, dampingi, dan bantu santri bertumbuh.',MANAJER:'Jaga keteraturan, dampingi personil, tuntaskan tindak lanjut.',SUPERVISOR:'Jaga standar, dampingi tim, dan arahkan perbaikan.',DIREKTUR:'Hadirkan arah, keputusan, dan teladan untuk pesantren.',DAPUR:'Hidangkan kebaikan, jaga kebersihan dapur setiap hari.',MEDIA:'Abadikan kegiatan dan sebarkan cerita kebaikan.',KESEHATAN:'Rawat kesehatan dan dampingi pemulihan santri.',SARPRAS:'Jaga fasilitas agar nyaman dan siap digunakan.',LAYANAN_KEBERSIHAN:'Layani dengan ramah, jaga kenyamanan lingkungan.',WALI_SANTRI:'Bersama mendampingi langkah tumbuh ananda.'};
-  const priority={GURU_PONDOK:['menu-absen-kbm','menu-kalender-materi','menu-nilai','menu-guru-menulis'],NAQIB:['menu-absen-asrama','menu-jurnal-piket','menu-gamifikasi','menu-naqib-teladan'],NAQIBAH:['menu-absen-asrama','menu-jurnal-piket','menu-gamifikasi','menu-naqib-teladan'],KONSELOR:['menu-kasus-masuk','menu-kasus-aktif','menu-konseling-konselor','menu-eskalasi-konselor'],MANAJER:['menu-kontrol-pendidikan','menu-materi-pembelajaran','menu-tindak-akademik','menu-absensi-ibadah-guru','menu-kontrol-pembinaan','menu-kontrol-pembinaan--mentoring','menu-kontrol-pembinaan--counselor','menu-kontrol-pembinaan--followup'],SUPERVISOR:['menu-supervisor-v2','menu-supervisor-v2--escalations','menu-supervisor-v2--observation','menu-supervisor-v2--followup'],DIREKTUR:['menu-direktur-v2','menu-direktur-v2--inbox','menu-direktur-v2--targets','menu-direktur-v2--supervisors']};
+  const priority={GURU_PONDOK:['menu-absen-guru','menu-absen-kbm','menu-tahfiz','leave'],NAQIB:['menu-absen-asrama','menu-jurnal-piket','menu-gamifikasi','menu-naqib-teladan'],NAQIBAH:['menu-absen-asrama','menu-jurnal-piket','menu-gamifikasi','menu-naqib-teladan'],KONSELOR:['menu-kasus-masuk','menu-kasus-aktif','menu-konseling-konselor','menu-eskalasi-konselor'],MANAJER:['menu-kontrol-pendidikan','menu-materi-pembelajaran','menu-tindak-akademik','menu-absensi-ibadah-guru','menu-kontrol-pembinaan','menu-kontrol-pembinaan--mentoring','menu-kontrol-pembinaan--counselor','menu-kontrol-pembinaan--followup'],SUPERVISOR:['menu-supervisor-v2','menu-supervisor-v2--escalations','menu-supervisor-v2--observation','menu-supervisor-v2--followup'],DIREKTUR:['menu-direktur-v2','menu-direktur-v2--inbox','menu-direktur-v2--targets','menu-direktur-v2--supervisors']};
   let session,user,items=[],quick=[],secondary=[],host;
   function summary(item){return descriptions[item.id]||(wali?(/mentoring/i.test(item.label)?'Refleksi, target & perkembangan ananda':/laporan/i.test(item.label)?'Ikuti perkembangan ananda':/kabar/i.test(item.label)?'Cerita dan kabar terbaru ananda':'Informasi untuk keluarga'):(/kpi/i.test(item.label)?'Tinjau capaian dan bukti kerja':/riwayat/i.test(item.label)?'Lihat catatan sebelumnya':/panduan/i.test(item.label)?'Tugas dan standar kerja':/pembinaan/i.test(item.label)?'Dampingi dan arahkan perbaikan':/izin/i.test(item.label)?'Informasi izin santri':'Buka ruang kerja Anda'))}
   function card(item,index,large=false){return `<button type="button" class="mh-card ${large?'mh-quick-card':'mh-menu-card'} mh-tone-${index%6}" data-mh-id="${esc(item.id)}" title="${esc(item.label)}"><span class="mh-icon">${icon(item.icon||iconFor(item.label))}</span><span class="mh-card-copy"><b>${esc(item.label)}</b><small>${esc(item.description||summary(item))}</small></span><span class="mh-card-arrow">${large?icon('arrow'):'›'}</span></button>`}
@@ -45,7 +45,7 @@
     if(id==='roles')return embedded?P.openCahayaGlobalRoleModal?.():all();
     if(id==='messages'){if(embedded)(wali?P.toggleWaliChat?.():P.openMobileShortcut?.('menu-chat'));return}
     if(id==='profile'){if(embedded){if(wali)P.document.getElementById('navProfil')?.click();else P.openAuthorizedMenu?.('menu-profil')}return}
-    const special={schedule:'openScheduleModal',leave:'openLeaveModal',activities:'openActivities'};
+    const special={'menu-absen-guru':'openScheduleModal',schedule:'openScheduleModal',leave:'openLeaveModal',activities:'openActivities'};
     if(special[id]&&typeof window[special[id]]==='function')return window[special[id]]();
     const item=items.find(x=>x.id===id);if(!item)return;
     host.querySelector('dialog')?.close();
@@ -76,14 +76,14 @@
     if(role==='GURU_PONDOK'){
       const labels={'menu-tahfiz':'Tahsin & Tahfiz','menu-tindak-lanjut-guru':'Tindak Lanjut','menu-laporan-murojaah':'Lapor Pelanggaran','menu-asesmen-guru':'Self Asesmen'};
       items=items.map(item=>({...item,label:labels[item.id]||item.label}));
+      items.push({id:'leave',label:'Memo Izin/Sakit',description:'Santri izin atau sakit hari ini',icon:'leave'});
     }
     const wanted=priority[role]||items.filter(x=>!x.utility&&x.group!=='Lainnya'&&x.group!=='Evaluasi').map(x=>x.id);
     quick=wanted.map(id=>items.find(x=>x.id===id)).filter(Boolean).slice(0,4);
     if(!quick.length)quick=items.slice(0,2);
     if(role==='GURU_PONDOK'){
-      const labels={'menu-absen-kbm':'Presensi Santri','menu-guru-menulis':'Tulis Materi'};
-      quick=quick.map(item=>({...item,label:labels[item.id]||item.label,icon:item.id==='menu-nilai'?'report':item.id==='menu-guru-menulis'?'pen':iconFor(item.label)}));
-      items.push({id:'leave',label:'Izin / Sakit',icon:'leave'});
+      const labels={'menu-absen-guru':'Presensi Guru','menu-absen-kbm':'Presensi Santri','menu-tahfiz':'Tahsin & Tahfiz'};
+      quick=quick.map(item=>({...item,label:labels[item.id]||item.label,icon:item.id==='menu-absen-guru'?'calendar':item.id==='leave'?'leave':iconFor(item.label)}));
     }
     if(wali)quick=['utility-kabar','menu-mentoring-wali','menu-akademik-wali','menu-perizinan-wali'].map(id=>items.find(x=>x.id===id)).filter(Boolean);
     const skip=new Set([...quick.map(x=>x.id),'menu-absen-guru']);

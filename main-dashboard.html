@@ -2062,7 +2062,7 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
         </div>
         <div class="brand-text">
           <span class="brand-kicker">Holistic Islamic School</span>
-          <h1>CAHAYA APP</h1>
+          <h1>CAHAYA APP 2.0</h1>
           <p id="roleBadge">Pesantren Cahaya Fajrul Islam</p>
         </div>
         <button class="sidebar-close" type="button" onclick="toggleSidebar()" aria-label="Tutup menu">✕</button>
@@ -2101,7 +2101,7 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
         <div class="page-heading">
           <div class="app-title-header">
             <span class="top-brand-mark" aria-hidden="true"></span>
-            <span id="currentPageTitle">CAHAYA APP</span>
+            <span id="currentPageTitle">CAHAYA APP 2.0</span>
           </div>
         </div>
       </div>
@@ -2467,7 +2467,7 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
       <div class="menu-group">
         <div class="group-label">Akademik (Guru)</div>
 
-        <a class="nav-item menu-akses" id="menu-absen-guru" style="display: none;" onclick="loadPage('home-guru.html?v=201&amp;openSchedule=1', document.getElementById('menu-home'))">✅ Absen Guru</a>
+        <a class="nav-item menu-akses" id="menu-absen-guru" style="display: none;" onclick="loadPage('home-guru.html?v=202&amp;openSchedule=1', document.getElementById('menu-home'))">✅ Absen Guru</a>
 
         <a class="nav-item menu-akses" id="menu-absen-kbm" style="display: none;" onclick="loadPage('guru/absensiPembelajaran.html?v=197', this)">📋 Presensi Santri</a>
 
@@ -2613,7 +2613,7 @@ function openOperationalDashboard(el) {
   frame.onload = () => { kirimProfilKeFrame(); hideCahayaPageLoader(); };
   frame.onerror = () => hideCahayaPageLoader();
   frame.src = route;
-  document.getElementById('currentPageTitle').textContent = 'CAHAYA APP';
+  document.getElementById('currentPageTitle').textContent = 'CAHAYA APP 2.0';
   if (window.innerWidth <= 900) { document.getElementById('mainSidebar').classList.remove('open'); document.body.classList.remove('mobile-sidebar-open'); }
   document.querySelector('.mobile-menu-overlay')?.classList.remove('open');
 }
@@ -2752,7 +2752,7 @@ function openMobileShortcut(menuId) {
       if (typeof fn === 'function') { fn(); setMobileBottomActive('menu-absen-guru'); return; }
     } catch(e) { console.warn(e); }
     if(canonicalRoleRuntime)openAuthorizedMenu('menu-absen-guru');
-    else loadPage('home-guru.html?v=201&openSchedule=1', document.getElementById('menu-home'));
+    else loadPage('home-guru.html?v=202&openSchedule=1', document.getElementById('menu-home'));
     return;
   }
   if (menuId === 'global-jadwal' || menuId === 'global-kpi') {
@@ -2768,7 +2768,7 @@ function openMobileShortcut(menuId) {
       const fn = frame?.contentWindow?.openScheduleModal;
       if (typeof fn === 'function') { fn('attendance'); return; }
     } catch(e) { console.warn(e); }
-    loadPage('home-guru.html?v=201&openSchedule=1', document.getElementById('menu-home'));
+    loadPage('home-guru.html?v=202&openSchedule=1', document.getElementById('menu-home'));
     return;
   }
   if (menuId === 'utility-menu') { toggleSidebar(); return; }
@@ -3716,7 +3716,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
           hideCahayaPageLoader();
           return;
         }
-        if (homeMenu) { loadPage('home-guru.html?v=201', homeMenu); return; }
+        if (homeMenu) { loadPage('home-guru.html?v=202', homeMenu); return; }
       }
       if (activeNow === 'naqib' || activeNow === 'naqib-operasional') {
         const homeMenu = document.getElementById('menu-home');
@@ -4296,7 +4296,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       }
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
       if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=202';
-      if (menuId === 'menu-home' && activeRoleForPage === 'guru') url = 'home-guru.html?v=201';
+      if (menuId === 'menu-home' && activeRoleForPage === 'guru') url = 'home-guru.html?v=202';
       if (menuId === 'menu-home' && ['naqib','naqib-operasional'].includes(activeRoleForPage)) url = 'home-naqib.html?v=216';
       if (canonicalRoleRuntime && menuId === 'menu-home') url = roleSystemV2.homeFor(activeRoleForPage, roleV2Session.activeAssignment);
       if (canonicalRoleRuntime && activeRoleForPage === 'WALI_SANTRI' && menuId === 'menu-home') {
