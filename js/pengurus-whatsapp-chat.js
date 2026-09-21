@@ -500,6 +500,16 @@
     user = {}
   ) {
     if (!user || isSelfUser(user)) return false;
+    const session=window.cahayaRoleV2Session;
+    if(session?.mode==='canonical'&&session.activeRole==='LAYANAN_KEBERSIHAN'){
+      const owned=Array.isArray(user.roles)?user.roles.map(role=>String(role).toUpperCase()):[];
+      const assignments=user.assignments||{};
+      const unit=session.activeAssignment?.unit;
+      const sameUnit=scope=>!unit||scope?.unit==='ALL'||scope?.unit===unit;
+      if(owned.includes('DIREKTUR'))return true;
+      if(owned.includes('SUPERVISOR')&&sameUnit(assignments.SUPERVISOR)&&assignments.SUPERVISOR?.supervisedRoles?.includes('LAYANAN_KEBERSIHAN'))return true;
+      return owned.includes('MANAJER')&&sameUnit(assignments.MANAJER)&&assignments.MANAJER?.managedRoles?.includes('LAYANAN_KEBERSIHAN');
+    }
     // V69: seluruh pengguna hanya dapat membuka chat langsung dengan
     // Direktur, Wakil Direktur, Konselor, dan Admin.
     return isPrivilegedRoles(rolesOf(user));
@@ -2357,6 +2367,7 @@
   function openConversation(
     active
   ) {
+    if(window.cahayaRoleV2Session?.activeRole==='LAYANAN_KEBERSIHAN'&&active.type!=='broadcast'&&!canChatWith(active.raw))return;
     state.active =
       active;
 
@@ -3029,6 +3040,10 @@
       !text ||
       !state.active
     ) {
+      return;
+    }
+    if(window.cahayaRoleV2Session?.activeRole==='LAYANAN_KEBERSIHAN'&&state.active.type!=='broadcast'&&!canChatWith(state.active.raw)){
+      alert('Kontak ini tidak tersedia untuk Layanan & Kebersihan.');
       return;
     }
 

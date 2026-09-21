@@ -86,8 +86,8 @@
     }else if(role==='SARPRAS'){
       [['menu-jurnal-sarpras','Jurnal Sarpras','jurnal'],['menu-checklist-sarpras','Checklist Harian','checklist'],['menu-tindak-sarpras','Tindak Lanjut','tindak-lanjut']].forEach(([id,label,path])=>add(id,label,`sarpras/${path}.html`));guide();
     }else if(role==='LAYANAN_KEBERSIHAN'){
-      add('menu-jurnal-pkl','Jurnal Keamanan & Kebersihan','PKL/jurnal-pkl.html');
-      add('menu-buku-izin','Buku Izin','layanan/buku-izin.html');
+      add('menu-jurnal-pkl','Jurnal Harian','PKL/jurnal-pkl.html');
+      add('menu-laporan-murojaah','Laporan Pelanggaran','guru/lapor-pelanggaran.html');
       add('menu-buku-tamu','Buku Tamu','PKL/buku-tamu.html');
       add('menu-penitipan-barang','Penitipan Barang','PKL/penitipan-barang.html');guide();
     }else guide();

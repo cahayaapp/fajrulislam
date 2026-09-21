@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head><!-- ROLE_V2_ENTRY_START -->
-<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-system-v2.js?v=271"></script>
 <script src="../js/role-route-registry-v2.js?v=266"></script>
-<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=271"></script>
 <script src="../js/role-scope-v2.js?v=206"></script>
-<script src="../js/role-entry-v2.js?v=266"></script>
+<script src="../js/role-entry-v2.js?v=271"></script>
 <!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
@@ -14,7 +14,7 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CAHAYA APP - Jurnal Keamanan & Kebersihan</title>
+  <title>CAHAYA APP - Jurnal Harian Layanan & Kebersihan</title>
 
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
 
@@ -1037,6 +1037,10 @@
           placeholder="Tuliskan kendala fasilitas, temuan keamanan, kerusakan, barang titipan, kejadian penting, atau tindak lanjut yang diperlukan..."
         ></textarea>
       </div>
+      <div class="form-group full" style="margin-top:17px;">
+        <label class="form-label" for="jkBuktiKerja">🔗 Tautan Bukti Kerja (Opsional)</label>
+        <input type="url" class="form-control" id="jkBuktiKerja" placeholder="https://..." inputmode="url">
+      </div>
 
       <div class="submit-row">
         <div class="submit-copy">
@@ -1260,13 +1264,7 @@
     }
 
     function localDateValue() {
-      const now = new Date();
-
-      return [
-        now.getFullYear(),
-        String(now.getMonth() + 1).padStart(2, "0"),
-        String(now.getDate()).padStart(2, "0")
-      ].join("-");
+      return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
     }
 
     function userName() {
@@ -1699,6 +1697,32 @@ function taskStatus(taskId) {
       return null;
     }
 
+    async function loadExistingJournal() {
+      const tanggal=document.getElementById('jkTanggal').value;
+      const nama=normalizedName(document.getElementById('jkNama').value);
+      taskStates={};renderTasks();
+      document.getElementById('jkCatatan').value='';
+      document.getElementById('jkBuktiKerja').value='';
+      if(!tanggal||!nama)return;
+      try{
+        const existing=await findExistingJournal(tanggal,nama);
+        if(document.getElementById('jkTanggal').value!==tanggal)return;
+        const data=existing?.value;
+        if(!data)return;
+        for(const detail of data.detailPelaksanaan||[]){
+          if(!taskStates[detail.id]||!STATUS_CONFIG[detail.statusKode])continue;
+          const input=document.querySelector(`input[name="status_${detail.id}"][value="${detail.statusKode}"]`);
+          if(input)input.checked=true;
+          setTaskStatus(detail.id,detail.statusKode);
+          const note=String(detail.catatan||'');
+          setTaskNote(detail.id,note);
+          document.getElementById(`note_${detail.id}`).value=note;
+        }
+        document.getElementById('jkCatatan').value=data.catatanKejadian==='Nihil'?'':data.catatanKejadian||'';
+        document.getElementById('jkBuktiKerja').value=data.buktiKerjaUrl||'';
+      }catch(error){console.error('Gagal memuat jurnal harian:',error);showToast('error','Jurnal gagal dimuat',error?.message||'Coba lagi.');}
+    }
+
     async function simpanJurnal() {
       const validation = validateJournal();
 
@@ -1721,11 +1745,14 @@ function taskStatus(taskId) {
 
       const area =
         document.getElementById("jkArea").value;
+      const assignedUnit=window.cahayaRoleContext?.activeRole==='LAYANAN_KEBERSIHAN'?window.cahayaRoleContext.activeAssignment?.unit:'';
+      if(assignedUnit&&['PUTRA','PUTRI'].includes(assignedUnit)&&area!==`Area ${assignedUnit==='PUTRA'?'Putra':'Putri'}`){showToast('error','Area tidak sesuai','Pilih area sesuai penugasan aktif.');return;}
 
       const catatan =
         document.getElementById("jkCatatan")
           .value
           .trim();
+      const buktiKerjaUrl = document.getElementById("jkBuktiKerja").value.trim();
 
       if (!tanggal || !nama) {
         showToast(
@@ -1793,6 +1820,7 @@ function taskStatus(taskId) {
         rekapKategori: buildCategoryRecap(details),
 
         catatanKejadian: catatan || "Nihil",
+        buktiKerjaUrl,
 
         statusVerifikasiSupervisor: "Menunggu Verifikasi",
         sumberPenilaian: "Jurnal Mandiri Personil",
@@ -1863,7 +1891,11 @@ function taskStatus(taskId) {
         localDateValue();
 
       fillProfile();
+      const assignedUnit=window.cahayaRoleContext?.activeRole==='LAYANAN_KEBERSIHAN'?window.cahayaRoleContext.activeAssignment?.unit:'';
+      if(['PUTRA','PUTRI'].includes(assignedUnit)){const area=document.getElementById('jkArea');area.value=`Area ${assignedUnit==='PUTRA'?'Putra':'Putri'}`;for(const option of area.options)option.disabled=option.value!==area.value;}
       renderTasks();
+      document.getElementById('jkTanggal').addEventListener('change',loadExistingJournal);
+      loadExistingJournal();
       hideLoading();
     });
 

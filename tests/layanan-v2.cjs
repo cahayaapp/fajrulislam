@@ -1,0 +1,24 @@
+'use strict';
+const assert=require('node:assert/strict');
+const R=require('../js/role-system-v2.js');
+const N=require('../js/role-navigation-v2.js');
+const M=require('../js/role-menu-v2.js');
+const user=unit=>({roleSystemVersion:2,roles:['LAYANAN_KEBERSIHAN'],defaultRole:'LAYANAN_KEBERSIHAN',assignments:{LAYANAN_KEBERSIHAN:unit?{unit}:{}}});
+for(const unit of ['', 'PUTRA', 'PUTRI']){
+  const session=R.resolveSession(user(unit));
+  const items=M.model(session);
+  const ids=items.map(item=>item.id);
+  assert(ids.includes('menu-jurnal-pkl'));
+  assert(ids.includes('menu-laporan-murojaah'));
+  assert(ids.includes('menu-buku-tamu'));
+  assert(ids.includes('menu-penitipan-barang'));
+  for(const id of ['menu-kpi-role','menu-panduan-kerja','menu-chat','menu-jadwal-role'])assert(ids.includes(id),id);
+  assert(!ids.includes('menu-buku-izin'));
+  assert(!R.can('LAYANAN_KEBERSIHAN','menu-buku-izin',session.activeAssignment));
+  assert(!N.canAccessRoute(session,'layanan/buku-izin.html').ok);
+  assert(!N.canAccessRoute(session,'layanan/buku-izin.html','menu-buku-izin').ok);
+  for(const route of ['PKL/jurnal-pkl.html','guru/lapor-pelanggaran.html','PKL/buku-tamu.html','PKL/penitipan-barang.html'])assert(N.canAccessRoute(session,route).ok,route);
+}
+const unrelated=R.resolveSession({roleSystemVersion:2,roles:['DAPUR'],defaultRole:'DAPUR',assignments:{DAPUR:{}}});
+assert(!N.canAccessRoute(unrelated,'guru/lapor-pelanggaran.html').ok);
+console.log('PASS Layanan menu, direct Buku Izin denial, journal/report routes and utilities');

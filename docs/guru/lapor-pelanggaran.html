@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head><!-- ROLE_V2_ENTRY_START -->
-<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-system-v2.js?v=271"></script>
 <script src="../js/role-route-registry-v2.js?v=266"></script>
-<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=271"></script>
 <script src="../js/role-scope-v2.js?v=206"></script>
-<script src="../js/role-entry-v2.js?v=266"></script>
+<script src="../js/role-entry-v2.js?v=271"></script>
 <!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
@@ -1015,6 +1015,10 @@
             placeholder="Tuliskan waktu, lokasi, kejadian, dan pihak yang mengetahui..."
           ></textarea>
         </div>
+        <div class="form-group full" id="lp_lokasiWrap" style="display:none">
+          <label class="form-label" for="lp_lokasi">📍 Lokasi Kejadian</label>
+          <input class="form-control" id="lp_lokasi" type="text" maxlength="160" placeholder="Contoh: gerbang pesantren">
+        </div>
 
         <div class="form-group full">
           <label class="form-label">📷 Bukti Foto <span style="font-weight:700;color:#8291a5;">(Opsional)</span></label>
@@ -1281,8 +1285,13 @@
 
     const reportScope=window.cahayaRoleContext;
     const scopedReporter=reportScope&&['NAQIB','NAQIBAH'].includes(reportScope.activeRole);
+    const layananReporter=reportScope?.activeRole==='LAYANAN_KEBERSIHAN';
+    if(layananReporter)document.getElementById('lp_lokasiWrap').style.display='';
     let reportRoster=null;
-    function validateReportRoster(names){if(scopedReporter){reportScope.assertCurrent();if(!reportRoster)throw new Error('Roster belum tersedia');names.forEach(n=>reportRoster.requireStudent(n));}}
+    function validateReportRoster(names){
+      if(layananReporter){reportScope.assertCurrent();names.forEach(n=>{if(!daftarSantriMaster.includes(n))throw new Error('Santri di luar daftar layanan yang tersedia.');});}
+      if(scopedReporter){reportScope.assertCurrent();if(!reportRoster)throw new Error('Roster belum tersedia');names.forEach(n=>reportRoster.requireStudent(n));}
+    }
     document.addEventListener("DOMContentLoaded", async () => {
       isiProfil();
       try {
@@ -1293,7 +1302,8 @@
           : window.CAHAYA_MASTER_DATA?.santriByClass || window.dataSantri || {};
         if(scopedReporter)reportRoster=reportScope.roster(sumber);
         const namaSet = new Set();
-        Object.values(sumber || {}).forEach(list => {
+        Object.entries(sumber || {}).forEach(([kelas,list]) => {
+          if(layananReporter&&['PUTRA','PUTRI'].includes(reportScope.activeAssignment?.unit)&&!String(kelas).toUpperCase().includes(reportScope.activeAssignment.unit))return;
           normalisasiDaftar(list).forEach(nama => namaSet.add(nama));
         });
         const daftarSantri = [...namaSet].sort((a,b)=>a.localeCompare(b,"id"));
@@ -1404,6 +1414,7 @@
       try{if(pelapor&&!pelapor.startsWith('Laporan Langsung'))validateReportRoster([pelapor]);}catch(e){tampilkanToast('error','Akses ditolak',e.message);return;}
       const bidang = bidangTerpilih();
       const keterangan = document.getElementById("lp_keterangan").value.trim();
+      const lokasi = layananReporter ? document.getElementById("lp_lokasi").value.trim() : "";
       const kritis = document.getElementById("lp_kritis").checked;
 
       if (!terlaporList.length || !pelapor || !bidang || !keterangan) {
@@ -1414,6 +1425,7 @@
         );
         return;
       }
+      if(layananReporter&&!lokasi){tampilkanToast('error','Lokasi belum diisi','Isi lokasi kejadian sebelum mengirim laporan.');return;}
 
       if (
         !pelapor.startsWith("Laporan Langsung") &&
@@ -1452,8 +1464,9 @@
         : "MANAJER_SUPERVISOR";
       const commonPayload = {
         waktu: now.toISOString(),
-        tanggal: now.toISOString().slice(0, 10),
-        pelapor,
+        tanggal: new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(now),
+        pelapor: layananReporter ? namaPenginput : pelapor,
+        ...(layananReporter ? {sumberLaporan:pelapor,lokasi,unit:reportScope.activeAssignment?.unit||'',statusLaporan:'Dilaporkan',sourceType:'LAPORAN_LAYANAN_KEBERSIHAN',sourceBadge:'Layanan & Kebersihan'} : {}),
         bidangPelanggaran: bidang,
         kategori: bidang,
         keterangan,

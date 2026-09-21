@@ -34,6 +34,8 @@
     if(e.policy==='legacy-mentor-disabled')return deny('LEGACY_MENTOR_WORKFLOW_DISABLED');
     if(e.policy==='legacy-permit-decision-disabled')return deny('SUPERVISOR_LAYANAN_DECISION_ONLY');
     if(e.policy==='mentor-usrah-v2')return role==='MENTOR_USRAH'&&a.usrahIds.length?{ok:true,reason:'ASSIGNED_USRAH_MENTORING'}:deny('PERMISSION_DENIED');
+    if(parsed.path==='guru/lapor-pelanggaran.html'&&role==='LAYANAN_KEBERSIHAN')return {ok:true,reason:'LAYANAN_REPORT_ONLY'};
+    if(role==='LAYANAN_KEBERSIHAN'&&['PKL/jurnal-pkl.html','PKL/buku-tamu.html','PKL/penitipan-barang.html'].includes(parsed.path))return {ok:true,reason:'LAYANAN_SCOPED_OPERATION'};
     if(e.policy==='dapur-v2')return role==='DAPUR'?{ok:true,reason:'DAPUR_OPERATIONAL_WORKSPACE'}:deny('PERMISSION_DENIED');
     if(e.policy==='media-v2'||e.policy==='media-url-v2')return role==='MEDIA'?{ok:true,reason:'MEDIA_OPERATIONAL_WORKSPACE'}:deny('PERMISSION_DENIED');
     if(e.policy==='manager-education-v2')return role==='MANAJER'&&R.isEducationManager(a)&&['PUTRA','PUTRI'].includes(a.unit)?{ok:true,reason:'MANAGER_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
@@ -62,7 +64,7 @@
     if(!e.menus.some(m=>R.can(role,m,a)))return deny('PERMISSION_DENIED');
     // Reviewed role-wide legacy tools have no unit adapter. Never grant a
     // narrowed assignment access to their unfiltered records.
-    const legacyTools={KESEHATAN:['kesehatan/jurnal.html','kesehatan/pemeriksaan.html','kesehatan/perizinan-uks.html','kesehatan/stokobat.html'],SARPRAS:['sarpras/jurnal.html','sarpras/checklist.html','sarpras/tindak-lanjut.html'],LAYANAN_KEBERSIHAN:['layanan/buku-izin.html','PKL/buku-tamu.html','PKL/penitipan-barang.html']};
+    const legacyTools={KESEHATAN:['kesehatan/jurnal.html','kesehatan/pemeriksaan.html','kesehatan/perizinan-uks.html','kesehatan/stokobat.html'],SARPRAS:['sarpras/jurnal.html','sarpras/checklist.html','sarpras/tindak-lanjut.html'],LAYANAN_KEBERSIHAN:['PKL/buku-tamu.html','PKL/penitipan-barang.html']};
     if(legacyTools[role]?.includes(parsed.path))return (!a.unit||a.unit==='ALL')&&!a.usrahIds.length&&!a.studentIds.length&&!a.divisionIds.length&&!a.programDomain?{ok:true,reason:'ROLE_WIDE_LEGACY_TOOL'}:deny('ASSIGNMENT_ADAPTER_REQUIRED');
     if(e.policy==='unreviewed')return deny('ASSIGNMENT_ADAPTER_REQUIRED');
     if(['counselor-queue-pending','naqib-assessment-pending'].includes(e.policy)&&role!=='DIREKTUR')return deny('ASSIGNMENT_ADAPTER_REQUIRED');
