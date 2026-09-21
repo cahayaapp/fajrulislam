@@ -919,7 +919,6 @@
               <span class="ec-teacher">Guru: ${formatGelarAkademik(ev.guru_penguji)}</span>
             </div>
           </div>
-          <div class="ec-body"><strong>Materi:</strong> ${ev.materi_ujian}</div>
           <div class="ec-progress-section">
             <div class="ec-progress-label">
                 <div class="score-text">
@@ -1316,7 +1315,6 @@
         return [
           teksPdf(item.mata_pelajaran || item.mapel),
           teksPdf(formatGelarAkademik(item.guru_penguji || item.guru || "Guru")),
-          teksPdf(item.materi_ujian || item.materi),
           item.nilai_syafawi !== undefined ? teksPdf(item.nilai_syafawi) : "-",
           item.nilai_tahriri !== undefined ? teksPdf(item.nilai_tahriri) : "-",
           item.nilai_tashnif !== undefined ? teksPdf(item.nilai_tashnif) : "-",
@@ -1333,18 +1331,17 @@
         margin: { left: 10, right: 10, top: 20, bottom: 18 },
         styles: { fontSize: 7.2, cellPadding: 1.9 },
         columnStyles: {
-          0: { cellWidth: 23 },
-          1: { cellWidth: 25 },
-          2: { cellWidth: 35 },
+          0: { cellWidth: 42 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 14, halign: "center" },
           3: { cellWidth: 14, halign: "center" },
           4: { cellWidth: 14, halign: "center" },
           5: { cellWidth: 14, halign: "center" },
-          6: { cellWidth: 14, halign: "center" },
-          7: { cellWidth: 14, halign: "center", fontStyle: "bold" },
-          8: { cellWidth: 29, halign: "center" }
+          6: { cellWidth: 14, halign: "center", fontStyle: "bold" },
+          7: { cellWidth: 43, halign: "center" }
         }
       }),
-      head: [["Mata Pelajaran", "Guru", "Materi Ujian", "Lisan", "Tulisan", "Tashnif", "Praktek", "Nilai", "Predikat"]],
+      head: [["Mata Pelajaran", "Guru", "Lisan", "Tulisan", "Tashnif", "Praktek", "Nilai", "Predikat"]],
       body: rows
     });
 

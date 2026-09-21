@@ -62,7 +62,7 @@ async function actions(){
     if(!window.CAHAYA_CONFIG)await localScript('config/tenant-config.js?v=149');
     if(!window.CAHAYA_MASTER_DATA)await localScript('config/master-data.js?v=149');
     if(!window.CahayaGuruKPI)await localScript('js/guru-kpi-v144.js?v=155');
-    return import('./guru-home-actions.js?v=203');
+    return import('./guru-home-actions.js?v=204');
   })().catch(error=>{actionPromise=null;throw error});
   return actionPromise;
 }
@@ -70,13 +70,13 @@ async function openPanel(kind){
   const started=performance.now(),marks={};
   const timing=stage=>{if(marks[stage]!==undefined)return;marks[stage]=Math.round(performance.now()-started);console.debug('[Guru quick access]',kind,stage,marks[stage]+'ms');};
   const generation=++actionGeneration;
-  $('teacherSheetTitle').textContent=kind==='leave'?'Izin / Sakit':'Jadwal Hari Ini';
+  $('teacherSheetTitle').textContent=kind==='leave'?'Memo Izin/Sakit':'Presensi Guru';
   $('teacherSheetSub').textContent='Memuat data yang Anda buka…';
   $('teacherSheetStats').replaceChildren();$('teacherSheetCount').textContent='';
   $('teacherSheetList').innerHTML='<div class="sheet-empty" role="status">Memuat…</div>';
   $('teacherSheet').classList.add('show');
   timing('shell');
-  try{const module=await actions();if(active&&generation===actionGeneration)await module.openPanel(kind,()=>active&&generation===actionGeneration,timing)}
+  try{const module=await actions();if(active&&generation===actionGeneration){await module.openPanel(kind,()=>active&&generation===actionGeneration,timing);if(active&&generation===actionGeneration){$('teacherSheetTitle').textContent=kind==='leave'?'Memo Izin/Sakit':'Presensi Guru';$('teacherSheetSub').textContent=kind==='leave'?'Santri izin atau sakit dari kelas Anda hari ini':'Jadwal dan absensi mengajar Anda hari ini'}}}
   catch(error){console.warn('Fitur belum dapat dimuat',error);if(generation===actionGeneration)$('teacherSheetList').innerHTML='<div class="sheet-empty">Data belum dapat dimuat. Periksa koneksi lalu buka kembali fitur ini.</div>'}
 }
 window.openScheduleModal=()=>openPanel('schedule');

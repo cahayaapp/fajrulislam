@@ -521,7 +521,7 @@ button{font:inherit}.app{width:min(1060px,100%);margin:0 auto;padding:18px 18px 
 @media(max-width:430px){#roleModal{padding:11px!important}#roleModal .role-modal-sheet{padding:11px 13px 16px!important;border-radius:26px!important}.role-head-copy h3{font-size:1.08rem!important}#roleModal .role-option{min-height:92px;grid-template-columns:55px minmax(0,1fr) 32px;gap:12px;padding:12px!important;border-radius:19px!important}.role-option-icon{width:54px;height:54px;border-radius:17px}.role-option-icon svg{width:29px;height:29px}.role-option-copy b{font-size:.82rem}.role-option-copy small{font-size:.55rem}.role-option-state{width:30px;height:30px}}
 </style>
 <link rel="stylesheet" href="guru/guru-ui-final-v190.css?v=190">
-<link rel="stylesheet" href="css/guru-home-hub.css?v=201">
+<link rel="stylesheet" href="css/guru-home-hub.css?v=202">
 </head>
 <body class="guru-final-ui guru-hub">
 <main class="app">
@@ -550,16 +550,17 @@ button{font:inherit}.app{width:min(1060px,100%);margin:0 auto;padding:18px 18px 
 
 <section class="hub-quick"><div class="hub-section-head"><span class="hub-eyebrow">MULAI HARI ANDA</span><h2>Akses Cepat Hari Ini</h2></div>
 <div class="hub-quick-grid">
-<button class="hub-quick-card blue" onclick="openScheduleModal()"><span class="hub-icon">▦</span><span><b>Jadwal Hari Ini</b><small>Buka jadwal &amp; sesi KBM</small></span><span aria-hidden="true">›</span></button>
-<button class="hub-quick-card teal" onclick="openLeaveModal()"><span class="hub-icon">✚</span><span><b>Izin / Sakit</b><small>Catat atau lihat izin</small></span><span aria-hidden="true">›</span></button>
-<button class="hub-quick-card violet" onclick="openActivities()"><span class="hub-icon">✓</span><span><b>Aktivitas Hari Ini</b><small>Masuk ke tugas harian</small></span><span aria-hidden="true">›</span></button>
+<button class="hub-quick-card blue" onclick="openScheduleModal()"><span class="hub-icon">▦</span><span><b>Presensi Guru</b><small>Jadwal dan absensi mengajar hari ini</small></span><span aria-hidden="true">›</span></button>
+<button class="hub-quick-card teal" onclick="openMenu('menu-absen-kbm')"><span class="hub-icon">✓</span><span><b>Presensi Santri</b><small>Catat kehadiran kelas</small></span><span aria-hidden="true">›</span></button>
+<button class="hub-quick-card violet" onclick="openMenu('menu-tahfiz')"><span class="hub-icon">▣</span><span><b>Tahsin &amp; Tahfiz</b><small>Bacaan dan setoran Al-Qur’an</small></span><span aria-hidden="true">›</span></button>
+<button class="hub-quick-card amber" onclick="openLeaveModal()"><span class="hub-icon">✚</span><span><b>Memo Izin/Sakit</b><small>Santri tidak masuk kelas hari ini</small></span><span aria-hidden="true">›</span></button>
 </div></section>
 <section class="hub-menu"><div class="hub-section-head"><span class="hub-eyebrow">RUANG KERJA ANDA</span><h2>Menu Guru</h2><p>Apa yang ingin saya kerjakan?</p></div><div class="hub-menu-grid" id="teacherMenuGrid"></div></section>
 <footer class="hub-footer"><span aria-hidden="true">✧</span><p>Setiap langkah kecil hari ini,<br>membawa perubahan besar esok hari.</p></footer>
 </main>
 <div class="modal-backdrop" id="attentionModal" onclick="if(event.target===this)closeModal('attentionModal')"><section class="modal"><div class="attention-grabber"></div><header class="attention-modal-head"><div class="attention-title-wrap"><span class="attention-title-icon"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></span><div><h3>Perlu Perhatian Guru</h3><small>Hal yang perlu diselesaikan dari tugas pembelajaran</small></div></div><button class="attention-close" onclick="closeModal('attentionModal')">✕</button></header><div class="attention-groups" id="attentionList"></div></section></div>
 <div class="modal-backdrop" id="roleModal" onclick="if(event.target===this)closeModal('roleModal')"><div class="modal role-modal-sheet"><div class="role-grabber"></div><div class="modal-head"><div class="role-head-copy"><h3>Pilih Role Aktif</h3><p>Pilih tampilan kerja yang ingin digunakan.</p></div><button class="close-btn" onclick="closeModal('roleModal')" aria-label="Tutup">✕</button></div><div class="role-sheet" id="roleList"></div></div></div>
-<div class="insight-backdrop" id="teacherSheet" onclick="if(event.target===this)closeTeacherSheet()"><section class="insight-sheet"><div class="sheet-grabber"></div><header class="sheet-head"><span class="sheet-head-icon schedule" id="teacherSheetIcon"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span><div class="sheet-head-copy"><h3 id="teacherSheetTitle">Jadwal Hari Ini</h3><small id="teacherSheetSub">Jadwal pengajaran kepondokan</small></div><button class="sheet-close" onclick="closeTeacherSheet()">✕</button></header><div class="sheet-stats" id="teacherSheetStats"></div><div class="sheet-list-head"><b id="teacherSheetListTitle">Daftar</b><span id="teacherSheetCount"></span></div><div class="sheet-list" id="teacherSheetList"></div></section></div>
+<div class="insight-backdrop" id="teacherSheet" onclick="if(event.target===this)closeTeacherSheet()"><section class="insight-sheet"><div class="sheet-grabber"></div><header class="sheet-head"><span class="sheet-head-icon schedule" id="teacherSheetIcon"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span><div class="sheet-head-copy"><h3 id="teacherSheetTitle">Presensi Guru</h3><small id="teacherSheetSub">Jadwal dan absensi mengajar hari ini</small></div><button class="sheet-close" onclick="closeTeacherSheet()">✕</button></header><div class="sheet-stats" id="teacherSheetStats"></div><div class="sheet-list-head"><b id="teacherSheetListTitle">Daftar</b><span id="teacherSheetCount"></span></div><div class="sheet-list" id="teacherSheetList"></div></section></div>
 
 <div id="materialMenuSheet" onclick="if(event.target===this)closeMateriMenu()">
   <section class="material-action-sheet" role="dialog" aria-modal="true" aria-label="Materi Pembelajaran">
@@ -579,5 +580,5 @@ button{font:inherit}.app{width:min(1060px,100%);margin:0 auto;padding:18px 18px 
   </section>
 </div>
 
-<script src="js/guru-home-hub.js?v=203"></script>
+<script src="js/guru-home-hub.js?v=204"></script>
 </body></html>
