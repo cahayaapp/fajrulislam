@@ -1,0 +1,22 @@
+const fs=require('node:fs'),assert=require('node:assert/strict');
+global.CahayaRoleSystemV2=require('../js/role-system-v2.js');
+let profile={username:'petugas',roleSystemVersion:2,roles:['DAPUR'],defaultRole:'DAPUR',assignments:{DAPUR:{unit:'PUTRA'}}};
+const memory={};global.localStorage={getItem:k=>k==='cahayaCurrentUser'?JSON.stringify(profile):null};global.sessionStorage={getItem:k=>memory[k]||null,setItem:(k,v)=>memory[k]=v};
+const A=require('../js/dapur-area-v2.js'),R=global.CahayaRoleSystemV2,N=require('../js/role-navigation-v2.js'),M=require('../js/user-management-v2.js');
+assert.equal(A.get(),'putra');assert.throws(()=>A.set('putri'));assert.equal(A.areaOf({unit:'PUTRI'}),'putri');assert.equal(A.areaOf({scopeKey:'ALL'}),'');
+profile={...profile,assignments:{DAPUR:{unit:'ALL'}}};assert.equal(A.get(),'');assert.equal(A.set('putri'),'putri');assert.equal(A.get(),'putri');assert.equal(A.set('putra'),'putra');
+for(const unit of ['PUTRA','PUTRI','ALL']){const p=M.buildPatch({username:'petugas',roles:['DAPUR'],defaultRole:'DAPUR',assignments:{DAPUR:{unit}}});assert.equal(p.assignments.DAPUR.unit,unit)}
+assert(!M.validate({username:'petugas',roles:['DAPUR'],defaultRole:'DAPUR',assignments:{DAPUR:{}}}).ok);
+const session=R.resolveSession(profile,{getItem:()=>null});
+for(const view of ['menu','stock','received','usage'])assert(N.canAccessRoute(session,`dapur/menu-bahan-v2.html?view=${view}`,`menu-dapur-${view}`).ok);
+assert(!N.canAccessRoute(session,'dapur/menu-bahan-v2.html?view=menu','menu-dapur-stock').ok);
+const naqib=R.resolveSession({username:'naqib',roleSystemVersion:2,roles:['NAQIB'],defaultRole:'NAQIB',assignments:{NAQIB:{unit:'PUTRA'}}});
+assert(!N.canAccessRoute(naqib,'dapur/menu-bahan-v2.html?view=menu').ok);
+const supervisor=R.resolveSession({username:'supervisor',roleSystemVersion:2,roles:['SUPERVISOR'],defaultRole:'SUPERVISOR',assignments:{SUPERVISOR:{unit:'PUTRA',supervisedRoles:['DAPUR']}}});
+assert(N.canAccessRoute(supervisor,'dapur/menu-bahan-v2.html?view=stock').ok);
+profile={username:'supervisor',roleSystemVersion:2,roles:['SUPERVISOR'],defaultRole:'SUPERVISOR',assignments:{SUPERVISOR:{unit:'PUTRA',supervisedRoles:['DAPUR']}}};assert.equal(A.get(),'putra');assert.throws(()=>A.set('putri'));
+for(const x of ['dapur/menu-bahan-v2.html','js/dapur-material-v2.js','js/dapur-area-v2.js'])assert(fs.existsSync(x));
+const material=fs.readFileSync('js/dapur-material-v2.js','utf8'),app=fs.readFileSync('js/dapur-app-v2.js','utf8');
+for(const x of ['cahaya_app/menu_harian_dapur','cahaya_app/inventori_bahan_dapur','runTransaction','jumlahPorsi','mutasi'])assert(material.includes(x));
+assert(app.includes('area:selectedArea'));assert(app.includes("Area.areaOf(x)===selectedArea"));
+console.log('dapur-area-v2: ok');

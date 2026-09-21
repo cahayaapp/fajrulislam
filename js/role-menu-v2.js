@@ -13,7 +13,7 @@
   const workspace=(base,permission,items)=>items.map(([view,label,group='Manajemen',id])=>entry(id||(view===items[0][0]?permission:`${permission}--${view}`),label,`${base}?view=${view}`,group,permission));
   function candidates(s){
     const role=s.activeRole,a=s.activeAssignment,out=[entry('menu-home','Beranda',R.homeFor(role,a),'Utama')];
-    const add=(id,label,route,group)=>out.push(entry(id,label,route,group));
+    const add=(id,label,route,group,permission)=>out.push(entry(id,label,route,group,permission||id));
     const guide=()=>add('menu-panduan-kerja','Panduan Kerja','role-workspace.html?guide=1','Lainnya');
     if(role==='GURU_PONDOK'){
       [
@@ -77,6 +77,7 @@
     }else if(role==='DAPUR'){
       out.push(...workspace('dapur/app.html','menu-dashboard-operasional',[
         ['logbook','Logbook Hari Ini','Operasional'],['checklist','Checklist Kebersihan','Operasional'],['history','Riwayat','Evaluasi']]));
+      [['stock','Stok Bahan Makanan','Operasional'],['menu','Menu Harian','Operasional'],['received','Penerimaan Bahan','Manajemen'],['usage','Pemakaian Bahan','Manajemen']].forEach(([view,label,group])=>add(`menu-dapur-${view}`,label,`dapur/menu-bahan-v2.html?view=${view}`,group));
       add('menu-panduan-kerja','Panduan Kerja','dapur/panduan.html','Lainnya');
     }else if(role==='MEDIA'){
       add('menu-media','Update URL Wali','admin/admin_media.html');

@@ -163,6 +163,10 @@
     "menus": ["menu-dashboard-operasional"],
     "policy": "dapur-v2"
   },
+  "dapur/menu-bahan-v2.html": {
+    "menus": ["menu-dashboard-operasional", "menu-dapur-stock", "menu-dapur-menu", "menu-dapur-received", "menu-dapur-usage"],
+    "policy": "dapur-material-v2"
+  },
   "dapur/panduan.html": {
     "menus": ["menu-panduan-kerja"],
     "policy": "dapur-v2"

@@ -27,7 +27,7 @@
     DIREKTUR: { label: "Direktur", home: "home-direktur.html?v=240", legacyRole: "direktur" },
     KESEHATAN: { label: "Kesehatan", home: "role-workspace.html?v=205", legacyRole: "kesehatan" },
     LAYANAN_KEBERSIHAN: { label: "Layanan & Kebersihan", home: "role-workspace.html?v=205", legacyRole: "keamanan-kebersihan" },
-    DAPUR: { label: "Dapur", home: "home-dapur.html?v=225", legacyRole: "tim-dapur" },
+    DAPUR: { label: "Dapur", home: "home-dapur.html?v=273", legacyRole: "tim-dapur" },
     SARPRAS: { label: "Sarana & Prasarana", home: "role-workspace.html?v=205", legacyRole: "sarpras" },
     MEDIA: { label: "Media", home: "home-media.html?v=226", legacyRole: "media-digital" },
     WALI_SANTRI: { label: "Wali Santri", home: "wali/dashboard/index.html?v=20260820-v70", legacyRole: "wali" }
@@ -44,7 +44,7 @@
     DIREKTUR: [...BASE_MENUS, "menu-direktur-v2", "menu-kpi-direktur", "menu-jadwal-direktur", "menu-arahan-kasus", "menu-dashboard-operasional", "menu-supervisi-terpadu", "menu-keputusan-direktur", "menu-kpi-guru", "menu-kontrol-pendidikan", "menu-observasi-pembelajaran", "menu-absensi-ibadah-guru", "menu-review-pendidikan", "menu-dashboard-pendidikan", "menu-tindak-akademik", "menu-kontrol-pembinaan", "menu-review-pembinaan", "menu-dashboard-dua-divisi", "menu-pantau-pendampingan", "menu-pantau-asesmen", "menu-kalender-pendidikan", "menu-dashboard-pimpinan", "menu-perizinan-santri", "menu-rekap-kepala-sekolah", "menu-raport-bulanan", "menu-monitoring-absen-guru", "menu-raport-sdm", "menu-tindak-lanjut-sdm", "menu-buku-izin"],
     KESEHATAN: [...BASE_MENUS, "menu-dashboard-operasional", "menu-jurnal-kesehatan", "menu-pemeriksaan-kesehatan", "menu-perizinan-uks", "menu-stok-obat"],
     LAYANAN_KEBERSIHAN: [...BASE_MENUS, "menu-dashboard-operasional", "menu-jurnal-pkl", "menu-laporan-murojaah", "menu-buku-tamu", "menu-penitipan-barang"],
-    DAPUR: [...BASE_MENUS, "menu-dashboard-operasional"],
+    DAPUR: [...BASE_MENUS, "menu-dashboard-operasional", "menu-dapur-stock", "menu-dapur-menu", "menu-dapur-received", "menu-dapur-usage"],
     SARPRAS: [...BASE_MENUS, "menu-dashboard-operasional", "menu-jurnal-sarpras", "menu-checklist-sarpras", "menu-tindak-sarpras"],
     MEDIA: [...BASE_MENUS, "menu-dashboard-operasional", "menu-media", "menu-gallery-dokumentasi", "menu-manajemen-konten"],
     MANAJER: [...BASE_MENUS, "menu-dashboard-operasional", "menu-kontrol-pendidikan", "menu-materi-pembelajaran", "menu-nilai-manajer", "menu-guru-pondok", "menu-observasi-pembelajaran", "menu-riwayat-temuan", "menu-pembinaan-guru", "menu-absensi-ibadah-guru", "menu-tindak-akademik", "menu-kpi-manajer", "menu-penempatan-tahsin", "menu-kontrol-pembinaan", "menu-pantau-asesmen", "menu-jurnal-kesehatan", "menu-jurnal-sarpras", "menu-jurnal-pkl", "menu-media"],

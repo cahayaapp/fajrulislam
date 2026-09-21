@@ -1,14 +1,14 @@
 const fs=require('node:fs'),assert=require('node:assert/strict'),R=require('../js/role-system-v2.js'),N=require('../js/role-navigation-v2.js');
 const read=p=>fs.readFileSync(p,'utf8'),home=read('home-dapur.html'),app=read('dapur/app.html'),guide=read('dapur/panduan.html'),logic=read('js/dapur-app-v2.js');
 const profile={username:'dapur',roleSystemVersion:2,roles:['DAPUR'],defaultRole:'DAPUR',assignments:{DAPUR:{unit:'PUTRA'}}},session=R.resolveSession(profile,{getItem:()=>null,setItem(){}});
-assert.equal(R.homeFor('DAPUR'),'home-dapur.html?v=225');
+assert.equal(R.homeFor('DAPUR'),'home-dapur.html?v=273');
 assert.equal(N.canAccessRoute(session,'home-dapur.html','menu-home').ok,true);
 assert.equal(N.canAccessRoute(session,'dapur/app.html?view=logbook','menu-dashboard-operasional').ok,true);
 assert.equal(N.canAccessRoute(session,'dapur/panduan.html','menu-panduan-kerja').ok,true);
 const naqib=R.resolveSession({roleSystemVersion:2,roles:['NAQIB'],defaultRole:'NAQIB',assignments:{NAQIB:{unit:'PUTRA'}}},{getItem:()=>null,setItem(){}});
 assert.equal(N.canAccessRoute(naqib,'dapur/app.html?view=logbook','menu-dashboard-operasional').ok,false);
 assert.equal((home.match(/class="dv-feature"/g)||[]).length,4);
-for(const text of['Logbook Hari Ini','Checklist Kebersihan','Riwayat','Panduan Kerja'])assert(home.includes(text));
+for(const text of['Logbook Hari Ini','Checklist Kebersihan','Stok Bahan Makanan','Menu Harian'])assert(home.includes(text));
 for(const meal of['Sarapan','Makan Siang','Makan Sore'])assert(logic.includes(meal));
 for(const item of['Kompor bersih','Meja bersih','Lantai dipel','Tempat sampah dikosongkan','Saluran air bersih','Peralatan tersusun','Kulkas bersih'])assert(logic.includes(item));
 assert(logic.includes("LOG_PATH='cahaya_app/logbook_dapur_harian'"));assert(logic.includes("CHECK_PATH='cahaya_app/checklist_kebersihan_dapur'"));

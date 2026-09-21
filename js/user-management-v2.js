@@ -30,6 +30,7 @@
     }
     if(role==='MENTOR_USRAH')return {...base,usrahIds:ids(input.usrahIds)};
     if(role==='KONSELOR')return {...base,unit:['PUTRA','PUTRI'].includes(unit)?unit:'',level};
+    if(role==='DAPUR')return {...base,unit:['PUTRA','PUTRI','ALL'].includes(unit)?unit:''};
     return base;
   }
   function existingChild(profile={}){
@@ -60,6 +61,7 @@
       if(role==='MANAJER'&&a.managedRoles.some(r=>['GURU_PONDOK','GURU_PKBM'].includes(r))&&!a.programDomain)errors.push('Program Domain wajib dipilih untuk Manajer pendidikan.');
       if(role==='MENTOR_USRAH'&&!a.usrahIds.length)errors.push('Mentor Usrah wajib memiliki minimal satu Usrah.');
       if(role==='KONSELOR'&&(!['PUTRA','PUTRI'].includes(a.unit)||!['PEMULA','MADYA'].includes(a.level)))errors.push('Konselor wajib memiliki Level dan Unit yang valid.');
+      if(role==='DAPUR'&&!['PUTRA','PUTRI','ALL'].includes(a.unit))errors.push('Dapur wajib memiliki Area Putra, Putri, atau Keduanya.');
       if(role==='WALI_SANTRI'&&!d.namaAnak)errors.push('Nama Anak Wali Santri tidak boleh kosong.');
     }
     return {ok:!errors.length,errors,d};
