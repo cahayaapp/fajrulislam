@@ -772,7 +772,7 @@
 
     <div class="indeks-desc-box">
       <strong>Dasar Perhitungan</strong>
-      Skor berasal dari absensi program asrama saja. Poin inisiatif menjadi penambah, sedangkan poin penindakan atas laporan pelanggaran menjadi pengurang. Benchmark putra menggunakan skor tertinggi dari seluruh santri putra.
+      Status absensi program dihitung: Hadir 100, Terlambat 70, Alfa 0; Izin dan Sakit tidak dinilai. Poin inisiatif menjadi penambah, sedangkan poin penindakan atas laporan pelanggaran menjadi pengurang. Benchmark menggunakan skor tertinggi pada unit santri.
     </div>
 
     <div class="score-layout">
@@ -963,6 +963,19 @@
     item?.score,
     item?.nilaiPoin
   );
+
+  // Absensi Program V2 menyimpan status per santri, bukan poin per baris.
+  // Ikuti bobot status pada Skor Kedisiplinan Usrah; nilai legacy tetap dibaca.
+  const programAttendanceScore = item => {
+    const explicit = [item?.poin,item?.point,item?.skor,item?.score,item?.nilaiPoin]
+      .find(value => value !== undefined && value !== null && value !== "");
+    if (explicit !== undefined) return attendancePoint(item);
+    const status = String(item?.status || item?.kehadiran || "").trim().toUpperCase();
+    if (["H","HADIR"].includes(status)) return 100;
+    if (["T","TERLAMBAT","TELAT"].includes(status)) return 70;
+    if (["A","ALFA","ALPHA"].includes(status)) return 0;
+    return null;
+  };
 
   const explicitReportPoint = item => {
     const raw = safeNumber(
@@ -1396,7 +1409,9 @@
     document.getElementById("studentClassHeader").textContent = identityGlobal.kelasDisplay;
     document.getElementById("studentUsrahHeader").textContent = identityGlobal.usrahDisplay;
 
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = new Intl.DateTimeFormat("en-CA",{
+      timeZone:"Asia/Jakarta",year:"numeric",month:"2-digit",day:"2-digit"
+    }).format(new Date());
     currentMonthFilter = getFilterBulan(todayStr);
     document.getElementById("filterBulan").value = currentMonthFilter;
 
@@ -1408,7 +1423,8 @@
         CahayaWaliSession.readSnapshot(dbRT,"cahaya_app/absensi_pembelajaran",{limit:160}),
         CahayaWaliSession.readSnapshot(dbRT,"cahaya_app/log_lapor_inisiatif",{limit:100}),
         CahayaWaliSession.readSnapshot(dbRT,"cahaya_app/poin_manual",{limit:100}),
-        CahayaWaliSession.readSnapshot(dbRT,"cahaya_app/buku_kasus_konselor",{limit:100})
+        CahayaWaliSession.readSnapshot(dbRT,"cahaya_app/buku_kasus_konselor",{limit:100,noCache:true}),
+        CahayaWaliSession.readSnapshot(dbRT,"cahaya_app/laporan_penindakan",{limit:100,noCache:true})
       ]);
 
       masterUsrah = snapshots[0]?.exists() ? snapshots[0].val() || {} : {};
@@ -1427,8 +1443,8 @@
         daftar(record.data).forEach(item => {
           const nama = item?.nama || item?.namaSantri || "";
           if (!nama) return;
-          const poin = attendancePoint(item);
-          if (!poin) return;
+          const poin = programAttendanceScore(item);
+          if (poin === null) return;
           globalProgramEntries.push({
             nama,
             poin,
@@ -1541,14 +1557,23 @@
       });
 
       const caseData = snapshots[6]?.exists() ? snapshots[6].val() || {} : {};
-      Object.values(caseData).forEach(record => {
-        if (record?.santri && namaCocok(record.santri)) {
-          const tgl = record.tanggalKejadian ||
-            (record.waktuKonseling ? String(record.waktuKonseling).substring(0,10) : "");
-          record.filterBulan = getFilterBulan(tgl);
-          globalKasusSelesai.push(record);
-        }
-      });
+      const handlingData = snapshots[7]?.exists() ? snapshots[7].val() || {} : {};
+      const completedCases = new Map();
+      [caseData,handlingData].forEach((source,sourceIndex) => Object.entries(source).forEach(([key,record]) => {
+        if (!record || !namaCocok(record.santri || record.namaSantri || "")) return;
+        if (sourceIndex === 1 && !/KONSELOR/i.test(String(record.jalurPenindakan || record.jalurPenangananV2 || ""))) return;
+        const status = String(record.status || record.statusPenanganan || "SELESAI").toUpperCase().replace(/\s+/g,"_");
+        if (!["SELESAI","TIDAK_TERBUKTI","DIBERSIHKAN"].includes(status)) return;
+        const tgl = record.tanggalKejadian || record.tanggalPenindakan ||
+          String(record.waktuKonseling || record.waktuPenindakan || "").substring(0,10);
+        const id = record.sumberCaseId || key;
+        if (!completedCases.has(id)) completedCases.set(id,{
+          ...record,santri:record.santri || record.namaSantri,
+          konselorPenindak:record.konselorPenindak || record.penindak,
+          filterBulan:getFilterBulan(tgl)
+        });
+      }));
+      globalKasusSelesai = [...completedCases.values()];
 
       document.getElementById("loadingData").style.display = "none";
       renderSemuaData();

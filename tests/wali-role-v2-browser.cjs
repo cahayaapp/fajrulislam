@@ -28,7 +28,10 @@ const server=http.createServer((req,res)=>{
           const dateParts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(x=>[x.type,x.value]));
           const day=`${dateParts.year}-${dateParts.month}-${dateParts.day}`;
           const mentoring={own:{namaSantri:'AKBAR PRAYOGA',tanggal:day,usrah:'Usrah 1',mentor:'Mentor fixture',targetBaru:'TARGET ANANDA',syukurPekan:'SYUKUR ANANDA',strongWhy:'WHY ANANDA',strategi:'STRATEGI ANANDA',catatanMentor:'PRIVATE MENTOR NOTE',fokusTipe:'PERBAIKI',cahayaKlarifikasi:{answers:{sp1:3},dimensions:{spiritual:{note:'Catatan klarifikasi ananda'}}},hasilTarget:{status:'TERCAPAI',keterangan:'HASIL ANANDA'}},other:{namaSantri:'UNRELATED CHILD',tanggal:day,targetBaru:'SECRET OTHER MENTORING'}};
-          const snap=snapshot(p==='cahaya_app/log_mentoring_naqib'?mentoring:p==='cahaya_app/wali_index/akbarprayoga/nilai_bulanan'?exams:null),params={},q={once:async()=>{window.__reads.push('RTDB:'+p);window.__queries.push({path:p,...params});if(p==='cahaya_app/log_mentoring_naqib'&&localStorage.getItem('testMentoringDenied'))throw Error('PERMISSION_DENIED fixture');return snap},get:async()=>snap,on:(event,fn)=>{window.__reads.push('LISTEN:'+p);fn?.(snap)},off(){},set:write,update:write,push:write,child:k=>ref(p+'/'+k)};
+          const program={own:{tanggal:day,program:'Halaqah Pagi',data:[{nama:'AKBAR PRAYOGA',status:'H'}]}};
+          const cases={own:{santri:'AKBAR PRAYOGA',tanggalKejadian:day,sumberCaseId:'case-own',status:'SELESAI',deskripsiAwal:'UJI KASUS',kategoriAkhir:'Bimbingan',konselorPenindak:'Konselor Fixture'}};
+          const fixture=p==='cahaya_app/log_mentoring_naqib'?mentoring:p==='cahaya_app/wali_index/akbarprayoga/nilai_bulanan'?exams:p==='cahaya_app/wali_index/akbarprayoga/program'?program:p==='cahaya_app/wali_index/akbarprayoga/kasus_konselor'?cases:null;
+          const snap=snapshot(fixture),params={},q={once:async()=>{window.__reads.push('RTDB:'+p);window.__queries.push({path:p,...params});if(p==='cahaya_app/log_mentoring_naqib'&&localStorage.getItem('testMentoringDenied'))throw Error('PERMISSION_DENIED fixture');return snap},get:async()=>snap,on:(event,fn)=>{window.__reads.push('LISTEN:'+p);fn?.(snap)},off(){},set:write,update:write,push:write,child:k=>ref(p+'/'+k)};
           for(const k of ['orderByChild','equalTo','startAt','endAt','limitToLast','limitToFirst'])q[k]=value=>{params[k]=value;return q};
           return q;
         };
@@ -99,6 +102,17 @@ const server=http.createServer((req,res)=>{
       await report.locator('#mentoringStart').fill('2001-01-01');await report.locator('#mentoringEnd').fill('2001-01-01');await report.locator('#mentoringApply').click();
       await report.getByText('Belum ada laporan mentoring pada rentang tanggal ini.',{exact:true}).waitFor();
       assert.equal(await report.locator('body').evaluate(()=>window.__queries.filter(x=>x.path==='cahaya_app/log_mentoring_naqib').length),3,'date changes reuse scoped data');
+      await page.evaluate(()=>openWaliMobileShortcut('menu-pembinaan-wali'));
+      const coaching=page.locator('#contentFrame').contentFrame();
+      await page.waitForFunction(()=>{
+        const frame=document.getElementById('contentFrame')?.contentDocument;
+        return frame?.getElementById('programPercent')?.textContent==='100%' &&
+          frame?.getElementById('kasusListContainer')?.textContent?.includes('UJI KASUS');
+      });
+      const coachingState=await coaching.locator('body').evaluate(()=>({loading:document.getElementById('loadingData')?.textContent,program:document.getElementById('programPercent')?.textContent,section:document.getElementById('secProgram')?.style.display,reads:window.__reads}));
+      assert.equal(coachingState.program,'100%','Hadir dari absensi program V2 tidak boleh menjadi 0%: '+JSON.stringify(coachingState));
+      const caseState=await coaching.locator('body').evaluate(()=>({text:document.getElementById('kasusListContainer')?.textContent,visible:document.getElementById('secKasus')?.style.display,loading:document.getElementById('loadingData')?.textContent,reads:window.__reads}));
+      assert.match(caseState.text||'',/UJI KASUS/,'kasus Konselor selesai muncul dari indeks Wali: '+JSON.stringify(caseState));
       // Direct URL parameters cannot replace linked-child scope.
       await page.goto(origin+'/wali/dashboard/mentoring-pekanan.html?santri=UNRELATED%20CHILD');
       await page.getByText('TARGET ANANDA',{exact:true}).waitFor();
