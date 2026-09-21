@@ -956,6 +956,11 @@
     </section>
 
     <section class="tab-panel" id="tab-barang">
+      <div class="deposit-subtabs" role="tablist" aria-label="Penitipan Barang">
+        <button type="button" id="depositRulesTab" class="active" aria-selected="true">Aturan Penitipan</button>
+        <button type="button" id="depositMonitorTab" aria-selected="false">Pantau Titipan <span id="depositActiveBadge"></span></button>
+      </div>
+      <div id="depositRulesPane">
       <article class="section-card">
         <div class="section-head">
           <div class="title-wrap">
@@ -1008,6 +1013,18 @@
           </div>
         </div>
       </article>
+      </div>
+      <div id="depositMonitorPane" hidden>
+        <article class="section-card">
+          <div class="section-head"><div class="title-wrap"><div class="section-icon">📦</div><div><h2>Pantau Titipan</h2><p>Status barang untuk ananda, langsung dari catatan Layanan.</p></div></div></div>
+          <div class="body-pad">
+            <div class="deposit-summary"><div><strong id="depositTotal">—</strong><span>Total Titipan</span></div><div><strong id="depositActive">—</strong><span>Masih Diproses</span></div><div><strong id="depositDone">—</strong><span>Sudah Diserahkan</span></div></div>
+            <div class="deposit-filters"><select id="depositChildFilter" aria-label="Pilih ananda"><option value="">Semua Anak</option></select><select id="depositStateFilter" aria-label="Filter titipan"><option value="ALL">Semua</option><option value="ACTIVE">Aktif</option><option value="DONE">Sudah Diserahkan</option></select></div>
+            <div id="depositFeedback" role="status">Buka Pantau Titipan untuk memuat data ananda.</div>
+            <div id="depositCards" class="deposit-cards"></div>
+          </div>
+        </article>
+      </div>
     </section>
 
     <section class="tab-panel" id="tab-disiplin">
@@ -2003,6 +2020,10 @@ const ACADEMIC_MONTHS = [
     }else loadCalendar();
   </script>
 
+  <link rel="stylesheet" href="penitipan-pantau-v2.css?v=274">
+  <script src="../../js/penitipan-student-ids.js?v=274" defer></script>
+  <script src="../../js/penitipan-barang-v2.js?v=274" defer></script>
+  <script src="penitipan-pantau-v2.js?v=274" defer></script>
   <script src="../../js/cahaya-responsive-v24.js?v=37" defer></script>
   <script src="wali-premium-v64.js?v=64" defer></script>
 </body>
