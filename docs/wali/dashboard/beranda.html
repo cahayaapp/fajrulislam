@@ -5,7 +5,7 @@
 <script src="../../js/role-route-registry-v2.js?v=206"></script>
 <script src="../../js/role-navigation-v2.js?v=206"></script>
 <script src="../../js/role-scope-v2.js?v=206"></script>
-<script src="../../js/role-entry-v2.js?v=265"></script>
+<script src="../../js/role-entry-v2.js?v=268"></script>
 <!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../../config/tenant-config.js"></script>
@@ -15,6 +15,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Beranda Wali - CAHAYA APP</title>
+  <!-- V63 MEDIA FIX: realtime pengaturan_media + Post/Reel/YouTube compatibility -->
   
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900;1000&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   
@@ -350,7 +351,17 @@
 
   <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="beranda-whatsapp.css">
-<link rel="stylesheet" href="beranda-media-fix.css">
+<link rel="stylesheet" href="beranda-media-fix.css?v=63">
+<style id="cahaya-v63-media-inline-style">
+.media-description{display:block;margin-top:3px;color:#7b879a;font-size:.64rem;font-weight:730;line-height:1.4}
+.media-source-link{display:flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border-top:1px solid #e7edf6;background:#fbfdff;color:#1768d7;text-decoration:none;font-size:.72rem;font-weight:900}
+.media-frame-wrap{position:relative;width:100%;overflow:hidden;background:#f7f9fc}.media-frame-wrap iframe{display:block;width:100%;border:0}
+.media-frame-wrap.youtube{aspect-ratio:16/9}.media-frame-wrap.youtube iframe{height:100%}.media-frame-wrap.instagram-post iframe{min-height:520px}.media-frame-wrap.instagram-reel iframe{min-height:650px}
+.youtube-file-fallback{aspect-ratio:16/9}.youtube-file-fallback img{display:block;width:100%;height:100%;object-fit:cover}.media-play-overlay{position:absolute;inset:0;display:grid;place-items:center;text-decoration:none;background:linear-gradient(180deg,transparent,rgba(0,0,0,.12))}.media-play-button{width:62px;height:62px;display:grid;place-items:center;border-radius:50%;background:#ff0000;color:#fff;font-size:1.5rem;box-shadow:0 10px 28px rgba(0,0,0,.22)}
+.instagram-file-fallback{padding:28px 18px;text-align:center;background:linear-gradient(135deg,#fff5f8,#f5f7ff)}.instagram-file-fallback>div{max-width:460px;margin:auto}.instagram-file-fallback .ig-mark{display:block;font-size:2rem;margin-bottom:8px}.instagram-file-fallback strong{display:block;color:#17284a}.instagram-file-fallback span:not(.ig-mark){display:block;margin-top:7px;color:#74829c;font-size:.72rem;line-height:1.55}
+.media-environment-notice{display:flex;gap:10px;margin:0 0 12px;padding:11px 13px;border:1px solid #f1d498;border-radius:13px;background:#fff8e9;color:#7a531b;font-size:.68rem;font-weight:760;line-height:1.5}
+@media(max-width:520px){.media-frame-wrap.instagram-post iframe{min-height:480px}.media-frame-wrap.instagram-reel iframe{min-height:620px}}
+</style>
   <script src="../../js/cahaya-bandwidth.js"></script>
 <style id="cahaya-v60-wali-home-guru-style">
 /* V60 — Beranda Wali: mengikuti bahasa visual Beranda Guru, dengan fitur khusus wali santri. */
@@ -534,7 +545,9 @@ body.page-beranda{
     <span class="ui-eyebrow">DEKAT DENGAN ANANDA</span><h2>Akses Cepat</h2>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button type="button" class="ui-button primary" onclick="openWaliKabar()">Kabar Ananda</button>
-      <button type="button" class="ui-button" onclick="if(parent!==window&&parent.openWaliMobileShortcut){parent.openWaliMobileShortcut('menu-mentoring-wali')}else{location.href='mentoring-pekanan.html?v=264'}">Laporan Mentoring Pekanan</button>
+      <button type="button" class="ui-button" onclick="if(parent!==window&&parent.openWaliMobileShortcut){parent.openWaliMobileShortcut('menu-informasi-kalender-wali')}else{location.href='informasi-penting.html?section=kalender&v=264'}">Kalender Wali</button>
+      <button type="button" class="ui-button" onclick="if(parent!==window&&parent.openWaliMobileShortcut){parent.openWaliMobileShortcut('menu-informasi-program-wali')}else{location.href='informasi-penting.html?section=program&v=264'}">Program Harian</button>
+      <button type="button" class="ui-button" onclick="if(parent!==window&&parent.openWaliMobileShortcut){parent.openWaliMobileShortcut('menu-informasi-pembelajaran-wali')}else{location.href='informasi-penting.html?section=pembelajaran&v=264'}">Jadwal Pembelajaran</button>
     </div>
   </section>
 
@@ -1292,9 +1305,28 @@ function ekstrakInstagramId(value) {
   }
 
   function pasangListenerTimeline() {
-      // Linimasa tidak lagi memasang listener pada seluruh node besar.
-      // Data terbaru dimuat sekali saat halaman dibuka; muat ulang halaman untuk menyegarkan.
+      if (timelineListenersInstalled) return;
       timelineListenersInstalled = true;
+
+      /*
+        V63 MEDIA FIX:
+        Sumber besar linimasa tetap tidak dipasang listener realtime demi bandwidth.
+        Hanya pengaturan_media yang kecil yang dipantau realtime supaya tautan baru
+        dari Tim Media langsung muncul di Kabar Ananda tanpa logout/login.
+      */
+      dbRT.ref('cahaya_app/pengaturan_media').on(
+          'value',
+          snapshot => {
+              parsePengaturanMedia(snapshot.val() || {});
+              if (initialTimelineReady) jadwalkanRefreshTimeline();
+          },
+          error => {
+              console.warn('Listener media gagal:', error);
+              if (!sourceWarnings.some(item => String(item).includes('pengaturan_media'))) {
+                  sourceWarnings.push(`cahaya_app/pengaturan_media: ${error?.message || error}`);
+              }
+          }
+      );
   }
 
 
@@ -2724,8 +2756,16 @@ function ekstrakInstagramId(value) {
         }
       });
 
-      /* Media hanya disisipkan setelah setiap dua status.
-         Media yang belum mendapat pasangan status tidak ditumpuk di bagian bawah. */
+      /*
+        V63 MEDIA FIX:
+        Media tetap disisipkan setiap dua status. Namun bila hari ini hanya memiliki
+        satu status (atau belum sempat mendapat slot media), tampilkan setidaknya
+        media terbaru agar unggahan Tim Media tidak terlihat "hilang".
+      */
+      if (offset === 0 && mediaQueue.length && mediaCounter === 0) {
+          htmlBlok += renderKartuMedia(mediaQueue[0]);
+          mediaCounter = 1;
+      }
 
       if (clearContainer) container.innerHTML = '';
       container.insertAdjacentHTML('beforeend', htmlBlok); 
@@ -3133,7 +3173,306 @@ async function kirimKomentar(eventId) {
   }
 </script>
 <script src="beranda-whatsapp.js?v=64"></script>
-<script src="beranda-media-fix.js"></script>
+<script id="cahaya-v63-wali-media-fix">
+/* =========================================================
+   V63 — KABAR ANANDA MEDIA FIX
+   - membaca format pengaturan_media lama + baru
+   - membedakan Instagram Post/Reel
+   - memakai embed_url bila tersedia
+   - menyaring aktif:false
+   - newest first
+   - fallback link tetap terlihat bila iframe diblokir/file://
+   ========================================================= */
+(function () {
+  'use strict';
+
+  let normalizedMedia = [];
+
+  function esc(value = '') {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function firstText(...values) {
+    for (const value of values) {
+      if (value === null || value === undefined) continue;
+      const text = String(value).trim();
+      if (text) return text;
+    }
+    return '';
+  }
+
+  function entriesOf(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) return value.map((item, index) => [String(index), item]);
+    if (typeof value === 'object') return Object.entries(value);
+    return [['legacy', value]];
+  }
+
+  function youtubeIdFrom(value) {
+    const raw = firstText(
+      typeof value === 'object' ? value.id : '',
+      typeof value === 'object' ? value.videoId : '',
+      typeof value === 'object' ? value.youtubeId : '',
+      typeof value === 'object' ? value.url : '',
+      typeof value === 'object' ? value.url_asli : '',
+      typeof value === 'object' ? value.link : '',
+      typeof value === 'object' ? value.embed_url : '',
+      typeof value !== 'object' ? value : ''
+    );
+    if (!raw) return '';
+    if (/^[A-Za-z0-9_-]{6,20}$/.test(raw)) return raw;
+    const patterns = [
+      /youtu\.be\/([A-Za-z0-9_-]{6,20})/i,
+      /youtube(?:-nocookie)?\.com\/embed\/([A-Za-z0-9_-]{6,20})/i,
+      /youtube\.com\/(?:shorts|live|v)\/([A-Za-z0-9_-]{6,20})/i,
+      /[?&]v=([A-Za-z0-9_-]{6,20})/i
+    ];
+    for (const pattern of patterns) {
+      const match = raw.match(pattern);
+      if (match) return match[1];
+    }
+    return '';
+  }
+
+  function instagramDataFrom(value) {
+    const raw = firstText(
+      typeof value === 'object' ? value.url_asli : '',
+      typeof value === 'object' ? value.url : '',
+      typeof value === 'object' ? value.link : '',
+      typeof value === 'object' ? value.embed_url : '',
+      typeof value !== 'object' ? value : ''
+    );
+    const objectId = firstText(
+      typeof value === 'object' ? value.id : '',
+      typeof value === 'object' ? value.instagramId : '',
+      typeof value === 'object' ? value.postId : '',
+      typeof value === 'object' ? value.shortcode : ''
+    );
+    const objectKind = firstText(
+      typeof value === 'object' ? value.kind : '',
+      typeof value === 'object' ? value.jenis : '',
+      typeof value === 'object' ? value.type : ''
+    ).toLowerCase();
+
+    const match = raw.match(/instagram\.com\/(p|reel|tv)\/([A-Za-z0-9_-]+)/i);
+    if (match) {
+      return {
+        id: match[2],
+        kind: match[1].toLowerCase() === 'reel' ? 'reel' : (match[1].toLowerCase() === 'tv' ? 'tv' : 'post')
+      };
+    }
+    if (/^[A-Za-z0-9_-]{5,40}$/.test(objectId)) {
+      return {
+        id: objectId,
+        kind: objectKind.includes('reel') ? 'reel' : (objectKind.includes('tv') ? 'tv' : 'post')
+      };
+    }
+    return null;
+  }
+
+  function normalizedTimestamp(item = {}) {
+    return firstText(item.updatedAt, item.waktu_input, item.createdAt, item.waktu, item.timestamp);
+  }
+
+  function normalizeRecord(platform, key, raw) {
+    const item = raw && typeof raw === 'object' ? raw : { id: raw };
+    if (item.aktif === false) return null;
+
+    if (platform === 'youtube') {
+      const id = youtubeIdFrom(item);
+      if (!id) return null;
+      const sourceUrl = firstText(item.url_asli, item.url, item.link, `https://www.youtube.com/watch?v=${id}`);
+      const embedUrl = firstText(item.embed_url, `https://www.youtube.com/embed/${id}`);
+      return {
+        key, type: 'youtube', platform: 'youtube', kind: firstText(item.kind, item.jenis, 'video').toLowerCase(), id,
+        sourceUrl, embedUrl,
+        title: firstText(item.judul, item.title, 'Video YouTube'),
+        description: firstText(item.keterangan, item.caption, item.deskripsi, item.description),
+        author: firstText(item.author_name, item.author, item.channel, '@fajrulislammedia'),
+        timestamp: normalizedTimestamp(item), active: item.aktif !== false
+      };
+    }
+
+    if (platform === 'instagram') {
+      const parsed = instagramDataFrom(item);
+      if (!parsed) return null;
+      const route = parsed.kind === 'reel' ? 'reel' : (parsed.kind === 'tv' ? 'tv' : 'p');
+      const sourceUrl = firstText(item.url_asli, item.url, item.link, `https://www.instagram.com/${route}/${parsed.id}/`);
+      const embedUrl = firstText(item.embed_url, `https://www.instagram.com/${route}/${parsed.id}/embed/`);
+      return {
+        key, type: 'instagram', platform: 'instagram', kind: parsed.kind, id: parsed.id,
+        sourceUrl, embedUrl,
+        title: firstText(item.judul, item.title, parsed.kind === 'reel' ? 'Instagram Reel' : 'Instagram Post'),
+        description: firstText(item.keterangan, item.caption, item.deskripsi, item.description),
+        author: firstText(item.author_name, item.author, '@fajrulislammedia'),
+        timestamp: normalizedTimestamp(item), active: item.aktif !== false
+      };
+    }
+
+    return null;
+  }
+
+  function addToMap(map, media) {
+    if (!media?.id || media.active === false) return;
+    const uniqueKey = media.key && media.key !== 'legacy'
+      ? `${media.platform}:${media.key}`
+      : `${media.platform}:${media.kind || ''}:${media.id}`;
+    const previous = map.get(uniqueKey);
+    if (!previous || String(media.timestamp || '') >= String(previous.timestamp || '')) map.set(uniqueKey, media);
+  }
+
+  function parseMediaSettings(data = {}) {
+    const map = new Map();
+
+    entriesOf(data.instagram).forEach(([key, item]) => addToMap(map, normalizeRecord('instagram', key, item)));
+    entriesOf(data.youtube).forEach(([key, item]) => addToMap(map, normalizeRecord('youtube', key, item)));
+
+    // Format legacy tambahan.
+    ['instagramIds', 'ig', 'postsInstagram'].forEach(sourceKey => {
+      entriesOf(data[sourceKey]).forEach(([key, item]) => addToMap(map, normalizeRecord('instagram', `legacy-${sourceKey}-${key}`, item)));
+    });
+    ['youtubeIds', 'yt', 'videoYoutube'].forEach(sourceKey => {
+      entriesOf(data[sourceKey]).forEach(([key, item]) => addToMap(map, normalizeRecord('youtube', `legacy-${sourceKey}-${key}`, item)));
+    });
+
+    entriesOf(data.media || data.items || data.daftar).forEach(([key, raw]) => {
+      if (!raw) return;
+      const platform = firstText(raw.platform, raw.jenis_platform, raw.provider, raw.type, raw.jenis).toLowerCase();
+      if (platform.includes('youtube') || platform === 'yt') addToMap(map, normalizeRecord('youtube', `legacy-mixed-${key}`, raw));
+      if (platform.includes('instagram') || platform === 'ig') addToMap(map, normalizeRecord('instagram', `legacy-mixed-${key}`, raw));
+    });
+
+    normalizedMedia = [...map.values()].sort((a, b) => {
+      const timeCompare = String(b.timestamp || '').localeCompare(String(a.timestamp || ''));
+      if (timeCompare) return timeCompare;
+      return String(b.key || '').localeCompare(String(a.key || ''));
+    });
+  }
+
+  function mediaQueue() {
+    // Newest first. Interleave platform only when timestamps are unavailable/equal is unnecessary;
+    // the timeline should prioritize the latest upload.
+    return [...normalizedMedia];
+  }
+
+  function isFileMode() { return window.location.protocol === 'file:'; }
+
+  function mediaHeader(media, icon, className, label) {
+    const author = esc(media.author || '@fajrulislammedia');
+    const title = esc(media.title || label);
+    const desc = media.description ? `<span class="media-description">${esc(media.description)}</span>` : '';
+    return `
+      <div class="media-header">
+        <div class="icon-brand ${className}">${icon}</div>
+        <div class="kabar-info">
+          <span class="kabar-name">${author}</span>
+          <span class="kabar-time">${title}</span>
+          ${desc}
+        </div>
+      </div>`;
+  }
+
+  function sourceLink(media, label) {
+    const href = esc(media.sourceUrl || '#');
+    return `<a class="media-source-link" href="${href}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
+  }
+
+  function youtubeCard(media) {
+    const id = encodeURIComponent(media.id);
+    const sourceUrl = media.sourceUrl || `https://www.youtube.com/watch?v=${id}`;
+    media.sourceUrl = sourceUrl;
+
+    if (isFileMode()) {
+      return `
+        <article class="kabar-card fade-in media-card" data-media-key="${esc(media.key || media.id)}">
+          ${mediaHeader(media, '▶', 'yt-brand', 'Video Pesantren Cahaya')}
+          <div class="media-frame-wrap youtube-file-fallback">
+            <img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="Pratinjau video YouTube" loading="lazy">
+            <a class="media-play-overlay" href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer"><span class="media-play-button">▶</span></a>
+          </div>
+          ${sourceLink(media, 'Buka langsung di YouTube')}
+        </article>`;
+    }
+
+    let embedUrl = media.embedUrl || `https://www.youtube.com/embed/${id}`;
+    try {
+      const parsed = new URL(embedUrl, window.location.href);
+      if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtube-nocookie.com')) {
+        parsed.searchParams.set('rel', '0');
+        parsed.searchParams.set('playsinline', '1');
+        if (window.location.origin && window.location.origin !== 'null') parsed.searchParams.set('origin', window.location.origin);
+        embedUrl = parsed.toString();
+      }
+    } catch (_) {}
+
+    return `
+      <article class="kabar-card fade-in media-card" data-media-key="${esc(media.key || media.id)}">
+        ${mediaHeader(media, '▶', 'yt-brand', 'Video Pesantren Cahaya')}
+        <div class="media-frame-wrap youtube">
+          <iframe src="${esc(embedUrl)}" title="Video YouTube Pesantren Cahaya" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+        </div>
+        ${sourceLink(media, 'Buka langsung di YouTube')}
+      </article>`;
+  }
+
+  function instagramCard(media) {
+    const route = media.kind === 'reel' ? 'reel' : (media.kind === 'tv' ? 'tv' : 'p');
+    const id = encodeURIComponent(media.id);
+    const sourceUrl = media.sourceUrl || `https://www.instagram.com/${route}/${id}/`;
+    media.sourceUrl = sourceUrl;
+
+    if (isFileMode()) {
+      return `
+        <article class="kabar-card fade-in media-card" data-media-key="${esc(media.key || media.id)}">
+          ${mediaHeader(media, '◎', 'ig-brand', media.kind === 'reel' ? 'Reel Pesantren Cahaya' : 'Foto Pesantren Cahaya')}
+          <div class="instagram-file-fallback"><div><span class="ig-mark">◎</span><strong>Postingan Instagram siap dibuka</strong><span>Preview Instagram memerlukan HTTP/HTTPS. Tautan media tetap dapat dibuka langsung.</span></div></div>
+          ${sourceLink(media, 'Buka langsung di Instagram')}
+        </article>`;
+    }
+
+    const embedUrl = media.embedUrl || `https://www.instagram.com/${route}/${id}/embed/`;
+    const ratio = media.kind === 'reel' ? 'instagram-reel' : 'instagram-post';
+    return `
+      <article class="kabar-card fade-in media-card" data-media-key="${esc(media.key || media.id)}">
+        ${mediaHeader(media, '◎', 'ig-brand', media.kind === 'reel' ? 'Reel Pesantren Cahaya' : 'Foto Pesantren Cahaya')}
+        <div class="media-frame-wrap ${ratio}">
+          <iframe src="${esc(embedUrl)}" title="Instagram Pesantren Cahaya" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+        ${sourceLink(media, 'Buka langsung di Instagram')}
+      </article>`;
+  }
+
+  function renderMedia(media) {
+    if (!media?.id) return '';
+    if (media.type === 'youtube') return youtubeCard(media);
+    if (media.type === 'instagram') return instagramCard(media);
+    return '';
+  }
+
+  function showFileProtocolNotice() {
+    if (!isFileMode() || document.getElementById('mediaEnvironmentNotice')) return;
+    const body = document.getElementById('waliKabarLayerBody') || document.getElementById('timelineContainer');
+    if (!body) return;
+    const notice = document.createElement('div');
+    notice.id = 'mediaEnvironmentNotice';
+    notice.className = 'media-environment-notice';
+    notice.innerHTML = '<span>⚠️</span><div><strong>Preview media sedang dibuka sebagai file lokal.</strong><br>Gunakan Live Server/hosting HTTPS agar embed Instagram dan YouTube tampil penuh. Tautan tetap dapat dibuka langsung.</div>';
+    body.insertAdjacentElement('afterbegin', notice);
+  }
+
+  window.parsePengaturanMedia = parseMediaSettings;
+  window.susunAntreanMedia = mediaQueue;
+  window.renderKartuMedia = renderMedia;
+  window.__cahayaNormalizedMedia = () => [...normalizedMedia];
+
+  document.addEventListener('DOMContentLoaded', showFileProtocolNotice);
+})();
+</script>
 
   <script src="../../js/cahaya-responsive-v24.js?v=37" defer></script>
 </body>

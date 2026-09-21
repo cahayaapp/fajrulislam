@@ -53,8 +53,9 @@ const server=http.createServer((req,res)=>{
       assert.deepEqual(before.writes,[]);
       const home=page.locator('#contentFrame').contentFrame();
       await home.locator('#mobileRoleHome').waitFor();
-      assert.equal(await home.locator('.mh-quick-grid [data-mh-id="utility-kabar"]').count(),1);
-      assert.equal(await home.locator('.mh-quick-grid [data-mh-id="menu-mentoring-wali"]').count(),1);
+      const quickIds=await home.locator('.mh-quick-grid [data-mh-id]').evaluateAll(cards=>cards.map(card=>card.dataset.mhId));
+      assert.deepEqual(quickIds,['utility-kabar','menu-informasi-kalender-wali','menu-informasi-program-wali','menu-informasi-pembelajaran-wali']);
+      assert.equal(await home.locator('.mh-all [data-mh-id="menu-mentoring-wali"]').count(),1,'Laporan Mentoring remains available outside Akses Cepat');
       assert(!await home.locator('#mobileRoleHome').innerText().then(t=>t.includes('RUANG KERJA')));
       await home.locator('[data-mh-id="utility-kabar"]').first().click();
       await home.locator('#waliKabarLayer.open').waitFor({state:'visible'});

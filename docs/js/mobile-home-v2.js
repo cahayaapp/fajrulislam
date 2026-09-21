@@ -85,7 +85,18 @@
       const labels={'menu-absen-guru':'Presensi Guru','menu-absen-kbm':'Presensi Santri','menu-tahfiz':'Tahsin & Tahfiz'};
       quick=quick.map(item=>({...item,label:labels[item.id]||item.label,icon:item.id==='menu-absen-guru'?'calendar':item.id==='leave'?'leave':iconFor(item.label)}));
     }
-    if(wali)quick=['utility-kabar','menu-mentoring-wali','menu-akademik-wali','menu-perizinan-wali'].map(id=>items.find(x=>x.id===id)).filter(Boolean);
+    if(wali){
+      const waliQuick={
+        'utility-kabar':{description:'Cerita dan kabar terbaru ananda',icon:'bell'},
+        'menu-informasi-kalender-wali':{description:'Agenda penting untuk keluarga',icon:'calendar'},
+        'menu-informasi-program-wali':{description:'Kegiatan ananda setiap hari',icon:'sun'},
+        'menu-informasi-pembelajaran-wali':{description:'Jadwal belajar ananda',icon:'book'}
+      };
+      quick=Object.entries(waliQuick).map(([id,meta])=>{
+        const item=items.find(x=>x.id===id);
+        return item?{...item,...meta}:null;
+      }).filter(Boolean);
+    }
     const skip=new Set([...quick.map(x=>x.id),'menu-absen-guru']);
     secondary=items.filter(x=>!skip.has(x.id));
     const name=String(wali?(user.namaWali||user.namaOrangTua||user.nama||user.displayName||'Abi & Ummi'):(user.nama||user.displayName||user.label||user.name||user.username||label)).trim();
