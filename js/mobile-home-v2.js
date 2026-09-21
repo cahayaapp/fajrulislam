@@ -55,8 +55,8 @@
   function fill(){
     let capacity=media.matches&&innerHeight<=620?4:8;
     // All destinations remain in Lainnya; the Home never squeezes touch targets.
-    const shown=secondary.slice(0,secondary.length>=capacity-1?capacity-1:capacity),grid=host.querySelector('.mh-menu-grid');
-    if(secondary.length>=capacity-1)shown.push({id:'all',label:'Lainnya',icon:'grid',description:'Seluruh laporan dan fitur yang tersedia'});
+    const shown=secondary.slice(0,wali?7:(secondary.length>=capacity-1?capacity-1:capacity)),grid=host.querySelector('.mh-menu-grid');
+    if(wali||secondary.length>=capacity-1)shown.push({id:'all',label:'Lainnya',icon:'grid',description:'Seluruh laporan dan fitur yang tersedia'});
     grid.innerHTML=shown.map((x,i)=>card(x,i)).join('');
     host.style.setProperty('--mh-menu-rows',Math.max(1,Math.ceil(shown.length/4)));
     host.classList.toggle('mh-sparse',secondary.length===0);
@@ -99,6 +99,21 @@
     }
     const skip=new Set([...quick.map(x=>x.id),'menu-absen-guru']);
     secondary=items.filter(x=>!skip.has(x.id));
+    if(wali){
+      const waliMenu=[
+        ['menu-akademik-wali','Laporan Akademik','report'],
+        ['menu-karakter-wali','Laporan Karakter','star'],
+        ['menu-pembinaan-wali','Laporan Pembinaan','people'],
+        ['menu-mentoring-wali','Laporan Mentoring','book'],
+        ['menu-riwayat-kesehatan-wali','Riwayat Kesehatan','history'],
+        ['menu-informasi-disiplin-wali','Tata Tertib Pesantren','check'],
+        ['menu-informasi-barang-wali','Penitipan Barang','grid']
+      ];
+      secondary=waliMenu.map(([id,label,icon])=>{
+        const item=items.find(x=>x.id===id);
+        return item?{...item,label,icon}:null;
+      }).filter(Boolean);
+    }
     const name=String(wali?(user.namaWali||user.namaOrangTua||user.nama||user.displayName||'Abi & Ummi'):(user.nama||user.displayName||user.label||user.name||user.username||label)).trim();
     const date=new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date());
     let hijri='';try{hijri=new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura',{timeZone:'Asia/Jakarta',day:'numeric',month:'long',year:'numeric'}).format(new Date()).replace(/AH/i,'H')}catch{}
@@ -113,8 +128,8 @@
       <footer class="mh-banner"><p>Setiap langkah kecil hari ini,<br><strong>membawa perubahan besar esok hari.</strong></p></footer>
       <dialog class="mh-all"><header><h2>Semua Menu ${esc(label)}</h2><button type="button" data-mh-close aria-label="Tutup menu">×</button></header><div>${items.map((x,i)=>card(x,i)).join('')}</div></dialog>`;
     if(wali){
-      host.querySelector('.mh-menu h2').textContent='Laporan Ananda';
-      host.querySelector('.mh-all h2').textContent='Laporan & Informasi Wali';
+      host.querySelector('.mh-menu h2').textContent='Menu Walisantri';
+      host.querySelector('.mh-all h2').textContent='Semua Menu Walisantri';
     }
     // Hide only previous Home composition; never hide existing action sheets.
     const old=document.querySelector('.ui-page,main,.app,.app-container,.container,.page');if(old&&!old.closest('dialog'))old.classList.add('mh-original');

@@ -9,7 +9,7 @@
   theme.id='cahaya-ui-v2-theme';theme.rel='stylesheet';theme.href=new URL('css/cahaya-ui-v2.css?v=260',appRoot).href;
   document.head.appendChild(theme);
   const presentation=document.createElement('script');
-  presentation.src=new URL('js/cahaya-ui-v2.js?v='+(location.pathname.includes('/wali/')?'268':'267'),appRoot).href;presentation.defer=true;
+  presentation.src=new URL('js/cahaya-ui-v2.js?v='+(location.pathname.includes('/wali/')?'269':'267'),appRoot).href;presentation.defer=true;
   document.head.appendChild(presentation);
   const route=location.pathname.slice(appRoot.pathname.length)+location.search;
   const readUser=()=>{try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'null')}catch{return null}};

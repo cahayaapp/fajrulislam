@@ -36,7 +36,7 @@ const server=http.createServer((req,res)=>{
           return q;
         };
         const auth={currentUser:{uid:'mock-akbar308',email:'akbar308@cahayaapp.id'},signInWithEmailAndPassword:async()=>({user:auth.currentUser}),onAuthStateChanged:fn=>{queueMicrotask(()=>fn(auth.currentUser));return ()=>{}},signOut:async()=>{}};
-        const firestore={collection:p=>({doc:id=>({get:async()=>{window.__reads.push('FS:'+p+'/'+id);return {exists:p==='users'||p==='settings',data:()=>p==='users'?profile:{wali:['menu-beranda-wali','menu-akademik-wali','menu-karakter-wali','menu-pembinaan-wali','menu-informasi-penting-wali']}}},set:write,update:write}),get:async()=>({docs:[],forEach(){}})})};
+        const firestore={collection:p=>({doc:id=>({get:async()=>{window.__reads.push('FS:'+p+'/'+id);return {exists:p==='users'||p==='settings',data:()=>p==='users'?profile:{wali:['menu-beranda-wali','menu-akademik-wali','menu-karakter-wali','menu-pembinaan-wali','menu-riwayat-kesehatan-wali','menu-informasi-penting-wali']}}},set:write,update:write}),get:async()=>({docs:[],forEach(){}})})};
         window.firebase={apps:[{}],initializeApp(){},auth:()=>auth,firestore:()=>firestore,database:()=>({ref}),messaging:()=>({onMessage(){},getToken:async()=>null})};
         window.firebase.messaging.isSupported=()=>false;
       },{canonical});
@@ -55,6 +55,14 @@ const server=http.createServer((req,res)=>{
       await home.locator('#mobileRoleHome').waitFor();
       const quickIds=await home.locator('.mh-quick-grid [data-mh-id]').evaluateAll(cards=>cards.map(card=>card.dataset.mhId));
       assert.deepEqual(quickIds,['utility-kabar','menu-informasi-kalender-wali','menu-informasi-program-wali','menu-informasi-pembelajaran-wali']);
+      assert.equal(await home.locator('.mh-menu h2').innerText(),'Menu Walisantri');
+      const menuCards=await home.locator('.mh-menu-grid [data-mh-id]').evaluateAll(cards=>cards.map(card=>[card.dataset.mhId,card.querySelector('b')?.textContent]));
+      assert.deepEqual(menuCards,[
+        ['menu-akademik-wali','Laporan Akademik'],['menu-karakter-wali','Laporan Karakter'],
+        ['menu-pembinaan-wali','Laporan Pembinaan'],['menu-mentoring-wali','Laporan Mentoring'],
+        ['menu-riwayat-kesehatan-wali','Riwayat Kesehatan'],['menu-informasi-disiplin-wali','Tata Tertib Pesantren'],
+        ['menu-informasi-barang-wali','Penitipan Barang'],['all','Lainnya']
+      ]);
       assert.equal(await home.locator('.mh-all [data-mh-id="menu-mentoring-wali"]').count(),1,'Laporan Mentoring remains available outside Akses Cepat');
       assert(!await home.locator('#mobileRoleHome').innerText().then(t=>t.includes('RUANG KERJA')));
       await home.locator('[data-mh-id="utility-kabar"]').first().click();

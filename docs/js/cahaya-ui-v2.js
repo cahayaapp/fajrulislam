@@ -13,7 +13,7 @@
   if(home || path==='wali/dashboard/beranda.html' || shell || path==='wali/dashboard/index.html'){
     const mobileStyle=document.createElement('link');mobileStyle.rel='stylesheet';mobileStyle.href=new URL('css/mobile-home-v2.css?v=265',root).href;document.head.append(mobileStyle);
     if(home || path==='wali/dashboard/beranda.html'){
-      const mobileScript=document.createElement('script');mobileScript.src=new URL('js/mobile-home-v2.js?v='+(path.startsWith('wali/')?'268':'267'),root).href;mobileScript.defer=true;document.head.append(mobileScript);
+      const mobileScript=document.createElement('script');mobileScript.src=new URL('js/mobile-home-v2.js?v='+(path.startsWith('wali/')?'269':'267'),root).href;mobileScript.defer=true;document.head.append(mobileScript);
     }
   }
   const mappings = {
