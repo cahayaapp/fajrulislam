@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=217"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
@@ -51,6 +57,7 @@
   </style>
 
   <link rel="stylesheet" href="../css/cahaya-unified-v24.css?v=37" />
+  <link rel="stylesheet" href="../css/naqib-core-v2.css?v=217" />
 
   <style id="cahaya-v58-assessment-scenes">
     body.assessment-flow .asesmen-hero, body.assessment-flow .identity-card{display:none!important}
@@ -70,16 +77,21 @@
   <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
 </head>
 
-<body class="assessment-flow">
+<body class="assessment-flow nq-core-page">
 
 <div id="loadingOverlay">
   <div style="font-size: 2.5rem; margin-bottom: 15px; animation: float 1.5s infinite alternate ease-in-out;">📋</div>
   <div style="font-weight: 700;">Menyiapkan Instrumen Asesmen...</div>
 </div>
 
-<main class="cahaya-container">
+<main class="cahaya-container nq-core-shell">
 
   <section id="assessmentFlow">
+    <header class="nq-core-hero assessment-flow-hero">
+      <span class="nq-core-eyebrow">Perkembangan Santri</span>
+      <h1>Asesmen CAHAYA Santri</h1>
+      <p>Pilih periode, usrah, dan santri untuk mencatat perkembangan lima dimensi CAHAYA.</p>
+    </header>
     <div class="as-scene active" id="asSceneMonth"><div class="as-grid months" id="asMonthGrid"></div></div>
     <div class="as-scene" id="asSceneUsrah"><button class="as-back" type="button" onclick="showAssessmentScene('asSceneMonth')">‹</button><div class="as-grid" id="asUsrahGrid"></div></div>
     <div class="as-scene" id="asSceneStudent"><button class="as-back" type="button" onclick="showAssessmentScene('asSceneUsrah')">‹</button><div class="as-grid" id="asStudentGrid"></div></div>
@@ -339,7 +351,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getDatabase, ref, push, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, query as profileQuery, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
@@ -383,13 +395,23 @@
   const assessmentYear = Number(new Intl.DateTimeFormat("en-CA", {timeZone:"Asia/Jakarta", year:"numeric"}).format(new Date()));
   const monthNames = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
   const normalizeIdentity = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const assessmentScope=window.cahayaRoleContext;
+  const scopedAssessment=assessmentScope&&['NAQIB','NAQIBAH'].includes(assessmentScope.activeRole);
+  let assessmentRoster=null;
+  function requireAssessmentStudent(name,usrah){
+    if(scopedAssessment){
+      assessmentScope.assertCurrent();
+      if(!assessmentRoster)throw new Error('Roster belum tersedia');
+      assessmentRoster.requireStudent(name,usrah);
+    }
+  }
   const roleValues = Array.isArray(user.akses) ? user.akses : [user.akses, user.role, user.jabatan].flat().filter(Boolean);
-  const activeRole = String(localStorage.getItem("cahayaActiveRole") || localStorage.getItem("cahayaCurrentRole") || user.activeRole || user.role || "").toLowerCase();
+  const activeRole = scopedAssessment ? assessmentScope.activeRole : String(localStorage.getItem("cahayaActiveRole") || localStorage.getItem("cahayaCurrentRole") || user.activeRole || user.role || "").toLowerCase();
   const workspaceAssignments = Array.isArray(user.workspaceAssignments) ? user.workspaceAssignments : [];
   const activeAssignment = workspaceAssignments.find(a => String(a?.role || "").toLowerCase() === activeRole) || {};
-  const activeUnit = String(activeAssignment.unit || user.unit || "").trim();
-  let assignedUsrah = String(user.usrahBinaan || user.usrah || user.kelompokNaqib || user.kelompok || "").trim();
-  const isNaqibOps = activeRole === "naqib-operasional" || (activeRole === "naqib" && !roleValues.some(v => String(v).toLowerCase().includes("asisten")));
+  const activeUnit = scopedAssessment ? (assessmentScope.unit==="PUTRI"?"Putri":"Putra") : String(activeAssignment.unit || user.unit || "").trim();
+  let assignedUsrah = scopedAssessment ? "" : String(user.usrahBinaan || user.usrah || user.kelompokNaqib || user.kelompok || "").trim();
+  const isNaqibOps = scopedAssessment || activeRole === "naqib-operasional" || (activeRole === "naqib" && !roleValues.some(v => String(v).toLowerCase().includes("asisten")));
   const isAsistenNaqib = activeRole === "asisten-naqib";
   const canAssessCahaya = isNaqibOps || isAsistenNaqib;
   const isNaqibView = canAssessCahaya;
@@ -408,7 +430,12 @@
   async function loadKetuaUsrahFromUsers() {
     ketuaUsrahNames.clear();
     try {
-      const snap = await getDocs(collection(dbFS, "users"));
+      if(scopedAssessment)assessmentScope.assertCurrent();
+      // Existing exact roster-duty tag, not an authorization role. Profiles
+      // lacking this searchable tag must be verified; never broaden to all users.
+      const source=collection(dbFS,"users");
+      const snap = await getDocs(scopedAssessment ? profileQuery(source,where("workspaceRoles","array-contains","asisten-naqib")) : source);
+      if(scopedAssessment)assessmentScope.assertCurrent();
       snap.forEach(docSnap => {
         const data = docSnap.data() || {};
         const roles = Array.isArray(data.workspaceRoles) ? data.workspaceRoles : [];
@@ -416,7 +443,7 @@
         const isAssistant = roles.map(v=>String(v||"").toLowerCase()).includes("asisten-naqib") || assignments.some(a => String(a?.role||"").toLowerCase() === "asisten-naqib");
         if (!isAssistant) return;
         const name = data.label || data.nama || data.namaTampilan || data.username || docSnap.id;
-        if (name) ketuaUsrahNames.add(normalizeIdentity(name));
+        if (name && (!scopedAssessment || assessmentRoster.rows.some(r=>normalizeIdentity(r.name)===normalizeIdentity(name)))) ketuaUsrahNames.add(normalizeIdentity(name));
       });
     } catch (error) {
       console.warn("Daftar Ketua Usrah dari User Setting belum dapat dimuat:", error);
@@ -428,6 +455,7 @@
   };
 
   function assessmentUsrahAllowed(key) {
+    if(scopedAssessment)return assessmentScope.allowsUsrah(key)&&Object.hasOwn(dataUsrahCloud,key);
     if (!isNaqibView) return true;
     if (isAsistenNaqib && assignedUsrah) {
       const a = normalizeIdentity(assignedUsrah);
@@ -458,10 +486,11 @@
   };
 
   window.selectAssessmentUsrah = function(key) {
+    if(scopedAssessment&&!assessmentUsrahAllowed(key))throw new Error("Usrah di luar assignment");
     document.getElementById("pilihUsrah").value = key;
     window.ubahUsrah();
     let daftar = normalisasiDaftarSantri(dataUsrahCloud[key]).sort((a,b)=>a.localeCompare(b,"id"));
-    if (isNaqibOps && ketuaUsrahNames.size) {
+    if (isNaqibOps && !scopedAssessment && ketuaUsrahNames.size) {
       daftar = daftar.filter(nama => ketuaUsrahNames.has(normalizeIdentity(nama)));
     }
     if (isAsistenNaqib) {
@@ -470,11 +499,12 @@
     document.getElementById("asStudentGrid").innerHTML = daftar.length ? daftar.map(nama => `
       <button class="as-choice" type="button" onclick="selectAssessmentStudent('${String(nama).replace(/'/g,"\'")}')">
         <i>☺</i><b>${nama}</b>
-      </button>`).join("") : `<div style="grid-column:1/-1;padding:25px;text-align:center;color:#73819a;font-weight:800">${isNaqibOps ? 'Ketua Usrah belum terdeteksi dari User Setting pada usrah ini.' : 'Belum ada santri yang dapat diasesmen pada usrah ini.'}</div>`;
+      </button>`).join("") : `<div style="grid-column:1/-1;padding:25px;text-align:center;color:#73819a;font-weight:800">Belum ada santri yang dapat diasesmen pada usrah ini.</div>`;
     showAssessmentScene("asSceneStudent");
   };
 
   window.selectAssessmentStudent = function(name) {
+    requireAssessmentStudent(name,document.getElementById("pilihUsrah").value);
     document.getElementById("namaSantri").value = name;
     document.body.classList.add("assessment-final");
     window.scrollTo({top:0,behavior:"smooth"});
@@ -575,7 +605,9 @@
       dataUsrahCloud[usrah]
     ).sort((a, b) => a.localeCompare(b, "id"));
 
-    if (isNaqibOps && ketuaUsrahNames.size) daftarSantri = daftarSantri.filter(nama => ketuaUsrahNames.has(normalizeIdentity(nama)));
+    // V2 Naqib/Naqibah dapat mengasesmen roster aktif pada unitnya. Deteksi
+    // Ketua Usrah hanya dipertahankan untuk alur legacy, bukan prasyarat V2.
+    if (isNaqibOps && !scopedAssessment && ketuaUsrahNames.size) daftarSantri = daftarSantri.filter(nama => ketuaUsrahNames.has(normalizeIdentity(nama)));
     if (isAsistenNaqib) daftarSantri = daftarSantri.filter(nama => normalizeIdentity(nama) !== normalizeIdentity(rawNama));
 
     selectSantri.innerHTML =
@@ -608,7 +640,9 @@
       }
 
       try {
-        const snapUsrah = await get(
+        const scopedMaster = scopedAssessment ? await assessmentScope.loadUsrah(async p=>(await get(ref(db,p))).val()) : null;
+        if(scopedAssessment)assessmentRoster=assessmentScope.roster(scopedMaster);
+        const snapUsrah = scopedAssessment ? {exists:()=>true,val:()=>scopedMaster} : await get(
           ref(db, "cahaya_app/master_usrah")
         );
 
@@ -617,7 +651,8 @@
           : {};
 
         if (isAsistenNaqib && !assignedUsrah) assignedUsrah = findUsrahForName(rawNama);
-        await loadKetuaUsrahFromUsers();
+        // Profil Ketua Usrah tidak diperlukan untuk otorisasi canonical V2.
+        if (!scopedAssessment) await loadKetuaUsrahFromUsers();
         isiDaftarUsrah();
         ubahUsrah();
       } catch (error) {
@@ -748,7 +783,7 @@
 
   window.simpanAsesmen = async function() {
     if (!canAssessCahaya) {
-      alert("⚠️ Asesmen CAHAYA bulanan hanya diinput oleh Ketua Usrah/Asisten Naqib untuk anggota usrah dan Naqib Operasional untuk Ketua Usrah.");
+      alert("⚠️ Anda tidak memiliki akses untuk mengisi Asesmen CAHAYA Santri.");
       return;
     }
     const tanggal =
@@ -759,6 +794,8 @@
 
     const santri =
       document.getElementById("namaSantri").value;
+
+    try{requireAssessmentStudent(santri,usrah)}catch(e){alert(e.message);return;}
 
     if(!usrah) {
       alert("⚠️ Mohon pilih Usrah terlebih dahulu.");
@@ -784,7 +821,7 @@
       alert("⚠️ Ketua Usrah tidak mengasesmen dirinya sendiri. Asesmen Ketua Usrah dilakukan oleh Naqib Operasional.");
       return;
     }
-    if (isNaqibOps && ketuaUsrahNames.size && !ketuaUsrahNames.has(normalizeIdentity(santri))) {
+    if (isNaqibOps && !scopedAssessment && ketuaUsrahNames.size && !ketuaUsrahNames.has(normalizeIdentity(santri))) {
       alert("⚠️ Role Naqib Operasional hanya mengasesmen Ketua Usrah. Nama yang dipilih belum terdaftar sebagai Asisten Naqib/Ketua Usrah pada User Setting.");
       return;
     }
@@ -843,6 +880,7 @@
     };
 
     try {
+      requireAssessmentStudent(santri,usrah);
       const savedRef = await push(ref(db, "cahaya_app/asesmen_cahaya_santri"), payload);
       const waliKey = String(santri||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
       if(waliKey && savedRef.key) await set(ref(db,`cahaya_app/wali_index/${waliKey}/asesmen/${savedRef.key}`),payload);

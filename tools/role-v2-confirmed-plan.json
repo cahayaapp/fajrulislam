@@ -1,0 +1,89 @@
+{
+  "status": "BLOCKED_NOT_APPLIED",
+  "projectId": "absensi-santri-fajrul-islam",
+  "collection": "users",
+  "source": "User confirmation, verified Firestore document identities on 2026-09-17",
+  "activationBlockers": [
+    "STANDALONE_ROUTE_GUARDS_MISSING",
+    "SCOPED_FEATURE_ADAPTERS_INCOMPLETE",
+    "PRODUCTION_CLIENT_RELEASE_NOT_VERIFIED"
+  ],
+  "profiles": [
+    {
+      "documentId": "multazam",
+      "expectedLabel": "Multazam",
+      "patch": {
+        "roleSystemVersion": 2,
+        "roles": ["DIREKTUR", "GURU_PONDOK"],
+        "defaultRole": "DIREKTUR",
+        "assignments": {
+          "DIREKTUR": {"unit": "ALL", "scope": "ALL"},
+          "GURU_PONDOK": {"programDomain": "KEPONDOKAN"}
+        }
+      }
+    },
+    {
+      "documentId": "donisetiawan",
+      "expectedLabel": "Dony Setiawan",
+      "patch": {
+        "roleSystemVersion": 2,
+        "roles": ["SUPERVISOR", "KONSELOR"],
+        "defaultRole": "SUPERVISOR",
+        "assignments": {
+          "SUPERVISOR": {"unit": "PUTRA", "supervisedRoles": ["GURU_PONDOK", "NAQIB", "KONSELOR", "MEDIA"]},
+          "KONSELOR": {"unit": "PUTRA", "level": "MUDA"}
+        }
+      }
+    },
+    {
+      "documentId": "bennyarizona",
+      "expectedLabel": "Wadir Benny Arizona",
+      "patch": {
+        "roleSystemVersion": 2,
+        "roles": ["SUPERVISOR"],
+        "defaultRole": "SUPERVISOR",
+        "assignments": {
+          "SUPERVISOR": {"unit": "PUTRA", "supervisedRoles": ["DAPUR", "SARPRAS", "KESEHATAN", "LAYANAN_KEBERSIHAN"]}
+        }
+      }
+    },
+    {
+      "documentId": "zaky",
+      "expectedLabel": "ZAKY",
+      "patch": {
+        "roleSystemVersion": 2,
+        "roles": ["MANAJER", "GURU_PONDOK"],
+        "defaultRole": "MANAJER",
+        "assignments": {
+          "MANAJER": {"unit": "PUTRA", "managedRoles": ["GURU_PONDOK"], "programDomain": "KEPONDOKAN"},
+          "GURU_PONDOK": {"programDomain": "KEPONDOKAN"}
+        }
+      }
+    },
+    {
+      "documentId": "favian",
+      "expectedLabel": "Naqib Favian",
+      "patch": {
+        "roleSystemVersion": 2,
+        "roles": ["NAQIB"],
+        "defaultRole": "NAQIB",
+        "assignments": {"NAQIB": {"unit": "PUTRA"}}
+      }
+    },
+    {
+      "documentId": "kamal",
+      "expectedLabel": "Naqib kamal",
+      "patch": {
+        "roleSystemVersion": 2,
+        "roles": ["NAQIB"],
+        "defaultRole": "NAQIB",
+        "assignments": {"NAQIB": {"unit": "PUTRA"}}
+      }
+    }
+  ],
+  "unresolved": [
+    {"name": "Dini Indriani", "documentId": "diniindriani", "roles": ["SUPERVISOR"], "assignment": {"unit": "PUTRI"}, "missing": ["supervisedRoles"]},
+    {"name": "Dandy", "candidateDocumentIds": ["dandi"], "roles": ["MANAJER"], "assignment": {"unit": "PUTRA", "managedRoles": ["NAQIB", "KONSELOR"]}, "missing": ["Confirm Dandy = users/dandi", "KONSELOR not confirmed by production profile; do not add"]},
+    {"name": "Khaizuran", "candidateDocumentIds": ["khaizuran", "regen", "adekhaizuron"], "roles": ["NAQIB"], "assignment": {"unit": "PUTRA"}, "missing": ["Explicit production document selection"]}
+  ]
+}

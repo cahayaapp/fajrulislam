@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="js/role-system-v2.js?v=267"></script>
+<script src="js/role-route-registry-v2.js?v=267"></script>
+<script src="js/role-navigation-v2.js?v=267"></script>
+<script src="js/role-menu-v2.js?v=267"></script>
+<script src="js/role-scope-v2.js?v=206"></script>
+<script src="js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="config/tenant-config.js"></script><script src="config/team-roles-v191.js?v=193"></script>
-  <script src="keuangan/finance-settings.js"></script>
+  <script src="keuangan/finance-settings.js" data-role-v2-lazy="true"></script>
   <script src="config/master-data.js"></script>
   <script src="js/cahaya-config-runtime.js?v=83" defer></script>
 
@@ -1614,7 +1621,7 @@
  .mobile-shortcut-label{font-size:.58rem!important;font-weight:900!important;color:inherit!important}
 }
 </style>
-  <link rel="stylesheet" href="css/pengurus-whatsapp-chat.css?v=39" />
+  <link rel="stylesheet" href="css/pengurus-whatsapp-chat.css?v=266" />
 <style id="cahaya-v23-mobile-fresh">
 /* =========================================================
    V23 — FRESH MOBILE SHELL
@@ -2331,7 +2338,7 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
         "cahayaCurrentRole",
         "cahayaCurrentProfile",
         "cahayaDirectorViewRole",
-        "cahayaActiveRole"
+        "cahayaActiveRole", "cahayaActiveRoleV2", "cahayaRoleUserV2"
       ].forEach(key => {
         localStorage.removeItem(key);
         sessionStorage.removeItem(key);
@@ -2372,7 +2379,10 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
         <div class="group-label">Pimpinan</div>
         <a class="nav-item menu-akses" id="menu-dashboard-pimpinan" style="display: none;" onclick="loadPage('pimpinan/dashboard-pimpinan.html?v=80.7', this)">📊 Dashboard Pimpinan</a>
         <a class="nav-item menu-akses" id="menu-keputusan-direktur" style="display: none;" onclick="loadPage('pimpinan/keputusan-direktur.html?v=191', this)">✅ Keputusan Direktur</a>
-        <a class="nav-item menu-akses" id="menu-perizinan-santri" style="display: none;" onclick="loadPage('pimpinan/perizinan-santri.html', this)">🛡️ Perizinan Santri</a>
+        <a class="nav-item menu-akses" id="menu-direktur-v2" style="display: none;" onclick="loadPage('pimpinan/direktur-v2.html?v=240&amp;view=condition', this)">◇ Ruang Kerja Direktur</a>
+        <a class="nav-item menu-akses" id="menu-jadwal-direktur" style="display: none;" onclick="loadPage('pimpinan/direktur-v2.html?v=240&amp;view=schedule', this)">📅 Jadwal Direktur</a>
+        <a class="nav-item menu-akses" id="menu-kpi-direktur" style="display: none;" onclick="loadPage('pimpinan/direktur-v2.html?v=240&amp;view=kpi', this)">📊 KPI Direktur</a>
+        <a class="nav-item menu-akses" id="menu-perizinan-santri" style="display: none;" onclick="loadPage('layanan/buku-izin.html?v=79', this)">🛡️ Buku Izin Santri</a>
         <a class="nav-item menu-akses" id="menu-rekap-kepala-sekolah" style="display: none;" onclick="loadPage('pimpinan/rekap-kepala-sekolah.html?v=20', this)">🏫 Rekap Kepala Sekolah</a>
       </div>
 
@@ -2383,10 +2393,13 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
         <a class="nav-item menu-akses" id="menu-pembinaan-guru" style="display: none;" onclick="loadPage('manajer/pembinaan-guru.html?v=194', this)">👨‍🏫 Pembinaan Guru</a>
         <a class="nav-item menu-akses" id="menu-materi-pembelajaran" style="display: none;" onclick="loadPage('manajer/materi-pembelajaran.html?v=194', this)">📘 Materi Pembelajaran</a>
         <a class="nav-item menu-akses" id="menu-observasi-pembelajaran" style="display: none;" onclick="loadPage('manajer/observasi-pendidikan.html?v=194', this)">👁️ Observasi Pendidikan</a>
-        <a class="nav-item menu-akses" id="menu-absensi-ibadah-guru" style="display: none;" onclick="loadPage('pendidikan/absensi-ibadah-guru.html?v=194', this)">🕌 Guru Mukim & Teladan Ibadah</a>
+        <a class="nav-item menu-akses" id="menu-absensi-ibadah-guru" style="display: none;" onclick="loadPage('pendidikan/absensi-ibadah-guru.html?v=232', this)">🕌 Guru Mukim & Teladan Ibadah</a>
         <a class="nav-item menu-akses" id="menu-review-pendidikan" style="display: none;" onclick="loadPage('supervisor/review-pendidikan.html?v=84', this)">🎯 Review Pendidikan Bulanan</a>
         <a class="nav-item menu-akses" id="menu-dashboard-pendidikan" style="display: none;" onclick="loadPage('pimpinan/dashboard-pendidikan.html?v=109', this)">📚 Dashboard Direktur Pendidikan</a>
         <a class="nav-item menu-akses" id="menu-tindak-akademik" style="display: none;" onclick="loadPage('pendidikan/tindak-lanjut-akademik.html?v=194', this)">🧩 Nilai & Tindak Lanjut</a>
+        <a class="nav-item menu-akses" id="menu-guru-pondok" style="display: none;" onclick="loadPage('manajer/pendidikan-v2.html?v=232&amp;view=teachers', this)">👨‍🏫 Guru Pondok</a>
+        <a class="nav-item menu-akses" id="menu-nilai-manajer" style="display: none;" onclick="loadPage('manajer/pendidikan-v2.html?v=232&amp;view=scores', this)">🧾 Nilai Ujian</a>
+        <a class="nav-item menu-akses" id="menu-riwayat-temuan" style="display: none;" onclick="loadPage('manajer/pendidikan-v2.html?v=232&amp;view=findings', this)">🕘 Riwayat Temuan</a>
       </div>
 
       <div class="menu-group">
@@ -2401,6 +2414,9 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
 
       <div class="menu-group">
         <div class="group-label">Modul Supervisor</div>
+        <a class="nav-item menu-akses" id="menu-supervisor-v2" style="display: none;" onclick="loadPage('supervisor/workspace-v2.html?v=239&amp;view=divisions', this)">🧭 Workspace Supervisor</a>
+        <a class="nav-item menu-akses" id="menu-supervisor-schedule" style="display: none;" onclick="loadPage('supervisor/workspace-v2.html?v=239&amp;view=schedule', this)">📅 Jadwal Supervisor</a>
+        <a class="nav-item menu-akses" id="menu-kpi-supervisor" style="display: none;" onclick="loadPage('supervisor/workspace-v2.html?v=239&amp;view=kpi', this)">📊 KPI Supervisor</a>
         <a class="nav-item menu-akses" id="menu-supervisi-terpadu" style="display: none;" onclick="loadPage('supervisor/command-center.html?v=192', this)">🧭 Supervisi Pendidikan & Pengasuhan</a>
         <a class="nav-item menu-akses" id="menu-raport-bulanan" style="display: none;" onclick="loadPage('supervisor/raport-bulanan.html', this)">📈 Laporan Bulanan & KPI</a>
         <a class="nav-item menu-akses" id="menu-monitoring-absen-guru" style="display: none;" onclick="loadPage('supervisor/monitoringabsenguru.html', this)">📍 Monitoring Absensi Guru</a>
@@ -2458,6 +2474,7 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
         <a class="nav-item menu-akses" id="menu-guru-menulis" style="display: none;" onclick="loadPage('guru/gurumenulis.html?v=153', this)">✍️ Tulis Materi</a>
         <a class="nav-item menu-akses" id="menu-kalender-materi" style="display: none;" onclick="loadPage('guru/capaian-materi.html?v=181', this)">📚 Materi Pembelajaran</a>
         <a class="nav-item menu-akses" id="menu-kpi-guru" style="display: none;" onclick="loadPage('pendidikan/kpi-guru.html?v=194', this)">📊 KPI Guru</a>
+        <a class="nav-item menu-akses" id="menu-kpi-manajer" style="display: none;" onclick="loadPage('manajer/pendidikan-v2.html?v=232&amp;view=kpi', this)">📊 KPI Manajer Pendidikan</a>
         <a class="nav-item menu-akses" id="menu-manajemen-kelas" style="display: none;" onclick="loadPage('pendidikan/manajemen-kelas.html?v=1', this)">🎓 Manajemen Kelas</a>
 
         <a class="nav-item menu-akses" id="menu-tahfiz" style="display: none;" onclick="loadPage('guru/inputSetoranTahfiz.html?v=155', this)">📖 Tahsin & Tahfiz</a>
@@ -2475,6 +2492,10 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
         <a class="nav-item menu-akses" id="menu-skor-usrah" style="display: none;" onclick="loadPage('naqib/skor-kedisiplinan-usrah.html?v=59', this)">📊 Skor Kedisiplinan Usrah</a>
         <a class="nav-item menu-akses" id="menu-jadwal-piket" style="display: none;" onclick="loadPage('naqib/jadwalpiket.html', this)">🗓️ Jadwal Piket Naqib</a>
         <a class="nav-item menu-akses" id="menu-jurnal-piket" style="display: none;" onclick="loadPage('naqib/jurnal-piket.html?v=59', this)">📝 Jurnal Pengawasan</a>
+        <a class="nav-item menu-akses" id="menu-kpi-naqib" style="display: none;" onclick="loadPage('naqib/kpi.html', this)">📊 KPI Naqib</a>
+        <a class="nav-item menu-akses" id="menu-naqib-teladan" style="display: none;" onclick="loadPage('naqib/naqib-teladan.html', this)">✨ Naqib Teladan</a>
+        <a class="nav-item menu-akses" id="menu-riwayat-laporan" style="display: none;" onclick="loadPage('naqib/jurnal-piket.html', this)">🕘 Riwayat Laporan</a>
+        <a class="nav-item menu-akses" id="menu-riwayat-absensi" style="display: none;" onclick="loadPage('naqib/absensi.html', this)">📋 Riwayat Absensi</a>
         <a class="nav-item menu-akses" id="menu-usrah" style="display: none;" onclick="loadPage('naqib/edit-usrah.html', this)">⚙️ Manajemen Usrah</a>
       </div>
 
@@ -2489,6 +2510,13 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
       <div class="menu-group">
         <div class="group-label">Kasus & Konseling</div>
         <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="openRoleAwareCasePage(this)">⏳ Tindak Pelanggaran</a>
+        <a class="nav-item menu-akses" id="menu-kasus-masuk" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=incoming', this)">📥 Kasus Masuk</a>
+        <a class="nav-item menu-akses" id="menu-kasus-aktif" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=active', this)">📂 Kasus Aktif</a>
+        <a class="nav-item menu-akses" id="menu-konseling-konselor" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=counseling', this)">🤝 Konseling & Pembinaan</a>
+        <a class="nav-item menu-akses" id="menu-eskalasi-konselor" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=escalations', this)">↗ Eskalasi Kasus</a>
+        <a class="nav-item menu-akses" id="menu-riwayat-kasus" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=history', this)">🕘 Riwayat Kasus</a>
+        <a class="nav-item menu-akses" id="menu-kpi-konselor" style="display: none;" onclick="loadPage('konselor/kpi.html', this)">📊 KPI Konselor</a>
+        <a class="nav-item menu-akses" id="menu-self-konselor" style="display: none;" onclick="loadPage('konselor/self-asesmen.html', this)">🧘 Self Asesmen Konselor</a>
       </div>
 
       <div class="menu-group">
@@ -2507,6 +2535,7 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
 
 
 function openOperationalDashboard(el) {
+  if (canonicalRoleRuntime) { openAuthorizedMenu('menu-dashboard-operasional'); return; }
   document.body.classList.remove('director-home-shell');
   const role = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
   const assignments = Array.isArray(pUserSafe?.workspaceAssignments) ? pUserSafe.workspaceAssignments : [];
@@ -2637,6 +2666,9 @@ function resolveGlobalBottomTarget(kind){
   const role = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
   const allowed = id => id && typeof bolehAksesMenu === 'function' && bolehAksesMenu(id);
   const firstAllowed = (...ids) => ids.find(allowed) || '';
+  if (canonicalRoleRuntime) {
+    return window.CahayaRoleMenuV2.bottom(roleV2Session,kind);
+  }
   if(kind==='jadwal'){
     const byRole={
       guru:['menu-absen-guru','menu-kalender-pendidikan'],
@@ -2676,7 +2708,7 @@ function renderMobileBottomNav() {
   const nav = document.getElementById('mobileBottomNav');
   if (!nav) return;
   const roleNow = (typeof ensureActiveRole === 'function' ? ensureActiveRole() : '');
-  const directorFast = roleNow === 'direktur';
+  const directorFast = roleNow === 'direktur' || roleNow === 'DIREKTUR';
   const premiumRoleShell = true;
   document.body.classList.add('director-role-shell');
   if (!authorizationReady && !directorFast) { nav.innerHTML=''; nav.classList.remove('ready'); return; }
@@ -2691,6 +2723,12 @@ function renderMobileBottomNav() {
       ${item.badge==='chat'?'<span class="mobile-shortcut-badge" id="mobileChatBadge">0</span>':''}
     </button>`).join('')}</div>`;
   nav.classList.add('ready');
+  if(canonicalRoleRuntime)nav.querySelectorAll('[data-menu-id]').forEach(button=>{
+    const id=button.dataset.menuId;
+    const unavailable=id==='global-jadwal'?!resolveGlobalBottomTarget('jadwal'):id==='global-kpi'?!resolveGlobalBottomTarget('kpi'):id==='menu-chat'?!bolehAksesMenu(id):false;
+    button.disabled=unavailable;
+    if(unavailable)button.title=button.textContent.trim()+' belum tersedia untuk peran ini';
+  });
   const activeSidebarMenu = document.querySelector('#dynamicMenu .nav-item.active');
   setMobileBottomActive(activeSidebarMenu?.id || '');
   sinkronkanBadgePintasanMobile();
@@ -2701,19 +2739,20 @@ function setMobileBottomActive(menuId = '') {
   const kpiTarget = resolveGlobalBottomTarget('kpi');
   document.querySelectorAll('#mobileBottomNav .mobile-shortcut-btn').forEach(button => {
     const id = button.dataset.menuId || '';
-    const active = id === menuId || (id === 'global-jadwal' && scheduleTarget === menuId) || (id === 'global-kpi' && kpiTarget === menuId);
+    const active = !button.disabled && (id === menuId || (id === 'global-jadwal' && scheduleTarget === menuId) || (id === 'global-kpi' && kpiTarget === menuId));
     button.classList.toggle('active', active);
   });
 }
 
 function openMobileShortcut(menuId) {
-  if (menuId === 'global-jadwal' && ensureActiveRole() === 'guru') {
+  if (menuId === 'global-jadwal' && ['guru','GURU_PONDOK'].includes(ensureActiveRole())) {
     try {
       const frame = document.getElementById('contentFrame');
       const fn = frame?.contentWindow?.openScheduleModal;
       if (typeof fn === 'function') { fn(); setMobileBottomActive('menu-absen-guru'); return; }
     } catch(e) { console.warn(e); }
-    loadPage('home-guru.html?v=201&openSchedule=1', document.getElementById('menu-home'));
+    if(canonicalRoleRuntime)openAuthorizedMenu('menu-absen-guru');
+    else loadPage('home-guru.html?v=201&openSchedule=1', document.getElementById('menu-home'));
     return;
   }
   if (menuId === 'global-jadwal' || menuId === 'global-kpi') {
@@ -2780,6 +2819,7 @@ function cahayaRoleDescription(role){
   };return m[role]||'Gunakan akses dan menu sesuai tanggung jawab Anda.';
 }
 function cahayaRoleIcon(role){
+  role=String(role).toLowerCase();
   if(/direktur|admin|supervisor|manajer|kepala|yayasan/.test(role)) return '<svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.4"/><path d="M5 21c.5-5 2.9-7.5 7-7.5s6.5 2.5 7 7"/><path d="M4 4h3M17 4h3"/></svg>';
   if(/guru|mentor/.test(role)) return '<svg viewBox="0 0 24 24"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H12v18H7.5A3.5 3.5 0 0 0 4 23V5.5z"/><path d="M20 5.5A3.5 3.5 0 0 0 16.5 2H12v18h4.5A3.5 3.5 0 0 1 20 23V5.5z"/></svg>';
   if(/konselor/.test(role)) return '<svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M8 10h8M8 13h5"/></svg>';
@@ -2789,10 +2829,11 @@ function openCahayaGlobalRoleModal(){
   const overlay=document.getElementById('cahayaGlobalRoleOverlay'),list=document.getElementById('cahayaGlobalRoleList');
   if(!overlay||!list)return;
   const active=typeof ensureActiveRole==='function'?ensureActiveRole():'';
-  const source=(Array.isArray(myRoles)&&myRoles.length)?myRoles:[];
+  const source=canonicalRoleRuntime ? roleV2Session.roles.filter(role=>roleSystemV2.exactRole(role)) : ((Array.isArray(myRoles)&&myRoles.length)?myRoles:[]);
+  if (canonicalRoleRuntime && source.length < 2) return;
   list.innerHTML=(source.length?source:[active]).filter(Boolean).map(role=>{
     const isActive=role===active,label=typeof labelRole==='function'?labelRole(role):role;
-    return `<button type="button" class="cahaya-global-role-option${isActive?' active':''}" onclick="chooseCahayaGlobalRole('${String(role).replace(/'/g,"\\'")}')"><span class="cahaya-global-role-icon">${cahayaRoleIcon(role)}</span><span class="cahaya-global-role-copy"><b>${label}</b><small>${cahayaRoleDescription(role)}</small></span><span class="cahaya-global-role-check">✓</span></button>`;
+    return `<button type="button" class="cahaya-global-role-option${isActive?' active':''}" aria-pressed="${isActive}" onclick="chooseCahayaGlobalRole('${String(role).replace(/'/g,"\\'")}')"><span class="cahaya-global-role-icon">${cahayaRoleIcon(role)}</span><span class="cahaya-global-role-copy"><b>${label}</b><small>${cahayaRoleDescription(role)}</small></span><span class="cahaya-global-role-check">✓</span></button>`;
   }).join('');
   overlay.classList.add('show');overlay.setAttribute('aria-hidden','false');
 }
@@ -2801,8 +2842,7 @@ async function chooseCahayaGlobalRole(role){
   closeCahayaGlobalRoleModal();
   const changed=typeof setActiveRole==='function'?await setActiveRole(role):false;
   if(changed){
-    const home=document.getElementById('menu-home');
-    if(home){loadPage('home.html?v=193',home)}
+    openAuthorizedMenu('menu-home');
     renderMobileBottomNav();
   }
 }
@@ -2810,6 +2850,11 @@ window.openCahayaGlobalRoleModal=openCahayaGlobalRoleModal;
 window.closeCahayaGlobalRoleModal=closeCahayaGlobalRoleModal;
 window.openGlobalRoleModal=openCahayaGlobalRoleModal;
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleModal()});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){
+  document.getElementById('mainSidebar')?.classList.remove('open');
+  document.querySelector('.mobile-menu-overlay')?.classList.remove('open');
+  document.body.classList.remove('mobile-sidebar-open');
+}});
 
     function toggleSidebar() {
       const sidebar = document.getElementById('mainSidebar');
@@ -2819,10 +2864,16 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       sidebar.classList.toggle('open', akanDibuka);
       overlay.classList.toggle('open', akanDibuka);
       document.body.classList.toggle('mobile-sidebar-open', akanDibuka);
+      if(akanDibuka){
+        const scroller=document.querySelector('.sidebar-scroll'),active=sidebar.querySelector('.nav-item.active');
+        if(scroller&&active){if(active.id==='menu-home')scroller.scrollTop=0;else {const r=active.getBoundingClientRect(),box=scroller.getBoundingClientRect();if(r.top<box.top)scroller.scrollTop+=r.top-box.top;else if(r.bottom>box.bottom)scroller.scrollTop+=r.bottom-box.bottom;}}
+        if(canonicalRoleRuntime)(matchMedia('(max-width: 900px)').matches?sidebar.querySelector('.sidebar-close'):active)?.focus({preventScroll:true});
+      }
     }
 
     function bolehAksesMenu(menuId) {
       const active = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
+      if (canonicalRoleRuntime) return roleSystemV2.can(active, document.getElementById(menuId)?.dataset.permission || menuId, roleV2Session.activeAssignment);
       // V99: Direktur tidak perlu menunggu otorisasi Firebase untuk shell/menu utama.
       if (active === 'direktur') return menuId === 'menu-chat' || Boolean(document.getElementById(menuId));
       if (!authorizationReady) return false;
@@ -2911,13 +2962,20 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     }
 
     let pUserSafe = JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}');
-    try { if (window.CAHAYA_TEAM_ROLES) pUserSafe = window.CAHAYA_TEAM_ROLES.apply(pUserSafe); } catch (_) {}
+    try { if (Number(pUserSafe.roleSystemVersion) !== 2 && window.CAHAYA_TEAM_ROLES) pUserSafe = window.CAHAYA_TEAM_ROLES.apply(pUserSafe); } catch (_) {}
+    const roleSystemV2 = window.CahayaRoleSystemV2 || null;
+    let roleV2Session = roleSystemV2 ? roleSystemV2.resolveSession(pUserSafe, localStorage) : null;
+    let canonicalRoleRuntime = roleV2Session?.mode === "canonical";
+    window.cahayaRoleV2Session = roleV2Session;
     // V86: akun Kasir tetap masuk shell CAHAYA APP agar memiliki Dashboard Operasional.
 
-    let rawRoles = (Array.isArray(pUserSafe.workspaceRoles) && pUserSafe.workspaceRoles.length) ? pUserSafe.workspaceRoles : (pUserSafe.akses || []);
+    let rawRoles = canonicalRoleRuntime
+      ? [...roleV2Session.roles]
+      : ((Array.isArray(pUserSafe.workspaceRoles) && pUserSafe.workspaceRoles.length) ? pUserSafe.workspaceRoles : (pUserSafe.akses || []));
     if(typeof rawRoles === 'string') rawRoles = [rawRoles];
 
     function normalisasiRole(role) {
+      if (canonicalRoleRuntime) return roleSystemV2?.exactRole(role) || "";
       const nilai = String(role || "").toLowerCase().trim();
 
       const aliasRole = {
@@ -3005,17 +3063,21 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       rawRoles.map(normalisasiRole).filter(Boolean)
     )];
 
-    const ACTIVE_ROLE_KEY = "cahayaActiveRole";
+    let ACTIVE_ROLE_KEY = canonicalRoleRuntime ? "cahayaActiveRoleV2" : "cahayaActiveRole";
     const ALL_ROLES_MODE = "semua-peran";
-    let activeRole = normalisasiRole(localStorage.getItem(ACTIVE_ROLE_KEY) || localStorage.getItem("cahayaCurrentRole") || "");
+    let activeRole = canonicalRoleRuntime
+      ? roleV2Session.activeRole
+      : normalisasiRole(localStorage.getItem(ACTIVE_ROLE_KEY) || localStorage.getItem("cahayaCurrentRole") || "");
     let roleMenuRulesCache = null;
 
     function ensureActiveRole() {
       if (!myRoles.length) { activeRole = ""; return ""; }
-      const allAllowed = myRoles.length > 1 && activeRole === ALL_ROLES_MODE;
+      const allAllowed = !canonicalRoleRuntime && myRoles.length > 1 && activeRole === ALL_ROLES_MODE;
       if (!allAllowed && (!activeRole || !myRoles.includes(activeRole))) activeRole = myRoles[0];
       localStorage.setItem(ACTIVE_ROLE_KEY, activeRole);
-      localStorage.setItem("cahayaCurrentRole", activeRole);
+      const legacyActive = canonicalRoleRuntime ? roleSystemV2.legacyRoleFor(activeRole) : activeRole;
+      localStorage.setItem("cahayaActiveRole", legacyActive);
+      localStorage.setItem("cahayaCurrentRole", legacyActive);
       return activeRole;
     }
 
@@ -3023,16 +3085,18 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     // Dashboard utama tidak boleh menunggu sinkronisasi rule menu/Firebase untuk menampilkan home.
     function cahayaIsDirectorContext() {
       const stored = normalisasiRole(
-        localStorage.getItem(ACTIVE_ROLE_KEY) ||
+        (canonicalRoleRuntime ? localStorage.getItem("cahayaActiveRoleV2") : localStorage.getItem(ACTIVE_ROLE_KEY)) ||
         localStorage.getItem("cahayaCurrentRole") ||
-        pUserSafe.activeRole ||
+        pUserSafe.activeRoleV2 || pUserSafe.activeRole ||
         pUserSafe.role ||
         ""
       );
-      return stored === "direktur" || (myRoles.length === 1 && myRoles[0] === "direktur");
+      const directorRole = canonicalRoleRuntime ? "DIREKTUR" : "direktur";
+      return stored === directorRole || (myRoles.length === 1 && myRoles[0] === directorRole);
     }
 
     function bootstrapDirectorHomeFailSafe(force = false) {
+      if (canonicalRoleRuntime) return false; // V2 has one Home entry through loadPage.
       if (!cahayaIsDirectorContext()) return false;
       const frame = document.getElementById("contentFrame");
       if (!frame) return false;
@@ -3066,6 +3130,10 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     }
 
     function compatRolesForWorkspace(role) {
+      if (canonicalRoleRuntime) {
+        const legacyRole = roleSystemV2?.legacyRoleFor(role);
+        return legacyRole ? [legacyRole] : [];
+      }
       const map = {
         'mentor-quran': ['mentor-quran','guru'],
         'manajer-pendidikan': ['manajer-pendidikan','manajer','operasional'],
@@ -3111,7 +3179,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       const viewRoles = role === ALL_ROLES_MODE
         ? compatRolesForWorkspaceList(workspaceViewRoles)
         : compatRolesForWorkspace(role);
-      return {
+      const profile = {
         ...pUserSafe,
         allRoles: [...myRoles],
         workspaceRoles: [...myRoles],
@@ -3122,18 +3190,37 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
         roleLabel: role === ALL_ROLES_MODE ? "Semua Peran" : (role ? labelRole(role) : "Pengguna CAHAYA"),
         activeRole: role || ""
       };
+      if (!canonicalRoleRuntime) return profile;
+      return roleSystemV2.projectLegacyProfile(profile, roleV2Session);
     }
 
     async function setActiveRole(role) {
-      const normalized = String(role||'').trim().toLowerCase() === ALL_ROLES_MODE ? ALL_ROLES_MODE : normalisasiRole(role);
-      if (!normalized || (normalized !== ALL_ROLES_MODE && !myRoles.includes(normalized)) || (normalized === ALL_ROLES_MODE && myRoles.length < 2)) return false;
+      const normalized = (!canonicalRoleRuntime && String(role||'').trim().toLowerCase() === ALL_ROLES_MODE) ? ALL_ROLES_MODE : normalisasiRole(role);
+      if (!normalized || (normalized !== ALL_ROLES_MODE && !myRoles.includes(normalized)) || (normalized === ALL_ROLES_MODE && (canonicalRoleRuntime || myRoles.length < 2))) return false;
+      if (canonicalRoleRuntime && normalized !== activeRole) disposeRoleFrames();
+      document.getElementById('mainSidebar').classList.remove('open');
+      document.querySelector('.mobile-menu-overlay')?.classList.remove('open');
+      document.body.classList.remove('mobile-sidebar-open');
+      if (canonicalRoleRuntime) {
+        const switched = roleSystemV2.switchRole(roleV2Session, normalized, localStorage);
+        if (!switched.ok) return false;
+        roleV2Session = switched.session;
+        window.cahayaRoleV2Session = roleV2Session;
+      }
       activeRole = normalized;
-      pUserSafe.activeRole = activeRole;
+      if (canonicalRoleRuntime) pUserSafe.activeRoleV2 = activeRole;
+      else pUserSafe.activeRole = activeRole;
       localStorage.setItem(ACTIVE_ROLE_KEY, activeRole);
-      localStorage.setItem("cahayaCurrentRole", activeRole);
+      const legacyActive = canonicalRoleRuntime ? roleSystemV2.legacyRoleFor(activeRole) : activeRole;
+      if (canonicalRoleRuntime) {
+        pUserSafe.role=legacyActive;pUserSafe.activeRole=legacyActive;pUserSafe.akses=[legacyActive];pUserSafe.jabatan=[legacyActive];
+        isTopLevel=activeRole==='DIREKTUR';isKonselor=activeRole==='KONSELOR';isWali=activeRole==='WALI_SANTRI';
+      }
+      localStorage.setItem("cahayaActiveRole", legacyActive);
+      localStorage.setItem("cahayaCurrentRole", legacyActive);
       try {
         const current = JSON.parse(localStorage.getItem("cahayaCurrentUser") || "{}") || {};
-        localStorage.setItem("cahayaCurrentUser", JSON.stringify({...current, activeRole}));
+        localStorage.setItem("cahayaCurrentUser", JSON.stringify(canonicalRoleRuntime ? roleSystemV2.projectLegacyProfile({...current,...pUserSafe},roleV2Session) : {...current, activeRole}));
         const workspaceViewRoles = activeRole === ALL_ROLES_MODE ? [...myRoles] : [activeRole];
         const viewRoles = activeRole === ALL_ROLES_MODE ? compatRolesForWorkspaceList(workspaceViewRoles) : compatRolesForWorkspace(activeRole);
         localStorage.setItem("cahayaCurrentProfile", JSON.stringify({
@@ -3145,15 +3232,22 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
           jabatan: viewRoles,
           role: activeRole === ALL_ROLES_MODE ? "" : activeRole,
           roleLabel: activeRole === ALL_ROLES_MODE ? "Semua Peran" : labelRole(activeRole),
-          activeRole
+          activeRole: legacyActive,
+          activeRoleV2: canonicalRoleRuntime ? activeRole : undefined
         }));
       } catch (_) {}
+      if (canonicalRoleRuntime) localStorage.setItem('cahayaCurrentProfile',JSON.stringify(getProfileForActiveView()));
       await refreshUserProfileUI();
-      window.dispatchEvent(new CustomEvent("cahaya:active-role-changed", {detail:{role:activeRole}}));
+      window.dispatchEvent(new CustomEvent("cahaya:active-role-changed", {detail:{role:activeRole,assignment:canonicalRoleRuntime?roleV2Session.activeAssignment:null}}));
       return true;
     }
     window.setCahayaActiveRole = setActiveRole;
     window.getCahayaActiveRole = () => ensureActiveRole();
+    window.CahayaAuthorization = Object.freeze({
+      getSession: () => roleV2Session,
+      can: (permission, resource) => roleSystemV2.authorize(roleV2Session,permission,resource),
+      filter: (permission, records, describe) => roleSystemV2.filterResources(roleV2Session,permission,records,describe)
+    });
 
 
     let authorizedMenuIds = new Set();
@@ -3163,13 +3257,14 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       requestAnimationFrame(() => renderMobileBottomNav());
     }
 
-    let isTopLevel = myRoles.some(r => ['admin', 'direktur', 'wakil'].includes(r));
-    let isKonselor = myRoles.includes('konselor');
-    let isWali = myRoles.includes('wali');
+    let isTopLevel = canonicalRoleRuntime ? myRoles.includes('DIREKTUR') : myRoles.some(r => ['admin', 'direktur', 'wakil'].includes(r));
+    let isKonselor = canonicalRoleRuntime ? myRoles.includes('KONSELOR') : myRoles.includes('konselor');
+    let isWali = canonicalRoleRuntime ? myRoles.includes('WALI_SANTRI') : myRoles.includes('wali');
     let realUsername = pUserSafe.username || "guest";
     let namaSaya = pUserSafe.label || pUserSafe.nama || pUserSafe.username || "Pengurus";
 
     function labelRole(role) {
+      if (canonicalRoleRuntime) return roleSystemV2?.displayLabelFor(role, roleV2Session.assignments[role]) || role;
       const labels = {
         "semua-peran": "Semua Peran",
         admin: "Administrator",
@@ -3228,6 +3323,11 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     }
 
     function labelRoleContext(role) {
+      if (canonicalRoleRuntime) {
+        const scope = roleV2Session?.scopes?.[role] || {};
+        const suffix = [scope.unit && scope.unit !== 'ALL' ? scope.unit : '', ...(scope.divisionIds || [])].filter(Boolean).join(' • ');
+        return suffix ? `${labelRole(role)} • ${suffix}` : labelRole(role);
+      }
       if (role === ALL_ROLES_MODE) return "Semua Peran";
       const workspaceAssignments = Array.isArray(pUserSafe.workspaceAssignments) ? pUserSafe.workspaceAssignments : [];
       const workspaceMatch = workspaceAssignments.find(a => String(a.role||'').toLowerCase() === role);
@@ -3253,8 +3353,16 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
         return data;
       }
 
-      const hasWorkspaceRoles = Array.isArray(data.workspaceRoles) && data.workspaceRoles.length;
-      let roles = hasWorkspaceRoles ? data.workspaceRoles : (data.akses || data.jabatan || data.role || []);
+      const incomingV2 = roleSystemV2?.resolveSession(data,localStorage);
+      if (canonicalRoleRuntime && incomingV2?.mode==='canonical' &&
+          (roleV2Session.activeRole!==incomingV2.activeRole || JSON.stringify(roleV2Session.activeAssignment)!==JSON.stringify(incomingV2.activeAssignment))) disposeRoleFrames();
+      canonicalRoleRuntime = incomingV2?.mode === 'canonical';
+      roleV2Session = incomingV2;
+      window.cahayaRoleV2Session = roleV2Session;
+      ACTIVE_ROLE_KEY = canonicalRoleRuntime ? 'cahayaActiveRoleV2' : 'cahayaActiveRole';
+      if (canonicalRoleRuntime) activeRole = incomingV2.activeRole;
+      const hasWorkspaceRoles = canonicalRoleRuntime || (Array.isArray(data.workspaceRoles) && data.workspaceRoles.length);
+      let roles = canonicalRoleRuntime ? [...incomingV2.roles] : hasWorkspaceRoles ? data.workspaceRoles : (data.akses || data.jabatan || data.role || []);
       if (!Array.isArray(roles)) roles = [roles];
 
       roles = [...new Set(roles.map(normalisasiRole).filter(Boolean))];
@@ -3330,6 +3438,14 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       rawRoles = roles;
       myRoles = roles;
       data.activeRole = ensureActiveRole();
+      if (canonicalRoleRuntime) {
+        data.roles = [...roles]; data.assignments = incomingV2.assignments;
+        data.defaultRole = incomingV2.defaultRole; data.activeRoleV2 = activeRole;
+        data.activeRole = roleSystemV2.legacyRoleFor(activeRole);
+        data.role = data.activeRole;
+        data.akses = [data.activeRole]; data.jabatan = [data.activeRole];
+        localStorage.setItem('cahayaRoleUserV2',incomingV2.userKey);
+      }
       pUserSafe = data;
 
       isTopLevel = myRoles.some(
@@ -3338,6 +3454,9 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
 
       isKonselor = myRoles.includes("konselor") || myRoles.includes("manajer-pembinaan") || myRoles.includes("supervisor-pembinaan");
       isWali = myRoles.includes("wali");
+      if (canonicalRoleRuntime) {
+        isTopLevel = activeRole === 'DIREKTUR'; isKonselor = activeRole === 'KONSELOR'; isWali = activeRole === 'WALI_SANTRI';
+      }
       realUsername = data.username || "guest";
       namaSaya = data.label || data.username || "Pengurus";
 
@@ -3353,7 +3472,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
 
       localStorage.setItem(
         "cahayaCurrentUser",
-        JSON.stringify(data)
+        JSON.stringify(canonicalRoleRuntime ? roleSystemV2.projectLegacyProfile(data,roleV2Session) : data)
       );
       localStorage.setItem(
         "cahayaCurrentProfile",
@@ -3376,6 +3495,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     // Hak akses inti dibangun dari sesi lokal yang sudah tervalidasi saat login;
     // sinkronisasi server tetap berjalan di belakang layar dan dapat memperbarui profil.
     function bootstrapGuruInstantWorkspace() {
+      if (canonicalRoleRuntime) { refreshUserProfileUI(); return true; }
       const active = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
       if (active !== 'guru') return false;
       const ids = [
@@ -3450,12 +3570,14 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
 
     function ambilUrlDariMenu(menuElement) {
       if (!menuElement) return "";
+      if(canonicalRoleRuntime && menuElement.dataset.route)return menuElement.dataset.route;
       const onclickText = menuElement.getAttribute("onclick") || "";
       const cocok = onclickText.match(/loadPage\('([^']+)'/);
       return cocok ? cocok[1] : "";
     }
 
     function cariMenuBerdasarkanUrl(url) {
+      if(canonicalRoleRuntime){const item=window.CahayaRoleMenuV2.match(roleV2Session,url);if(item)return document.getElementById(item.id);}
       return [...document.querySelectorAll('#dynamicMenu .menu-akses')]
         .find(menu => ambilUrlDariMenu(menu) === url) || null;
     }
@@ -3516,6 +3638,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     function organizeSidebarByRole() {
       const nav = document.getElementById("dynamicMenu");
       if (!nav) return;
+      if(canonicalRoleRuntime)return;
       const directorFullAccess = (typeof ensureActiveRole === 'function' ? ensureActiveRole() : '') === 'direktur';
       const items = [...nav.querySelectorAll(".menu-akses")]
         .filter(item => bolehAksesMenu(item.id) && (directorFullAccess || item.dataset.moduleDisabled !== "true"));
@@ -3560,6 +3683,12 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
 
     function bukaHalamanAwalYangDiizinkan() {
       const activeNow = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
+      if (canonicalRoleRuntime) {
+        const menu=document.getElementById('menu-home');
+        if(menu && activeNow)loadPage(roleSystemV2.homeFor(activeNow,roleV2Session.activeAssignment),menu);
+        else tampilkanHalamanTanpaAkses();
+        return;
+      }
       if (activeNow === 'direktur') {
         const homeMenu = document.getElementById('menu-home');
         const frame = document.getElementById('contentFrame');
@@ -3588,6 +3717,20 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
           return;
         }
         if (homeMenu) { loadPage('home-guru.html?v=201', homeMenu); return; }
+      }
+      if (activeNow === 'naqib' || activeNow === 'naqib-operasional') {
+        const homeMenu = document.getElementById('menu-home');
+        const frame = document.getElementById('contentFrame');
+        const currentSrc = String(frame?.getAttribute('src') || '');
+        if (currentSrc.includes('home-naqib.html')) {
+          document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+          homeMenu?.classList.add('active');
+          document.body.classList.add('director-home-shell','director-role-shell');
+          setMobileBottomActive('menu-home');
+          hideCahayaPageLoader();
+          return;
+        }
+        if (homeMenu) { loadPage('home-naqib.html?v=216', homeMenu); return; }
       }
       const deepLinkOperasional = new URLSearchParams(window.location.search).get("operasional");
       if (deepLinkOperasional && bolehAksesMenu("menu-dashboard-operasional")) {
@@ -3679,6 +3822,37 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
 
         document.getElementById('dynamicMenu').innerHTML = allMenuHTML;
 
+        if (canonicalRoleRuntime) {
+          const nav=document.getElementById('dynamicMenu');nav.replaceChildren();
+          const groups=new Map();
+          window.CahayaRoleMenuV2.model(roleV2Session).forEach(item=>{
+            if(!groups.has(item.group)){
+              const group=document.createElement('div');group.className='menu-group';
+              const title=document.createElement('div');title.className='group-label';title.textContent=item.group;
+              group.appendChild(title);nav.appendChild(group);groups.set(item.group,group);
+            }
+            const menu=document.createElement('a');menu.id=item.id;menu.className='nav-item menu-akses';
+            menu.dataset.permission=item.permission;menu.dataset.route=item.route;menu.textContent=item.label;
+            menu.href=item.route;menu.onclick=event=>{event.preventDefault();openAuthorizedMenu(item.id)};
+            groups.get(item.group).appendChild(menu);
+          });
+          // Contextual authority-response links are reachable from the inbox,
+          // not a duplicate sidebar workflow.
+          if(roleSystemV2.can(active,'menu-arahan-kasus',roleV2Session.activeAssignment)){
+            const link=document.createElement('a');link.id='menu-arahan-kasus';link.className='menu-akses';link.hidden=true;
+            link.dataset.route='konselor/higher-response.html';nav.appendChild(link);
+          }
+          authorizedMenuIds = new Set(roleSystemV2.menusFor(active,roleV2Session.activeAssignment));
+          authorizationReady = true;
+          window.CahayaUIV2?.enhance(nav);terapkanOtorisasiFiturTambahan();
+          bukaHalamanAwalYangDiizinkan();
+          if(new URLSearchParams(location.search).get('utility')==='pesan'&&!window.__cahayaInitialMessageOpened){
+            window.__cahayaInitialMessageOpened=true;
+            setTimeout(()=>openAuthorizedMenu('menu-chat'),0);
+          }
+          return;
+        }
+
         document.querySelectorAll('.menu-group').forEach(group => group.style.display = 'none');
         document.querySelectorAll('#dynamicMenu .menu-akses').forEach(menu => menu.style.display = 'none');
 
@@ -3691,7 +3865,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
         }
         // Untuk workspace Guru, menu inti sudah pasti dari kebijakan aplikasi sehingga
         // dokumen role_menus tidak perlu menjadi blocking request pada setiap buka app.
-        if (!roleMenuRules && ['guru','direktur'].includes(ensureActiveRole())) roleMenuRules = {};
+        if (!roleMenuRules && ['guru','direktur','naqib','naqib-operasional'].includes(ensureActiveRole())) roleMenuRules = {};
         if (!roleMenuRules) {
           const roleMenuDoc = await dbFS.collection("settings").doc("role_menus").get();
           roleMenuRules = roleMenuDoc.exists ? roleMenuDoc.data() : {};
@@ -3857,7 +4031,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
 
       } catch (error) {
         authorizationReady = true;
-        const active = ensureActiveRoleFromCurrentUser(getCurrentUser());
+        const active = ensureActiveRole();
         if (active === 'direktur') {
           authorizedMenuIds = new Set(
             [...document.querySelectorAll('#dynamicMenu .menu-akses')]
@@ -3895,6 +4069,14 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
         return;
       }
 
+      if(canonicalRoleRuntime&&menuId==='menu-chat'){
+        document.getElementById('mainSidebar').classList.remove('open');
+        document.querySelector('.mobile-menu-overlay')?.classList.remove('open');
+        document.body.classList.remove('mobile-sidebar-open');
+        window.openCahayaMessages?.();setMobileBottomActive('menu-chat');return;
+      }
+      if(canonicalRoleRuntime){window.closeCahayaMessages?.();loadPage(ambilUrlDariMenu(menu),menu);return;}
+
       // V59: menu Tindak Pelanggaran memakai routing berbasis peran.
       // Dashboard Home memanggil openAuthorizedMenu(), jadi kasus ini tidak boleh
       // dipaksa melewati parser onclick loadPage() biasa.
@@ -3920,10 +4102,8 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       if (!bolehAksesMenu(menuId)) { tampilkanPesanTidakBerwenang(menuId); return; }
       const menu = document.getElementById(menuId);
       if (!menu) { tampilkanPesanTidakBerwenang(menuId); return; }
-      const onclickText = menu.getAttribute('onclick') || '';
-      const match = onclickText.match(/loadPage\('([^']+)'/);
-      if (!match) return;
-      const raw = match[1];
+      const raw = ambilUrlDariMenu(menu);
+      if (!raw) return;
       const [path, hash=''] = raw.split('#');
       const [base, query=''] = path.split('?');
       const sp = new URLSearchParams(query);
@@ -3953,7 +4133,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     // Halaman yang sudah dibuka disimpan sebagai iframe hidup. Saat kembali,
     // halaman tidak dimuat ulang sehingga query Firebase dan state form tidak berulang.
     // =========================================================
-    const CAHAYA_RELEASE = '20260911-v190';
+    const CAHAYA_RELEASE = '20260921-v266';
     const CAHAYA_PAGE_CACHE_MAX = 10;
     const cahayaPageFrames = new Map();
 
@@ -3998,6 +4178,49 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
 
     function currentContentFrame() { return document.getElementById('contentFrame'); }
 
+    function disposeRoleFrames() {
+      // A frame that belongs to the previous assignment must never be resumed.
+      parkCurrentFrame();
+      for (const {frame} of cahayaPageFrames.values()) {
+        try { frame.contentWindow?.dispatchEvent(new CustomEvent('cahaya:suspend')); } catch (_) {}
+        frame.remove();
+      }
+      cahayaPageFrames.clear();
+      const current=currentContentFrame();if(current)current.remove();
+      // loadPage expects an optional current iframe and creates the new one.
+      window.CahayaDataCache?._m?.clear();
+    }
+
+    function connectCanonicalHome(frame) {
+      if(!canonicalRoleRuntime)return;
+      try {
+        const w=frame.contentWindow,doc=frame.contentDocument;
+        w.CahayaMobileHomeV2?.syncShell();
+        w.CahayaAuthorization=window.CahayaAuthorization;
+        // All canonical Homes use the Director Home picker in the parent shell.
+        w.openRoleModal=openCahayaGlobalRoleModal;w.openRoleSelector=openCahayaGlobalRoleModal;
+        if(!w.__cahayaRoleEscapeBound){
+          w.addEventListener('keydown',event=>{if(event.key==='Escape')closeCahayaGlobalRoleModal()});
+          w.__cahayaRoleEscapeBound=true;
+        }
+        const role=ensureActiveRole(), label=labelRole(role), multiple=roleV2Session.roles.length>1;
+        let chip=doc.querySelector('.exec-role,.role-chip,.hero-role,[data-cahaya-home-role],#roleChip');
+        if(!chip) {
+          const name=doc.querySelector('#managerName,#nameChip,#mentorName,#staffName');
+          if(!name)return;
+          chip=doc.createElement('button');chip.type='button';chip.dataset.cahayaHomeRole='';
+          chip.style.cssText='position:relative;z-index:1;min-height:34px;padding:7px 11px;border:1px solid rgba(64,139,213,.22);border-radius:999px;background:rgba(255,255,255,.92);color:#1769b9;font:900 11px Inter,system-ui,sans-serif;box-shadow:0 5px 15px rgba(25,69,120,.08)';
+          name.insertAdjacentElement('afterend',chip);
+        }
+        chip.dataset.cahayaHomeRole='';
+        const icon=chip.querySelector('svg');
+        chip.replaceChildren(...(icon?[icon]:[]),doc.createTextNode(`${label}${multiple?' ▾':''}`));
+        chip.disabled=!multiple;chip.style.opacity='1';chip.style.cursor=multiple?'pointer':'default';
+        chip.setAttribute('aria-label',multiple?`Ganti peran. Saat ini ${label}`:label);
+        chip.onclick=multiple?openCahayaGlobalRoleModal:null;
+      }catch(_){}
+    }
+
     function parkCurrentFrame() {
       const frame = currentContentFrame();
       if (!frame) return;
@@ -4038,6 +4261,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       frame.dataset.cahayaPageKey = key;
       frame.dataset.cahayaUrl = url;
       enhanceGuruFrame(frame, url);
+      connectCanonicalHome(frame);
       try {
         frame.contentWindow?.dispatchEvent(new CustomEvent('cahaya:resume', {detail:{url, menuId, resumedAt:Date.now()}}));
         frame.contentWindow?.postMessage({type:'CAHAYA_PAGE_RESUME',url,menuId}, location.origin);
@@ -4061,14 +4285,27 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     };
 
     function loadPage(url, el) {
-      const menuElement = (el && el.classList && el.classList.contains('menu-akses'))
+      let menuElement = (el && el.classList && el.classList.contains('menu-akses'))
         ? el
         : cariMenuBerdasarkanUrl(url);
 
-      const menuId = menuElement?.id || "";
+      let menuId = menuElement?.dataset.permission || menuElement?.id || "";
+      if(canonicalRoleRuntime){
+        const resolved=window.CahayaRoleMenuV2.resolve(roleV2Session,menuElement?.id||menuId,url);
+        if(resolved){url=resolved.route;menuId=resolved.permission;menuElement=document.getElementById(resolved.id)||menuElement;}
+      }
       const activeRoleForPage = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
       if (menuId === 'menu-home' && activeRoleForPage === 'direktur') url = 'home-direktur.html?v=202';
       if (menuId === 'menu-home' && activeRoleForPage === 'guru') url = 'home-guru.html?v=201';
+      if (menuId === 'menu-home' && ['naqib','naqib-operasional'].includes(activeRoleForPage)) url = 'home-naqib.html?v=216';
+      if (canonicalRoleRuntime && menuId === 'menu-home') url = roleSystemV2.homeFor(activeRoleForPage, roleV2Session.activeAssignment);
+      if (canonicalRoleRuntime && activeRoleForPage === 'WALI_SANTRI' && menuId === 'menu-home') {
+        // Keep the existing standalone Portal Wali and its child/session engine.
+        // Never nest a second portal shell/nav inside the staff shell.
+        disposeRoleFrames();
+        window.location.replace(url);
+        return;
+      }
       const premiumHome = menuId === 'menu-home';
       document.body.classList.toggle('director-home-shell', premiumHome);
       document.body.classList.add('director-role-shell');
@@ -4078,9 +4315,24 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
         return;
       }
 
+      if (canonicalRoleRuntime) {
+        const verdict=window.CahayaRoleNavigationV2.decision(roleV2Session,menuId,url,ambilUrlDariMenu(menuElement));
+        if(!verdict.ok) {
+          tampilkanPesanTidakBerwenang(menuId);return;
+        }
+      }
+
       document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
       if (menuElement.classList.contains('nav-item')) menuElement.classList.add('active');
-      setMobileBottomActive(menuId);
+      document.querySelectorAll('#dynamicMenu [aria-current]').forEach(item=>item.removeAttribute('aria-current'));
+      menuElement.setAttribute('aria-current','page');
+      if(menuId==='menu-home')document.querySelector('.sidebar-scroll').scrollTop=0;
+      setMobileBottomActive(menuElement.id);
+      if(canonicalRoleRuntime){
+        document.getElementById('mainSidebar').classList.remove('open');
+        document.querySelector('.mobile-menu-overlay')?.classList.remove('open');
+        document.body.classList.remove('mobile-sidebar-open');
+      }
 
       const key = cahayaPageKey(url, activeRoleForPage);
       const activeFrame = currentContentFrame();
@@ -4115,7 +4367,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       frame.dataset.cahayaPageKey = key;
       frame.dataset.cahayaUrl = url;
       holder.appendChild(frame);
-      const guruImmediateShell = activeRoleForPage === 'guru' && (() => {
+      const guruImmediateShell = ['guru','GURU_PONDOK'].includes(activeRoleForPage) && (() => {
         try {
           const path = new URL(url, location.href).pathname;
           return /\/home-guru\.html$/.test(path) || isGuruWorkPage(url);
@@ -4125,7 +4377,22 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
       else showCahayaPageLoader("Menyiapkan halaman...");
 
       frame.onload = () => {
+        if(canonicalRoleRuntime){
+          try{
+            const current=new URL(frame.contentWindow.location.href),base=new URL('.',location.href);
+            if(current.origin===base.origin&&current.pathname.startsWith(base.pathname)){
+              const relative=current.pathname.slice(base.pathname.length)+current.search;
+              const item=window.CahayaRoleMenuV2.match(roleV2Session,relative);
+              if(item){
+                document.querySelectorAll('#dynamicMenu .nav-item').forEach(link=>{const selected=link.id===item.id;link.classList.toggle('active',selected);if(selected)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current')});
+                setMobileBottomActive(item.id);
+                frame.dataset.cahayaUrl=relative;
+              }
+            }
+          }catch(error){console.warn('Status navigasi halaman belum dapat diperbarui',error)}
+        }
         enhanceGuruFrame(frame, url);
+        connectCanonicalHome(frame);
         kirimProfilKeFrame();
         hideCahayaPageLoader();
       };
@@ -4161,7 +4428,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
           snap.forEach(doc => pListUsers.push(doc.data()));
         } catch (err) {
           console.error('Gagal memuat master user saat membuka Pesan:', err);
-          pListUsers = Array.isArray(pListUsers) ? pListUsers : [];
+          throw err;
         }
         window.__cahayaChatUsersLoaded = true;
         window.dispatchEvent(new CustomEvent('cahaya:chat-users-ready',{detail:{count:pListUsers.length}}));
@@ -4208,7 +4475,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
           }
 
           const profilGabungan = {
-            ...pUserSafe,
+            ...((profilFirestore && (canonicalRoleRuntime || Number(profilFirestore.roleSystemVersion)===2)) ? {} : pUserSafe),
             ...(profilFirestore || {}),
             username:
               profilFirestore?.username ||
@@ -4260,8 +4527,8 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCahayaGlobalRoleM
     /* Chat legacy dihapus. Seluruh chat pengurus memakai js/pengurus-whatsapp-chat.js
        agar pesan tidak ditimpa, room tidak terhapus, dan inbox tetap sinkron. */
   </script>
-  <script src="js/pengurus-whatsapp-chat.js?v=202"></script>
-  <script src="js/cahaya-push-global-v68.js?v=202"></script>
+  <script src="js/pengurus-whatsapp-chat.js?v=266"></script>
+  <script src="js/cahaya-push-global-v68.js?v=204"></script>
 
   <script>
     window.addEventListener(

@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=206"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
+  <script src="../js/naqib-program-today.js?v=209"></script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CAHAYA APP - Jurnal Pengawasan Naqib</title>
+  <title>CAHAYA APP - Laporan Pelaksanaan Naqib</title>
   <meta name="cahaya-build" content="20260819-v59">
 
   <link rel="stylesheet" href="../css/cahaya-theme.css" />
@@ -1107,7 +1114,7 @@
 <body>
   <div id="loadingOverlay">
     <div class="loader-mark">📝</div>
-    <div id="loadingText">Menyiapkan jurnal pengawasan...</div>
+    <div id="loadingText">Menyiapkan laporan pelaksanaan...</div>
   </div>
 
   <div id="appToast" class="toast" role="status" aria-live="polite">
@@ -1122,7 +1129,7 @@
     <section class="journal-hero">
       <div class="hero-copy">
         <span class="hero-label">Jadwal Harian 24 Jam</span>
-        <h1>Jurnal Pengawasan Naqib</h1>
+        <h1>Laporan Pelaksanaan Naqib</h1>
         <p>
           Isi dengan jujur dan apa apa adanya.
         </p>
@@ -1259,7 +1266,7 @@
 
         <div class="submit-row">
           <div class="submit-copy">
-            <strong>Simpan jurnal pengawasan</strong>
+            <strong>Simpan laporan pelaksanaan</strong>
             <span>
               Jurnal akan masuk sebagai data kinerja harian dan bahan rekap
               bulanan Supervisor.
@@ -1301,6 +1308,19 @@
     const DB_PATH = "cahaya_app/jurnal_piket_naqib";
     const SCHEDULE_PATH = "cahaya_app/jadwal_piket_naqib";
     let scheduleData = {};
+    const journalScope=window.cahayaRoleContext;
+    const scopedJournal=journalScope&&['NAQIB','NAQIBAH'].includes(journalScope.activeRole);
+    const dutyApi=window.CahayaNaqibProgramToday;
+    let inboundContext={};
+    const scopeUnit=()=>journalScope.unit==='PUTRI'?'Putri':'Putra';
+    function requireJournalScope(){if(scopedJournal){journalScope.assertCurrent();if(document.getElementById('jpUnit').value!==scopeUnit())throw new Error('Unit jurnal di luar assignment');}}
+    function programContext(){
+      let stored={};try{stored=JSON.parse(sessionStorage.getItem('cahaya:naqib-program-context')||'{}')||{}}catch{}
+      const params=new URLSearchParams(location.search),query={};['tanggal','programId','programName','block','blockId','scheduleDay','assignedNaqib','time','unit','activeRole','group','location'].forEach(key=>{if(params.has(key))query[key]=params.get(key)});
+      const value={...stored,...query};
+      if(!scopedJournal||value.activeRole!==journalScope.activeRole||String(value.unit||'').toUpperCase()!==journalScope.unit)return{};
+      return value;
+    }
 
     const STATUS_CONFIG = {
       terlaksana: {
@@ -1668,6 +1688,7 @@
     }
 
     function userName() {
+      if(scopedJournal)return currentUser.label || currentUser.nama || currentUser.displayName || currentUser.username || "Naqib";
       return (
         localStorage.getItem("namaNaqib") ||
         currentUser.label ||
@@ -1678,6 +1699,7 @@
     }
 
     function userRole() {
+      if(scopedJournal)return journalScope.activeRole==="NAQIBAH"?"Naqibah":"Naqib";
       if (Array.isArray(currentUser.akses)) {
         return currentUser.akses.join(" • ");
       }
@@ -1763,6 +1785,7 @@
     }
 
     function detectCurrentBlock() {
+      if(scopedJournal&&dutyApi){const duty=dutyApi.currentDuty(scheduleData,dutyApi.jakartaParts());return `Blok ${String(duty.blockId).replace(/\D/g,'')}`;}
       const parts = new Intl.DateTimeFormat("en-GB", {
         timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", hour12: false
       }).formatToParts(new Date());
@@ -1790,11 +1813,12 @@
 
     function putraDutyMatches(blockLabel) {
       const date = document.getElementById("jpTanggal")?.value || localDateValue();
-      const day = dayKeyFromDate(date);
       const n = String(blockLabel || "").match(/\d+/)?.[0] || "1";
-      const scheduled = scheduleData?.putra?.jadwal?.[day]?.[`blok${n}`];
-      if (!scheduleData?.putra?.jadwal) return { configured:false, match:true, scheduled:"" };
-      return { configured:true, match:personMatches(document.getElementById("jpNama")?.value || "", scheduled), scheduled:scheduled || "" };
+      const blockId=`blok${n}`,clock=dutyApi?.jakartaParts?.(),current=dutyApi?.currentDuty?.(scheduleData,clock),contextDay=inboundContext.tanggal===date&&inboundContext.block===blockLabel?inboundContext.scheduleDay:"";
+      const scheduleDay=contextDay||(date===clock?.date&&current?.blockId===blockId?current.scheduleDay:dayKeyFromDate(date));
+      const resolved=dutyApi?.normalizeDutySchedule?.(scheduleData)||scheduleData||{},scheduled=resolved?.jadwal?.[scheduleDay]?.[blockId];
+      if (!resolved?.jadwal||!Object.keys(resolved.jadwal).length) return { configured:false, match:false, scheduled:"",scheduleDay,blockId };
+      return { configured:true, match:personMatches(document.getElementById("jpNama")?.value || "", scheduled), scheduled:scheduled || "",scheduleDay,blockId };
     }
 
     function taskStatus(taskId) {
@@ -1833,8 +1857,8 @@
     }
 
     function personMatches(a,b) {
-      const x=normalizedKey(a), y=normalizedKey(b);
-      return x && y && (x===y || x.includes(y) || y.includes(x));
+      if(dutyApi)return dutyApi.samePerson(a,b);
+      const x=normalizedKey(a), y=normalizedKey(b);return x && y && (x===y || x.includes(y) || y.includes(x));
     }
 
     function putriNoDuty(day, programId, programs) {
@@ -1861,25 +1885,27 @@
     }
 
     async function loadScheduleConfig(){
-      try{const snap=await get(ref(db,SCHEDULE_PATH));scheduleData=snap.exists()?snap.val():{};}catch(e){console.warn('Jadwal piket Firebase gagal dimuat',e);scheduleData={};}
+      try{if(scopedJournal)journalScope.assertCurrent();const snap=await get(ref(db,SCHEDULE_PATH));if(scopedJournal)journalScope.assertCurrent();const saved=snap.exists()?snap.val():{};scheduleData=scopedJournal&&dutyApi?dutyApi.normalizeDutySchedule(saved):saved;}catch(e){console.warn('Jadwal piket Firebase gagal dimuat',e);scheduleData={};}
     }
 
     function handleUnitChange(){
+      if(scopedJournal){journalScope.assertCurrent();document.getElementById("jpUnit").value=scopeUnit();}
       const unit=document.getElementById("jpUnit").value;
       const blockGroup=document.getElementById("blockGroup");
-      if(unit==="Putri"){
+      if(unit==="Putri"&&!scopedJournal){
         blockGroup.style.display="none";
         document.getElementById("jpBlok").value="";
       }else{
         blockGroup.style.display="grid";
-        document.getElementById("jpBlok").value=detectCurrentBlock();
+        if(!/^Blok [123]$/.test(document.getElementById("jpBlok").value))document.getElementById("jpBlok").value=detectCurrentBlock();
       }
       renderChecklist();
     }
 
     function renderChecklist() {
+      requireJournalScope();
       const unit=document.getElementById("jpUnit")?.value || "Putra";
-      if(unit==="Putri"){
+      if(unit==="Putri"&&!scopedJournal){
         const built=buildPutriBlock();
         activeBlock="Jadwal Putri";
         if(!scheduleData?.putri?.program?.length){
@@ -1896,7 +1922,7 @@
         activeBlock = document.getElementById("jpBlok").value;
         const duty = putraDutyMatches(activeBlock);
         if (duty.configured && !duty.match) {
-          document.getElementById("taskList").innerHTML = `<div class="empty-state"><div class="empty-icon">🕒</div>Tidak ada tugas pengawasan untuk akun ini pada jadwal saat ini.</div>`;
+          document.getElementById("taskList").innerHTML = `<div class="empty-state"><div class="empty-icon">🕒</div>Anda tidak terjadwal mengisi laporan pelaksanaan untuk blok ini.</div>`;
           document.getElementById("journalFooter").style.display = "none";
           return;
         }
@@ -2277,18 +2303,16 @@
         )
       );
 
+      if(scopedJournal)journalScope.assertCurrent();
       if (!snapshot.exists()) return null;
 
       const data = snapshot.val() || {};
-      const nameKey = normalizedKey(nama);
-
       for (const [key, value] of Object.entries(data)) {
         const sameDate = value.tanggal === tanggal;
         const sameBlock = value.blokPiket === blok;
-        const sameName =
-          normalizedKey(value.naqib || "") === nameKey;
+        const sameName = personMatches(value.naqib || value.petugasTerjadwal || "",nama);
 
-        if (sameDate && sameBlock && sameName) {
+        if (sameDate && sameBlock && sameName && (!scopedJournal||value.unitPengawasan===scopeUnit())) {
           return {
             key,
             value
@@ -2300,6 +2324,8 @@
     }
 
     async function simpanJurnal() {
+      try{requireJournalScope()}catch(e){showToast("error","Akses ditolak",e.message);return;}
+      if(scopedJournal){const duty=putraDutyMatches(activeBlock);if(!duty.configured||!duty.match){showToast("error","Akses ditolak","Anda tidak terjadwal mengisi laporan pelaksanaan untuk blok ini.");return;}}
       const validation = validateAssessment();
 
       if (!validation.valid) {
@@ -2376,8 +2402,8 @@
           nama,
 
         unitPengawasan: document.getElementById("jpUnit")?.value || "Putra",
-        jenisJadwal: (document.getElementById("jpUnit")?.value || "Putra") === "Putri" ? "program" : "blok",
-        petugasTerjadwal: [...new Set(block.tasks.map(t=>t.pengawasTerjadwal||t.penanggungJawab).filter(Boolean))].join(", "),
+        jenisJadwal: scopedJournal ? "blok" : (document.getElementById("jpUnit")?.value || "Putra") === "Putri" ? "program" : "blok",
+        petugasTerjadwal: scopedJournal ? putraDutyMatches(activeBlock).scheduled : [...new Set(block.tasks.map(t=>t.pengawasTerjadwal||t.penanggungJawab).filter(Boolean))].join(", "),
         blokPiket: activeBlock,
         labelBlok: block.label,
         rentangWaktu: block.range,
@@ -2421,6 +2447,7 @@
           activeBlock
         );
 
+        requireJournalScope();
         if (existing) {
           payload.waktuSimpan =
             existing.value.waktuSimpan ||
@@ -2468,13 +2495,15 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      document.getElementById("jpTanggal").value = localDateValue();
+      inboundContext=programContext();
+      document.getElementById("jpTanggal").value = inboundContext.tanggal || localDateValue();
       fillProfile();
       await loadScheduleConfig();
       const person=document.getElementById("jpNama").value;
-      const isPutri=["fatimah","meilisa","melisa","alamanda"].some(n=>normalizedKey(person).includes(n));
+      const isPutri=scopedJournal ? journalScope.unit==="PUTRI" : ["fatimah","meilisa","melisa","alamanda"].some(n=>normalizedKey(person).includes(n));
       document.getElementById("jpUnit").value=isPutri?"Putri":"Putra";
-      document.getElementById("jpBlok").value=detectCurrentBlock();
+      if(scopedJournal)document.getElementById("jpUnit").disabled=true;
+      document.getElementById("jpBlok").value=/^Blok [123]$/.test(inboundContext.block||'')?inboundContext.block:detectCurrentBlock();
       handleUnitChange();
       hideLoading();
     });

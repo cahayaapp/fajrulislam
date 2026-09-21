@@ -14,6 +14,7 @@
   <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon.png?v=141">
   <script src="config/tenant-config.js?v=141"></script>
   <script src="config/master-data.js?v=141"></script>
+  <script src="js/role-system-v2.js?v=266"></script>
   <script src="js/cahaya-config-runtime.js?v=141" defer></script>
   <style>
     :root{
@@ -340,6 +341,11 @@
       try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'null')}catch(_){return null}
     }
     function getLoginTarget(user){
+      const roleV2=window.CahayaRoleSystemV2?.resolveSession(user,localStorage);
+      if(roleV2?.mode==='canonical'){
+        if(roleV2.activeRole==='WALI_SANTRI') return 'wali/dashboard/index.html?v=20260820-v70';
+        return 'main-dashboard.html?v=205';
+      }
       const roles=(Array.isArray(user?.akses)?user.akses:[user?.akses||user?.role].filter(Boolean)).map(r=>String(r||'').toLowerCase());
       const identity=[user?.cashierUnit,user?.unitKasir,user?.username,user?.email,user?.label].filter(Boolean).join(' ');
       const dedicatedCashier=roles.includes('kasir')&&/kasir\s*putri|kasirputri|kasir\s*putra|kasirputra/i.test(identity);
@@ -362,7 +368,7 @@
       if(installed && !forceInstall){
         localStorage.setItem('cahayaPwaInstalled','1');
         const user=sessionUser();
-        if(user?.akses){location.replace(getLoginTarget(user));return;}
+        if(user?.akses || Number(user?.roleSystemVersion)===2){location.replace(getLoginTarget(user));return;}
         show(loginScene);return;
       }
 
@@ -378,7 +384,7 @@
       if(promptEvent){show(installScene);return;}
 
       const user=sessionUser();
-      if(user?.akses){location.replace(getLoginTarget(user));return;}
+      if(user?.akses || Number(user?.roleSystemVersion)===2){location.replace(getLoginTarget(user));return;}
       show(loginScene);
     }
 
@@ -443,7 +449,7 @@
 
       if(isStandalone()){
         const user=sessionUser();
-        if(user?.akses){ location.href=getLoginTarget(user); return; }
+        if(user?.akses || Number(user?.roleSystemVersion)===2){ location.href=getLoginTarget(user); return; }
         show(loginScene); return;
       }
 
@@ -502,7 +508,7 @@
       // Saat ikon CAHAYA APP dibuka, start_url ?source=pwa juga akan langsung ke login/dashboard.
       setTimeout(()=>{
         const user=sessionUser();
-        if(user?.akses){ location.href=getLoginTarget(user); return; }
+        if(user?.akses || Number(user?.roleSystemVersion)===2){ location.href=getLoginTarget(user); return; }
         location.href='/?source=pwa&installed=1&mode=login';
       },350);
     });
@@ -541,12 +547,17 @@
         const cred=await firebase.auth().signInWithEmailAndPassword(email,password);
         const userDoc=await db.collection('users').doc(uname).get();
         let data;
-        if(userDoc.exists){data=userDoc.data();if(!data.akses)data.akses=['wali'];}
+        if(userDoc.exists){data=userDoc.data();if(!data.akses && Number(data.roleSystemVersion)!==2)data.akses=['wali'];}
         else{
           const isStaff=uname.includes('admin')||uname.includes('guru')||uname==='multazam';
           data={username:uname,label:isStaff?'Pengurus CAHAYA':'Wali Santri',akses:isStaff?['guru']:['wali'],namaAnak:uname};
         }
-        const session={...data,uid:cred.user.uid};
+        let session={...data,uid:cred.user.uid};
+        const roleV2=window.CahayaRoleSystemV2?.resolveSession(session,localStorage);
+        if(roleV2?.mode==='canonical'){
+          window.CahayaRoleSystemV2.switchRole(roleV2,roleV2.activeRole,localStorage);
+          session={...session,activeRoleV2:roleV2.activeRole};
+        }
         localStorage.setItem('cahayaCurrentUser',JSON.stringify(session));
         txt.textContent='Membuka CAHAYA APP...';
         setTimeout(()=>location.href=getLoginTarget(session),260);

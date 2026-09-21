@@ -57,6 +57,7 @@
   ];
 
   const state = {
+    loadError: false,
     rooms: {},
     meta: {},
     readMap: {},
@@ -71,6 +72,8 @@
     latestNotifiedTime: 0,
     dbNotifications: []
   };
+  // Owned by this engine; the removed legacy inline chat no longer defines these.
+  let allGlobalNotifs=[],lastUnreadCount=0;
 
   const oldShowInAppNotif =
     typeof showInAppNotif ===
@@ -162,6 +165,12 @@
         "wali"
     };
 
+    // Shell canonical normalization intentionally rejects legacy labels. Chat
+    // contact policy still uses its established labels; do not mix the two.
+    if(window.cahayaRoleV2Session?.mode==='canonical'){
+      const R=window.CahayaRoleSystemV2,canonical=R?.exactRole(raw);
+      return canonical?R.legacyRoleFor(canonical):(aliases[raw]||raw);
+    }
     if (
       typeof normalisasiRole ===
       "function"
@@ -180,7 +189,7 @@
     user = {}
   ) {
     let raw =
-      user.akses ??
+      (Number(user.roleSystemVersion)===2&&Array.isArray(user.roles)?user.roles:null) ?? user.akses ??
       user.jabatan ??
       user.roles ??
       user.role ??
@@ -234,6 +243,8 @@
   }
 
   function currentIsPrivileged() {
+    const v2=window.cahayaRoleV2Session;
+    if(v2?.mode==='canonical')return window.CahayaRoleSystemV2.can(v2.activeRole,'message.broadcast',v2.activeAssignment);
     const roleCandidates = [
       ...(Array.isArray(myRoles) ? myRoles : []),
       ...rolesOf(pUserSafe || {}),
@@ -250,6 +261,11 @@
   function roleLabelLocal(
     role
   ) {
+    if(window.cahayaRoleV2Session?.mode==='canonical'){
+      const R=window.CahayaRoleSystemV2;
+      const id=R?.exactRole(role)||R?.ROLE_IDS.find(id=>R.legacyRoleFor(id)===role);
+      if(id)return R.labelFor(id);
+    }
     if (
       typeof labelRole ===
       "function"
@@ -1411,6 +1427,7 @@
     if (!container) {
       return;
     }
+    if(state.loadError){renderLoadError();return;}
 
     const query =
       String(
@@ -1446,7 +1463,7 @@
     ) {
       container.innerHTML = `
         <div class="pw-empty">
-          Tidak ada kontak yang sesuai dengan akses role Anda.
+          <strong>Belum Ada Pesan</strong><br>Belum ada kontak yang tersedia untuk percakapan ini.
         </div>
       `;
 
@@ -1454,7 +1471,7 @@
     }
 
     container.innerHTML =
-      state.renderedContacts
+      (state.renderedContacts.some(item=>item.latest)?'':'<div class="pw-empty"><strong>Belum Ada Pesan</strong><br>Pilih kontak untuk memulai percakapan.</div>')+state.renderedContacts
         .map(
           (item, index) => {
             const preview =
@@ -2248,7 +2265,12 @@
   }
 
   async function updateInboxIndex(contact, roomId, message = null) {
-    const updates = buildInboxIndexUpdates(contact, roomId, message);
+    let updates = buildInboxIndexUpdates(contact, roomId, message);
+    // Opening an internal thread must not replace its lastMessage/unread evidence.
+    // Preserve Wali conversation behavior in this internal-only release patch.
+    if(!message&&!contact.isWali&&window.cahayaRoleV2Session?.mode==='canonical'){
+      updates=Object.fromEntries(Object.entries(updates).flatMap(([path,value])=>Object.entries(value).filter(([field])=>field!=='updatedAt').map(([field,v])=>[`${path}/${field}`,v])));
+    }
     if (!Object.keys(updates).length) return;
     try { await dbRT.ref().update(updates); }
     catch (error) { console.warn("Indeks inbox belum tersimpan:", error); }
@@ -2434,11 +2456,7 @@
     if (
       pChatListener
     ) {
-      dbRT
-        .ref(
-          `cahaya_app/pesan_global/${pChatListener}`
-        )
-        .off();
+      conversationSubscription?.off();conversationSubscription=null;
     }
 
     if (active.type === "broadcast") {
@@ -2460,14 +2478,12 @@
     pChatListener =
       active.roomId;
 
-    dbRT
-      .ref(
-        `cahaya_app/pesan_global/${active.roomId}`
-      )
-      .limitToLast(50)
-      .on(
+    conversationSubscription=dbRT.ref(`cahaya_app/pesan_global/${active.roomId}`).limitToLast(50);
+    const conversationEpoch=loadEpoch;
+    conversationSubscription.on(
         "value",
         async snapshot => {
+          if(conversationEpoch!==loadEpoch||state.active?.roomId!==active.roomId)return;
           state.rooms[
             active.roomId
           ] =
@@ -2498,15 +2514,12 @@
           );
         },
         error => {
+          console.error('Percakapan belum dapat dimuat:',error);
           document.getElementById(
             "pChatBody"
           ).innerHTML = `
             <div class="pw-empty">
-              Percakapan belum dapat dimuat:
-              ${esc(
-                error?.message ||
-                "Periksa koneksi Firebase."
-              )}
+              Pesan belum dapat dimuat. Kembali ke daftar lalu coba lagi.
             </div>
           `;
         }
@@ -3111,13 +3124,8 @@
 
       input.focus();
     } catch (error) {
-      alert(
-        "Pesan belum dapat dikirim: " +
-        (
-          error?.message ||
-          "Periksa koneksi dan izin Firebase."
-        )
-      );
+      console.error('Pesan belum dapat dikirim:',error);
+      alert('Pesan belum dapat dikirim. Periksa koneksi lalu coba lagi.');
     } finally {
       sendButton.disabled =
         false;
@@ -3338,11 +3346,7 @@
     if (
       pChatListener
     ) {
-      dbRT
-        .ref(
-          `cahaya_app/pesan_global/${pChatListener}`
-        )
-        .off();
+      conversationSubscription?.off();conversationSubscription=null;
 
       pChatListener =
         null;
@@ -3594,13 +3598,30 @@
       null;
   }
 
+  const inboxSubscriptions=[];
+  let conversationSubscription=null,loadEpoch=0,openingMessages=null;
+  function listenInbox(path,limit,success,failure){
+    const epoch=loadEpoch;let q=dbRT.ref(path);if(limit)q=q.limitToLast(limit);
+    const callback=snapshot=>{if(epoch===loadEpoch)success(snapshot)};
+    inboxSubscriptions.push({q,callback});q.on('value',callback,error=>{if(epoch===loadEpoch)failure(error)});
+  }
+  function stopMessageListeners(){
+    loadEpoch++;
+    inboxSubscriptions.splice(0).forEach(({q,callback})=>q.off('value',callback));
+    conversationSubscription?.off();conversationSubscription=null;pChatListener=null;
+    state.listenersInstalled=false;
+  }
+  function renderLoadError(){
+    const inbox=document.getElementById('viewInbox');if(!inbox)return;
+    inbox.innerHTML='<div class="pw-empty"><strong>Pesan belum dapat dimuat</strong><p>Periksa koneksi, lalu coba lagi.</p><button type="button" id="retryCahayaMessages">Coba Lagi</button></div>';
+    inbox.querySelector('button').onclick=()=>{stopMessageListeners();state.loadError=false;openMessages()};
+  }
   function installListeners() {
     if (state.listenersInstalled) { renderChatList(); return; }
     state.listenersInstalled = true;
     buildContacts();
 
-    dbRT.ref(`cahaya_app/pesan_dibaca/${safeFirebaseKey(realUsername)}`).on(
-      "value",
+    listenInbox(`cahaya_app/pesan_dibaca/${safeFirebaseKey(realUsername)}`,0,
       snapshot => {
         state.readMap = snapshot.val() || {};
         renderChatList();
@@ -3610,9 +3631,9 @@
       error => console.warn("Status baca belum dimuat:", error)
     );
 
-    dbRT.ref(`cahaya_app/pesan_inbox/${safeFirebaseKey(realUsername || namaSaya)}`).limitToLast(100).on(
-      "value",
+    listenInbox(`cahaya_app/pesan_inbox/${safeFirebaseKey(realUsername || namaSaya)}`,100,
       snapshot => {
+        state.loadError=false;
         const index = snapshot.val() || {};
         const previousRooms = state.rooms || {};
         const nextRooms = {};
@@ -3638,13 +3659,11 @@
       },
       error => {
         console.error("Inbox pesan belum dapat dimuat:", error);
-        const inbox = document.getElementById("viewInbox");
-        if (inbox) inbox.innerHTML = `<div class="pw-empty">Pesan belum dapat dimuat.<br>Periksa koneksi dan aturan Firebase.</div>`;
+        state.loadError=true;renderLoadError();
       }
     );
 
-    dbRT.ref(`cahaya_app/notifikasi_user/${safeFirebaseKey(realUsername)}`).limitToLast(100).on(
-      "value",
+    listenInbox(`cahaya_app/notifikasi_user/${safeFirebaseKey(realUsername)}`,100,
       snapshot => {
         const value = snapshot.val() || {};
         state.dbNotifications = Object.entries(value).map(([notifId,item])=>({...item,notifId,tipe:item.tipe||"database"})).filter(item=>item.dibaca!==true);
@@ -3680,7 +3699,7 @@
     if (!windowElement || !chatIsOpen()) return;
     windowElement.style.display = "none";
     if (pChatListener) {
-      dbRT.ref(`cahaya_app/pesan_global/${pChatListener}`).off();
+      conversationSubscription?.off();conversationSubscription=null;
       pChatListener = null;
     }
     if (!fromHistory && chatHistoryArmed && history.state?.cahayaChatOpen) {
@@ -3694,51 +3713,32 @@
     chatHistoryArmed = false;
   });
 
-  async function toggleChat() {
-    if (
-      !bolehAksesMenu(
-        "menu-chat"
-      )
-    ) {
-      tampilkanPesanTidakBerwenang(
-        "menu-chat"
-      );
-
-      return;
-    }
-
-    if (window.CAHAYA_CHAT_LAZY === true && !state.listenersInstalled) {
-      try { if (typeof window.ensureCahayaChatReady === "function") await window.ensureCahayaChatReady(); } catch (_) {}
-      bootstrap();
-    }
-
-    const windowElement =
-      document.getElementById(
-        "pengurusChatWindow"
-      );
-
-    if (windowElement.style.display === "flex") {
-      closeChatWindow(false);
-      return;
-    }
-
-    openChatWindow();
-
-    showList();
-
-    try {
-      notifSound
-        .play()
-        .then(() => {
-          notifSound.pause();
-          notifSound.currentTime =
-            0;
-        })
-        .catch(
-          () => {}
-        );
-    } catch (error) {}
+  async function openMessages() {
+    if(!bolehAksesMenu('menu-chat')){tampilkanPesanTidakBerwenang('menu-chat');return}
+    if(openingMessages)return openingMessages;
+    openChatWindow();showList();
+    if(state.listenersInstalled){renderChatList();return}
+    const epoch=loadEpoch;
+    document.getElementById('viewInbox').innerHTML='<div class="pw-empty" role="status">Memuat pesan…</div>';
+    const work=(async()=>{
+      try{
+        if(typeof window.ensureCahayaChatReady==='function')await window.ensureCahayaChatReady();
+        if(epoch!==loadEpoch||!chatIsOpen())return;
+        state.loadError=false;bootstrap();
+      }catch(error){
+        console.error('Pesan belum dapat dimuat:',error);
+        if(epoch===loadEpoch){state.loadError=true;renderLoadError()}
+      }
+    })();
+    openingMessages=work;
+    try{await work}finally{if(openingMessages===work)openingMessages=null}
   }
+  async function toggleChat(){if(chatIsOpen())closeChatWindow(false);else await openMessages()}
+  window.openCahayaMessages=openMessages;
+  window.closeCahayaMessages=()=>{
+    closeChatWindow(true);
+    if(history.state?.cahayaChatOpen){const next={...history.state};delete next.cahayaChatOpen;history.replaceState(next,'',location.href)}
+  };
 
   function handleEnter(
     event
@@ -3799,73 +3799,27 @@
     showList();
   }
 
+  // Initialization is lazy and event-driven: no polling intervals on Home.
   function bootstrap() {
-    let attempts = 0;
-    let timer = null;
-
-    const runtimeReady = () =>
-      typeof dbRT !== "undefined" &&
-      typeof bolehAksesMenu === "function" &&
-      typeof realUsername !== "undefined";
-
-    const usersReady = () =>
-      window.__cahayaChatUsersLoaded === true ||
-      (
-        Array.isArray(pListUsers) &&
-        pListUsers.length > 0
-      );
-
-    const initialize = () => {
-      attempts += 1;
-
-      if (!runtimeReady()) {
-        if (attempts > 160 && timer) {
-          clearInterval(timer);
-        }
-        return;
-      }
-
-      renderAccessNote();
-
-      // Guru Home is a navigation hub. Messaging starts only after Pesan is opened.
-      const activeRole = localStorage.getItem('cahayaActiveRole') || localStorage.getItem('cahayaCurrentRole');
-      if (['guru', 'direktur'].includes(activeRole) && window.__cahayaChatUsersLoaded !== true) {
-        if (timer) clearInterval(timer);
-        return;
-      }
-
-      if (usersReady()) {
-        buildContacts();
-        renderChatList();
-        installListeners();
-        updateChatBadge();
-
-        if (timer) {
-          clearInterval(timer);
-        }
-        return;
-      }
-
-      if (attempts > 160) {
-        buildContacts();
-        renderChatList();
-        installListeners();
-        updateChatBadge();
-
-        if (timer) {
-          clearInterval(timer);
-        }
-      }
-    };
-
-    window.addEventListener(
-      "cahaya:chat-users-ready",
-      initialize
-    );
-
-    initialize();
-    timer = setInterval(initialize, 120);
+    if(typeof dbRT==='undefined'||typeof bolehAksesMenu!=='function'||typeof realUsername==='undefined')return;
+    renderAccessNote();
+    if(window.CAHAYA_CHAT_LAZY===true&&!chatIsOpen())return;
+    if(window.CAHAYA_CHAT_LAZY===true&&window.__cahayaChatUsersLoaded!==true)return;
+    if(window.__cahayaChatUsersLoaded!==true&&!(Array.isArray(pListUsers)&&pListUsers.length))return;
+    buildContacts();renderChatList();installListeners();updateChatBadge();
   }
+  window.addEventListener('cahaya:chat-users-ready',bootstrap);
+  window.addEventListener('cahaya:active-role-changed',()=>{
+    // Conversations remain user-centric, but prior role subscriptions/drafts stop.
+    closeChatWindow(true);stopMessageListeners();openingMessages=null;
+    state.rooms={};state.meta={};state.readMap={};state.active=null;
+    state.contacts=[];state.dbNotifications=[];state.loadError=false;
+    state.selectedMessage=null;clearTimeout(state.longPressTimer);
+    editModeId=null;
+    const input=document.getElementById('pChatInput');if(input)input.value='';
+    renderChatList();updateChatBadge();renderNotificationPanel([],[]);
+  });
+  window.addEventListener('pagehide',stopMessageListeners);
 
   /* =======================================================
      Override API dashboard lama

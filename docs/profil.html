@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="js/role-system-v2.js?v=266"></script>
+<script src="js/role-route-registry-v2.js?v=266"></script>
+<script src="js/role-navigation-v2.js?v=266"></script>
+<script src="js/role-scope-v2.js?v=206"></script>
+<script src="js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="config/tenant-config.js"></script>
   <script src="config/master-data.js"></script>
@@ -433,7 +439,19 @@
 
     document.getElementById('dispUsername').textContent = "@" + currentUser.username;
     document.getElementById('dispRole').textContent = (currentUser.akses || []).join(' & ').toUpperCase();
-    document.getElementById('editNama').value = currentUser.label || currentUser.username;
+    document.getElementById('editNama').value = currentUser.label || currentUser.nama || currentUser.displayName || currentUser.username;
+    const roleSystem=window.CahayaRoleSystemV2,session=roleSystem?.resolveSession(currentUser,localStorage);
+    if(session?.mode==='canonical'&&session.activeRole!=='WALI_SANTRI'){
+      document.getElementById('dispRole').textContent=roleSystem.displayLabelFor(session.activeRole,session.activeAssignment);
+      const box=document.createElement('section');box.className='info-box';box.id='profileRoleContext';
+      const title=document.createElement('h3');title.textContent='Peran & Penugasan';box.append(title);
+      const a=session.activeAssignment,scope=document.createElement('p');
+      const labels={PUTRA:'Putra',PUTRI:'Putri',ALL:'Seluruh unit',KEPONDOKAN:'Kepondokan',PKBM:'PKBM',PEMULA:'Pemula',MADYA:'Madya'};
+      scope.textContent=[labels[a.unit],labels[a.programDomain],labels[a.level],a.usrahIds.length?`${a.usrahIds.length} Usrah ditugaskan`:null,a.supervisedRoles.length?'Supervisi: '+a.supervisedRoles.map(roleSystem.labelFor).join(', '):null].filter(Boolean).join(' • ')||'Sesuai penugasan akun';box.append(scope);
+      const owned=document.createElement('p');owned.textContent='Peran yang dimiliki: '+session.roles.map(role=>roleSystem.displayLabelFor(role,roleSystem.assignmentFor(role,currentUser.assignments?.[role]))).join(', ');box.append(owned);
+      if(session.roles.length>1){const button=document.createElement('button');button.type='button';button.className='btn-primary';button.textContent='Pindah Peran';button.onclick=()=>{if(parent!==window&&parent.openCahayaGlobalRoleModal)parent.openCahayaGlobalRoleModal();else location.href='main-dashboard.html'};box.append(button)}
+      document.querySelector('.foto-area').append(box);
+    }
 
     // Logika Pemunculan Foto
     const imgElement = document.getElementById('imgPreview');
@@ -447,7 +465,7 @@
       avatarDiv.id = 'inisialPreview';
       avatarDiv.style.display = 'flex'; avatarDiv.style.justifyContent = 'center'; avatarDiv.style.alignItems = 'center';
       avatarDiv.style.fontSize = '4rem'; avatarDiv.style.fontWeight = 'bold'; avatarDiv.style.color = 'var(--navy-dark)';
-      avatarDiv.innerHTML = (currentUser.label || currentUser.username).charAt(0).toUpperCase();
+      avatarDiv.textContent = (currentUser.label || currentUser.nama || currentUser.username).charAt(0).toUpperCase();
       document.querySelector('.foto-area').insertBefore(avatarDiv, document.getElementById('dispUsername'));
     }
   });

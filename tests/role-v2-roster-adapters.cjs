@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict'),R=require('../js/role-system-v2.js'),S=require('../js/role-scope-v2.js');
+let current=R.resolveSession({username:'fixture',roleSystemVersion:2,roles:['NAQIB','NAQIBAH'],assignments:{NAQIB:{unit:'PUTRA'},NAQIBAH:{unit:'PUTRI'}}});
+const context=S.create(current,()=>current),roster=context.roster({'Usrah 1':['BOY'],'Usrah 7':['GIRL']});
+assert.equal(roster.rows.length,1);assert.equal(roster.requireStudent('BOY').unit,'PUTRA');assert.throws(()=>roster.requireStudent('GIRL'));assert.throws(()=>roster.requireStudent('BOY','Usrah 7'));
+current=R.switchRole(current,'NAQIBAH').session;assert.throws(()=>roster.requireStudent('BOY'),/EXPIRED/);assert.equal(S.create(current).roster({'Usrah 1':['BOY'],'Usrah 7':['GIRL']}).rows[0].name,'GIRL');
+const basic={category:'Kedisiplinan',route:'NAQIB'},advanced={category:'Moral/Etika',route:'KONSELOR'};
+assert(S.counselorCaseAllowed('PEMULA',basic));assert(!S.counselorCaseAllowed('PEMULA',advanced));assert(!S.counselorCaseAllowed('PEMULA',{...basic,repeated:true}));assert(S.counselorCaseAllowed('MADYA',advanced));assert(!S.counselorCaseAllowed('UTAMA',advanced));
+assert(S.counselorCaseAllowed('PEMULA',{...basic,route:'KONSELOR',raw:{statusPenanganan:'Menunggu Konselor'}}));
+assert(!S.COUNSELOR_LEVEL_ACTIONS.PEMULA.includes('case.delete'));assert(!S.COUNSELOR_LEVEL_ACTIONS.MADYA.includes('case.warning'));
+console.log('PASS exact unit roster, forged selection, role-switch expiry, centralized legacy level boundaries and new report-only routing');

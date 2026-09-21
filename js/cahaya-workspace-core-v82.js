@@ -1,10 +1,10 @@
 (function(){'use strict';
   const W={};
   W.safeJson=function(key){try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(_){return{}}};
-  W.profile=function(){const p=W.safeJson('cahayaCurrentProfile');if(Object.keys(p).length)return p;const u=W.safeJson('cahayaCurrentUser');return u};
+  W.profile=function(){if(window.cahayaRoleContext){window.cahayaRoleContext.assertCurrent();const u=W.safeJson('cahayaCurrentUser'),R=window.CahayaRoleSystemV2;return R.projectLegacyProfile(u,R.resolveSession(u,localStorage))}const p=W.safeJson('cahayaCurrentProfile');if(Object.keys(p).length)return p;const u=W.safeJson('cahayaCurrentUser');return u};
   W.name=function(){const p=W.profile();return p.label||p.nama||p.namaTampilan||p.username||'Pengguna CAHAYA'};
   W.username=function(){const p=W.profile();return String(p.username||'').toLowerCase()};
-  W.activeRole=function(){const p=W.profile();return String(localStorage.getItem('cahayaActiveRole')||p.activeRole||p.role||'').toLowerCase()};
+  W.activeRole=function(){if(window.cahayaRoleContext){window.cahayaRoleContext.assertCurrent();return window.CahayaRoleSystemV2.legacyRoleFor(window.cahayaRoleContext.activeRole)}const p=W.profile();return String(localStorage.getItem('cahayaActiveRole')||p.activeRole||p.role||'').toLowerCase()};
   W.norm=function(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()};
   W.key=function(v){return W.norm(v).replace(/\s+/g,'')};
   W.esc=function(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))};
@@ -15,6 +15,6 @@
   W.toast=function(msg){let el=document.getElementById('cwToast');if(!el){el=document.createElement('div');el.id='cwToast';el.style.cssText='position:fixed;right:14px;bottom:14px;z-index:2000;background:#17325a;color:#fff;padding:10px 12px;border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.2);font:800 .66rem Nunito,system-ui;opacity:0;transform:translateY(10px);transition:.2s';document.body.appendChild(el)}el.textContent=msg;el.style.opacity='1';el.style.transform='none';clearTimeout(W._toast);W._toast=setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(10px)'},2200)};
   W.records=function(val){if(!val)return[];if(Array.isArray(val))return val.filter(Boolean);return Object.entries(val).map(([id,x])=>x&&typeof x==='object'?{id,...x}:{id,value:x})};
   W.usrahRecords=function(val){if(!val)return[];if(Array.isArray(val))return val.filter(Boolean).map((x,i)=>x&&typeof x==='object'?{id:x.id||String(i),...x}:{id:String(i),namaUsrah:String(x),anggota:[]});return Object.entries(val).map(([id,x])=>{if(Array.isArray(x))return{id,namaUsrah:id,usrah:id,anggota:x};if(x&&typeof x==='object'){const members=x.anggota||x.santri||x.members||x.daftarSantri||((Object.keys(x).every(k=>/^\d+$/.test(k)))?Object.values(x):[]);return{id,namaUsrah:x.namaUsrah||x.usrah||x.nama||id,...x,anggota:members}}return{id,namaUsrah:id,anggota:[]}})};
-  W.unitFromProfile=function(){const p=W.profile();const active=W.activeRole();const a=(Array.isArray(p.workspaceAssignments)?p.workspaceAssignments:[]).find(x=>String(x.role||'').toLowerCase()===active);return a?.unit||''};
+  W.unitFromProfile=function(){if(window.cahayaRoleContext){window.cahayaRoleContext.assertCurrent();return {PUTRA:'Putra',PUTRI:'Putri',ALL:'Semua'}[window.cahayaRoleContext.unit]||''}const p=W.profile();const active=W.activeRole();const a=(Array.isArray(p.workspaceAssignments)?p.workspaceAssignments:[]).find(x=>String(x.role||'').toLowerCase()===active);return a?.unit||''};
   window.CahayaWorkspace=W;
 })();

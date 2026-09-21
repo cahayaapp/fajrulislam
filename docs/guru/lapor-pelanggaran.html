@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=206"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
@@ -1273,12 +1279,19 @@
       );
     }
 
+    const reportScope=window.cahayaRoleContext;
+    const scopedReporter=reportScope&&['NAQIB','NAQIBAH'].includes(reportScope.activeRole);
+    let reportRoster=null;
+    function validateReportRoster(names){if(scopedReporter){reportScope.assertCurrent();if(!reportRoster)throw new Error('Roster belum tersedia');names.forEach(n=>reportRoster.requireStudent(n));}}
     document.addEventListener("DOMContentLoaded", async () => {
       isiProfil();
       try {
         // v151 hemat kuota: daftar santri memakai master lokal yang sudah ikut bundle aplikasi.
         // Tidak ada lagi pembacaan master_usrah Firebase setiap halaman dibuka/back.
-        const sumber = window.CAHAYA_MASTER_DATA?.santriByClass || window.dataSantri || {};
+        const sumber = scopedReporter
+          ? await reportScope.loadUsrah(async p=>(await get(ref(db,p))).val())
+          : window.CAHAYA_MASTER_DATA?.santriByClass || window.dataSantri || {};
+        if(scopedReporter)reportRoster=reportScope.roster(sumber);
         const namaSet = new Set();
         Object.values(sumber || {}).forEach(list => {
           normalisasiDaftar(list).forEach(nama => namaSet.add(nama));
@@ -1386,7 +1399,9 @@
 
     window.kirimLaporan = async function() {
       const terlaporList = [...santriTerpilih];
+      try{validateReportRoster(terlaporList)}catch(e){tampilkanToast("error","Akses ditolak",e.message);return;}
       const pelapor = document.getElementById("lp_namaPelapor").value;
+      try{if(pelapor&&!pelapor.startsWith('Laporan Langsung'))validateReportRoster([pelapor]);}catch(e){tampilkanToast('error','Akses ditolak',e.message);return;}
       const bidang = bidangTerpilih();
       const keterangan = document.getElementById("lp_keterangan").value.trim();
       const kritis = document.getElementById("lp_kritis").checked;
@@ -1432,7 +1447,7 @@
           }
         : null;
 
-      const jalurPenanganan = (!kritis && bidang !== "Moral/Etika")
+      const jalurPenanganan = reportScope ? "KONSELOR" : (!kritis && bidang !== "Moral/Etika")
         ? "NAQIB"
         : "MANAJER_SUPERVISOR";
       const commonPayload = {
@@ -1447,7 +1462,7 @@
         kategoriKhusus: kritis ? "KRITIS" : "",
         prioritas: kritis ? "KRITIS" : "NORMAL",
         jalurPenanganan,
-        statusPenanganan: jalurPenanganan === "NAQIB" ? "Menunggu Naqib Operasional" : "Menunggu Manajer/Supervisor",
+        statusPenanganan: reportScope ? "Menunggu Konselor" : jalurPenanganan === "NAQIB" ? "Menunggu Naqib Operasional" : "Menunggu Manajer/Supervisor",
         naqibPendata: namaPenginput,
         namaPenginput,
         buktiFoto: evidenceMeta,
@@ -1491,12 +1506,13 @@
           };
         }
 
+        validateReportRoster(terlaporList);
         await update(ref(db), updates);
 
         tampilkanToast(
           "success",
           kritis ? "Laporan KRITIS terkirim" : "Laporan terkirim",
-          jalurPenanganan === "NAQIB"
+          reportScope ? `${terlaporList.length} laporan masuk ke antrean Konselor tanpa pengurangan poin.` : jalurPenanganan === "NAQIB"
             ? `${terlaporList.length} laporan ringan masuk ke antrean Naqib Operasional.`
             : `${terlaporList.length} laporan masuk ke antrean Manajer/Supervisor Pembinaan Karakter.`
         );

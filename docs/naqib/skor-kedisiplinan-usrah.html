@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=217"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
@@ -36,12 +42,19 @@
   </style>
 
   <link rel="stylesheet" href="../css/cahaya-signature-v87.css?v=87" />
+  <link rel="stylesheet" href="../css/naqib-core-v2.css?v=217" />
 </head>
-<body>
+<body class="nq-core-page">
 <div class="loading" id="loading">Memuat data kedisiplinan…</div>
-<main class="page">
+<main class="page nq-core-shell">
   <section class="scene center active" id="scenePeriod">
     <div class="period-wrap">
+      <header class="nq-core-hero">
+        <span class="nq-core-eyebrow">Pemantauan Santri &amp; Usrah</span>
+        <h1>Skor Kedisiplinan</h1>
+        <p>Pantau ringkasan disiplin berdasarkan absensi program pada unit pendampingan Anda.</p>
+        <div class="nq-core-meta"><span class="nq-core-chip" id="disciplineRoleChip">Naqib</span><span class="nq-core-chip" id="disciplineUnitChip">Putra</span></div>
+      </header>
       <div class="period-grid">
         <button class="period" type="button" onclick="choosePeriod('today')"><span class="period-icon">☀️</span><b>Hari Ini</b><span>Kedisiplinan program hari ini</span></button>
         <button class="period" type="button" onclick="choosePeriod('week')"><span class="period-icon">📆</span><b>Pekan Ini</b><span>Senin sampai hari ini</span></button>
@@ -79,9 +92,13 @@
   const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const currentUser=(()=>{try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')||{}}catch{return{}}})();
-  const userName=String(currentUser.label||currentUser.nama||currentUser.username||'').trim();
-  const putriNames=['fatimah','meilisa','melisa','alamanda'];
-  const isPutri=putriNames.some(n=>norm(userName).includes(n));
+  const roleContext=window.cahayaRoleContext;
+  if(roleContext)roleContext.assertCurrent();
+  const activeRole=roleContext?.activeRole||'';
+  const activeUnit=roleContext?.unit||String(currentUser.unit||'').trim().toUpperCase();
+  const isPutri=activeUnit==='PUTRI';
+  $('disciplineRoleChip').textContent=activeRole==='NAQIBAH'?'Naqibah':'Naqib';
+  $('disciplineUnitChip').textContent=isPutri?'Putri':'Putra';
   let usrahData={},attendance=[],period={key:'',start:'',end:'',label:''},results=[];
 
   function todayJakarta(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
@@ -91,7 +108,7 @@
   window.choosePeriod=choosePeriod;
   window.showScene=function(id){document.querySelectorAll('.scene').forEach(x=>x.classList.toggle('active',x.id===id))};
   function usrahNo(k){const m=String(k).match(/\d+/);return m?Number(m[0]):999}
-  function allowedUsrah(k){const n=usrahNo(k);return isPutri?(n>=7&&n<=8):(n>=1&&n<=6)}
+  function allowedUsrah(k){if(roleContext)return roleContext.allowsUsrah(k);const n=usrahNo(k);return activeUnit==='PUTRI'?(n>=7&&n<=8):activeUnit==='PUTRA'?(n>=1&&n<=6):false}
   function labelUsrah(k){return /^usrah\s/i.test(String(k))?String(k).replace(/^usrah\s*/i,'Usrah '):`Usrah ${String(k).match(/\d+/)?.[0]||k}`}
   function names(v){const arr=Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);return arr.map(x=>typeof x==='string'?x:String(x?.nama||x?.namaSantri||x?.label||'')).map(x=>x.trim()).filter(Boolean)}
   function statusScore(v){const s=String(v||'').trim().toUpperCase();if(['H','HADIR'].includes(s))return 100;if(['T','TERLAMBAT','TELAT'].includes(s))return 70;if(['A','ALFA','ALPHA'].includes(s))return 0;if(['I','IZIN','S','SAKIT'].includes(s))return null;return null}
@@ -106,8 +123,10 @@
     results=Object.values(buckets).map(b=>{const sm=new Map(b.members.map(n=>[norm(n),{name:n,scores:[],h:0,t:0,a:0,x:0}]));b.events.forEach(e=>{const k=norm(e.name);if(!sm.has(k))sm.set(k,{name:e.name,scores:[],h:0,t:0,a:0,x:0});const s=sm.get(k),score=statusScore(e.status);if(score===100)s.h++;else if(score===70)s.t++;else if(score===0)s.a++;else s.x++;if(score!==null)s.scores.push(score)});const students=[...sm.values()].map(s=>({...s,count:s.scores.length,score:s.scores.length?Math.round(s.scores.reduce((a,b)=>a+b,0)/s.scores.length):null})).sort((a,b)=>(b.score??-1)-(a.score??-1)||a.name.localeCompare(b.name,'id'));const scores=b.events.map(e=>statusScore(e.status)).filter(v=>v!==null);return{...b,students,count:scores.length,score:scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):null}}).sort((a,b)=>(b.score??-1)-(a.score??-1)||usrahNo(a.key)-usrahNo(b.key));renderDashboard()}
   function renderDashboard(){const scored=results.filter(r=>r.score!=null),avg=scored.length?Math.round(scored.reduce((a,b)=>a+b.score,0)/scored.length):null;const best=scored[0],low=scored[scored.length-1];$('overallScore').textContent=avg==null?'—':avg+'%';$('overallDonut').style.setProperty('--p',avg||0);$('overallDonut').style.setProperty('--accent',accent(avg));$('periodLabel').textContent=period.label;$('bestUsrah').textContent=best?.label||'—';$('lowUsrah').textContent=low?.label||'—';$('recordCount').textContent=scored.reduce((s,r)=>s+r.count,0);$('usrahGrid').innerHTML=results.length?results.map((r,i)=>`<button class="usrah-card" type="button" onclick="openUsrah('${esc(r.key)}')"><span class="usrah-copy"><b>${esc(r.label)}</b><span>${r.members.length} santri</span></span><span class="mini-donut" style="--p:${r.score||0};--accent:${accent(r.score,i)}"><b>${r.score==null?'—':r.score+'%'}</b></span></button>`).join(''):'<div class="empty">Belum ada master usrah untuk unit ini.</div>';showScene('sceneDashboard')}
   window.openUsrah=function(key){const r=results.find(x=>x.key===key);if(!r)return;$('studentGrid').innerHTML=r.students.length?r.students.map(s=>`<article class="student-card"><div><strong>${esc(s.name)}</strong><small>${s.count?`${s.h} hadir • ${s.t} terlambat • ${s.a} alfa`:'Belum ada data pada periode ini'}</small></div><div class="score-pill ${s.score==null?'':s.score>=85?'good':s.score>=70?'mid':'low'}">${s.score==null?'—':s.score+'%'}</div></article>`).join(''):'<div class="empty">Belum ada anggota usrah.</div>';showScene('sceneStudents')};
-  async function read(path){if(window.CahayaBandwidth)return window.CahayaBandwidth.readCompat(db,path,{ttl:180000,limit:1800});return db.ref(path).limitToLast(1800).once('value')}
-  async function loadData(){$('loading').classList.add('show');try{const [u,a]=await Promise.all([read(PATH_USRAH),read(PATH_ATT)]);usrahData=u.val()||window.CAHAYA_MASTER_DATA?.usrah||{};attendance=normalizeAttendance(a.val());compute()}catch(e){console.error(e);usrahData=window.CAHAYA_MASTER_DATA?.usrah||{};attendance=[];compute()}finally{$('loading').classList.remove('show')}}
+  async function read(path){if(window.CahayaBandwidth)return window.CahayaBandwidth.readCompat(db,path,{ttl:180000,limit:600});return db.ref(path).limitToLast(600).once('value')}
+  async function readScopedUsrah(){const keys=roleContext?roleContext.usrahKeys():Object.keys(window.CAHAYA_MASTER_DATA?.usrah||{}).filter(allowedUsrah);const pairs=await Promise.all(keys.map(async key=>[key,(await read(`${PATH_USRAH}/${key}`)).val()]));return Object.fromEntries(pairs.filter(([,value])=>value!=null))}
+  async function readAttendanceRange(){return db.ref(PATH_ATT).orderByChild('tanggal').startAt(period.start).endAt(period.end).once('value')}
+  async function loadData(){$('loading').classList.add('show');try{if(roleContext)roleContext.assertCurrent();const [u,a]=await Promise.all([readScopedUsrah(),readAttendanceRange()]);if(roleContext)roleContext.assertCurrent();usrahData=Object.keys(u).length?u:Object.fromEntries(Object.entries(window.CAHAYA_MASTER_DATA?.usrah||{}).filter(([key])=>allowedUsrah(key)));attendance=normalizeAttendance(a.val());compute()}catch(e){console.error(e);usrahData=Object.fromEntries(Object.entries(window.CAHAYA_MASTER_DATA?.usrah||{}).filter(([key])=>allowedUsrah(key)));attendance=[];compute()}finally{$('loading').classList.remove('show')}}
 })();
 </script>
 <script src="../js/cahaya-responsive-v24.js?v=37" defer></script>

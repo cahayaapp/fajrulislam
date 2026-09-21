@@ -1,0 +1,17 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),R=require('../js/role-system-v2.js'),N=require('../js/role-navigation-v2.js');
+const read=p=>fs.readFileSync(p,'utf8'),home=read('home-media.html'),page=read('media/target-capaian.html'),logic=read('js/media-target-v2.js'),legacy=read('admin/admin_media.html');
+const session=R.resolveSession({username:'media',roleSystemVersion:2,roles:['MEDIA'],defaultRole:'MEDIA',assignments:{MEDIA:{}}},{getItem:()=>null,setItem(){}});
+assert.equal(R.homeFor('MEDIA'),'home-media.html?v=226');
+assert.equal(N.canAccessRoute(session,'home-media.html','menu-home').ok,true);
+assert.equal(N.canAccessRoute(session,'media/target-capaian.html','menu-dashboard-operasional').ok,true);
+assert.equal(N.canAccessRoute(session,'admin/admin_media.html','menu-media').ok,true);
+const dapur=R.resolveSession({roleSystemVersion:2,roles:['DAPUR'],defaultRole:'DAPUR',assignments:{DAPUR:{}}},{getItem:()=>null,setItem(){}});
+assert.equal(N.canAccessRoute(dapur,'media/target-capaian.html','menu-dashboard-operasional').ok,false);
+assert.equal(N.canAccessRoute(dapur,'admin/admin_media.html','menu-media').ok,false);
+assert.equal((home.match(/class="dv-feature"/g)||[]).length,2);assert(home.includes('Update URL Wali'));assert(home.includes('Laporan & Capaian Media'));assert(!home.includes('>Target & Capaian<'));
+assert(legacy.includes('cahaya_app/pengaturan_media/${parsed.platform}'));assert(legacy.includes("dbRT.ref('cahaya_app/pengaturan_media').on"));
+for(const type of['PHOTO','VIDEO_KEGIATAN','KLIPPER_KAJIAN','LIVE_KAJIAN'])assert(logic.includes(type));
+assert(logic.includes("DAILY_PATH='cahaya_app/capaian_media_harian'"));assert(logic.includes("WEEKLY_PATH='cahaya_app/capaian_media_pekanan'"));
+assert(logic.includes("['BELUM','PROSES','TERCAPAI']"));assert(logic.includes("return`${date}_photo`"));assert(logic.includes("return`${start}_${type.toLowerCase()}`"));
+assert(page.includes('Hari Ini'));assert(page.includes('Pekan Ini'));assert(page.includes('Bulan Ini'));assert(!page.includes('7 hari terakhir'));assert(!page.includes('30 hari terakhir'));
+console.log('media-v2: ok');

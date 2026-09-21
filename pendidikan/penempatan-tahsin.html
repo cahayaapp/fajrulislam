@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id"><head>
+<!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=267"></script>
+<script src="../js/role-route-registry-v2.js?v=267"></script>
+<script src="../js/role-navigation-v2.js?v=267"></script>
+<script src="../js/role-scope-v2.js?v=206"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Penempatan Level Tahsin • CAHAYA</title>
+<script src="../config/tenant-config.js"></script>
+<script src="../config/master-data.js"></script>
+<script src="../js/student-program-applicability.js?v=3"></script>
+<script src="../js/quran-menu-roster.js?v=2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(#f7fbff,#eaf5ff);font:15px Inter,system-ui,sans-serif;color:#15345e}
+main{max-width:760px;margin:auto;padding:18px 16px 100px}header,.card{background:#fff;border:1px solid #d8e8fa;border-radius:23px;box-shadow:0 12px 32px #265b9612}
+header{padding:22px;margin-bottom:15px}header a{text-decoration:none;color:#1769d6;font-weight:800}h1{margin:10px 0 5px;font-size:25px}h2{font-size:18px;margin:0}
+p{color:#5d7595;line-height:1.5;margin:0}.card{padding:18px;margin-top:14px}label{display:block;font-weight:750;margin:12px 0 7px}
+select,input{width:100%;min-width:0;min-height:48px;border-radius:14px;border:1px solid #cfe0f6;background:#fbfdff;padding:10px 12px;color:#15345e;font:inherit}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.search{grid-column:1/-1}.filters>div{min-width:0}
+.summary{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}.summary span{background:#edf5ff;border:1px solid #d8e8fa;border-radius:12px;padding:9px 11px;font-size:13px}
+.student{display:flex;align-items:center;gap:12px;margin:8px 0;padding:11px;border:1px solid #e2edfa;border-radius:14px;background:#fafdff;cursor:pointer}
+.student input{width:22px;height:22px;min-height:22px;flex:none}.student span{min-width:0;overflow-wrap:anywhere}.student small{display:block;color:#6782a2;margin-top:3px;line-height:1.4}
+[hidden]{display:none!important}.list{max-height:52vh;overflow:auto}.student:has(input:checked){background:#edf5ff;border-color:#2180ee}
+button{min-height:48px;border:0;border-radius:14px;background:#1d75e7;color:#fff;font:inherit;font-weight:800;padding:10px 14px;cursor:pointer}
+button:disabled{opacity:.6;cursor:default}.hint{font-size:13px;color:#6782a2;margin-top:10px}.status{margin-top:12px;font-weight:750;min-height:20px;line-height:1.5}.status.error{color:#ba314c}.status.success{color:#087d65}
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.soft{background:#e8f2ff;color:#1769d6}.toolbar button{font-size:13px}
+#save{width:100%;margin-top:14px}#placementAction{scroll-margin:16px}dialog{width:min(430px,calc(100% - 28px));max-height:85dvh;overflow:auto;border:1px solid #d8e8fa;border-radius:22px;padding:22px;color:#15345e;box-shadow:0 20px 65px #14345b40}
+dialog::backdrop{background:#102e5d80}dialog p{margin:16px 0}.dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:420px){main{padding:12px 11px 90px}header,.card{border-radius:19px;padding:16px}h1{font-size:23px}}
+</style></head><body><main>
+<header><a href="../main-dashboard.html">← Beranda</a><h1>Penempatan Level Tahsin</h1><p>Centang santri Tahsin yang akan ditempatkan, pilih level dan tanggal berlakunya.</p><p id="scopeLabel" class="hint"></p></header>
+<section class="card">
+<h2>Santri Tahsin Saat Ini</h2>
+<div id="summary" class="summary" aria-live="polite"></div>
+<div class="filters">
+<div class="search"><label for="search">Cari Santri</label><input id="search" type="search" placeholder="Cari nama santri..." disabled></div>
+<div><label for="classSelect">Filter Kelas</label><select id="classSelect" disabled><option value="">Semua Kelas</option></select></div>
+<div><label for="levelFilter">Filter Level</label><select id="levelFilter" disabled><option value="">Semua Level</option><option value="UNSET">Belum Ditentukan</option><option value="LEVEL_1">Level 1</option><option value="LEVEL_2">Level 2</option><option value="LEVEL_3">Level 3</option></select></div>
+</div>
+<div class="toolbar"><p id="loading" class="hint" role="status">Memuat santri Tahsin...</p><button id="selectAll" type="button" class="soft" disabled>Centang Semua yang Terlihat</button></div>
+<div id="studentList" class="list"></div>
+<p id="selectionSummary" class="hint" aria-live="polite"></p>
+</section>
+<section class="card" id="placementAction" hidden>
+<h2>Aksi Penempatan Level</h2>
+<label for="placementSelect">Tempatkan santri terpilih ke:</label>
+<select id="placementSelect"><option value="">Pilih level</option><option value="LEVEL_1">Level 1 • Tahsin Praktek</option><option value="LEVEL_2">Level 2 • Tahsin Teori</option><option value="LEVEL_3">Level 3 • Tahsin Praktek</option></select>
+<label for="effectiveDate">Berlaku mulai</label><input id="effectiveDate" type="date">
+<button id="save" type="button" disabled>Simpan Penempatan Level</button>
+</section>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+<h2 id="confirmTitle">Konfirmasi Penempatan Level</h2><p id="confirmText"></p>
+<div class="dialog-actions"><button id="cancelSave" type="button" class="soft">Batal</button><button id="confirmSave" type="button">Konfirmasi</button></div>
+</dialog>
+</main><script type="module" src="../js/tahsin-placement-v2.js?v=7"></script></body></html>

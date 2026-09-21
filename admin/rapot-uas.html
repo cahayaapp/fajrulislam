@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=206"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
+  <script src="../js/student-program-applicability.js?v=3"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -913,7 +920,7 @@
       <button class="btn btn-print" id="btnCetak" disabled>CETAK RAPORT TAMPIL</button>
       <button class="btn btn-outline" id="btnMuatUlang">MUAT ULANG DATA</button>
     </div>
-    <p class="helper">Pilih <strong>Semua Santri (Kelas / Filter Terpilih)</strong> untuk menampilkan serta mencetak raport seluruh santri berdasarkan kategori, kelas, tahun akademik, dan semester yang dipilih. Nilai akademik diambil dari data UAS dengan <strong>Tanggal Ujian/Input 26 Juni–02 Juli</strong> sesuai tahun akademik yang dipilih. Tahfiz dihitung dari seluruh setoran sejak awal hingga 02 Juli. Asesmen dibaca dari asesmen akhir semester yang tersimpan. Perubahan nilai di Firebase akan memperbarui e-Raport secara otomatis. Bila terdapat riwayat nilai lama atau nilai 0 otomatis pada mapel yang sama, raport memakai nilai manual terbaru.</p>
+    <p class="helper">Pilih <strong>Semua Santri (Kelas / Filter Terpilih)</strong> untuk menampilkan serta mencetak raport seluruh santri berdasarkan kategori, kelas, tahun akademik, dan semester yang dipilih. Nilai akademik diambil dari data UAS dengan <strong>Tanggal Ujian/Input 26 Juni–02 Juli</strong> sesuai tahun akademik yang dipilih. Tahfiz dihitung dari seluruh setoran sejak awal hingga 02 Juli. Asesmen dibaca dari asesmen akhir semester yang tersimpan. Perubahan nilai di Firebase akan memperbarui e-Raport secara otomatis. Nilai Tahsin/Tahfiz hanya tampil jika penempatan program santri pada periode tersebut terverifikasi.</p>
     <div class="sync-status is-syncing" id="syncStatus">Menghubungkan sinkronisasi nilai dengan Firebase...</div>
   </section>
 
@@ -1059,12 +1066,11 @@
   const NILAI_PATH = "cahaya_app/nilai_ujian_bulanan";
 
   let masterAkademik = {};
+  let quranAssignments = {};
   let semuaNilai = [];
   let semuaAsesmen = [];
   let semuaTahfiz = [];
   let stopPantauNilai = null;
-  let sedangSinkronNilaiNol = false;
-  let sedangBersihkanNilaiOtomatis = false;
   let antreanSinkronNilai = Promise.resolve();
   let timerRenderNilai = null;
   let intervalCadanganNilai = null;
@@ -1307,7 +1313,23 @@
     // Tidak memakai tahun_akademik/semester sebagai filter data. Keduanya sering
     // otomatis berubah ketika input dilakukan di masa transisi tahun ajaran.
     // Patokan tunggal adalah tanggal entri UAS yang telah ditetapkan.
-    return semuaNilai.filter(nilaiMasukRentangUas);
+    return semuaNilai.filter(nilaiMasukRentangUas)
+      .filter(item => !isNilaiOtomatis(item))
+      .filter(item => Number.isFinite(bacaNilaiAkhir(item)))
+      .filter(item => CahayaStudentProgramApplicability.applicable(
+        item.nama_santri || item.namaSantri || '', item,
+        CahayaStudentProgramApplicability.date(item.programPeriodDate || item.tanggal_ujian || item.tanggal || item.timestamp),
+        quranAssignments,item,quranReportContext(item)
+      ).applicable);
+  }
+
+  function quranReportContext(item) {
+    return {classes:masterAkademik.kelas || window.CAHAYA_MASTER_DATA?.santriByClass || {},className:item.kelas_kelompok || item.kelas || ''};
+  }
+  function reportSubject(item) {
+    const A=CahayaStudentProgramApplicability;
+    return A.reportLabel(item.nama_santri || item.namaSantri || '',item,
+      A.date(item.programPeriodDate || item.tanggal_ujian || item.tanggal || item.timestamp),quranAssignments,quranReportContext(item));
   }
 
   /*
@@ -1340,7 +1362,7 @@
       normalNama(item?.nama_santri),
       normal(item?.kategori_halqah),
       normal(item?.kelas_kelompok),
-      normal(item?.mata_pelajaran)
+      normal(reportSubject(item))
     ].join("¦");
   }
 
@@ -1359,7 +1381,7 @@
       if (Number.isFinite(angka)) return angka;
     }
 
-    return 0;
+    return NaN;
   }
 
   function bandingkanRekamanNilai(a, b) {
@@ -1381,9 +1403,11 @@
     const kelompokMapel = new Map();
 
     getNilaiRaport()
-      .filter(item => namaSama(item?.nama_santri, namaSantri))
+      .filter(item => namaSama(CahayaStudentProgramApplicability.subject(item)
+        ? CahayaStudentProgramApplicability.resolveStudent(item.nama_santri || item.namaSantri,quranReportContext(item)).name
+        : item?.nama_santri, namaSantri))
       .forEach(item => {
-        const mapelKey = normal(item?.mata_pelajaran) || "tanpa-mapel";
+        const mapelKey = normal(reportSubject(item)) || "tanpa-mapel";
         if (!kelompokMapel.has(mapelKey)) kelompokMapel.set(mapelKey, []);
         kelompokMapel.get(mapelKey).push(item);
       });
@@ -1391,114 +1415,6 @@
     return [...kelompokMapel.values()]
       .map(daftar => daftar.sort(bandingkanRekamanNilai)[0])
       .filter(Boolean);
-  }
-
-  /*
-    KELENGKAPAN NILAI 0
-    Bila pada satu kelas/kelompok sudah ada nilai suatu mata pelajaran, tetapi
-    ada anggota kelas yang belum memiliki entri sama sekali untuk mata pelajaran
-    tersebut, e-Raport mengisi nilai 0 di Firebase. Data 0 diberi penanda sistem
-    agar asal-usulnya tetap dapat diaudit.
-  */
-  function ambilAnggotaKelompokNilai(kategoriNama, kelasNama) {
-    const daftarHalqah = masterAkademik?.halqah || {};
-    const kategoriEntry = Object.entries(daftarHalqah)
-      .find(([namaKategori]) => normal(namaKategori) === normal(kategoriNama));
-    if (!kategoriEntry) return [];
-
-    const kelasEntry = Object.entries(kategoriEntry[1] || {})
-      .find(([namaKelas]) => normal(namaKelas) === normal(kelasNama));
-    return Array.isArray(kelasEntry?.[1]) ? kelasEntry[1].filter(Boolean) : [];
-  }
-
-  function kunciKelompokMapel(item) {
-    return [
-      normal(item?.kategori_halqah),
-      normal(item?.kelas_kelompok),
-      normal(item?.mata_pelajaran)
-    ].join("¦");
-  }
-
-  function buatPayloadNilaiNol(template, namaSantri) {
-    const payload = {
-      tahun_akademik: template?.tahun_akademik || el("tahunAkademik")?.value || "",
-      semester: template?.semester || "Genap",
-      bulan: template?.bulan || "",
-      nama_santri: namaSantri,
-      kategori_halqah: template?.kategori_halqah || "",
-      kelas_kelompok: template?.kelas_kelompok || "",
-      mata_pelajaran: template?.mata_pelajaran || "",
-      materi_ujian: template?.materi_ujian || "",
-      guru_penguji: template?.guru_penguji || "",
-      tanggal_ujian: template?.tanggal_ujian || "2026-07-02",
-      nilai_total: 0,
-      nilai_diisi_otomatis: true,
-      keterangan_sistem: "Nilai 0 dibuat otomatis oleh e-Raport karena nilai UAS mata pelajaran ini belum diinput, sementara teman sekelas sudah memiliki nilai.",
-      timestamp: new Date().toISOString()
-    };
-
-    Object.entries(template || {}).forEach(([key, value]) => {
-      if (key.startsWith("nilai_") && !["nilai_total", "nilai_diisi_otomatis"].includes(key)) {
-        payload[key] = 0;
-      }
-      if (key.startsWith("bobot_") && key.endsWith("_persen")) {
-        payload[key] = value;
-      }
-    });
-
-    return payload;
-  }
-
-  function cariNilaiKosongUntukDiisiNol() {
-    const grupMapel = new Map();
-
-    getNilaiRaport().forEach(item => {
-      if (!item?.nama_santri || !item?.kategori_halqah || !item?.kelas_kelompok || !item?.mata_pelajaran) return;
-
-      const key = kunciKelompokMapel(item);
-      if (!grupMapel.has(key)) {
-        grupMapel.set(key, {
-          template: item,
-          namaTerinput: new Set()
-        });
-      }
-      grupMapel.get(key).namaTerinput.add(normalNama(item.nama_santri));
-    });
-
-    const kandidat = [];
-    grupMapel.forEach(({ template, namaTerinput }) => {
-      const anggotaKelas = ambilAnggotaKelompokNilai(template.kategori_halqah, template.kelas_kelompok);
-      anggotaKelas.forEach(namaSantri => {
-        if (namaSantri && !namaTerinput.has(normalNama(namaSantri))) {
-          kandidat.push(buatPayloadNilaiNol(template, namaSantri));
-        }
-      });
-    });
-
-    return kandidat;
-  }
-
-  async function sinkronkanNilaiNolKePusat() {
-    if (sedangSinkronNilaiNol) return 0;
-
-    const kandidat = cariNilaiKosongUntukDiisiNol();
-    if (!kandidat.length) return 0;
-
-    sedangSinkronNilaiNol = true;
-    try {
-      const pembaruan = {};
-      kandidat.forEach(payload => {
-        const idBaru = push(ref(db, NILAI_PATH)).key;
-        pembaruan[`${NILAI_PATH}/${idBaru}`] = payload;
-      });
-      await update(ref(db), pembaruan);
-      return kandidat.length;
-    } catch (error) {
-      console.warn("Sinkronisasi nilai 0 tidak dapat dilakukan:", error);
-      return 0;
-    } finally {
-      sedangSinkronNilaiNol = false;
-    }
   }
 
   function perbaruiStatusSinkron(teks, status = "ok") {
@@ -1534,54 +1450,8 @@
     perbaruiStatusSinkron(`Sinkronisasi realtime aktif • Nilai terakhir diperbarui ${waktuSinkronSekarang()}`);
   }
 
-  function cariNilaiOtomatisTergantikan() {
-    const manual = new Set(
-      getNilaiRaport()
-        .filter(item => !isNilaiOtomatis(item))
-        .map(kunciNilaiSantriMapel)
-    );
-
-    return getNilaiRaport()
-      .filter(item => isNilaiOtomatis(item))
-      .filter(item => manual.has(kunciNilaiSantriMapel(item)))
-      .map(item => item?.id)
-      .filter(Boolean);
-  }
-
-  async function bersihkanNilaiOtomatisTergantikan() {
-    if (sedangBersihkanNilaiOtomatis) return 0;
-
-    const ids = cariNilaiOtomatisTergantikan();
-    if (!ids.length) return 0;
-
-    sedangBersihkanNilaiOtomatis = true;
-    try {
-      const pembaruan = {};
-      ids.forEach(id => {
-        pembaruan[`${NILAI_PATH}/${id}`] = null;
-      });
-      await update(ref(db), pembaruan);
-      return ids.length;
-    } catch (error) {
-      console.warn("Nilai 0 otomatis belum dapat dibersihkan:", error);
-      return 0;
-    } finally {
-      sedangBersihkanNilaiOtomatis = false;
-    }
-  }
-
   async function prosesPembaruanNilai() {
-    perbaruiStatusSinkron("Menyinkronkan perubahan nilai dari Firebase...", "syncing");
-
-    // Jika nilai manual sudah diisi, hapus sisa nilai 0 otomatis agar tidak lagi
-    // bercampur atau menurunkan nilai di raport.
-    const jumlahDibersihkan = await bersihkanNilaiOtomatisTergantikan();
-    if (jumlahDibersihkan > 0) return;
-
-    // Pastikan anggota kelas yang benar-benar belum memiliki nilai tetap diberi 0.
-    const jumlahBaru = await sinkronkanNilaiNolKePusat();
-    if (jumlahBaru > 0) return;
-
+    // Laporan bersifat baca saja: ketidakhadiran nilai bukan angka 0.
     jadwalkanPerbaruiRaportNilai();
   }
 
@@ -1846,7 +1716,7 @@
         const nilaiAsli = bacaNilaiAkhir(item);
         const nilai = nilaiTampilKeputusanRapat(namaSantri, nilaiAsli);
         return {
-          mapel: kosong(item?.mata_pelajaran, "Mata Pelajaran"),
+          mapel: kosong(reportSubject(item), "Mata Pelajaran"),
           nilai,
           nilaiAsli,
           nilaiDisesuaikan: nilai !== nilaiAsli,
@@ -1954,6 +1824,10 @@
   }
 
   function ambilDataTahfizSantri(namaSantri) {
+    const cutoff=batasTahfizRaport();
+    const at=cutoff.getFullYear()+'-'+String(cutoff.getMonth()+1).padStart(2,'0')+'-'+String(cutoff.getDate()).padStart(2,'0');
+    const placement=CahayaStudentProgramApplicability.getQuranProgramPlacement(namaSantri,at,quranAssignments,null,quranReportContext({}));
+    if(placement.programQuran==='TAHSIN')return {hasData:false};
     const pencapaian = new Array(quranDb.length).fill(0);
     let jumlahSetoran = 0;
     const setoranCahaya = [];
@@ -2352,14 +2226,16 @@
     el("loadingOverlay").style.display = "flex";
     try {
       // Hanya data inti yang memengaruhi pembukaan halaman dimuat di tahap awal.
-      const [masterSnap, nilaiSnap, asesmenSnap] = await Promise.all([
+      const [masterSnap, nilaiSnap, asesmenSnap, programSnap] = await Promise.all([
         get(ref(db, "cahaya_app/master_akademik")),
         get(query(ref(db, NILAI_PATH), orderByChild("tanggal_ujian"), limitToLast(2500))),
-        get(ref(db, "cahaya_app/asesmen_akhir_semester"))
+        get(ref(db, "cahaya_app/asesmen_akhir_semester")),
+        get(ref(db, "cahaya_app/program_quran_santri"))
       ]);
 
       masterAkademik = masterSnap.val() || {};
       semuaNilai = Object.entries(nilaiSnap.val() || {}).map(([id, value]) => ({ id, ...value }));
+      quranAssignments = programSnap.val() || {};
       semuaAsesmen = Object.entries(asesmenSnap.val() || {}).map(([id, value]) => ({ id, ...value }));
 
       isiPilihanTahun();

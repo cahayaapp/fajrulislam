@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../../js/role-system-v2.js?v=206"></script>
+<script src="../../js/role-route-registry-v2.js?v=206"></script>
+<script src="../../js/role-navigation-v2.js?v=206"></script>
+<script src="../../js/role-scope-v2.js?v=206"></script>
+<script src="../../js/role-entry-v2.js?v=265"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../../config/tenant-config.js"></script>
   <script src="../../config/master-data.js"></script>
@@ -135,6 +141,7 @@
       scrollbar-width:none;
     }
     .nav-tabs::-webkit-scrollbar{display:none}
+    #waliInformationTabs[hidden]{display:none!important}
     .tab-btn{
       min-height:48px;
       padding:9px 12px;
@@ -781,7 +788,7 @@
       </div>
 </header>
 
-    <nav class="nav-tabs" aria-label="Menu Informasi Penting">
+    <nav id="waliInformationTabs" class="nav-tabs" aria-label="Menu Informasi Penting">
       <button class="tab-btn active" data-tab="kalender">📅 Kalender Wali</button>
       <button class="tab-btn" data-tab="pembelajaran">📚 Jadwal Pembelajaran</button>
       <button class="tab-btn" data-tab="program">🕌 Program Harian</button>
@@ -1718,6 +1725,7 @@ const ACADEMIC_MONTHS = [
           });
           panels.forEach(panel=>panel.classList.toggle("active",panel.id===`tab-${target}`));
           button.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+          if(target==="kalender")loadCalendar();
           if(target==="pembelajaran")loadLearningSchedule();
           if(target==="program")loadProgramSchedule();
         });
@@ -1984,7 +1992,15 @@ const ACADEMIC_MONTHS = [
     bindTabs();
     populateMonths();
     renderMonth();
-    loadCalendar();
+    const selectedSection = new URLSearchParams(location.search).get('section');
+    const sectionButton = [...document.querySelectorAll('.tab-btn')].find(button=>button.dataset.tab===selectedSection);
+    if(sectionButton){
+      document.querySelector('.nav-tabs').hidden=true;
+      document.querySelector('.hero h1').textContent=sectionButton.textContent.replace(/^[^A-Za-z]+/,'');
+      document.querySelector('.hero p').textContent='Informasi pesantren untuk mendampingi ananda dan keluarga.';
+      document.title=document.querySelector('.hero h1').textContent+' • CAHAYA APP';
+      sectionButton.click();
+    }else loadCalendar();
   </script>
 
   <script src="../../js/cahaya-responsive-v24.js?v=37" defer></script>

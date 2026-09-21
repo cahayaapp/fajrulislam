@@ -9,6 +9,13 @@
   const PATH = 'cahaya_app/keuangan/pengaturan_modul';
   const CACHE_KEY = 'cahayaFinanceModuleSettings';
   const CACHE_TTL = 15 * 60 * 1000;
+  // Canonical navigation shell uses local config; the opened finance feature
+  // still owns load()/save() and the original authoritative path.
+  let deferShellBootstrap = false;
+  try {
+    deferShellBootstrap = document.currentScript?.dataset.roleV2Lazy === 'true'
+      && Number(JSON.parse(localStorage.getItem('cahayaCurrentUser') || '{}').roleSystemVersion) === 2;
+  } catch (_) {}
   const DEFAULTS = {
     version: '2026.08-finance-module-v1',
     spp: { enabled: true, scope: 'all' },
@@ -196,6 +203,7 @@
   }
 
   function bootstrap(attempt = 0) {
+    if (deferShellBootstrap) return;
     if (ensureFirebase()) {
       load().catch(() => {});
       return;

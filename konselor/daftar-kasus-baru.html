@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=206"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
@@ -2313,6 +2319,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    const caseScope=window.cahayaRoleContext;
+    const scopedCounselor=caseScope?.activeRole==='KONSELOR';
+    function assertCaseScope(){if(scopedCounselor)caseScope.assertCurrent();}
+    function requireCaseAction(items){
+      assertCaseScope();
+      if(scopedCounselor&&(!items.length||items.some(item=>!isValidStudent(item.student)||item.gender!==caseScope.unit||!window.CahayaRoleScopeV2.counselorCaseAllowed(caseScope.assignment.level,item))))
+        throw new Error('Kasus di luar kewenangan assignment Konselor.');
+    }
     const DB = {
       reports: "cahaya_app/log_lapor_inisiatif",
       programAttendance: "cahaya_app/absensi_program_harian",
@@ -2328,7 +2342,11 @@
       const target = window.open("about:blank", "_blank");
       try {
         const path = decodeURIComponent(encodedPath || "");
+        assertCaseScope();
+        if(scopedCounselor&&(!/^cahaya_app\/bukti_pelanggaran\/[^/]+$/.test(path)||!allCases.some(item=>isValidStudent(item.student)&&item.raw?.buktiFoto?.path===path)))
+          throw new Error('Bukti di luar antrean aktif.');
         const snapshot = await get(ref(db, path));
+        assertCaseScope();
         const value = snapshot.val();
         const url = typeof value === "string"
           ? value
@@ -2391,10 +2409,10 @@
       console.warn("Data pengguna tidak terbaca:", error);
     }
 
-    const NAQIB_MODE =
+    const NAQIB_MODE = !caseScope && (
       new URLSearchParams(window.location.search).get("mode") === "naqib" ||
-      localStorage.getItem("cahayaDirectorViewRole") === "naqib";
-    const COUNSELOR_LEVEL = (() => { const q=new URLSearchParams(window.location.search).get("level"); if(q) return q; const r=String(localStorage.getItem("cahayaActiveRole")||localStorage.getItem("cahayaCurrentRole")||"").toLowerCase(); return r.includes("pemula")?"pemula":r.includes("muda")?"muda":""; })();
+      localStorage.getItem("cahayaDirectorViewRole") === "naqib");
+    const COUNSELOR_LEVEL = scopedCounselor ? caseScope.assignment.level.toLowerCase() : (() => { const q=new URLSearchParams(window.location.search).get("level"); if(q) return q; const r=String(localStorage.getItem("cahayaActiveRole")||localStorage.getItem("cahayaCurrentRole")||"").toLowerCase(); return r.includes("pemula")?"pemula":r.includes("muda")?"muda":""; })();
     let naqibActionMode = "single";
 
     function naqibUnitGender() {
@@ -2649,7 +2667,7 @@
 
     function isValidStudent(name) {
       if (!name) return false;
-      if (!validStudents) return true;
+      if (!validStudents) return !scopedCounselor;
 
       return validStudents.has(normalizeText(name));
     }
@@ -2832,15 +2850,18 @@
         const startDate = new Date(`${endKey}T12:00:00`); startDate.setDate(startDate.getDate()-119);
         const startKey = new Date(startDate.getTime()-startDate.getTimezoneOffset()*60000).toISOString().slice(0,10);
         const ranged = (path, field, limit=900) => get(query(ref(db,path),orderByChild(field),startAt(startKey),endAt(endKey),limitToLast(limit)));
+        assertCaseScope();
+        const snapshotOf=value=>({exists:()=>value!=null,val:()=>value});
         const snapshots = await Promise.all([
-          get(ref(db, "cahaya_app/data_santri")),
-          get(ref(db, "cahaya_app/master_usrah")),
+          scopedCounselor ? Promise.resolve(snapshotOf({})) : get(ref(db, "cahaya_app/data_santri")),
+          scopedCounselor ? caseScope.loadUsrah(async path=>(await get(ref(db,path))).val()).then(snapshotOf) : get(ref(db, "cahaya_app/master_usrah")),
           ranged(DB.reports,"tanggal",700),
           ranged(DB.programAttendance,"tanggal",1200),
           ranged(DB.learningAttendance,"tanggal",900),
           ranged(DB.actionReports,"tanggalPenindakan",700)
         ]);
 
+        assertCaseScope();
         const masterStudentData = snapshots[0].exists()
           ? snapshots[0].val()
           : {};
@@ -3019,7 +3040,7 @@
               ""
             ).trim();
 
-            if (!student) return null;
+            if (!student || (scopedCounselor&&!isValidStudent(student))) return null;
 
             const usrah = getStudentUsrah(
               student,
@@ -3096,7 +3117,7 @@
             return a.student.localeCompare(b.student, "id");
           });
 
-        allCases = result.sort((a, b) => {
+        allCases = result.filter(item=>!scopedCounselor||item.gender===caseScope.unit).sort((a, b) => {
           const dateCompare = b.date.localeCompare(a.date);
 
           if (dateCompare !== 0) return dateCompare;
@@ -3129,6 +3150,7 @@
           }
         });
 
+        if(scopedCounselor)allActions=allActions.filter(item=>item.gender===caseScope.unit&&isValidStudent(item.student));
         selectedQueueIds = new Set(
           [...selectedQueueIds].filter(id =>
             allCases.some(item => item.id === id)
@@ -3193,12 +3215,13 @@
         );
 
       return allCases.filter(item => {
-        if (COUNSELOR_LEVEL === "pemula") {
+        if(scopedCounselor&&!window.CahayaRoleScopeV2.counselorCaseAllowed(caseScope.assignment.level,item))return false;
+        if (!scopedCounselor && COUNSELOR_LEVEL === "pemula") {
           const c=normalizeText(item.category||item.description||"");
           const basic=c.includes("kedisiplin")||c.includes("kebersihan")||c.includes("kerapian");
           if (!basic || item.repeated || item.route === "KONSELOR") return false;
         }
-        if (COUNSELOR_LEVEL === "muda") {
+        if (!scopedCounselor && COUNSELOR_LEVEL === "muda") {
           const c=normalizeText(item.category||item.description||"");
           const advanced=item.repeated||item.route === "KONSELOR"||c.includes("etika")||c.includes("moral")||c.includes("kritis")||c.includes("berat")||c.includes("sedang");
           if (!advanced) return false;
@@ -3550,6 +3573,7 @@
     }
 
     function startSingleAction(id) {
+      try{requireCaseAction(allCases.filter(item=>item.id===id))}catch(e){showToast('error','Akses ditolak',e.message);return;}
       selectedActionIds = [id];
       selectedQueueIds = new Set([id]);
       resetActionForm();
@@ -3557,6 +3581,7 @@
     }
 
     function startSelectedAction() {
+      try{requireCaseAction(allCases.filter(item=>selectedQueueIds.has(item.id)))}catch(e){showToast('error','Akses ditolak',e.message);return;}
       if (!selectedQueueIds.size) {
         showToast(
           "error",
@@ -3616,7 +3641,7 @@
       wrap.style.display = "block";
 
       const route = cases[0].route;
-      const title =
+      const title = scopedCounselor ? "Laporan Konselor" :
         route === "NAQIB"
           ? "Laporan Tindak Naqib"
           : "Laporan Konselor Muda";
@@ -4510,6 +4535,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}
     }
 
     async function deleteCase(id) {
+      if(scopedCounselor&&!caseScope.can('case.delete',{unit:caseScope.unit}))return showToast("warning","Tindakan belum diotorisasi","Kebijakan penghapusan kasus per level belum dikonfirmasi.");
       const item = allCases.find(caseItem => caseItem.id === id);
 
       if (!item) return;
@@ -4557,6 +4583,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}
 
     async function saveActionReport() {
       const cases = getSelectedActionCases();
+      try{requireCaseAction(cases)}catch(e){showToast("error","Akses ditolak",e.message);return;}
 
       if (!cases.length) {
         showToast(
@@ -4653,7 +4680,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}
 
       const now = new Date();
       const nowIso = now.toISOString();
-      const route = cases[0].route;
+      const route = scopedCounselor ? "KONSELOR" : cases[0].route;
       const batchId =
         `penindakan_${Date.now()}_${Math.random()
           .toString(36)
@@ -4687,7 +4714,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}
           route;
 
         updates[`${item.dbPath}/jalurPenangananV2`] =
-          route === "NAQIB" ? "NAQIB_OPERASIONAL" : "MANAJER_SUPERVISOR";
+          scopedCounselor ? "KONSELOR" : route === "NAQIB" ? "NAQIB_OPERASIONAL" : "MANAJER_SUPERVISOR";
 
         updates[`${item.dbPath}/statusPembinaan`] =
           "SELESAI";
@@ -4725,8 +4752,8 @@ ${'</bo' + 'dy></ht' + 'ml>'}
 
           kelompokKasus: item.category,
           jalurPenindakan: route,
-          jalurPenangananV2: route === "NAQIB" ? "NAQIB_OPERASIONAL" : "MANAJER_SUPERVISOR",
-          penanggungJawabFungsi: route === "NAQIB" ? "Konselor Pemula" : "Manajer/Supervisor Pembinaan Karakter",
+          jalurPenangananV2: scopedCounselor ? "KONSELOR" : route === "NAQIB" ? "NAQIB_OPERASIONAL" : "MANAJER_SUPERVISOR",
+          penanggungJawabFungsi: scopedCounselor ? "Konselor" : route === "NAQIB" ? "Konselor Pemula" : "Manajer/Supervisor Pembinaan Karakter",
           statusPembinaan: "SELESAI",
           penindak: actionOfficer,
           dicatatOleh: recorder,
@@ -4909,6 +4936,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}
       }
 
       try {
+        requireCaseAction(cases);
         await update(ref(db), updates);
 
         showToast(
@@ -4985,6 +5013,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}
     }
 
     async function saveStudentWarning() {
+      if(scopedCounselor&&!caseScope.can('case.warning',{unit:caseScope.unit}))return showToast("warning","Tindakan belum diotorisasi","Kewenangan penerbitan SP per level belum dikonfirmasi.");
       const button = document.getElementById("saveSpButton");
       const namaSantri = document.getElementById("spStudent").value.trim();
       const jenisSP = Number(document.getElementById("spType").value || 1);
@@ -5022,7 +5051,10 @@ ${'</bo' + 'dy></ht' + 'ml>'}
     async function openSpPhoto(idSP) {
       const target = window.open("about:blank","_blank");
       try {
+        assertCaseScope();
+        if(scopedCounselor&&!warningRows.some(w=>(w.idSP||w.id)===idSP&&isValidStudent(w.namaSantri)))throw new Error('Foto di luar scope.');
         const snap = await get(ref(db, `${DB.warningPhotos}/${idSP}`));
+        assertCaseScope();
         const url = snap.val()?.dataUrl || "";
         if (!url) throw new Error("Foto SP tidak tersedia.");
         if (target) target.location.href = url; else window.open(url,"_blank");
@@ -5030,12 +5062,15 @@ ${'</bo' + 'dy></ht' + 'ml>'}
     }
 
     async function loadWarnings() {
+      assertCaseScope();
       const root = document.getElementById("spHistory");
       if (!root) return;
       root.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Memuat Surat Peringatan...</div>';
       try {
         const snap = await get(query(ref(db, DB.warnings), orderByChild("dibuatPada"), limitToLast(300)));
         warningRows = snap.exists() ? Object.entries(snap.val()||{}).map(([id,v])=>({id,...(v||{})})) : [];
+        assertCaseScope();
+        if(scopedCounselor)warningRows=warningRows.filter(w=>isValidStudent(w.namaSantri));
         warningRows.sort((a,b)=>(Number(b.dibuatPada)||0)-(Number(a.dibuatPada)||0));
         root.innerHTML = warningRows.length ? warningRows.map(w=>`<article class="sp-history-card ${Number(w.jenisSP)===2?'sp2':''}"><div><span class="sp-badge">SP ${Number(w.jenisSP)||1}</span><h3>${escapeHtml(w.namaSantri||'Santri')}</h3><p>${escapeHtml(w.deskripsiPelanggaran||'')}</p><p style="margin-top:6px">Usrah: ${escapeHtml(w.usrah||'-')} • Diberikan oleh: ${escapeHtml(w.diberikanOleh||'-')}</p>${w.adaFoto?`<button type="button" class="sp-photo-link" style="border:0;background:transparent;padding:0" onclick="openSpPhoto('${w.idSP||w.id}')">Lihat foto SP ↗</button>`:''}</div><div class="sp-date">${escapeHtml(w.tanggal||'-')}<br>${escapeHtml(w.status||'AKTIF')}</div></article>`).join("") : '<div class="empty-state"><div class="empty-icon">⚠️</div>Belum ada Surat Peringatan.</div>';
       } catch (error) { console.error(error); root.innerHTML='<div class="empty-state">Data SP belum dapat dimuat.</div>'; }

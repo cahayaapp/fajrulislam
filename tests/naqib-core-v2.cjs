@@ -1,0 +1,34 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.join(__dirname,'..');
+const R=require('../js/role-system-v2.js');
+const N=require('../js/role-navigation-v2.js');
+const read=file=>fs.readFileSync(path.join(root,file),'utf8');
+const naqib={mode:'canonical',activeRole:'NAQIB',activeAssignment:R.assignmentFor('NAQIB',{unit:'PUTRA'}),userKey:'kamal'};
+const naqibah={mode:'canonical',activeRole:'NAQIBAH',activeAssignment:R.assignmentFor('NAQIBAH',{unit:'PUTRI'}),userKey:'fixture'};
+const guru={mode:'canonical',activeRole:'GURU_PONDOK',activeAssignment:R.assignmentFor('GURU_PONDOK',{programDomain:'KEPONDOKAN'}),userKey:'guru'};
+for(const route of ['pusat-asesmen/santri.html','pusat-asesmen/naqib.html','naqib/skor-kedisiplinan-usrah.html','naqib/kpi.html']){
+  assert.equal(N.canAccessRoute(naqib,route).ok,true,route+' NAQIB');
+  assert.equal(N.canAccessRoute(naqibah,route).ok,true,route+' NAQIBAH');
+  assert.equal(N.canAccessRoute(guru,route).ok,false,route+' GURU denied');
+}
+assert(R.ROLE_PERMISSIONS.NAQIB.includes('menu-kpi-naqib'));
+assert(R.ROLE_PERMISSIONS.NAQIBAH.includes('menu-kpi-naqib'));
+const santri=read('pusat-asesmen/santri.html'),self=read('pusat-asesmen/naqib.html'),discipline=read('naqib/skor-kedisiplinan-usrah.html'),kpi=read('naqib/kpi.html'),kpiJs=read('js/naqib-kpi.js');
+assert(santri.includes('cahaya_app/asesmen_cahaya_santri'));
+assert(santri.includes('if (!scopedAssessment) await loadKetuaUsrahFromUsers()'));
+assert(!santri.includes("if(!ketuaUsrahNames.has(normalizeIdentity(name)))throw new Error('Ketua Usrah belum terverifikasi')"));
+assert(self.includes('cahaya_app/self_asesmen_naqib'));
+assert(self.includes('existingRecordKey'));
+assert(self.includes("tipeAsesmen:'MUHASABAH_PEKANAN'"));
+assert(self.includes('Refleksi Pekan Ini')&&self.includes('Tantangan')&&self.includes('Pelajaran')&&self.includes('Fokus Perbaikan Pekan Depan'));
+assert(!self.includes('kalkulasiSkorSistem')&&!self.includes('skorAkhir:'));
+assert(discipline.includes("PATH_ATT='cahaya_app/absensi_program_harian'"));
+assert(discipline.includes("orderByChild('tanggal').startAt(period.start).endAt(period.end)"));
+assert(!discipline.includes('putriNames'));
+assert(kpi.includes('KPI Naqib'));
+assert(kpiJs.includes("cahaya_app/self_asesmen_naqib"));
+assert(!kpiJs.includes('set(')&&!kpiJs.includes('push('));
+for(const file of ['pusat-asesmen/santri.html','pusat-asesmen/naqib.html','naqib/skor-kedisiplinan-usrah.html','naqib/kpi.html'])assert(read(file).includes('naqib-core-v2.css'));
+console.log('PASS Naqib Core V2 routes, unit adapters, authoritative paths, weekly upsert, read-only KPI, and shared UI');

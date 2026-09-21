@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const M=require('../js/wali-mentoring-model-v2');
+const input={a:{namaSantri:'ANANDA',tanggal:'2026-09-21',targetBaru:'Target',catatanMentor:'PRIVATE',hasilTarget:{status:'TERCAPAI',keterangan:'Lima hari',dinilaiAt:'2026-09-21T18:00:00Z'}},b:{santri:'Ananda',timestamp:'2026-08-31T18:00:00Z',target:'Lama'},c:{studentName:'OTHER',tanggal:'2026-09-21'},d:{namaSantri:'ANANDA',tanggal:'2026-09-22'}};
+assert.equal(M.date('2026-08-31T18:00:00Z'),'2026-09-01');
+assert.equal(M.date('2026-09-21'),'2026-09-21');
+const rows=M.select(input,'ANANDA','2026-09-01','2026-09-21');
+assert.deepEqual(rows.map(x=>x.id),['a','b']);
+assert.equal(rows[0].result.date,'2026-09-22');
+assert(!JSON.stringify(rows).includes('PRIVATE'));
+assert.equal(M.select(input,'ANANDA','2026-09-21','2026-09-21').length,1);
+assert.equal(M.normalize(input.a,'a','OTHER'),null);
+const source=fs.readFileSync('wali/dashboard/mentoring-pekanan.js','utf8');
+assert(!/\.(?:set|update|remove)\(/.test(source));
+assert(!/searchParams|URLSearchParams/.test(source),'URL cannot select another student');
+assert(source.includes("orderByChild(field).equalTo(name)"));
+console.log('Wali mentoring: scoped projection, legacy aliases, inclusive calendar, WIB, private-note exclusion, read-only queries passed.');

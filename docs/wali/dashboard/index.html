@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../../js/role-system-v2.js?v=206"></script>
+<script src="../../js/role-route-registry-v2.js?v=206"></script>
+<script src="../../js/role-navigation-v2.js?v=206"></script>
+<script src="../../js/role-scope-v2.js?v=206"></script>
+<script src="../../js/role-entry-v2.js?v=265"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../../config/tenant-config.js"></script>
   <script src="../../keuangan/finance-settings.js"></script>
@@ -1868,11 +1874,12 @@
             <span class="nav-arrow">›</span>
           </a>
 
-          <a class="nav-item" id="menu-informasi-penting-wali" data-menu-id="menu-informasi-penting-wali" data-page-url="informasi-penting.html?v=65" onclick="loadPage('informasi-penting.html?v=65', this)" hidden>
-            <span class="nav-icon">📌</span>
-            <span class="nav-label">Informasi Penting</span>
+          <a class="nav-item" id="menu-mentoring-wali" data-menu-id="menu-mentoring-wali" data-page-url="mentoring-pekanan.html?v=264" onclick="loadPage('mentoring-pekanan.html?v=264', this)">
+            <span class="nav-icon">🌱</span>
+            <span class="nav-label">Laporan Mentoring Pekanan</span>
             <span class="nav-arrow">›</span>
           </a>
+          <div id="waliInformationMenus"></div>
 
           <a class="nav-item" id="menu-riwayat-kesehatan-wali" data-menu-id="menu-riwayat-kesehatan-wali" data-page-url="riwayat-kesehatan.html?v=65" onclick="loadPage('riwayat-kesehatan.html?v=65', this)">
             <span class="nav-icon">🩺</span>
@@ -2126,6 +2133,11 @@
         url: "pembinaan.html?v=65",
         title: "Laporan Pembinaan"
       },
+      "menu-mentoring-wali": {
+        url: "mentoring-pekanan.html?v=264",
+        title: "Laporan Mentoring Pekanan",
+        alwaysAllowed: true
+      },
       "menu-informasi-penting-wali": {
         url: "informasi-penting.html?v=65",
         title: "Informasi Penting"
@@ -2149,6 +2161,24 @@
       "menu-laporan-wali": "menu-akademik-wali"
     };
 
+    // Reuse the six existing information sections; retain the old aggregate URL
+    // as a bookmark/permission alias, not a seventh duplicate menu.
+    const WALI_INFORMATION_SECTIONS = {
+      kalender: ['Kalender Wali', '📅'], pembelajaran: ['Jadwal Pembelajaran', '📚'],
+      program: ['Program Harian', '🕌'], izin: ['Perizinan Khusus', '📝'],
+      barang: ['Penitipan Barang', '📦'], disiplin: ['Tata Tertib Pesantren', '📘']
+    };
+    Object.entries(WALI_INFORMATION_SECTIONS).forEach(([section, [title, icon]]) => {
+      const id = `menu-informasi-${section}-wali`, url = `informasi-penting.html?section=${section}&v=264`;
+      WALI_MENU_CONFIG[id] = {url, title, parentPermission: 'menu-informasi-penting-wali'};
+      const item = document.createElement('a');
+      item.className = 'nav-item'; item.id = id; item.dataset.menuId = id; item.dataset.pageUrl = url; item.hidden = true;
+      item.href = url;
+      item.innerHTML = `<span class="nav-icon">${icon}</span><span class="nav-label">${title}</span><span class="nav-arrow">›</span>`;
+      item.onclick = event => {event.preventDefault(); loadPage(url, item)};
+      document.getElementById('waliInformationMenus').append(item);
+    });
+
     let authorizedWaliMenus = new Set();
     let authorizationReady = false;
 
@@ -2163,17 +2193,18 @@
     }
 
     function menuIdFromUrl(url = "") {
-      const cleanUrl = String(url).split("?")[0].split("#")[0];
-
-      return Object.keys(WALI_MENU_CONFIG).find(menuId =>
-        String(WALI_MENU_CONFIG[menuId].url || "").split("?")[0].split("#")[0] === cleanUrl
-      ) || "";
+      const target = new URL(url, location.href);
+      return Object.keys(WALI_MENU_CONFIG).find(menuId => {
+        const route = new URL(WALI_MENU_CONFIG[menuId].url, location.href);
+        return route.pathname === target.pathname && route.searchParams.get('section') === target.searchParams.get('section');
+      }) || "";
     }
 
     function isWaliMenuAllowed(menuId) {
       return Boolean(menuId) && (
         menuId === WALI_HOME_MENU_ID ||
         WALI_MENU_CONFIG[menuId]?.alwaysAllowed === true ||
+        authorizedWaliMenus.has(WALI_MENU_CONFIG[menuId]?.parentPermission) ||
         authorizedWaliMenus.has(menuId)
       );
     }

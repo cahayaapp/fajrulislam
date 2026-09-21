@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=206"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
@@ -287,6 +293,10 @@
     const app=initializeApp(firebaseConfig),db=getDatabase(app);
     let user={};try{user=JSON.parse(localStorage.getItem("cahayaCurrentUser")||"{}")}catch(e){}
     let students=[],selected=new Set(),toastTimer,selectedGuide=null;
+    const scope=window.cahayaRoleContext;
+    const scopedNaqib=scope&&['NAQIB','NAQIBAH'].includes(scope.activeRole);
+    let scopedRoster=null;
+    function checkSelection(names){if(scopedNaqib){scope.assertCurrent();if(!scopedRoster)throw new Error('Roster belum tersedia');names.forEach(n=>scopedRoster.requireStudent(n));}}
 
     const esc=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
     const username=()=>user.label||user.nama||user.username||localStorage.getItem("namaNaqib")||"Pengguna";
@@ -300,9 +310,9 @@
     function renderChips(){chips.innerHTML=selected.size?[...selected].map(n=>`<span class="chip"><span>${esc(n)}</span><button type="button" data-name="${esc(n)}" onclick="removeStudent(this)">×</button></span>`).join(""):'<span class="placeholder">Belum ada santri dipilih.</span>'}
     function sync(){document.querySelectorAll('#studentList input[type="checkbox"]').forEach(i=>i.checked=selected.has(i.value))}
 
-    document.addEventListener("DOMContentLoaded",async()=>{profile();try{const [u,a]=await Promise.all([get(ref(db,"cahaya_app/master_usrah")),get(ref(db,"cahaya_app/master_akademik"))]);students=build(u.exists()?u.val():{},a.exists()?a.val():{});render();updateSummary();loading.style.opacity="0";setTimeout(()=>loading.style.display="none",300)}catch(e){loading.innerHTML=`<div class="loader" style="background:#ef5b69">!</div><strong>Data santri gagal dimuat</strong><small>${esc(e.message)}</small>`}});
+    document.addEventListener("DOMContentLoaded",async()=>{profile();try{if(scopedNaqib){const master=await scope.loadUsrah(async p=>(await get(ref(db,p))).val());scopedRoster=scope.roster(master);students=build(master,{});}else{const [u,a]=await Promise.all([get(ref(db,"cahaya_app/master_usrah")),get(ref(db,"cahaya_app/master_akademik"))]);students=build(u.exists()?u.val():{},a.exists()?a.val():{});}render();updateSummary();loading.style.opacity="0";setTimeout(()=>loading.style.display="none",300)}catch(e){loading.innerHTML=`<div class="loader" style="background:#ef5b69">!</div><strong>Data santri gagal dimuat</strong><small>${esc(e.message)}</small>`}});
 
-    window.toggleStudent=i=>{i.checked?selected.add(i.value):selected.delete(i.value);renderChips();updateSummary()};
+    window.toggleStudent=i=>{checkSelection([i.value]);i.checked?selected.add(i.value):selected.delete(i.value);renderChips();updateSummary()};
     window.removeStudent=b=>{selected.delete(b.dataset.name||"");sync();renderChips();updateSummary()};
     window.filterStudents=()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll(".student-option").forEach(o=>o.style.display=!q||o.dataset.search.includes(q)?"":"none")};
     window.selectVisible=()=>{document.querySelectorAll(".student-option").forEach(o=>{if(o.style.display!=="none"){const i=o.querySelector("input");selected.add(i.value);i.checked=true}});renderChips();updateSummary()};
@@ -340,6 +350,7 @@
 
     window.saveInitiative=async()=>{
       const names=[...selected];
+      try{checkSelection(names)}catch(e){toast("error","Akses ditolak",e.message);return;}
       const desc=description.value.trim();
       const p=Number(point.value);
 
@@ -379,8 +390,27 @@
           equalTo(tanggalHariIni)
         );
 
-        const dailySnap=await get(dailyQuery);
-        const dailyData=dailySnap.exists()?dailySnap.val():{};
+        let dailyData={};
+        if(scopedNaqib){
+          try{
+          // Existing equality fields retain legacy duplicate/cap semantics.
+          // No truncation: dropping an older same-day record could allow duplicates.
+          for(const name of names){
+            checkSelection([name]);
+            for(const field of ['pelapor','namaSantri']){
+              const snap=await get(query(ref(db,root),orderByChild(field),equalTo(name)));
+              checkSelection([name]);
+              for(const [key,item] of Object.entries(snap.val()||{}))if(item?.tanggal===tanggalHariIni&&(item.pelapor||item.namaSantri)===name)dailyData[key]=item;
+            }
+          }
+          }catch(error){
+            toast('error','Pemeriksaan poin belum selesai',error.message||'Coba kembali setelah koneksi pulih.');
+            saveBtn.disabled=false;saveBtn.textContent='✨ Berikan Poin';return;
+          }
+        }else{
+          const dailySnap=await get(dailyQuery);
+          dailyData=dailySnap.exists()?dailySnap.val():{};
+        }
         const exceeded=[];
         const duplicated=[];
 
@@ -470,6 +500,7 @@
       });
 
       try{
+        checkSelection(names);
         await update(ref(db),updates);
 
         toast(

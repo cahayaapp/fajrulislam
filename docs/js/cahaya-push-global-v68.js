@@ -155,10 +155,10 @@
     },220);
   }
 
-  // Guru Home is a navigation hub: token/config refresh starts with Pesan
-  // or the existing explicit enable action, never merely by opening Home.
+  // Zero-download role homes defer token/config refresh until Pesan or the
+  // existing explicit enable action, never merely because Home is opened.
   function deferGuruPush(){
-    return ['guru','direktur'].includes(localStorage.getItem('cahayaActiveRole')||localStorage.getItem('cahayaCurrentRole'))
+    return (window.cahayaRoleV2Session?.mode==='canonical' || ['guru','direktur','naqib','naqib-operasional'].includes(localStorage.getItem('cahayaActiveRole')||localStorage.getItem('cahayaCurrentRole')))
       && window.__cahayaChatUsersLoaded!==true;
   }
   function boot(){

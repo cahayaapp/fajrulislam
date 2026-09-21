@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=206"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
+  <script src="../js/student-program-applicability.js?v=3"></script>
+  <script src="../js/quran-menu-roster.js?v=2"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -2060,8 +2068,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     const prog=document.getElementById('tfzProgram').value, jenisMurojaah=document.getElementById('tfzJenisMurojaah')?.value||'', container=document.getElementById('santriCardsContainer');
     if(!prog || (prog==='Murojaah'&&!jenisMurojaah)){container.innerHTML='<div class="initial-state"><div><div class="initial-state-icon">📖</div><strong>Pilih jenis input</strong><span>Pilih Tahsin, Tahfiz, atau Muroja’ah terlebih dahulu.</span></div></div>';return}
     if(!autoQuranClasses.length){container.innerHTML='<div class="initial-state"><div><div class="initial-state-icon">📅</div><strong>Jadwal Al-Qur’an belum ditemukan</strong><span>Kelas otomatis mengikuti jadwal guru yang login.</span></div></div>';return}
-    const listSantri=[];studentClassMap=new Map();
-    autoQuranClasses.forEach(kelas=>{const list=Array.isArray(dataKelasCloud?.[kelas])?dataKelasCloud[kelas]:[];list.forEach(nama=>{const assigned=quranProgramByStudent[normalizeStudentKey(nama)]?.programQuran;if((prog==='Tahsin'||prog==='Tahfiz')&&assigned&&assigned!==prog)return;listSantri.push({nama,kelas})})});
+    const listSantri=CahayaQuranMenuRoster.rows(dataKelasCloud,autoQuranClasses,prog,quranProgramByStudent);studentClassMap=new Map();
     listSantri.sort((a,b)=>a.kelas.localeCompare(b.kelas,'id',{numeric:true})||a.nama.localeCompare(b.nama,'id'));
     if(!listSantri.length){container.innerHTML='<div class="initial-state"><div><div class="initial-state-icon">👤</div><strong>Data santri belum tersedia</strong><span>Belum ada santri pada kelas jadwal Anda.</span></div></div>';return}
     container.innerHTML =
