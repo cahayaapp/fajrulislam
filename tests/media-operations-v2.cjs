@@ -1,0 +1,10 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),R=require('../js/role-system-v2.js'),N=require('../js/role-navigation-v2.js'),M=require('../js/role-menu-v2.js');
+const session=(role,scope)=>R.resolveSession({roleSystemVersion:2,roles:[role],defaultRole:role,assignments:{[role]:scope}},{getItem:()=>null,setItem(){}});
+const media=session('MEDIA',{}),supervisor=session('SUPERVISOR',{unit:'PUTRA',supervisedRoles:['MEDIA'],divisionIds:['MEDIA']}),unrelated=session('SUPERVISOR',{unit:'PUTRA',supervisedRoles:['GURU_PONDOK'],divisionIds:['PENDIDIKAN']}),director=session('DIREKTUR',{unit:'ALL'}),dapur=session('DAPUR',{});
+const urls=[['menu-gallery-dokumentasi','media/operasional.html?view=gallery'],['menu-manajemen-konten','media/operasional.html?view=content']];
+for(const[id,url]of urls){assert(N.canAccessRoute(media,url,id).ok);assert(N.canAccessRoute(supervisor,url).ok);assert(N.canAccessRoute(director,url).ok);assert(!N.canAccessRoute(unrelated,url).ok);assert(!N.canAccessRoute(dapur,url).ok);assert(M.model(media).some(x=>x.id===id&&x.route===url&&x.group==='Lainnya'))}
+assert(!N.canAccessRoute(media,'media/operasional.html?view=other').ok);assert(!N.canAccessRoute(media,urls[0][1],urls[1][0]).ok);
+const source=fs.readFileSync('js/media-operations-v2.js','utf8');assert(source.includes('cahaya_app/gallery_dokumentasi'));assert(source.includes('cahaya_app/media_content_plan'));assert(source.includes('orderByKey(),startAt(prefix'));assert(source.includes('await update(ref(db,path),{[oldKey]:null,[newKey]:record})'));assert(source.includes("v.status==='Tidak Terlaksana'&&!v.alasanTidakTerlaksana?.trim()"));
+for(const p of ['js/role-system-v2.js','js/role-menu-v2.js','js/role-route-registry-v2.js','js/role-navigation-v2.js','js/mobile-home-v2.js','js/media-operations-v2.js','media/operasional.html','css/media-operations-v2.css','home-media.html'])assert.equal(fs.readFileSync(p,'utf8'),fs.readFileSync('docs/'+p,'utf8'),p+' docs mirror');
+console.log('media-operations-v2: ok');

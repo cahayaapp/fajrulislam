@@ -112,6 +112,16 @@ const firestore=`export const getFirestore=()=>({}),collection=(d,p)=>({p}),doc=
         if(['GURU_PONDOK','SUPERVISOR','MENTOR_USRAH','MANAJER','DIREKTUR'].includes(fixture.name))await p.screenshot({path:'/tmp/cahaya-home-'+fixture.name+'-'+width+'.png'});
       }
       await p.setViewportSize({width:409,height:720});
+      if(fixture.name==='MEDIA'){
+        for(const [id,title] of [['menu-gallery-dokumentasi','Gallery Dokumentasi'],['menu-manajemen-konten','Manajemen Konten']]){
+          await p.evaluate(id=>openAuthorizedMenu(id),id);
+          await f.locator('#pageTitle').waitFor();
+          assert.equal(await f.locator('#pageTitle').innerText(),title);
+          assert.equal(await f.locator('#roleAccessDenied').count(),0);
+          await p.evaluate(()=>openAuthorizedMenu('menu-home'));
+          await f.locator('#mobileRoleHome').waitFor();
+        }
+      }
       if(fixture.user.defaultRole==='LAYANAN_KEBERSIHAN'){
         for(const [id,selector] of [['menu-jurnal-pkl','#jkTanggal'],['menu-buku-tamu','#guestForm'],['menu-laporan-murojaah','#lp_searchSantri'],['menu-penitipan-barang','#depositForm']]){
           await p.evaluate(id=>openAuthorizedMenu(id),id);

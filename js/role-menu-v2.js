@@ -80,7 +80,9 @@
       add('menu-panduan-kerja','Panduan Kerja','dapur/panduan.html','Lainnya');
     }else if(role==='MEDIA'){
       add('menu-media','Update URL Wali','admin/admin_media.html');
-      add('menu-dashboard-operasional','Laporan & Capaian Media','media/target-capaian.html');guide();
+      add('menu-dashboard-operasional','Laporan & Capaian Media','media/target-capaian.html');
+      add('menu-gallery-dokumentasi','Gallery Dokumentasi','media/operasional.html?view=gallery','Lainnya');
+      add('menu-manajemen-konten','Manajemen Konten','media/operasional.html?view=content','Lainnya');guide();
     }else if(role==='KESEHATAN'){
       [['menu-jurnal-kesehatan','Jurnal Kesehatan','jurnal'],['menu-pemeriksaan-kesehatan','Pemeriksaan Kesehatan','pemeriksaan'],['menu-perizinan-uks','Perizinan Medis UKS','perizinan-uks'],['menu-stok-obat','Stok Obat UKS','stokobat']].forEach(([id,label,path])=>add(id,label,`kesehatan/${path}.html`));guide();
     }else if(role==='SARPRAS'){

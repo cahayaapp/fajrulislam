@@ -176,6 +176,10 @@
     "menus": ["menu-dashboard-operasional"],
     "policy": "media-v2"
   },
+  "media/operasional.html": {
+    "menus": ["menu-gallery-dokumentasi", "menu-manajemen-konten"],
+    "policy": "media-operations-v2"
+  },
   "pembinaan/pantau-pendampingan.html": {
     "menus": [
       "menu-pantau-pendampingan"

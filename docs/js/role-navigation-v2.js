@@ -38,6 +38,14 @@
     if(role==='LAYANAN_KEBERSIHAN'&&['PKL/jurnal-pkl.html','PKL/buku-tamu.html','PKL/penitipan-barang.html'].includes(parsed.path))return {ok:true,reason:'LAYANAN_SCOPED_OPERATION'};
     if(e.policy==='dapur-v2')return role==='DAPUR'?{ok:true,reason:'DAPUR_OPERATIONAL_WORKSPACE'}:deny('PERMISSION_DENIED');
     if(e.policy==='media-v2'||e.policy==='media-url-v2')return role==='MEDIA'?{ok:true,reason:'MEDIA_OPERATIONAL_WORKSPACE'}:deny('PERMISSION_DENIED');
+    if(e.policy==='media-operations-v2'){
+      const view=parsed.params.get('view'),expected=view==='gallery'?'menu-gallery-dokumentasi':view==='content'?'menu-manajemen-konten':'';
+      if(!expected||menuId&&menuId!==expected)return deny('INVALID_MEDIA_VIEW');
+      if(role==='MEDIA')return {ok:true,reason:'MEDIA_CONTENT_EDITOR'};
+      if(role==='DIREKTUR'&&a.unit==='ALL')return {ok:true,reason:'MEDIA_CONTENT_READER'};
+      if(role==='SUPERVISOR'&&a.supervisedRoles?.includes('MEDIA')&&(!a.divisionIds?.length||a.divisionIds.includes('MEDIA')))return {ok:true,reason:'MEDIA_CONTENT_READER'};
+      return deny('PERMISSION_DENIED');
+    }
     if(e.policy==='manager-education-v2')return role==='MANAJER'&&R.isEducationManager(a)&&['PUTRA','PUTRI'].includes(a.unit)?{ok:true,reason:'MANAGER_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='tahsin-placement-v2')return R.canManageTahsinLevels(role,a)?{ok:true,reason:'TAHSIN_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='manager-character-v2')return role==='MANAJER'&&R.isCharacterManager(a)?{ok:true,reason:'MANAGER_CHARACTER_SCOPE'}:deny('PERMISSION_DENIED');

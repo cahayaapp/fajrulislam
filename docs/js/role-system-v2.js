@@ -46,7 +46,7 @@
     LAYANAN_KEBERSIHAN: [...BASE_MENUS, "menu-dashboard-operasional", "menu-jurnal-pkl", "menu-laporan-murojaah", "menu-buku-tamu", "menu-penitipan-barang"],
     DAPUR: [...BASE_MENUS, "menu-dashboard-operasional"],
     SARPRAS: [...BASE_MENUS, "menu-dashboard-operasional", "menu-jurnal-sarpras", "menu-checklist-sarpras", "menu-tindak-sarpras"],
-    MEDIA: [...BASE_MENUS, "menu-dashboard-operasional", "menu-media"],
+    MEDIA: [...BASE_MENUS, "menu-dashboard-operasional", "menu-media", "menu-gallery-dokumentasi", "menu-manajemen-konten"],
     MANAJER: [...BASE_MENUS, "menu-dashboard-operasional", "menu-kontrol-pendidikan", "menu-materi-pembelajaran", "menu-nilai-manajer", "menu-guru-pondok", "menu-observasi-pembelajaran", "menu-riwayat-temuan", "menu-pembinaan-guru", "menu-absensi-ibadah-guru", "menu-tindak-akademik", "menu-kpi-manajer", "menu-penempatan-tahsin", "menu-kontrol-pembinaan", "menu-pantau-asesmen", "menu-jurnal-kesehatan", "menu-jurnal-sarpras", "menu-jurnal-pkl", "menu-media"],
     WALI_SANTRI: ["menu-home", "menu-panduan-kerja"]
   });
