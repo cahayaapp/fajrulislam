@@ -7,6 +7,17 @@
 <script src="../js/role-scope-v2.js?v=206"></script>
 <script src="../js/role-entry-v2.js?v=266"></script>
 <!-- ROLE_V2_ENTRY_END -->
+<script>
+(() => {
+  let user={};try{user=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')||{}}catch{}
+  const session=window.CahayaRoleSystemV2?.resolveSession(user,localStorage);
+  const raw=[user.role,user.peran,user.jabatan,...(Array.isArray(user.akses)?user.akses:[user.akses]),...(Array.isArray(user.roles)?user.roles:[])].map(x=>String(x||'').trim().toLowerCase());
+  const layanan=session?.mode==='canonical'?session.activeRole==='LAYANAN_KEBERSIHAN':raw.some(x=>['layanan','tim layanan','petugas layanan','keamanan-kebersihan','keamanan dan kebersihan','keamanan & kebersihan'].includes(x));
+  if(!layanan)return;
+  document.addEventListener('DOMContentLoaded',()=>{document.documentElement.innerHTML='<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Akses ditolak • CAHAYA</title></head><body style="font:16px system-ui;background:#f4f8ff;color:#14345b;padding:24px"><main id="roleAccessDenied" role="alert"><h1>Akses ditolak</h1><p>Keputusan izin santri ditangani Supervisor Layanan.</p><a href="../main-dashboard.html">Kembali ke Beranda</a></main></body>';},{once:true});
+  document.write('<plaintext hidden>');
+})();
+</script>
   <script src="../config/tenant-config.js"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">

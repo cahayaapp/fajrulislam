@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const R=require('../js/role-system-v2.js');
 const N=require('../js/role-navigation-v2.js');
 const M=require('../js/role-menu-v2.js');
+const C=require('../js/counselor-case-v2.js');
 const user=unit=>({roleSystemVersion:2,roles:['LAYANAN_KEBERSIHAN'],defaultRole:'LAYANAN_KEBERSIHAN',assignments:{LAYANAN_KEBERSIHAN:unit?{unit}:{}}});
 for(const unit of ['', 'PUTRA', 'PUTRI']){
   const session=R.resolveSession(user(unit));
@@ -21,4 +22,10 @@ for(const unit of ['', 'PUTRA', 'PUTRI']){
 }
 const unrelated=R.resolveSession({roleSystemVersion:2,roles:['DAPUR'],defaultRole:'DAPUR',assignments:{DAPUR:{}}});
 assert(!N.canAccessRoute(unrelated,'guru/lapor-pelanggaran.html').ok);
+const reported=C.normalizeCase({tipe:'Lapor Pelanggaran',tanggal:'2026-09-21',waktu:'2026-09-21T03:00:00Z',pelapor:'Petugas Layanan',dilaporkan:'Santri Contoh',bidangPelanggaran:'Kedisiplinan',keterangan:'Kejadian dicatat tanpa penindakan.',lokasi:'Gerbang',unit:'PUTRA',statusLaporan:'Dilaporkan',statusPenanganan:'Menunggu Konselor',sourceType:'LAPORAN_LAYANAN_KEBERSIHAN'},'laporan-layanan-uji');
+assert(C.isViolation(reported.raw));
+assert.equal(reported.reporter,'Petugas Layanan');
+assert.equal(reported.unit,'PUTRA');
+assert.equal(reported.status,'MENUNGGU_KONSELOR');
+assert.equal(C.routeCase(reported,[reported]).level,'PEMULA');
 console.log('PASS Layanan menu, direct Buku Izin denial, journal/report routes and utilities');

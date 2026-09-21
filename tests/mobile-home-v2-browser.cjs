@@ -48,13 +48,37 @@ const firestore=`export const getFirestore=()=>({}),collection=(d,p)=>({p}),doc=
         assert(!homeMenu.some(card=>card.id==='menu-penempatan-tahsin'),'Supervisor Home does not show Penempatan Level Tahsin');
         assert.equal(await f.locator('.mh-all [data-mh-id="menu-penempatan-tahsin"]').count(),1,'Tahsin placement remains available in all menus');
       }
-      if(fixture.name==='LAYANAN_KEBERSIHAN'){
+      if(fixture.user.defaultRole==='LAYANAN_KEBERSIHAN'){
         const quick=await f.locator('.mh-quick-grid .mh-card').evaluateAll(cards=>cards.map(card=>({id:card.dataset.mhId,label:card.querySelector('b')?.textContent,description:card.querySelector('small')?.textContent})));
         assert.deepEqual(quick.map(card=>card.id),['menu-jurnal-pkl','menu-buku-tamu','menu-laporan-murojaah','menu-penitipan-barang']);
         assert.equal(quick[0].label,'Jurnal Harian');
         assert.equal(quick[0].description,'Catat pelaksanaan tugas hari ini');
         assert.equal(quick[2].label,'Laporan Pelanggaran');
         assert(!await f.locator('[data-mh-id="menu-buku-izin"]').count(),'Buku Izin absent from Layanan Home');
+        const chat=await p.evaluate(()=>{
+          const can=window.CahayaPengurusChat?.canChatWith;
+          if(typeof can!=='function')return null;
+          const base={uid:'other-person',username:'other-person'};
+          return {
+            director:can({...base,roles:['DIREKTUR']}),
+            counselor:can({...base,roles:['KONSELOR']}),
+            peer:can({...base,roles:['LAYANAN_KEBERSIHAN']}),
+            supervisorPutra:can({...base,roles:['SUPERVISOR'],assignments:{SUPERVISOR:{unit:'PUTRA',supervisedRoles:['LAYANAN_KEBERSIHAN']}}}),
+            supervisorPutri:can({...base,roles:['SUPERVISOR'],assignments:{SUPERVISOR:{unit:'PUTRI',supervisedRoles:['LAYANAN_KEBERSIHAN']}}}),
+            managerPutra:can({...base,roles:['MANAJER'],assignments:{MANAJER:{unit:'PUTRA',managedRoles:['LAYANAN_KEBERSIHAN']}}}),
+            unrelatedManager:can({...base,roles:['MANAJER'],assignments:{MANAJER:{unit:'PUTRA',managedRoles:['GURU_PONDOK']}}})
+          };
+        });
+        assert(chat,'Layanan chat policy available');
+        assert.equal(chat.director,true);
+        assert.equal(chat.counselor,false);
+        assert.equal(chat.peer,false);
+        assert.equal(chat.unrelatedManager,false);
+        if(fixture.user.assignments.LAYANAN_KEBERSIHAN?.unit==='PUTRA'){
+          assert.equal(chat.supervisorPutra,true);
+          assert.equal(chat.supervisorPutri,false);
+          assert.equal(chat.managerPutra,true);
+        }
       }
       assert(await f.locator('.mh-role').isDisabled(),'single-role label has no fake picker');
       for(const width of [409,456,550,1024,1440]){
@@ -88,14 +112,32 @@ const firestore=`export const getFirestore=()=>({}),collection=(d,p)=>({p}),doc=
         if(['GURU_PONDOK','SUPERVISOR','MENTOR_USRAH','MANAJER','DIREKTUR'].includes(fixture.name))await p.screenshot({path:'/tmp/cahaya-home-'+fixture.name+'-'+width+'.png'});
       }
       await p.setViewportSize({width:409,height:720});
-      if(fixture.name==='LAYANAN_KEBERSIHAN'){
+      if(fixture.user.defaultRole==='LAYANAN_KEBERSIHAN'){
         for(const [id,selector] of [['menu-jurnal-pkl','#jkTanggal'],['menu-buku-tamu','#guestForm'],['menu-laporan-murojaah','#lp_searchSantri'],['menu-penitipan-barang','#depositForm']]){
           await p.evaluate(id=>openAuthorizedMenu(id),id);
           await f.locator(selector).waitFor();
           assert.equal(await f.locator('#roleAccessDenied').count(),0,id+' must not be denied');
+          if(id==='menu-jurnal-pkl'&&fixture.user.assignments.LAYANAN_KEBERSIHAN?.unit==='PUTRA'){
+            const state=await f.locator('#jkNama').evaluate(input=>new Promise(resolve=>{const until=Date.now()+2000;const check=()=>{const user=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}'),session=window.CahayaRoleSystemV2?.resolveSession(user,localStorage);input.readOnly||Date.now()>until?resolve({readOnly:input.readOnly,name:input.value,date:document.getElementById('jkTanggal').value,taskCount:document.querySelectorAll('.task-card').length,unit:document.getElementById('jkArea').value,module:typeof window.simpanJurnal,role:session?.activeRole,assignment:session?.activeAssignment,activeRoleV2:user.activeRoleV2,ready:document.readyState,url:location.href,source:document.querySelector('script[type="module"]')?.textContent?.includes('setTimeout(initJournal,0)'),saveSource:window.simpanJurnal?.toString().includes('refreshProfile()')}):setTimeout(check,20)};check()}));
+            assert(state.readOnly,JSON.stringify({state,errors}));
+            assert.equal(await f.locator('#jkArea').inputValue(),'Area Putra');
+          }
+          if(id==='menu-laporan-murojaah')await f.locator('#lp_lokasiWrap').waitFor();
+          if(['menu-buku-tamu','menu-penitipan-barang'].includes(id)){
+            assert.equal(await f.locator('#accessDenied').isVisible(),false,id+' legacy guard must allow canonical role');
+            const assigned=fixture.user.assignments.LAYANAN_KEBERSIHAN?.unit?.toLowerCase();
+            if(assigned){
+              await f.locator('#unit').evaluate((input,unit)=>new Promise((resolve,reject)=>{const until=Date.now()+2000;const check=()=>input.value===unit?resolve():Date.now()>until?reject(Error(JSON.stringify({value:input.value,context:window.cahayaRoleContext?.activeAssignment,session:window.cahayaRoleV2Session,user:JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}))):setTimeout(check,20);check()}),assigned);
+              assert.equal(await f.locator('#unitFilter').inputValue(),assigned);
+            }
+          }
           await p.evaluate(()=>openAuthorizedMenu('menu-home'));
           await f.locator('#mobileRoleHome').waitFor();
         }
+        await p.evaluate(base=>{document.getElementById('contentFrame').src=base+'/layanan/buku-izin.html'},origin);
+        await f.locator('#roleAccessDenied').waitFor();
+        await p.evaluate(base=>{document.getElementById('contentFrame').src=base+'/role-workspace.html'},origin);
+        await f.locator('#mobileRoleHome').waitFor();
       }
       if(fixture.name==='SUPERVISOR'){
         await f.locator('.mh-menu-grid [data-mh-id="menu-supervisor-v2--history"]').click();

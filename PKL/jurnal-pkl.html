@@ -1253,6 +1253,12 @@
     } catch (error) {
       console.warn("Data pengguna tidak terbaca:", error);
     }
+    let layananAssignment=null;
+    function refreshProfile(){
+      try{currentUser=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')||{}}catch{}
+      const session=window.CahayaRoleSystemV2?.resolveSession(currentUser,localStorage);
+      layananAssignment=(session?.activeRole||currentUser.activeRoleV2)==='LAYANAN_KEBERSIHAN'?(currentUser.assignments?.LAYANAN_KEBERSIHAN||session?.activeAssignment||currentUser.activeAssignment||window.cahayaRoleContext?.activeAssignment):null;
+    }
 
     function escapeHtml(value = "") {
       return String(value)
@@ -1724,6 +1730,7 @@ function taskStatus(taskId) {
     }
 
     async function simpanJurnal() {
+      refreshProfile();
       const validation = validateJournal();
 
       if (!validation.valid) {
@@ -1742,10 +1749,14 @@ function taskStatus(taskId) {
         normalizedName(
           document.getElementById("jkNama").value
         );
+      if(layananAssignment){
+        window.cahayaRoleContext?.assertCurrent?.();
+        if(nama!==normalizedName(userName())){showToast('error','Identitas tidak sesuai','Jurnal harus dicatat atas nama personil yang sedang masuk.');return;}
+      }
 
       const area =
         document.getElementById("jkArea").value;
-      const assignedUnit=window.cahayaRoleContext?.activeRole==='LAYANAN_KEBERSIHAN'?window.cahayaRoleContext.activeAssignment?.unit:'';
+      const assignedUnit=layananAssignment?.unit||'';
       if(assignedUnit&&['PUTRA','PUTRI'].includes(assignedUnit)&&area!==`Area ${assignedUnit==='PUTRA'?'Putra':'Putri'}`){showToast('error','Area tidak sesuai','Pilih area sesuai penugasan aktif.');return;}
 
       const catatan =
@@ -1886,18 +1897,21 @@ function taskStatus(taskId) {
       }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    function initJournal() {
+      refreshProfile();
       document.getElementById("jkTanggal").value =
         localDateValue();
 
       fillProfile();
-      const assignedUnit=window.cahayaRoleContext?.activeRole==='LAYANAN_KEBERSIHAN'?window.cahayaRoleContext.activeAssignment?.unit:'';
+      if(layananAssignment)document.getElementById('jkNama').readOnly=true;
+      const assignedUnit=layananAssignment?.unit||'';
       if(['PUTRA','PUTRI'].includes(assignedUnit)){const area=document.getElementById('jkArea');area.value=`Area ${assignedUnit==='PUTRA'?'Putra':'Putri'}`;for(const option of area.options)option.disabled=option.value!==area.value;}
       renderTasks();
       document.getElementById('jkTanggal').addEventListener('change',loadExistingJournal);
       loadExistingJournal();
       hideLoading();
-    });
+    }
+    setTimeout(initJournal,100);
 
     window.setTaskStatus = setTaskStatus;
     window.setTaskNote = setTaskNote;
