@@ -99,6 +99,15 @@
     }
     const skip=new Set([...quick.map(x=>x.id),'menu-absen-guru']);
     secondary=items.filter(x=>!skip.has(x.id));
+    if(role==='SUPERVISOR'){
+      const placementIndex=secondary.findIndex(x=>x.id==='menu-penempatan-tahsin');
+      const historyIndex=secondary.findIndex(x=>x.id==='menu-supervisor-v2--history');
+      if(placementIndex!==-1&&historyIndex!==-1){
+        const history=secondary[historyIndex];
+        secondary=secondary.filter(x=>x.id!=='menu-penempatan-tahsin'&&x.id!=='menu-supervisor-v2--history');
+        secondary.splice(placementIndex,0,history);
+      }
+    }
     if(wali){
       const waliMenu=[
         ['menu-akademik-wali','Laporan Akademik','report'],

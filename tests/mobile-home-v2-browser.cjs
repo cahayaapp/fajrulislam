@@ -42,6 +42,12 @@ const firestore=`export const getFirestore=()=>({}),collection=(d,p)=>({p}),doc=
       p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.dismiss());
       await p.goto(origin+'/main-dashboard.html');
       const f=p.locator('#contentFrame').contentFrame();await f.locator('#mobileRoleHome').waitFor();
+      if(fixture.name==='SUPERVISOR'){
+        const homeMenu=await f.locator('.mh-menu-grid .mh-card').evaluateAll(cards=>cards.map(card=>({id:card.dataset.mhId,label:card.querySelector('b')?.textContent})));
+        assert(homeMenu.some(card=>card.id==='menu-supervisor-v2--history'&&card.label==='Riwayat Eskalasi'),'Supervisor Home shows Riwayat Eskalasi');
+        assert(!homeMenu.some(card=>card.id==='menu-penempatan-tahsin'),'Supervisor Home does not show Penempatan Level Tahsin');
+        assert.equal(await f.locator('.mh-all [data-mh-id="menu-penempatan-tahsin"]').count(),1,'Tahsin placement remains available in all menus');
+      }
       assert(await f.locator('.mh-role').isDisabled(),'single-role label has no fake picker');
       for(const width of [409,456,550,1024,1440]){
         await p.setViewportSize({width,height:720});await p.waitForTimeout(150);
@@ -74,6 +80,12 @@ const firestore=`export const getFirestore=()=>({}),collection=(d,p)=>({p}),doc=
         if(['GURU_PONDOK','SUPERVISOR','MENTOR_USRAH','MANAJER','DIREKTUR'].includes(fixture.name))await p.screenshot({path:'/tmp/cahaya-home-'+fixture.name+'-'+width+'.png'});
       }
       await p.setViewportSize({width:409,height:720});
+      if(fixture.name==='SUPERVISOR'){
+        await f.locator('.mh-menu-grid [data-mh-id="menu-supervisor-v2--history"]').click();
+        await p.waitForFunction(()=>document.querySelector('#dynamicMenu .nav-item.active')?.id==='menu-supervisor-v2--history');
+        await p.evaluate(()=>openAuthorizedMenu('menu-home'));
+        await f.locator('#mobileRoleHome').waitFor();
+      }
       await f.locator('[data-mh-id="all"]').first().click();await p.locator('#mainSidebar.open').waitFor();await p.keyboard.press('Escape');
       const routeButton=f.locator('.mh-card[data-mh-id^="menu-"]').first(),menuId=await routeButton.getAttribute('data-mh-id');
       await routeButton.click();await p.waitForFunction(id=>document.querySelector('#dynamicMenu .nav-item.active')?.id===id,menuId);
