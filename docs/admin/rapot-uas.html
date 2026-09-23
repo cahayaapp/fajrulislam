@@ -11,6 +11,7 @@
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
   <script src="../js/student-program-applicability.js?v=5"></script>
+  <script src="../js/academic-report-score-policy.js?v=1"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -1714,7 +1715,8 @@
     return ambilRekamanNilaiEfektif(namaSantri)
       .map(item => {
         const nilaiAsli = bacaNilaiAkhir(item);
-        const nilai = nilaiTampilKeputusanRapat(namaSantri, nilaiAsli);
+        const nilaiKeputusanRapat = nilaiTampilKeputusanRapat(namaSantri, nilaiAsli);
+        const nilai = CahayaAcademicReportScorePolicy.reportScore(item, nilaiKeputusanRapat);
         return {
           mapel: kosong(reportSubject(item), "Mata Pelajaran"),
           nilai,

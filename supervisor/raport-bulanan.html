@@ -10,6 +10,7 @@
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
+  <script src="../js/academic-report-score-policy.js?v=1"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8">
@@ -657,7 +658,9 @@
           if(myNilai.length > 0) {
               let no = 1;
               myNilai.forEach(n => {
-                 const pred = getPredikat(n.nilai_total || 0);
+                 const nilaiLaporanRaw=CahayaAcademicReportScorePolicy.reportScore(n);
+                 const nilaiLaporan=Number.isFinite(nilaiLaporanRaw)?nilaiLaporanRaw:0;
+                 const pred = getPredikat(nilaiLaporan);
                  
                  // Jika komponen tidak diujikan oleh guru, akan tercetak strip (-)
                  const vSya = n.nilai_syafawi !== undefined ? n.nilai_syafawi : '-';
@@ -673,7 +676,7 @@
                     <td class="td-center">${vTah}</td>
                     <td class="td-center">${vTas}</td>
                     <td class="td-center">${vTat}</td>
-                    <td class="td-center" style="font-weight:bold; color:var(--primary-dark);">${n.nilai_total || 0}</td>
+                    <td class="td-center" style="font-weight:bold; color:var(--primary-dark);">${nilaiLaporan}</td>
                     <td class="td-center" style="color:${pred.color}"><b>${pred.huruf}</b></td>
                     <td>${ketRemedial}</td>
                  </tr>`;

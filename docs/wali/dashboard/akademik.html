@@ -11,6 +11,7 @@
   <script src="../../config/tenant-config.js"></script>
   <script src="../../config/master-data.js"></script>
   <script src="../../js/student-program-applicability.js?v=5"></script>
+  <script src="../../js/academic-report-score-policy.js?v=1"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -874,7 +875,8 @@
       if(ev.nilai_tashnif !== undefined && ev.bobot_tashnif_persen > 0) comps += `<div class="comp-pill">Tashnif: <span>${ev.nilai_tashnif}</span></div>`;
       if(ev.nilai_tathbiqi !== undefined && ev.bobot_tathbiqi_persen > 0) comps += `<div class="comp-pill">Praktek: <span>${ev.nilai_tathbiqi}</span></div>`;
 
-      let score = parseFloat(ev.nilai_total) || 0;
+      let score = CahayaAcademicReportScorePolicy.reportScore(ev);
+      if (!Number.isFinite(score)) score = 0;
       
       // LOGIKA PREDIKAT & WARNA BARU SESUAI KKM 70
       let statTks = "";
@@ -1312,7 +1314,8 @@
     const rows = [...listData]
       .sort((a, b) => new Date(a.tanggal_ujian || a.timestamp || 0) - new Date(b.tanggal_ujian || b.timestamp || 0))
       .map(item => {
-        const score = Number.parseFloat(item.nilai_total) || 0;
+        const scoreValue = CahayaAcademicReportScorePolicy.reportScore(item);
+        const score = Number.isFinite(scoreValue) ? scoreValue : 0;
         return [
           teksPdf(item.mata_pelajaran || item.mapel),
           teksPdf(formatGelarAkademik(item.guru_penguji || item.guru || "Guru")),
