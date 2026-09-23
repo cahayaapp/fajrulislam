@@ -49,5 +49,6 @@ assert.equal(A.reportLabel(names[0],score,'2026-09-30',records,context),'Tahsin 
 assert(!A.applicable(names[4],score,'2026-09-30',records,score,context).applicable);
 // Outside the explicit four classes existing program behavior is unchanged.
 assert.equal(A.currentProgram('Unknown',{className:'Kelas 4 Putra',classes}), '');
-assert.equal(Q.rows({'Kelas 4 Putra':['Unknown']},['Kelas 4 Putra'],'Tahsin',{}).length,1);
+assert.equal(Q.rows({'Kelas 4 Putra':['Unknown']},['Kelas 4 Putra'],'Tahsin',{}).length,0);
+assert.equal(Q.rows({'Kelas 4 Putra':['Unknown']},['Kelas 4 Putra'],'Tahfiz',{}).length,1);
 console.log('Quran classification: 33 Tahsin / 32 Tahfiz, XOR, aliases, exact levels, period history and report eligibility: PASS');

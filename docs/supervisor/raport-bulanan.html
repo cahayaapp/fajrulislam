@@ -306,13 +306,14 @@
           <tr>
             <!-- Diupdate dengan 4 kemungkinan komponen penilaian akademik -->
             <th width="5%">No</th>
-            <th width="28%">Mata Pelajaran</th>
+            <th width="22%">Mata Pelajaran</th>
             <th width="11%">Lisan</th>
             <th width="11%">Tulisan</th>
             <th width="11%">Tashnif</th>
             <th width="11%">Praktek</th>
             <th width="11%">Total</th>
-            <th width="12%">Predikat</th>
+            <th width="10%">Predikat</th>
+            <th width="14%">Keterangan</th>
           </tr>
         </thead>
         <tbody class="tabelNilai">
@@ -663,6 +664,7 @@
                  const vTah = n.nilai_tahriri !== undefined ? n.nilai_tahriri : '-';
                  const vTas = n.nilai_tashnif !== undefined ? n.nilai_tashnif : '-';
                  const vTat = n.nilai_tathbiqi !== undefined ? n.nilai_tathbiqi : '-';
+                 const ketRemedial=[n.is_remedial===true?'Remedial pada penilaian bulanan':'',String(n.keterangan||'').trim()].filter(Boolean).join(' · ')||'—';
 
                  tbody.innerHTML += `<tr>
                     <td class="td-center">${no++}</td>
@@ -673,10 +675,11 @@
                     <td class="td-center">${vTat}</td>
                     <td class="td-center" style="font-weight:bold; color:var(--primary-dark);">${n.nilai_total || 0}</td>
                     <td class="td-center" style="color:${pred.color}"><b>${pred.huruf}</b></td>
+                    <td>${ketRemedial}</td>
                  </tr>`;
               });
           } else {
-              tbody.innerHTML = '<tr><td colspan="8" class="td-center" style="color:#ef4444; font-weight:normal; padding:15px;">Belum ada input nilai akademik bulanan untuk periode ini.</td></tr>';
+              tbody.innerHTML = '<tr><td colspan="9" class="td-center" style="color:#ef4444; font-weight:normal; padding:15px;">Belum ada input nilai akademik bulanan untuk periode ini.</td></tr>';
           }
 
           // SECTION B1: TAHFIZ

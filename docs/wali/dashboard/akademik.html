@@ -10,7 +10,7 @@
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../../config/tenant-config.js"></script>
   <script src="../../config/master-data.js"></script>
-  <script src="../../js/student-program-applicability.js?v=1"></script>
+  <script src="../../js/student-program-applicability.js?v=5"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -932,6 +932,7 @@
             </div>
             <div class="ec-bar-container"><div class="ec-bar-fill" style="width:${score}%; background:${barClr}; box-shadow: 0 0 8px ${barClr}"></div></div>
             <div class="ec-components">${comps}</div>
+            ${(ev.is_remedial===true||String(ev.keterangan||'').trim())?`<div class="ec-components" style="margin-top:9px;color:#123b65">${ev.is_remedial===true?'<strong>Remedial pada penilaian bulanan</strong>':''}${ev.is_remedial===true&&String(ev.keterangan||'').trim()?' · ':''}${String(ev.keterangan||'').trim().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</div>`:''}
           </div>
         </div>
       `);
@@ -1320,7 +1321,8 @@
           item.nilai_tashnif !== undefined ? teksPdf(item.nilai_tashnif) : "-",
           item.nilai_tathbiqi !== undefined ? teksPdf(item.nilai_tathbiqi) : "-",
           score.toFixed(score % 1 ? 1 : 0),
-          predikatNilai(score)
+          predikatNilai(score),
+          teksPdf([item.is_remedial===true?'Remedial pada penilaian bulanan':'',item.keterangan||''].filter(Boolean).join(' - '))
         ];
       });
 
@@ -1331,17 +1333,18 @@
         margin: { left: 10, right: 10, top: 20, bottom: 18 },
         styles: { fontSize: 7.2, cellPadding: 1.9 },
         columnStyles: {
-          0: { cellWidth: 42 },
-          1: { cellWidth: 35 },
-          2: { cellWidth: 14, halign: "center" },
-          3: { cellWidth: 14, halign: "center" },
-          4: { cellWidth: 14, halign: "center" },
-          5: { cellWidth: 14, halign: "center" },
-          6: { cellWidth: 14, halign: "center", fontStyle: "bold" },
-          7: { cellWidth: 43, halign: "center" }
+          0: { cellWidth: 34 },
+          1: { cellWidth: 27 },
+          2: { cellWidth: 12, halign: "center" },
+          3: { cellWidth: 12, halign: "center" },
+          4: { cellWidth: 12, halign: "center" },
+          5: { cellWidth: 12, halign: "center" },
+          6: { cellWidth: 12, halign: "center", fontStyle: "bold" },
+          7: { cellWidth: 23, halign: "center" },
+          8: { cellWidth: 46 }
         }
       }),
-      head: [["Mata Pelajaran", "Guru", "Lisan", "Tulisan", "Tashnif", "Praktek", "Nilai", "Predikat"]],
+      head: [["Mata Pelajaran", "Guru", "Lisan", "Tulisan", "Tashnif", "Praktek", "Nilai", "Predikat", "Keterangan"]],
       body: rows
     });
 

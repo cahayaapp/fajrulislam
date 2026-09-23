@@ -10,7 +10,7 @@
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
-  <script src="../js/student-program-applicability.js?v=3"></script>
+  <script src="../js/student-program-applicability.js?v=5"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -1721,6 +1721,8 @@
           nilaiAsli,
           nilaiDisesuaikan: nilai !== nilaiAsli,
           guru: kosong(item?.guru_penguji, ""),
+          is_remedial: item?.is_remedial === true,
+          keterangan: String(item?.keterangan || "").trim(),
           kategori: item?.kategori_halqah || "",
           kelas: item?.kelas_kelompok || "",
           id: item?.id || ""
@@ -1947,7 +1949,7 @@
         <td class="center">${index + 1}</td>
         <td><strong>${escapeHtml(item.mapel)}</strong></td>
         <td class="center"><strong>${item.nilai.toFixed(1)}</strong></td>
-        <td class="center">${statusNilai(item.nilai)}</td>
+        <td>${escapeHtml([item.is_remedial?'Remedial pada penilaian semester':'',item.keterangan].filter(Boolean).join(' · ')||'-')}</td>
         <td>${escapeHtml(kosong(item.guru))}</td>
       </tr>
     `).join("");

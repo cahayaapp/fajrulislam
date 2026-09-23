@@ -15,6 +15,7 @@
     kelas2putra: { count: 5, total: 22, only: ['ALIF SAMUDRA', 'EZA FEBRI AL FADZRI', 'MUHAMMAD ABIL IRWANSYAH', 'MUHAMMAD IZAM SAPUTRA', 'FAUZAN IBNI JABAR'] }
   };
   const aliases = { cahyiziszam: 'CAHYIS ISZAM', ezhafebrialfadzri: 'EZA FEBRI AL FADZRI' };
+  const studentName = value => typeof value === 'string' ? value : String(value?.namaSantri || value?.nama_santri || value?.nama || value?.name || value?.label || '').trim();
   function identityKey(name, className = '') {
     const normalized = key(name);
     return key(aliases[normalized] || (normalized === 'nurul' && key(className) === 'kelas2putri' ? 'AISYAH NURUL AULIA' : name));
@@ -24,8 +25,9 @@
     const requested = context.className || context.kelas || '';
     const matches = [];
     for (const [className, values] of Object.entries(classes)) {
-      for (const canonical of Object.values(values || {})) {
-        if (typeof canonical === 'string' && identityKey(canonical, className) === identityKey(name, requested || className))
+      for (const raw of Object.values(values || {})) {
+        const canonical = studentName(raw);
+        if (canonical && identityKey(canonical, className) === identityKey(name, requested || className))
           matches.push({ name: canonical, className, key: identityKey(canonical, className) });
       }
     }
@@ -39,6 +41,8 @@
   }
   function assignmentKey(name, assignments = {}, context = {}) {
     const student = resolveStudent(name, context);
+    const stableId = String(context.studentId || context.santriId || '').trim();
+    if (stableId && Object.prototype.hasOwnProperty.call(assignments, stableId)) return stableId;
     if (Object.prototype.hasOwnProperty.call(assignments, student.key)) return student.key;
     const matches = Object.entries(assignments).filter(([id, record]) =>
       identityKey(record?.namaSantri || record?.nama_santri || id, student.className) === student.key);
@@ -53,7 +57,7 @@
   function auditRoster(classes) {
     return Object.entries(CURRENT).map(([classKey, rule]) => {
       const className = Object.keys(classes).find(name => key(name) === classKey) || classKey;
-      const names = Object.values(classes[className] || {}).filter(name => typeof name === 'string');
+      const names = Object.values(classes[className] || {}).map(studentName).filter(Boolean);
       const tahsin = names.filter(name => currentProgram(name, { classes, className }) === 'TAHSIN').length;
       const missing = [...(rule.only || rule.except),...(rule.required || [])].filter(name => !names.some(actual => identityKey(actual, className) === key(name)));
       return { className, tahsin, tahfiz: names.length - tahsin, total: names.length,
@@ -88,12 +92,12 @@
     const entries = history.filter(Boolean).map(item => ({
       effectiveFrom: date(item.effectiveFrom || item.berlakuMulai || item.tanggalMulai),
       program: program(item.programQuran || item.program),
-      level: level(item.tahsinLevel || item.levelTahsin || item.level_tahsin)
+      level: level(item.tahsinLevel || item.levelTahsin || item.level_tahsin), source: 'assignment'
     }));
     if (source.programQuran || source.program) entries.push({
       effectiveFrom: date(source.effectiveFrom || source.berlakuMulai || source.updatedAt),
       program: program(source.programQuran || source.program),
-      level: level(source.tahsinLevel || source.levelTahsin || source.level_tahsin)
+      level: level(source.tahsinLevel || source.levelTahsin || source.level_tahsin), source: 'assignment'
     });
     const valid = entries.filter(item => item.effectiveFrom && item.effectiveFrom <= at)
       .sort((a, b) => a.effectiveFrom.localeCompare(b.effectiveFrom));
@@ -102,18 +106,25 @@
     if (scoreRecord && date(scoreRecord.programPeriodDate || scoreRecord.tanggal_ujian || scoreRecord.tanggal) === at) {
       const scoreProgram = program(scoreRecord.programQuran || scoreRecord.program_quran);
       const scoreLevel = level(scoreRecord.tahsinLevel || scoreRecord.levelTahsin || scoreRecord.level_tahsin);
-      if (scoreProgram) return { effectiveFrom: at, program: scoreProgram, level: scoreLevel };
+      if (scoreProgram) return { effectiveFrom: at, program: scoreProgram, level: scoreLevel, source: 'score' };
     }
     return null;
   }
   function getQuranProgramPlacement(studentName, periodDate, assignments = {}, scoreRecord = null, context = {}) {
     const historical = assignmentFor(studentName, periodDate, assignments, scoreRecord, context);
-    const override = (context.current || date(periodDate) >= CURRENT_FROM) ? currentProgram(studentName, context) : '';
+    const at = date(periodDate);
+    const baselineProgram = at >= CURRENT_FROM ? currentProgram(studentName, context) : '';
     const source = assignments[assignmentKey(studentName, assignments, context)] || {};
-    const programQuran = override || historical?.program || (context.current ? program(source.programQuran) : '') || null;
+    // The confirmed roster is a dated baseline, not a permanent override. A later
+    // explicit program change (Tahsin ↔ Tahfiz) must win for its effective period.
+    const baseline = baselineProgram ? { program: baselineProgram, level: '', effectiveFrom: CURRENT_FROM } : null;
+    const selected = historical && (!baseline || (historical.source !== 'score' && historical.effectiveFrom >= baseline.effectiveFrom)) ? historical
+      : baseline ? { ...baseline, level: historical?.program === baseline.program ? historical.level || '' : '' }
+      : null;
+    const programQuran = selected?.program || (context.current ? program(source.programQuran) : '') || null;
     // A stale Tahfiz level is never evidence of a Tahsin placement.
-    const tahsinLevel = programQuran === 'TAHSIN' && historical?.program === 'TAHSIN' ? historical.level || null : null;
-    return { programQuran, tahsinLevel, effectiveFrom: historical?.effectiveFrom || (override ? CURRENT_FROM : null) };
+    const tahsinLevel = programQuran === 'TAHSIN' && selected?.program === 'TAHSIN' ? selected.level || null : null;
+    return { programQuran, tahsinLevel, effectiveFrom: selected?.effectiveFrom || null };
   }
   function applicable(studentName, selectedSubject, periodDate, assignments = {}, scoreRecord = null, context = {}) {
     const kind = subject(selectedSubject);
@@ -158,6 +169,6 @@
     return `${year}-${String(month).padStart(2, '0')}-${String(new Date(year, month, 0).getDate()).padStart(2, '0')}`;
   }
   return { key, date, level, program, subject, assignmentFor, applicable, periodDate, CURRENT_FROM,
-    identityKey, resolveStudent, assignmentKey, currentProgram, auditRoster, getQuranProgramPlacement, reportLabel,
+    identityKey, studentName, resolveStudent, assignmentKey, currentProgram, auditRoster, getQuranProgramPlacement, reportLabel,
     isExplicitClass: className => !!CURRENT[key(className)] };
 });

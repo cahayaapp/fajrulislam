@@ -54,7 +54,11 @@
       if(role==='SUPERVISOR'&&a.supervisedRoles?.includes('MEDIA')&&(!a.divisionIds?.length||a.divisionIds.includes('MEDIA')))return {ok:true,reason:'MEDIA_CONTENT_READER'};
       return deny('PERMISSION_DENIED');
     }
-    if(e.policy==='manager-education-v2')return role==='MANAJER'&&R.isEducationManager(a)&&['PUTRA','PUTRI'].includes(a.unit)?{ok:true,reason:'MANAGER_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
+    if(e.policy==='manager-education-v2'){
+      if(role==='MANAJER'&&R.isEducationManager(a)&&['PUTRA','PUTRI'].includes(a.unit))return {ok:true,reason:'MANAGER_EDUCATION_SCOPE'};
+      if(parsed.params.get('view')==='scores'&&!menuId&&((role==='SUPERVISOR'&&R.canManageTahsinLevels(role,a))||(role==='DIREKTUR'&&a.unit==='ALL')))return {ok:true,reason:'EDUCATION_SCORE_REVIEW'};
+      return deny('PERMISSION_DENIED');
+    }
     if(e.policy==='tahsin-placement-v2')return R.canManageTahsinLevels(role,a)?{ok:true,reason:'TAHSIN_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='manager-character-v2')return role==='MANAJER'&&R.isCharacterManager(a)?{ok:true,reason:'MANAGER_CHARACTER_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='supervisor-layanan-v2'){

@@ -1300,6 +1300,15 @@ body.cahaya-guru-executive:before{
 #tabelEvaluasi .note-input::placeholder{color:#9aabc2;font-weight:650}
 #tabelEvaluasi .note-input:focus{border-color:#69b7ff;background:#fff;box-shadow:0 0 0 4px rgba(39,142,240,.09)}
 #tabelEvaluasi .note-input:disabled{opacity:.72;background:#f1f5fa;color:#6e819d}
+#scorePanel #tabelEvaluasi .remedial-box{display:block!important;width:100%!important;min-width:0!important;margin:0!important;padding:11px 12px!important;border:1px solid #dfeaf6!important;border-radius:15px!important;background:#f8fbff!important;box-sizing:border-box!important}
+#scorePanel #tabelEvaluasi label.remedial-control{position:static!important;inset:auto!important;display:grid!important;grid-template-columns:20px minmax(0,1fr) auto!important;align-items:center!important;gap:9px!important;width:100%!important;min-width:0!important;max-width:none!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;color:#16436c!important;transform:none!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important;white-space:normal!important;text-align:left!important;font-weight:700!important;cursor:pointer!important;box-sizing:border-box!important}
+#scorePanel #tabelEvaluasi label.remedial-control::before,#scorePanel #tabelEvaluasi label.remedial-control::after{display:none!important;content:none!important}
+#scorePanel #tabelEvaluasi .remedial-input{position:static!important;inset:auto!important;display:block!important;appearance:auto!important;-webkit-appearance:checkbox!important;width:20px!important;min-width:20px!important;max-width:20px!important;height:20px!important;min-height:20px!important;max-height:20px!important;margin:0!important;padding:0!important;border:initial!important;border-radius:3px!important;background:initial!important;box-shadow:none!important;transform:none!important;accent-color:#208b9b!important}
+#scorePanel #tabelEvaluasi .remedial-copy{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:2px!important;min-width:0!important;width:auto!important;margin:0!important;padding:0!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important;white-space:normal!important}
+#scorePanel #tabelEvaluasi .remedial-title{display:block!important;margin:0!important;color:#16436c!important;font-size:.72rem!important;font-weight:900!important;line-height:1.25!important;writing-mode:horizontal-tb!important}
+#scorePanel #tabelEvaluasi .remedial-help{display:block!important;margin:0!important;color:#64748b!important;font-size:.62rem!important;font-weight:650!important;line-height:1.4!important;overflow-wrap:anywhere!important;writing-mode:horizontal-tb!important}
+#scorePanel #tabelEvaluasi .remedial-badge{display:none;margin:0!important;padding:3px 8px!important;border-radius:99px!important;background:#def7f2!important;color:#087c72!important;font-size:.58rem!important;font-weight:900!important;white-space:nowrap!important;writing-mode:horizontal-tb!important}
+#scorePanel #tabelEvaluasi tr.is-remedial .remedial-badge{display:inline-flex!important}
 /* V150: layout final, aman dari style global dan layar telepon */
 #sceneType .c53-choice{display:grid!important;grid-template-columns:58px minmax(0,1fr) 24px!important;grid-template-rows:auto auto!important;column-gap:14px!important;align-items:center!important;min-height:96px!important;padding:14px!important;text-align:left!important}
 #sceneType .c53-choice:before{position:static!important;grid-column:1!important;grid-row:1/3!important;transform:none!important;width:58px!important;height:58px!important}
@@ -1590,6 +1599,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
       <span class="finalized-badge">✓ NILAI FINAL</span>
       <div class="finalized-copy"><b>Periode ini sudah dikunci</b><p>Nilai periode ini telah dikirim final dan tidak dapat diedit.</p></div>
     </div>
+    <div id="revisionBanner" class="finalized-banner" role="status"><div class="finalized-copy"><b>Sesi dibuka untuk revisi</b><p>Perbaiki nilai, keterangan, atau penanda Remedial, lalu finalisasi kembali. <span id="revisionReason"></span></p></div></div>
 
     <div class="stats-grid">
       <div class="stat-mini">
@@ -1662,14 +1672,16 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
       <div><span>Jumlah Santri</span><b id="finalCtxStudents">0</b></div>
       <div><span>Nilai Terisi</span><b id="finalCtxFilled">0</b></div>
     </div>
+    <label style="display:flex;align-items:flex-start;gap:9px;margin:12px 0;color:#18345f"><input type="checkbox" id="finalReviewed" onchange="document.getElementById('btnConfirmFinal').disabled=!this.checked" /> Saya sudah memeriksa seluruh nilai, keterangan, dan penanda Remedial.</label>
     <div class="nilai-final-actions">
       <button type="button" class="nilai-final-cancel" id="btnCancelFinal" onclick="closeFinalConfirmation()">Batal</button>
-      <button type="button" class="nilai-final-confirm" id="btnConfirmFinal" onclick="confirmFinalSubmission()">Kirim Nilai Final</button>
+      <button type="button" class="nilai-final-confirm" id="btnConfirmFinal" onclick="confirmFinalSubmission()" disabled>Finalisasi &amp; Kunci Nilai</button>
     </div>
   </section>
 </div>
 
-<script src="../js/student-program-applicability.js?v=3"></script>
+<script src="../js/student-program-applicability.js?v=5"></script>
+<script src="../js/quran-menu-roster.js?v=4"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getDatabase, ref, push, get, remove, set, update, query, orderByChild, equalTo, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -1742,6 +1754,10 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   let rosterRevision = 0;
   let existingScoreRecords = {};
   let currentSessionFinal = false;
+  let scoreStatusVerified = false;
+  let currentRevisionMarker = null;
+  let scoreWriting = false;
+  let scoreFinalizing = false;
   let scorePageState = "unchanged";
   let finalSubmissionRows = [];
   let finalTriggerButton = null;
@@ -1752,8 +1768,8 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const stateNote = document.getElementById("draftStateNote");
     const totalWeight = getKomponenAktif().reduce((sum, item) => sum + item.bobot, 0);
     const labels = {
-      unchanged: "💾 Simpan Nilai Ini Dulu",
-      changed: "💾 Simpan Perubahan",
+      unchanged: currentRevisionMarker ? "💾 Simpan Perbaikan" : "💾 Simpan Nilai Ini Dulu",
+      changed: currentRevisionMarker ? "💾 Simpan Perbaikan" : "💾 Simpan Perubahan",
       saving: "⏳ Menyimpan...",
       saved: "✓ Tersimpan",
       final: "🔒 Nilai Final"
@@ -1767,7 +1783,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     };
     if (saveButton) {
       saveButton.innerHTML = labels[scorePageState] || labels.unchanged;
-      saveButton.disabled = scorePageState === "saving" || scorePageState === "final" || !isWeightValid(totalWeight);
+      saveButton.disabled = !scoreStatusVerified || scorePageState === "saving" || scorePageState === "final" || !isWeightValid(totalWeight);
     }
     if (stateNote) {
       stateNote.dataset.state = scorePageState;
@@ -1777,7 +1793,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   }
 
   function hasUnsavedScoreChanges() {
-    return [...document.querySelectorAll("#nilaiSantriBody .input-dinamis, #nilaiSantriBody .note-input")]
+    return [...document.querySelectorAll("#nilaiSantriBody .input-dinamis, #nilaiSantriBody .note-input, #nilaiSantriBody .remedial-input")]
       .some(input => input.dataset.dirty === "1");
   }
 
@@ -1807,6 +1823,8 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     Object.entries(context).forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.textContent = value; });
     const modal = document.getElementById("finalConfirmModal");
     modal?.classList.add("open");
+    document.getElementById('finalReviewed').checked=false;
+    document.getElementById('btnConfirmFinal').disabled=true;
     modal?.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
     requestAnimationFrame(() => document.getElementById("btnCancelFinal")?.focus());
@@ -1938,8 +1956,9 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   window.syncJenisUjian=function(){};
 
   function normalizeArray(value) {
-    if (Array.isArray(value)) return value.filter(Boolean).map(String);
-    if (value && typeof value === "object") return Object.values(value).filter(Boolean).map(String);
+    const name=value=>window.CahayaQuranMenuRoster?.studentName(value)||(typeof value==='string'?value:String(value?.namaSantri||value?.nama_santri||value?.nama||value?.name||''));
+    if (Array.isArray(value)) return value.map(name).filter(Boolean);
+    if (value && typeof value === "object") return Object.values(value).map(name).filter(Boolean);
     return [];
   }
   function buildClassSource() {
@@ -1979,6 +1998,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   function activeAssessment(){ return ASSESSMENT_TYPES[currentAssessmentKey] || null; }
   function resetExamPeriod(){
     rosterRevision++;activeStudentList=[];existingScoreRecords={};
+    scoreStatusVerified=false;currentRevisionMarker=null;
     document.getElementById('jenisUjian').innerHTML='<option value=""></option>';
     document.getElementById('periodChooser').innerHTML='<option value=""></option>';
     document.getElementById('periodeUjian').value='';
@@ -2068,12 +2088,14 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   };
   window.examSubjectChanged=function(){
     rosterRevision++;
+    scoreStatusVerified=false;currentRevisionMarker=null;
     const classes=classesForActiveAssessment();
     const info=document.getElementById('subjectClassInfo'); if(info)info.textContent=classes.length?`Kelas otomatis: ${classes.join(' • ')}`:'Belum ada kelas pada jadwal Anda.';
     document.getElementById('scorePanel').hidden=true;setupConfirmed=false;currentSessionFinal=false;
   };
   window.selectExamType=function(type){
     rosterRevision++;
+    scoreStatusVerified=false;currentRevisionMarker=null;
     document.getElementById('jenisUjian').innerHTML=`<option value="${type}">${type}</option>`;document.getElementById('jenisUjian').value=type;
     document.getElementById('periodChooser').value='';setupConfirmed=false;
     renderPeriodButtons(type);showExamScene('period');
@@ -2093,6 +2115,9 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const source=buildClassSource(), selected=document.getElementById('examClassSelect').value, result=[];
     if(!classesForActiveAssessment().includes(selected))return[];
     const period=CahayaStudentProgramApplicability.periodDate(currentExamParams());
+    if(CahayaStudentProgramApplicability.subject(currentAssessmentKey)){
+      return CahayaQuranMenuRoster.resolveAssessmentStudents({classes:source,selectedClasses:[selected],assessmentKey:currentAssessmentKey,periodDate:period,assignments:quranAssignments});
+    }
     normalizeArray(source[selected]).forEach(name=>{
       const eligibility=CahayaStudentProgramApplicability.applicable(name,currentAssessmentKey,period,quranAssignments,null,{classes:source,className:selected});
       if(eligibility.applicable)result.push({name,className:selected,tahsinLevel:eligibility.level});
@@ -2113,7 +2138,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     activeStudentList=buildStudentsForSelectedSubject();
     if(!activeStudentList.length){
       setupConfirmed=true;document.getElementById('scorePanel').hidden=false;
-      renderEmpty(CahayaStudentProgramApplicability.subject(currentAssessmentKey)?'Belum ada santri pada kelas ini yang mengikuti '+config.label+'.':'Belum ada santri pada kelas ini.');
+      renderEmpty(currentAssessmentKey==='tahfiz'?'Peserta Tahfiz belum ditemukan untuk kelas/kelompok yang Anda ampu.':CahayaStudentProgramApplicability.subject(currentAssessmentKey)?'Belum ada santri pada kelas ini yang mengikuti '+config.label+'.':'Belum ada santri pada kelas ini.');
       document.getElementById('scorePanel').scrollIntoView({behavior:'smooth',block:'start'});return;
     }
     const classes=[...new Set(activeStudentList.map(x=>x.className))];
@@ -2219,7 +2244,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     tbody.innerHTML=activeStudentList.map((item,index)=>{
       const name=item.name||item, className=item.className||"", displayName=cleanStudentDisplayName(name);
       const componentCells=activeComponents.map(component=>`<td class="score-cell" data-label="${escapeHtml(component.nama)}"><span class="score-component-label"><span>${escapeHtml(component.nama)}</span><span class="score-component-weight">${component.bobot}%</span></span><input type="number" inputmode="decimal" min="0" max="100" step="0.1" class="score-input input-dinamis" data-id="${component.id}" data-bobot="${component.bobot}" aria-label="Nilai ${escapeHtml(component.nama)} ${escapeHtml(displayName)}" oninput="markScoreDirty(this);hitungTotal(this)" placeholder="0 – 100" /></td>`).join("");
-      return `<tr class="student-score-card state-empty${index===0?' expanded':''}" data-nama="${escapeHtml(name)}" data-kelas="${escapeHtml(className)}" data-search="${escapeHtml(normalizeSearchText(displayName+" "+className))}"><td class="student-no">${index+1}</td><td class="student-name"><button type="button" class="student-card-toggle" aria-expanded="${index===0?'true':'false'}" onclick="toggleStudentScoreCard(this)"><span class="student-card-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c.5-5 3-7.5 7.5-7.5s7 2.5 7.5 7.5Z"/></svg></span><span class="student-card-copy"><b>${escapeHtml(displayName)}</b><span class="class-mini">${escapeHtml(className)}</span></span><span class="student-card-summary"><span class="student-card-total-label">Total</span><span class="student-card-total-value">—</span></span><span class="student-card-chevron" aria-hidden="true">⌃</span></button></td><td class="student-state-badge">○ Belum diisi</td>${componentCells}<td class="nilai-total" data-label="Nilai Total"><span class="total-label">Nilai Total</span><span class="total-pill">—</span></td><td class="note-cell" data-label="Keterangan"><span class="note-card-label">▤ Keterangan</span><textarea class="note-input" data-dirty="0" rows="2" maxlength="500" aria-label="Keterangan ${escapeHtml(displayName)}" placeholder="Tulis keterangan bila diperlukan, misalnya sebab nilai 0..." oninput="markNoteDirty(this)"></textarea></td></tr>`;
+      return `<tr class="student-score-card state-empty${index===0?' expanded':''}" data-nama="${escapeHtml(name)}" data-student-id="${escapeHtml(item.studentId||'')}" data-kelas="${escapeHtml(className)}" data-search="${escapeHtml(normalizeSearchText(displayName+" "+className))}"><td class="student-no">${index+1}</td><td class="student-name"><button type="button" class="student-card-toggle" aria-expanded="${index===0?'true':'false'}" onclick="toggleStudentScoreCard(this)"><span class="student-card-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c.5-5 3-7.5 7.5-7.5s7 2.5 7.5 7.5Z"/></svg></span><span class="student-card-copy"><b>${escapeHtml(displayName)}</b><span class="class-mini">${escapeHtml(className)}</span></span><span class="student-card-summary"><span class="student-card-total-label">Total</span><span class="student-card-total-value">—</span></span><span class="student-card-chevron" aria-hidden="true">⌃</span></button></td><td class="student-state-badge">○ Belum diisi</td>${componentCells}<td class="nilai-total" data-label="Nilai Total"><span class="total-label">Nilai Total</span><span class="total-pill">—</span></td><td class="note-cell"><div class="remedial-box"><label class="remedial-control"><input type="checkbox" class="remedial-input" data-dirty="0" onchange="markRemedialDirty(this)"><span class="remedial-copy"><span class="remedial-title">Remedial</span><small class="remedial-help">Centang jika nilai ini hasil remedial. Keterangan Remedial tampil pada laporan.</small></span><span class="remedial-badge">Remedial</span></label></div><span class="note-card-label">▤ Keterangan</span><textarea class="note-input" data-dirty="0" rows="2" maxlength="500" aria-label="Keterangan ${escapeHtml(displayName)}" placeholder="Tulis keterangan bila diperlukan, misalnya sebab nilai 0..." oninput="markNoteDirty(this)"></textarea></td></tr>`;
     }).join("");
     activeStudentList.forEach((item,index)=>{
       const row=tbody.querySelectorAll('tr[data-nama]')[index];
@@ -2355,6 +2380,29 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   function scoreFinalPath(params = currentExamParams()) {
     return `cahaya_app/nilai_input_final/${scoreSessionKey(params)}`;
   }
+  async function verifyWritableScoreSession(params,changedRows=[]){
+    if(!scoreStatusVerified)throw new Error('Status sesi belum terverifikasi. Muat ulang periode.');
+    const marker=(await get(ref(db,scoreFinalPath(params)))).val();
+    if(marker?.status==='FINAL'||marker?.locked===true)throw new Error('Sesi telah Final. Muat ulang untuk melihat status terbaru.');
+    if(currentRevisionMarker){
+      if(marker?.status!=='REVISION_OPEN'||marker?.revisionCycle!==currentRevisionMarker.revisionCycle||marker?.sessionKey!==scoreSessionKey(params))throw new Error('Siklus revisi berubah. Muat ulang sebelum menyimpan.');
+    }else if(marker?.status==='REVISION_OPEN'||Object.values(existingScoreRecords).some(x=>x?.data?.status_nilai==='FINAL')){
+      throw new Error('Sesi berubah sejak dimuat. Muat ulang sebelum menyimpan.');
+    }
+    if(changedRows.length){
+      const current=(await get(ref(db,scoreIndexPath(params)))).val()||{};
+      for(const row of changedRows){
+        const key=scoreStudentKey(row.dataset.nama,row.dataset.kelas||'');
+        const earlier=existingScoreRecords[key]?.data,currentItem=current[key]?.data;
+        if(earlier&&!currentItem&&existingScoreRecords[key]?.recordKey){
+          const item=existingScoreRecords[key];
+          const source=(await get(ref(db,`${item.dbPath}/${item.recordKey}`))).val();
+          if(!source||String(source.updated_at||source.timestamp||'')!==String(earlier.updated_at||earlier.timestamp||''))throw new Error(`Nilai ${row.dataset.nama} berubah di tab lain. Muat ulang.`);
+        }else if(String(earlier?.updated_at||'')!==String(currentItem?.updated_at||'')||Boolean(earlier)!==Boolean(currentItem))throw new Error(`Nilai ${row.dataset.nama} berubah di tab lain. Muat ulang sebelum menyimpan.`);
+      }
+    }
+    return marker;
+  }
 
   function teacherMatchesSession(value, params = {}) {
     const source = normalizeTeacherIdentity(value || "");
@@ -2460,6 +2508,10 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
 
   async function loadExistingScoresForCurrentSetup() {
     const revision=rosterRevision;
+    scoreStatusVerified=false;
+    currentRevisionMarker=null;
+    currentSessionFinal=true;
+    applyFinalState();
     closeFinalConfirmation(false);
     existingScoreRecords = {};
     currentSessionFinal = false;
@@ -2484,7 +2536,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
 
     try {
       // 1) Indeks sesi baru V80.5.
-      const indexedValue = await cachedPathValue(scoreIndexPath(params), 10 * 60 * 1000);
+      const indexedValue = (await get(ref(db,scoreIndexPath(params)))).val();
       if(revision!==rosterRevision)return;
       if (indexedValue) acceptIndexedData(indexedValue || {});
 
@@ -2535,6 +2587,8 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           noteInput.value = String(record.keterangan ?? record.catatan ?? "");
           noteInput.dataset.dirty = "0";
         }
+        const remedial=row.querySelector('.remedial-input');
+        if(remedial){remedial.checked=record.is_remedial===true;remedial.dataset.dirty='0';row.classList.toggle('is-remedial',remedial.checked)}
         const anyFilled = [...row.querySelectorAll(".input-dinamis")].some(input => input.value !== "");
         if (anyFilled) loadedCount++;
         recalcScoreRow(row);
@@ -2542,8 +2596,9 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
 
       // Marker FINAL lama tidak lagi dipercaya untuk mengunci sesi baru.
       // Marker V80.5 harus membawa identitas sesi lengkap dan cocok dengan guru/mapel/periode/kelas saat ini.
-      const marker = await cachedPathValue(scoreFinalPath(params), 10 * 60 * 1000);
+      const marker = (await get(ref(db,scoreFinalPath(params)))).val();
       if(revision!==rosterRevision)return;
+      if(marker&&(marker.sessionKey&&marker.sessionKey!==scoreSessionKey(params)||!['FINAL','REVISION_OPEN'].includes(marker.status)))throw new Error('Penanda sesi nilai tidak dikenali.');
       const markerFinal = markerMatchesSession(marker, params);
 
       // Kompatibilitas FINAL lama: hanya dianggap final bila SETIAP santri aktif memiliki record FINAL
@@ -2554,18 +2609,21 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
         return Boolean(item?.data && recordMatchesSession(item.data, params) && String(item.data.status_nilai || "").toUpperCase() === "FINAL");
       });
 
-      currentSessionFinal = Boolean(markerFinal || rosterFinal);
+      currentRevisionMarker=marker?.status==='REVISION_OPEN'&&marker?.sessionKey===scoreSessionKey(params)?marker:null;
+      currentSessionFinal = Boolean(markerFinal || (rosterFinal&&!currentRevisionMarker));
+      scoreStatusVerified=true;
       applyFinalState();
       if (!currentSessionFinal) setScorePageState("unchanged");
       updateStats();
       if (currentSessionFinal) showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
       else if (loadedCount) showToast("success", "Nilai sebelumnya dimuat", `${loadedCount} data santri sudah terisi dan dapat dilanjutkan atau diedit.`);
     } catch (error) {
-      currentSessionFinal = false;
+      currentSessionFinal = true;
+      scoreStatusVerified=false;
       applyFinalState();
       setScorePageState("unchanged");
       console.warn("Nilai sebelumnya belum dapat dimuat:", error);
-      showToast("error", "Status nilai gagal diperiksa", "Sesi tidak dikunci otomatis. Muat ulang halaman sebelum mengirim nilai final.");
+      showToast("error", "Status nilai gagal diperiksa", "Nilai dikunci sementara. Muat ulang setelah koneksi pulih.");
     }
   }
 
@@ -2574,17 +2632,22 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const finalButton = document.getElementById("btnFinal");
     const note = document.getElementById("finalLockNote");
     const banner = document.getElementById("finalizedBanner");
-    document.querySelectorAll("#nilaiSantriBody .input-dinamis, #nilaiSantriBody .note-input").forEach(input => { input.disabled = currentSessionFinal; });
+    document.querySelectorAll("#nilaiSantriBody .input-dinamis, #nilaiSantriBody .note-input, #nilaiSantriBody .remedial-input").forEach(input => { input.disabled = currentSessionFinal||!scoreStatusVerified; });
     document.querySelectorAll("#nilaiSantriBody tr[data-nama]").forEach(updateStudentCardState);
     if (saveButton) {
       saveButton.hidden = currentSessionFinal;
+      saveButton.disabled = !scoreStatusVerified;
     }
     if (finalButton) {
       finalButton.hidden = currentSessionFinal;
-      finalButton.disabled = currentSessionFinal;
-      if (!currentSessionFinal) finalButton.innerHTML = "🔒 Kirim Nilai Final (Tidak Bisa Diedit Lagi)";
+      finalButton.disabled = currentSessionFinal||!scoreStatusVerified;
+      if (!currentSessionFinal) finalButton.innerHTML = "🔒 Finalisasi & Kunci Nilai";
     }
     banner?.classList.toggle("visible", currentSessionFinal);
+    const revisionBanner=document.getElementById('revisionBanner');
+    revisionBanner?.classList.toggle('visible',Boolean(currentRevisionMarker&&!currentSessionFinal));
+    if(currentRevisionMarker)document.getElementById('revisionReason').textContent=`Alasan: ${currentRevisionMarker.revisionReason||'—'}`;
+    if(saveButton&&!currentSessionFinal)saveButton.textContent=currentRevisionMarker?'Simpan Perbaikan':'Simpan Draft';
     if (note) note.textContent = currentSessionFinal ? "Data ditampilkan sebagai arsip nilai final." : "Gunakan tombol final hanya setelah seluruh komponen nilai selesai diinput.";
     setScorePageState(currentSessionFinal ? "final" : scorePageState);
   }
@@ -2600,12 +2663,18 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     if (input) { input.dataset.dirty = "1"; updateStudentCardState(input.closest("tr")); }
     setScorePageState("changed");
   };
+  window.markRemedialDirty=function(input){
+    if(currentSessionFinal||!scoreStatusVerified)return;
+    input.dataset.dirty='1';
+    const row=input.closest('tr');row.classList.toggle('is-remedial',input.checked);
+    updateStudentCardState(row);setScorePageState('changed');
+  };
 
   function updateStudentCardState(row){
     if(!row)return;
     const inputs=[...row.querySelectorAll('.input-dinamis')];
     const entered=inputs.filter(input=>input.value!=="").length;
-    const dirty=inputs.some(input=>input.dataset.dirty==="1")||row.querySelector('.note-input')?.dataset.dirty==="1";
+    const dirty=inputs.some(input=>input.dataset.dirty==="1")||row.querySelector('.note-input')?.dataset.dirty==="1"||row.querySelector('.remedial-input')?.dataset.dirty==="1";
     const saved=Boolean(row.dataset.recordKey);
     let state='empty',label='○ Belum diisi';
     if(currentSessionFinal){state='final';label='🔒 Final';}
@@ -2697,22 +2766,32 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const selected=document.getElementById('examClassSelect').value;
     if(!selected||!classesForActiveAssessment().includes(selected)||rows.length!==activeStudentList.length)return false;
     const classSnap=await get(ref(db,`cahaya_app/master_akademik/kelas/${selected}`));
-    const members=new Set(normalizeArray(classSnap.exists()?classSnap.val():buildClassSource()[selected]).map(CahayaStudentProgramApplicability.key));
+    let liveClasses={...buildClassSource()};
+    if(classSnap.exists())liveClasses[selected]=classSnap.val();
+    else if(!liveClasses[selected]){
+      const classesSnap=await get(ref(db,'cahaya_app/master_akademik/kelas'));
+      if(classesSnap.exists())liveClasses=classesSnap.val()||liveClasses;
+    }
+    const members=new Set(CahayaQuranMenuRoster.scopedMembers(liveClasses,[selected]).map(item=>item.studentId||CahayaStudentProgramApplicability.key(item.name)));
     const period=CahayaStudentProgramApplicability.periodDate(params);
     const quranKind=CahayaStudentProgramApplicability.subject(currentAssessmentKey);
     const liveAssignments={};
     if(quranKind){
-      await Promise.all(rows.map(async row=>{
-        const studentKey=CahayaStudentProgramApplicability.assignmentKey(row.dataset.nama,quranAssignments,{classes:buildClassSource(),className:selected});
+      const scoped=CahayaQuranMenuRoster.scopedMembers(liveClasses,[selected]);
+      await Promise.all(scoped.map(async member=>{
+        const studentKey=CahayaStudentProgramApplicability.assignmentKey(member.name,quranAssignments,{classes:liveClasses,className:member.academicClass,studentId:member.studentId});
         const snap=await get(ref(db,`cahaya_app/program_quran_santri/${studentKey}`));
         if(snap.exists())liveAssignments[studentKey]=snap.val();
       }));
     }
     if(revision!==rosterRevision)return false;
+    const eligible=quranKind?CahayaQuranMenuRoster.resolveAssessmentStudents({classes:liveClasses,selectedClasses:[selected],assessmentKey:currentAssessmentKey,periodDate:period,assignments:liveAssignments}):[];
+    const eligibleKeys=new Set(eligible.map(item=>item.studentId||CahayaStudentProgramApplicability.key(item.name)));
     return rows.every(row=>{
-      if(row.dataset.kelas!==selected||!members.has(CahayaStudentProgramApplicability.key(row.dataset.nama)))return false;
-      const current=CahayaStudentProgramApplicability.applicable(row.dataset.nama,currentAssessmentKey,period,liveAssignments,null,{classes:{...buildClassSource(),[selected]:classSnap.exists()?classSnap.val():buildClassSource()[selected]},className:selected});
-      return current.applicable&&(!quranKind||current.level===(row.dataset.level||''));
+      const stableId=row.dataset.studentId||CahayaStudentProgramApplicability.key(row.dataset.nama);
+      if(row.dataset.kelas!==selected||!members.has(stableId))return false;
+      if(quranKind)return eligibleKeys.has(stableId)&&eligible.find(item=>(item.studentId||CahayaStudentProgramApplicability.key(item.name))===stableId)?.tahsinLevel===(row.dataset.level||'');
+      return true;
     });
   }
 
@@ -2722,6 +2801,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
       if (!options.silent) showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
       return false;
     }
+    if(scoreWriting){if(!options.silent)showToast('info','Sedang menyimpan','Tunggu proses sebelumnya selesai.');return false;}
     const activeComponents = getKomponenAktif();
     const totalWeight = activeComponents.reduce((sum, item) => sum + item.bobot, 0);
 
@@ -2762,11 +2842,12 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const rowsToSave = rows.filter(row => {
       const inputs = [...row.querySelectorAll(".input-dinamis")];
       const noteInput = row.querySelector(".note-input");
-      const dirty = inputs.some(input => input.dataset.dirty === "1") || noteInput?.dataset.dirty === "1";
+      const dirty = inputs.some(input => input.dataset.dirty === "1") || noteInput?.dataset.dirty === "1" || row.querySelector('.remedial-input')?.dataset.dirty === '1';
       const newWithValue = !row.dataset.recordKey && (inputs.some(input => input.value !== "") || String(noteInput?.value || "").trim() !== "");
       return dirty || newWithValue;
     });
 
+    try{await verifyWritableScoreSession(params,rowsToSave)}catch(error){console.error('Status sesi berubah:',error);currentSessionFinal=true;scoreStatusVerified=false;applyFinalState();showToast('error','Sesi tidak dapat disimpan',error.message);return false}
     if (!rowsToSave.length) {
       if (!options.silent) showToast("info", "Tidak ada perubahan", "Nilai yang tampil sudah tersimpan. Silakan ubah atau isi nilai yang belum ada.");
       setScorePageState("saved");
@@ -2774,6 +2855,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     }
 
     setScorePageState("saving");
+    scoreWriting=true;
 
     try {
       const monthly = jenis === "Bulanan";
@@ -2822,6 +2904,10 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           timestamp: oldData.timestamp || nowIso,
           updated_at: nowIso
         };
+        const remedial=row.querySelector('.remedial-input');
+        finalData.is_remedial=Boolean(remedial?.checked);
+        finalData.status_nilai='DRAFT';
+        finalData.locked=false;
 
         const noteInput = row.querySelector(".note-input");
         if (noteInput) {
@@ -2861,6 +2947,13 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
         finalData.komponen_terisi = filledComponents.map(component => component.nama);
         finalData.komponen_belum_terisi = activeComponents.filter(component => !Object.prototype.hasOwnProperty.call(finalData, `nilai_${component.id}`)).map(component => component.nama);
         finalData.status_input = filledComponents.length === activeComponents.length ? "lengkap" : "parsial";
+        if(currentRevisionMarker){
+          const changes={};
+          for(const field of [...activeComponents.map(x=>`nilai_${x.id}`),'keterangan','is_remedial']){
+            if(JSON.stringify(oldData[field]??null)!==JSON.stringify(finalData[field]??null))changes[field]={before:oldData[field]??null,after:finalData[field]??null};
+          }
+          if(Object.keys(changes).length)finalData.revision_history={...(oldData.revision_history||{}),[push(ref(db)).key]:{cycle:currentRevisionMarker.revisionCycle,at:nowIso,by:getActiveUserName(),changes}};
+        }
         if (finalData.status_input === "parsial") partialCount++;
 
         if (!recordKey) recordKey = push(ref(db, dbPath)).key;
@@ -2874,7 +2967,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           namaSantri:studentName,kelas:className,mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||75),
           periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
           statusInput:finalData.status_input||'',statusNilai:finalData.status_nilai||'',recordKey,sourcePath:dbPath,updatedAt:nowIso,
-          keterangan:finalData.keterangan||'',jenisUjian:jenis,tanggalUjian:params.tanggal,tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
+          keterangan:finalData.keterangan||'',is_remedial:finalData.is_remedial,jenisUjian:jenis,tanggalUjian:params.tanggal,tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
         };
         if (monthly) {
           const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -2884,7 +2977,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
             namaSantri:studentName,kelas:className,mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||70),
             periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
             statusInput:finalData.status_input||'',statusNilai:finalData.status_nilai||'',recordKey,updatedAt:nowIso,
-            keterangan:finalData.keterangan||'',jenisUjian:jenis,tanggalUjian:params.tanggal,tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
+            keterangan:finalData.keterangan||'',is_remedial:finalData.is_remedial,jenisUjian:jenis,tanggalUjian:params.tanggal,tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
           };
         }
         nextIndexRecords[studentKey] = indexData;
@@ -2901,6 +2994,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
         row.querySelectorAll(".input-dinamis").forEach(input => { input.dataset.dirty = "0"; });
         const noteInput = row.querySelector(".note-input");
         if (noteInput) noteInput.dataset.dirty = "0";
+        const remedial=row.querySelector('.remedial-input');if(remedial)remedial.dataset.dirty='0';
         updateStudentCardState(row);
       });
       setCachedPathValue(indexBase, existingScoreRecords);
@@ -2919,6 +3013,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
       showToast("error", "Gagal menyimpan", error.message || "Terjadi kesalahan saat mengirim data ke Firebase.");
       return false;
     } finally {
+      scoreWriting=false;
       if (document.body.contains(button) && scorePageState === "saving") setScorePageState(hasUnsavedScoreChanges() ? "changed" : "saved");
     }
   };
@@ -2949,6 +3044,9 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   };
 
   window.confirmFinalSubmission = async function() {
+    if(!document.getElementById('finalReviewed')?.checked)return;
+    if(scoreFinalizing)return;
+    scoreFinalizing=true;
     const rows = finalSubmissionRows.length ? finalSubmissionRows : [...document.querySelectorAll("#nilaiSantriBody tr[data-nama]")];
     closeFinalConfirmation(false);
 
@@ -2957,6 +3055,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     finalButton.innerHTML = "⏳ Mengirim nilai final...";
     const saved = await window.simpanNilaiUjian({silent:true});
     if (!saved) {
+      scoreFinalizing=false;
       finalButton.disabled = false;
       finalButton.innerHTML = "🔒 Kirim Nilai Final (Tidak Bisa Diedit Lagi)";
       return;
@@ -2964,6 +3063,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
 
     try {
       const params = currentExamParams();
+      const priorMarker=await verifyWritableScoreSession(params);
       const monthly = params.jenis === "Bulanan";
       const nowIso = new Date().toISOString();
       const finalBy = getActiveUserName();
@@ -2976,7 +3076,11 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           item = Object.values(existingScoreRecords).find(candidate => String(candidate?.data?.nama_santri || "") === String(row.dataset.nama || ""));
         }
         if (!item?.recordKey || !item?.dbPath || !item?.data) throw new Error(`Data ${row.dataset.nama || "santri"} belum tersimpan.`);
-        const finalData = {...item.data, status_nilai:"FINAL", status_input:"lengkap", locked:true, final_at:nowIso, final_by:finalBy, updated_at:nowIso};
+        const old=item.data;
+        const history=[...(Array.isArray(old.final_history)?old.final_history:[])];
+        if(old.final_at&&!history.some(x=>x.at===old.final_at))history.push({at:old.final_at,by:old.final_by||''});
+        history.push({at:nowIso,by:finalBy,revisionCycle:priorMarker?.revisionCycle||0});
+        const finalData = {...old, is_remedial:old.is_remedial===true, status_nilai:"FINAL", status_input:"lengkap", locked:true, final_at:nowIso, final_by:finalBy, final_history:history, updated_at:nowIso};
         const indexData = {...item, data:finalData, updatedAt:nowIso, status:"FINAL"};
         updates[`${item.dbPath}/${item.recordKey}`] = finalData;
         updates[`${scoreIndexPath(params)}/${studentKey}`] = indexData;
@@ -2985,7 +3089,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           namaSantri:row.dataset.nama,kelas:row.dataset.kelas||'',mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||75),
           periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
           statusInput:'lengkap',statusNilai:'FINAL',recordKey:item.recordKey,sourcePath:item.dbPath,updatedAt:nowIso,
-          keterangan:finalData.keterangan||'',jenisUjian:params.jenis,tanggalUjian:finalData.tanggal_ujian||params.tanggal||'',tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
+          keterangan:finalData.keterangan||'',is_remedial:finalData.is_remedial,jenisUjian:params.jenis,tanggalUjian:finalData.tanggal_ujian||params.tanggal||'',tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
         };
         nextIndexRecords[studentKey] = indexData;
         if (monthly) {
@@ -2996,15 +3100,18 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
             namaSantri:row.dataset.nama,kelas:row.dataset.kelas||'',mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||70),
             periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
             statusInput:'lengkap',statusNilai:'FINAL',recordKey:item.recordKey,updatedAt:nowIso,
-            keterangan:finalData.keterangan||'',jenisUjian:params.jenis,tanggalUjian:finalData.tanggal_ujian||params.tanggal||'',tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
+            keterangan:finalData.keterangan||'',is_remedial:finalData.is_remedial,jenisUjian:params.jenis,tanggalUjian:finalData.tanggal_ujian||params.tanggal||'',tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
           };
         }
       }
       updates[scoreFinalPath(params)] = {
+        ...(priorMarker||{}),
         status:"FINAL", locked:true, finalAt:nowIso, finalBy,
+        finalHistory:[...(priorMarker?.finalHistory||[]),{at:nowIso,by:finalBy,revisionCycle:priorMarker?.revisionCycle||0}],
         sessionVersion:"v805", sessionKey:scoreSessionKey(params),
         jenisPenilaian:params.jenisPenilaian, kodePenilaian:params.kodePenilaian,
         jenisUjian:params.jenis, periode:params.periode, mapel:params.mapel,
+        bulan:params.bulan,tanggalUjian:params.tanggal,
         tahunAkademik:params.tahun, semester:params.semester,
         guru:params.guru, guruKode:params.guruKode || "",
         kelasScope:classScopeFromParams(params).join(" | "),
@@ -3021,6 +3128,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
         sessionStorage.removeItem(`cahaya:tl:index:${guruTindakLanjutPath(params)}`);
       } catch (_) {}
       currentSessionFinal = true;
+      currentRevisionMarker=null;
       applyFinalState();
       finalSubmissionRows = [];
       showToast("success", "Nilai FINAL terkirim", `${rows.length} nilai santri telah dikunci. Nilai tidak dapat diedit lagi dari CAHAYA App.`);
@@ -3030,6 +3138,8 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
       finalButton.innerHTML = "🔒 Kirim Nilai Final (Tidak Bisa Diedit Lagi)";
       setScorePageState(hasUnsavedScoreChanges() ? "changed" : "saved");
       showToast("error", "Gagal mengirim nilai final", error.message || "Nilai belum berhasil dikunci.");
+    } finally {
+      scoreFinalizing=false;
     }
   };
 </script>
