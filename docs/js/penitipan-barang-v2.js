@@ -10,5 +10,8 @@
   function legacyStudent(record,roster){if(record?.santriId)return roster.find(x=>x.id===record.santriId)||null;return uniqueByName(record?.penerima||record?.santriNama||record?.namaSantri,roster,String(record?.unit||'').toLowerCase())}
   function depositPath(x){return`penitipan_barang/${x.unit}/${x.monthKey}/${x.id}`}
   function pointerPath(studentId,recordId){return`penitipan_barang/index_santri/${studentId}/${recordId}`}
-  return Object.freeze({norm,statusValues,statusLabels,statusOf,buildRoster,uniqueByName,linkedStudentIds,legacyStudent,depositPath,pointerPath});
+  function isKajianMalamAhad(context){return String(context||'').toUpperCase()==='KAJIAN_MALAM_AHAD'}
+  function maySubmitOutsideServiceHours(context){const value=String(context||'').toUpperCase();return value==='DARURAT'||isKajianMalamAhad(value)}
+  function countsTowardWeeklyLimit(context){return!isKajianMalamAhad(context)}
+  return Object.freeze({norm,statusValues,statusLabels,statusOf,buildRoster,uniqueByName,linkedStudentIds,legacyStudent,depositPath,pointerPath,isKajianMalamAhad,maySubmitOutsideServiceHours,countsTowardWeeklyLimit});
 });

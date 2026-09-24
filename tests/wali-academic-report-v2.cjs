@@ -24,7 +24,7 @@ const page=fs.readFileSync(require.resolve('../wali/dashboard/akademik.html'),'u
 const input=fs.readFileSync(require.resolve('../guru/inputNilaiUjian.html'),'utf8');
 const manager=fs.readFileSync(require.resolve('../js/manager-education-v2.js'),'utf8');
 const session=fs.readFileSync(require.resolve('../wali/dashboard/script.js'),'utf8');
-for(const contract of ['data-report-tab="bulanan"','data-report-tab="triwulan"','data-report-tab="semester"','readStudentScoreIndex(\'cahaya_app/nilai_ujian\'','selectedPeriodicScores()','rapor-triwulan','rapor-semester'])assert(page.includes(contract),contract);
+for(const contract of ['id="reportTypeStep"','id="reportPeriodStep"','id="reportContentStep"','readStudentScoreIndex(\'cahaya_app/nilai_ujian\'','selectedPeriodicScores()','rapor-triwulan','rapor-semester','checkPublicationAndRender'])assert(page.includes(contract),contract);
 assert(input.includes('/nilai_akademik/${recordKey}`] = finalData'));
 assert(manager.includes('/nilai_akademik/${item.recordKey}`]=data'));
 assert(session.includes('"cahaya_app/nilai_ujian":"nilai_akademik"'));

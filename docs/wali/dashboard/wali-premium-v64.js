@@ -68,6 +68,13 @@
   }
 
   function setupReport(kind){
+    // Laporan Akademik V2 memiliki alur sendiri: jenis → periode → laporan.
+    // Jangan tampilkan pemilih bulan legacy atau memindahkan tombol PDF saat halaman dibuka.
+    if(kind==='akademik'){
+      document.body.classList.add('v63-premium-page','v63-report-page');
+      document.body.classList.remove('v63-await-period');
+      return;
+    }
     document.body.classList.add('v63-premium-page','v63-report-page','v63-await-period');
     const cfg={
       akademik:['Laporan Akademik','Perkembangan belajar, asesmen, tahfiz, murojaah, dan hasil ujian ananda.'],

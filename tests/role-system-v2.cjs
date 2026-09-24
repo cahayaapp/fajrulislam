@@ -44,7 +44,7 @@ test('Supervisor Dapur/Sarpras excludes Pendidikan, including direct data access
 });
 test('Supervisor Pendidikan excludes Dapur and PKBM unless assigned',()=>{
   const s=session('SUPERVISOR',{unit:'PUTRA',supervisedRoles:['GURU_PONDOK']});
-  assert(menu(s,'menu-supervisor-v2'));assert(!menu(s,'menu-review-pendidikan'));assert(!menu(s,'menu-jurnal-sarpras'));
+  assert(menu(s,'menu-supervisor-v2'));assert(menu(s,'menu-review-pendidikan'));assert(menu(s,'menu-kontrol-publikasi-rapor'));assert(!menu(s,'menu-jurnal-sarpras'));
   assert(R.authorize(s,'operations.read',{roleId:'GURU_PONDOK',unit:'PUTRA',programDomain:'KEPONDOKAN'}));
   assert(!R.authorize(s,'operations.read',{roleId:'DAPUR',unit:'PUTRA'}));
   assert(!R.authorize(s,'operations.read',{roleId:'GURU_PKBM',unit:'PUTRA',programDomain:'PKBM'}));

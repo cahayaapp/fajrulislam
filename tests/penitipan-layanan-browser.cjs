@@ -30,6 +30,11 @@ export const set=async(r,value)=>{window.__dbData[r.path]=value;window.__writes.
     });
     const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.goto(origin+'/PKL/penitipan-barang.html');
+    assert.equal(await page.locator('body').getByText("$('penerima').addEventListener",{exact:false}).count(),0,'tidak ada JavaScript mentah di atas halaman');
+    assert.equal(await page.locator('#konteks option[value="KUNJUNGAN_BULANAN"]').count(),0);
+    assert.equal(await page.locator('#konteks option[value="KAJIAN_MALAM_AHAD"]').innerText(),'Saat Kajian Malam Ahad');
+    await page.waitForFunction(()=>window.__reads.includes('cahaya_app/master_akademik/kelas'));
+    assert((await page.evaluate(()=>window.__reads)).includes('cahaya_app/master_akademik/kelas'),'roster mencoba membaca master santri aktif');
     await page.locator('#unit').selectOption('putri');
     await page.locator('#nama').fill('Wali Uji');await page.locator('#hp').fill('081234567891');
     await page.locator('#statusPengantar').selectOption('Wali Santri');

@@ -13,6 +13,7 @@
   <script src="../../js/student-program-applicability.js?v=5"></script>
   <script src="../../js/academic-report-score-policy.js?v=2"></script>
   <script src="../../js/wali-academic-report-v2.js?v=1"></script>
+  <script src="../../js/academic-report-publication-v1.js?v=2"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -315,9 +316,7 @@
     .academic-center-head small{display:block;color:#64748b;font-size:.68rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
     .academic-center-head h1{margin:5px 0 3px;color:#123b65;font-size:clamp(1.35rem,4vw,1.9rem);line-height:1.15}
     .academic-center-head p{margin:0;color:#64748b;font-size:.82rem;font-weight:650}
-    .report-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:14px 0;padding:6px;border:1px solid #dbe7f5;border-radius:17px;background:#edf4fb}
-    .report-tab{min-width:0;min-height:43px;padding:8px 5px;border:0;border-radius:12px;background:transparent;color:#58708e;font:800 .8rem 'Nunito',sans-serif;cursor:pointer}
-    .report-tab.active{background:#fff;color:#0f61d8;box-shadow:0 5px 15px rgba(23,83,151,.12)}
+    .report-flow-step[hidden]{display:none!important}.report-flow-head{display:flex;align-items:center;gap:11px;margin:14px 0}.report-flow-head div{min-width:0}.report-flow-head h2{margin:0;color:#123b65;font-size:1.08rem}.report-flow-head p{margin:3px 0 0;color:#71829a;font-size:.73rem;font-weight:700}.report-back{flex:0 0 auto;min-height:39px;padding:8px 12px;border:1px solid #d7e5f3;border-radius:12px;background:#fff;color:#1764bd;font-weight:900;cursor:pointer}.report-type-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 22px}.report-type-card{min-width:0;padding:19px;text-align:left;border:1px solid #dbe7f4;border-radius:20px;background:linear-gradient(155deg,#fff,#f5f9ff);box-shadow:0 9px 25px rgba(31,71,116,.07);cursor:pointer}.report-type-card:hover{border-color:#9fc7f8;transform:translateY(-1px)}.report-type-card .icon{display:grid;place-items:center;width:42px;height:42px;margin-bottom:13px;border-radius:13px;background:#e9f3ff;font-size:1.25rem}.report-type-card strong{display:block;color:#123b65;font-size:1rem}.report-type-card span{display:block;margin-top:6px;color:#71829a;font-size:.72rem;line-height:1.45;font-weight:650}.report-period-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:13px 0 22px}.report-period-card{min-height:54px;padding:11px;border:1px solid #dbe7f4;border-radius:15px;background:#fff;color:#234b75;font-weight:900;cursor:pointer}.report-period-card:hover{border-color:#80b5f5;background:#f3f8ff}.report-content-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:13px 0}.publication-gate{padding:24px 18px;border:1px dashed #cbdced;border-radius:19px;background:#f8fbff;text-align:center;color:#627a95;line-height:1.55}.publication-gate strong{display:block;margin-bottom:5px;color:#214b77;font-size:.95rem}
     .report-field{display:grid;gap:5px;min-width:145px;flex:1}
     .report-field label{color:#60738e;font-size:.65rem;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
     .report-field select{width:100%;min-height:43px;padding:8px 34px 8px 12px;border:1px solid #d8e5f3;border-radius:12px;background:#fff;color:#17375f;font:800 .78rem 'Nunito',sans-serif}
@@ -342,7 +341,7 @@
       .filter-actions { width: 100%; justify-content: space-between; }
       .header-filter-box { flex: 1; }
       .btn-download-pdf { flex: 0 0 auto; }
-      .report-field{min-width:0}.report-summary{gap:7px}.report-metric{padding:12px 6px}.report-tabs{position:sticky;top:0;z-index:4}
+      .report-field{min-width:0}.report-summary{gap:7px}.report-metric{padding:12px 6px}.report-type-grid{grid-template-columns:1fr}.report-period-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.report-content-toolbar{align-items:stretch;flex-direction:column}.btn-download-pdf{width:100%}
 
       .resume-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; } 
       .kategori-blok { padding: 24px 18px; border-radius: 24px; }
@@ -381,17 +380,18 @@
     <h1>Laporan Akademik</h1>
     <p>Nilai akademik ananda yang telah difinalisasi.</p>
   </div>
-  <div class="report-tabs fade-in" role="tablist" aria-label="Jenis laporan akademik">
-    <button type="button" class="report-tab active" data-report-tab="bulanan" role="tab" aria-selected="true">Bulanan</button>
-    <button type="button" class="report-tab" data-report-tab="triwulan" role="tab" aria-selected="false">Triwulan</button>
-    <button type="button" class="report-tab" data-report-tab="semester" role="tab" aria-selected="false">Semester</button>
-  </div>
-
-  <!-- Blok Filter Terpisah -->
-  <div class="filter-container fade-in">
-    <div class="fc-label"><span style="font-size:1.2rem;">📅</span> Periode laporan</div>
-    <div class="filter-actions">
-      <div class="report-field"><label for="filterTahunAkademik">Tahun Akademik</label><select id="filterTahunAkademik" onchange="renderSemuaData()"></select></div>
+  <section id="reportTypeStep" class="report-flow-step fade-in">
+    <div class="report-flow-head"><div><h2>Pilih Jenis Laporan</h2><p>Tentukan laporan akademik yang ingin Anda lihat.</p></div></div>
+    <div class="report-type-grid" id="reportTypeChoices"></div>
+  </section>
+  <section id="reportPeriodStep" class="report-flow-step fade-in" hidden>
+    <div class="report-flow-head"><button type="button" class="report-back" onclick="backReportFlow()">← Kembali</button><div><h2 id="periodStepTitle">Pilih Periode</h2><p>Pilih periode laporan yang akan dibuka.</p></div></div>
+    <div class="filter-container"><div class="filter-actions"><div class="report-field"><label for="filterTahunAkademik">Tahun Akademik</label><select id="filterTahunAkademik" onchange="handleAcademicYearChange()"></select></div></div></div>
+    <div class="report-period-grid" id="reportPeriodChoices"></div>
+  </section>
+  <section id="reportContentStep" class="report-flow-step fade-in" hidden>
+    <div class="report-content-toolbar"><div class="report-flow-head" style="margin:0"><button type="button" class="report-back" onclick="backReportFlow()">← Kembali</button><div><h2 id="contentStepTitle">Laporan Akademik</h2><p id="contentStepPeriod"></p></div></div><button type="button" class="btn-download-pdf" id="btnDownloadPdf" onclick="downloadLaporanPDF()" disabled><span>⬇️</span> Download PDF Resmi</button></div>
+    <div hidden aria-hidden="true">
       <div class="header-filter-box report-field" id="monthFilterWrap"><label for="filterBulan">Bulan</label>
         <select id="filterBulan" onchange="renderSemuaData()">
           <option value="Januari">Januari</option>
@@ -411,13 +411,10 @@
       </div>
       <div class="report-field" id="quarterFilterWrap" hidden><label for="filterTriwulan">Triwulan</label><select id="filterTriwulan" onchange="renderSemuaData()"><option>Triwulan 1</option><option>Triwulan 2</option><option>Triwulan 3</option><option>Triwulan 4</option></select></div>
       <div class="report-field" id="semesterFilterWrap" hidden><label for="filterSemester">Semester</label><select id="filterSemester" onchange="renderSemuaData()"><option value="Semester 1">Semester 1 / Ganjil</option><option value="Semester 2">Semester 2 / Genap</option></select></div>
-      <button type="button" class="btn-download-pdf" id="btnDownloadPdf" onclick="downloadLaporanPDF()">
-        <span>⬇️</span> Download PDF Resmi
-      </button>
     </div>
-  </div>
-
-
+    <div id="publicationGate" class="publication-gate" hidden></div>
+  </section>
+  <div id="reportOutput" hidden>
   <div id="loadingData">🔄 Sinkronisasi data pendidikan...</div>
 
   <section id="secPeriodik" hidden>
@@ -467,6 +464,7 @@
       <h3 class="kb-title">Laporan Ujian Bulanan</h3>
     </div>
     <div class="eval-list" id="evaluasiListContainer"></div>
+  </div>
   </div>
 
 </div> <!-- Akhir app-container -->
@@ -610,7 +608,9 @@
 
   let globalExams = []; let globalPeriodicExams = []; let globalTahfizReguler = []; let globalTahfizCahaya = []; let globalMurojaah = []; let globalAsesmen = [];
   let currentMonthFilter = ""; let activeStudentName = ""; let activeStudentKey = ""; let activeStudentProfile = {}; let activeReportTab = "bulanan"; let quranAssignments = {};
+  let reportFlowStep='type',selectedReportPeriod='',publicationRecord=null,scoreDataReady=false,publicationCheckToken=0;
   const academicReport = window.CahayaWaliAcademicReportV2;
+  const reportPublication=window.CahayaAcademicReportPublication;
   function currentAcademicYear(){const now=new Date(),year=now.getFullYear(),start=now.getMonth()>=6?year:year-1;return `${start}/${start+1}`}
   function activeYear(){return document.getElementById('filterTahunAkademik')?.value||currentAcademicYear()}
   function examBelongsToStudentProgram(exam){
@@ -633,15 +633,63 @@
     select.value=years.includes(current)?current:fallback;
   }
 
-  function bindReportTabs(){
-    document.querySelectorAll('[data-report-tab]').forEach(button=>button.addEventListener('click',()=>{
-      activeReportTab=button.dataset.reportTab;
-      document.querySelectorAll('[data-report-tab]').forEach(item=>{const active=item===button;item.classList.toggle('active',active);item.setAttribute('aria-selected',active?'true':'false')});
-      document.getElementById('monthFilterWrap').hidden=activeReportTab!=='bulanan';
-      document.getElementById('quarterFilterWrap').hidden=activeReportTab!=='triwulan';
-      document.getElementById('semesterFilterWrap').hidden=activeReportTab!=='semester';
-      renderSemuaData();
-    }));
+  function setFlowStep(step){
+    reportFlowStep=step;
+    document.getElementById('reportTypeStep').hidden=step!=='type';
+    document.getElementById('reportPeriodStep').hidden=step!=='period';
+    document.getElementById('reportContentStep').hidden=step!=='report';
+    if(step!=='report')document.getElementById('reportOutput').hidden=true;
+  }
+  function buildTypeChoices(){
+    const icons={bulanan:'📅',triwulan:'📊',semester:'🎓'};
+    document.getElementById('reportTypeChoices').innerHTML=Object.entries(reportPublication.TYPES).map(([type,config])=>`<button type="button" class="report-type-card" onclick="chooseReportType('${type}')"><span class="icon">${icons[type]}</span><strong>${config.label}</strong><span>${config.description}</span></button>`).join('');
+  }
+  function showReportTypes(){selectedReportPeriod='';publicationRecord=null;setFlowStep('type')}
+  function chooseReportType(type){
+    if(!reportPublication.TYPES[type])return;
+    activeReportTab=type;selectedReportPeriod='';publicationRecord=null;
+    const config=reportPublication.TYPES[type];
+    document.getElementById('periodStepTitle').textContent=type==='bulanan'?'Laporan Akademik Bulanan':config.title;
+    document.getElementById('reportPeriodChoices').innerHTML=config.periods.map(period=>`<button type="button" class="report-period-card" onclick="chooseReportPeriod('${period.replace(/'/g,"\\'")}')">${type==='semester'?(period==='Semester 1'?'Semester 1 / Ganjil':'Semester 2 / Genap'):period}</button>`).join('');
+    setFlowStep('period');
+  }
+  async function chooseReportPeriod(period){
+    selectedReportPeriod=period;
+    if(activeReportTab==='bulanan'){currentMonthFilter=period;document.getElementById('filterBulan').value=period}
+    if(activeReportTab==='triwulan')document.getElementById('filterTriwulan').value=period;
+    if(activeReportTab==='semester')document.getElementById('filterSemester').value=period;
+    const config=reportPublication.TYPES[activeReportTab];
+    document.getElementById('contentStepTitle').textContent=config.title;
+    document.getElementById('contentStepPeriod').textContent=`${period} • Tahun Akademik ${activeYear()}`;
+    setFlowStep('report');
+    await checkPublicationAndRender();
+  }
+  function backReportFlow(){
+    if(reportFlowStep==='report'){publicationRecord=null;document.getElementById('publicationGate').hidden=true;setFlowStep('period');return}
+    showReportTypes();
+  }
+  async function handleAcademicYearChange(){
+    if(reportFlowStep==='report'&&selectedReportPeriod){document.getElementById('contentStepPeriod').textContent=`${selectedReportPeriod} • Tahun Akademik ${activeYear()}`;await checkPublicationAndRender()}
+  }
+  async function checkPublicationAndRender(){
+    const token=++publicationCheckToken,gate=document.getElementById('publicationGate'),output=document.getElementById('reportOutput'),button=document.getElementById('btnDownloadPdf');
+    output.hidden=true;gate.hidden=false;gate.innerHTML='<strong>Memeriksa publikasi rapor…</strong><span>Mohon tunggu sebentar.</span>';button.disabled=true;
+    try{
+      const snapshot=await dbRT.ref(reportPublication.path({studentKey:activeStudentKey,tahunAkademik:activeYear(),type:activeReportTab,period:selectedReportPeriod})).once('value');
+      if(token!==publicationCheckToken)return;
+      publicationRecord=snapshot.val()||null;
+      const legacyMonthlyRecords=activeReportTab==='bulanan'&&scoreDataReady?academicReport.filterScores(globalExams,{tab:'bulanan',year:activeYear(),period:selectedReportPeriod,student:activeStudentProfile,applicable:examBelongsToStudentProgram}):[];
+      const legacyPeriodDate=CahayaStudentProgramApplicability.periodDate({tahun:activeYear(),bulan:selectedReportPeriod,periode:selectedReportPeriod});
+      if(reportPublication.isLegacyMonthlyPublished({marker:publicationRecord,type:activeReportTab,periodDate:legacyPeriodDate,finalRecordCount:legacyMonthlyRecords.length}))publicationRecord={status:reportPublication.STATUS.PUBLISHED,legacyCompatibility:true};
+      if(!reportPublication.isPublished(publicationRecord)){
+        gate.innerHTML='<strong>Laporan periode ini belum diterbitkan.</strong><span>Rapor sedang dalam proses penyelesaian dan peninjauan Supervisor Pendidikan.</span>';
+        return;
+      }
+      gate.hidden=true;output.hidden=false;button.disabled=false;
+      if(scoreDataReady)renderSemuaData();else document.getElementById('loadingData').style.display='block';
+    }catch(error){
+      console.error(error);publicationRecord=null;gate.innerHTML='<strong>Status publikasi belum dapat dimuat.</strong><span>Periksa koneksi lalu coba kembali.</span>';
+    }
   }
 
   function namaCocok(value) {
@@ -658,6 +706,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
+    buildTypeChoices();showReportTypes();
     const session =
       await CahayaWaliSession
         .ready({
@@ -727,11 +776,6 @@
     ).textContent =
       identity.usrahDisplay;
     
-    const today = new Date();
-    currentMonthFilter = isAprilOrEarlyMay(today.toISOString().split('T')[0]) ? "April" : monthMapRev[String(today.getMonth()+1).padStart(2,'0')];
-    document.getElementById('filterBulan').value = currentMonthFilter;
-    bindReportTabs();
-
     try {
       try{
         const placement=await dbRT.ref(`cahaya_app/wali_index/${activeStudentKey}/program_quran/current`).once('value');
@@ -802,16 +846,17 @@
       }).filter(examBelongsToStudentProgram);
       globalPeriodicExams=periodicRows.filter(exam=>academicReport.belongsToStudent(exam,activeStudentProfile)).filter(examBelongsToStudentProgram);
       setupAcademicYears();
-      
+      scoreDataReady=true;
       document.getElementById('loadingData').style.display = 'none';
-      renderSemuaData(); 
+      if(reportFlowStep==='report')checkPublicationAndRender();
 
     } catch(e) { document.getElementById('loadingData').innerHTML = "Gagal memuat."; }
   });
 
   function renderSemuaData() {
+    if(reportFlowStep!=='report'||!reportPublication.isPublished(publicationRecord))return;
     let selectEl = document.getElementById('filterBulan');
-    currentMonthFilter = selectEl.value;
+    currentMonthFilter = activeReportTab==='bulanan'?(selectedReportPeriod||selectEl.value):selectEl.value;
 
     const monthly=activeReportTab==='bulanan';
     ['secIntelektual','secTahfizReguler','secTahfizCahaya','secMurojaah','secEvaluasi'].forEach(id=>{const node=document.getElementById(id);if(node&&!monthly)node.style.display='none'});
@@ -836,7 +881,7 @@
     document.getElementById('periodReportSummary').innerHTML=`<div class="report-metric"><b>${summary.subjects}</b><span>Mapel Dinilai</span></div><div class="report-metric"><b>${summary.average??'—'}</b><span>Rata-rata</span></div><div class="report-metric"><b>${summary.remedial}</b><span>Remedial</span></div>`;
     const list=document.getElementById('periodReportList');
     if(!records.length){list.innerHTML=`<div class="empty-state"><strong>${label} belum tersedia.</strong><br><small>Laporan akan tampil setelah nilai akademik difinalisasi.</small></div>`;return}
-    list.innerHTML=records.map(record=>{const displayed=CahayaAcademicReportScorePolicy.reportScore(record),remedial=CahayaAcademicReportScorePolicy.isRemedial(record),note=String(record.keterangan||'').trim();return `<article class="period-report-card"><div class="period-report-head"><div><h4>${escapeAcademic(academicReport.subjectOf(record))}</h4><div class="period-report-meta">${escapeAcademic(formatGelarAkademik(record.guru_penguji||record.guru||'Guru'))}</div></div><div class="period-report-score">${Number.isFinite(displayed)?displayed:'—'}</div></div><div class="period-report-components">${scoreComponents(record)}</div>${remedial?'<span class="report-remedial">Remedial</span>':''}${note?`<div class="period-report-note">${remedial?'Remedial · ':''}${escapeAcademic(note)}</div>`:''}</article>`}).join('');
+    list.innerHTML=reportPublication.renderScoreCards(records,{formatTeacher:formatGelarAkademik});
   }
 
   function renderAsesmen(dataList) {
@@ -1483,6 +1528,11 @@
   async function downloadLaporanPDF() {
     const button = document.getElementById("btnDownloadPdf");
     const loading = document.getElementById("loadingData");
+
+    if (reportFlowStep !== 'report' || !reportPublication.isPublished(publicationRecord)) {
+      alert("PDF hanya tersedia setelah laporan dipublikasikan oleh Supervisor Pendidikan.");
+      return;
+    }
 
     if (!window.jspdf?.jsPDF) {
       alert("Pustaka PDF belum siap. Muat ulang halaman dan coba kembali.");

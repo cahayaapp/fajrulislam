@@ -113,6 +113,12 @@
     ],
     "policy": "scoped"
   },
+  "supervisor/laporan-akademik.html": {
+    "menus": [
+      "menu-kontrol-publikasi-rapor"
+    ],
+    "policy": "scoped"
+  },
   "pimpinan/dashboard-pendidikan.html": {
     "menus": [
       "menu-dashboard-pendidikan"
