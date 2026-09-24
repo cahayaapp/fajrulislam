@@ -2888,6 +2888,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           semester: params.semester,
           bulan: params.bulan,
           nama_santri: studentName,
+          studentKey: String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''),
           ...(CahayaStudentProgramApplicability.subject(params.kodePenilaian)?{programQuran:params.kodePenilaian==='tahfiz'?'Tahfiz':'Tahsin',tahsinLevel:row.dataset.level||'',programPeriodDate:CahayaStudentProgramApplicability.periodDate(params)}:{}),
           kelas_kelompok: className,
           kelas: className,
@@ -2969,8 +2970,12 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           statusInput:finalData.status_input||'',statusNilai:finalData.status_nilai||'',recordKey,sourcePath:dbPath,updatedAt:nowIso,
           keterangan:finalData.keterangan||'',is_remedial:finalData.is_remedial,jenisUjian:jenis,tanggalUjian:params.tanggal,tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
         };
+        {
+          const waliKey = finalData.studentKey;
+          if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_akademik/${recordKey}`] = finalData;
+        }
         if (monthly) {
-          const waliKey = String(studentName||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          const waliKey = finalData.studentKey;
           if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${recordKey}`] = finalData;
           const ringkasKey=guruRingkasKey(studentName,className,params.mapel);
           updates[`${guruRingkasPath(params)}/${ringkasKey}`]={
@@ -3092,8 +3097,13 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           keterangan:finalData.keterangan||'',is_remedial:finalData.is_remedial,jenisUjian:params.jenis,tanggalUjian:finalData.tanggal_ujian||params.tanggal||'',tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
         };
         nextIndexRecords[studentKey] = indexData;
+        {
+          const waliKey = String(finalData.studentKey||row.dataset.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          finalData.studentKey=waliKey;
+          if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_akademik/${item.recordKey}`] = finalData;
+        }
         if (monthly) {
-          const waliKey = String(row.dataset.nama||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+          const waliKey = finalData.studentKey;
           if (waliKey) updates[`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${item.recordKey}`] = finalData;
           const ringkasKey=guruRingkasKey(row.dataset.nama,row.dataset.kelas||'',params.mapel);
           updates[`${guruRingkasPath(params)}/${ringkasKey}`]={

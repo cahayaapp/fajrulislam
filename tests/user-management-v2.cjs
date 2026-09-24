@@ -12,7 +12,7 @@ p=patch({roles:['MANAJER'],defaultRole:'MANAJER',assignments:{MANAJER:{unit:'PUT
 p=patch({roles:['MENTOR_USRAH'],defaultRole:'MENTOR_USRAH',assignments:{MENTOR_USRAH:{usrahIds:['USRAH_3']}}});assert.deepEqual(p.assignments.MENTOR_USRAH.usrahIds,['USRAH_3']);
 p=patch({roles:['KONSELOR'],defaultRole:'KONSELOR',assignments:{KONSELOR:{unit:'PUTRA',level:'MUDA'}}});assert.deepEqual(p.assignments.KONSELOR,{unit:'PUTRA',level:'MADYA'});
 p=patch({roles:['NAQIBAH'],defaultRole:'NAQIBAH',assignments:{NAQIBAH:{unit:'PUTRA'}}});assert.deepEqual(p.assignments.NAQIBAH,{unit:'PUTRI'});
-const wali=M.createDraft({...base,roleSystemVersion:2,roles:['WALI_SANTRI'],defaultRole:'WALI_SANTRI',assignments:{WALI_SANTRI:{}},namaAnak:'AKBAR PRAYOGA'});p=M.buildPatch(wali,'now');assert.equal(p.namaAnak,'AKBAR PRAYOGA');assert(!('studentIds' in p.assignments.WALI_SANTRI));
+const wali=M.createDraft({...base,roleSystemVersion:2,roles:['WALI_SANTRI'],defaultRole:'WALI_SANTRI',assignments:{WALI_SANTRI:{}},namaAnak:'AKBAR PRAYOGA',students:[{studentKey:'SANTRI-AK-01',namaSantri:'AKBAR PRAYOGA',kelas:'Kelas 1 Putra'}],authUid:'uid-wali-a'});p=M.buildPatch(wali,'now');assert.equal(p.namaAnak,'AKBAR PRAYOGA');assert.deepEqual(p.studentKeys,['SANTRI-AK-01']);assert.equal(p.authUid,'uid-wali-a');assert(!('studentIds' in p.assignments.WALI_SANTRI));
 const merged={...base,...p};assert.deepEqual(merged.akses,['admin','guru']);assert.equal(merged.teacherId,'TEACHER-9');assert.deepEqual(merged.mysteryField,{keep:true});
 const legacyDraft=M.createDraft({...base,namaAnak:'AKBAR PRAYOGA'});assert.deepEqual(legacyDraft.roles,[]);assert(legacyDraft.legacyNotice);assert.equal(legacyDraft.namaAnak,'AKBAR PRAYOGA');
 let d={username:'x',roles:['SUPERVISOR'],defaultRole:'SUPERVISOR',assignments:{SUPERVISOR:{unit:'PUTRA',supervisedRoles:[]}}};assert(!M.validate(d).ok);
@@ -20,6 +20,6 @@ d={username:'x',roles:['GURU_PONDOK','KONSELOR'],defaultRole:'KONSELOR',assignme
 for(const invalid of [
  {roles:['MENTOR_USRAH'],defaultRole:'MENTOR_USRAH',assignments:{MENTOR_USRAH:{usrahIds:[]}}},
  {roles:['KONSELOR'],defaultRole:'KONSELOR',assignments:{KONSELOR:{unit:'ALL',level:'MADYA'}}},
- {roles:['WALI_SANTRI'],defaultRole:'WALI_SANTRI',assignments:{WALI_SANTRI:{}},namaAnak:''}
+ {roles:['WALI_SANTRI'],defaultRole:'WALI_SANTRI',assignments:{WALI_SANTRI:{}},namaAnak:'ANAK TANPA KEY',waliStudentsText:''}
 ])assert(!M.validate({username:'x',...invalid}).ok);
-console.log('PASS canonical roles, multi-role/default, assignments, intrinsic scope, Wali namaAnak, legacy preservation, removal and validation');
+console.log('PASS canonical roles, assignments, trusted Wali studentKey/authUid, legacy preservation and validation');

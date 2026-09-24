@@ -12,10 +12,18 @@
  */
 
 const {
-  onValueCreated
+  onValueCreated,
+  onValueWritten
 } = require(
   "firebase-functions/v2/database"
 );
+
+const {
+  onCall,
+  HttpsError
+} = require("firebase-functions/v2/https");
+
+const {createHash} = require("node:crypto");
 
 const {
   initializeApp
@@ -60,6 +68,10 @@ const KABAR_CATEGORIES = new Set([
   "penindakan"
 ]);
 
+function stableStudentKey(value = "") {
+  return String(value || "").trim().replace(/[.#$\[\]\/]/g, "");
+}
+
 function clean(value = "") {
   return String(value)
     .replace(
@@ -103,6 +115,186 @@ function rolesOf(value = {}) {
   if (!Array.isArray(raw)) raw = [raw];
   return [...new Set(raw.flatMap(item => String(item || "").split(/[;,|]/)).map(normalizeRole).filter(Boolean))];
 }
+
+function accessRoles(value = {}) {
+  const raw = value.roles || {};
+  if (Array.isArray(raw)) return raw.map(normalizeRole).filter(Boolean);
+  if (raw && typeof raw === "object") {
+    return Object.entries(raw).filter(([, enabled]) => enabled === true).map(([role]) => normalizeRole(role));
+  }
+  return rolesOf(value);
+}
+
+function hasAccessRole(profile = {}, wanted = []) {
+  const accepted = new Set(wanted.map(normalizeRole));
+  return accessRoles(profile).some(role => accepted.has(role));
+}
+
+function secureRoomId(waliUid, staffUid, studentKeyValue) {
+  const digest = createHash("sha256")
+    .update(["wali", waliUid, staffUid, studentKeyValue].join("|"))
+    .digest("hex")
+    .slice(0, 32);
+  return `wali_${digest}`;
+}
+
+function publicAccessProfile(uid, profile = {}) {
+  return {
+    uid,
+    username: String(profile.username || "").trim().toLowerCase(),
+    label: String(profile.label || profile.displayName || profile.username || "Pengguna CAHAYA").trim(),
+    roles: accessRoles(profile)
+  };
+}
+
+async function secureChatContext(uid) {
+  if (!uid) throw new HttpsError("unauthenticated", "Firebase Auth diperlukan.");
+  const db = getDatabase();
+  const [userSnap, waliSnap] = await Promise.all([
+    db.ref(`/cahaya_access/users/${uid}`).get(),
+    db.ref(`/cahaya_access/wali/${uid}`).get()
+  ]);
+  const user = userSnap.val() || {};
+  const wali = waliSnap.val() || {};
+  const isWali = wali.active === true;
+  const isInternal = user.active === true && user.internal === true;
+  if (!isWali && !isInternal) throw new HttpsError("permission-denied", "Akun belum memiliki akses chat.");
+  return {db, uid, user, wali, isWali, isInternal};
+}
+
+/* Contact discovery is trusted: the client never receives the access tree and
+ * cannot promote a localStorage role into a privileged chat counterpart. */
+exports.listSecureChatContacts = onCall({region:DATABASE_REGION}, async request => {
+  const context = await secureChatContext(request.auth?.uid);
+  const users = (await context.db.ref("/cahaya_access/users").get()).val() || {};
+  if (context.isWali) {
+    return {
+      contacts: Object.entries(users)
+        .filter(([uid, profile]) => uid !== context.uid && profile?.active === true && profile?.internal === true && hasAccessRole(profile, ["direktur", "supervisor"]))
+        .map(([uid, profile]) => publicAccessProfile(uid, profile))
+    };
+  }
+  if (!hasAccessRole(context.user, ["direktur", "supervisor"])) return {contacts:[]};
+  const waliMap = (await context.db.ref("/cahaya_access/wali").get()).val() || {};
+  const contacts = [];
+  Object.entries(waliMap).forEach(([uid, access]) => {
+    if (uid === context.uid || access?.active !== true) return;
+    const base = publicAccessProfile(uid, users[uid] || {});
+    Object.entries(access.students || {}).forEach(([studentKeyValue, child]) => {
+      if (!(child === true || child?.active === true)) return;
+      contacts.push({
+        ...base,
+        roles:["wali"],
+        studentKey:stableStudentKey(child?.studentKey || studentKeyValue),
+        studentName:String(child?.namaSantri || child?.namaAnak || child?.label || "Santri").trim(),
+        kelas:String(child?.kelas || "").trim()
+      });
+    });
+  });
+  return {contacts};
+});
+
+/* A room is created/reused only after both UID roles and the Wali-child edge
+ * have been verified by Admin SDK. The deterministic key makes retries safe. */
+exports.openSecureChatRoom = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await secureChatContext(request.auth?.uid);
+  const counterpartUid = String(request.data?.counterpartUid || "").trim();
+  const requestedStudentKey = stableStudentKey(request.data?.studentKey || "");
+  if (!counterpartUid || !requestedStudentKey || counterpartUid === caller.uid) {
+    throw new HttpsError("invalid-argument", "Kontak dan konteks santri wajib dipilih.");
+  }
+  const [counterUserSnap, counterWaliSnap] = await Promise.all([
+    caller.db.ref(`/cahaya_access/users/${counterpartUid}`).get(),
+    caller.db.ref(`/cahaya_access/wali/${counterpartUid}`).get()
+  ]);
+  const counterUser = counterUserSnap.val() || {};
+  const counterWali = counterWaliSnap.val() || {};
+  let waliUid, staffUid, waliAccess, staffProfile;
+  if (caller.isWali) {
+    waliUid = caller.uid; staffUid = counterpartUid; waliAccess = caller.wali; staffProfile = counterUser;
+  } else {
+    waliUid = counterpartUid; staffUid = caller.uid; waliAccess = counterWali; staffProfile = caller.user;
+  }
+  if (waliAccess?.active !== true || !(waliAccess.students?.[requestedStudentKey] === true || waliAccess.students?.[requestedStudentKey]?.active === true)) {
+    throw new HttpsError("permission-denied", "Santri bukan bagian dari akun Wali ini.");
+  }
+  if (staffProfile?.active !== true || staffProfile?.internal !== true || !hasAccessRole(staffProfile, ["direktur", "supervisor"])) {
+    throw new HttpsError("permission-denied", "Wali hanya dapat menghubungi Direktur atau Supervisor.");
+  }
+  const roomId = secureRoomId(waliUid, staffUid, requestedStudentKey);
+  const now = new Date().toISOString();
+  const waliProfile = publicAccessProfile(waliUid, caller.isWali ? caller.user : counterUser);
+  const staffPublic = publicAccessProfile(staffUid, caller.isWali ? counterUser : caller.user);
+  const child = waliAccess.students[requestedStudentKey] || {};
+  const roomRef = caller.db.ref(`/cahaya_chat_v2/rooms/${roomId}`);
+  await roomRef.transaction(current => current || {
+    id:roomId,
+    type:"wali_staff",
+    studentKey:requestedStudentKey,
+    studentName:String(child.namaSantri || child.namaAnak || child.label || "Santri").trim(),
+    members:{
+      [waliUid]:{active:true, kind:"wali", label:waliProfile.label, username:waliProfile.username},
+      [staffUid]:{active:true, kind:"internal", label:staffPublic.label, username:staffPublic.username, roles:staffPublic.roles}
+    },
+    createdAt:now,
+    createdByUid:caller.uid,
+    updatedAt:now
+  }, undefined, false);
+  const room = (await roomRef.get()).val() || {};
+  const updates = {};
+  [[waliUid, staffPublic], [staffUid, {...waliProfile, roles:["wali"]}]].forEach(([uid, peer]) => {
+    updates[`/cahaya_chat_v2/user_rooms/${uid}/${roomId}`] = {
+      roomId, studentKey:requestedStudentKey, studentName:room.studentName || "Santri",
+      peerUid:peer.uid, peerLabel:peer.label, peerUsername:peer.username, peerRoles:peer.roles || [],
+      updatedAt:room.updatedAt || now, lastMessage:room.lastMessage || null
+    };
+  });
+  await caller.db.ref().update(updates);
+  return {roomId, room};
+});
+
+exports.indexSecureChatMessage = onValueCreated(
+  {ref:"/cahaya_chat_v2/rooms/{roomId}/messages/{messageId}", instance:DATABASE_INSTANCE, region:DATABASE_REGION},
+  async event => {
+    const message = event.data.val() || {};
+    const roomRef = getDatabase().ref(`/cahaya_chat_v2/rooms/${event.params.roomId}`);
+    const room = (await roomRef.get()).val() || {};
+    const members = Object.entries(room.members || {}).filter(([, member]) => member?.active === true);
+    if (!members.some(([uid]) => uid === message.senderUid)) return event.data.ref.remove();
+    const summary = {
+      id:event.params.messageId,
+      text:String(message.text || "").slice(0, 500),
+      senderUid:message.senderUid,
+      senderDisplay:String(message.senderDisplay || "Pengguna"),
+      createdAt:Number(message.createdAt || Date.now())
+    };
+    const updates = {
+      [`/cahaya_chat_v2/rooms/${event.params.roomId}/lastMessage`]:summary,
+      [`/cahaya_chat_v2/rooms/${event.params.roomId}/updatedAt`]:new Date(summary.createdAt).toISOString()
+    };
+    members.forEach(([uid]) => {
+      updates[`/cahaya_chat_v2/user_rooms/${uid}/${event.params.roomId}/lastMessage`] = summary;
+      updates[`/cahaya_chat_v2/user_rooms/${uid}/${event.params.roomId}/updatedAt`] = new Date(summary.createdAt).toISOString();
+    });
+    return getDatabase().ref().update(updates);
+  }
+);
+
+exports.pushSecureChatMessage = onValueCreated(
+  {ref:"/cahaya_chat_v2/rooms/{roomId}/messages/{messageId}", instance:DATABASE_INSTANCE, region:DATABASE_REGION},
+  async event => {
+    const message = event.data.val() || {};
+    const room = (await getDatabase().ref(`/cahaya_chat_v2/rooms/${event.params.roomId}`).get()).val() || {};
+    const recipients = Object.entries(room.members || {}).filter(([uid, member]) => uid !== message.senderUid && member?.active === true);
+    const sender = room.members?.[message.senderUid] || {};
+    const title = `Pesan dari ${sender.label || message.senderDisplay || "Pengguna CAHAYA"}`;
+    const body = String(message.text || "Ada pesan baru.").slice(0, 180);
+    return Promise.all(recipients.map(([, member]) => member.kind === "wali"
+      ? sendToOneWali({waliUsername:member.username,title,body,roomId:event.params.roomId,notificationId:`secure_${event.params.messageId}`})
+      : sendToOneUser({username:member.username,title,body,roomId:event.params.roomId,link:`main-dashboard.html?openChat=1&room=${encodeURIComponent(event.params.roomId)}`,notificationId:`secure_${event.params.messageId}`,tag:event.params.roomId})
+    ));
+  }
+);
 
 function allowedStaff(value = {}) {
   return rolesOf(value).some(role => ALLOWED_CHAT_ROLES.has(role));
@@ -170,6 +362,49 @@ function activeTokenEntries(
         item.token
     );
 }
+
+/* Quran placement remains authoritative at program_quran_santri. The Wali
+ * copy is a read index only, kept current by trusted backend code. */
+exports.syncQuranPlacementToWaliIndex = onValueWritten(
+  {
+    ref: "/cahaya_app/program_quran_santri/{studentKey}",
+    instance: DATABASE_INSTANCE,
+    region: DATABASE_REGION
+  },
+  async event => {
+    const key = stableStudentKey(event.params.studentKey);
+    if (!key) return null;
+    const target = getDatabase().ref(`/cahaya_app/wali_index/${key}/program_quran/current`);
+    if (!event.data.after.exists()) return target.remove();
+    const value = event.data.after.val() || {};
+    return target.set({...value, studentKey:key, indexedAt:new Date().toISOString()});
+  }
+);
+
+/* Mentoring records are exposed to Wali only when the writer provides a
+ * stable student key. Legacy name-only records remain inaccessible until an
+ * administrator resolves them; runtime name matching is deliberately absent. */
+exports.syncMentoringToWaliIndex = onValueWritten(
+  {
+    ref: "/cahaya_app/log_mentoring_naqib/{eventId}",
+    instance: DATABASE_INSTANCE,
+    region: DATABASE_REGION
+  },
+  async event => {
+    const before = event.data.before.val() || {};
+    const after = event.data.after.val() || {};
+    const beforeKey = stableStudentKey(before.studentKey || before.santriId || before.studentId || "");
+    const afterKey = stableStudentKey(after.studentKey || after.santriId || after.studentId || "");
+    const updates = {};
+    if (beforeKey && beforeKey !== afterKey) updates[`/cahaya_app/wali_index/${beforeKey}/mentoring/${event.params.eventId}`] = null;
+    if (afterKey && event.data.after.exists()) {
+      updates[`/cahaya_app/wali_index/${afterKey}/mentoring/${event.params.eventId}`] = {...after, studentKey:afterKey};
+    } else if (beforeKey && !event.data.after.exists()) {
+      updates[`/cahaya_app/wali_index/${beforeKey}/mentoring/${event.params.eventId}`] = null;
+    }
+    return Object.keys(updates).length ? getDatabase().ref().update(updates) : null;
+  }
+);
 
 function chunkArray(
   values,

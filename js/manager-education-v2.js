@@ -234,8 +234,11 @@ async function openScoreRevision(key,reason){
     const previous=source[i].val(),data={...previous,status_nilai:'DRAFT',locked:false,revision_cycle:cycle,revision_opened_at:at,revision_opened_by:identity.name,revision_opened_by_id:identity.id,revision_reason:reason,updated_at:at};
     updates[`${item.dbPath}/${item.recordKey}`]=data;
     updates[`${PATH.scoreIndex}/${key}/${studentKey}`]={...item,data,updatedAt:at,status:'REVISION_OPEN'};
+    const academicWaliKey=String(data.studentKey||data.nama_santri||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    data.studentKey=academicWaliKey;
+    if(academicWaliKey)updates[`cahaya_app/wali_index/${academicWaliKey}/nilai_akademik/${item.recordKey}`]=data;
     if(marker.jenisUjian==='Bulanan'){
-      const waliKey=String(data.nama_santri||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+      const waliKey=academicWaliKey;
       if(waliKey)updates[`cahaya_app/wali_index/${waliKey}/nilai_bulanan/${item.recordKey}`]=data;
     }
     const teacherName=String(marker.guru||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\b(abah|abi|ummi|ustadzah|ustadz|ust|muallimah|muallim|guru|bapak|ibu|pak|bu|dr|s pd|m pd|mpd|se)\b/g,' ').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();

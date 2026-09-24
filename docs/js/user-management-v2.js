@@ -38,17 +38,27 @@
     if(Object.keys(preferred).length)return preferred;
     return typeof profile.namaAnak==='string'&&profile.namaAnak.trim()?{namaAnak:profile.namaAnak}:{};
   }
+  function waliStudents(profile={}){
+    const raw=Array.isArray(profile.students)?profile.students:(Array.isArray(profile.studentKeys)?profile.studentKeys:[]);
+    return raw.map(item=>typeof item==='string'?{studentKey:item}:{...(item||{})}).map(item=>({studentKey:String(item.studentKey||item.santriId||item.id||'').trim(),namaSantri:String(item.namaSantri||item.namaAnak||item.label||'').trim(),kelas:String(item.kelas||item.kelasSantri||'').trim(),usrah:String(item.usrah||item.namaUsrah||'').trim()})).filter(item=>item.studentKey);
+  }
+  function waliStudentsText(profile={}){return waliStudents(profile).map(item=>[item.studentKey,item.namaSantri,item.kelas,item.usrah].join(' | ').replace(/(?:\s*\|\s*)+$/,'')).join('\n')}
+  function parseWaliStudents(value=''){
+    const seen=new Set(),rows=[];
+    String(value||'').split(/\r?\n/).forEach(line=>{const [studentKey,namaSantri='',kelas='',usrah='']=line.split('|').map(part=>part.trim());if(!studentKey||seen.has(studentKey))return;seen.add(studentKey);rows.push({studentKey,namaSantri,kelas,usrah})});
+    return rows;
+  }
   function createDraft(profile={}){
     const canonical=Number(profile.roleSystemVersion)===2;
     const roles=canonical?exactRoles(profile.roles):[];
     const assignments=Object.fromEntries(roles.map(role=>[role,cleanAssignment(role,profile.assignments?.[role]||{})]));
     const defaultRole=roles.includes(profile.defaultRole)?profile.defaultRole:(roles[0]||'');
-    return {username:String(profile.username||profile.id||''),label:String(profile.label||profile.nama||profile.username||profile.id||''),roles,defaultRole,assignments,namaAnak:String(existingChild(profile).namaAnak||''),legacyNotice:!canonical&&Boolean(profile.akses||profile.role||profile.jabatan||profile.workspaceRoles)};
+    return {username:String(profile.username||profile.id||''),label:String(profile.label||profile.nama||profile.username||profile.id||''),roles,defaultRole,assignments,namaAnak:String(existingChild(profile).namaAnak||''),waliStudentsText:waliStudentsText(profile),authUid:String(profile.authUid||profile.uid||''),legacyNotice:!canonical&&Boolean(profile.akses||profile.role||profile.jabatan||profile.workspaceRoles)};
   }
   function normalizeDraft(draft={}){
     const roles=exactRoles(draft.roles),assignments={};
     roles.forEach(role=>assignments[role]=cleanAssignment(role,draft.assignments?.[role]||{}));
-    return {...draft,roles,defaultRole:roles.includes(draft.defaultRole)?draft.defaultRole:'',assignments,namaAnak:String(draft.namaAnak||'').trim()};
+    return {...draft,roles,defaultRole:roles.includes(draft.defaultRole)?draft.defaultRole:'',assignments,namaAnak:String(draft.namaAnak||'').trim(),students:parseWaliStudents(draft.waliStudentsText),authUid:String(draft.authUid||'').trim()};
   }
   function validate(draft={}){
     const d=normalizeDraft(draft),errors=[];
@@ -62,14 +72,16 @@
       if(role==='MENTOR_USRAH'&&!a.usrahIds.length)errors.push('Mentor Usrah wajib memiliki minimal satu Usrah.');
       if(role==='KONSELOR'&&(!['PUTRA','PUTRI'].includes(a.unit)||!['PEMULA','MADYA'].includes(a.level)))errors.push('Konselor wajib memiliki Level dan Unit yang valid.');
       if(role==='DAPUR'&&!['PUTRA','PUTRI','ALL'].includes(a.unit))errors.push('Dapur wajib memiliki Area Putra, Putri, atau Keduanya.');
-      if(role==='WALI_SANTRI'&&!d.namaAnak)errors.push('Nama Anak Wali Santri tidak boleh kosong.');
+      if(role==='WALI_SANTRI'&&!d.students.length)errors.push('Minimal satu studentKey wajib dihubungkan ke akun Wali.');
+      if(role==='WALI_SANTRI'&&d.students.some(item=>/[.#$\[\]\/]/.test(item.studentKey)))errors.push('studentKey Wali mengandung karakter yang tidak valid untuk Firebase.');
     }
     return {ok:!errors.length,errors,d};
   }
   function buildPatch(draft={},now=new Date().toISOString()){
     const result=validate(draft);if(!result.ok)throw new Error(result.errors.join('\n'));
     const d=result.d,patch={username:String(d.username).trim().toLowerCase(),label:String(d.label||d.username).trim(),roleSystemVersion:2,roles:d.roles,defaultRole:d.defaultRole,assignments:d.assignments,updatedAt:now};
-    if(d.roles.includes('WALI_SANTRI'))patch.namaAnak=d.namaAnak;
+    if(d.roles.includes('WALI_SANTRI')){patch.namaAnak=d.namaAnak||d.students[0]?.namaSantri||'';patch.students=d.students;patch.studentKeys=d.students.map(item=>item.studentKey)}
+    if(d.authUid)patch.authUid=d.authUid;
     return patch;
   }
   function assignmentSummary(role,a={}){
@@ -82,5 +94,5 @@
     if(a.unit)return a.unit==='ALL'?'Semua unit':a.unit==='PUTRA'?'Putra':'Putri';
     return '';
   }
-  return Object.freeze({ROLE_IDS,LABELS,AREA_ROLES,intrinsic,cleanAssignment,createDraft,normalizeDraft,validate,buildPatch,assignmentSummary});
+  return Object.freeze({ROLE_IDS,LABELS,AREA_ROLES,intrinsic,cleanAssignment,waliStudents,parseWaliStudents,createDraft,normalizeDraft,validate,buildPatch,assignmentSummary});
 });

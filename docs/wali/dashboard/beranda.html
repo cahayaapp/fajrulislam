@@ -737,7 +737,7 @@ body.page-beranda{
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="script.js?v=20260804-v15"></script>
+<script src="script.js?v=20260923-v17"></script>
 
 <script>
   // 1. KONFIGURASI FIREBASE
@@ -1063,21 +1063,15 @@ async function bacaSumberRT(path) {
         const indexLimits = {halqah:60,tahfiz:70,program:90,pembelajaran:90,penindakan:50};
         const category = indexMap[path];
         if (category) {
-            const canonicalKey = normalisasiNama(namaAnakUtuh).replace(/[^a-z0-9]/g,'');
-            const legacyKey = String(namaAnakUtuh||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-            const studentKeys = [...new Set([canonicalKey,legacyKey].filter(Boolean))];
-            if (!studentKeys.length) return {ok:true,value:{},indexed:true};
-            let indexed = null;
-            for (const studentKey of studentKeys) {
-                const indexPath = `cahaya_app/wali_index/${studentKey}/${category}`;
-                indexed = window.CahayaBandwidth
-                    ? await window.CahayaBandwidth.readCompat(dbRT, indexPath, {
-                        ttl: 30 * 60 * 1000,
-                        limit: indexLimits[category] || 80
-                      })
-                    : await dbRT.ref(indexPath).limitToLast(indexLimits[category] || 80).once('value');
-                if (indexed.exists()) break;
-            }
+            const studentKey = window.CahayaWaliSession?.studentKey?.() || "";
+            if (!studentKey) return {ok:false,value:{},indexed:true,error:new Error("STUDENT_KEY_NOT_AUTHORIZED")};
+            const indexPath = `cahaya_app/wali_index/${studentKey}/${category}`;
+            const indexed = window.CahayaBandwidth
+                ? await window.CahayaBandwidth.readCompat(dbRT, indexPath, {
+                    ttl: 30 * 60 * 1000,
+                    limit: indexLimits[category] || 80
+                  })
+                : await dbRT.ref(indexPath).limitToLast(indexLimits[category] || 80).once('value');
             return {ok:true,value:indexed?.val() || {},indexed:true};
         }
         const snapshot = window.CahayaBandwidth
@@ -3172,7 +3166,17 @@ async function kirimKomentar(eventId) {
       document.getElementById('actionSheetOverlay').style.display = 'none';
   }
 </script>
-<script src="beranda-whatsapp.js?v=64"></script>
+<script>
+  /* Chat Beranda legacy dinonaktifkan. Portal induk memegang satu-satunya
+     client chat Wali yang divalidasi UID + membership oleh RTDB Rules. */
+  window.toggleChat = function () {
+    if (window.parent && window.parent !== window && typeof window.parent.toggleWaliChat === "function") {
+      window.parent.toggleWaliChat();
+    }
+  };
+  window.startChat = function () { window.toggleChat(); };
+  document.getElementById("chatWindow")?.setAttribute("aria-hidden", "true");
+</script>
 <script id="cahaya-v63-wali-media-fix">
 /* =========================================================
    V63 — KABAR ANANDA MEDIA FIX

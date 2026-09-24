@@ -40,12 +40,8 @@
     busy=true;$('mentoringApply').disabled=true;state('Memuat laporan mentoring…');
     try{
       if(!records||partial){
-        const names=[...new Set([child,M.name(child)])],queries=[];
-        for(const field of ['namaSantri','santri','studentName'])for(const name of names)queries.push(db.ref('cahaya_app/log_mentoring_naqib').orderByChild(field).equalTo(name).once('value'));
-        const response=await Promise.allSettled(queries);if(!alive)return;
-        if(response.every(x=>x.status==='rejected'))throw response[0].reason;
-        partial=response.some(x=>x.status==='rejected');records={};
-        response.forEach(x=>{if(x.status==='fulfilled')Object.assign(records,x.value.val()||{});else console.error('Query laporan mentoring gagal',x.reason)});
+        const snapshot=await CahayaWaliSession.readSnapshot(db,'cahaya_app/log_mentoring_naqib',{limit:160,noCache:true});if(!alive)return;
+        partial=false;records=snapshot?.val?.()||{};
       }
       render();
     }catch(error){if(alive){console.error('Laporan mentoring Wali gagal dimuat',error);$('mentoringReports').replaceChildren();state('Laporan mentoring belum dapat dimuat. Periksa koneksi atau hak akses data, lalu coba Lihat Laporan kembali.',true)}}
@@ -57,14 +53,15 @@
     document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period(b.dataset.period);load()});
     try{
       if(!firebase.apps.length)firebase.initializeApp(window.CAHAYA_CONFIG.firebase);
-      const session=await CahayaWaliSession.ready({firestore:firebase.firestore()});
+      db=firebase.database();
+      const session=await CahayaWaliSession.ready({firestore:firebase.firestore(),database:db,auth:firebase.auth(),requireAuthAccess:true});
       const canonical=Number(session.account?.roleSystemVersion)===2;
       const role=canonical?window.CahayaRoleSystemV2.resolveSession(session.account,localStorage).activeRole:null;
       if(!session.valid||(canonical?role!=='WALI_SANTRI':!CahayaWaliSession.normalizeRoles(session.account).includes('wali'))){state('Akses ditolak. Buka laporan melalui akun Wali Santri.',true);return}
       // Identity is the linked session child, never a student supplied in the URL.
       child=CahayaWaliSession.studentName(session.student);
       if(!child){state('Ananda belum terhubung dengan akun Wali.',true);return}
-      $('mentoringChild').textContent=child;db=firebase.database();await load();
+      $('mentoringChild').textContent=child;await load();
     }catch(error){console.error(error);state('Sesi Wali belum dapat dimuat. Silakan buka kembali dari Beranda Wali.',true)}
   }
   addEventListener('pagehide',()=>{alive=false;records=null});

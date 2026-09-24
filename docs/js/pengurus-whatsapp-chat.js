@@ -62,6 +62,7 @@
     meta: {},
     readMap: {},
     contacts: [],
+    secureContacts: [],
     renderedContacts: [],
     renderedBroadcasts: [],
     active: null,
@@ -611,6 +612,11 @@
         );
       });
 
+    (state.secureContacts || []).forEach(contact => {
+      const key = `secure:${contact.counterpartUid}:${contact.studentKey}`;
+      unique.set(key, contact);
+    });
+
     state.contacts =
       [...unique.values()]
         .sort((a, b) => {
@@ -713,6 +719,8 @@
   function isOwnMessage(
     message = {}
   ) {
+    const authUid = window.firebase?.auth?.().currentUser?.uid || "";
+    if (message.senderUid && authUid && message.senderUid === authUid) return true;
     const senderUsername =
       String(
         message.senderUsername ||
@@ -919,6 +927,7 @@
   function resolveRoomId(
     contact
   ) {
+    if (contact?.secureChat) return contact.roomId || "";
     for (
       const [roomId, meta]
       of Object.entries(
@@ -2467,7 +2476,8 @@
     if (
       pChatListener
     ) {
-      conversationSubscription?.off();conversationSubscription=null;
+      if(typeof conversationSubscription==="function")conversationSubscription();else conversationSubscription?.off();
+      conversationSubscription=null;
     }
 
     if (active.type === "broadcast") {
@@ -2489,17 +2499,14 @@
     pChatListener =
       active.roomId;
 
-    conversationSubscription=dbRT.ref(`cahaya_app/pesan_global/${active.roomId}`).limitToLast(50);
     const conversationEpoch=loadEpoch;
-    conversationSubscription.on(
-        "value",
-        async snapshot => {
+    const handleConversationValue = async rawValue => {
           if(conversationEpoch!==loadEpoch||state.active?.roomId!==active.roomId)return;
           state.rooms[
             active.roomId
-          ] =
-            snapshot.val() ||
-            {};
+          ] = active.secureChat
+            ? Object.fromEntries(Object.entries(rawValue || {}).map(([id,message])=>[id,secureMessageShape(message)]))
+            : (rawValue || {});
 
           renderConversation();
 
@@ -2508,13 +2515,8 @@
               active.roomId
             );
 
-          await markRoomRead(
-            active.roomId,
-            latest?.waktu ||
-            latest?.createdAt ||
-            new Date()
-              .toISOString()
-          );
+          if(active.secureChat) await CahayaSecureChat.markRead(active.roomId, Date.now());
+          else await markRoomRead(active.roomId, latest?.waktu || latest?.createdAt || new Date().toISOString());
 
           renderChatList();
           updateChatBadge();
@@ -2523,8 +2525,8 @@
             chatNotifications(),
             state.dbNotifications
           );
-        },
-        error => {
+        };
+    const handleConversationError = error => {
           console.error('Percakapan belum dapat dimuat:',error);
           document.getElementById(
             "pChatBody"
@@ -2533,13 +2535,17 @@
               Pesan belum dapat dimuat. Kembali ke daftar lalu coba lagi.
             </div>
           `;
-        }
-      );
+        };
+    if (active.secureChat) {
+      CahayaSecureChat.listenMessages(active.roomId, handleConversationValue, handleConversationError)
+        .then(unsubscribe => { conversationSubscription = unsubscribe; })
+        .catch(handleConversationError);
+    } else {
+      conversationSubscription=dbRT.ref(`cahaya_app/pesan_global/${active.roomId}`).limitToLast(50);
+      conversationSubscription.on("value", snapshot => handleConversationValue(snapshot.val() || {}), handleConversationError);
+    }
 
-    if (
-      active.type ===
-      "private"
-    ) {
+    if (active.type === "private" && !active.secureChat) {
       savePrivateRoomMeta(
         active,
         active.roomId
@@ -2735,7 +2741,7 @@
         deleted
           ? "Pesan ini telah dihapus"
           : (
-            message.teks ||
+            message.teks || message.text ||
             ""
           );
 
@@ -2746,8 +2752,7 @@
           message.isEdited
         );
 
-      const clickable =
-        !deleted;
+      const clickable = !deleted && !state.active?.secureChat;
 
       const senderLine =
         state.active.type ===
@@ -3068,7 +3073,10 @@
       true;
 
     try {
-      if (
+      if (state.active.secureChat) {
+        if (editModeId) throw new Error("SECURE_CHAT_MESSAGES_ARE_IMMUTABLE");
+        await CahayaSecureChat.send(state.active.roomId, text, namaSaya);
+      } else if (
         editModeId
       ) {
         await dbRT
@@ -3125,7 +3133,7 @@
         await dbRT.ref().update(updates);
       }
 
-      if (state.active.type !== "broadcast") {
+      if (state.active.type !== "broadcast" && !state.active.secureChat) {
         await markRoomRead(
           state.active.roomId,
           new Date().toISOString()
@@ -3361,7 +3369,7 @@
     if (
       pChatListener
     ) {
-      conversationSubscription?.off();conversationSubscription=null;
+      if(typeof conversationSubscription==="function")conversationSubscription();else conversationSubscription?.off();conversationSubscription=null;
 
       pChatListener =
         null;
@@ -3400,7 +3408,7 @@
     }
   }
 
-  function openContactByIndex(
+  async function openContactByIndex(
     index
   ) {
     const contact =
@@ -3412,6 +3420,7 @@
       return;
     }
 
+    try { await ensureSecureContactRoom(contact); } catch (error) { console.error("Room chat aman belum siap:",error); alert("Percakapan ini sedang disiapkan. Silakan coba lagi."); return; }
     openConversation({
       ...contact,
       type:
@@ -3441,7 +3450,7 @@
   }
 
 
-  function openContactById(
+  async function openContactById(
     contactId
   ) {
     const normalizedId =
@@ -3467,6 +3476,7 @@
       return;
     }
 
+    try { await ensureSecureContactRoom(contact); } catch (error) { console.error("Room chat aman belum siap:",error); alert("Percakapan ini sedang disiapkan. Silakan coba lagi."); return; }
     openConversation({
       ...contact,
       type:
@@ -3614,7 +3624,61 @@
   }
 
   const inboxSubscriptions=[];
-  let conversationSubscription=null,loadEpoch=0,openingMessages=null;
+  let conversationSubscription=null,secureRoomsUnsubscribe=null,loadEpoch=0,openingMessages=null;
+
+  function secureMessageShape(message = {}) {
+    return {
+      ...message,
+      teks:message.text || message.teks || "",
+      waktu:message.waktu || (message.createdAt ? new Date(message.createdAt).toISOString() : ""),
+      pengirim:message.senderDisplay || message.pengirim || "Pengguna"
+    };
+  }
+
+  async function loadSecureChatContacts() {
+    if (!window.CahayaSecureChat) return;
+    try {
+      const contacts = await CahayaSecureChat.listContacts();
+      state.secureContacts = contacts.map(item => ({
+        id:`secure-${item.uid}-${item.studentKey || ""}`,
+        username:item.username || "",
+        roles:["wali"],
+        isWali:true,
+        secureChat:true,
+        counterpartUid:item.uid,
+        studentKey:item.studentKey || "",
+        displayName:`Wali dari ${item.studentName || item.label || "Santri"}`,
+        chatIdentity:item.label || item.username || "Wali Santri",
+        roleSummary:`Wali Santri${item.studentName ? ` • ${item.studentName}` : ""}`,
+        photo:"",
+        raw:item,
+        roomId:""
+      }));
+      if (!secureRoomsUnsubscribe) {
+        secureRoomsUnsubscribe = await CahayaSecureChat.listenUserRooms(index => {
+          Object.entries(index || {}).forEach(([roomId, item]) => {
+            const contact = state.secureContacts.find(candidate => candidate.counterpartUid === item.peerUid && candidate.studentKey === item.studentKey);
+            if (contact) contact.roomId = roomId;
+            if (item.lastMessage) state.rooms[roomId] = {__last:secureMessageShape(item.lastMessage)};
+            if (item.lastReadAt) state.readMap[roomId] = {waktu:new Date(item.lastReadAt).toISOString()};
+          });
+          buildContacts(); renderChatList(); updateChatBadge();
+        }, error => console.warn("Indeks chat UID belum dimuat:", error));
+      }
+    } catch (error) {
+      console.warn("Kontak chat UID belum dimuat:", error);
+      state.secureContacts = [];
+    }
+  }
+
+  async function ensureSecureContactRoom(contact) {
+    if (!contact?.secureChat) return contact;
+    if (!contact.roomId) {
+      const opened = await CahayaSecureChat.openRoom(contact.counterpartUid, contact.studentKey);
+      contact.roomId = opened.roomId;
+    }
+    return contact;
+  }
   function listenInbox(path,limit,success,failure){
     const epoch=loadEpoch;let q=dbRT.ref(path);if(limit)q=q.limitToLast(limit);
     const callback=snapshot=>{if(epoch===loadEpoch)success(snapshot)};
@@ -3623,7 +3687,9 @@
   function stopMessageListeners(){
     loadEpoch++;
     inboxSubscriptions.splice(0).forEach(({q,callback})=>q.off('value',callback));
-    conversationSubscription?.off();conversationSubscription=null;pChatListener=null;
+    if(typeof conversationSubscription==="function")conversationSubscription();else conversationSubscription?.off();
+    conversationSubscription=null;pChatListener=null;
+    if(typeof secureRoomsUnsubscribe==="function")secureRoomsUnsubscribe();secureRoomsUnsubscribe=null;
     state.listenersInstalled=false;
   }
   function renderLoadError(){
@@ -3714,7 +3780,7 @@
     if (!windowElement || !chatIsOpen()) return;
     windowElement.style.display = "none";
     if (pChatListener) {
-      conversationSubscription?.off();conversationSubscription=null;
+      if(typeof conversationSubscription==="function")conversationSubscription();else conversationSubscription?.off();conversationSubscription=null;
       pChatListener = null;
     }
     if (!fromHistory && chatHistoryArmed && history.state?.cahayaChatOpen) {
@@ -3738,6 +3804,7 @@
     const work=(async()=>{
       try{
         if(typeof window.ensureCahayaChatReady==='function')await window.ensureCahayaChatReady();
+        await loadSecureChatContacts();
         if(epoch!==loadEpoch||!chatIsOpen())return;
         state.loadError=false;bootstrap();
       }catch(error){

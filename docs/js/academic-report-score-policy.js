@@ -1,4 +1,4 @@
-/* Shared presentation policy for academic reports. Raw score records stay unchanged. */
+/* Shared presentation policy for academic reports. Remedial is metadata only. */
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -27,8 +27,8 @@
     const source = arguments.length > 1 ? scoreValue : rawScore(record);
     const score = Number(source);
     if (!Number.isFinite(score)) return NaN;
-    return isRemedial(record) && score > 75 ? 75 : score;
+    return score;
   }
 
-  return { REMEDIAL_REPORT_MAX: 75, isRemedial, rawScore, reportScore };
+  return { isRemedial, rawScore, reportScore };
 });

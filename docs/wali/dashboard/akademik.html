@@ -11,7 +11,8 @@
   <script src="../../config/tenant-config.js"></script>
   <script src="../../config/master-data.js"></script>
   <script src="../../js/student-program-applicability.js?v=5"></script>
-  <script src="../../js/academic-report-score-policy.js?v=1"></script>
+  <script src="../../js/academic-report-score-policy.js?v=2"></script>
+  <script src="../../js/wali-academic-report-v2.js?v=1"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -310,6 +311,24 @@
       box-shadow: none;
     }
 
+    .academic-center-head{margin:18px 0 12px;padding:0 3px}
+    .academic-center-head small{display:block;color:#64748b;font-size:.68rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+    .academic-center-head h1{margin:5px 0 3px;color:#123b65;font-size:clamp(1.35rem,4vw,1.9rem);line-height:1.15}
+    .academic-center-head p{margin:0;color:#64748b;font-size:.82rem;font-weight:650}
+    .report-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:14px 0;padding:6px;border:1px solid #dbe7f5;border-radius:17px;background:#edf4fb}
+    .report-tab{min-width:0;min-height:43px;padding:8px 5px;border:0;border-radius:12px;background:transparent;color:#58708e;font:800 .8rem 'Nunito',sans-serif;cursor:pointer}
+    .report-tab.active{background:#fff;color:#0f61d8;box-shadow:0 5px 15px rgba(23,83,151,.12)}
+    .report-field{display:grid;gap:5px;min-width:145px;flex:1}
+    .report-field label{color:#60738e;font-size:.65rem;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+    .report-field select{width:100%;min-height:43px;padding:8px 34px 8px 12px;border:1px solid #d8e5f3;border-radius:12px;background:#fff;color:#17375f;font:800 .78rem 'Nunito',sans-serif}
+    .report-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}
+    .report-metric{padding:15px 12px;border:1px solid #dce7f3;border-radius:17px;background:#fff;text-align:center;box-shadow:0 5px 16px rgba(31,71,116,.06)}
+    .report-metric b{display:block;color:#133d69;font-size:1.35rem;line-height:1.1}.report-metric span{display:block;margin-top:4px;color:#71829a;font-size:.66rem;font-weight:800}
+    .period-report-card{margin-bottom:12px;padding:17px;border:1px solid #dce7f3;border-radius:18px;background:#fff;box-shadow:0 6px 18px rgba(31,71,116,.06)}
+    .period-report-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.period-report-head h4{margin:0;color:#153c68;font-size:1rem}.period-report-score{color:#0f61d8;font-size:1.5rem;font-weight:1000}
+    .period-report-meta{margin-top:4px;color:#72839a;font-size:.72rem;font-weight:700}.period-report-components{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.period-report-components span{padding:5px 9px;border-radius:999px;background:#eff6ff;color:#315a86;font-size:.66rem;font-weight:800}
+    .report-remedial{display:inline-flex;margin-top:10px;padding:4px 9px;border-radius:999px;background:#e6f7f3;color:#087c72;font-size:.65rem;font-weight:900}.period-report-note{margin-top:9px;color:#415b77;font-size:.76rem;line-height:1.5}
+
     /* Responsif Mobile */
     @media (max-width: 768px) { 
       .rg-header-card { padding: 24px 18px; border-radius: 24px; gap: 12px; flex-direction: row; align-items: center; justify-content: flex-start; }
@@ -323,6 +342,7 @@
       .filter-actions { width: 100%; justify-content: space-between; }
       .header-filter-box { flex: 1; }
       .btn-download-pdf { flex: 0 0 auto; }
+      .report-field{min-width:0}.report-summary{gap:7px}.report-metric{padding:12px 6px}.report-tabs{position:sticky;top:0;z-index:4}
 
       .resume-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; } 
       .kategori-blok { padding: 24px 18px; border-radius: 24px; }
@@ -356,15 +376,24 @@
     </div>
   </div>
 
+  <div class="academic-center-head fade-in">
+    <small>Pusat laporan</small>
+    <h1>Laporan Akademik</h1>
+    <p>Nilai akademik ananda yang telah difinalisasi.</p>
+  </div>
+  <div class="report-tabs fade-in" role="tablist" aria-label="Jenis laporan akademik">
+    <button type="button" class="report-tab active" data-report-tab="bulanan" role="tab" aria-selected="true">Bulanan</button>
+    <button type="button" class="report-tab" data-report-tab="triwulan" role="tab" aria-selected="false">Triwulan</button>
+    <button type="button" class="report-tab" data-report-tab="semester" role="tab" aria-selected="false">Semester</button>
+  </div>
+
   <!-- Blok Filter Terpisah -->
   <div class="filter-container fade-in">
-    <div class="fc-label">
-      <span style="font-size:1.2rem;">📅</span> Pilih Laporan:
-    </div>
+    <div class="fc-label"><span style="font-size:1.2rem;">📅</span> Periode laporan</div>
     <div class="filter-actions">
-      <div class="header-filter-box">
+      <div class="report-field"><label for="filterTahunAkademik">Tahun Akademik</label><select id="filterTahunAkademik" onchange="renderSemuaData()"></select></div>
+      <div class="header-filter-box report-field" id="monthFilterWrap"><label for="filterBulan">Bulan</label>
         <select id="filterBulan" onchange="renderSemuaData()">
-          <option value="Semua">Semua Bulan</option>
           <option value="Januari">Januari</option>
           <option value="Februari">Februari</option>
           <option value="Maret">Maret</option>
@@ -380,6 +409,8 @@
           <option value="Desember">Desember</option>
         </select>
       </div>
+      <div class="report-field" id="quarterFilterWrap" hidden><label for="filterTriwulan">Triwulan</label><select id="filterTriwulan" onchange="renderSemuaData()"><option>Triwulan 1</option><option>Triwulan 2</option><option>Triwulan 3</option><option>Triwulan 4</option></select></div>
+      <div class="report-field" id="semesterFilterWrap" hidden><label for="filterSemester">Semester</label><select id="filterSemester" onchange="renderSemuaData()"><option value="Semester 1">Semester 1 / Ganjil</option><option value="Semester 2">Semester 2 / Genap</option></select></div>
       <button type="button" class="btn-download-pdf" id="btnDownloadPdf" onclick="downloadLaporanPDF()">
         <span>⬇️</span> Download PDF Resmi
       </button>
@@ -388,6 +419,11 @@
 
 
   <div id="loadingData">🔄 Sinkronisasi data pendidikan...</div>
+
+  <section id="secPeriodik" hidden>
+    <div class="report-summary" id="periodReportSummary"></div>
+    <div id="periodReportList"></div>
+  </section>
 
   <div class="kategori-blok blok-intelektual fade-in" id="secIntelektual" style="display: none;">
     <div class="kb-header">
@@ -401,7 +437,7 @@
   <div id="secTahfizReguler" class="kategori-blok blok-tahfiz fade-in" style="display: none;">
     <div class="kb-header">
       <div class="kb-icon">📖</div>
-      <h3 class="kb-title">Tahfiz Reguler</h3>
+      <h3 class="kb-title">Perkembangan Tahfiz</h3>
     </div>
     <div class="resume-grid" id="tahfizResumeGridReguler"></div>
     <div class="tahfiz-list" id="tahfizListReguler"></div>
@@ -436,17 +472,18 @@
 </div> <!-- Akhir app-container -->
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 
-<script src="script.js?v=20260804-v15"></script>
+<script src="script.js?v=20260923-v17"></script>
 <script>
   // KONFIGURASI FIREBASE & DATABASE QURAN
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
   if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-  const dbRT = firebase.database(); const dbFS = firebase.firestore();
+  const dbRT = firebase.database(); const dbFS = firebase.firestore(); const auth = firebase.auth();
 
   const quranDb = [
     { nama: "Al-Fatihah", ayat: 7, pages: 1 }, { nama: "Al-Baqarah", ayat: 286, pages: 48 }, { nama: "Ali 'Imran", ayat: 200, pages: 27 },
@@ -571,14 +608,40 @@
 
   const monthMapRev = { "01":"Januari", "02":"Februari", "03":"Maret", "04":"April", "05":"Mei", "06":"Juni", "07":"Juli", "08":"Agustus", "09":"September", "10":"Oktober", "11":"November", "12":"Desember" };
 
-  let globalExams = []; let globalTahfizReguler = []; let globalTahfizCahaya = []; let globalMurojaah = []; let globalAsesmen = [];
-  let currentMonthFilter = "Semua"; let activeStudentName = "";
+  let globalExams = []; let globalPeriodicExams = []; let globalTahfizReguler = []; let globalTahfizCahaya = []; let globalMurojaah = []; let globalAsesmen = [];
+  let currentMonthFilter = ""; let activeStudentName = ""; let activeStudentKey = ""; let activeStudentProfile = {}; let activeReportTab = "bulanan"; let quranAssignments = {};
+  const academicReport = window.CahayaWaliAcademicReportV2;
+  function currentAcademicYear(){const now=new Date(),year=now.getFullYear(),start=now.getMonth()>=6?year:year-1;return `${start}/${start+1}`}
+  function activeYear(){return document.getElementById('filterTahunAkademik')?.value||currentAcademicYear()}
   function examBelongsToStudentProgram(exam){
+    if(!academicReport.isFinal(exam))return false;
     if(exam.nilai_diisi_otomatis===true||String(exam.nilai_diisi_otomatis).toLowerCase()==='true')return false;
     const score=exam.nilai_total??exam.nilai_akhir??exam.nilai;
     if(score===null||score===undefined||score===''||!Number.isFinite(Number(score)))return false;
     const A=CahayaStudentProgramApplicability;
-    return A.applicable(activeStudentName,exam,A.date(exam.programPeriodDate||exam.tanggal_ujian||exam.tanggal||exam.timestamp),{},exam).applicable;
+    return A.applicable(activeStudentName,exam,A.date(exam.programPeriodDate||exam.tanggal_ujian||exam.tanggal||exam.timestamp),quranAssignments,exam).applicable;
+  }
+
+  async function readStudentScoreIndex(path,sourceType){
+    const indexed=await CahayaWaliSession.readSnapshot(dbRT,path,{limit:500,noCache:true});
+    return indexed?.exists()?Object.entries(indexed.val()||{}).map(([id,value])=>({id,__sourceType:sourceType,...value})):[];
+  }
+
+  function setupAcademicYears(){
+    const select=document.getElementById('filterTahunAkademik'),fallback=currentAcademicYear(),years=academicReport.years([...globalExams,...globalPeriodicExams],fallback),current=select.value||fallback;
+    select.innerHTML=years.map(year=>`<option value="${year}">${year}</option>`).join('');
+    select.value=years.includes(current)?current:fallback;
+  }
+
+  function bindReportTabs(){
+    document.querySelectorAll('[data-report-tab]').forEach(button=>button.addEventListener('click',()=>{
+      activeReportTab=button.dataset.reportTab;
+      document.querySelectorAll('[data-report-tab]').forEach(item=>{const active=item===button;item.classList.toggle('active',active);item.setAttribute('aria-selected',active?'true':'false')});
+      document.getElementById('monthFilterWrap').hidden=activeReportTab!=='bulanan';
+      document.getElementById('quarterFilterWrap').hidden=activeReportTab!=='triwulan';
+      document.getElementById('semesterFilterWrap').hidden=activeReportTab!=='semester';
+      renderSemuaData();
+    }));
   }
 
   function namaCocok(value) {
@@ -598,24 +661,31 @@
     const session =
       await CahayaWaliSession
         .ready({
-          firestore: dbFS
+          firestore: dbFS,
+          database: dbRT,
+          auth,
+          requireAuthAccess: true
         });
 
     if (!session.valid) {
       document.getElementById(
         'loadingData'
       ).innerText =
-        "Sesi Portal Wali tidak valid.";
+        session.reason === "WALI_ACCESS_NOT_PROVISIONED"
+          ? "Akun Wali belum terhubung ke data santri. Hubungi administrator."
+          : "Sesi Portal Wali tidak valid.";
       return;
     }
 
     const user =
       session.student;
+    activeStudentProfile=user||{};
 
     activeStudentName =
       CahayaWaliSession
         .studentName(user)
         .toUpperCase();
+    activeStudentKey=CahayaWaliSession.studentKey(user);
 
     document.getElementById(
       'studentNameHeader'
@@ -639,13 +709,13 @@
         document.getElementById('avatarInit').style.display = 'none';
     }
 
-    const identity =
-      await CahayaWaliSession
-        .resolveStudentIdentity(
-          dbRT,
-          activeStudentName,
-          user
-        );
+    const identity = {
+      kelas: user.kelas || user.kelasSantri || "",
+      usrah: user.usrah || user.namaUsrah || "",
+      kelasDisplay: CahayaWaliSession.formatClassDisplay(user.kelas || user.kelasSantri || ""),
+      usrahDisplay: CahayaWaliSession.formatUsrahDisplay(user.usrah || user.namaUsrah || "")
+    };
+    activeStudentProfile={...activeStudentProfile,...identity,name:activeStudentName,studentKey:activeStudentKey};
 
     document.getElementById(
       'studentClassHeader'
@@ -660,8 +730,13 @@
     const today = new Date();
     currentMonthFilter = isAprilOrEarlyMay(today.toISOString().split('T')[0]) ? "April" : monthMapRev[String(today.getMonth()+1).padStart(2,'0')];
     document.getElementById('filterBulan').value = currentMonthFilter;
+    bindReportTabs();
 
     try {
+      try{
+        const placement=await dbRT.ref(`cahaya_app/wali_index/${activeStudentKey}/program_quran/current`).once('value');
+        if(placement.exists())quranAssignments[academicReport.key(activeStudentName)]=placement.val();
+      }catch(error){console.warn('Penempatan program Quran belum dapat dimuat',error)}
       const snapAsesmen =
         await CahayaWaliSession
           .readSnapshot(
@@ -716,33 +791,17 @@
         });
       }
 
-      const snapUjian =
-        await CahayaWaliSession
-          .readSnapshot(
-            dbRT,
-            'cahaya_app/nilai_ujian_bulanan'
-          );
-      if(snapUjian?.exists()) {
-        const ud = snapUjian.val();
-        Object.keys(ud).forEach(k => {
-          const namaUjian =
-            ud[k].nama_santri ||
-            ud[k].namaSantri ||
-            ud[k].nama ||
-            "";
-
-          if(
-            namaUjian &&
-            namaCocok(
-              namaUjian
-            )
-          ) {
-              let exam = ud[k];
-              if (isAprilOrEarlyMay(exam.tanggal_ujian) || isAprilOrEarlyMay(exam.timestamp)) exam.bulan = "April"; 
-              if(examBelongsToStudentProgram(exam))globalExams.push(exam);
-          }
-        });
-      }
+      const [monthlyRows,periodicRows]=await Promise.all([
+        readStudentScoreIndex('cahaya_app/nilai_ujian_bulanan','Bulanan'),
+        readStudentScoreIndex('cahaya_app/nilai_ujian','Periodik')
+      ]);
+      globalExams=monthlyRows.filter(exam=>academicReport.belongsToStudent(exam,activeStudentProfile)).map(exam=>{
+        const row={...exam,__sourceType:'Bulanan'};
+        if(isAprilOrEarlyMay(row.tanggal_ujian)||isAprilOrEarlyMay(row.timestamp))row.bulan='April';
+        return row;
+      }).filter(examBelongsToStudentProgram);
+      globalPeriodicExams=periodicRows.filter(exam=>academicReport.belongsToStudent(exam,activeStudentProfile)).filter(examBelongsToStudentProgram);
+      setupAcademicYears();
       
       document.getElementById('loadingData').style.display = 'none';
       renderSemuaData(); 
@@ -754,11 +813,30 @@
     let selectEl = document.getElementById('filterBulan');
     currentMonthFilter = selectEl.value;
 
-    renderAsesmen(currentMonthFilter === "Semua" ? globalAsesmen : globalAsesmen.filter(a => a.filterBulan === currentMonthFilter));
-    renderTahfizBlok('Reguler', globalTahfizReguler, 'secTahfizReguler', 'tahfizResumeGridReguler', 'tahfizListReguler');
-    renderTahfizBlok('Cahaya', globalTahfizCahaya, 'secTahfizCahaya', 'tahfizResumeGridCahaya', 'tahfizListCahaya');
+    const monthly=activeReportTab==='bulanan';
+    ['secIntelektual','secTahfizReguler','secTahfizCahaya','secMurojaah','secEvaluasi'].forEach(id=>{const node=document.getElementById(id);if(node&&!monthly)node.style.display='none'});
+    document.getElementById('secPeriodik').hidden=monthly;
+    if(!monthly){renderPeriodicReport();return}
+
+    renderAsesmen(dataSesuaiBulan(globalAsesmen));
+    renderTahfizBlok('Tahfiz', dataSesuaiBulan([...globalTahfizReguler,...globalTahfizCahaya]), 'secTahfizReguler', 'tahfizResumeGridReguler', 'tahfizListReguler');
+    document.getElementById('secTahfizCahaya').style.display='none';
     renderMurojaah();
     renderEvaluasi();
+  }
+
+  function selectedPeriod(){return activeReportTab==='triwulan'?document.getElementById('filterTriwulan').value:activeReportTab==='semester'?document.getElementById('filterSemester').value:currentMonthFilter}
+  function selectedPeriodicScores(){return academicReport.filterScores(globalPeriodicExams,{tab:activeReportTab,year:activeYear(),period:selectedPeriod(),student:activeStudentProfile,applicable:examBelongsToStudentProgram})}
+  function escapeAcademic(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+  function scoreComponents(record){
+    return [['nilai_syafawi','Lisan'],['nilai_tahriri','Tulisan'],['nilai_tashnif','Tashnif'],['nilai_tathbiqi','Praktek']].filter(([field])=>record[field]!==undefined&&record[field]!==null&&record[field]!==''&&Number(record[`bobot_${field.replace('nilai_','')}_persen`]??1)>0).map(([field,label])=>`<span>${label}: ${escapeAcademic(record[field])}</span>`).join('');
+  }
+  function renderPeriodicReport(){
+    const records=selectedPeriodicScores(),summary=academicReport.summary(records),period=selectedPeriod(),label=activeReportTab==='triwulan'?`Rapor ${period}`:`Rapor ${period}`;
+    document.getElementById('periodReportSummary').innerHTML=`<div class="report-metric"><b>${summary.subjects}</b><span>Mapel Dinilai</span></div><div class="report-metric"><b>${summary.average??'—'}</b><span>Rata-rata</span></div><div class="report-metric"><b>${summary.remedial}</b><span>Remedial</span></div>`;
+    const list=document.getElementById('periodReportList');
+    if(!records.length){list.innerHTML=`<div class="empty-state"><strong>${label} belum tersedia.</strong><br><small>Laporan akan tampil setelah nilai akademik difinalisasi.</small></div>`;return}
+    list.innerHTML=records.map(record=>{const displayed=CahayaAcademicReportScorePolicy.reportScore(record),remedial=CahayaAcademicReportScorePolicy.isRemedial(record),note=String(record.keterangan||'').trim();return `<article class="period-report-card"><div class="period-report-head"><div><h4>${escapeAcademic(academicReport.subjectOf(record))}</h4><div class="period-report-meta">${escapeAcademic(formatGelarAkademik(record.guru_penguji||record.guru||'Guru'))}</div></div><div class="period-report-score">${Number.isFinite(displayed)?displayed:'—'}</div></div><div class="period-report-components">${scoreComponents(record)}</div>${remedial?'<span class="report-remedial">Remedial</span>':''}${note?`<div class="period-report-note">${remedial?'Remedial · ':''}${escapeAcademic(note)}</div>`:''}</article>`}).join('');
   }
 
   function renderAsesmen(dataList) {
@@ -803,7 +881,7 @@
       <div class="resume-box"><p>${res.baris}</p><h4>Baris</h4></div>
     `;
 
-    let filtered = currentMonthFilter === "Semua" ? dataList : dataList.filter(r => r.filterBulan === currentMonthFilter);
+    let filtered = dataList;
     const listContainer = document.getElementById(listId);
     if (filtered.length === 0) { listContainer.innerHTML = `<div class="empty-state">Data setoran kosong.</div>`; return; }
 
@@ -840,7 +918,7 @@
     const sec = document.getElementById('secMurojaah');
     const grid = document.getElementById('murojaahResumeGrid');
     const list = document.getElementById('murojaahList');
-    const filtered = currentMonthFilter === "Semua" ? globalMurojaah : globalMurojaah.filter(r => r.filterBulan === currentMonthFilter);
+    const filtered = dataSesuaiBulan(globalMurojaah);
     if (!globalMurojaah.length) { sec.style.display = 'none'; return; }
     sec.style.display = 'block';
     const total = filtered.length;
@@ -863,9 +941,9 @@
     const sec = document.getElementById('secEvaluasi');
     const container = document.getElementById('evaluasiListContainer');
     container.innerHTML = '';
-    let filtered = currentMonthFilter === "Semua" ? globalExams : globalExams.filter(e => e.bulan === currentMonthFilter);
+    let filtered = academicReport.filterScores(globalExams,{tab:'bulanan',year:activeYear(),period:currentMonthFilter,student:activeStudentProfile,applicable:examBelongsToStudentProgram});
     sec.style.display = 'block';
-    if(filtered.length === 0) { container.innerHTML = `<div class="empty-state">Nilai ujian kosong.</div>`; return; }
+    if(filtered.length === 0) { container.innerHTML = `<div class="empty-state"><strong>Laporan akademik ${escapeAcademic(currentMonthFilter)} belum tersedia.</strong><br><small>Laporan akan tampil setelah nilai akademik difinalisasi.</small></div>`; return; }
 
     filtered.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
     filtered.forEach(ev => {
@@ -979,9 +1057,14 @@
   }
 
   function dataSesuaiBulan(list) {
-    return currentMonthFilter === "Semua"
-      ? [...list]
-      : list.filter(item => item.filterBulan === currentMonthFilter || item.bulan === currentMonthFilter);
+    const [startYearRaw,endYearRaw]=activeYear().split('/'),startYear=Number(startYearRaw),endYear=Number(endYearRaw);
+    return [...list].filter(item => item.filterBulan === currentMonthFilter || item.bulan === currentMonthFilter).filter(item=>{
+      const explicit=String(item.tahun_akademik||item.tahunAkademik||item.tahunAjaran||'').trim();
+      if(explicit)return explicit===activeYear();
+      const raw=String(item.tanggal_ujian||item.tanggalAsesmen||item.tanggal||item.timestamp||'').slice(0,10),match=raw.match(/^(\d{4})-(\d{2})-/);
+      if(!match||!startYear||!endYear)return true;
+      const year=Number(match[1]),month=Number(match[2]);return(month>=7&&year===startYear)||(month<=6&&year===endYear);
+    });
   }
 
   function predikatNilai(scoreValue) {
@@ -1159,9 +1242,8 @@
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10.2);
     doc.setTextColor(22, 52, 95);
-    doc.text("LAPORAN", 192, 17.5, { align: "right" });
-    doc.text("AKADEMIK", 192, 24.2, { align: "right" });
-    doc.text("BULANAN", 192, 30.9, { align: "right" });
+    const titleLines=meta.titleLines||["LAPORAN","AKADEMIK","BULANAN"];
+    titleLines.slice(0,3).forEach((line,index)=>doc.text(teksPdf(line),192,17.5+(index*6.7),{align:"right"}));
 
     doc.setDrawColor(37, 99, 235);
     doc.setLineWidth(0.75);
@@ -1191,7 +1273,7 @@
       body: [
         ["Nama Santri", meta.nama, "Periode", meta.periode],
         ["Kelas", meta.kelas, "Usrah", meta.usrah],
-        ["Tahun Ajaran", "2026/2027", "Tanggal Cetak", meta.tanggalCetak]
+        ["Tahun Ajaran", meta.tahunAkademik||"-", "Tanggal Cetak", meta.tanggalCetak]
       ]
     });
 
@@ -1304,8 +1386,8 @@
     return doc.lastAutoTable.finalY + 7;
   }
 
-  function gambarUjianPdf(doc, y, meta, listData) {
-    y = judulBagianPdf(doc, y, 4, "Laporan Ujian Bulanan");
+  function gambarUjianPdf(doc, y, meta, listData, nomor=4, judul="Laporan Ujian Bulanan") {
+    y = judulBagianPdf(doc, y, nomor, judul);
 
     if (!listData.length) {
       return tulisKosongPdf(doc, y, "Belum ada nilai ujian pada periode ini.");
@@ -1413,17 +1495,21 @@
     }
 
     const originalText = button.innerHTML;
-    const bulan = document.getElementById("filterBulan")?.value || "Semua";
+    const bulan = document.getElementById("filterBulan")?.value || "";
     const nama = document.getElementById("studentNameHeader")?.textContent?.trim() || "Santri";
     const kelas = document.getElementById("studentClassHeader")?.textContent?.trim() || "-";
     const usrah = document.getElementById("studentUsrahHeader")?.textContent?.trim() || "-";
-    const periode = bulan === "Semua" ? "Semua Bulan - Tahun Ajaran 2026/2027" : `Bulan ${bulan} - Tahun Ajaran 2026/2027`;
+    const tahun=activeYear(),periodAktif=selectedPeriod();
+    const reportTitle=activeReportTab==='triwulan'?'Rapor Triwulan':activeReportTab==='semester'?'Rapor Semester':'Laporan Akademik Bulanan';
+    const periode=activeReportTab==='bulanan'?`${bulan} • Tahun Akademik ${tahun}`:`${periodAktif} • Tahun Akademik ${tahun}`;
 
     const meta = {
       nama: teksPdf(nama),
       kelas: teksPdf(kelas),
       usrah: teksPdf(usrah),
       periode: teksPdf(periode),
+      tahunAkademik:teksPdf(tahun),
+      titleLines:activeReportTab==='bulanan'?["LAPORAN","AKADEMIK","BULANAN"]:activeReportTab==='triwulan'?["RAPOR","TRIWULAN"]:["RAPOR","SEMESTER"],
       tanggalCetak: new Date().toLocaleDateString("id-ID", {
         day: "2-digit",
         month: "long",
@@ -1449,7 +1535,7 @@
       }
 
       doc.setProperties({
-        title: `Laporan Akademik Bulanan - ${meta.nama}`,
+        title: `${reportTitle} - ${meta.nama}`,
         subject: meta.periode,
         author: "Pesantren Cahaya Fajrul Islam",
         creator: "CAHAYA APP"
@@ -1459,23 +1545,25 @@
       let y = gambarHeaderResmi(doc, meta, logoData);
       y = gambarIdentitasPdf(doc, y, meta);
 
-      const asesmenFiltered = dataSesuaiBulan(globalAsesmen)
-        .sort((a, b) => new Date(b.timestamp || b.tanggalAsesmen || 0) - new Date(a.timestamp || a.tanggalAsesmen || 0));
-      const tahfizRegulerFiltered = dataSesuaiBulan(globalTahfizReguler);
-      const tahfizCahayaFiltered = dataSesuaiBulan(globalTahfizCahaya);
-      const murojaahFiltered = dataSesuaiBulan(globalMurojaah).map(r=>({...r,setoran:`${r.jenisMurojaah||'Harian'} • ${r.setoran||'-'}`}));
-      const ujianFiltered = dataSesuaiBulan(globalExams);
-
-      y = gambarAsesmenPdf(doc, y, meta, asesmenFiltered[0] || null);
-      y = gambarTahfizPdf(doc, y, meta, 2, "Tahfiz Reguler", tahfizRegulerFiltered);
-      y = gambarTahfizPdf(doc, y, meta, 3, "Tahfiz CAHAYA", tahfizCahayaFiltered);
-      y = gambarTahfizPdf(doc, y, meta, 4, "Muroja’ah", murojaahFiltered);
-      y = gambarUjianPdf(doc, y, meta, ujianFiltered);
+      if(activeReportTab==='bulanan'){
+        const asesmenFiltered=dataSesuaiBulan(globalAsesmen).sort((a,b)=>new Date(b.timestamp||b.tanggalAsesmen||0)-new Date(a.timestamp||a.tanggalAsesmen||0));
+        const tahfizFiltered=dataSesuaiBulan([...globalTahfizReguler,...globalTahfizCahaya]);
+        const murojaahFiltered=dataSesuaiBulan(globalMurojaah).map(r=>({...r,setoran:`${r.jenisMurojaah||'Harian'} • ${r.setoran||'-'}`}));
+        const ujianFiltered=academicReport.filterScores(globalExams,{tab:'bulanan',year:tahun,period:bulan,student:activeStudentProfile,applicable:examBelongsToStudentProgram});
+        y=gambarAsesmenPdf(doc,y,meta,asesmenFiltered[0]||null);
+        if(tahfizFiltered.length)y=gambarTahfizPdf(doc,y,meta,2,"Perkembangan Tahfiz",tahfizFiltered);
+        if(murojaahFiltered.length)y=gambarTahfizPdf(doc,y,meta,3,"Muroja’ah",murojaahFiltered);
+        y=gambarUjianPdf(doc,y,meta,ujianFiltered,4,"Nilai Ujian Bulanan");
+      }else{
+        const ujianFiltered=selectedPeriodicScores();
+        y=gambarUjianPdf(doc,y,meta,ujianFiltered,1,reportTitle);
+      }
       gambarPengesahanDigitalPdf(doc, y, meta);
 
       gambarFooterSemuaHalaman(doc, meta);
 
-      const filename = `laporan-akademik-resmi-${amanNamaFile(nama)}-${amanNamaFile(bulan)}.pdf`;
+      const prefix=activeReportTab==='triwulan'?'rapor-triwulan':activeReportTab==='semester'?'rapor-semester':'laporan-akademik-bulanan';
+      const filename = `${prefix}-${amanNamaFile(nama)}-${amanNamaFile(periodAktif)}.pdf`;
       doc.save(filename);
     } catch (error) {
       console.error("Gagal membuat PDF resmi:", error);

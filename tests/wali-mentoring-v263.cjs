@@ -12,5 +12,6 @@ assert.equal(M.normalize(input.a,'a','OTHER'),null);
 const source=fs.readFileSync('wali/dashboard/mentoring-pekanan.js','utf8');
 assert(!/\.(?:set|update|remove)\(/.test(source));
 assert(!/searchParams|URLSearchParams/.test(source),'URL cannot select another student');
-assert(source.includes("orderByChild(field).equalTo(name)"));
-console.log('Wali mentoring: scoped projection, legacy aliases, inclusive calendar, WIB, private-note exclusion, read-only queries passed.');
+assert(!source.includes("orderByChild(field).equalTo(name)"),'Wali must not query the global mentoring collection by client-supplied name');
+assert(source.includes("CahayaWaliSession.readSnapshot(db,'cahaya_app/log_mentoring_naqib'"));
+console.log('Wali mentoring: trusted per-student index, scoped projection, legacy aliases, inclusive calendar, WIB, private-note exclusion passed.');

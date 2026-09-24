@@ -6,7 +6,8 @@
  * - cahayaCurrentUser tetap menyimpan akun wali hasil login.
  * - cahayaWaliAccount menyimpan salinan akun wali.
  * - cahayaWaliStudentProfile menyimpan identitas santri yang dipantau.
- * - Tidak mewajibkan Firebase Authentication.
+ * - Otorisasi data produksi selalu berasal dari Firebase Auth UID +
+ *   cahaya_access/wali/{uid}/students, bukan dari localStorage.
  */
 (function (global) {
   "use strict";
@@ -22,7 +23,11 @@
     student: null,
     ready: false,
     valid: false,
-    source: "local"
+    source: "local",
+    authUid: "",
+    authorizedStudents: [],
+    selectedStudentKey: "",
+    reason: ""
   };
 
   let readyPromise = null;
@@ -37,6 +42,48 @@
 
   function cleanText(value = "") {
     return String(value ?? "").trim();
+  }
+
+  function stableStudentKey(value = "") {
+    return cleanText(value).replace(/[.#$\[\]\/]/g, "");
+  }
+
+  function profileStudentKey(profile = {}) {
+    return stableStudentKey(
+      profile.studentKey || profile.santriId || profile.studentId || profile.namaSantriKey || ""
+    );
+  }
+
+  function normalizeAuthorizedStudents(value) {
+    if (!value || typeof value !== "object") return [];
+    return Object.entries(value).map(([key, raw]) => {
+      const item = raw && typeof raw === "object" ? raw : {};
+      return {
+        ...item,
+        studentKey: stableStudentKey(item.studentKey || key),
+        active: raw === true || item.active === true
+      };
+    }).filter(item => item.active && item.studentKey);
+  }
+
+  async function resolveAuthUser(auth) {
+    if (!auth) return null;
+    if (auth.currentUser) return auth.currentUser;
+    if (typeof auth.onAuthStateChanged !== "function") return null;
+    return new Promise(resolve => {
+      let settled = false;
+      let timer = null;
+      let unsubscribe = null;
+      const finish = value => { if (settled) return; settled = true; clearTimeout(timer); unsubscribe?.(); resolve(value || null); };
+      unsubscribe = auth.onAuthStateChanged(user => finish(user), () => finish(null));
+      timer = setTimeout(() => finish(auth.currentUser || null), 8000);
+    });
+  }
+
+  async function readAuthorizedStudents(database, uid) {
+    if (!database || !uid || typeof database.ref !== "function") return [];
+    const snapshot = await database.ref(`cahaya_access/wali/${uid}/students`).once("value");
+    return normalizeAuthorizedStudents(snapshot.val());
   }
 
   function normalizeRoles(profile = {}) {
@@ -73,6 +120,7 @@
 
     return (
       roles.includes("wali") ||
+      roles.includes("wali_santri") ||
       profile.isPortalWali === true ||
       cleanText(profile.portalMode).toLowerCase() === "wali" ||
       hasStudentName(profile)
@@ -181,7 +229,7 @@
       storedStudent.nama ||
       (
         normalizeRoles(account)
-          .includes("wali")
+          .some(role => role === "wali" || role === "wali_santri")
           ? (
               account.label ||
               account.namaTampilan ||
@@ -193,12 +241,14 @@
     );
   }
 
-  function buildStudentProfile(account = {}) {
+  function buildStudentProfile(account = {}, authorizedChild = null) {
     const storedStudent =
       readStorageProfile(KEYS.student) || {};
 
-    const studentName =
-      studentNameFrom(account, storedStudent);
+    const child = authorizedChild && typeof authorizedChild === "object" ? authorizedChild : {};
+    const studentName = cleanText(
+      child.namaSantri || child.namaAnak || child.label || studentNameFrom(account, storedStudent)
+    );
 
     const waliUsername =
       getAccountUsername(account) ||
@@ -235,6 +285,8 @@
 
       username: waliUsername,
 
+      studentKey: profileStudentKey(child) || profileStudentKey(storedStudent) || profileStudentKey(account),
+
       namaAnak: studentName,
       namaSantri: studentName,
       namaAnanda: studentName,
@@ -244,6 +296,7 @@
       namaTampilan: studentName,
 
       kelas: cleanText(
+        child.kelasSantri || child.kelas ||
         account.kelasSantri ||
         account.kelas ||
         storedStudent.kelasSantri ||
@@ -251,6 +304,7 @@
       ),
 
       kelasSantri: cleanText(
+        child.kelasSantri || child.kelas ||
         account.kelasSantri ||
         account.kelas ||
         storedStudent.kelasSantri ||
@@ -258,7 +312,9 @@
       ),
 
       usrah: cleanText(
+        child.usrah || child.namaUsrah ||
         account.usrah ||
+        child.namaUsrah || child.usrah ||
         account.namaUsrah ||
         storedStudent.usrah ||
         storedStudent.namaUsrah
@@ -307,6 +363,7 @@
 
     if (
       roles.includes("wali") ||
+      roles.includes("wali_santri") ||
       !hasStudentName(account)
     ) {
       return { ...account };
@@ -326,7 +383,7 @@
     };
   }
 
-  function saveState(account, source = "local") {
+  function saveState(account, source = "local", access = {}) {
     const normalizedAccount =
       ensureWaliRole({
         ...account,
@@ -335,8 +392,15 @@
           getAccountUsername(account)
       });
 
-    const student =
-      buildStudentProfile(normalizedAccount);
+    const authorizedStudents = Array.isArray(access.authorizedStudents)
+      ? access.authorizedStudents
+      : (state.authorizedStudents || []);
+    const requestedKey = stableStudentKey(
+      access.selectedStudentKey || profileStudentKey(readStorageProfile(KEYS.student) || {}) || profileStudentKey(normalizedAccount)
+    );
+    const selectedChild = authorizedStudents.find(item => item.studentKey === requestedKey) || authorizedStudents[0] || null;
+    const student = buildStudentProfile(normalizedAccount, selectedChild);
+    const selectedStudentKey = selectedChild?.studentKey || profileStudentKey(student);
 
     state = {
       account: normalizedAccount,
@@ -350,7 +414,11 @@
         ) &&
         studentNameFrom(normalizedAccount, student)
       ),
-      source
+      source,
+      authUid: cleanText(access.authUid || state.authUid),
+      authorizedStudents,
+      selectedStudentKey,
+      reason: ""
     };
 
     localStorage.setItem(
@@ -395,39 +463,16 @@
     return state;
   }
 
-  async function readFirestoreAccount(
-    firestore,
-    account
-  ) {
-    const username =
-      getAccountUsername(account);
-
-    if (
-      !firestore ||
-      !username ||
-      typeof firestore.collection !== "function"
-    ) {
+  async function readFirestoreAccount(firestore, account) {
+    const username = getAccountUsername(account);
+    if (!firestore || !username || typeof firestore.collection !== "function") return null;
+    try {
+      const snapshot = await firestore.collection("users").doc(username).get();
+      return snapshot.exists ? snapshot.data() : null;
+    } catch (error) {
+      console.warn("Profil Firestore belum dapat diperbarui:", error);
       return null;
     }
-
-    try {
-      const snapshot =
-        await firestore
-          .collection("users")
-          .doc(username)
-          .get();
-
-      if (snapshot.exists) {
-        return snapshot.data();
-      }
-    } catch (error) {
-      console.warn(
-        "Profil Firestore belum dapat diperbarui:",
-        error
-      );
-    }
-
-    return null;
   }
 
   async function ready(options = {}) {
@@ -452,7 +497,11 @@
             student: null,
             ready: true,
             valid: false,
-            source: "none"
+            source: "none",
+            authUid: "",
+            authorizedStudents: [],
+            selectedStudentKey: "",
+            reason: "NO_LOCAL_ACCOUNT"
           };
 
           return state;
@@ -462,11 +511,8 @@
           ...selected.account
         };
 
-        const remote =
-          await readFirestoreAccount(
-            options.firestore,
-            account
-          );
+        const access = null;
+        const remote = await readFirestoreAccount(options.firestore, account);
 
         if (remote) {
           /*
@@ -495,13 +541,15 @@
 
           return saveState(
             account,
-            "firestore"
+            "firestore",
+            access || {}
           );
         }
 
         return saveState(
           account,
-          selected.source
+          selected.source,
+          access || {}
         );
       })();
 
@@ -536,6 +584,32 @@
       profile,
       profile
     );
+  }
+
+  function studentKey(profile = getStudent()) {
+    const requested = profileStudentKey(profile);
+    if (state.authorizedStudents?.length) {
+      return state.authorizedStudents.some(item => item.studentKey === requested)
+        ? requested
+        : state.selectedStudentKey;
+    }
+    return requested;
+  }
+
+  function authorizedStudentKeys() {
+    return (state.authorizedStudents || []).map(item => item.studentKey);
+  }
+
+  function selectAuthorizedStudent(key) {
+    const wanted = stableStudentKey(key);
+    const child = (state.authorizedStudents || []).find(item => item.studentKey === wanted);
+    if (!child) return false;
+    saveState(getAccount(), "authorized-selection", {
+      authUid: state.authUid,
+      authorizedStudents: state.authorizedStudents,
+      selectedStudentKey: wanted
+    });
+    return true;
   }
 
   function normalizeName(value = "") {
@@ -1040,6 +1114,7 @@ async function readRTDB(database, path, options = {}) {
       "cahaya_app/asesmen_cahaya_santri":"asesmen",
       "cahaya_app/setoran_tahfiz":"tahfiz",
       "cahaya_app/nilai_ujian_bulanan":"nilai_bulanan",
+      "cahaya_app/nilai_ujian":"nilai_akademik",
       "cahaya_app/absensi_halqah":"halqah",
       "cahaya_app/absensi_program_harian":"program",
       "cahaya_app/absensi_pembelajaran":"pembelajaran",
@@ -1049,14 +1124,16 @@ async function readRTDB(database, path, options = {}) {
       "cahaya_app/laporan_penindakan":"penindakan",
       "cahaya_app/pemeriksaan_kesehatan":"kesehatan",
       "cahaya_app/perizinan_santri":"perizinan",
-      "cahaya_app/evaluasi_bulanan_naqib":"evaluasi_bulanan"
+      "cahaya_app/evaluasi_bulanan_naqib":"evaluasi_bulanan",
+      "cahaya_app/log_mentoring_naqib":"mentoring"
     };
     const category = indexMap[path];
     if (category) {
       const currentName = studentName();
+      const trustedKey = studentKey();
       const canonicalKey = normalizeName(currentName).replace(/[^a-z0-9]/g, "");
       const legacyKey = String(currentName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-      const studentKeys = [...new Set([canonicalKey, legacyKey].filter(Boolean))];
+      const studentKeys = [...new Set([trustedKey, canonicalKey, legacyKey].filter(Boolean))];
       if (!studentKeys.length) return {ok:true,snapshot:null,value:{},indexed:true,empty:true};
       const safeLimit = Math.min(300, Math.max(1, Number(options.limit || 120)));
       let indexed = null;
@@ -1223,7 +1300,11 @@ async function readSnapshot(database, path, options = {}) {
       student: null,
       ready: false,
       valid: false,
-      source: "none"
+      source: "none",
+      authUid: "",
+      authorizedStudents: [],
+      selectedStudentKey: "",
+      reason: ""
     };
 
     readyPromise = null;
@@ -1288,6 +1369,9 @@ async function readSnapshot(database, path, options = {}) {
     getAccount,
     getStudent,
     studentName,
+    studentKey,
+    authorizedStudentKeys,
+    selectAuthorizedStudent,
     normalizeRoles,
     isWaliProfile,
     hasStudentName,

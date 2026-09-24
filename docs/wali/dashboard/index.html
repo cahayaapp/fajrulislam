@@ -1856,7 +1856,7 @@
             <span class="nav-arrow">›</span>
           </a>
 
-          <a class="nav-item" id="menu-akademik-wali" data-menu-id="menu-akademik-wali" data-page-url="akademik.html?v=65" onclick="loadPage('akademik.html?v=65', this)" hidden>
+          <a class="nav-item" id="menu-akademik-wali" data-menu-id="menu-akademik-wali" data-page-url="akademik.html?v=66" onclick="loadPage('akademik.html?v=66', this)" hidden>
             <span class="nav-icon">📚</span>
             <span class="nav-label">Laporan Akademik</span>
             <span class="nav-arrow">›</span>
@@ -2090,8 +2090,10 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
-  <script src="script.js?v=20260804-v15"></script>
+  <script src="script.js?v=20260923-v17"></script>
+  <script src="../../js/chat-uid-v2.js?v=20260923-v1"></script>
 
   <script>
     const firebaseConfig = window.CAHAYA_CONFIG.firebase;
@@ -2122,7 +2124,7 @@
         alwaysAllowed: true
       },
       "menu-akademik-wali": {
-        url: "akademik.html?v=65",
+        url: "akademik.html?v=66",
         title: "Laporan Akademik"
       },
       "menu-karakter-wali": {
@@ -2351,12 +2353,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
     let waliChatRoomListener = null;
     let waliChatGlobalListenerStarted = false;
 
-    const WALI_CHAT_ALLOWED_ROLES = new Set([
-      "admin",
-      "direktur",
-      "wakil",
-      "konselor"
-    ]);
+    const WALI_CHAT_ALLOWED_ROLES = new Set(["direktur", "supervisor"]);
 
     function normalizeWaliChatRole(value = "") {
       const raw=String(value||'').trim().toLowerCase();
@@ -2398,63 +2395,6 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
       return `Abi Ummi ${waliChatSmartCallName(studentName)}`;
     }
 
-    function buildWaliChatRoomId(a, b) {
-      return "chat_" + [
-        cleanWaliChatIdentity(a),
-        cleanWaliChatIdentity(b)
-      ].sort().join("_");
-    }
-
-    function getWaliChatIndexKey() {
-      const account = portalState?.account || {};
-      return cleanWaliChatIdentity(
-        account.username ||
-        account.id ||
-        getWaliChatIdentity()
-      );
-    }
-
-    function buildWaliInboxUpdates(roomId, opponentName, message = null) {
-      if (!roomId || !opponentName) return {};
-      const account = portalState?.account || {};
-      const myIdentity = getWaliChatIdentity();
-      const myKey = getWaliChatIndexKey();
-      const contact = waliChatContacts.find(item =>
-        cleanWaliChatIdentity(item.actualName) === cleanWaliChatIdentity(opponentName) ||
-        cleanWaliChatIdentity(item.username) === cleanWaliChatIdentity(opponentName)
-      );
-      const peerKey = cleanWaliChatIdentity(contact?.username || opponentName);
-      const updatedAt = message?.waktu || new Date().toISOString();
-      const updates = {};
-      updates[`cahaya_app/pesan_inbox/${myKey}/${roomId}`] = {
-        roomId,
-        peerUsername: contact?.username || "",
-        peerLabel: contact?.displayName || opponentName,
-        peerRoles: contact?.roles || [],
-        updatedAt,
-        ...(message ? { lastMessage: message } : {})
-      };
-      updates[`cahaya_app/pesan_inbox/${peerKey}/${roomId}`] = {
-        roomId,
-        peerUsername: account.username || "",
-        peerLabel: myIdentity,
-        peerRoles: ["wali"],
-        updatedAt,
-        ...(message ? { lastMessage: message } : {})
-      };
-      return updates;
-    }
-
-    async function updateWaliInboxIndex(roomId, opponentName, message = null) {
-      const updates = buildWaliInboxUpdates(roomId, opponentName, message);
-      if (!Object.keys(updates).length) return;
-      try {
-        await dbRT.ref().update(updates);
-      } catch (error) {
-        console.warn("Indeks inbox wali belum tersimpan:", error);
-      }
-    }
-
     function encodeWaliChatArg(value = "") {
       return encodeURIComponent(String(value)).replace(/'/g, "%27");
     }
@@ -2485,59 +2425,25 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
 
     async function initializeWaliChat() {
       try {
-        const meClean = cleanWaliChatIdentity(getWaliChatIdentity());
-        const cacheKey = 'cahaya_wali_chat_directory_v3';
-        let directory = [];
-        try {
-          const cached = JSON.parse(localStorage.getItem(cacheKey) || '{}');
-          if (cached.savedAt && Date.now() - cached.savedAt < 6 * 60 * 60 * 1000 && Array.isArray(cached.rows)) directory = cached.rows;
-        } catch (_) {}
-
-        if (!directory.length) {
-          const merged = [];
-          try {
-            const usersSnapshot = await db.collection('users').get();
-            usersSnapshot.forEach(doc => merged.push({ id: doc.id, ...(doc.data() || {}) }));
-          } catch (error) {
-            console.warn('Master kontak Firestore belum dapat dibaca:', error);
-          }
-          try {
-            const snapshot = await dbRT.ref('cahaya_app/direktori_chat_wali').limitToLast(200).once('value');
-            merged.push(...Object.values(snapshot.val() || {}));
-          } catch (error) {
-            console.warn('Direktori kontak RTDB belum dapat dibaca:', error);
-          }
-          const unique = new Map();
-          merged.forEach(user => {
-            if (!user || typeof user !== 'object') return;
-            const key = cleanWaliChatIdentity(user.username || user.email || user.label || user.nama || user.id || '');
-            if (key && !unique.has(key)) unique.set(key, user);
-          });
-          directory = [...unique.values()];
-          try { localStorage.setItem(cacheKey, JSON.stringify({savedAt:Date.now(),rows:directory})); } catch (_) {}
-        }
-
-        waliChatContacts = directory.filter(user => user?.aktif !== false && !/nonaktif|disabled|inactive/i.test(String(user?.status || ''))).map(user => {
-          const roles = normalizeWaliChatRoles(user);
-          const actualName = String(user.label || user.namaTampilan || user.nama || user.username || '').trim();
-          const username = String(user.username || user.userName || user.email?.split('@')[0] || '').trim().toLowerCase();
-          return {
-            actualName,
-            displayName: user.label || user.namaTampilan || user.nama || (username ? `@${username}` : actualName),
-            username,
-            roles,
-            photo:user.fotoProfil || user.foto || user.photoURL || ''
-          };
-        }).filter(item => item.actualName && item.roles.some(role => WALI_CHAT_ALLOWED_ROLES.has(role)) && cleanWaliChatIdentity(item.actualName) !== meClean)
-          .sort((a,b)=>a.displayName.localeCompare(b.displayName,'id'));
+        if (!window.CahayaSecureChat) throw new Error("SECURE_CHAT_CLIENT_NOT_READY");
+        const directory = await CahayaSecureChat.listContacts();
+        waliChatContacts = directory.map(user => ({
+          actualName:String(user.uid || ""),
+          counterpartUid:String(user.uid || ""),
+          displayName:String(user.label || user.username || "Pengurus Pesantren"),
+          username:String(user.username || ""),
+          roles:Array.isArray(user.roles) ? user.roles : [],
+          photo:""
+        })).filter(item => item.counterpartUid && item.roles.some(role => WALI_CHAT_ALLOWED_ROLES.has(normalizeWaliChatRole(role))))
+          .sort((a,b)=>a.displayName.localeCompare(b.displayName,"id"));
 
         renderWaliChatList();
         listenToWaliChatRooms();
       } catch (error) {
-        console.warn('Direktori chat wali belum dapat dimuat:', error);
+        console.warn('Direktori chat UID belum dapat dimuat:', error);
         waliChatContacts = [];
         renderWaliChatList();
-        listenToWaliChatRooms();
+        document.getElementById("waliChatList").innerHTML = '<div class="wali-chat-empty">Percakapan ini sedang disiapkan. Silakan hubungi pengelola pesantren.</div>';
       }
     }
 
@@ -2560,42 +2466,24 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
     function listenToWaliChatRooms() {
       if (waliChatGlobalListenerStarted) return;
       waliChatGlobalListenerStarted = true;
-
-      dbRT
-        .ref(`cahaya_app/pesan_inbox/${getWaliChatIndexKey()}`)
-        .limitToLast(100)
-        .on("value", snapshot => {
-          const index = snapshot.val() || {};
+      CahayaSecureChat.listenUserRooms(index => {
           const me = getWaliChatIdentity();
           const inbox = [];
           let unreadTotal = 0;
 
           Object.entries(index).forEach(([roomId, item]) => {
-            if (!item || !item.lastMessage || roomId.startsWith("room_broadcast_")) return;
-
-            // V63: wali hanya dapat membuka percakapan dengan role layanan resmi.
-            // Inbox lama dengan guru/naqib/pengurus lain otomatis tidak ditampilkan.
-            const peerRoles = (Array.isArray(item.peerRoles) ? item.peerRoles : [item.peerRoles || ""])
-              .flatMap(value => String(value || "").split(/[;,|]/))
-              .map(normalizeWaliChatRole)
-              .filter(Boolean);
-            const peerAllowedByRole = peerRoles.some(role => WALI_CHAT_ALLOWED_ROLES.has(role));
-            const peerAllowedByDirectory = waliChatContacts.some(contact => {
-              const contactIdentity = cleanWaliChatIdentity(contact.username || contact.actualName);
-              const peerIdentity = cleanWaliChatIdentity(item.peerUsername || item.peerLabel);
-              return contactIdentity && contactIdentity === peerIdentity &&
-                contact.roles.some(role => WALI_CHAT_ALLOWED_ROLES.has(role));
-            });
-            if (!peerAllowedByRole && !peerAllowedByDirectory) return;
+            if (!item || !item.lastMessage) return;
+            const peerRoles = Array.isArray(item.peerRoles) ? item.peerRoles.map(normalizeWaliChatRole) : [];
+            if (!peerRoles.some(role => WALI_CHAT_ALLOWED_ROLES.has(role))) return;
 
             const lastMessage = item.lastMessage;
-            const lastRead = localStorage.getItem(`chat_read_${roomId}`) || "0";
-            const unread = lastMessage.pengirim !== me &&
-              new Date(lastMessage.waktu || 0) > new Date(lastRead);
+            const lastRead = Math.max(Number(item.lastReadAt || 0), Number(localStorage.getItem(`chat_read_${roomId}`) || 0));
+            const unread = lastMessage.senderUid !== firebase.auth().currentUser?.uid && Number(lastMessage.createdAt || 0) > lastRead;
             if (unread) unreadTotal += 1;
             inbox.push({
               roomId,
-              actualName: item.peerLabel || item.peerUsername || "Pengurus Pesantren",
+              counterpartUid:item.peerUid || "",
+              actualName: item.peerUid || "",
               displayName: item.peerLabel || item.peerUsername || "Pengurus Pesantren",
               peerUsername: item.peerUsername || "",
               peerLabel: item.peerLabel || "",
@@ -2638,12 +2526,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
     }
 
     function closeWaliChatRoomListener() {
-      if (waliChatRoomListener && waliChatRoomId) {
-        dbRT
-          .ref(`cahaya_app/pesan_global/${waliChatRoomId}`)
-          .off("value", waliChatRoomListener);
-      }
-
+      if (typeof waliChatRoomListener === "function") waliChatRoomListener();
       waliChatRoomListener = null;
     }
 
@@ -2681,10 +2564,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
     }
 
     function resolveWaliChatRoomId(contact = {}) {
-      const canonical = buildWaliChatRoomId(getWaliChatIdentity(), contact.actualName || contact.displayName || contact.username);
-      const canonicalInbox = waliChatInbox.find(item => item.roomId === canonical);
-      if (canonicalInbox) return canonicalInbox.roomId;
-      return canonical;
+      return waliChatInbox.find(item => item.counterpartUid === contact.counterpartUid)?.roomId || "";
     }
 
     function renderWaliChatList(searchValue = "") {
@@ -2715,11 +2595,11 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
             .filter(item =>
               !query ||
               item.displayName.toLowerCase().includes(query) ||
-              String(item.lastMessage?.teks || "").toLowerCase().includes(query)
+              String(item.lastMessage?.text || "").toLowerCase().includes(query)
             )
             .map(item => ({
               ...item,
-              preview: item.lastMessage?.teks || "Belum ada pesan"
+              preview: item.lastMessage?.text || "Belum ada pesan"
             }));
 
       if (!items.length) {
@@ -2760,7 +2640,7 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
       }).join("");
     }
 
-    function openWaliChatRoom(
+    async function openWaliChatRoom(
       encodedActualName,
       encodedDisplayName,
       encodedRoomId,
@@ -2768,18 +2648,27 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
     ) {
       closeWaliChatRoomListener();
 
-      waliChatOpponent =
-        decodeURIComponent(encodedActualName);
+      waliChatOpponent = decodeURIComponent(encodedActualName);
 
       const displayName =
         decodeURIComponent(encodedDisplayName);
 
-      waliChatRoomId =
-        decodeURIComponent(encodedRoomId);
+      waliChatRoomId = decodeURIComponent(encodedRoomId);
+      if (!waliChatRoomId) {
+        const contact = waliChatContacts.find(item => item.counterpartUid === waliChatOpponent);
+        try {
+          const opened = await CahayaSecureChat.openRoom(contact?.counterpartUid, CahayaWaliSession.studentKey());
+          waliChatRoomId = opened.roomId;
+        } catch (error) {
+          console.error("Room chat aman belum dapat dibuka:", error);
+          document.getElementById("waliChatList").innerHTML = '<div class="wali-chat-empty">Percakapan ini sedang disiapkan. Silakan hubungi pengelola pesantren.</div>';
+          return;
+        }
+      }
 
       localStorage.setItem(
         `chat_read_${waliChatRoomId}`,
-        new Date().toISOString()
+        String(Date.now())
       );
 
       document.getElementById("waliChatBackButton").style.display = "grid";
@@ -2793,20 +2682,14 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
       document.getElementById("waliChatMessages").style.display = "flex";
       document.getElementById("waliChatFooter").style.display = broadcast ? "none" : "flex";
 
-      const roomRef =
-        dbRT.ref(`cahaya_app/pesan_global/${waliChatRoomId}`).limitToLast(50);
-
-      waliChatRoomListener = snapshot => {
-        const messages = snapshot.val() || {};
+      waliChatRoomListener = await CahayaSecureChat.listenMessages(waliChatRoomId, messages => {
         renderWaliChatMessages(messages);
-
-        localStorage.setItem(
-          `chat_read_${waliChatRoomId}`,
-          new Date().toISOString()
-        );
-      };
-
-      roomRef.on("value", waliChatRoomListener);
+        localStorage.setItem(`chat_read_${waliChatRoomId}`, String(Date.now()));
+        CahayaSecureChat.markRead(waliChatRoomId).catch(error => console.warn("Status baca belum tersimpan:", error));
+      }, error => {
+        console.error("Percakapan ditolak atau gagal dimuat:", error);
+        document.getElementById("waliChatMessages").innerHTML = '<div class="wali-chat-empty">Percakapan ini sedang disiapkan. Silakan hubungi pengelola pesantren.</div>';
+      });
     }
 
     function renderWaliChatMessages(rawMessages = {}) {
@@ -2818,8 +2701,8 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
 
       const messages = Object.entries(rawMessages)
         .map(([id, message]) => ({ id, ...(message || {}) }))
-        .filter(message => message.waktu)
-        .sort((a, b) => new Date(a.waktu) - new Date(b.waktu));
+        .filter(message => message.createdAt)
+        .sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
 
       if (!messages.length) {
         container.innerHTML = `
@@ -2831,17 +2714,17 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
       }
 
       container.innerHTML = messages.map(message => {
-        const self = message.pengirim === me;
+        const self = message.senderUid === firebase.auth().currentUser?.uid;
 
         return `
           <div class="wali-chat-message ${self ? "self" : "other"}">
             <div class="wali-chat-message-info">
-              ${escapeWaliChatHTML(message.pengirim || "Pengurus")} •
-              ${escapeWaliChatHTML(formatWaliChatTime(message.waktu))}
+              ${escapeWaliChatHTML(message.senderDisplay || "Pengurus")} •
+              ${escapeWaliChatHTML(formatWaliChatTime(message.createdAt))}
             </div>
             ${message.dihapus || message.deleted
               ? '<em style="color:#8190a8">Pesan telah dihapus</em>'
-              : escapeWaliChatHTML(message.teks || "")}
+              : escapeWaliChatHTML(message.text || "")}
           </div>
         `;
       }).join("");
@@ -2875,34 +2758,9 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
       const text = String(input.value || "").trim();
       if (!text || !waliChatRoomId) return;
 
-      const account = portalState?.account || {};
-      const contact = waliChatContacts.find(item =>
-        cleanWaliChatIdentity(item.actualName) === cleanWaliChatIdentity(waliChatOpponent) ||
-        cleanWaliChatIdentity(item.username) === cleanWaliChatIdentity(waliChatOpponent)
-      );
-      const now = new Date().toISOString();
-      const messageRef = dbRT.ref(`cahaya_app/pesan_global/${waliChatRoomId}`).push();
-      const message = {
-        id: messageRef.key,
-        teks: text,
-        pengirim: getWaliChatIdentity(),
-        senderDisplay: getWaliChatIdentity(),
-        senderUsername: account.username || "",
-        senderRoles: ["wali"],
-        recipientDisplay: contact?.displayName || waliChatOpponent,
-        recipientUsername: contact?.username || "",
-        recipientRoles: contact?.roles || [],
-        roomId: waliChatRoomId,
-        waktu: now
-      };
-      const updates = buildWaliInboxUpdates(waliChatRoomId, waliChatOpponent, message);
-      updates[`cahaya_app/pesan_global/${waliChatRoomId}/${messageRef.key}`] = message;
-      updates[`cahaya_app/pesan_meta/${waliChatRoomId}/updatedAt`] = now;
-      updates[`cahaya_app/pesan_meta/${waliChatRoomId}/type`] = "private";
-
       if (sendButton) sendButton.disabled = true;
       try {
-        await dbRT.ref().update(updates);
+        await CahayaSecureChat.send(waliChatRoomId, text, getWaliChatIdentity());
         input.value = "";
         autoResizeWaliChatInput();
         input.focus();
@@ -3192,7 +3050,9 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
           )
       ) {
         alert(
-          "Sesi Portal Wali tidak valid. Silakan login kembali dari halaman utama."
+          portalState?.reason === "WALI_ACCESS_NOT_PROVISIONED"
+            ? "Akun Wali belum terhubung ke data santri. Hubungi administrator."
+            : "Sesi Portal Wali tidak valid. Silakan login kembali dari halaman utama."
         );
 
         window.location.href =
