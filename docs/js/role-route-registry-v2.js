@@ -117,7 +117,7 @@
     "menus": [
       "menu-kontrol-publikasi-rapor"
     ],
-    "policy": "scoped"
+    "policy": "supervisor-education-v2"
   },
   "pimpinan/dashboard-pendidikan.html": {
     "menus": [

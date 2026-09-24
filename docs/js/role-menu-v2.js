@@ -64,6 +64,7 @@
       add('menu-panduan-kerja','Panduan Kerja','manajer/pembinaan-karakter-v2.html?view=guide','Lainnya');
     }else if(role==='SUPERVISOR'){
       if(R.canManageTahsinLevels(role,a))add('menu-penempatan-tahsin','Penempatan Level Tahsin','pendidikan/penempatan-tahsin.html','Manajemen');
+      if(R.canManageTahsinLevels(role,a))add('menu-kontrol-publikasi-rapor','Laporan Akademik','supervisor/laporan-akademik.html','Manajemen');
       out.push(...workspace('supervisor/workspace-v2.html','menu-supervisor-v2',[
         ['divisions','Kondisi Divisi'],['escalations','Eskalasi Masuk'],['observation','Observasi Pembanding'],['followup','Tindak Lanjut Supervisor'],['people','Manajer & Personil'],['recap','Rekap KPI Bawahan','Evaluasi'],['standards','Standar Kerja'],['coaching','Pembinaan'],['history','Riwayat Eskalasi','Evaluasi'],['guide','Panduan Kerja','Lainnya','menu-panduan-kerja']]));
       const review=entry('menu-supervisor-v2--review-izin','Review Izin Santri','supervisor/review-izin-santri.html','Manajemen','menu-supervisor-v2');review.conditional=true;out.push(review);

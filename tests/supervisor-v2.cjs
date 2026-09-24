@@ -45,5 +45,6 @@ assert.match(workspace,/path===PATH\.mediaWeekly\?'weekStart':'tanggal'/);
 assert.match(workspace,/readDate\(path,from,to,dateField\)/);
 assert.match(workspace,/\$\('filters'\)\.hidden=view==='guide'/);
 const menu=require('../js/role-menu-v2.js');assert.equal(menu.bottom(sv,'jadwal'),'menu-supervisor-schedule');assert.equal(menu.bottom(sv,'kpi'),'menu-kpi-supervisor');
+assert.equal(menu.model(sv).find(x=>x.id==='menu-kontrol-publikasi-rapor')?.route,'supervisor/laporan-akademik.html');
 for(const p of ['home-supervisor-v2.html','supervisor/workspace-v2.html','js/supervisor-home-v2.js','js/supervisor-workspace-v2.js','js/supervisor-v2-contract.js','js/role-system-v2.js','js/role-route-registry-v2.js','js/role-navigation-v2.js','main-dashboard.html'])assert.equal(fs.readFileSync(p,'utf8'),fs.readFileSync('docs/'+p,'utf8'),p+' mirror');
 console.log('supervisor-v2: role, scope, routes, zero-read Home, workflow contracts, mirrors ok');

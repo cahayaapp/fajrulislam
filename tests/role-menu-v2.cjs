@@ -25,7 +25,10 @@ for(const fixture of fixtures){
   for(const kind of ['jadwal','kpi']){const target=M.bottom(s,kind);if(target)assert(items.some(x=>x.id===target));}
   if(s.activeRole==='MANAJER'&&s.activeAssignment.area==='PEMBINAAN_KARAKTER')assert(!items.some(x=>x.label==='Kontrol Hari Ini'));
   if(s.activeRole==='DIREKTUR')assert(!R.can('DIREKTUR','menu-nilai',s.activeAssignment));
-  if(s.activeRole==='SUPERVISOR')assert.equal(items.some(x=>x.label==='Review Izin Santri'),N.canAccessRoute(s,'supervisor/review-izin-santri.html').ok);
+  if(s.activeRole==='SUPERVISOR'){
+    assert.equal(items.some(x=>x.label==='Review Izin Santri'),N.canAccessRoute(s,'supervisor/review-izin-santri.html').ok);
+    assert.equal(items.some(x=>x.id==='menu-kontrol-publikasi-rapor'),R.canManageTahsinLevels(s.activeRole,s.activeAssignment));
+  }
   results.push({role:fixture.name,visible:items.length,blocked:M.audit(s).filter(x=>x.status==='BLOCKED').map(x=>x.label)});
 }
 const mentor=R.resolveSession(profile('MENTOR_USRAH'));

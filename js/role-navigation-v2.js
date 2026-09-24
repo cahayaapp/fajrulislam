@@ -60,6 +60,7 @@
       return deny('PERMISSION_DENIED');
     }
     if(e.policy==='tahsin-placement-v2')return R.canManageTahsinLevels(role,a)?{ok:true,reason:'TAHSIN_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
+    if(e.policy==='supervisor-education-v2')return role==='SUPERVISOR'&&R.canManageTahsinLevels(role,a)?{ok:true,reason:'SUPERVISOR_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='manager-character-v2')return role==='MANAJER'&&R.isCharacterManager(a)?{ok:true,reason:'MANAGER_CHARACTER_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='supervisor-layanan-v2'){
       const fromRoles=[...new Set((a.supervisedRoles||[]).map(owned=>R.ROLE_DIVISIONS[owned]).filter(Boolean))];
