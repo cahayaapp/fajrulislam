@@ -70,7 +70,7 @@ const guide = fs.readFileSync('js/role-guide-v2.js', 'utf8');
 assert(guide.includes("parent.openAuthorizedMenu('menu-home')"));
 
 const homeLogic = fs.readFileSync('js/manager-education-home-v2.js', 'utf8');
-for (const label of ['Kontrol Hari Ini', 'Capaian Materi', 'Tindak Lanjut', 'Guru Mukim & Ibadah', 'Guru Pondok', 'Nilai Ujian', 'Observasi Pembelajaran', 'Riwayat Temuan', 'Pembinaan Guru', 'Panduan Kerja']) {
+for (const label of ['Kontrol Hari Ini', 'Capaian Materi', 'Tindak Lanjut', 'Guru Mukim & Ibadah', 'Guru Pondok', 'Progres Input Nilai', 'Observasi Pembelajaran', 'Riwayat Temuan', 'Pembinaan Guru', 'Panduan Kerja']) {
   assert(homeLogic.includes(label), label);
 }
 assert(!homeLogic.includes("'Pelaksanaan KBM'"));

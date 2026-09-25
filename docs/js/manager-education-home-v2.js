@@ -41,7 +41,7 @@
   ];
   const menu = [
     ['♙', 'Guru Pondok', 'Lihat personil pendidikan dalam scope Anda', 'teachers', 'menu-guru-pondok'],
-    ['#', 'Nilai Ujian', 'Pantau kelengkapan dan hasil input nilai', 'scores', 'menu-nilai-manajer'],
+    ['#', 'Progres Input Nilai', 'Pantau progres Parsial dan Final setiap Guru', 'scores', 'menu-nilai-manajer'],
     ['◇', 'Observasi Pembelajaran', 'Catat observasi pelaksanaan pembelajaran', 'observation', 'menu-observasi-pembelajaran'],
     ['↶', 'Riwayat Temuan', 'Lihat temuan dan tindak lanjut sebelumnya', 'findings', 'menu-riwayat-temuan'],
     ['✦', 'Pembinaan Guru', 'Catat pembinaan operasional personil', 'coaching', 'menu-pembinaan-guru'],
