@@ -39,10 +39,16 @@
     if(e.policy==='dapur-v2')return role==='DAPUR'&&['logbook','checklist','history'].includes(parsed.params.get('view')||'logbook')?{ok:true,reason:'DAPUR_OPERATIONAL_WORKSPACE'}:deny('PERMISSION_DENIED');
     if(e.policy==='dapur-material-v2'){
       const view=parsed.params.get('view'),expected=`menu-dapur-${view}`;
-      if(!['stock','menu','received','usage'].includes(view)||menuId&&menuId!==expected&&menuId!=='menu-dashboard-operasional')return deny('INVALID_DAPUR_VIEW');
-      if(role==='DAPUR')return {ok:true,reason:'DAPUR_MATERIAL_EDITOR'};
+      if(!['stock','menu'].includes(view)||menuId&&menuId!==expected&&menuId!=='menu-dashboard-operasional')return deny('INVALID_DAPUR_VIEW');
+      if(role==='DAPUR')return {ok:true,reason:view==='menu'?'DAPUR_MENU_READER':'DAPUR_STOCK_EDITOR'};
       if(role==='DIREKTUR'&&a.unit==='ALL')return {ok:true,reason:'DAPUR_MATERIAL_READER'};
-      if(role==='SUPERVISOR'&&a.supervisedRoles?.includes('DAPUR')&&(!a.divisionIds?.length||a.divisionIds.includes('DAPUR')))return {ok:true,reason:'DAPUR_MATERIAL_READER'};
+      if(role==='SUPERVISOR'&&a.supervisedRoles?.includes('DAPUR')&&(!a.divisionIds?.length||a.divisionIds.includes('DAPUR')))return {ok:true,reason:view==='menu'?'SUPERVISOR_DAPUR_MENU_EDITOR':'DAPUR_MATERIAL_READER'};
+      return deny('PERMISSION_DENIED');
+    }
+    if(e.policy==='dapur-procurement-v2'){
+      const view=parsed.params.get('view'),expected=view==='shopping'?'menu-dapur-shopping':view==='received'?'menu-dapur-received':view==='report'?'menu-dapur-procurement-report':'';
+      if(role==='DAPUR'&&['shopping','received'].includes(view)&&(!menuId||menuId===expected))return{ok:true,reason:'DAPUR_PROCUREMENT'};
+      if(role==='SUPERVISOR'&&view==='report'&&(!menuId||menuId===expected)&&a.supervisedRoles?.includes('DAPUR')&&(!a.divisionIds?.length||a.divisionIds.includes('DAPUR')))return{ok:true,reason:'SUPERVISOR_DAPUR_REPORT'};
       return deny('PERMISSION_DENIED');
     }
     if(e.policy==='media-v2'||e.policy==='media-url-v2')return role==='MEDIA'?{ok:true,reason:'MEDIA_OPERATIONAL_WORKSPACE'}:deny('PERMISSION_DENIED');

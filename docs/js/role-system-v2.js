@@ -27,7 +27,7 @@
     DIREKTUR: { label: "Direktur", home: "home-direktur.html?v=240", legacyRole: "direktur" },
     KESEHATAN: { label: "Kesehatan", home: "role-workspace.html?v=205", legacyRole: "kesehatan" },
     LAYANAN_KEBERSIHAN: { label: "Layanan & Kebersihan", home: "role-workspace.html?v=205", legacyRole: "keamanan-kebersihan" },
-    DAPUR: { label: "Dapur", home: "home-dapur.html?v=273", legacyRole: "tim-dapur" },
+    DAPUR: { label: "Dapur", home: "home-dapur.html?v=275", legacyRole: "tim-dapur" },
     SARPRAS: { label: "Sarana & Prasarana", home: "role-workspace.html?v=205", legacyRole: "sarpras" },
     MEDIA: { label: "Media", home: "home-media.html?v=226", legacyRole: "media-digital" },
     WALI_SANTRI: { label: "Wali Santri", home: "wali/dashboard/index.html?v=20260820-v70", legacyRole: "wali" }
@@ -40,11 +40,11 @@
     NAQIBAH: [...BASE_MENUS, "menu-dashboard-operasional", "menu-absen-asrama", "menu-gamifikasi", "menu-skor-usrah", "menu-kpi-naqib", "menu-jadwal-piket", "menu-jurnal-piket", "menu-naqib-teladan", "menu-riwayat-laporan", "menu-riwayat-absensi", "menu-usrah", "menu-laporan-murojaah", "menu-asesmen-naqib", "menu-asesmen-santri"],
     KONSELOR: [...BASE_MENUS, "menu-kasus-masuk", "menu-kasus-aktif", "menu-konseling-konselor", "menu-eskalasi-konselor", "menu-riwayat-kasus", "menu-kpi-konselor", "menu-self-konselor"],
     MENTOR_USRAH: [...BASE_MENUS, "menu-mentoring-individu", "menu-mentoring-usrah"],
-    SUPERVISOR: [...BASE_MENUS, "menu-supervisor-v2", "menu-supervisor-schedule", "menu-kpi-supervisor", "menu-arahan-kasus", "menu-dashboard-operasional", "menu-supervisi-terpadu", "menu-kpi-guru", "menu-review-pendidikan", "menu-kontrol-publikasi-rapor", "menu-review-pembinaan", "menu-kontrol-pendidikan", "menu-penempatan-tahsin", "menu-kontrol-pembinaan", "menu-observasi-pembelajaran", "menu-observer-pengasuhan", "menu-pantau-pendampingan", "menu-pantau-asesmen", "menu-monitoring-absen-guru", "menu-raport-sdm", "menu-tindak-lanjut-sdm", "menu-jurnal-kesehatan", "menu-pemeriksaan-kesehatan", "menu-stok-obat", "menu-jurnal-sarpras", "menu-checklist-sarpras", "menu-tindak-sarpras", "menu-jurnal-pkl", "menu-buku-izin", "menu-buku-tamu", "menu-penitipan-barang", "menu-media"],
+    SUPERVISOR: [...BASE_MENUS, "menu-supervisor-v2", "menu-supervisor-schedule", "menu-kpi-supervisor", "menu-arahan-kasus", "menu-dashboard-operasional", "menu-supervisi-terpadu", "menu-kpi-guru", "menu-review-pendidikan", "menu-kontrol-publikasi-rapor", "menu-review-pembinaan", "menu-kontrol-pendidikan", "menu-penempatan-tahsin", "menu-kontrol-pembinaan", "menu-observasi-pembelajaran", "menu-observer-pengasuhan", "menu-pantau-pendampingan", "menu-pantau-asesmen", "menu-monitoring-absen-guru", "menu-raport-sdm", "menu-tindak-lanjut-sdm", "menu-jurnal-kesehatan", "menu-pemeriksaan-kesehatan", "menu-stok-obat", "menu-jurnal-sarpras", "menu-checklist-sarpras", "menu-tindak-sarpras", "menu-jurnal-pkl", "menu-buku-izin", "menu-buku-tamu", "menu-penitipan-barang", "menu-media", "menu-dapur-menu", "menu-dapur-procurement-report"],
     DIREKTUR: [...BASE_MENUS, "menu-direktur-v2", "menu-kpi-direktur", "menu-jadwal-direktur", "menu-arahan-kasus", "menu-dashboard-operasional", "menu-supervisi-terpadu", "menu-keputusan-direktur", "menu-kpi-guru", "menu-kontrol-pendidikan", "menu-observasi-pembelajaran", "menu-absensi-ibadah-guru", "menu-review-pendidikan", "menu-dashboard-pendidikan", "menu-tindak-akademik", "menu-kontrol-pembinaan", "menu-review-pembinaan", "menu-dashboard-dua-divisi", "menu-pantau-pendampingan", "menu-pantau-asesmen", "menu-kalender-pendidikan", "menu-dashboard-pimpinan", "menu-perizinan-santri", "menu-rekap-kepala-sekolah", "menu-raport-bulanan", "menu-monitoring-absen-guru", "menu-raport-sdm", "menu-tindak-lanjut-sdm", "menu-buku-izin"],
     KESEHATAN: [...BASE_MENUS, "menu-dashboard-operasional", "menu-jurnal-kesehatan", "menu-pemeriksaan-kesehatan", "menu-perizinan-uks", "menu-stok-obat"],
     LAYANAN_KEBERSIHAN: [...BASE_MENUS, "menu-dashboard-operasional", "menu-jurnal-pkl", "menu-laporan-murojaah", "menu-buku-tamu", "menu-penitipan-barang"],
-    DAPUR: [...BASE_MENUS, "menu-dashboard-operasional", "menu-dapur-stock", "menu-dapur-menu", "menu-dapur-received", "menu-dapur-usage"],
+    DAPUR: [...BASE_MENUS, "menu-dashboard-operasional", "menu-dapur-stock", "menu-dapur-menu", "menu-dapur-shopping", "menu-dapur-received"],
     SARPRAS: [...BASE_MENUS, "menu-dashboard-operasional", "menu-jurnal-sarpras", "menu-checklist-sarpras", "menu-tindak-sarpras"],
     MEDIA: [...BASE_MENUS, "menu-dashboard-operasional", "menu-media", "menu-gallery-dokumentasi", "menu-manajemen-konten"],
     MANAJER: [...BASE_MENUS, "menu-dashboard-operasional", "menu-kontrol-pendidikan", "menu-materi-pembelajaran", "menu-nilai-manajer", "menu-guru-pondok", "menu-observasi-pembelajaran", "menu-riwayat-temuan", "menu-pembinaan-guru", "menu-absensi-ibadah-guru", "menu-tindak-akademik", "menu-kpi-manajer", "menu-penempatan-tahsin", "menu-kontrol-pembinaan", "menu-pantau-asesmen", "menu-jurnal-kesehatan", "menu-jurnal-sarpras", "menu-jurnal-pkl", "menu-media"],
@@ -58,7 +58,7 @@
     LAYANAN_KEBERSIHAN: new Set(["menu-dashboard-operasional", "menu-jurnal-pkl", "menu-buku-izin", "menu-buku-tamu", "menu-penitipan-barang"]),
     SARPRAS: new Set(["menu-dashboard-operasional", "menu-jurnal-sarpras", "menu-checklist-sarpras", "menu-tindak-sarpras"]),
     MEDIA: new Set(["menu-dashboard-operasional", "menu-media"]),
-    DAPUR: new Set(["menu-dashboard-operasional"])
+    DAPUR: new Set(["menu-dashboard-operasional", "menu-dapur-menu", "menu-dapur-procurement-report"])
   });
 
   // V2 migration suggestions and outbound aliases live here. The unmigrated
@@ -331,7 +331,7 @@
     // Navigation permissions follow the active V2 workspace, never the union
     // of legacy division menus. Business-action permissions remain separate.
     if (roleId === 'DIREKTUR') return [...BASE_MENUS,'menu-direktur-v2','menu-jadwal-direktur','menu-kpi-direktur','menu-arahan-kasus'];
-    if (roleId === 'SUPERVISOR') return [...BASE_MENUS,'menu-supervisor-v2','menu-supervisor-schedule','menu-kpi-supervisor',...(a.supervisedRoles.includes('KONSELOR')?['menu-arahan-kasus']:[]),...(canManageTahsinLevels(roleId,a)?['menu-penempatan-tahsin','menu-review-pendidikan','menu-kontrol-publikasi-rapor']:[])];
+    if (roleId === 'SUPERVISOR') return [...BASE_MENUS,'menu-supervisor-v2','menu-supervisor-schedule','menu-kpi-supervisor',...(a.supervisedRoles.includes('KONSELOR')?['menu-arahan-kasus']:[]),...(a.supervisedRoles.includes('DAPUR')?['menu-dapur-menu','menu-dapur-procurement-report']:[]),...(canManageTahsinLevels(roleId,a)?['menu-penempatan-tahsin','menu-review-pendidikan','menu-kontrol-publikasi-rapor']:[])];
     if (roleId === 'MANAJER') {
       if (isEducationManager(a)) return [...BASE_MENUS,'menu-kontrol-pendidikan','menu-materi-pembelajaran','menu-tindak-akademik','menu-absensi-ibadah-guru','menu-guru-pondok','menu-nilai-manajer','menu-observasi-pembelajaran','menu-riwayat-temuan','menu-pembinaan-guru','menu-kpi-manajer','menu-penempatan-tahsin'];
       if (isCharacterManager(a)) return [...BASE_MENUS,'menu-kontrol-pembinaan','menu-kpi-manajer'];

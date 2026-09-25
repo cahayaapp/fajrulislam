@@ -70,6 +70,7 @@
       const review=entry('menu-supervisor-v2--review-izin','Review Izin Santri','supervisor/review-izin-santri.html','Manajemen','menu-supervisor-v2');review.conditional=true;out.push(review);
       add('menu-supervisor-schedule','Jadwal Supervisor','supervisor/workspace-v2.html?view=schedule','Utama');
       add('menu-kpi-supervisor','KPI Supervisor','supervisor/workspace-v2.html?view=kpi','Evaluasi');
+      if(a.supervisedRoles?.includes('DAPUR')&&(!a.divisionIds?.length||a.divisionIds.includes('DAPUR'))){add('menu-dapur-menu','Jadwal Menu Dapur','dapur/menu-bahan-v2.html?view=menu','Manajemen');add('menu-dapur-procurement-report','Laporan Belanja & Penerimaan','dapur/procurement-v2.html?view=report','Evaluasi')}
     }else if(role==='DIREKTUR'){
       out.push(...workspace('pimpinan/direktur-v2.html','menu-direktur-v2',[
         ['condition','Kondisi Pesantren'],['inbox','Eskalasi & Keputusan'],['targets','Target & Arah'],['supervisors','Supervisor'],['systemic','Masalah Sistemik'],['recap','Rekap KPI Supervisor','Evaluasi'],['changes','Perubahan Sistem'],['coaching','Pembinaan Supervisor'],['history','Riwayat Keputusan','Evaluasi'],['guide','Panduan Kerja','Lainnya','menu-panduan-kerja']]));
@@ -77,8 +78,10 @@
       add('menu-kpi-direktur','KPI Direktur','pimpinan/direktur-v2.html?view=kpi','Evaluasi');
     }else if(role==='DAPUR'){
       out.push(...workspace('dapur/app.html','menu-dashboard-operasional',[
-        ['logbook','Logbook Hari Ini','Operasional'],['checklist','Checklist Kebersihan','Operasional'],['history','Riwayat','Evaluasi']]));
-      [['stock','Stok Bahan Makanan','Operasional'],['menu','Menu Harian','Operasional'],['received','Penerimaan Bahan','Manajemen'],['usage','Pemakaian Bahan','Manajemen']].forEach(([view,label,group])=>add(`menu-dapur-${view}`,label,`dapur/menu-bahan-v2.html?view=${view}`,group));
+        ['logbook','Jurnal Makan','Operasional'],['checklist','Checklist Kebersihan','Operasional'],['history','Riwayat','Evaluasi']]));
+      add('menu-dapur-shopping','Daftar Belanja Besok','dapur/procurement-v2.html?view=shopping','Operasional');
+      add('menu-dapur-received','Penerimaan Bahan Makanan','dapur/procurement-v2.html?view=received','Operasional');
+      [['stock','Stok Bahan Makanan','Operasional'],['menu','Menu Makan Harian','Operasional']].forEach(([view,label,group])=>add(`menu-dapur-${view}`,label,`dapur/menu-bahan-v2.html?view=${view}`,group));
       add('menu-panduan-kerja','Panduan Kerja','dapur/panduan.html','Lainnya');
     }else if(role==='MEDIA'){
       add('menu-media','Update URL Wali','admin/admin_media.html');

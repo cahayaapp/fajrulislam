@@ -282,16 +282,21 @@ Jadwal: `menu-jadwal-role`; KPI: `menu-kpi-role`.
 
 Assignment: `{"unit":"","area":"","divisionIds":[],"usrahIds":[],"studentIds":[],"programDomain":"","supervisedRoles":[],"managedRoles":[],"level":""}`.
 
-Home: `home-dapur.html?v=225`.
+Home: `home-dapur.html?v=275`.
 
 Jadwal: `menu-jadwal-role`; KPI: `menu-kpi-role`.
 
 | menuId | Label | Group | Route | Guard permission | Status / reason |
 |---|---|---|---|---|---|
-| menu-home | Beranda | Utama | home-dapur.html?v=225 | menu-home | PASS |
-| menu-dashboard-operasional | Logbook Hari Ini | Operasional | dapur/app.html?view=logbook | menu-dashboard-operasional | PASS |
+| menu-home | Beranda | Utama | home-dapur.html?v=275 | menu-home | PASS |
+| menu-dashboard-operasional | Jurnal Makan | Operasional | dapur/app.html?view=logbook | menu-dashboard-operasional | PASS |
 | menu-dashboard-operasional--checklist | Checklist Kebersihan | Operasional | dapur/app.html?view=checklist | menu-dashboard-operasional | PASS |
 | menu-dashboard-operasional--history | Riwayat | Evaluasi | dapur/app.html?view=history | menu-dashboard-operasional | PASS |
+| menu-dapur-shopping | Daftar Belanja Besok | Operasional | dapur/procurement-v2.html?view=shopping | menu-dapur-shopping | PASS |
+| menu-dapur-received | Penerimaan Bahan Makanan | Operasional | dapur/procurement-v2.html?view=received | menu-dapur-received | PASS |
+| menu-dapur-stock | Stok Bahan Makanan | Operasional | dapur/menu-bahan-v2.html?view=stock | menu-dapur-stock | PASS |
+| menu-dapur-menu | Menu Makan Harian | Operasional | dapur/menu-bahan-v2.html?view=menu | menu-dapur-menu | PASS / read-only for Dapur |
+| menu-dapur-procurement-report | Laporan Belanja & Penerimaan | Evaluasi Supervisor Dapur | dapur/procurement-v2.html?view=report | menu-dapur-procurement-report | PASS / Supervisor Dapur only |
 | menu-panduan-kerja | Panduan & Manual | Lainnya | panduan-role-v2.html | menu-panduan-kerja | PASS |
 | menu-profil | Profil | Lainnya | profil.html | menu-profil | PASS |
 | menu-chat | Pesan | Lainnya | pesan.html | menu-chat | PASS / same staff chat engine |
