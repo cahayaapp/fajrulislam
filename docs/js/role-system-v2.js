@@ -47,7 +47,7 @@
     DAPUR: [...BASE_MENUS, "menu-dashboard-operasional", "menu-dapur-stock", "menu-dapur-menu", "menu-dapur-shopping", "menu-dapur-received"],
     SARPRAS: [...BASE_MENUS, "menu-dashboard-operasional", "menu-jurnal-sarpras", "menu-checklist-sarpras", "menu-tindak-sarpras"],
     MEDIA: [...BASE_MENUS, "menu-dashboard-operasional", "menu-media", "menu-gallery-dokumentasi", "menu-manajemen-konten"],
-    MANAJER: [...BASE_MENUS, "menu-dashboard-operasional", "menu-kontrol-pendidikan", "menu-materi-pembelajaran", "menu-nilai-manajer", "menu-guru-pondok", "menu-observasi-pembelajaran", "menu-riwayat-temuan", "menu-pembinaan-guru", "menu-absensi-ibadah-guru", "menu-tindak-akademik", "menu-kpi-manajer", "menu-penempatan-tahsin", "menu-kontrol-pembinaan", "menu-pantau-asesmen", "menu-jurnal-kesehatan", "menu-jurnal-sarpras", "menu-jurnal-pkl", "menu-media"],
+    MANAJER: [...BASE_MENUS, "menu-dashboard-operasional", "menu-kontrol-pendidikan", "menu-materi-pembelajaran", "menu-nilai-manajer", "menu-guru-pondok", "menu-observasi-pembelajaran", "menu-riwayat-temuan", "menu-pembinaan-guru", "menu-absensi-ibadah-guru", "menu-pengaturan-guru-mukim", "menu-absensi-ibadah-naqib", "menu-tindak-akademik", "menu-kpi-manajer", "menu-penempatan-tahsin", "menu-kontrol-pembinaan", "menu-pantau-asesmen", "menu-jurnal-kesehatan", "menu-jurnal-sarpras", "menu-jurnal-pkl", "menu-media"],
     WALI_SANTRI: ["menu-home", "menu-panduan-kerja"]
   });
 
@@ -333,8 +333,8 @@
     if (roleId === 'DIREKTUR') return [...BASE_MENUS,'menu-direktur-v2','menu-jadwal-direktur','menu-kpi-direktur','menu-arahan-kasus'];
     if (roleId === 'SUPERVISOR') return [...BASE_MENUS,'menu-supervisor-v2','menu-supervisor-schedule','menu-kpi-supervisor',...(a.supervisedRoles.includes('KONSELOR')?['menu-arahan-kasus']:[]),...(a.supervisedRoles.includes('DAPUR')?['menu-dapur-menu','menu-dapur-procurement-report']:[]),...(canManageTahsinLevels(roleId,a)?['menu-penempatan-tahsin','menu-review-pendidikan','menu-kontrol-publikasi-rapor']:[])];
     if (roleId === 'MANAJER') {
-      if (isEducationManager(a)) return [...BASE_MENUS,'menu-kontrol-pendidikan','menu-materi-pembelajaran','menu-tindak-akademik','menu-absensi-ibadah-guru','menu-guru-pondok','menu-nilai-manajer','menu-observasi-pembelajaran','menu-riwayat-temuan','menu-pembinaan-guru','menu-kpi-manajer','menu-penempatan-tahsin'];
-      if (isCharacterManager(a)) return [...BASE_MENUS,'menu-kontrol-pembinaan','menu-kpi-manajer'];
+      if (isEducationManager(a)) return [...BASE_MENUS,'menu-kontrol-pendidikan','menu-materi-pembelajaran','menu-tindak-akademik','menu-absensi-ibadah-guru','menu-pengaturan-guru-mukim','menu-guru-pondok','menu-nilai-manajer','menu-observasi-pembelajaran','menu-riwayat-temuan','menu-pembinaan-guru','menu-kpi-manajer','menu-penempatan-tahsin'];
+      if (isCharacterManager(a)) return [...BASE_MENUS,'menu-kontrol-pembinaan','menu-absensi-ibadah-naqib','menu-kpi-manajer'];
       return [...BASE_MENUS];
     }
     if (['NAQIB','NAQIBAH'].includes(roleId)) return ROLE_PERMISSIONS[roleId].filter(p=>p.startsWith('menu-')&&!['menu-usrah','menu-jadwal-piket','menu-riwayat-absensi'].includes(p));

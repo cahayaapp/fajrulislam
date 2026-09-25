@@ -73,6 +73,12 @@
     "menus": ["menu-kontrol-pembinaan", "menu-kpi-manajer", "menu-panduan-kerja"],
     "policy": "manager-character-v2"
   },
+  "pembinaan/absensi-ibadah-naqib.html": {
+    "menus": [
+      "menu-absensi-ibadah-naqib"
+    ],
+    "policy": "manager-character-v2"
+  },
   "manajer/pendidikan-v2.html": {
     "menus": ["menu-kontrol-pendidikan", "menu-materi-pembelajaran", "menu-nilai-manajer", "menu-guru-pondok", "menu-observasi-pembelajaran", "menu-riwayat-temuan", "menu-pembinaan-guru", "menu-tindak-akademik", "menu-kpi-manajer", "menu-panduan-kerja"],
     "policy": "manager-education-v2"
@@ -104,6 +110,12 @@
   "pendidikan/absensi-ibadah-guru.html": {
     "menus": [
       "menu-absensi-ibadah-guru"
+    ],
+    "policy": "guru-mukim-v2"
+  },
+  "pendidikan/pengaturan-guru-mukim.html": {
+    "menus": [
+      "menu-pengaturan-guru-mukim"
     ],
     "policy": "guru-mukim-v2"
   },

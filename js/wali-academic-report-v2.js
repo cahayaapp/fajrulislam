@@ -88,5 +88,25 @@
     if (fallback && !result.includes(fallback)) result.unshift(fallback);
     return result;
   }
-  return { MONTHS, norm, key, typeOf, periodOf, yearOf, isFinal, belongsToStudent, subjectOf, filterScores, summary, years };
+  function periodBounds(tab, year, period) {
+    const match=String(year||'').match(/(\d{4})\s*\/\s*(\d{4})/);
+    if(!match)return null;
+    const startYear=Number(match[1]),endYear=Number(match[2]);
+    if(tab==='triwulan'){
+      const quarter=Number(String(period||'').match(/([1-4])/)?.[1]||0);
+      const ranges={1:[startYear,7,startYear,9],2:[startYear,10,startYear,12],3:[endYear,1,endYear,3],4:[endYear,4,endYear,6]};
+      const range=ranges[quarter];if(!range)return null;
+      return {start:`${range[0]}-${String(range[1]).padStart(2,'0')}-01`,end:`${range[2]}-${String(range[3]).padStart(2,'0')}-${String(new Date(range[2],range[3],0).getDate()).padStart(2,'0')}`};
+    }
+    return null;
+  }
+  function tahfizHistory(records, options={}) {
+    const bounds=periodBounds(options.tab,options.year,options.period);
+    if(!bounds)return[];
+    return values(records).filter(record=>{
+      const date=String(record?.tanggal||record?.tanggal_setoran||record?.createdAt||'').slice(0,10);
+      return /^\d{4}-\d{2}-\d{2}$/.test(date)&&date>=bounds.start&&date<=bounds.end;
+    }).sort((a,b)=>String(a.tanggal||a.tanggal_setoran||'').localeCompare(String(b.tanggal||b.tanggal_setoran||'')));
+  }
+  return { MONTHS, norm, key, typeOf, periodOf, yearOf, isFinal, belongsToStudent, subjectOf, filterScores, summary, years, periodBounds, tahfizHistory };
 });

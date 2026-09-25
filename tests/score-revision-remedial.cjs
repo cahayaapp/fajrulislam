@@ -32,7 +32,7 @@ for(const path of ['guru/inputNilaiUjian.html','js/manager-education-v2.js','js/
 for(const code of ['finalData.is_remedial=Boolean(remedial?.checked)','remedial.dataset.dirty','verifyWritableScoreSession(params,rowsToSave)','revision_history','final_history','scoreStatusVerified=false'])assert(guru.includes(code),code);
 for(const period of ['Bulanan','Triwulan','Semester'])assert(guru.includes(`selectExamType('${period}')`),period);
 assert(guru.match(/function scoreSessionKey[^]*?params\.jenis,[^]*?params\.periode/),'jenis ujian and period are part of session key');
-assert(report.includes('Remedial pada penilaian bulanan'));
+assert(report.includes('Telah melakukan Remedial'));
 assert(manager.includes('await update(ref(db),updates)'));
 assert(fs.readFileSync('supervisor/review-pendidikan.html','utf8').includes('../manajer/pendidikan-v2.html?view=scores'));
 console.log('PASS: session scope, role routes, draft/final/remedial contracts and docs mirrors (fixture/static checks, no Firebase writes).');

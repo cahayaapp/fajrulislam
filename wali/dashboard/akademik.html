@@ -12,8 +12,8 @@
   <script src="../../config/master-data.js"></script>
   <script src="../../js/student-program-applicability.js?v=5"></script>
   <script src="../../js/academic-report-score-policy.js?v=2"></script>
-  <script src="../../js/wali-academic-report-v2.js?v=1"></script>
-  <script src="../../js/academic-report-publication-v1.js?v=7"></script>
+  <script src="../../js/wali-academic-report-v2.js?v=2"></script>
+  <script src="../../js/academic-report-publication-v1.js?v=9"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -327,6 +327,7 @@
     .period-report-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.period-report-head h4{margin:0;color:#153c68;font-size:1rem}.period-report-score{color:#0f61d8;font-size:1.5rem;font-weight:1000}
     .period-report-meta{margin-top:4px;color:#72839a;font-size:.72rem;font-weight:700}.period-report-components{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.period-report-components span{padding:5px 9px;border-radius:999px;background:#eff6ff;color:#315a86;font-size:.66rem;font-weight:800}
     .report-remedial{display:inline-flex;margin-top:10px;padding:4px 9px;border-radius:999px;background:#e6f7f3;color:#087c72;font-size:.65rem;font-weight:900}.period-report-note{margin-top:9px;color:#415b77;font-size:.76rem;line-height:1.5}.report-review-note{margin-top:16px;padding:15px 16px;border:1px solid #cfe1f6;border-radius:18px;background:linear-gradient(145deg,#f8fbff,#edf6ff);color:#23476e;box-shadow:0 7px 20px rgba(31,89,153,.06)}.report-review-note strong{display:block;margin-bottom:5px;color:#123b65;font-size:.78rem}.report-review-note p{margin:0;font-size:.73rem;line-height:1.55}
+    .period-tahfiz{margin:18px 0;padding:17px;border:1px solid #cfe1f6;border-radius:20px;background:#f7fbff;box-shadow:0 7px 20px rgba(31,89,153,.06)}.period-tahfiz h3{margin:0 0 5px;color:#123b65;font-size:1rem}.period-tahfiz>p{margin:0 0 13px;color:#71829a;font-size:.72rem;font-weight:700}.period-tahfiz-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid #dbe7f4;border-radius:14px;background:#fff}.period-tahfiz-table th,.period-tahfiz-table td{padding:9px 7px;border-bottom:1px solid #e5edf6;vertical-align:top;text-align:left;overflow-wrap:anywhere}.period-tahfiz-table th{background:#eaf4ff;color:#234b75;font-size:.62rem;text-transform:uppercase}.period-tahfiz-table td{color:#415b77;font-size:.68rem}.period-tahfiz-table tr:last-child td{border-bottom:0}.period-tahfiz-empty{padding:15px;border:1px dashed #cbdced;border-radius:13px;background:#fff;color:#71829a;text-align:center;font-size:.72rem}
 
     /* Responsif Mobile */
     @media (max-width: 768px) { 
@@ -420,6 +421,11 @@
   <section id="secPeriodik" hidden>
     <div class="report-summary" id="periodReportSummary"></div>
     <div id="periodReportList"></div>
+    <section id="periodTahfizHistory" class="period-tahfiz" hidden>
+      <h3>Riwayat Tahfiz Al-Qur’an</h3>
+      <p>Setoran hafalan pada periode Triwulan yang dipilih.</p>
+      <div id="periodTahfizHistoryBody"></div>
+    </section>
   </section>
 
   <div class="kategori-blok blok-intelektual fade-in" id="secIntelektual" style="display: none;">
@@ -608,7 +614,7 @@
   const monthMapRev = { "01":"Januari", "02":"Februari", "03":"Maret", "04":"April", "05":"Mei", "06":"Juni", "07":"Juli", "08":"Agustus", "09":"September", "10":"Oktober", "11":"November", "12":"Desember" };
 
   let globalExams = []; let globalPeriodicExams = []; let globalTahfizReguler = []; let globalTahfizCahaya = []; let globalMurojaah = []; let globalAsesmen = [];
-  let currentMonthFilter = ""; let activeStudentName = ""; let activeStudentKey = ""; let activeStudentProfile = {}; let activeReportTab = "bulanan"; let quranAssignments = {};
+  let currentMonthFilter = ""; let activeStudentName = ""; let activeStudentKey = ""; let publicationStudentKey = ""; let activeStudentProfile = {}; let activeReportTab = "bulanan"; let quranAssignments = {};
   let reportFlowStep='type',selectedReportPeriod='',publicationRecord=null,scoreDataReady=false,publicationCheckToken=0,educationSupervisors={PUTRA:null,PUTRI:null};
   const academicReport = window.CahayaWaliAcademicReportV2;
   const reportPublication=window.CahayaAcademicReportPublication;
@@ -678,7 +684,7 @@
     const token=++publicationCheckToken,gate=document.getElementById('publicationGate'),output=document.getElementById('reportOutput'),button=document.getElementById('btnDownloadPdf');
     output.hidden=true;gate.hidden=false;gate.innerHTML='<strong>Memeriksa publikasi rapor…</strong><span>Mohon tunggu sebentar.</span>';button.disabled=true;
     try{
-      const snapshot=await dbRT.ref(reportPublication.path({studentKey:activeStudentKey,tahunAkademik:activeYear(),type:activeReportTab,period:selectedReportPeriod})).once('value');
+      const snapshot=await dbRT.ref(reportPublication.path({studentKey:publicationStudentKey,tahunAkademik:activeYear(),type:activeReportTab,period:selectedReportPeriod})).once('value');
       if(token!==publicationCheckToken)return;
       publicationRecord=snapshot.val()||null;
       const legacyMonthlyRecords=activeReportTab==='bulanan'&&scoreDataReady?academicReport.filterScores(globalExams,{tab:'bulanan',year:activeYear(),period:selectedReportPeriod,student:activeStudentProfile,applicable:examBelongsToStudentProgram}):[];
@@ -738,6 +744,7 @@
         .studentName(user)
         .toUpperCase();
     activeStudentKey=CahayaWaliSession.studentKey(user);
+    publicationStudentKey=reportPublication.academicStudentKey(activeStudentName);
 
     document.getElementById(
       'studentNameHeader'
@@ -767,7 +774,7 @@
       kelasDisplay: CahayaWaliSession.formatClassDisplay(user.kelas || user.kelasSantri || ""),
       usrahDisplay: CahayaWaliSession.formatUsrahDisplay(user.usrah || user.namaUsrah || "")
     };
-    activeStudentProfile={...activeStudentProfile,...identity,name:activeStudentName,studentKey:activeStudentKey};
+    activeStudentProfile={...activeStudentProfile,...identity,name:activeStudentName,studentKey:publicationStudentKey};
 
     await loadEducationSupervisorAccounts();
 
@@ -889,8 +896,22 @@
     const records=selectedPeriodicScores(),summary=academicReport.summary(records),period=selectedPeriod(),label=activeReportTab==='triwulan'?`Rapor ${period}`:`Rapor ${period}`;
     document.getElementById('periodReportSummary').innerHTML=`<div class="report-metric"><b>${summary.subjects}</b><span>Mapel Dinilai</span></div><div class="report-metric"><b>${summary.average??'—'}</b><span>Rata-rata</span></div><div class="report-metric"><b>${summary.remedial}</b><span>Remedial</span></div>`;
     const list=document.getElementById('periodReportList');
-    if(!records.length){list.innerHTML=`<div class="empty-state"><strong>${label} belum tersedia.</strong><br><small>Laporan akan tampil setelah nilai akademik difinalisasi.</small></div>`;return}
-    list.innerHTML=reportPublication.renderScoreCards(records,{formatTeacher:formatGelarAkademik});
+    if(!records.length)list.innerHTML=`<div class="empty-state"><strong>${label} belum tersedia.</strong><br><small>Laporan akan tampil setelah nilai akademik difinalisasi.</small></div>`;
+    else list.innerHTML=reportPublication.renderScoreCards(records,{formatTeacher:formatGelarAkademik});
+    renderPeriodicTahfizHistory(records);
+  }
+
+  function selectedTriwulanTahfizHistory(){return activeReportTab==='triwulan'?academicReport.tahfizHistory([...globalTahfizReguler,...globalTahfizCahaya],{tab:'triwulan',year:activeYear(),period:selectedPeriod()}):[]}
+  function isTahfizStudentForPeriod(records=[]){
+    if(records.some(record=>CahayaStudentProgramApplicability.subject(record)==='TAHFIZ'))return true;
+    const at=CahayaStudentProgramApplicability.periodDate({tahun:activeYear(),periode:selectedPeriod()});
+    const placement=CahayaStudentProgramApplicability.getQuranProgramPlacement(activeStudentName,at,quranAssignments,null,{classes:window.CAHAYA_MASTER_DATA?.santriByClass||{},className:reportClassContext(),studentId:publicationStudentKey});
+    return placement.programQuran==='TAHFIZ';
+  }
+  function renderPeriodicTahfizHistory(records=[]){
+    const section=document.getElementById('periodTahfizHistory'),body=document.getElementById('periodTahfizHistoryBody'),history=selectedTriwulanTahfizHistory();
+    const visible=activeReportTab==='triwulan'&&isTahfizStudentForPeriod(records);section.hidden=!visible;if(!visible)return;
+    body.innerHTML=reportPublication.renderTahfizHistory(history);
   }
 
   function renderAsesmen(dataList) {
@@ -1066,7 +1087,7 @@
             </div>
             <div class="ec-bar-container"><div class="ec-bar-fill" style="width:${score}%; background:${barClr}; box-shadow: 0 0 8px ${barClr}"></div></div>
             <div class="ec-components">${comps}</div>
-            ${(ev.is_remedial===true||String(ev.keterangan||'').trim())?`<div class="ec-components" style="margin-top:9px;color:#123b65">${ev.is_remedial===true?'<strong>Remedial pada penilaian bulanan</strong>':''}${ev.is_remedial===true&&String(ev.keterangan||'').trim()?' · ':''}${String(ev.keterangan||'').trim().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</div>`:''}
+            ${(ev.is_remedial===true||String(ev.keterangan||'').trim())?`<div class="ec-components" style="margin-top:9px;color:#123b65">${ev.is_remedial===true?'<strong>Telah melakukan Remedial</strong>':''}${ev.is_remedial===true&&String(ev.keterangan||'').trim()?' · ':''}${String(ev.keterangan||'').trim().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</div>`:''}
           </div>
         </div>
       `);
@@ -1454,14 +1475,13 @@
         const score = Number.isFinite(scoreValue) ? scoreValue : 0;
         return [
           teksPdf(item.mata_pelajaran || item.mapel),
-          teksPdf(formatGelarAkademik(item.guru_penguji || item.guru || "Guru")),
           item.nilai_syafawi !== undefined ? teksPdf(item.nilai_syafawi) : "-",
           item.nilai_tahriri !== undefined ? teksPdf(item.nilai_tahriri) : "-",
           item.nilai_tashnif !== undefined ? teksPdf(item.nilai_tashnif) : "-",
           item.nilai_tathbiqi !== undefined ? teksPdf(item.nilai_tathbiqi) : "-",
           score.toFixed(score % 1 ? 1 : 0),
           predikatNilai(score),
-          teksPdf([item.is_remedial===true?'Remedial pada penilaian bulanan':'',item.keterangan||''].filter(Boolean).join(' - '))
+          teksPdf([item.is_remedial===true?'Telah melakukan Remedial':'',item.keterangan||''].filter(Boolean).join(' - '))
         ];
       });
 
@@ -1472,18 +1492,17 @@
         margin: { left: 15, right: 15, top: 20, bottom: 18 },
         styles: { fontSize: 7.2, cellPadding: 1.9 },
         columnStyles: {
-          0: { cellWidth: 31 },
-          1: { cellWidth: 25 },
-          2: { cellWidth: 11, halign: "center" },
-          3: { cellWidth: 11, halign: "center" },
-          4: { cellWidth: 11, halign: "center" },
-          5: { cellWidth: 11, halign: "center" },
-          6: { cellWidth: 11, halign: "center", fontStyle: "bold" },
-          7: { cellWidth: 20, halign: "center" },
-          8: { cellWidth: 49 }
+          0: { cellWidth: 34 },
+          1: { cellWidth: 13, halign: "center" },
+          2: { cellWidth: 13, halign: "center" },
+          3: { cellWidth: 13, halign: "center" },
+          4: { cellWidth: 13, halign: "center" },
+          5: { cellWidth: 13, halign: "center", fontStyle: "bold" },
+          6: { cellWidth: 22, halign: "center" },
+          7: { cellWidth: 59 }
         }
       }),
-      head: [["Mata Pelajaran", "Guru", "Lisan", "Tulisan", "Tashnif", "Praktek", "Nilai", "Predikat", "Keterangan"]],
+      head: [["Mata Pelajaran", "Lisan", "Tulisan", "Tashnif", "Praktek", "Nilai", "Predikat", "Keterangan"]],
       body: rows
     });
 
@@ -1685,6 +1704,10 @@
       }else{
         const ujianFiltered=selectedPeriodicScores();
         y=gambarUjianPdf(doc,y,meta,ujianFiltered,1,reportTitle);
+        if(activeReportTab==='triwulan'&&isTahfizStudentForPeriod(ujianFiltered)){
+          const tahfizFiltered=selectedTriwulanTahfizHistory();
+          y=gambarTahfizPdf(doc,y,meta,2,"Riwayat Tahfiz Al-Qur’an",tahfizFiltered);
+        }
       }
       y = gambarTandaTanganPdf(doc, y, meta);
       gambarKeteranganDokumenPdf(doc, y, meta);

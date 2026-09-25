@@ -24,7 +24,7 @@ assert(fs.readFileSync(path.join(root,'guru/inputNilaiUjian.html'),'utf8').inclu
   },{record,code:extract('renderEvaluasi')});
   const screen=await page.locator('#evaluasiListContainer').innerText();
   assert(!/Materi|QA_MATERIAL|Thaharah/.test(screen));
-  for(const text of ['Fiqih','Guru Uji','90','Baik','Lisan','Tulisan','Tashnif','Praktek','Remedial pada penilaian bulanan','Sudah memahami materi dasar'])assert(screen.toLowerCase().includes(text.toLowerCase()),text);
+  for(const text of ['Fiqih','Guru Uji','90','Baik','Lisan','Tulisan','Tashnif','Praktek','Telah melakukan Remedial','Sudah memahami materi dasar'])assert(screen.toLowerCase().includes(text.toLowerCase()),text);
   assert.equal(await page.evaluate(()=>JSON.stringify(globalExams[0])),original);
   assert(screen.includes('90%'));
   for(const value of [90,75,65]){
@@ -38,11 +38,11 @@ assert(fs.readFileSync(path.join(root,'guru/inputNilaiUjian.html'),'utf8').inclu
   const data=await page.evaluate(({functions,record})=>{
    window.gambarHeaderLanjutan=()=>{};(0,eval)(functions);
    const doc=new jspdf.jsPDF();gambarUjianPdf(doc,20,{},[record]);
-   const pdfScores=[90,75,65].map(value=>{const qa=new jspdf.jsPDF();gambarUjianPdf(qa,20,{},[{...record,nilai_total:value}]);return qa.lastAutoTable.body[0].raw[6]});
+   const pdfScores=[90,75,65].map(value=>{const qa=new jspdf.jsPDF();gambarUjianPdf(qa,20,{},[{...record,nilai_total:value}]);return qa.lastAutoTable.body[0].raw[5]});
    return {bytes:Array.from(new Uint8Array(doc.output('arraybuffer'))),headers:doc.lastAutoTable.head[0].raw,rows:doc.lastAutoTable.body[0].raw,width:doc.lastAutoTable.columns.reduce((sum,c)=>sum+c.width,0),pdfScores};
   },{functions,record});
-  assert.deepEqual(data.headers,['Mata Pelajaran','Guru','Lisan','Tulisan','Tashnif','Praktek','Nilai','Predikat','Keterangan']);
-  assert.equal(data.rows.length,9);assert.equal(data.rows[6],'90');assert(!data.rows.join(' ').includes('QA_MATERIAL'));assert.equal(data.width,190);assert(data.rows[8].includes('Remedial'));assert(data.rows[8].includes('Sudah memahami'));
+  assert.deepEqual(data.headers,['Mata Pelajaran','Lisan','Tulisan','Tashnif','Praktek','Nilai','Predikat','Keterangan']);
+  assert.equal(data.rows.length,8);assert.equal(data.rows[5],'90');assert(!data.rows.join(' ').includes('QA_MATERIAL'));assert.equal(data.width,180);assert(data.rows[7].includes('Telah melakukan Remedial'));assert(data.rows[7].includes('Sudah memahami'));
   assert.deepEqual(data.pdfScores,['90','75','65']);
   fs.writeFileSync('/tmp/cahaya-no-material-individual.pdf',Buffer.from(data.bytes));
   const template=bulk.match(/<template id="raportTemplate">([\s\S]*?)<\/template>/)[1];
@@ -60,11 +60,11 @@ assert(fs.readFileSync(path.join(root,'guru/inputNilaiUjian.html'),'utf8').inclu
   },{template,section,record});
   const text=await page.locator('#printArea').innerText();assert(!/Materi|Thaharah|QA_MATERIAL/.test(text));
   assert(text.includes('90'));
-  assert(text.includes('Remedial pada penilaian bulanan'));assert(text.includes('Sudah memahami materi dasar'));
+  assert(text.includes('Telah melakukan Remedial'));assert(text.includes('Sudah memahami materi dasar'));
   assert.equal(await page.locator('.tabelNilai tr').count(),2);
   await page.pdf({path:'/tmp/cahaya-no-material-bulk.pdf',format:'A4',printBackground:true});
   assert.equal(JSON.stringify(record),original);
-  assert(uas.includes("item?.is_remedial === true")&&uas.includes('Remedial pada penilaian semester'));
-  console.log('PASS: actual screen/monthly PDF/bulk-print renderers; nine PDF columns; scores/components/predikat retained; populated material fixture unchanged.');
+  assert(uas.includes("item?.is_remedial === true")&&uas.includes('Telah melakukan Remedial'));
+  console.log('PASS: actual screen/monthly PDF/bulk-print renderers; PDF Guru column removed; scores/components/predikat retained; populated material fixture unchanged.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

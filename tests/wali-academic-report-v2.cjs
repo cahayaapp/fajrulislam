@@ -20,11 +20,14 @@ assert.deepEqual(R.filterScores(records,{tab:'semester',year:'2026/2027',period:
 assert.deepEqual(R.summary(R.filterScores(records,{tab:'semester',year:'2026/2027',period:'Semester 1',student})),{subjects:1,average:88,remedial:1});
 assert.equal(R.isFinal(records.find(x=>x.id==='draft')),false);
 assert.equal(R.isFinal(records.find(x=>x.id==='legacy')),false);
+assert.deepEqual(R.periodBounds('triwulan','2026/2027','Triwulan 1'),{start:'2026-07-01',end:'2026-09-30'});
+assert.deepEqual(R.periodBounds('triwulan','2026/2027','Triwulan 4'),{start:'2027-04-01',end:'2027-06-30'});
+assert.deepEqual(R.tahfizHistory([{id:'jul',tanggal:'2026-07-01'},{id:'sep',tanggal:'2026-09-30'},{id:'oct',tanggal:'2026-10-01'}],{tab:'triwulan',year:'2026/2027',period:'Triwulan 1'}).map(x=>x.id),['jul','sep']);
 const page=fs.readFileSync(require.resolve('../wali/dashboard/akademik.html'),'utf8');
 const input=fs.readFileSync(require.resolve('../guru/inputNilaiUjian.html'),'utf8');
 const manager=fs.readFileSync(require.resolve('../js/manager-education-v2.js'),'utf8');
 const session=fs.readFileSync(require.resolve('../wali/dashboard/script.js'),'utf8');
-for(const contract of ['id="reportTypeStep"','id="reportPeriodStep"','id="reportContentStep"','readStudentScoreIndex(\'cahaya_app/nilai_ujian\'','selectedPeriodicScores()','rapor-triwulan','rapor-semester','checkPublicationAndRender'])assert(page.includes(contract),contract);
+for(const contract of ['id="reportTypeStep"','id="reportPeriodStep"','id="reportContentStep"','readStudentScoreIndex(\'cahaya_app/nilai_ujian\'','selectedPeriodicScores()','rapor-triwulan','rapor-semester','checkPublicationAndRender','Riwayat Tahfiz Al-Qur’an','selectedTriwulanTahfizHistory','Telah melakukan Remedial'])assert(page.includes(contract),contract);
 assert(input.includes('/nilai_akademik/${recordKey}`] = finalData'));
 assert(manager.includes('/nilai_akademik/${item.recordKey}`]=data'));
 assert(session.includes('"cahaya_app/nilai_ujian":"nilai_akademik"'));

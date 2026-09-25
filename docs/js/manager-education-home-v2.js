@@ -37,7 +37,7 @@
     ['◷', 'Kontrol Hari Ini', 'Pantau seluruh proses pendidikan hari ini', 'control', 'menu-kontrol-pendidikan'],
     ['▤', 'Capaian Materi', 'Pantau target dan realisasi materi', 'material', 'menu-materi-pembelajaran'],
     ['↗', 'Tindak Lanjut', 'Selesaikan temuan operasional pendidikan', 'followup', 'menu-tindak-akademik'],
-    ['☾', 'Guru Mukim & Ibadah', 'Atur Guru Mukim dan catat keteladanan ibadah', 'worship', 'menu-absensi-ibadah-guru']
+    ['☾', 'Absensi Ibadah Guru Mukim', 'Catat kehadiran ibadah Guru Mukim', 'worship', 'menu-absensi-ibadah-guru']
   ];
   const menu = [
     ['♙', 'Guru Pondok', 'Lihat personil pendidikan dalam scope Anda', 'teachers', 'menu-guru-pondok'],
@@ -45,6 +45,7 @@
     ['◇', 'Observasi Pembelajaran', 'Catat observasi pelaksanaan pembelajaran', 'observation', 'menu-observasi-pembelajaran'],
     ['↶', 'Riwayat Temuan', 'Lihat temuan dan tindak lanjut sebelumnya', 'findings', 'menu-riwayat-temuan'],
     ['✦', 'Pembinaan Guru', 'Catat pembinaan operasional personil', 'coaching', 'menu-pembinaan-guru'],
+    ['⚙', 'Pengaturan Guru Mukim', 'Tentukan guru yang mengikuti absensi ibadah', 'resident', 'menu-pengaturan-guru-mukim'],
     ['?', 'Panduan Kerja', 'Tugas, standar, dan batas kewenangan', 'guide', 'menu-panduan-kerja']
   ];
 
@@ -58,8 +59,10 @@
     const b = e.target.closest('[data-view]');
     if (!b) return;
     const route = b.dataset.view === 'worship'
-      ? 'pendidikan/absensi-ibadah-guru.html?v=232'
-      : `manajer/pendidikan-v2.html?v=232&view=${encodeURIComponent(b.dataset.view)}`;
+      ? 'pendidikan/absensi-ibadah-guru.html?v=267'
+      : b.dataset.view === 'resident'
+        ? 'pendidikan/pengaturan-guru-mukim.html?v=267'
+        : `manajer/pendidikan-v2.html?v=232&view=${encodeURIComponent(b.dataset.view)}`;
     try {
       if (parent !== window && typeof parent.loadPage === 'function') {
         parent.loadPage(route, parent.document.getElementById(b.dataset.menu));

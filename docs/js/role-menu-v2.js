@@ -55,9 +55,11 @@
       add('menu-kpi-konselor','KPI Konselor','konselor/kpi.html','Evaluasi');guide();
     }else if(role==='MANAJER'&&R.isEducationManager(a)){
       [['menu-kontrol-pendidikan','Kontrol Hari Ini','control'],['menu-materi-pembelajaran','Capaian Materi','material'],['menu-tindak-akademik','Tindak Lanjut','followup'],['menu-guru-pondok','Guru Pondok','teachers'],['menu-nilai-manajer','Progres Input Nilai','scores'],['menu-observasi-pembelajaran','Observasi Pembelajaran','observation'],['menu-riwayat-temuan','Riwayat Temuan','findings'],['menu-pembinaan-guru','Pembinaan Guru','coaching'],['menu-kpi-manajer','KPI Manajer Pendidikan','kpi'],['menu-panduan-kerja','Panduan Kerja','guide']].forEach(([id,label,view])=>add(id,label,`manajer/pendidikan-v2.html?view=${view}`,view==='guide'?'Lainnya':view==='kpi'?'Evaluasi':'Manajemen'));
-      out.splice(4,0,entry('menu-absensi-ibadah-guru','Guru Mukim & Ibadah','pendidikan/absensi-ibadah-guru.html','Manajemen'));
+      out.splice(4,0,entry('menu-absensi-ibadah-guru','Absensi Ibadah Guru Mukim','pendidikan/absensi-ibadah-guru.html','Operasional'));
+      add('menu-pengaturan-guru-mukim','Pengaturan Guru Mukim','pendidikan/pengaturan-guru-mukim.html','Manajemen');
       add('menu-penempatan-tahsin','Penempatan Level Tahsin','pendidikan/penempatan-tahsin.html','Manajemen');
     }else if(role==='MANAJER'&&R.isCharacterManager(a)){
+      add('menu-absensi-ibadah-naqib','Absensi Teladan Ibadah Naqib','pembinaan/absensi-ibadah-naqib.html','Operasional');
       out.push(...workspace('manajer/pembinaan-karakter-v2.html','menu-kontrol-pembinaan',[
         ['naqib','Naqib & Program'],['mentoring','Mentoring Usrah'],['counselor','Kasus & Konselor'],['followup','Tindak Lanjut'],['observation','Observasi Pengasuhan'],['coaching','Pembinaan Personil'],['sdm-kpi','Rekap KPI SDM','Evaluasi'],['history','Riwayat Temuan','Evaluasi']]));
       add('menu-kpi-manajer','KPI Manajer Pembinaan Karakter','manajer/pembinaan-karakter-v2.html?view=kpi','Evaluasi');
