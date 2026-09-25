@@ -13,7 +13,7 @@
   <script src="../../js/student-program-applicability.js?v=5"></script>
   <script src="../../js/academic-report-score-policy.js?v=2"></script>
   <script src="../../js/wali-academic-report-v2.js?v=1"></script>
-  <script src="../../js/academic-report-publication-v1.js?v=3"></script>
+  <script src="../../js/academic-report-publication-v1.js?v=4"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -326,7 +326,7 @@
     .period-report-card{margin-bottom:12px;padding:17px;border:1px solid #dce7f3;border-radius:18px;background:#fff;box-shadow:0 6px 18px rgba(31,71,116,.06)}
     .period-report-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.period-report-head h4{margin:0;color:#153c68;font-size:1rem}.period-report-score{color:#0f61d8;font-size:1.5rem;font-weight:1000}
     .period-report-meta{margin-top:4px;color:#72839a;font-size:.72rem;font-weight:700}.period-report-components{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.period-report-components span{padding:5px 9px;border-radius:999px;background:#eff6ff;color:#315a86;font-size:.66rem;font-weight:800}
-    .report-remedial{display:inline-flex;margin-top:10px;padding:4px 9px;border-radius:999px;background:#e6f7f3;color:#087c72;font-size:.65rem;font-weight:900}.period-report-note{margin-top:9px;color:#415b77;font-size:.76rem;line-height:1.5}
+    .report-remedial{display:inline-flex;margin-top:10px;padding:4px 9px;border-radius:999px;background:#e6f7f3;color:#087c72;font-size:.65rem;font-weight:900}.period-report-note{margin-top:9px;color:#415b77;font-size:.76rem;line-height:1.5}.report-review-note{margin-top:16px;padding:15px 16px;border:1px solid #cfe1f6;border-radius:18px;background:linear-gradient(145deg,#f8fbff,#edf6ff);color:#23476e;box-shadow:0 7px 20px rgba(31,89,153,.06)}.report-review-note strong{display:block;margin-bottom:5px;color:#123b65;font-size:.78rem}.report-review-note p{margin:0;font-size:.73rem;line-height:1.55}
 
     /* Responsif Mobile */
     @media (max-width: 768px) { 
@@ -465,6 +465,7 @@
     </div>
     <div class="eval-list" id="evaluasiListContainer"></div>
   </div>
+  <div id="supervisorReviewStatement"></div>
   </div>
 
 </div> <!-- Akhir app-container -->
@@ -861,6 +862,7 @@
     const monthly=activeReportTab==='bulanan';
     ['secIntelektual','secTahfizReguler','secTahfizCahaya','secMurojaah','secEvaluasi'].forEach(id=>{const node=document.getElementById(id);if(node&&!monthly)node.style.display='none'});
     document.getElementById('secPeriodik').hidden=monthly;
+    renderSupervisorReviewStatement();
     if(!monthly){renderPeriodicReport();return}
 
     renderAsesmen(dataSesuaiBulan(globalAsesmen));
@@ -869,6 +871,9 @@
     renderMurojaah();
     renderEvaluasi();
   }
+
+  function reportClassContext(){return activeStudentProfile?.kelas||activeStudentProfile?.namaKelas||document.getElementById('studentClassHeader')?.textContent||''}
+  function renderSupervisorReviewStatement(){const target=document.getElementById('supervisorReviewStatement');if(!target)return;target.innerHTML=reportPublication.isPublished(publicationRecord)?reportPublication.renderReviewStatement(publicationRecord,{kelas:reportClassContext()}):''}
 
   function selectedPeriod(){return activeReportTab==='triwulan'?document.getElementById('filterTriwulan').value:activeReportTab==='semester'?document.getElementById('filterSemester').value:currentMonthFilter}
   function selectedPeriodicScores(){return academicReport.filterScores(globalPeriodicExams,{tab:activeReportTab,year:activeYear(),period:selectedPeriod(),student:activeStudentProfile,applicable:examBelongsToStudentProgram})}
@@ -1505,6 +1510,54 @@
     return y + 24;
   }
 
+  function gambarPemeriksaanSupervisorPdf(doc, y, meta) {
+    const statement = teksPdf(reportPublication.reviewStatement(publicationRecord,{kelas:meta.kelas}));
+    const lines = doc.splitTextToSize(statement, 168);
+    const height = Math.max(22, 12 + lines.length * 4);
+    y = pastikanRuangPdf(doc, y, height + 4);
+    doc.setDrawColor(147, 197, 240);
+    doc.setFillColor(239, 247, 255);
+    doc.roundedRect(15, y, 180, height, 2.5, 2.5, "FD");
+    doc.setTextColor(22, 52, 95);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text("PEMERIKSAAN SUPERVISOR PENDIDIKAN", 19, y + 6);
+    doc.setTextColor(55, 78, 105);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.text(lines, 19, y + 11);
+    return y + height + 5;
+  }
+
+  function gambarTandaTanganPdf(doc, y, meta) {
+    y = pastikanRuangPdf(doc, y, 49);
+    const supervisor = teksPdf(reportPublication.supervisorName(publicationRecord));
+    const unit = reportPublication.reportUnit(meta.kelas);
+    doc.setDrawColor(148, 163, 184);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(15, y, 180, 43, 2.5, 2.5, "FD");
+    doc.setTextColor(51, 65, 85);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.2);
+    doc.text(`Tanjungpandan, ${meta.tanggalCetak}`, 19, y + 7);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(105, y + 11, 105, y + 38);
+    doc.setTextColor(22, 52, 95);
+    doc.setFont("helvetica", "bold");
+    doc.text("Direktur", 58, y + 15, {align:"center"});
+    doc.text(`Supervisor Pendidikan${unit?` ${unit}`:''}`, 150, y + 15, {align:"center"});
+    doc.setTextColor(22, 52, 95);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text("MULTAZAM", 58, y + 36, {align:"center"});
+    const supervisorLines=doc.splitTextToSize(supervisor.toUpperCase(),76);
+    doc.text(supervisorLines,150,y+34,{align:"center"});
+    doc.setDrawColor(100, 116, 139);
+    doc.line(31, y + 38, 85, y + 38);
+    doc.line(118, y + 38, 182, y + 38);
+    return y + 48;
+  }
+
   function gambarFooterSemuaHalaman(doc, meta) {
     const pages = doc.getNumberOfPages();
 
@@ -1608,7 +1661,9 @@
         const ujianFiltered=selectedPeriodicScores();
         y=gambarUjianPdf(doc,y,meta,ujianFiltered,1,reportTitle);
       }
-      gambarPengesahanDigitalPdf(doc, y, meta);
+      y = gambarPengesahanDigitalPdf(doc, y, meta);
+      y = gambarPemeriksaanSupervisorPdf(doc, y, meta);
+      gambarTandaTanganPdf(doc, y, meta);
 
       gambarFooterSemuaHalaman(doc, meta);
 
