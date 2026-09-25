@@ -13,7 +13,7 @@
   <script src="../../js/student-program-applicability.js?v=5"></script>
   <script src="../../js/academic-report-score-policy.js?v=2"></script>
   <script src="../../js/wali-academic-report-v2.js?v=1"></script>
-  <script src="../../js/academic-report-publication-v1.js?v=4"></script>
+  <script src="../../js/academic-report-publication-v1.js?v=5"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -609,11 +609,13 @@
 
   let globalExams = []; let globalPeriodicExams = []; let globalTahfizReguler = []; let globalTahfizCahaya = []; let globalMurojaah = []; let globalAsesmen = [];
   let currentMonthFilter = ""; let activeStudentName = ""; let activeStudentKey = ""; let activeStudentProfile = {}; let activeReportTab = "bulanan"; let quranAssignments = {};
-  let reportFlowStep='type',selectedReportPeriod='',publicationRecord=null,scoreDataReady=false,publicationCheckToken=0;
+  let reportFlowStep='type',selectedReportPeriod='',publicationRecord=null,scoreDataReady=false,publicationCheckToken=0,educationSupervisors={PUTRA:null,PUTRI:null};
   const academicReport = window.CahayaWaliAcademicReportV2;
   const reportPublication=window.CahayaAcademicReportPublication;
   function currentAcademicYear(){const now=new Date(),year=now.getFullYear(),start=now.getMonth()>=6?year:year-1;return `${start}/${start+1}`}
   function activeYear(){return document.getElementById('filterTahunAkademik')?.value||currentAcademicYear()}
+  async function loadEducationSupervisorAccounts(){try{const snapshot=await dbFS.collection('users').where('roles','array-contains','SUPERVISOR').get(),accounts=[];snapshot.forEach(doc=>accounts.push({id:doc.id,...doc.data()}));educationSupervisors.PUTRA=reportPublication.resolveEducationSupervisor(accounts,'PUTRA');educationSupervisors.PUTRI=reportPublication.resolveEducationSupervisor(accounts,'PUTRI')}catch(error){console.warn('Nama akun Supervisor Pendidikan belum dapat dimuat; menggunakan snapshot publikasi.',error)}}
+  function resolvedPublicationMarker(){const unit=reportPublication.reportUnit(reportClassContext()).toUpperCase(),account=educationSupervisors[unit],name=reportPublication.accountName(account);return name?{...(publicationRecord||{}),supervisorAccountName:name,supervisorAccountUid:account?.authUid||account?.uid||account?.id||'',supervisorUnit:unit}:publicationRecord}
   function examBelongsToStudentProgram(exam){
     if(!academicReport.isFinal(exam))return false;
     if(exam.nilai_diisi_otomatis===true||String(exam.nilai_diisi_otomatis).toLowerCase()==='true')return false;
@@ -767,6 +769,8 @@
     };
     activeStudentProfile={...activeStudentProfile,...identity,name:activeStudentName,studentKey:activeStudentKey};
 
+    await loadEducationSupervisorAccounts();
+
     document.getElementById(
       'studentClassHeader'
     ).textContent =
@@ -873,7 +877,7 @@
   }
 
   function reportClassContext(){return activeStudentProfile?.kelas||activeStudentProfile?.namaKelas||document.getElementById('studentClassHeader')?.textContent||''}
-  function renderSupervisorReviewStatement(){const target=document.getElementById('supervisorReviewStatement');if(!target)return;target.innerHTML=reportPublication.isPublished(publicationRecord)?reportPublication.renderReviewStatement(publicationRecord,{kelas:reportClassContext()}):''}
+  function renderSupervisorReviewStatement(){const target=document.getElementById('supervisorReviewStatement');if(!target)return;target.innerHTML=reportPublication.isPublished(publicationRecord)?reportPublication.renderReviewStatement(resolvedPublicationMarker(),{kelas:reportClassContext()}):''}
 
   function selectedPeriod(){return activeReportTab==='triwulan'?document.getElementById('filterTriwulan').value:activeReportTab==='semester'?document.getElementById('filterSemester').value:currentMonthFilter}
   function selectedPeriodicScores(){return academicReport.filterScores(globalPeriodicExams,{tab:activeReportTab,year:activeYear(),period:selectedPeriod(),student:activeStudentProfile,applicable:examBelongsToStudentProgram})}
@@ -1465,18 +1469,18 @@
       ...opsiAutoTable(doc, meta, {
         startY: y,
         theme: "grid",
-        margin: { left: 10, right: 10, top: 20, bottom: 18 },
+        margin: { left: 15, right: 15, top: 20, bottom: 18 },
         styles: { fontSize: 7.2, cellPadding: 1.9 },
         columnStyles: {
-          0: { cellWidth: 34 },
-          1: { cellWidth: 27 },
-          2: { cellWidth: 12, halign: "center" },
-          3: { cellWidth: 12, halign: "center" },
-          4: { cellWidth: 12, halign: "center" },
-          5: { cellWidth: 12, halign: "center" },
-          6: { cellWidth: 12, halign: "center", fontStyle: "bold" },
-          7: { cellWidth: 23, halign: "center" },
-          8: { cellWidth: 46 }
+          0: { cellWidth: 31 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 11, halign: "center" },
+          3: { cellWidth: 11, halign: "center" },
+          4: { cellWidth: 11, halign: "center" },
+          5: { cellWidth: 11, halign: "center" },
+          6: { cellWidth: 11, halign: "center", fontStyle: "bold" },
+          7: { cellWidth: 20, halign: "center" },
+          8: { cellWidth: 49 }
         }
       }),
       head: [["Mata Pelajaran", "Guru", "Lisan", "Tulisan", "Tashnif", "Praktek", "Nilai", "Predikat", "Keterangan"]],
@@ -1486,12 +1490,62 @@
     return doc.lastAutoTable.finalY + 7;
   }
 
-  function gambarPengesahanDigitalPdf(doc, y, meta) {
-    y = pastikanRuangPdf(doc, y, 27);
+  function teksCampuranPdf(doc, runs, x, y, maxWidth, draw = false) {
+    const lineHeight = 3.8;
+    let cursorX = x;
+    let cursorY = y;
+    let lines = 1;
+    runs.forEach(run => {
+      const words = String(run.text || "").split(/(\s+)/).filter(Boolean);
+      words.forEach(word => {
+        doc.setFont("helvetica", run.bold ? "bold" : "normal");
+        doc.setFontSize(7.4);
+        const width = doc.getTextWidth(word);
+        if (!/^\s+$/.test(word) && cursorX > x && cursorX + width > x + maxWidth) {
+          cursorX = x;
+          cursorY += lineHeight;
+          lines += 1;
+        }
+        if (draw && !/^\s+$/.test(word)) doc.text(word, cursorX, cursorY);
+        cursorX += width;
+      });
+    });
+    return { lines, endY: cursorY, lineHeight };
+  }
+
+  function dataPemeriksaanSupervisorPdf(doc, meta) {
+    const marker = resolvedPublicationMarker();
+    const supervisorName = teksPdf(reportPublication.supervisorName(marker));
+    const identified = supervisorName && supervisorName !== "Supervisor Pendidikan";
+    const unit = reportPublication.reportUnit(meta.kelas);
+    const role = ["Supervisor Pendidikan Pesantren Cahaya Fajrul Islam", unit].filter(Boolean).join(" ");
+    const runs = identified
+      ? [
+          { text: `Isi Raport ini telah melalui pemeriksaan ${role} ` },
+          { text: supervisorName, bold: true },
+          { text: ". Jika ada yang perlu dikonsultasikan, dapat menghubungi supervisor tersebut." }
+        ]
+      : [{ text: `Isi Raport ini telah melalui pemeriksaan ${role}. Jika ada yang perlu dikonsultasikan, dapat menghubungi supervisor Pendidikan.` }];
+    return { runs, lines: teksCampuranPdf(doc, runs, 19, 0, 170).lines };
+  }
+
+  function tinggiKeteranganDokumenPdf(doc, meta) {
+    const documentNote = `Dokumen ini diterbitkan secara digital melalui CAHAYA APP berdasarkan data akademik Pesantren Cahaya Fajrul Islam. Dicetak pada ${meta.tanggalCetak}.`;
+    const noteLines = doc.splitTextToSize(documentNote, 170);
+    const review = dataPemeriksaanSupervisorPdf(doc, meta);
+    return Math.max(35, 17 + noteLines.length * 3.6 + review.lines * 3.8);
+  }
+
+  function gambarKeteranganDokumenPdf(doc, y, meta) {
+    const documentNote = `Dokumen ini diterbitkan secara digital melalui CAHAYA APP berdasarkan data akademik Pesantren Cahaya Fajrul Islam. Dicetak pada ${meta.tanggalCetak}.`;
+    const noteLines = doc.splitTextToSize(documentNote, 170);
+    const review = dataPemeriksaanSupervisorPdf(doc, meta);
+    const height = tinggiKeteranganDokumenPdf(doc, meta);
+    y = pastikanRuangPdf(doc, y, height + 4);
 
     doc.setDrawColor(148, 163, 184);
     doc.setFillColor(248, 250, 252);
-    doc.roundedRect(15, y, 180, 20, 2, 2, "FD");
+    doc.roundedRect(15, y, 180, height, 2, 2, "FD");
 
     doc.setTextColor(22, 52, 95);
     doc.setFont("helvetica", "bold");
@@ -1501,61 +1555,32 @@
     doc.setTextColor(71, 85, 105);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.4);
-    const note = doc.splitTextToSize(
-      `Dokumen ini diterbitkan secara digital melalui CAHAYA APP berdasarkan data akademik Pesantren Cahaya Fajrul Islam. Dicetak pada ${meta.tanggalCetak}.`,
-      170
-    );
-    doc.text(note, 19, y + 11);
-
-    return y + 24;
-  }
-
-  function gambarPemeriksaanSupervisorPdf(doc, y, meta) {
-    const statement = teksPdf(reportPublication.reviewStatement(publicationRecord,{kelas:meta.kelas}));
-    const lines = doc.splitTextToSize(statement, 168);
-    const height = Math.max(22, 12 + lines.length * 4);
-    y = pastikanRuangPdf(doc, y, height + 4);
-    doc.setDrawColor(147, 197, 240);
-    doc.setFillColor(239, 247, 255);
-    doc.roundedRect(15, y, 180, height, 2.5, 2.5, "FD");
-    doc.setTextColor(22, 52, 95);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.text("PEMERIKSAAN SUPERVISOR PENDIDIKAN", 19, y + 6);
-    doc.setTextColor(55, 78, 105);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.text(lines, 19, y + 11);
+    doc.text(noteLines, 19, y + 11);
+    const supervisorY = y + 12 + noteLines.length * 3.6;
+    doc.setTextColor(71, 85, 105);
+    teksCampuranPdf(doc, review.runs, 19, supervisorY, 170, true);
     return y + height + 5;
   }
 
   function gambarTandaTanganPdf(doc, y, meta) {
-    y = pastikanRuangPdf(doc, y, 49);
-    const supervisor = teksPdf(reportPublication.supervisorName(publicationRecord));
+    y = pastikanRuangPdf(doc, y, 39);
+    const supervisor = teksPdf(reportPublication.supervisorName(resolvedPublicationMarker()));
     const unit = reportPublication.reportUnit(meta.kelas);
-    doc.setDrawColor(148, 163, 184);
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(15, y, 180, 43, 2.5, 2.5, "FD");
-    doc.setTextColor(51, 65, 85);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.2);
-    doc.text(`Tanjungpandan, ${meta.tanggalCetak}`, 19, y + 7);
-    doc.setDrawColor(226, 232, 240);
-    doc.line(105, y + 11, 105, y + 38);
     doc.setTextColor(22, 52, 95);
     doc.setFont("helvetica", "bold");
-    doc.text("Direktur", 58, y + 15, {align:"center"});
-    doc.text(`Supervisor Pendidikan${unit?` ${unit}`:''}`, 150, y + 15, {align:"center"});
+    doc.setFontSize(8.2);
+    doc.text("Direktur", 58, y + 7, {align:"center"});
+    doc.text(`Supervisor Pendidikan${unit?` ${unit}`:''}`, 150, y + 7, {align:"center"});
     doc.setTextColor(22, 52, 95);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
-    doc.text("MULTAZAM", 58, y + 36, {align:"center"});
+    doc.text("MULTAZAM", 58, y + 30, {align:"center"});
     const supervisorLines=doc.splitTextToSize(supervisor.toUpperCase(),76);
-    doc.text(supervisorLines,150,y+34,{align:"center"});
+    doc.text(supervisorLines,150,y+28,{align:"center"});
     doc.setDrawColor(100, 116, 139);
-    doc.line(31, y + 38, 85, y + 38);
-    doc.line(118, y + 38, 182, y + 38);
-    return y + 48;
+    doc.line(31, y + 32, 85, y + 32);
+    doc.line(118, y + 32, 182, y + 32);
+    return y + 38;
   }
 
   function gambarFooterSemuaHalaman(doc, meta) {
@@ -1661,9 +1686,8 @@
         const ujianFiltered=selectedPeriodicScores();
         y=gambarUjianPdf(doc,y,meta,ujianFiltered,1,reportTitle);
       }
-      y = gambarPengesahanDigitalPdf(doc, y, meta);
-      y = gambarPemeriksaanSupervisorPdf(doc, y, meta);
-      gambarTandaTanganPdf(doc, y, meta);
+      y = gambarTandaTanganPdf(doc, y, meta);
+      gambarKeteranganDokumenPdf(doc, y, meta);
 
       gambarFooterSemuaHalaman(doc, meta);
 

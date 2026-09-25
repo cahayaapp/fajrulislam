@@ -1890,6 +1890,22 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     return activeUser.label || activeUser.nama || activeUser.namaTampilan || activeUser.username || "Guru CAHAYA";
   }
 
+  function activeTeacherAccountKey() {
+    return String(activeUser.uid || activeUser.authUid || activeUser.userId || activeUser.id || activeUser.username || activeUser.email || "").trim();
+  }
+
+  function activeTeacherAliases() {
+    return [...new Set([
+      activeUser.label,
+      activeUser.nama,
+      activeUser.namaTampilan,
+      activeUser.displayName,
+      activeUser.name,
+      activeUser.username,
+      String(activeUser.email || "").split("@")[0]
+    ].map(normalizeTeacherIdentity).filter(Boolean))];
+  }
+
   function getRoleLabel() {
     let roles = activeUser.akses || activeUser.jabatan || activeUser.role || [];
     if (!Array.isArray(roles)) roles = [roles];
@@ -1927,7 +1943,8 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   function compactTeacherIdentity(value=""){return normalizeTeacherIdentity(value).replace(/\s+/g,"")}
   function normalizeScheduleRows(value){return Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}))}
   function detectTeacherCode(rows=[]){
-    const direct=String(activeUser.teacherCode||activeUser.guruKode||"").trim().toUpperCase(); if(direct)return direct;
+    const assignment=activeUser.assignments?.GURU_PONDOK||activeUser.assignment||{};
+    const direct=String(activeUser.teacherCode||activeUser.guruKode||assignment.teacherCode||assignment.guruKode||"").trim().toUpperCase(); if(direct)return direct;
     const candidates=[getActiveUserName(),activeUser.username,String(activeUser.email||"").split("@")[0]].filter(Boolean).map(normalizeTeacherIdentity);
     const known=new Set(rows.map(r=>String(r?.guruKode||"").trim().toUpperCase()).filter(Boolean)); let best={code:"",score:0};
     Object.entries(TEACHER_CODE_ALIASES).forEach(([code,aliases])=>{if(known.size&&!known.has(code))return;aliases.forEach(alias=>candidates.forEach(c=>{const a=normalizeTeacherIdentity(alias);let score=c===a?100:(c.includes(a)||a.includes(c)?80:0);if(score>best.score)best={code,score}}))}); return best.code;
@@ -2313,7 +2330,10 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
       mapel: document.getElementById("mapel").value,
       guru,
       guruKode: String(teacherCodeAktif || "").trim().toUpperCase(),
-      guruKey: String(teacherCodeAktif || "").trim().toUpperCase() || normalizeTeacherIdentity(guru),
+      guruUid: String(activeUser.uid || activeUser.authUid || "").trim(),
+      guruAccountKey: activeTeacherAccountKey(),
+      guruAliases: activeTeacherAliases(),
+      guruKey: String(teacherCodeAktif || "").trim().toUpperCase() || activeTeacherAccountKey() || normalizeTeacherIdentity(guru),
       kkm: 70,
       kelas,
       kelasList
@@ -2407,11 +2427,27 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   function teacherMatchesSession(value, params = {}) {
     const source = normalizeTeacherIdentity(value || "");
     if (!source) return false;
-    const target = normalizeTeacherIdentity(params.guru || "");
-    if (source === target) return true;
+    const targets = [...new Set([params.guru, ...(params.guruAliases || []), ...activeTeacherAliases()].map(normalizeTeacherIdentity).filter(Boolean))];
+    if (targets.includes(source)) return true;
     const code = String(params.guruKode || "").trim().toUpperCase();
     const aliases = (TEACHER_CODE_ALIASES[code] || []).map(normalizeTeacherIdentity).filter(Boolean);
     return aliases.includes(source);
+  }
+
+  function teacherRecordMatchesSession(record = {}, params = {}) {
+    const recordCode = String(record.guruKode || record.teacherCode || record.kode_guru || "").trim().toUpperCase();
+    const targetCode = String(params.guruKode || "").trim().toUpperCase();
+    if (recordCode && targetCode) return recordCode === targetCode;
+
+    const recordUid = String(record.guruUid || record.teacherUid || record.userUid || "").trim();
+    const targetUid = String(params.guruUid || "").trim();
+    if (recordUid && targetUid) return recordUid === targetUid;
+
+    const recordAccount = normalizeTeacherIdentity(record.guruAccountKey || record.teacherAccountKey || "");
+    const targetAccount = normalizeTeacherIdentity(params.guruAccountKey || "");
+    if (recordAccount && targetAccount) return recordAccount === targetAccount;
+
+    return teacherMatchesSession(record.guru_penguji || record.guru || record.nama_guru || "", params);
   }
 
   function recordMatchesSession(record, params, options = {}) {
@@ -2448,9 +2484,9 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const oldSemester = normalizeSessionText(record.semester || "");
     const sameSemester = !oldSemester || oldSemester === normalizeSessionText(params.semester || "");
 
-    const oldTeacherRaw = record.guru_penguji || record.guru || record.nama_guru || "";
+    const oldTeacherRaw = record.guru_penguji || record.guru || record.nama_guru || record.guruKode || record.guruUid || record.guruAccountKey || "";
     const sameTeacher = String(oldTeacherRaw || "").trim()
-      ? teacherMatchesSession(oldTeacherRaw, params)
+      ? teacherRecordMatchesSession(record, params)
       : Boolean(options.allowMissingTeacher);
 
     const recordClass = String(record.kelas_kelompok || record.kelas || "").trim();
@@ -2464,7 +2500,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     if (!marker || String(marker.status || "").toUpperCase() !== "FINAL") return false;
     if (String(marker.sessionVersion || "") !== "v805") return false;
     const sameMapel = normalizeSessionText(marker.mapel || "") === normalizeSessionText(params.mapel || "");
-    const sameGuru = teacherMatchesSession(marker.guru || "", params);
+    const sameGuru = teacherRecordMatchesSession(marker, params);
     const sameJenis = normalizeSessionText(marker.jenisUjian || "") === normalizeSessionText(params.jenis || "");
     const samePeriode = normalizeSessionText(marker.periode || "") === normalizeSessionText(params.periode || params.bulan || "");
     const samePenilaian = String(marker.kodePenilaian || "") === String(params.kodePenilaian || "");
@@ -2481,7 +2517,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const activeKeys = new Set(activeStudentList.map(item => scoreStudentKey(item.name, item.className)));
     const period = String(params.periode || params.bulan || '').trim();
     if (!period) return {};
-    const cacheKey = `guru:nilai:legacy:${stableKey([dbPath,period,params.guruKode||params.guru,params.mapel,params.kodePenilaian].join('|'))}`;
+    const cacheKey = `guru:nilai:legacy:v2:${stableKey([dbPath,period,params.guruKode||params.guruUid||params.guruAccountKey||params.guru,params.mapel,params.kodePenilaian].join('|'))}`;
     const cached = cacheGet(cacheKey, 15 * 60 * 1000);
     if (cached !== null) return cached;
     try {
@@ -2897,6 +2933,8 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           materi_ujian: params.materi,
           guru_penguji: params.guru,
           guruKode: params.guruKode || "",
+          guruUid: params.guruUid || "",
+          guruAccountKey: params.guruAccountKey || "",
           tanggal: params.tanggal,
           tanggal_ujian: params.tanggal,
           komponen_aktif: activeComponents.map(component => component.nama),
@@ -2966,7 +3004,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
         const tindakKey = guruTindakLanjutKey(studentName,className,params.mapel,params);
         updates[`${guruTindakLanjutPath(params)}/${tindakKey}`] = {
           namaSantri:studentName,kelas:className,mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||75),
-          periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
+          periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',guruUid:params.guruUid||'',guruAccountKey:params.guruAccountKey||'',
           statusInput:finalData.status_input||'',statusNilai:finalData.status_nilai||'',recordKey,sourcePath:dbPath,updatedAt:nowIso,
           keterangan:finalData.keterangan||'',is_remedial:finalData.is_remedial,jenisUjian:jenis,tanggalUjian:params.tanggal,tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
         };
@@ -2980,7 +3018,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           const ringkasKey=guruRingkasKey(studentName,className,params.mapel);
           updates[`${guruRingkasPath(params)}/${ringkasKey}`]={
             namaSantri:studentName,kelas:className,mapel:params.mapel,nilai:finalData.nilai_total,kkm:Number(finalData.kkm||70),
-            periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',
+            periode:params.periode,bulan:params.bulan,tahunAkademik:params.tahun,guru:params.guru,guruKode:params.guruKode||'',guruUid:params.guruUid||'',guruAccountKey:params.guruAccountKey||'',
             statusInput:finalData.status_input||'',statusNilai:finalData.status_nilai||'',recordKey,updatedAt:nowIso,
             keterangan:finalData.keterangan||'',is_remedial:finalData.is_remedial,jenisUjian:jenis,tanggalUjian:params.tanggal,tanggalInput:nowIso,kodePenilaian:params.kodePenilaian||''
           };
@@ -3085,7 +3123,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
         const history=[...(Array.isArray(old.final_history)?old.final_history:[])];
         if(old.final_at&&!history.some(x=>x.at===old.final_at))history.push({at:old.final_at,by:old.final_by||''});
         history.push({at:nowIso,by:finalBy,revisionCycle:priorMarker?.revisionCycle||0});
-        const finalData = {...old, is_remedial:old.is_remedial===true, status_nilai:"FINAL", status_input:"lengkap", locked:true, final_at:nowIso, final_by:finalBy, final_history:history, updated_at:nowIso};
+        const finalData = {...old, guru_penguji:params.guru, guruKode:old.guruKode||params.guruKode||"", guruUid:old.guruUid||params.guruUid||"", guruAccountKey:old.guruAccountKey||params.guruAccountKey||"", is_remedial:old.is_remedial===true, status_nilai:"FINAL", status_input:"lengkap", locked:true, final_at:nowIso, final_by:finalBy, final_history:history, updated_at:nowIso};
         const indexData = {...item, data:finalData, updatedAt:nowIso, status:"FINAL"};
         updates[`${item.dbPath}/${item.recordKey}`] = finalData;
         updates[`${scoreIndexPath(params)}/${studentKey}`] = indexData;
@@ -3123,7 +3161,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
         jenisUjian:params.jenis, periode:params.periode, mapel:params.mapel,
         bulan:params.bulan,tanggalUjian:params.tanggal,
         tahunAkademik:params.tahun, semester:params.semester,
-        guru:params.guru, guruKode:params.guruKode || "",
+        guru:params.guru, guruKode:params.guruKode || "", guruUid:params.guruUid || "", guruAccountKey:params.guruAccountKey || "",
         kelasScope:classScopeFromParams(params).join(" | "),
         rosterHash:stableKey(activeStudentList.map(item=>`${item.className}|${item.name}`).sort().join("||")),
         jumlahSantri:rows.length
