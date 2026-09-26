@@ -14,7 +14,11 @@ const checks=M.normalizeChecks({aktivitas_1:true,aktivitas_2:false,aktivitas_3:'
 assert.equal(checks.aktivitas_1,true);
 assert.equal(checks.aktivitas_2,false);
 assert.equal(checks.aktivitas_3,false,'boolean false/true harus eksplisit, bukan truthy');
-assert.deepEqual(M.activityProgress(checks),{completed:1,total:12,percent:8});
+assert.deepEqual(M.activityProgress(checks),{completed:1,total:12,percent:8,notCompleted:11,answered:12});
+const statuses=M.normalizeActivityStatuses({aktivitas_1:'TERLAKSANA',aktivitas_2:'TIDAK_TERLAKSANA'});
+assert.equal(statuses.aktivitas_1,'TERLAKSANA');
+assert.equal(statuses.aktivitas_2,'TIDAK_TERLAKSANA');
+assert.equal(statuses.aktivitas_3,'');
 
 const answers=Object.fromEntries(M.QUESTIONS.map((x,i)=>[x.id,` jawaban ${i+1} `]));
 assert.deepEqual(M.reportProgress(answers),{completed:7,total:7,complete:true});

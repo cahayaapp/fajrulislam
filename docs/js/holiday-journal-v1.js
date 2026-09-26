@@ -20,8 +20,9 @@
   function activityPath(studentKey,date){const student=key(studentKey);if(!student)throw new Error('STUDENT_KEY_REQUIRED');return`cahaya_app/jurnal_liburan/aktivitas_harian/${student}/${dateKey(date)}`}
   function reportPath(studentKey,period='triwulan_1_ke_2'){const student=key(studentKey),p=key(period);if(!student||!p)throw new Error('REPORT_KEY_REQUIRED');return`cahaya_app/jurnal_liburan/bedah_rapor/${student}/${p}`}
   function normalizeChecks(value={}){return Object.fromEntries(ACTIVITIES.map(item=>[item.id,value[item.id]===true]))}
+  function normalizeActivityStatuses(value={}){return Object.fromEntries(ACTIVITIES.map(item=>{const raw=value[item.id];return[item.id,raw==='TERLAKSANA'||raw===true?'TERLAKSANA':raw==='TIDAK_TERLAKSANA'||raw===false?'TIDAK_TERLAKSANA':'']}))}
   function normalizeAnswers(value={}){return Object.fromEntries(QUESTIONS.map(item=>[item.id,String(value[item.id]??'').trim()]))}
-  function activityProgress(value={}){const checks=normalizeChecks(value);const completed=Object.values(checks).filter(Boolean).length;return{completed,total:ACTIVITIES.length,percent:Math.round(completed/ACTIVITIES.length*100)}}
+  function activityProgress(value={}){const statuses=normalizeActivityStatuses(value),completed=Object.values(statuses).filter(x=>x==='TERLAKSANA').length,notCompleted=Object.values(statuses).filter(x=>x==='TIDAK_TERLAKSANA').length,answered=completed+notCompleted;return{completed,total:ACTIVITIES.length,percent:Math.round(completed/ACTIVITIES.length*100),notCompleted,answered}}
   function reportProgress(value={}){const answers=normalizeAnswers(value);const completed=Object.values(answers).filter(Boolean).length;return{completed,total:QUESTIONS.length,complete:completed===QUESTIONS.length}}
-  return Object.freeze({version:1,period:'triwulan_1_ke_2',ACTIVITIES,QUESTIONS,key,dateKey,activityPath,reportPath,normalizeChecks,normalizeAnswers,activityProgress,reportProgress});
+  return Object.freeze({version:2,period:'triwulan_1_ke_2',ACTIVITIES,QUESTIONS,key,dateKey,activityPath,reportPath,normalizeChecks,normalizeActivityStatuses,normalizeAnswers,activityProgress,reportProgress});
 });
