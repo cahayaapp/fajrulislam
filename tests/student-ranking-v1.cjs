@@ -55,6 +55,8 @@ assert.equal(sickNeutral.score,100);
 const fs=require('node:fs'),supervisor=fs.readFileSync(require('node:path').join(__dirname,'../supervisor/laporan-akademik.html'),'utf8'),wali=fs.readFileSync(require('node:path').join(__dirname,'../wali/dashboard/akademik.html'),'utf8');
 assert.match(supervisor,/Ranking & Santri Terbaik/);
 assert.match(supervisor,/Sinkronkan Ranking Terpublikasi/,'rapor lama yang sudah published dapat diberi snapshot ranking tanpa publikasi ulang');
+assert.match(supervisor,/Menyiapkan data ranking dan memeriksa rapor yang sudah dipublikasikan/,'sinkronisasi selalu memberi status proses yang terlihat');
+assert.match(supervisor,/rapor terpublikasi berhasil diperbarui/,'sinkronisasi melaporkan jumlah rapor yang benar-benar diperbarui');
 assert.match(supervisor,/orderByChild\('tanggal'\)\.startAt\(range\.start\)\.endAt\(range\.end\)/,'data pendukung dibaca sesuai rentang periode');
 assert.match(supervisor,/cahaya_app\/absensi_program_harian/);
 assert.match(supervisor,/cahaya_app\/absensi_pembelajaran/);
