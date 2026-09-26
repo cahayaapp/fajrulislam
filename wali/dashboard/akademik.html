@@ -1352,9 +1352,7 @@
       body: [
         ["Nama Santri", meta.nama, "Periode", meta.periode],
         ["Kelas", meta.kelas, "Usrah", meta.usrah],
-        ["Tahun Ajaran", meta.tahunAkademik||"-", "Tanggal Cetak", meta.tanggalCetak],
-        ["Peringkat Akademik", meta.academicRanking||"Belum tersedia", "Peringkat Santri Terbaik", meta.bestRanking||"Belum tersedia"],
-        ["Jumlah Mapel", String(meta.subjectCount??0), "Remedial", String(meta.remedialCount??0)]
+        ["Tahun Ajaran", meta.tahunAkademik||"-", "Tanggal Cetak", meta.tanggalCetak]
       ]
     });
 
@@ -1467,6 +1465,32 @@
     return doc.lastAutoTable.finalY + 7;
   }
 
+  function gambarRingkasanNilaiPdf(doc, y, meta) {
+    y = pastikanRuangPdf(doc, y, 23);
+    const items = [
+      ["RATA-RATA", meta.averageScore ?? "Belum tersedia"],
+      ["PERINGKAT AKADEMIK", meta.academicRanking || "Belum tersedia"],
+      ["PERINGKAT SANTRI TERBAIK", meta.bestRanking || "Belum tersedia"]
+    ];
+    const width = 60;
+    doc.setDrawColor(203, 213, 225);
+    doc.setFillColor(248, 251, 255);
+    doc.roundedRect(15, y, 180, 19, 2, 2, "FD");
+    items.forEach((item, index) => {
+      const x = 15 + (index * width);
+      if (index) doc.line(x, y + 3, x, y + 16);
+      doc.setTextColor(100, 116, 139);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.4);
+      doc.text(item[0], x + width / 2, y + 6.2, { align: "center" });
+      doc.setTextColor(22, 52, 95);
+      doc.setFontSize(9.2);
+      const valueLines = doc.splitTextToSize(teksPdf(item[1]), width - 8);
+      doc.text(valueLines.slice(0, 2), x + width / 2, y + 12.2, { align: "center" });
+    });
+    return y + 24;
+  }
+
   function gambarUjianPdf(doc, y, meta, listData, nomor=4, judul="Laporan Ujian Bulanan") {
     y = judulBagianPdf(doc, y, nomor, judul);
 
@@ -1512,7 +1536,7 @@
       body: rows
     });
 
-    return doc.lastAutoTable.finalY + 7;
+    return gambarRingkasanNilaiPdf(doc, doc.lastAutoTable.finalY + 4, meta);
   }
 
   function teksCampuranPdf(doc, runs, x, y, maxWidth, draw = false) {
@@ -1666,8 +1690,7 @@
       tahunAkademik:teksPdf(tahun),
       academicRanking:ranking?.complete&&ranking?.rank&&ranking?.total?`${ranking.rank} dari ${ranking.total} santri`:'Belum tersedia',
       bestRanking:bestRanking?.complete&&bestRanking?.eligible&&bestRanking?.rank&&bestRanking?.total?`${bestRanking.rank} dari ${bestRanking.total} santri`:'Belum tersedia',
-      subjectCount:pdfSummary.subjects,
-      remedialCount:pdfSummary.remedial,
+      averageScore:Number.isFinite(Number(pdfSummary.average))?Number(pdfSummary.average).toFixed(1):'Belum tersedia',
       titleLines:activeReportTab==='bulanan'?["LAPORAN","AKADEMIK","BULANAN"]:activeReportTab==='triwulan'?["RAPOR","TRIWULAN"]:["RAPOR","SEMESTER"],
       tanggalCetak: new Date().toLocaleDateString("id-ID", {
         day: "2-digit",

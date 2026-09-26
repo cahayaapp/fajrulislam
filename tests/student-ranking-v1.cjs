@@ -71,8 +71,8 @@ assert.match(supervisor,/bestRankingForUnit\(models,x\.student\.kelas\)/,'previe
 assert.match(supervisor,/classRanking.*bestStudentRanking/s,'snapshot rapor memisahkan ranking kelas dari Santri Terbaik area');
 assert.match(wali,/publicationRecord\?\.bestStudentRanking/);
 assert.doesNotMatch(wali,/ranking-table/,'Wali tidak menerima leaderboard seluruh kelas');
-assert.match(wali,/Peringkat Akademik/);
-assert.match(wali,/Peringkat Santri Terbaik/);
+assert.match(wali,/peringkat akademik/i);
+assert.match(wali,/peringkat santri terbaik/i);
 assert.match(wali,/bestRanking:bestRanking\?\.complete&&bestRanking\?\.eligible/,'PDF hanya menampilkan posisi Santri Terbaik yang eligible dan dipublikasikan');
 assert.equal(fs.readFileSync(require('node:path').join(__dirname,'../docs/supervisor/laporan-akademik.html'),'utf8'),supervisor,'mirror Supervisor sinkron');
 assert.equal(fs.readFileSync(require('node:path').join(__dirname,'../docs/wali/dashboard/akademik.html'),'utf8'),wali,'mirror Wali sinkron');

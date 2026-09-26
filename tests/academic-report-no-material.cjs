@@ -10,6 +10,9 @@ const record={nama_santri:'SANTRI UJI',studentKey:'santriuji',mata_pelajaran:'Fi
 const original=JSON.stringify(record);
 for(const source of [wali,bulk,uas])assert(!/materi_ujian|Materi Ujian|Capaian Materi|Target Materi|Pokok Materi|Topik Pembelajaran/.test(source));
 assert(fs.readFileSync(path.join(root,'guru/inputNilaiUjian.html'),'utf8').includes('materi_ujian: params.materi'));
+assert(!/Peringkat Akademik|Peringkat Santri Terbaik|Jumlah Mapel|Remedial/.test(extract('gambarIdentitasPdf')),'biodata PDF tidak memuat ranking, jumlah mapel, atau remedial');
+assert(/return gambarRingkasanNilaiPdf\(doc, doc\.lastAutoTable\.finalY \+ 4, meta\)/.test(extract('gambarUjianPdf')),'ringkasan ranking ditempatkan langsung setelah tabel nilai');
+assert(/averageScore:Number\.isFinite/.test(wali),'PDF membawa nilai rata-rata asli ke ringkasan bawah tabel');
 (async()=>{
  const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
  try{
@@ -34,7 +37,7 @@ assert(fs.readFileSync(path.join(root,'guru/inputNilaiUjian.html'),'utf8').inclu
    assert(remedialScreen.includes('Remedial'),`screen labels remedial score ${value}`);
   }
   await page.addScriptTag({path:'/tmp/cahaya-qa-jspdf.js'});await page.addScriptTag({path:'/tmp/cahaya-qa-autotable.js'});
-  const functions=['teksPdf','predikatNilai','opsiAutoTable','pastikanRuangPdf','judulBagianPdf','gambarUjianPdf'].map(extract).join('\n');
+  const functions=['teksPdf','predikatNilai','opsiAutoTable','pastikanRuangPdf','judulBagianPdf','gambarRingkasanNilaiPdf','gambarUjianPdf'].map(extract).join('\n');
   const data=await page.evaluate(({functions,record})=>{
    window.gambarHeaderLanjutan=()=>{};(0,eval)(functions);
    const doc=new jspdf.jsPDF();gambarUjianPdf(doc,20,{},[record]);
