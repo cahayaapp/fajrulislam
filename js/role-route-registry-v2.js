@@ -173,6 +173,10 @@
     "menus": ["menu-mentoring-individu", "menu-mentoring-usrah"],
     "policy": "mentor-usrah-v2"
   },
+  "pembinaan/jurnal-liburan-monitor.html": {
+    "menus": ["menu-jurnal-liburan-monitor"],
+    "policy": "holiday-journal-monitor-v1"
+  },
   "home-dapur.html": {
     "menus": ["menu-home"],
     "policy": "home",
@@ -699,6 +703,10 @@
     "policy": "wali"
   },
   "wali/dashboard/mentoring-pekanan.html": {
+    "menus": [],
+    "policy": "wali"
+  },
+  "wali/dashboard/jurnal-liburan.html": {
     "menus": [],
     "policy": "wali"
   }

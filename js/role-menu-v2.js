@@ -48,6 +48,7 @@
     }else if(role==='MENTOR_USRAH'){
       add('menu-mentoring-individu','Form Mentoring','pembinaan/mentor-usrah-v2.html?view=form');
       add('menu-mentoring-usrah','Riwayat Mentoring','pembinaan/mentor-usrah-v2.html?view=history');
+      add('menu-jurnal-liburan-monitor','Jurnal Liburan Santri','pembinaan/jurnal-liburan-monitor.html','Operasional');
     }else if(role==='KONSELOR'){
       const base='konselor/cases-v2.html?view=';
       [['menu-kasus-masuk','Kasus Masuk','incoming'],['menu-kasus-aktif','Kasus Aktif','active'],['menu-konseling-konselor','Catat Konseling','counseling'],['menu-eskalasi-konselor',a.level==='MADYA'?'Eskalasi Masuk':'Perlu Eskalasi','escalations'],['menu-riwayat-kasus','Riwayat Kasus','history']].forEach(([id,label,view])=>add(id,label,base+view));
@@ -68,6 +69,7 @@
     }else if(role==='SUPERVISOR'){
       if(R.canManageTahsinLevels(role,a))add('menu-penempatan-tahsin','Penempatan Level Tahsin','pendidikan/penempatan-tahsin.html','Manajemen');
       if(R.canManageTahsinLevels(role,a))add('menu-kontrol-publikasi-rapor','Laporan Akademik','supervisor/laporan-akademik.html','Manajemen');
+      if((a.supervisedRoles||[]).some(item=>['NAQIB','NAQIBAH','MENTOR_USRAH'].includes(item)))add('menu-jurnal-liburan-monitor','Jurnal Liburan Santri','pembinaan/jurnal-liburan-monitor.html','Manajemen');
       out.push(...workspace('supervisor/workspace-v2.html','menu-supervisor-v2',[
         ['divisions','Kondisi Divisi'],['escalations','Eskalasi Masuk'],['observation','Observasi Pembanding'],['followup','Tindak Lanjut Supervisor'],['people','Manajer & Personil'],['recap','Rekap KPI Bawahan','Evaluasi'],['standards','Standar Kerja'],['coaching','Pembinaan'],['history','Riwayat Eskalasi','Evaluasi'],['guide','Panduan Kerja','Lainnya','menu-panduan-kerja']]));
       const review=entry('menu-supervisor-v2--review-izin','Review Izin Santri','supervisor/review-izin-santri.html','Manajemen','menu-supervisor-v2');review.conditional=true;out.push(review);
