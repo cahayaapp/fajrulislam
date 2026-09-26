@@ -24,6 +24,7 @@ const {
 } = require("firebase-functions/v2/https");
 
 const {createHash} = require("node:crypto");
+const FacePoc = require("./face-attendance-poc-core");
 
 const {
   initializeApp
@@ -44,6 +45,8 @@ const {
 );
 
 initializeApp();
+
+const FACE_POC_ROOT = "/cahaya_app/face_attendance_poc";
 
 const DATABASE_INSTANCE =
   process.env.CAHAYA_DATABASE_INSTANCE ||
@@ -1447,3 +1450,99 @@ exports.pushBroadcastSemuaPenggunaToPengurus = onValueCreated(
     });
   }
 );
+
+async function facePocCaller(request) {
+  const uid = request.auth?.uid;
+  if (!uid) throw new HttpsError("unauthenticated", "Firebase Auth diperlukan untuk Face Attendance POC.");
+  const db = getDatabase();
+  const profile = (await db.ref(`/cahaya_access/users/${uid}`).get()).val() || {};
+  if (profile.active !== true || profile.internal !== true) throw new HttpsError("permission-denied", "Akun internal aktif diperlukan.");
+  return {uid, db, profile};
+}
+
+function faceProgramSummary(id, value = {}) {
+  return {
+    id,
+    name:String(value.name || id),
+    active:value.active === true,
+    unit:String(value.unit || ""),
+    startTime:String(value.startTime || "04:00:00"),
+    onTimeCutoff:String(value.onTimeCutoff || "04:45:00"),
+    scanCloseTime:String(value.scanCloseTime || "06:00:00"),
+    timeZone:String(value.timeZone || "Asia/Jakarta"),
+    rosterCount:FacePoc.programRoster(value).length,
+    version:Number(value.version || 1),
+    updatedAt:Number(value.updatedAt || 0)
+  };
+}
+
+/* Returns authorization and program summaries only. It never returns the access
+ * tree, roster, or biometric template to an unauthorized caller. */
+exports.getFaceAttendancePocContext = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request);
+  const programs = (await caller.db.ref(`${FACE_POC_ROOT}/programs`).get()).val() || {};
+  const canEnroll = FacePoc.canEnroll(caller.profile), canScan = FacePoc.canScan(caller.profile);
+  const visible = Object.entries(programs).filter(([, program]) => canEnroll || FacePoc.authorizedForProgram(caller.profile, program, caller.uid)).map(([id, program]) => faceProgramSummary(id, program));
+  return {uid:caller.uid, canEnroll, canScan, modelVersion:FacePoc.MODEL_VERSION, embeddingVersion:FacePoc.EMBEDDING_VERSION, programs:visible};
+});
+
+/* Enrollment writes are server mediated. Admin/Director cannot choose audit UID,
+ * version, timestamps, active status, or overwrite history from the client. */
+exports.saveFaceProfilePoc = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request);
+  if (!FacePoc.canEnroll(caller.profile)) throw new HttpsError("permission-denied", "Role ini tidak boleh melakukan enrollment wajah.");
+  let payload;
+  try { payload = FacePoc.sanitizeEnrollment(request.data || {}); }
+  catch (error) { throw new HttpsError("invalid-argument", error.message); }
+  payload.templateHash = createHash("sha256").update(JSON.stringify(payload.samples)).digest("hex");
+  const profileRef = caller.db.ref(`${FACE_POC_ROOT}/profiles/${payload.studentKey}`);
+  let previousVersion = 0, saved = null;
+  const transaction = await profileRef.transaction(current => {
+    previousVersion = Number(current?.profileVersion || 0);
+    saved = FacePoc.nextProfile(payload, current || {}, {uid:caller.uid}, Date.now());
+    return saved;
+  }, undefined, false);
+  if (!transaction.committed) throw new HttpsError("aborted", "Enrollment tidak tersimpan secara utuh.");
+  const auditRef = caller.db.ref(`${FACE_POC_ROOT}/enrollment_audit`).push();
+  await auditRef.set({studentKey:payload.studentKey, previousVersion, newVersion:saved.profileVersion, performedByUid:caller.uid, performedAt:saved.updatedAt, deviceId:FacePoc.safeKey(request.data?.deviceId), sessionDeviceId:FacePoc.safeKey(request.data?.sessionDeviceId), reason:FacePoc.text(request.data?.reason,300), modelVersion:saved.modelVersion, embeddingVersion:saved.embeddingVersion});
+  return {studentKey:saved.studentKey, profileVersion:saved.profileVersion, templateHash:saved.templateHash, updatedAt:saved.updatedAt, sampleCount:saved.sampleCount};
+});
+
+exports.listFaceProfilesPoc = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request);
+  if (!FacePoc.canEnroll(caller.profile)) throw new HttpsError("permission-denied", "Hanya petugas enrollment yang dapat melihat status seluruh profil.");
+  const profiles = (await caller.db.ref(`${FACE_POC_ROOT}/profiles`).get()).val() || {};
+  return {profiles:Object.values(profiles).map(profile => ({studentKey:profile.studentKey, studentName:profile.studentName, className:profile.className, active:profile.active===true, profileVersion:Number(profile.profileVersion||0), modelVersion:profile.modelVersion, embeddingVersion:profile.embeddingVersion, sampleCount:Number(profile.sampleCount||0), updatedAt:Number(profile.updatedAt||0), templateHash:profile.templateHash}))};
+});
+
+/* Naqib receives only active profiles present in the trusted program roster and
+ * only when their UID is assigned to that program. */
+exports.syncFaceProfilesPoc = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request), programId = FacePoc.safeKey(request.data?.programId);
+  if (!programId) throw new HttpsError("invalid-argument", "Program wajib dipilih.");
+  const program = (await caller.db.ref(`${FACE_POC_ROOT}/programs/${programId}`).get()).val() || {};
+  if (!FacePoc.authorizedForProgram(caller.profile, program, caller.uid)) throw new HttpsError("permission-denied", "Anda tidak memiliki scope program ini.");
+  const allProfiles = (await caller.db.ref(`${FACE_POC_ROOT}/profiles`).get()).val() || {}, profiles = FacePoc.scopedProfiles(allProfiles, program);
+  return {program:faceProgramSummary(programId, program), modelVersion:FacePoc.MODEL_VERSION, embeddingVersion:FacePoc.EMBEDDING_VERSION, syncedAt:Date.now(), profiles};
+});
+
+/* The client submits identity result only. Server validates program scope,
+ * roster, model, duplicate key and authoritative status/time. */
+exports.submitFaceCheckInPoc = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request), programId = FacePoc.safeKey(request.data?.programId), studentKey = FacePoc.safeKey(request.data?.studentKey);
+  const program = (await caller.db.ref(`${FACE_POC_ROOT}/programs/${programId}`).get()).val() || {};
+  if (!FacePoc.authorizedForProgram(caller.profile, program, caller.uid)) throw new HttpsError("permission-denied", "Anda tidak memiliki scope program ini.");
+  if (!FacePoc.programRoster(program).includes(studentKey)) throw new HttpsError("permission-denied", "Santri bukan roster program aktif.");
+  const profile = (await caller.db.ref(`${FACE_POC_ROOT}/profiles/${studentKey}`).get()).val() || {};
+  if (profile.active !== true || profile.modelVersion !== FacePoc.MODEL_VERSION) throw new HttpsError("failed-precondition", "Template wajah belum tersedia atau perlu diperbarui.");
+  let record;
+  try { record = FacePoc.sanitizeCheckIn({...request.data, programId, studentKey}, program, Date.now()); }
+  catch (error) { throw new HttpsError("invalid-argument", error.message); }
+  if(record.status === "DITOLAK_DI_LUAR_WAKTU")throw new HttpsError("failed-precondition","Sesi scan program sudah ditutup.");
+  record.submissionId=FacePoc.safeKey(request.data?.submissionId);
+  if(!record.submissionId)throw new HttpsError("invalid-argument","Submission ID wajib untuk idempotensi.");
+  record.submittedByUid=caller.uid;record.profileVersion=Number(profile.profileVersion||0);record.templateHash=String(profile.templateHash||"");
+  const checkRef=caller.db.ref(`${FACE_POC_ROOT}/checkins/${record.sessionId}/${studentKey}`);
+  const transaction=await checkRef.transaction(current=>current||record,undefined,false),stored=transaction.snapshot.val();
+  return {created:stored?.submissionId===record.submissionId, duplicate:stored?.submissionId!==record.submissionId, record:stored};
+});

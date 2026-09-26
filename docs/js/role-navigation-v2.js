@@ -67,7 +67,22 @@
     }
     if(e.policy==='tahsin-placement-v2')return R.canManageTahsinLevels(role,a)?{ok:true,reason:'TAHSIN_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='supervisor-education-v2')return role==='SUPERVISOR'&&R.canManageTahsinLevels(role,a)?{ok:true,reason:'SUPERVISOR_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
+    if(e.policy==='education-report-v2')return ((role==='SUPERVISOR'||role==='MANAJER')&&R.canManageTahsinLevels(role,a))?{ok:true,reason:'EDUCATION_REPORT_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='manager-character-v2')return role==='MANAJER'&&R.isCharacterManager(a)?{ok:true,reason:'MANAGER_CHARACTER_SCOPE'}:deny('PERMISSION_DENIED');
+    if(e.policy==='weekly-kpi-guru-v2'){
+      if(role==='GURU_PONDOK')return {ok:true,reason:'OWN_WEEKLY_GURU_KPI'};
+      if(role==='MANAJER'&&R.isEducationManager(a)&&['PUTRA','PUTRI'].includes(a.unit))return {ok:true,reason:'MANAGER_EDUCATION_WEEKLY_KPI'};
+      if(role==='SUPERVISOR'&&R.canManageTahsinLevels(role,a))return {ok:true,reason:'SUPERVISOR_EDUCATION_KPI_READ'};
+      if(role==='DIREKTUR'&&a.unit==='ALL')return {ok:true,reason:'DIRECTOR_KPI_READ'};
+      return deny('PERMISSION_DENIED');
+    }
+    if(e.policy==='weekly-kpi-naqib-v2'){
+      if(['NAQIB','NAQIBAH'].includes(role))return {ok:true,reason:'OWN_WEEKLY_NAQIB_KPI'};
+      if(role==='MANAJER'&&R.isCharacterManager(a)&&['PUTRA','PUTRI'].includes(a.unit))return {ok:true,reason:'MANAGER_CHARACTER_WEEKLY_KPI'};
+      if(role==='SUPERVISOR'&&['PUTRA','PUTRI','ALL'].includes(a.unit)&&(a.supervisedRoles||[]).some(item=>['NAQIB','NAQIBAH'].includes(item)))return {ok:true,reason:'SUPERVISOR_CHARACTER_KPI_READ'};
+      if(role==='DIREKTUR'&&a.unit==='ALL')return {ok:true,reason:'DIRECTOR_KPI_READ'};
+      return deny('PERMISSION_DENIED');
+    }
     if(e.policy==='supervisor-layanan-v2'){
       const fromRoles=[...new Set((a.supervisedRoles||[]).map(owned=>R.ROLE_DIVISIONS[owned]).filter(Boolean))];
       const areas=a.divisionIds.length?fromRoles.filter(area=>a.divisionIds.includes(area)):fromRoles;

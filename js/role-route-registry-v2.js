@@ -127,9 +127,10 @@
   },
   "supervisor/laporan-akademik.html": {
     "menus": [
-      "menu-kontrol-publikasi-rapor"
+      "menu-kontrol-publikasi-rapor",
+      "menu-nilai-manajer"
     ],
-    "policy": "supervisor-education-v2"
+    "policy": "education-report-v2"
   },
   "pimpinan/dashboard-pendidikan.html": {
     "menus": [
@@ -399,9 +400,9 @@
   },
   "pendidikan/kpi-guru.html": {
     "menus": [
-      "menu-kpi-guru"
+      "menu-kpi-guru", "menu-kontrol-pendidikan", "menu-review-pendidikan", "menu-dashboard-pendidikan"
     ],
-    "policy": "teacher"
+    "policy": "weekly-kpi-guru-v2"
   },
   "pendidikan/manajemen-kelas.html": {
     "menus": [
@@ -470,9 +471,9 @@
   },
   "naqib/kpi.html": {
     "menus": [
-      "menu-kpi-naqib"
+      "menu-kpi-naqib", "menu-kontrol-pembinaan", "menu-supervisor-v2", "menu-dashboard-pimpinan"
     ],
-    "policy": "naqib-kpi"
+    "policy": "weekly-kpi-naqib-v2"
   },
   "naqib/jadwalpiket.html": {
     "menus": [

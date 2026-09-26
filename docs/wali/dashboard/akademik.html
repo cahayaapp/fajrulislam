@@ -13,7 +13,7 @@
   <script src="../../js/student-program-applicability.js?v=5"></script>
   <script src="../../js/academic-report-score-policy.js?v=2"></script>
   <script src="../../js/wali-academic-report-v2.js?v=2"></script>
-  <script src="../../js/academic-report-publication-v1.js?v=9"></script>
+  <script src="../../js/academic-report-publication-v1.js?v=10"></script>
   <script src="../../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -320,7 +320,7 @@
     .report-field{display:grid;gap:5px;min-width:145px;flex:1}
     .report-field label{color:#60738e;font-size:.65rem;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
     .report-field select{width:100%;min-height:43px;padding:8px 34px 8px 12px;border:1px solid #d8e5f3;border-radius:12px;background:#fff;color:#17375f;font:800 .78rem 'Nunito',sans-serif}
-    .report-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}
+    .report-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:16px}
     .report-metric{padding:15px 12px;border:1px solid #dce7f3;border-radius:17px;background:#fff;text-align:center;box-shadow:0 5px 16px rgba(31,71,116,.06)}
     .report-metric b{display:block;color:#133d69;font-size:1.35rem;line-height:1.1}.report-metric span{display:block;margin-top:4px;color:#71829a;font-size:.66rem;font-weight:800}
     .period-report-card{margin-bottom:12px;padding:17px;border:1px solid #dce7f3;border-radius:18px;background:#fff;box-shadow:0 6px 18px rgba(31,71,116,.06)}
@@ -342,7 +342,7 @@
       .filter-actions { width: 100%; justify-content: space-between; }
       .header-filter-box { flex: 1; }
       .btn-download-pdf { flex: 0 0 auto; }
-      .report-field{min-width:0}.report-summary{gap:7px}.report-metric{padding:12px 6px}.report-type-grid{grid-template-columns:1fr}.report-period-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.report-content-toolbar{align-items:stretch;flex-direction:column}.btn-download-pdf{width:100%}
+      .report-field{min-width:0}.report-summary{grid-template-columns:1fr 1fr;gap:7px}.report-metric{padding:12px 6px}.report-type-grid{grid-template-columns:1fr}.report-period-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.report-content-toolbar{align-items:stretch;flex-direction:column}.btn-download-pdf{width:100%}
 
       .resume-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; } 
       .kategori-blok { padding: 24px 18px; border-radius: 24px; }
@@ -418,8 +418,8 @@
   <div id="reportOutput" hidden>
   <div id="loadingData">🔄 Sinkronisasi data pendidikan...</div>
 
+  <div class="report-summary" id="periodReportSummary"></div>
   <section id="secPeriodik" hidden>
-    <div class="report-summary" id="periodReportSummary"></div>
     <div id="periodReportList"></div>
     <section id="periodTahfizHistory" class="period-tahfiz" hidden>
       <h3>Riwayat Tahfiz Al-Qur’an</h3>
@@ -876,6 +876,9 @@
     renderSupervisorReviewStatement();
     if(!monthly){renderPeriodicReport();return}
 
+    const monthlyScores=academicReport.filterScores(globalExams,{tab:'bulanan',year:activeYear(),period:currentMonthFilter,student:activeStudentProfile,applicable:examBelongsToStudentProgram});
+    renderAcademicSummary(monthlyScores);
+
     renderAsesmen(dataSesuaiBulan(globalAsesmen));
     renderTahfizBlok('Tahfiz', dataSesuaiBulan([...globalTahfizReguler,...globalTahfizCahaya]), 'secTahfizReguler', 'tahfizResumeGridReguler', 'tahfizListReguler');
     document.getElementById('secTahfizCahaya').style.display='none';
@@ -888,13 +891,14 @@
 
   function selectedPeriod(){return activeReportTab==='triwulan'?document.getElementById('filterTriwulan').value:activeReportTab==='semester'?document.getElementById('filterSemester').value:currentMonthFilter}
   function selectedPeriodicScores(){return academicReport.filterScores(globalPeriodicExams,{tab:activeReportTab,year:activeYear(),period:selectedPeriod(),student:activeStudentProfile,applicable:examBelongsToStudentProgram})}
+  function renderAcademicSummary(records=[]){const summary=academicReport.summary(records),academicRanking=publicationRecord?.classRanking||null,bestRanking=publicationRecord?.bestStudentRanking||null,academicText=academicRanking?.complete&&academicRanking?.rank&&academicRanking?.total?`${academicRanking.rank} dari ${academicRanking.total}`:'Belum tersedia',bestText=bestRanking?.complete&&bestRanking?.eligible&&bestRanking?.rank&&bestRanking?.total?`${bestRanking.rank} dari ${bestRanking.total}`:'Belum tersedia';document.getElementById('periodReportSummary').innerHTML=`<div class="report-metric"><b>${summary.average??'—'}</b><span>Rata-rata</span></div><div class="report-metric"><b>${academicText}</b><span>Ranking Akademik</span></div><div class="report-metric"><b>${bestText}</b><span>Ranking Santri Terbaik</span></div><div class="report-metric"><b>${summary.subjects}</b><span>Jumlah Mapel</span></div><div class="report-metric"><b>${summary.remedial}</b><span>Remedial</span></div>`}
   function escapeAcademic(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
   function scoreComponents(record){
     return [['nilai_syafawi','Lisan'],['nilai_tahriri','Tulisan'],['nilai_tashnif','Tashnif'],['nilai_tathbiqi','Praktek']].filter(([field])=>record[field]!==undefined&&record[field]!==null&&record[field]!==''&&Number(record[`bobot_${field.replace('nilai_','')}_persen`]??1)>0).map(([field,label])=>`<span>${label}: ${escapeAcademic(record[field])}</span>`).join('');
   }
   function renderPeriodicReport(){
     const records=selectedPeriodicScores(),summary=academicReport.summary(records),period=selectedPeriod(),label=activeReportTab==='triwulan'?`Rapor ${period}`:`Rapor ${period}`;
-    document.getElementById('periodReportSummary').innerHTML=`<div class="report-metric"><b>${summary.subjects}</b><span>Mapel Dinilai</span></div><div class="report-metric"><b>${summary.average??'—'}</b><span>Rata-rata</span></div><div class="report-metric"><b>${summary.remedial}</b><span>Remedial</span></div>`;
+    renderAcademicSummary(records);
     const list=document.getElementById('periodReportList');
     if(!records.length)list.innerHTML=`<div class="empty-state"><strong>${label} belum tersedia.</strong><br><small>Laporan akan tampil setelah nilai akademik difinalisasi.</small></div>`;
     else list.innerHTML=reportPublication.renderScoreCards(records,{formatTeacher:formatGelarAkademik});
@@ -1348,7 +1352,9 @@
       body: [
         ["Nama Santri", meta.nama, "Periode", meta.periode],
         ["Kelas", meta.kelas, "Usrah", meta.usrah],
-        ["Tahun Ajaran", meta.tahunAkademik||"-", "Tanggal Cetak", meta.tanggalCetak]
+        ["Tahun Ajaran", meta.tahunAkademik||"-", "Tanggal Cetak", meta.tanggalCetak],
+        ["Peringkat Akademik", meta.academicRanking||"Belum tersedia", "Peringkat Santri Terbaik", meta.bestRanking||"Belum tersedia"],
+        ["Jumlah Mapel", String(meta.subjectCount??0), "Remedial", String(meta.remedialCount??0)]
       ]
     });
 
@@ -1650,12 +1656,18 @@
     const reportTitle=activeReportTab==='triwulan'?'Rapor Triwulan':activeReportTab==='semester'?'Rapor Semester':'Laporan Akademik Bulanan';
     const periode=activeReportTab==='bulanan'?`${bulan} • Tahun Akademik ${tahun}`:`${periodAktif} • Tahun Akademik ${tahun}`;
 
+    const pdfScores=activeReportTab==='bulanan'?academicReport.filterScores(globalExams,{tab:'bulanan',year:tahun,period:bulan,student:activeStudentProfile,applicable:examBelongsToStudentProgram}):selectedPeriodicScores(),pdfSummary=academicReport.summary(pdfScores),ranking=publicationRecord?.classRanking||null;
+    const bestRanking=publicationRecord?.bestStudentRanking||null;
     const meta = {
       nama: teksPdf(nama),
       kelas: teksPdf(kelas),
       usrah: teksPdf(usrah),
       periode: teksPdf(periode),
       tahunAkademik:teksPdf(tahun),
+      academicRanking:ranking?.complete&&ranking?.rank&&ranking?.total?`${ranking.rank} dari ${ranking.total} santri`:'Belum tersedia',
+      bestRanking:bestRanking?.complete&&bestRanking?.eligible&&bestRanking?.rank&&bestRanking?.total?`${bestRanking.rank} dari ${bestRanking.total} santri`:'Belum tersedia',
+      subjectCount:pdfSummary.subjects,
+      remedialCount:pdfSummary.remedial,
       titleLines:activeReportTab==='bulanan'?["LAPORAN","AKADEMIK","BULANAN"]:activeReportTab==='triwulan'?["RAPOR","TRIWULAN"]:["RAPOR","SEMESTER"],
       tanggalCetak: new Date().toLocaleDateString("id-ID", {
         day: "2-digit",

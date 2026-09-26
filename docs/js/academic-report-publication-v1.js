@@ -55,6 +55,28 @@
     (records||[]).filter(record=>Number.isFinite(Number(record?.nilai_total??record?.nilai))).forEach(record=>{const id=isQuranSubject(record)?'quran':norm(subject(record)),previous=selected.get(id);if(!previous||recordStamp(record)>=recordStamp(previous))selected.set(id,record)});
     return [...selected.values()].sort((a,b)=>subject(a).localeCompare(subject(b),'id',{numeric:true}));
   }
+  function scoreValue(record){
+    const value=ScorePolicy?.reportScore?ScorePolicy.reportScore(record):Number(record?.nilai_total??record?.nilai_akhir??record?.nilai);
+    return Number.isFinite(Number(value))?Number(value):null;
+  }
+  function rankClassReports(entries=[]){
+    const prepared=(entries||[]).map((entry,index)=>{
+      const records=reviewScoreRecords(entry?.records||entry?.readiness?.records||[]).filter(isFinalRecord),scores=records.map(scoreValue).filter(Number.isFinite),complete=entry?.complete===true||entry?.readiness?.ready===true;
+      const total=scores.reduce((sum,value)=>sum+value,0),average=scores.length?total/scores.length:null;
+      return {...entry,__index:index,records,complete,average,subjectCount:scores.length,remedial:records.filter(record=>ScorePolicy?.isRemedial?.(record)||record?.is_remedial===true).length,rank:null,rankingTotal:0};
+    });
+    const ranked=prepared.filter(item=>item.complete&&Number.isFinite(item.average)).sort((a,b)=>b.average-a.average);
+    ranked.forEach((item,index)=>{const previous=ranked[index-1];item.rank=index>0&&previous&&Math.abs(item.average-previous.average)<1e-9?previous.rank:index+1;item.rankingTotal=ranked.length});
+    return prepared.sort((a,b)=>{if(a.rank&&b.rank)return a.rank-b.rank;if(a.rank)return-1;if(b.rank)return 1;return String(a?.student?.name||a?.name||'').localeCompare(String(b?.student?.name||b?.name||''),'id')});
+  }
+  function rankingSnapshot(item){
+    if(!item)return null;
+    return {rank:item.rank||null,total:item.rankingTotal||0,average:Number.isFinite(item.average)?item.average:null,subjectCount:item.subjectCount||0,remedial:item.remedial||0,complete:item.complete===true,method:'competition-v1',computedAt:new Date().toISOString()};
+  }
+  function rankingLabel(value){
+    const ranking=value?.classRanking||value?.ranking||value;
+    return ranking?.complete&&ranking?.rank&&ranking?.total?`Peringkat ${ranking.rank} dari ${ranking.total} santri`:'Ranking belum tersedia — nilai belum lengkap.';
+  }
   function readiness({allRecords=[],studentRecords=[],type,year,period,student,applicable,expectedSubjects=[]}){
     const cohort=(allRecords||[]).filter(record=>Report.typeOf(record)===type&&(!year||norm(Report.yearOf(record))===norm(year))&&(!period||norm(Report.periodOf(record,type))===norm(period))&&(!student?.kelas||norm(classOf(record))===norm(student.kelas))).filter(record=>typeof applicable!=='function'||applicable(record,student));
     const scheduled=expectedSubjects||[];
@@ -83,5 +105,5 @@
   function supervisorName(marker){return String(marker?.supervisorAccountName||marker?.publishedByName||marker?.reviewedByName||marker?.updatedByName||'Supervisor Pendidikan').trim()||'Supervisor Pendidikan'}
   function reviewStatement(marker,{kelas='',unit=''}={}){const name=supervisorName(marker),scope=reportUnit(unit||kelas),role=['Supervisor Pendidikan Pesantren Cahaya Fajrul Islam',scope].filter(Boolean).join(' '),identified=name!=='Supervisor Pendidikan';return `Isi Raport ini telah melalui pemeriksaan ${role}${identified?` ${name}`:''}. Jika ada yang perlu dikonsultasikan, dapat menghubungi supervisor ${identified?name:'Pendidikan'}.`}
   function renderReviewStatement(marker,context={}){const name=supervisorName(marker),escapedName=escape(name),statement=escape(reviewStatement(marker,context)),body=name==='Supervisor Pendidikan'?statement:statement.split(escapedName).join(`<strong>${escapedName}</strong>`);return `<aside class="report-review-note"><strong>Telah diperiksa Supervisor Pendidikan</strong><p>${body}</p></aside>`}
-  return {TYPES,STATUS,PUBLICATION_REQUIRED_FROM,norm,key,academicStudentKey,stableStudentKey,path,isPublished,isLegacyMonthlyPublished,statusLabel,effectiveStatus,subject,studentKeyOf,classOf,finalRecords,isQuranSubject,sameSubject,expectedSubjectRows,reviewScoreRecords,readiness,reportRows,renderScoreCards,renderTahfizHistory,reportUnit,roleList,educationSupervisorAccount,resolveEducationSupervisor,accountName,supervisorName,reviewStatement,renderReviewStatement};
+  return {TYPES,STATUS,PUBLICATION_REQUIRED_FROM,norm,key,academicStudentKey,stableStudentKey,path,isPublished,isLegacyMonthlyPublished,statusLabel,effectiveStatus,subject,studentKeyOf,classOf,finalRecords,isQuranSubject,sameSubject,expectedSubjectRows,reviewScoreRecords,scoreValue,rankClassReports,rankingSnapshot,rankingLabel,readiness,reportRows,renderScoreCards,renderTahfizHistory,reportUnit,roleList,educationSupervisorAccount,resolveEducationSupervisor,accountName,supervisorName,reviewStatement,renderReviewStatement};
 });

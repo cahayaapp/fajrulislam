@@ -22,7 +22,7 @@
   function samePerson(a,b){if(Array.isArray(a))return a.some(value=>samePerson(value,b));if(Array.isArray(b))return b.some(value=>samePerson(a,value));const x=picKey(a),y=picKey(b);return Boolean(x&&y&&(x===y||x.includes(y)||y.includes(x)))}
   function previousDay(day){const i=DAY_KEYS.indexOf(day);return DAY_KEYS[(i+6)%7]}
   function inBlock(start,from,to){if(start==null||from==null||to==null)return false;return to>from?start>=from&&start<to:start>=from||start<to}
-  function normalizeDutySchedule(raw={}){const source=raw?.blok&&raw?.jadwal?raw:raw?.putra?.blok&&raw?.putra?.jadwal?raw.putra:{};return {blok:{...DEFAULT_BLOCKS,...(source.blok||{})},jadwal:source.jadwal||{},versi:source.versi||raw.versi||'',zonaWaktu:source.zonaWaktu||raw.zonaWaktu||'Asia/Jakarta'}}
+  function normalizeDutySchedule(raw={}){const source=raw?.blok&&raw?.jadwal?raw:raw?.putra?.blok&&raw?.putra?.jadwal?raw.putra:{};return {blok:{...DEFAULT_BLOCKS,...(source.blok||{})},jadwal:source.jadwal||{},weekendMode:source.weekendMode||raw.weekendMode||{},kpiCycle:source.kpiCycle||raw.kpiCycle||'',rewardPolicyVersion:source.rewardPolicyVersion||raw.rewardPolicyVersion||'',versi:source.versi||raw.versi||'',zonaWaktu:source.zonaWaktu||raw.zonaWaktu||'Asia/Jakarta'}}
   function currentDuty(raw,clock=jakartaParts()){
     const schedule=normalizeDutySchedule(raw),minutes=Number(clock.minutes),afterMidnight=minutes<210,blockId=afterMidnight?'blok3':minutes<680?'blok1':minutes<1070?'blok2':'blok3',scheduleDay=afterMidnight?previousDay(clock.day):clock.day,block=schedule.blok[blockId]||DEFAULT_BLOCKS[blockId];
     return {blockId,scheduleDay,petugas:String(schedule.jadwal?.[scheduleDay]?.[blockId]||'').trim(),mulai:block.mulai,selesai:block.selesai,timezone:'Asia/Jakarta'};
@@ -42,7 +42,12 @@
     const duty=currentDuty(schedule,{day,minutes}),onDuty=samePerson(duty.petugas,userName),message=onDuty?`Sedang bertugas • ${duty.blockId.replace('blok','Blok ')} • ${duty.petugas}`:selected.length?'Program disaring sesuai jadwal piket Anda.':`Petugas ${duty.blockId.replace('blok','Blok ')} saat ini: ${duty.petugas||'belum diatur'}.`;
     return {programs:selected,configured:true,matched:selected.length>0,onDuty,currentDuty:duty,message};
   }
-  function applyAssignment(programs,schedule,{userName,day,minutes}){return dutyScope(programs,schedule,userName,day,minutes)}
+  function applyAssignment(programs,schedule,{userName,day,minutes,reward=null,at=null,weekendResolver=null}){
+    const assigned=dutyScope(programs,schedule,userName,day,minutes),resolver=weekendResolver||(typeof window!=='undefined'?window.CahayaNaqibWeekendModeV2:null);
+    if(!resolver||!reward)return assigned;
+    const weekend=resolver.apply(assigned.programs,{reward,at:at||new Date(),person:userName});
+    return weekend.weekendMode?{...assigned,...weekend,message:weekend.message}:assigned;
+  }
   function stateFor(program,index,programs,nowMinutes){const range=timeRange(program.time,program.start,program.end);if(range.allDay)return {id:'all-day',label:'Sepanjang Hari'};if(range.start==null)return {id:'unknown',label:'Waktu Belum Diatur'};let end=range.end;const next=programs.slice(index+1).map(p=>timeRange(p.time,p.start,p.end).start).find(Number.isFinite);if(end==null)end=Number.isFinite(next)?next:range.start+30;if(end<=range.start){if(nowMinutes>=range.start||nowMinutes<end)return {id:'current',label:'Sedang Berjalan'};return nowMinutes<range.start&&nowMinutes>=end?{id:'upcoming',label:'Akan Datang'}:{id:'past',label:'Telah Lewat'}}if(nowMinutes>=range.start&&nowMinutes<end)return {id:'current',label:'Sedang Berjalan'};return nowMinutes<range.start?{id:'upcoming',label:'Akan Datang'}:{id:'past',label:'Telah Lewat'}}
   function unitOf(row){const value=norm(row?.unit||row?.unitPengawasan||row?.unitAsrama||row?.labelUsrah||row?.usrah||'');if(value.includes('putri')||/usrah(?:7|8)/.test(value))return'PUTRI';if(value.includes('putra')||/usrah(?:[1-6])/.test(value))return'PUTRA';return''}
   function recordMatchesProgram(row,program){const pid=norm(row?.programId),pname=norm(row?.programName||row?.program||row?.namaProgram),id=norm(program.id),name=norm(program.name);return Boolean((pid&&(pid===id||pid===name))||(pname&&(pname===name||pname===id)))}

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b4f8a">
+  <title>Face Attendance — POC</title>
+  <link rel="stylesheet" href="face-attendance-poc.css?v=1">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <div class="brand-mark" aria-hidden="true">◉</div>
+      <div><p class="eyebrow">CAHAYA APP · DEVELOPMENT TOOL</p><h1>Face Attendance — POC</h1><p>Uji pengenalan wajah lokal melalui kamera HP.</p></div>
+      <span class="poc-badge">POC</span>
+    </header>
+
+    <section class="privacy-note" id="secureNotice">
+      <strong>Privasi POC</strong>
+      <span>Video dan foto tidak disimpan. Template tersimpan terpusat melalui backend terpercaya; HP hanya menyimpan cache sesuai roster.</span>
+    </section>
+
+    <section class="sync-banner" id="backendStatus"><span class="dot"></span><div><strong>Menghubungkan backend…</strong><small>Firebase Auth dan scope role sedang diperiksa.</small></div></section>
+
+    <nav class="tabs" aria-label="Mode Face Attendance">
+      <button class="tab active" data-view="scan">Scan</button>
+      <button class="tab" data-view="enroll">Enrollment</button>
+      <button class="tab" data-view="results">Hasil</button>
+    </nav>
+
+    <section class="view active" id="view-scan">
+      <div class="session-card">
+        <label><span>Program</span><select id="programSelect"><option value="">Memuat program…</option></select></label>
+        <label><span>Batas tepat waktu</span><input type="time" id="cutoff" value="04:45" step="60"></label>
+        <div class="session-actions"><button class="secondary compact" id="syncProfilesBtn">Sync Face Profiles</button><button class="secondary compact" id="newSessionBtn">Sesi Baru</button></div>
+        <p class="sync-copy" id="syncStatus">Belum disinkronkan.</p>
+      </div>
+      <div class="stats" aria-label="Ringkasan sesi">
+        <div><b id="participantCount">0</b><span>Peserta</span></div>
+        <div><b id="scannedCount">0</b><span>Sudah scan</span></div>
+        <div><b id="pendingCount">0</b><span>Belum scan</span></div>
+      </div>
+
+      <section class="camera-card">
+        <div class="camera-toolbar">
+          <label>Camera<select id="cameraFacing"><option value="user">Depan</option><option value="environment">Belakang</option></select></label>
+          <button class="primary compact" id="startScanBtn">Mulai Scan Wajah</button>
+        </div>
+        <div class="camera-stage">
+          <video id="camera" autoplay muted playsinline></video>
+          <canvas id="overlay" aria-hidden="true"></canvas>
+          <div class="camera-empty" id="cameraEmpty"><span>◎</span><b>Kamera belum aktif</b><small>Gunakan HTTPS atau localhost dan izinkan akses kamera.</small></div>
+          <div class="scan-guide"><span></span><p>Arahkan satu wajah ke area ini</p></div>
+        </div>
+        <div class="live-status" id="liveStatus"><span class="dot"></span><p>Model belum dimuat.</p></div>
+        <div class="recognition" id="recognition" hidden>
+          <strong id="recognizedName">—</strong>
+          <span id="recognizedMeta">—</span>
+        </div>
+      </section>
+
+      <section class="log-card">
+        <div class="section-heading"><div><p class="eyebrow">LOG SESI</p><h2>Check-in Hari Ini</h2></div><span id="sessionDate"></span></div>
+        <div id="scanLog" class="scan-log"><div class="empty-state">Belum ada santri yang melakukan scan.</div></div>
+      </section>
+    </section>
+
+    <section class="view" id="view-enroll">
+      <div class="section-heading"><div><p class="eyebrow">DATA BIOMETRIK TERPUSAT</p><h2>Kelola Wajah Santri</h2></div><span id="enrolledCount">0 terdaftar</span></div>
+      <div class="form-card">
+        <label class="field"><span>Pilih santri dari master data</span><input id="studentSearch" type="search" placeholder="Cari nama atau kelas…" autocomplete="off"></label>
+        <label class="field"><span>Santri</span><select id="studentSelect"><option value="">Memuat master santri…</option></select></label>
+        <div class="selected-student" id="selectedStudent">Belum ada santri dipilih.</div>
+        <div class="sample-steps" id="sampleSteps">
+          <span class="current">1. Depan</span><span>2. Kiri</span><span>3. Kanan</span><span>4. Normal</span>
+        </div>
+        <div class="button-row"><button class="secondary" id="startEnrollCameraBtn">Aktifkan Kamera</button><button class="primary" id="captureSampleBtn" disabled>Ambil Sampel 1</button></div>
+        <label class="field reason-field"><span>Alasan enrollment ulang (opsional)</span><input id="reenrollReason" type="text" maxlength="300" placeholder="Contoh: kualitas template lama kurang baik"></label>
+        <p class="helper" id="enrollHint">Pilih santri, lalu ambil empat embedding dari sudut berbeda. Template dikirim melalui backend; tidak ada foto yang disimpan.</p>
+      </div>
+      <div class="enrollment-list" id="enrollmentList"></div>
+    </section>
+
+    <section class="view" id="view-results">
+      <div class="section-heading"><div><p class="eyebrow">EVALUASI POC</p><h2>Ringkasan & Ekspor</h2></div></div>
+      <div class="results-grid">
+        <div><b id="resultKnown">0</b><span>Check-in dikenali</span></div>
+        <div><b id="resultUnknown">0</b><span>Unknown</span></div>
+        <div><b id="resultDuplicate">0</b><span>Duplikat ditolak</span></div>
+        <div><b id="resultLatency">—</b><span>Latency rata-rata</span></div>
+      </div>
+      <div class="form-card">
+        <h3>Protokol uji lapangan</h3>
+        <ul class="checklist">
+          <li>Minimal 5 santri dan minimal 3 percobaan per santri.</li>
+          <li>Uji cahaya normal, redup, memakai peci, dan posisi sedikit miring.</li>
+          <li>Uji wajah tidak terdaftar serta foto pada layar HP lain.</li>
+          <li>Catat salah identifikasi, gagal dikenali, latency, dan panas perangkat.</li>
+        </ul>
+        <button class="primary" id="downloadBtn">Download Data Uji (JSON)</button>
+        <button class="danger-text" id="clearBtn">Hapus seluruh data biometrik POC di perangkat</button>
+      </div>
+      <div class="warning-card"><strong>Liveness dasar, bukan keamanan final</strong><p>POC memakai model anti-spoof/liveness dan tantangan gerakan kepala multi-frame. Uji foto/video replay pada perangkat nyata tetap wajib sebelum dinilai layak.</p></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../config/tenant-config.js"></script>
+  <script src="face-attendance-poc-core.js?v=2"></script>
+  <script src="face-attendance-multidevice-core.js?v=2"></script>
+  <script src="face-attendance-poc-backend.js?v=2"></script>
+  <script src="face-attendance-poc.js?v=2" defer></script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict');
 const A=require('../js/naqib-program-today.js');
+const W=require('../js/naqib-weekend-mode-v2.js');
 const R=require('../js/role-system-v2.js');
 const ROUTES=require('../js/role-route-registry-v2.js');
 const N=require('../js/role-navigation-v2.js');
@@ -25,6 +26,9 @@ assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:680}).blockId,'blok2');
 assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:1070}).blockId,'blok3');
 assert.equal(A.samePerson('Abi Dandi','Dandy'),true);assert.equal(A.samePerson('abi dandi','DANDY'),true);assert.equal(A.samePerson('Abi Dandi','Naqib Dandy'),true);assert.equal(A.samePerson('Kamal','Favian'),false);
 assert.equal(A.applyAssignment(base,friday,{userName:'Dandy',day:'jumat',minutes:18*60}).onDuty,true);
+const reward={rewardEligible:true,status:'EARNED',rewardStart:'2026-09-19T13:00:00+07:00',rewardEnd:'2026-09-20T11:00:00+07:00'};
+const weekend=A.applyAssignment(base,friday,{userName:'Favian',day:'sabtu',minutes:18*60,reward,at:new Date('2026-09-19T18:00:00+07:00'),weekendResolver:W});
+assert.equal(weekend.weekendMode,true);assert.deepEqual(weekend.programs,[]);assert.match(weekend.message,/Hak Libur Pilihan/);
 const midnightBase=A.basePrograms(daily,[],new Date('2026-09-17T21:09:00+07:00'));
 const kamalAfterMidnight=A.applyAssignment(midnightBase,{putra:{blok:A.DEFAULT_BLOCKS,jadwal:{kamis:{blok1:'Khaizuran',blok2:'Favian',blok3:'Kamal'},jumat:{blok1:'Favian',blok2:'Abi Dandi',blok3:'Abi Dandi'}}}},{userName:['u-03','Naqib kamal','Kamal'],day:'kamis',minutes:39});
 assert(kamalAfterMidnight.programs.length>0,'00:39 Friday must render Thursday Block 3 programs for Kamal');
