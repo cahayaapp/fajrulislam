@@ -97,7 +97,6 @@
     if(wali){
       const waliQuick={
         'utility-kabar':{description:'Cerita dan kabar terbaru ananda',icon:'bell'},
-        'menu-informasi-kalender-wali':{description:'Agenda penting untuk keluarga',icon:'calendar'},
         'menu-informasi-program-wali':{description:'Kegiatan ananda setiap hari',icon:'sun'},
         'menu-informasi-pembelajaran-wali':{description:'Jadwal belajar ananda',icon:'book'},
         'menu-jurnal-liburan-wali':{description:'Checklist harian dan Bedah Rapor ananda',icon:'check'}
