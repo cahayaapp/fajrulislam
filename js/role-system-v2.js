@@ -23,7 +23,7 @@
     KONSELOR: { label: "Konselor", home: "home-konselor.html?v=220", legacyRole: "konselor" },
     MENTOR_USRAH: { label: "Mentor Usrah", home: "home-mentor-usrah.html?v=224", legacyRole: "mentor" },
     MANAJER: { label: "Manajer", home: "role-workspace.html?v=205", legacyRole: "manajer" },
-    SUPERVISOR: { label: "Supervisor", home: "home-supervisor-v2.html?v=239", legacyRole: "supervisor" },
+    SUPERVISOR: { label: "Supervisor", home: "home-supervisor-v2.html?v=240", legacyRole: "supervisor" },
     DIREKTUR: { label: "Direktur", home: "home-direktur.html?v=240", legacyRole: "direktur" },
     KESEHATAN: { label: "Kesehatan", home: "role-workspace.html?v=205", legacyRole: "kesehatan" },
     LAYANAN_KEBERSIHAN: { label: "Layanan & Kebersihan", home: "role-workspace.html?v=205", legacyRole: "keamanan-kebersihan" },

@@ -16,7 +16,12 @@
     return rawDivisions.length?fromRoles.filter(a=>explicit.includes(a)):fromRoles;
   }
   function allows(assignment,area,unit){return areas(assignment).includes(norm(area))&&(!unit||assignment?.unit==='ALL'||norm(assignment?.unit)===norm(unit))}
-  function unitOf(record){const raw=norm(record?.unit||record?.unitAsrama||record?.caseV2?.unit||'');return raw==='PUTRA'||raw==='PUTRI'?raw:''}
+  function unitOf(record){
+    const raw=norm(record?.unit||record?.unitAsrama||record?.caseV2?.unit||record?.wilayahTugas||record?.areaTugas||record?.wilayah||'');
+    if(raw==='PUTRA'||raw.includes('PUTRA'))return'PUTRA';
+    if(raw==='PUTRI'||raw.includes('PUTRI'))return'PUTRI';
+    return'';
+  }
   function inScope(record,assignment,area){const recordUnit=unitOf(record);return allows(assignment,area,recordUnit)&&Boolean(recordUnit||assignment?.unit==='ALL')}
   function status(value){const v=norm(value);return ['SELESAI','TUNTAS','CLOSED'].includes(v)?'SELESAI':['DIESKALASI_KE_SUPERVISOR','DIESKALASI','ESKALASI'].includes(v)?'DIESKALASI_KE_SUPERVISOR':v||'BARU'}
   function dateOf(record){return String(record?.tanggal||record?.date||record?.weekStart||record?.createdAt||record?.timestamp||'').slice(0,10)}
