@@ -758,7 +758,9 @@ body.page-beranda{
   let globalCommentNotifs = [];
   let isShowingAllNotifs = false;
 
-  let timelineListenersInstalled = false;
+  let timelineListenerSignature = "";
+  let timelineListenerBindings = [];
+  let timelineIndexedSnapshots = {};
   let timelineRefreshTimer = null;
   let initialTimelineReady = false;
   let sourceWarnings = [];
@@ -896,6 +898,7 @@ body.page-beranda{
                       .getStudent()
               );
 
+              pasangListenerTimeline();
               jadwalkanRefreshTimeline();
           }
       }
@@ -915,6 +918,7 @@ body.page-beranda{
               bacaProfilPortalTerbaru()
           );
 
+          pasangListenerTimeline();
           jadwalkanRefreshTimeline();
       }
   );
@@ -1063,16 +1067,20 @@ async function bacaSumberRT(path) {
         const indexLimits = {halqah:60,tahfiz:70,program:90,pembelajaran:90,penindakan:50};
         const category = indexMap[path];
         if (category) {
-            const studentKey = window.CahayaWaliSession?.studentKey?.() || "";
-            if (!studentKey) return {ok:false,value:{},indexed:true,error:new Error("STUDENT_KEY_NOT_AUTHORIZED")};
-            const indexPath = `cahaya_app/wali_index/${studentKey}/${category}`;
-            const indexed = window.CahayaBandwidth
-                ? await window.CahayaBandwidth.readCompat(dbRT, indexPath, {
-                    ttl: 30 * 60 * 1000,
-                    limit: indexLimits[category] || 80
-                  })
-                : await dbRT.ref(indexPath).limitToLast(indexLimits[category] || 80).once('value');
-            return {ok:true,value:indexed?.val() || {},indexed:true};
+            const studentKeys = kunciIndexSantriTimeline();
+            if (!studentKeys.length) return {ok:false,value:{},indexed:true,error:new Error("STUDENT_KEY_NOT_AVAILABLE")};
+            const values = await Promise.all(studentKeys.map(async studentKey => {
+                const indexPath = `cahaya_app/wali_index/${studentKey}/${category}`;
+                const indexed = window.CahayaBandwidth
+                    ? await window.CahayaBandwidth.readCompat(dbRT, indexPath, {
+                        ttl: 30 * 60 * 1000,
+                        limit: indexLimits[category] || 80,
+                        noCache: true
+                      })
+                    : await dbRT.ref(indexPath).limitToLast(indexLimits[category] || 80).once('value');
+                return indexed?.val() || {};
+            }));
+            return {ok:true,value:Object.assign({}, ...values),indexed:true};
         }
         const snapshot = window.CahayaBandwidth
             ? await window.CahayaBandwidth.readCompat(dbRT, path, {ttl:30*60000,limit:20})
@@ -1298,29 +1306,86 @@ function ekstrakInstagramId(value) {
       }, 250);
   }
 
-  function pasangListenerTimeline() {
-      if (timelineListenersInstalled) return;
-      timelineListenersInstalled = true;
+  function kunciIndexSantriTimeline() {
+      const profile = window.CahayaWaliSession?.getStudent?.() || user || {};
+      const name = window.CahayaWaliSession?.studentName?.(profile) || namaAnakUtuh || "";
+      const trustedKey = window.CahayaWaliSession?.studentKey?.(profile) || "";
+      const canonicalKey = window.CahayaWaliSession?.normalizeName?.(name)
+          ?.replace(/[^a-z0-9]/g, "") || "";
+      const legacyKey = String(name)
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+      return [...new Set([trustedKey, canonicalKey, legacyKey].filter(Boolean))];
+  }
 
-      /*
-        V63 MEDIA FIX:
-        Sumber besar linimasa tetap tidak dipasang listener realtime demi bandwidth.
-        Hanya pengaturan_media yang kecil yang dipantau realtime supaya tautan baru
-        dari Tim Media langsung muncul di Kabar Ananda tanpa logout/login.
-      */
-      dbRT.ref('cahaya_app/pengaturan_media').on(
-          'value',
-          snapshot => {
-              parsePengaturanMedia(snapshot.val() || {});
-              if (initialTimelineReady) jadwalkanRefreshTimeline();
-          },
-          error => {
-              console.warn('Listener media gagal:', error);
-              if (!sourceWarnings.some(item => String(item).includes('pengaturan_media'))) {
-                  sourceWarnings.push(`cahaya_app/pengaturan_media: ${error?.message || error}`);
-              }
+  function lepasListenerTimeline() {
+      timelineListenerBindings.forEach(({query, callback}) => {
+          try { query.off('value', callback); } catch (error) {}
+      });
+      timelineListenerBindings = [];
+      timelineIndexedSnapshots = {};
+  }
+
+  function gabungkanSnapshotTimeline(category) {
+      const byStudentKey = timelineIndexedSnapshots[category] || {};
+      return Object.assign({}, ...Object.values(byStudentKey));
+  }
+
+  function pasangListenerTimeline() {
+      const studentKeys = kunciIndexSantriTimeline();
+      const signature = studentKeys.slice().sort().join('|');
+      if (!signature || signature === timelineListenerSignature) return;
+
+      lepasListenerTimeline();
+      timelineListenerSignature = signature;
+
+      const categories = {
+          halqah: 60,
+          tahfiz: 70,
+          program: 90,
+          pembelajaran: 90,
+          penindakan: 50
+      };
+
+      Object.keys(categories).forEach(category => {
+          globalDB[category] = {};
+      });
+
+      Object.entries(categories).forEach(([category, limit]) => {
+          timelineIndexedSnapshots[category] = {};
+          studentKeys.forEach(studentKey => {
+              const query = dbRT
+                  .ref(`cahaya_app/wali_index/${studentKey}/${category}`)
+                  .limitToLast(limit);
+              const callback = snapshot => {
+                  timelineIndexedSnapshots[category][studentKey] = snapshot.val() || {};
+                  globalDB[category] = gabungkanSnapshotTimeline(category);
+                  if (initialTimelineReady) jadwalkanRefreshTimeline();
+              };
+              query.on('value', callback, error => {
+                  console.warn(`Listener ${category} gagal:`, error);
+                  if (!sourceWarnings.some(item => String(item).includes(`/wali_index/`) && String(item).includes(`/${category}`))) {
+                      sourceWarnings.push(`cahaya_app/wali_index/[ananda]/${category}: ${error?.message || error}`);
+                  }
+              });
+              timelineListenerBindings.push({query, callback});
+          });
+      });
+
+      const mediaQuery = dbRT.ref('cahaya_app/pengaturan_media');
+      const mediaCallback = snapshot => {
+          parsePengaturanMedia(snapshot.val() || {});
+          if (initialTimelineReady) jadwalkanRefreshTimeline();
+      };
+      mediaQuery.on('value', mediaCallback, error => {
+          console.warn('Listener media gagal:', error);
+          if (!sourceWarnings.some(item => String(item).includes('pengaturan_media'))) {
+              sourceWarnings.push(`cahaya_app/pengaturan_media: ${error?.message || error}`);
           }
-      );
+      });
+      timelineListenerBindings.push({query: mediaQuery, callback: mediaCallback});
   }
 
 

@@ -2,7 +2,10 @@
   'use strict';
   const DAY_KEYS=['ahad','senin','selasa','rabu','kamis','jumat','sabtu'];
   const DEFAULT_BLOCKS=Object.freeze({blok1:{mulai:'03:30',selesai:'11:20'},blok2:{mulai:'11:20',selesai:'17:50'},blok3:{mulai:'17:50',selesai:'03:30'}});
-  const PIC_ALIASES=Object.freeze({dandy:Object.freeze(['dandy','dandi'])});
+  const PIC_ALIASES=Object.freeze({
+    dandy:Object.freeze(['dandy','dandi']),
+    khaizuran:Object.freeze(['khaizuran','yong','adekhaizuran','adekhaizuranutsman'])
+  });
   const norm=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function timeMinutes(value){const m=String(value||'').match(/(\d{1,2})[.:](\d{2})/);return m?Number(m[1])*60+Number(m[2]):null}
@@ -14,8 +17,8 @@
   }
   function basePrograms(daily=[],weekly=[],date=new Date()){
     const day=jakartaParts(date).day,rows=[];
-    daily.forEach((p,i)=>rows.push({id:String(p.id||`daily-${i}`),name:String(p.program||p.nama||'').trim(),time:String(p.waktu||''),start:p.mulai,end:p.selesai,category:p.kategori||'Program Harian',location:p.lokasi||'',group:p.kelompok||p.usrah||'',pic:p.pengawas||'',order:Number(p.no||p.urutan||i+1),source:'LOCAL_DAILY'}));
-    weekly.filter(p=>!Array.isArray(p.hariAktif)||p.hariAktif.includes(day)).forEach((p,i)=>rows.push({id:String(p.id||`weekly-${i}`),name:String(p.program||p.nama||'').trim(),time:String(p.waktu||''),start:p.mulai,end:p.selesai,category:p.kategori||p.frekuensi||'Program Pekanan',location:p.lokasi||'',group:p.kelompok||p.usrah||'',pic:p.pengawas||'',order:Number(p.no||p.urutan||100+i),source:'LOCAL_WEEKLY'}));
+    daily.forEach((p,i)=>rows.push({id:String(p.id||`daily-${i}`),name:String(p.program||p.nama||'').trim(),time:String(p.waktu||''),start:p.mulai,end:p.selesai,blockId:p.blockId||p.blokId||'',category:p.kategori||'Program Harian',location:p.lokasi||'',group:p.kelompok||p.usrah||'',pic:p.pengawas||'',order:Number(p.no||p.urutan||i+1),source:'LOCAL_DAILY'}));
+    weekly.filter(p=>!Array.isArray(p.hariAktif)||p.hariAktif.map(value=>String(value).toLowerCase()).includes(day)).forEach((p,i)=>rows.push({id:String(p.id||`weekly-${i}`),name:String(p.program||p.nama||'').trim(),time:String(p.waktu||''),start:p.mulai,end:p.selesai,blockId:p.blockId||p.blokId||'',category:p.kategori||p.frekuensi||'Program Pekanan',location:p.lokasi||'',group:p.kelompok||p.usrah||'',pic:p.pengawas||'',order:Number(p.no||p.urutan||100+i),source:'LOCAL_WEEKLY'}));
     return rows.filter(p=>p.name).sort((a,b)=>{const at=timeRange(a.time,a.start,a.end),bt=timeRange(b.time,b.start,b.end);return (at.allDay?-1:(at.start??9999))-(bt.allDay?-1:(bt.start??9999))||a.order-b.order});
   }
   function picKey(value){const flat=norm(String(value||'').replace(/\b(?:abi|ustadz|ustaz|ust|ummi|naqib|naqibah)\b/gi,' '));for(const [key,aliases] of Object.entries(PIC_ALIASES))if(aliases.some(alias=>flat.includes(alias)))return key;return flat}
@@ -29,6 +32,8 @@
   }
   function blockForProgram(program,raw,day){
     const schedule=normalizeDutySchedule(raw),range=timeRange(program.time,program.start,program.end),start=range.allDay?0:range.start;
+    if(range.allDay&&!program.blockId)return null;
+    if(program.blockId&&schedule.blok[program.blockId]){const block=schedule.blok[program.blockId];return {blockId:program.blockId,block:`Blok ${String(program.blockId).replace(/\D/g,'')}`,scheduleDay:day,assignedNaqib:String(schedule.jadwal?.[day]?.[program.blockId]||'').trim()}}
     if(start==null)return null;
     for(const [blockId,block] of Object.entries(schedule.blok)){const from=timeMinutes(block.mulai),to=timeMinutes(block.selesai);if(!inBlock(start,from,to))continue;const scheduleDay=to!=null&&from!=null&&to<from&&start<to?previousDay(day):day;return {blockId,block:`Blok ${String(blockId).replace(/\D/g,'')}`,scheduleDay,assignedNaqib:String(schedule.jadwal?.[scheduleDay]?.[blockId]||'').trim()}}
     return null;

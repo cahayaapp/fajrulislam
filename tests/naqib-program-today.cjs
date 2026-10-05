@@ -1,4 +1,6 @@
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
 const A=require('../js/naqib-program-today.js');
 const W=require('../js/naqib-weekend-mode-v2.js');
 const R=require('../js/role-system-v2.js');
@@ -25,6 +27,22 @@ assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:210}).blockId,'blok1');
 assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:680}).blockId,'blok2');
 assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:1070}).blockId,'blok3');
 assert.equal(A.samePerson('Abi Dandi','Dandy'),true);assert.equal(A.samePerson('abi dandi','DANDY'),true);assert.equal(A.samePerson('Abi Dandi','Naqib Dandy'),true);assert.equal(A.samePerson('Kamal','Favian'),false);
+assert.equal(A.samePerson('Yong','Khaizuran'),true);assert.equal(A.samePerson('Yong','Ade Khaizuran Utsman'),true);
+const liveMonday={blok:A.DEFAULT_BLOCKS,jadwal:{ahad:{blok3:'Khaizuran'},senin:{blok1:'Favian',blok2:'Yong',blok3:'Kamal'}}};
+const mondayDuty=A.applyAssignment([
+  {id:'siang-1',name:'Makan Siang',time:'11.20–11.50'},
+  {id:'siang-2',name:'Shalat Zuhur',time:'11.50–12.30'},
+  {id:'all-day',name:'Puasa Sunnah',time:'Seharian'}
+],liveMonday,{userName:'Khaizuran',day:'senin',minutes:720});
+assert.deepEqual(mondayDuty.programs.map(row=>row.id),['siang-1','siang-2'],'Khaizuran harus membaca tugas Yong Blok 2 tanpa program seharian palsu dari Ahad Blok 3');
+assert.equal(A.blockForProgram({id:'all-day',name:'Puasa Sunnah',time:'Seharian'},liveMonday,'senin'),null);
+const programSandbox={window:{}};vm.runInNewContext(fs.readFileSync('js/program-harian-24jam-v45.js','utf8'),programSandbox);
+const mondayFasting=programSandbox.window.CAHAYA_PROGRAM_PEKANAN_PENGASUHAN.filter(row=>row.hariAktif?.includes('senin')&&/puasa|sahur/i.test(row.program));
+assert.equal(mondayFasting.length,0,'Senin tidak boleh memuat program puasa sunnah');
+const completeMonday=A.basePrograms(programSandbox.window.CAHAYA_PROGRAM_HARIAN_24JAM,programSandbox.window.CAHAYA_PROGRAM_PEKANAN_PENGASUHAN,new Date('2026-10-05T12:00:00+07:00'));
+const khaizuranMonday=A.applyAssignment(completeMonday,liveMonday,{userName:'Khaizuran',day:'senin',minutes:720});
+assert.equal(khaizuranMonday.programs.length,10,'Khaizuran/Yong harus menerima seluruh 10 program Blok 2 pada Senin');
+assert.equal(khaizuranMonday.programs.some(row=>/puasa/i.test(row.name)),false,'Puasa Sunnah tidak boleh tampil pada tugas Senin Khaizuran');
 assert.equal(A.applyAssignment(base,friday,{userName:'Dandy',day:'jumat',minutes:18*60}).onDuty,true);
 const reward={rewardEligible:true,status:'EARNED',rewardStart:'2026-09-19T13:00:00+07:00',rewardEnd:'2026-09-20T11:00:00+07:00'};
 const weekend=A.applyAssignment(base,friday,{userName:'Favian',day:'sabtu',minutes:18*60,reward,at:new Date('2026-09-19T18:00:00+07:00'),weekendResolver:W});
