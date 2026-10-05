@@ -10,6 +10,7 @@
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="../config/tenant-config.js"></script>
   <script src="../config/master-data.js"></script>
+  <script src="../js/guru-attendance-session-v1.js?v=1"></script>
   <script src="../js/cahaya-config-runtime.js" defer></script>
 
   <meta charset="UTF-8" />
@@ -4361,15 +4362,16 @@
     const assignments = daftarJadwalTerpilih(assignment);
     if (!assignments.length) return;
     const todays = await loadTodayAttendanceRecords();
+    const scheduleOccurrences = dailyAssignments.flatMap(daftarJadwalTerpilih);
+    const attendanceSession = window.CahayaGuruAttendanceSessionV1;
+    const matchesAttendanceSession = attendanceSession?.matches || ((record, currentAssignment) => {
+      const savedIds = [record.jadwalIdPresensi, record.jadwalIdAsli, record.jadwalId].filter(Boolean).map(value => String(value));
+      const currentIds = [currentAssignment.id, currentAssignment.sourceScheduleId].filter(Boolean).map(value => String(value));
+      return currentIds.some(id => savedIds.includes(id));
+    });
     existingAttendanceByAssignment = new Map();
     assignments.forEach(a => {
-      const candidates = a.virtualJuz
-        ? todays.filter(x =>
-            String(x.jadwalIdPresensi || "") === String(a.id) ||
-            (String(x.kelompokBahasaArabJuzKode || "") === String(a.virtualJuz) &&
-             String(x.jadwalIdAsli || "") === String(a.sourceScheduleId || ""))
-          )
-        : todays.filter(x => String(x.jadwalId || "") === String(a.id) || (normalizeIdentity(x.kelas || x.sub || "") === normalizeIdentity(a.className) && normalizeIdentity(x.mapel || "") === normalizeIdentity(a.subject || "")));
+      const candidates = todays.filter(x => matchesAttendanceSession(x, a, scheduleOccurrences));
       if (candidates.length) {
         candidates.sort((x,y)=>String(y.waktuSimpan||y.waktuFinalisasi||"").localeCompare(String(x.waktuSimpan||x.waktuFinalisasi||"")));
         existingAttendanceByAssignment.set(a.id, candidates[0]);
@@ -4614,6 +4616,9 @@
           jadwalId: itemAssignment.sourceScheduleId || itemAssignment.id,
           jadwalIdPresensi: itemAssignment.id,
           jadwalIdAsli: itemAssignment.sourceScheduleId || itemAssignment.id,
+          jamMulaiJadwal: itemAssignment.scheduleStart || "",
+          jamSelesaiJadwal: itemAssignment.scheduleEnd || "",
+          sesiJadwal: itemAssignment.sessionLabel || "",
           kelompokBahasaArabJuzKode: assignment.virtualJuz || "",
           kelompokBahasaArabJuz: assignment.virtualJuzLabel || "",
           hariJadwal: itemAssignment.dayLabel,
