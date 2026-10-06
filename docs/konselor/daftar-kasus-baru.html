@@ -2834,7 +2834,12 @@
         String(record.tanggal || record.date || "").slice(0, 10),
         record.kelas || record.kelasNama || record.sub || record.kelasKelompok || "",
         record.mapel || record.mataPelajaran || record.subject || "",
-        lokasi(record)
+        lokasi(record),
+        record.jadwalIdPresensi || record.jadwalIdAsli || record.jadwalId || [
+          record.jamMulaiJadwal || record.jamMulai || record.scheduleStart || "",
+          record.jamSelesaiJadwal || record.jamSelesai || record.scheduleEnd || "",
+          record.sesiJadwal || record.sesi || record.sessionLabel || ""
+        ].join("|")
       ].map(normal).join("|");
       const previous = map.get(fingerprint);
       if (!previous || waktu(record) >= waktu(previous.record)) map.set(fingerprint, { firebaseKey, record });

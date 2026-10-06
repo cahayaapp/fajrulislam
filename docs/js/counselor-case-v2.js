@@ -113,6 +113,7 @@
     if(cv.routedAt)events.push({type:'DIRUTEKAN',at:cv.routedAt,label:`Dirutekan ke Konselor ${cv.routeLevel||''}`,by:'Sistem'});
     if(cv.claim?.assignedAt)events.push({type:'DIAMBIL',at:cv.claim.assignedAt,label:'Kasus diambil',by:cv.claim.assignedCounselorName});
     if(cv.tabayyun?.savedAt)events.push({type:'TABAYYUN',at:cv.tabayyun.savedAt,label:`Tabayyun: ${cv.tabayyun.conclusion||''}`,by:cv.tabayyun.counselorName});
+    Object.values(cv.batchActions||{}).forEach(x=>events.push({type:'PENINDAKAN_BERSAMA',at:x.savedAt||x.date,label:x.actionLabel||'Penindakan bersama',by:x.counselorName,note:[x.note,x.followUp].filter(Boolean).join(' · ')}));
     Object.values(cv.counseling||{}).forEach(x=>events.push({type:'KONSELING',at:x.savedAt||x.date,label:'Sesi konseling/pembinaan',by:x.counselorName}));
     if(cv.consequence?.savedAt)events.push({type:'KONSEKUENSI',at:cv.consequence.savedAt,label:cv.consequence.label||'Konsekuensi edukatif',by:cv.consequence.counselorName});
     if(cv.pointTransactionId)events.push({type:'POIN',at:cv.pointAt,label:`Transaksi poin ${cv.pointValue??''}`,by:cv.pointBy});
@@ -139,6 +140,21 @@
     return Object.freeze({status,response:Object.freeze({respondedBy:String(identity.name||identity.nama||identity.username||''),respondedById:String(identity.id||identity.uid||identity.username||''),respondedRole:role,respondedAt:now,decision:isDirector?decision:'',instruction,note})});
   }
   function claimPatch(identity={},assignment={},now=new Date().toISOString()){return{assignedCounselorId:String(identity.id||identity.username||''),assignedCounselorName:String(identity.name||identity.nama||identity.username||''),assignedCounselorLevel:counselorLevel(assignment.level),assignedAt:now}}
+  function groupCasesByStudent(cases=[]){
+    const groups=new Map();
+    for(const item of cases){
+      const key=item?.studentKey||nameKey(item?.student||'')||String(item?.id||'');
+      if(!groups.has(key))groups.set(key,{studentKey:key,student:item?.student||'Santri',cases:[]});
+      groups.get(key).cases.push(item);
+    }
+    return [...groups.values()].map(group=>Object.freeze({...group,cases:Object.freeze([...group.cases].sort((a,b)=>String(b.reportTime||b.reportDate||'').localeCompare(String(a.reportTime||a.reportDate||''))))}));
+  }
+  function batchActionRecord(values={},identity={},caseIds=[],now=new Date().toISOString()){
+    const actionType=norm(values.actionType),labels={KONSELING_PEMBINAAN:'Konseling / Pembinaan',TEGURAN_EDUKATIF:'Teguran Edukatif',PEMANTAUAN:'Pemantauan',KOORDINASI_WALI:'Koordinasi Wali'};
+    const note=String(values.note||'').trim(),followUp=String(values.followUp||'').trim(),date=String(values.date||now).trim();
+    if(!labels[actionType]||!date||!note||!Array.isArray(caseIds)||!caseIds.length)return null;
+    return Object.freeze({batchActionId:String(values.batchActionId||`batch_${Date.now()}`),actionType,actionLabel:labels[actionType],date,note,followUp,caseIds:Object.freeze(caseIds.map(String)),caseCount:caseIds.length,counselorId:String(identity.id||identity.uid||identity.username||''),counselorName:String(identity.name||identity.nama||identity.username||''),savedAt:now});
+  }
   function routingPatch(item,nearby,unit,now=new Date().toISOString()){const route=routeCase(item,nearby);return{routeLevel:route.level,routingReason:route.reason,unit:norm(unit),routedAt:now,status:'MENUNGGU_KONSELOR',version:2}}
-  return Object.freeze({ROOT,POINT_ROOT,SELF_ROOT,PROGRAM_ATTENDANCE_ROOT,LEARNING_ATTENDANCE_ROOT,LEVELS,UNITS,ROUTING_PRIORITY,POINTS,norm,nameKey,dateOnly,shiftDate,jakartaDate,calendarRange,validRange,counselorLevel,violationCode,severity,isViolation,normalizeCase,normalizeAttendanceStatus,attendanceFinal,attendanceResolved,attendanceCases,excludeRepresented,sameOccurrence,hasThreeConsecutive,routeCase,actionable,pointFor,nfdk,weekKey,timeline,canHigherAuthorityRespond,higherResponsePatch,claimPatch,routingPatch,FINAL_STATES});
+  return Object.freeze({ROOT,POINT_ROOT,SELF_ROOT,PROGRAM_ATTENDANCE_ROOT,LEARNING_ATTENDANCE_ROOT,LEVELS,UNITS,ROUTING_PRIORITY,POINTS,norm,nameKey,dateOnly,shiftDate,jakartaDate,calendarRange,validRange,counselorLevel,violationCode,severity,isViolation,normalizeCase,normalizeAttendanceStatus,attendanceFinal,attendanceResolved,attendanceCases,excludeRepresented,sameOccurrence,hasThreeConsecutive,routeCase,actionable,pointFor,nfdk,weekKey,timeline,groupCasesByStudent,batchActionRecord,canHigherAuthorityRespond,higherResponsePatch,claimPatch,routingPatch,FINAL_STATES});
 });

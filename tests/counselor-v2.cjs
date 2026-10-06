@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
 const C=require('../js/counselor-case-v2.js');
 const R=require('../js/role-system-v2.js');
 function row(date,code='BOLOS_PROGRAM',student='Ahmad',extra={}){return C.normalizeCase({tanggal:date,tipe:'Lapor Pelanggaran',dilaporkan:student,kodePelanggaran:code,...extra},date+code)}
@@ -35,4 +36,23 @@ const pendingDirector=row('2026-09-18','MORAL','Ahmad',{unit:'PUTRA',statusPenan
 const director={activeRole:'DIREKTUR',activeAssignment:{unit:'ALL'}};
 const directorPatch=C.higherResponsePatch(director,pendingDirector,{decision:'Disetujui','instruction':'Laksanakan sesuai SOP'},{username:'dir',name:'Direktur'},'2026-09-18T13:30:00Z');
 assert.equal(directorPatch.status,'KEPUTUSAN_DIREKTUR_DITERIMA');assert.equal(directorPatch.response.respondedRole,'DIREKTUR');
+// Semua kasus seorang santri tetap menjadi record tersendiri, termasuk pada hari yang sama.
+const grouped=C.groupCasesByStudent([
+  row('2026-09-18','TERLAMBAT_PROGRAM','Ahmad'),
+  row('2026-09-18','KEBERSIHAN','Ahmad'),
+  row('2026-09-17','BOLOS_PROGRAM','Ahmad'),
+  row('2026-09-18','BOLOS_PROGRAM','Fauzan')
+]);
+assert.equal(grouped.length,2);assert.equal(grouped.find(x=>x.student==='Ahmad').cases.length,3);
+// Satu tindakan massal membawa semua case ID, tetapi tetap dapat ditulis ke tiap record kasus.
+const batch=C.batchActionRecord({actionType:'Konseling Pembinaan',date:'2026-09-18T10:00',note:'Pembinaan bersama',followUp:'Pantau tiga hari',batchActionId:'batch-test'},{id:'k1',name:'Konselor'},['c1','c2'],'2026-09-18T10:05:00Z');
+assert.equal(batch.caseCount,2);assert.deepEqual([...batch.caseIds],['c1','c2']);assert.equal(batch.actionLabel,'Konseling / Pembinaan');
+assert.equal(C.batchActionRecord({actionType:'Pemantauan',date:'2026-09-18',note:''},{id:'k1'},['c1']),null);
+const withBatch=row('2026-09-18','BOLOS_PROGRAM','Ahmad',{caseV2:{batchActions:{'batch-test':batch}}});
+assert(C.timeline(withBatch).some(x=>x.type==='PENINDAKAN_BERSAMA'&&x.note.includes('Pembinaan bersama')));
+const queueSource=fs.readFileSync(require('node:path').join(__dirname,'..','konselor','daftar-kasus-baru.html'),'utf8');
+assert.match(queueSource,/jadwalIdPresensi \|\| record\.jadwalIdAsli \|\| record\.jadwalId/,'deduplikasi antrean harus memakai ID sesi');
+assert.match(queueSource,/jamMulaiJadwal \|\| record\.jamMulai/,'fallback sesi harus membedakan waktu');
+const appSource=fs.readFileSync(require('node:path').join(__dirname,'..','js','counselor-app-v2.js'),'utf8');
+assert.match(appSource,/groupCasesByStudent\(visible\)/);assert.match(appSource,/batchActions\/\$\{batchId\}/);
 console.log('counselor-v2: ok');
