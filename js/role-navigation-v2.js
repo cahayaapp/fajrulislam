@@ -73,6 +73,12 @@
     if(e.policy==='tahsin-placement-v2')return R.canManageTahsinLevels(role,a)?{ok:true,reason:'TAHSIN_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='supervisor-education-v2')return role==='SUPERVISOR'&&R.canManageTahsinLevels(role,a)?{ok:true,reason:'SUPERVISOR_EDUCATION_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='education-report-v2')return ((role==='SUPERVISOR'||role==='MANAJER')&&R.canManageTahsinLevels(role,a))?{ok:true,reason:'EDUCATION_REPORT_SCOPE'}:deny('PERMISSION_DENIED');
+    if(e.policy==='teacher-leave-v1'){
+      if(role==='GURU_PONDOK'&&(!menuId||menuId==='menu-izin-guru'))return {ok:true,reason:'OWN_TEACHER_LEAVE'};
+      if(role==='SUPERVISOR'&&R.canManageTahsinLevels(role,a)&&(!menuId||menuId==='menu-persetujuan-izin-guru'))return {ok:true,reason:'SUPERVISOR_EDUCATION_LEAVE_REVIEW'};
+      if(role==='MANAJER'&&R.isEducationManager(a)&&['PUTRA','PUTRI'].includes(a.unit)&&(!menuId||menuId==='menu-informasi-izin-guru'))return {ok:true,reason:'MANAGER_EDUCATION_LEAVE_INFO'};
+      return deny('PERMISSION_DENIED');
+    }
     if(e.policy==='manager-character-v2')return role==='MANAJER'&&R.isCharacterManager(a)?{ok:true,reason:'MANAGER_CHARACTER_SCOPE'}:deny('PERMISSION_DENIED');
     if(e.policy==='weekly-kpi-guru-v2'){
       if(role==='GURU_PONDOK')return {ok:true,reason:'OWN_WEEKLY_GURU_KPI'};

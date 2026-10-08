@@ -119,6 +119,10 @@
     ],
     "policy": "guru-mukim-v2"
   },
+  "pendidikan/izin-guru.html": {
+    "menus": ["menu-izin-guru", "menu-persetujuan-izin-guru", "menu-informasi-izin-guru"],
+    "policy": "teacher-leave-v1"
+  },
   "supervisor/review-pendidikan.html": {
     "menus": [
       "menu-review-pendidikan"
