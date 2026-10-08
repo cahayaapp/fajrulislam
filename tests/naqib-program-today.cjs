@@ -6,6 +6,7 @@ const W=require('../js/naqib-weekend-mode-v2.js');
 const R=require('../js/role-system-v2.js');
 const ROUTES=require('../js/role-route-registry-v2.js');
 const N=require('../js/role-navigation-v2.js');
+assert.deepEqual(A.DEFAULT_BLOCKS,{blok1:{label:'Blok 1',mulai:'00:00',selesai:'08:00'},blok2:{label:'Blok 2',mulai:'08:00',selesai:'16:00'},blok3:{label:'Blok 3',mulai:'16:00',selesai:'00:00'}});
 const daily=[
   {id:'a',no:1,waktu:'03.30–04.00',program:'Bangun'},
   {id:'b',no:2,waktu:'04.00–11.20',program:'Pagi'},
@@ -17,15 +18,21 @@ const base=A.basePrograms(daily,[{id:'w',no:101,waktu:'08.00–09.00',program:'P
 assert.equal(base.length,5);
 const putra={blok:{blok1:{mulai:'03:30',selesai:'11:20'},blok2:{mulai:'11:20',selesai:'17:50'},blok3:{mulai:'17:50',selesai:'03:30'}},jadwal:{senin:{blok1:'Favian',blok2:'Kamal',blok3:'Yong'},ahad:{blok3:'Favian'}}};
 const favian=A.applyAssignment(base,putra,{userName:'Favian',day:'senin',minutes:500});
-assert.deepEqual(favian.programs.map(x=>x.id),['a','b','w']);
+assert.deepEqual(favian.programs.map(x=>x.id),['a','b']);
 assert.equal(favian.programs[0].block,'Blok 1');assert.equal(favian.programs[0].assignedNaqib,'Favian');
 const friday={blok:A.DEFAULT_BLOCKS,jadwal:{jumat:{blok1:'Favian',blok2:'Abi Dandi',blok3:'Abi Dandi'},sabtu:{blok1:'Kamal',blok2:'Yong',blok3:'Favian'}}};
-assert.deepEqual(A.currentDuty(friday,{day:'jumat',minutes:18*60}),{blockId:'blok3',scheduleDay:'jumat',petugas:'Abi Dandi',mulai:'17:50',selesai:'03:30',timezone:'Asia/Jakarta'});
-assert.deepEqual(A.currentDuty(friday,{day:'sabtu',minutes:2*60}),{blockId:'blok3',scheduleDay:'jumat',petugas:'Abi Dandi',mulai:'17:50',selesai:'03:30',timezone:'Asia/Jakarta'});
-assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:209}).scheduleDay,'jumat');
-assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:210}).blockId,'blok1');
-assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:680}).blockId,'blok2');
-assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:1070}).blockId,'blok3');
+assert.equal(A.blockForProgram({id:'before-8',name:'Sebelum 8',time:'07.59–08.00'},friday,'jumat').blockId,'blok1');
+assert.equal(A.blockForProgram({id:'at-8',name:'Jam 8',time:'08.00–08.30'},friday,'jumat').blockId,'blok2');
+assert.equal(A.blockForProgram({id:'before-16',name:'Sebelum 16',time:'15.59–16.00'},friday,'jumat').blockId,'blok2');
+assert.equal(A.blockForProgram({id:'at-16',name:'Jam 16',time:'16.00–16.30'},friday,'jumat').blockId,'blok3');
+assert.deepEqual(A.currentDuty(friday,{day:'jumat',minutes:18*60}),{blockId:'blok3',scheduleDay:'jumat',petugas:'Abi Dandi',mulai:'16:00',selesai:'00:00',timezone:'Asia/Jakarta'});
+assert.deepEqual(A.currentDuty(friday,{day:'sabtu',minutes:2*60}),{blockId:'blok1',scheduleDay:'sabtu',petugas:'Kamal',mulai:'00:00',selesai:'08:00',timezone:'Asia/Jakarta'});
+assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:0}).blockId,'blok1');
+assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:479}).blockId,'blok1');
+assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:480}).blockId,'blok2');
+assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:959}).blockId,'blok2');
+assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:960}).blockId,'blok3');
+assert.equal(A.currentDuty(friday,{day:'sabtu',minutes:1439}).blockId,'blok3');
 assert.equal(A.samePerson('Abi Dandi','Dandy'),true);assert.equal(A.samePerson('abi dandi','DANDY'),true);assert.equal(A.samePerson('Abi Dandi','Naqib Dandy'),true);assert.equal(A.samePerson('Kamal','Favian'),false);
 assert.equal(A.samePerson('Yong','Khaizuran'),true);assert.equal(A.samePerson('Yong','Ade Khaizuran Utsman'),true);
 const liveMonday={blok:A.DEFAULT_BLOCKS,jadwal:{ahad:{blok3:'Khaizuran'},senin:{blok1:'Favian',blok2:'Yong',blok3:'Kamal'}}};
@@ -41,16 +48,17 @@ const mondayFasting=programSandbox.window.CAHAYA_PROGRAM_PEKANAN_PENGASUHAN.filt
 assert.equal(mondayFasting.length,0,'Senin tidak boleh memuat program puasa sunnah');
 const completeMonday=A.basePrograms(programSandbox.window.CAHAYA_PROGRAM_HARIAN_24JAM,programSandbox.window.CAHAYA_PROGRAM_PEKANAN_PENGASUHAN,new Date('2026-10-05T12:00:00+07:00'));
 const khaizuranMonday=A.applyAssignment(completeMonday,liveMonday,{userName:'Khaizuran',day:'senin',minutes:720});
-assert.equal(khaizuranMonday.programs.length,10,'Khaizuran/Yong harus menerima seluruh 10 program Blok 2 pada Senin');
+assert(khaizuranMonday.programs.length>0,'Khaizuran/Yong harus menerima program Blok 2 pada Senin');
+assert(khaizuranMonday.programs.every(row=>row.blockId==='blok2'),'Semua program Khaizuran/Yong harus berada pada Blok 2 baru 08.00–16.00');
 assert.equal(khaizuranMonday.programs.some(row=>/puasa/i.test(row.name)),false,'Puasa Sunnah tidak boleh tampil pada tugas Senin Khaizuran');
 assert.equal(A.applyAssignment(base,friday,{userName:'Dandy',day:'jumat',minutes:18*60}).onDuty,true);
 const reward={rewardEligible:true,status:'EARNED',rewardStart:'2026-09-19T13:00:00+07:00',rewardEnd:'2026-09-20T11:00:00+07:00'};
 const weekend=A.applyAssignment(base,friday,{userName:'Favian',day:'sabtu',minutes:18*60,reward,at:new Date('2026-09-19T18:00:00+07:00'),weekendResolver:W});
 assert.equal(weekend.weekendMode,true);assert.deepEqual(weekend.programs,[]);assert.match(weekend.message,/Hak Libur Pilihan/);
 const midnightBase=A.basePrograms(daily,[],new Date('2026-09-17T21:09:00+07:00'));
-const kamalAfterMidnight=A.applyAssignment(midnightBase,{putra:{blok:A.DEFAULT_BLOCKS,jadwal:{kamis:{blok1:'Khaizuran',blok2:'Favian',blok3:'Kamal'},jumat:{blok1:'Favian',blok2:'Abi Dandi',blok3:'Abi Dandi'}}}},{userName:['u-03','Naqib kamal','Kamal'],day:'kamis',minutes:39});
-assert(kamalAfterMidnight.programs.length>0,'00:39 Friday must render Thursday Block 3 programs for Kamal');
-assert(kamalAfterMidnight.programs.every(program=>program.scheduleDay==='kamis'&&program.assignedNaqib==='Kamal'));
+const favianAfterMidnight=A.applyAssignment(midnightBase,{putra:{blok:A.DEFAULT_BLOCKS,jadwal:{kamis:{blok1:'Khaizuran',blok2:'Favian',blok3:'Kamal'},jumat:{blok1:'Favian',blok2:'Abi Dandi',blok3:'Abi Dandi'}}}},{userName:['u-02','Naqib Favian','Favian'],day:'jumat',minutes:39});
+assert(favianAfterMidnight.programs.length>0,'00:39 Jumat harus membaca Blok 1 hari Jumat untuk Favian');
+assert(favianAfterMidnight.programs.every(program=>program.scheduleDay==='jumat'&&program.assignedNaqib==='Favian'));
 assert.equal(A.normalizeDutySchedule({blok:A.DEFAULT_BLOCKS,jadwal:{kamis:{blok1:'FIREBASE'}}}).jadwal.kamis.blok1,'FIREBASE');
 assert.equal(A.normalizeDutySchedule({putra:{blok:A.DEFAULT_BLOCKS,jadwal:{kamis:{blok1:'FIREBASE_WRAPPER'}}}}).jadwal.kamis.blok1,'FIREBASE_WRAPPER');
 const program=id=>base.find(row=>row.id===id);

@@ -244,8 +244,8 @@
   function previousDayKey(date){const d=new Date(`${date}T12:00:00`);d.setDate(d.getDate()-1);return DAY_KEYS[d.getDay()];}
   function currentDayKey(date){const d=new Date(`${date}T12:00:00`);return DAY_KEYS[d.getDay()];}
   function dutyPutra(schedule,date,time){
-    const unit=schedule?.putra||{},blocks=unit.blok||{},day=currentDayKey(date);let blockKey='';let dutyDay=day;
-    for(const key of ['blok1','blok2','blok3']){const b=blocks[key]||{};if(insideTime(time,b.mulai,b.selesai)){blockKey=key;if(minutes(b.selesai)<minutes(b.mulai)&&minutes(time)<minutes(b.selesai))dutyDay=previousDayKey(date);break;}}
+    const unit=schedule?.putra||{},saved=unit.blok||{},blocks={blok1:{...(saved.blok1||{}),label:'Blok 1',mulai:'00:00',selesai:'08:00'},blok2:{...(saved.blok2||{}),label:'Blok 2',mulai:'08:00',selesai:'16:00'},blok3:{...(saved.blok3||{}),label:'Blok 3',mulai:'16:00',selesai:'00:00'}},day=currentDayKey(date);let blockKey='';let dutyDay=day;
+    for(const key of ['blok1','blok2','blok3']){const b=blocks[key]||{};if(insideTime(time,b.mulai,b.selesai)){blockKey=key;break;}}
     if(!blockKey)return{pic:'Belum terjadwal',detail:'Tidak ada blok piket pada jam ini'};
     const pic=String(unit.jadwal?.[dutyDay]?.[blockKey]||'').trim()||'Belum terjadwal';
     return{pic,detail:`Putra • ${blocks[blockKey]?.label||blockKey} • ${dutyDay}`};

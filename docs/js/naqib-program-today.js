@@ -1,7 +1,7 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CahayaNaqibProgramToday=api})(typeof window!=='undefined'?window:globalThis,function(){
   'use strict';
   const DAY_KEYS=['ahad','senin','selasa','rabu','kamis','jumat','sabtu'];
-  const DEFAULT_BLOCKS=Object.freeze({blok1:{mulai:'03:30',selesai:'11:20'},blok2:{mulai:'11:20',selesai:'17:50'},blok3:{mulai:'17:50',selesai:'03:30'}});
+  const DEFAULT_BLOCKS=Object.freeze({blok1:{label:'Blok 1',mulai:'00:00',selesai:'08:00'},blok2:{label:'Blok 2',mulai:'08:00',selesai:'16:00'},blok3:{label:'Blok 3',mulai:'16:00',selesai:'00:00'}});
   const PIC_ALIASES=Object.freeze({
     dandy:Object.freeze(['dandy','dandi']),
     khaizuran:Object.freeze(['khaizuran','yong','adekhaizuran','adekhaizuranutsman'])
@@ -25,9 +25,9 @@
   function samePerson(a,b){if(Array.isArray(a))return a.some(value=>samePerson(value,b));if(Array.isArray(b))return b.some(value=>samePerson(a,value));const x=picKey(a),y=picKey(b);return Boolean(x&&y&&(x===y||x.includes(y)||y.includes(x)))}
   function previousDay(day){const i=DAY_KEYS.indexOf(day);return DAY_KEYS[(i+6)%7]}
   function inBlock(start,from,to){if(start==null||from==null||to==null)return false;return to>from?start>=from&&start<to:start>=from||start<to}
-  function normalizeDutySchedule(raw={}){const source=raw?.blok&&raw?.jadwal?raw:raw?.putra?.blok&&raw?.putra?.jadwal?raw.putra:{};return {blok:{...DEFAULT_BLOCKS,...(source.blok||{})},jadwal:source.jadwal||{},weekendMode:source.weekendMode||raw.weekendMode||{},kpiCycle:source.kpiCycle||raw.kpiCycle||'',rewardPolicyVersion:source.rewardPolicyVersion||raw.rewardPolicyVersion||'',versi:source.versi||raw.versi||'',zonaWaktu:source.zonaWaktu||raw.zonaWaktu||'Asia/Jakarta'}}
+  function normalizeDutySchedule(raw={}){const source=raw?.blok&&raw?.jadwal?raw:raw?.putra?.blok&&raw?.putra?.jadwal?raw.putra:{},saved=source.blok||{},blok=Object.fromEntries(Object.entries(DEFAULT_BLOCKS).map(([key,fixed])=>[key,{...(saved[key]||{}),...fixed}]));return {blok,jadwal:source.jadwal||{},weekendMode:source.weekendMode||raw.weekendMode||{},kpiCycle:source.kpiCycle||raw.kpiCycle||'',rewardPolicyVersion:source.rewardPolicyVersion||raw.rewardPolicyVersion||'',versi:source.versi||raw.versi||'',zonaWaktu:source.zonaWaktu||raw.zonaWaktu||'Asia/Jakarta'}}
   function currentDuty(raw,clock=jakartaParts()){
-    const schedule=normalizeDutySchedule(raw),minutes=Number(clock.minutes),afterMidnight=minutes<210,blockId=afterMidnight?'blok3':minutes<680?'blok1':minutes<1070?'blok2':'blok3',scheduleDay=afterMidnight?previousDay(clock.day):clock.day,block=schedule.blok[blockId]||DEFAULT_BLOCKS[blockId];
+    const schedule=normalizeDutySchedule(raw),minutes=Number(clock.minutes),blockId=minutes<480?'blok1':minutes<960?'blok2':'blok3',scheduleDay=clock.day,block=schedule.blok[blockId]||DEFAULT_BLOCKS[blockId];
     return {blockId,scheduleDay,petugas:String(schedule.jadwal?.[scheduleDay]?.[blockId]||'').trim(),mulai:block.mulai,selesai:block.selesai,timezone:'Asia/Jakarta'};
   }
   function blockForProgram(program,raw,day){
@@ -35,7 +35,7 @@
     if(range.allDay&&!program.blockId)return null;
     if(program.blockId&&schedule.blok[program.blockId]){const block=schedule.blok[program.blockId];return {blockId:program.blockId,block:`Blok ${String(program.blockId).replace(/\D/g,'')}`,scheduleDay:day,assignedNaqib:String(schedule.jadwal?.[day]?.[program.blockId]||'').trim()}}
     if(start==null)return null;
-    for(const [blockId,block] of Object.entries(schedule.blok)){const from=timeMinutes(block.mulai),to=timeMinutes(block.selesai);if(!inBlock(start,from,to))continue;const scheduleDay=to!=null&&from!=null&&to<from&&start<to?previousDay(day):day;return {blockId,block:`Blok ${String(blockId).replace(/\D/g,'')}`,scheduleDay,assignedNaqib:String(schedule.jadwal?.[scheduleDay]?.[blockId]||'').trim()}}
+    for(const [blockId,block] of Object.entries(schedule.blok)){const from=timeMinutes(block.mulai),to=timeMinutes(block.selesai);if(!inBlock(start,from,to))continue;const scheduleDay=day;return {blockId,block:`Blok ${String(blockId).replace(/\D/g,'')}`,scheduleDay,assignedNaqib:String(schedule.jadwal?.[scheduleDay]?.[blockId]||'').trim()}}
     return null;
   }
   function dutyScope(programs,raw,userName,day,minutes){

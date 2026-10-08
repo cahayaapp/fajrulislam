@@ -477,9 +477,9 @@ body{background:radial-gradient(circle at 100% 0,rgba(62,135,235,.055),transpare
     function timeMinutes(v){const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?(Number(m[1])*60+Number(m[2])):null}
     function inRange(now,start,end){const s=timeMinutes(start),e=timeMinutes(end);if(s===null)return false;if(e===null)return now>=s;if(e>=s)return now>=s&&now<e;return now>=s||now<e}
     function currentPutraDuty(schedule,ctx){
-      const putra=schedule?.putra||(schedule?.jadwal||schedule?.blok?schedule:{}),blocks=putra?.blok||{},keys=['blok1','blok2','blok3'];
+      const putra=schedule?.putra||(schedule?.jadwal||schedule?.blok?schedule:{}),blocks={blok1:{...(putra?.blok?.blok1||{}),mulai:'00:00',selesai:'08:00'},blok2:{...(putra?.blok?.blok2||{}),mulai:'08:00',selesai:'16:00'},blok3:{...(putra?.blok?.blok3||{}),mulai:'16:00',selesai:'00:00'}},keys=['blok1','blok2','blok3'];
       let blockKey=keys.find(k=>inRange(ctx.minutes,blocks[k]?.mulai,blocks[k]?.selesai));
-      if(!blockKey)blockKey=ctx.minutes>=210&&ctx.minutes<680?'blok1':ctx.minutes>=680&&ctx.minutes<1070?'blok2':'blok3';
+      if(!blockKey)blockKey=ctx.minutes<480?'blok1':ctx.minutes<960?'blok2':'blok3';
       const duty=putra?.jadwal?.[ctx.day]?.[blockKey]||'';
       return {name:String(duty||'').trim()||'Belum dijadwalkan',block:blockKey};
     }
