@@ -19,7 +19,7 @@
       [
         ['menu-absen-guru','Jadwal & Kehadiran Guru','home-guru.html?openSchedule=1'],
         ['menu-absen-kbm','Absensi Pembelajaran','guru/absensiPembelajaran.html'],
-        ['menu-izin-guru','Izin Guru','pendidikan/izin-guru.html?v=4'],
+        ['menu-izin-guru','Izin Guru','pendidikan/izin-guru.html?v=5'],
         ['menu-kalender-materi','Materi Pembelajaran','guru/capaian-materi.html'],
         ['menu-nilai','Nilai Ujian','guru/inputNilaiUjian.html'],
         ['menu-tahfiz','Tahsin / Tahfiz','guru/inputSetoranTahfiz.html'],
@@ -58,7 +58,7 @@
     }else if(role==='MANAJER'&&R.isEducationManager(a)){
       [['menu-kontrol-pendidikan','Kontrol Hari Ini','control'],['menu-materi-pembelajaran','Capaian Materi','material'],['menu-tindak-akademik','Tindak Lanjut','followup'],['menu-guru-pondok','Guru Pondok','teachers'],['menu-nilai-manajer','Laporan Akademik','scores'],['menu-observasi-pembelajaran','Observasi Pembelajaran','observation'],['menu-riwayat-temuan','Riwayat Temuan','findings'],['menu-pembinaan-guru','Pembinaan Guru','coaching'],['menu-kpi-manajer','KPI Manajer Pendidikan','kpi'],['menu-panduan-kerja','Panduan Kerja','guide']].forEach(([id,label,view])=>add(id,label,view==='scores'?'supervisor/laporan-akademik.html?mode=progress':`manajer/pendidikan-v2.html?view=${view}`,view==='guide'?'Lainnya':view==='kpi'?'Evaluasi':'Manajemen'));
       out.splice(4,0,entry('menu-absensi-ibadah-guru','Absensi Ibadah Guru Mukim','pendidikan/absensi-ibadah-guru.html','Operasional'));
-      out.splice(5,0,entry('menu-informasi-izin-guru','Informasi Izin Guru','pendidikan/izin-guru.html?v=4','Operasional'));
+      out.splice(5,0,entry('menu-informasi-izin-guru','Informasi Izin Guru','pendidikan/izin-guru.html?v=5','Operasional'));
       add('menu-pengaturan-guru-mukim','Pengaturan Guru Mukim','pendidikan/pengaturan-guru-mukim.html','Manajemen');
       add('menu-penempatan-tahsin','Penempatan Level Tahsin','pendidikan/penempatan-tahsin.html','Manajemen');
       add('menu-kpi-guru','KPI Pekan Kerja Guru','pendidikan/kpi-guru.html','Evaluasi');
@@ -71,7 +71,7 @@
     }else if(role==='SUPERVISOR'){
       if(R.canManageTahsinLevels(role,a))add('menu-penempatan-tahsin','Penempatan Level Tahsin','pendidikan/penempatan-tahsin.html','Manajemen');
       if(R.canManageTahsinLevels(role,a))add('menu-kontrol-publikasi-rapor','Laporan Akademik','supervisor/laporan-akademik.html','Manajemen');
-      if(R.canManageTahsinLevels(role,a))add('menu-persetujuan-izin-guru','Persetujuan Izin Guru','pendidikan/izin-guru.html?v=4','Manajemen');
+      if(R.canManageTahsinLevels(role,a))add('menu-persetujuan-izin-guru','Persetujuan Izin Guru','pendidikan/izin-guru.html?v=5','Manajemen');
       if(a.supervisedRoles?.includes('SARPRAS')&&(!a.divisionIds?.length||a.divisionIds.includes('SARPRAS')))add('menu-supervisor-v2--laporan-sarpras','Laporan Sarpras','supervisor/workspace-v2.html?v=253&view=divisions&area=SARPRAS','Evaluasi','menu-supervisor-v2');
       if(a.supervisedRoles?.includes('LAYANAN_KEBERSIHAN')&&(!a.divisionIds?.length||a.divisionIds.includes('LAYANAN_KEBERSIHAN')))add('menu-supervisor-v2--laporan-layanan','Laporan Layanan & Kebersihan','supervisor/workspace-v2.html?v=253&view=divisions&area=LAYANAN_KEBERSIHAN','Evaluasi','menu-supervisor-v2');
       if((a.supervisedRoles||[]).some(item=>['NAQIB','NAQIBAH','MENTOR_USRAH'].includes(item)))add('menu-jurnal-liburan-monitor','Jurnal Liburan Santri','pembinaan/jurnal-liburan-monitor.html','Manajemen');
