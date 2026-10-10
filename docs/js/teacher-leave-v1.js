@@ -9,7 +9,7 @@
   const STATUS_LABEL=Object.freeze({PENDING_REVIEW:'Menunggu Persetujuan',NEEDS_CONFIRMATION:'Perlu Konfirmasi',APPROVED:'Disetujui',REJECTED:'Ditolak',CANCELLED:'Dibatalkan'});
   const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
   const key=v=>norm(v).replace(/ /g,'');
-  const records=v=>Array.isArray(v)?v.filter(Boolean):Object.entries(v||{}).map(([id,x])=>x&&typeof x==='object'?({id,...x}):null).filter(Boolean);
+  const records=v=>Array.isArray(v)?v.filter(Boolean):Object.entries(v||{}).map(([id,x])=>x&&typeof x==='object'?({...x,id:x.id||id,_key:id}):null).filter(Boolean);
   const date=v=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''));
   const time=v=>/^([01]\d|2[0-3]):[0-5]\d$/.test(String(v||''));
   const stamp=(d,t)=>`${d}T${t}:00+07:00`;
