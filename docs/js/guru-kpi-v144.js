@@ -1,6 +1,22 @@
 (function(root){
   'use strict';
-  const KPI_VERSION='181';
+  const KPI_VERSION='182';
+  const TEACHER_CODE_ALIASES={
+    MULTAZAM:['multazam','multazam zakaria','abah multazam','dr multazam zakaria'],
+    RASYIDIN:['rasyidin','rosyidin','abi rasyidin','abi rosyidin'],
+    NAQIEB:['naqieb','muhammad naqieb'],
+    ZAKY:['zaky','zaki','muhammad zaky','muhammad zaki'],
+    RAHIEL:['rahiel','mika rahiel','mika rahiel yusuf'],
+    FAIQ:['faiq','muhammad faiq'],
+    FALAH:['falah','al falah','muhammad al falah','m al falah'],
+    DONY:['dony','doni','dony setiawan','doni setiawan','donisetiawan'],
+    FATIMAH:['fatimah'],MEILISA:['meilisa','melisa'],ALAMANDA:['alamanda'],HANIF:['hanif'],
+    AHMAD_IMBRON:['ahmad imbron','ahmadimbron','imbron'],ANDRIYANI:['andriyani','andriyani kusuma dayanti'],
+    CAPPRY:['cappry','cappry yoda pratama'],DELLA:['della','della gustia'],EDWIN:['edwin','edwin romeo'],
+    EVITA:['evita','evita hardyanti'],FENNY:['fenny','fenny ayu anggraeni'],LAILA:['laila','laila nuzlini'],
+    MANDA:['manda','manda saputra'],MARYANA:['maryana'],NURUL_FADLILAH:['nurul fadlilah','nurulfadlilah'],
+    SHAFIRA:['shafira','shafira ramadanty']
+  };
   function norm(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim()}
   function key(v){return norm(v).replace(/ /g,'')}
   function records(v){if(Array.isArray(v))return v.filter(Boolean);return Object.entries(v||{}).map(([id,x])=>x&&typeof x==='object'?({id,...x}):null).filter(Boolean)}
@@ -23,6 +39,8 @@
     const names=[profile.label,profile.nama,profile.name,profile.displayName,profile.username,profile.email].filter(Boolean).map(String);
     if(direct)return{code:direct,names,nameKey:key(names[0]||direct),display:names[0]||direct};
     const keys=names.map(key).filter(Boolean);
+    const aliased=Object.entries(TEACHER_CODE_ALIASES).find(([,aliases])=>aliases.some(alias=>keys.includes(key(alias))));
+    if(aliased)return{code:aliased[0],names,nameKey:key(names[0]||aliased[0]),display:names[0]||aliased[0]};
     const match=records(schedule).find(r=>{const rn=key(teacherName(r)),rc=key(teacherCode(r));return keys.some(k=>k&&(rn===k||rc===k||rn.includes(k)||k.includes(rn)))});
     return{code:teacherCode(match),names,nameKey:key(teacherName(match)||names[0]||''),display:teacherName(match)||names[0]||'Guru'};
   }
