@@ -262,7 +262,7 @@ window.CAHAYA_MASTER_DATA = {
     "ALVIN",
     "RASYIDIN",
     "NAQIEB",
-    "FALAH",
+    "DONY",
     "FAHMI",
     "KHAIZURAN",
     "RAHIEL",

@@ -1802,7 +1802,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
   let studentClassMap = new Map();
   const TEACHER_CODE_ALIASES_QURAN = {
     MULTAZAM:["multazam","multazam zakaria","abah multazam"],ZAKY:["zaky","zaki","muhammad zaky"],RAHIEL:["rahiel","mika rahiel","mika rahiel yusuf"],
-    FAIQ:["faiq","muhammad faiq"],FALAH:["falah","al falah","muhammad al falah"],FATIMAH:["fatimah"],MEILISA:["meilisa","melisa"],ALAMANDA:["alamanda"],NAQIEB:["naqieb","muhammad naqieb"]
+    FAIQ:["faiq","muhammad faiq"],DONY:["dony","doni","dony setiawan","doni setiawan","donisetiawan"],FATIMAH:["fatimah"],MEILISA:["meilisa","melisa"],ALAMANDA:["alamanda"],NAQIEB:["naqieb","muhammad naqieb"]
   };
   const normalizeTeacherQuran=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\b(abah|abi|ummi|ustadzah|ustadz|ust|guru|bapak|ibu|pak|bu|dr)\b/g," ").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();
   function detectTeacherCodeQuran(rows=[]){
@@ -1813,7 +1813,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
   function normalizeScheduleRowsQuran(value){return Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}))}
   async function refreshAutoQuranClasses(scheduleRows=[]){
     let rows=scheduleRows;
-    if(!rows.length){try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"force-cache"});if(r.ok)rows=normalizeScheduleRowsQuran(await r.json())}catch(_){}}
+    if(!rows.length){try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json?v=183",{cache:"no-cache"});if(r.ok)rows=normalizeScheduleRowsQuran(await r.json())}catch(_){}}
     const code=detectTeacherCodeQuran(rows);
     autoQuranClasses=[...new Set(rows.filter(r=>r&&r.aktif!==false&&String(r.guruKode||"").trim().toUpperCase()===code&&/qur|tahsin|tahfiz/i.test(String(r.mapel||""))).map(r=>String(r.kelas||"").trim()).filter(k=>k&&dataKelasCloud[k]))];
     const order=k=>{const i=URUTAN_KELAS.indexOf(k);return i<0?999:i};autoQuranClasses.sort((a,b)=>order(a)-order(b)||a.localeCompare(b,"id",{numeric:true}));
@@ -1853,7 +1853,7 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     if(cacheMetaQuranSiap) return;
     try{
       const [jadwalRes,kalenderRes]=await Promise.all([
-        fetch('../data/jadwal-pelajaran-awal-2026-2027.json',{cache:'force-cache'}).catch(()=>null),
+        fetch('../data/jadwal-pelajaran-awal-2026-2027.json?v=183',{cache:'no-cache'}).catch(()=>null),
         fetch('../data/kalender-pendidikan-2026-2027.json',{cache:'force-cache'}).catch(()=>null)
       ]);
       if(jadwalRes?.ok) cacheJadwalQuran=objectValues(await jadwalRes.json());

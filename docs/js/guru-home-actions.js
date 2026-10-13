@@ -13,9 +13,9 @@ function cacheRead(key,ttl=300000){try{const x=JSON.parse(sessionStorage.getItem
 function addDays(date,days){const d=new Date(date+'T12:00:00+07:00');d.setDate(d.getDate()+days);return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
 let schedulePromise;
 async function fastSchedule(){
-  const c=cacheRead('cahaya_guru_schedule_v148',12*3600000)||P.CahayaDataCache?.get('guru:schedule:2026-2027',12*3600000);
+  const c=cacheRead('cahaya_guru_schedule_v183',12*3600000)||P.CahayaDataCache?.get('guru:schedule:2026-2027:v183',12*3600000);
   if(c)return c;
-  if(!schedulePromise)schedulePromise=fetch('data/jadwal-pelajaran-awal-2026-2027.json',{cache:'force-cache'}).then(async r=>{if(!r.ok)throw Error('Jadwal lokal belum tersedia');const v=await r.json();cacheWrite('cahaya_guru_schedule_v148',v,true);return v}).finally(()=>{schedulePromise=null});
+  if(!schedulePromise)schedulePromise=fetch('data/jadwal-pelajaran-awal-2026-2027.json?v=183',{cache:'no-cache'}).then(async r=>{if(!r.ok)throw Error('Jadwal lokal belum tersedia');const v=await r.json();cacheWrite('cahaya_guru_schedule_v183',v,true);return v}).finally(()=>{schedulePromise=null});
   return schedulePromise;
 }
 const sourceCache=new Map(),sourceFlights=new Map();

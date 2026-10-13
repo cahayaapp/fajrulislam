@@ -1933,7 +1933,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   const TEACHER_CODE_ALIASES = {
     MULTAZAM:["multazam","multazam zakaria","abah multazam","dr multazam zakaria"], RASYIDIN:["rasyidin","rosyidin"],
     NAQIEB:["naqieb","muhammad naqieb"], ZAKY:["zaky","zaki","muhammad zaky"], RAHIEL:["rahiel","mika rahiel","mika rahiel yusuf"],
-    FAIQ:["faiq","muhammad faiq"], FALAH:["falah","al falah","muhammad al falah","m al falah"], FATIMAH:["fatimah"],
+    FAIQ:["faiq","muhammad faiq"], DONY:["dony","doni","dony setiawan","doni setiawan","donisetiawan"], FATIMAH:["fatimah"],
     MEILISA:["meilisa","melisa"], ALAMANDA:["alamanda"], HANIF:["hanif"], AHMAD_IMBRON:["ahmad imbron","imbron"],
     ANDRIYANI:["andriyani","andriyani kusuma dayanti"], CAPPRY:["cappry","cappry yoda pratama"], DELLA:["della","della gustia"],
     EDWIN:["edwin","edwin romeo"], EVITA:["evita","evita hardyanti"], FENNY:["fenny","fenny ayu anggraeni"],
@@ -1950,14 +1950,14 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     Object.entries(TEACHER_CODE_ALIASES).forEach(([code,aliases])=>{if(known.size&&!known.has(code))return;aliases.forEach(alias=>candidates.forEach(c=>{const a=normalizeTeacherIdentity(alias);let score=c===a?100:(c.includes(a)||a.includes(c)?80:0);if(score>best.score)best={code,score}}))}); return best.code;
   }
   async function loadLocalSchedule(){
-    const key='guru:schedule:2026-2027';
+    const key='guru:schedule:2026-2027:v183';
     const cached=cacheGet(key,12*60*60*1000);
     if(cached)return normalizeScheduleRows(cached);
     try{
-      const legacy=JSON.parse(sessionStorage.getItem('cahaya_guru_schedule_v148')||localStorage.getItem('cahaya_guru_schedule_v148')||'null');
+      const legacy=JSON.parse(sessionStorage.getItem('cahaya_guru_schedule_v183')||localStorage.getItem('cahaya_guru_schedule_v183')||'null');
       if(legacy&&legacy.v){cacheSet(key,legacy.v,true);return normalizeScheduleRows(legacy.v)}
     }catch(_){}
-    try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json",{cache:"force-cache"});if(!r.ok)return[];const value=await r.json();cacheSet(key,value,true);return normalizeScheduleRows(value)}catch(_){return[]}
+    try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json?v=183",{cache:"no-cache"});if(!r.ok)return[];const value=await r.json();cacheSet(key,value,true);return normalizeScheduleRows(value)}catch(_){return[]}
   }
 
   function initPageData() {

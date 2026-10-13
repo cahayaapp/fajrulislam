@@ -212,7 +212,7 @@ window.dataGuru = [
     "ALVIN",
     "RASYIDIN",
     "NAQIEB",
-    "FALAH",
+    "DONY",
     "FAHMI",
     "KHAIZURAN",
     "RAHIEL",

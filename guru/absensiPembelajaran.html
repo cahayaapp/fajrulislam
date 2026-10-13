@@ -2237,16 +2237,16 @@
   }
 
   async function loadLiteSchedule() {
-    const key = 'guru:schedule:2026-2027';
+    const key = 'guru:schedule:2026-2027:v183';
     const shared = cacheGet(key, 12 * 60 * 60 * 1000);
     if (shared) return normalizeLiteScheduleRows(shared);
     // kompatibel dengan cache beranda Guru v148/v149
     try {
-      const legacy = JSON.parse(sessionStorage.getItem('cahaya_guru_schedule_v148') || localStorage.getItem('cahaya_guru_schedule_v148') || 'null');
+      const legacy = JSON.parse(sessionStorage.getItem('cahaya_guru_schedule_v183') || localStorage.getItem('cahaya_guru_schedule_v183') || 'null');
       if (legacy && legacy.v) { cacheSet(key, legacy.v, true); return normalizeLiteScheduleRows(legacy.v); }
     } catch (_) {}
     try {
-      const response = await fetch('../data/jadwal-pelajaran-awal-2026-2027.json', { cache: 'force-cache' });
+      const response = await fetch('../data/jadwal-pelajaran-awal-2026-2027.json?v=183', { cache: 'no-cache' });
       if (!response.ok) return [];
       const value = await response.json();
       cacheSet(key, value, true);
@@ -2469,7 +2469,7 @@
     2: [
       { subject: "Bahasa Arab", teacher: "RAHIEL" },
       { subject: "Bahasa Arab", teacher: "FAIQ" },
-      { subject: "Al-Qur’an", teacher: "FALAH" }
+      { subject: "Al-Qur’an", teacher: "DONY" }
     ],
     3: [
       { subject: "Bahasa Arab", teacher: "MULTAZAM" },
@@ -2554,11 +2554,12 @@
       "faiq",
       "muhammad faiq"
     ],
-    FALAH: [
-      "falah",
-      "al falah",
-      "muhammad al falah",
-      "m al falah"
+    DONY: [
+      "dony",
+      "doni",
+      "dony setiawan",
+      "doni setiawan",
+      "donisetiawan"
     ],
     FATIMAH: [
       "fatimah"
