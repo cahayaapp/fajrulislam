@@ -552,7 +552,14 @@
   },
   "admin/database.html": {
     "menus": [
-      "menu-db-master"
+      "menu-home",
+      "menu-db-master",
+      "menu-admin-sdm",
+      "menu-admin-sekolah",
+      "menu-admin-asrama",
+      "menu-jadwal",
+      "menu-admin-program",
+      "menu-users"
     ],
     "policy": "unreviewed"
   },

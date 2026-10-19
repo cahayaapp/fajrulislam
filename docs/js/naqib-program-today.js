@@ -21,6 +21,18 @@
     weekly.filter(p=>!Array.isArray(p.hariAktif)||p.hariAktif.map(value=>String(value).toLowerCase()).includes(day)).forEach((p,i)=>rows.push({id:String(p.id||`weekly-${i}`),name:String(p.program||p.nama||'').trim(),time:String(p.waktu||''),start:p.mulai,end:p.selesai,blockId:p.blockId||p.blokId||'',category:p.kategori||p.frekuensi||'Program Pekanan',location:p.lokasi||'',group:p.kelompok||p.usrah||'',pic:p.pengawas||'',order:Number(p.no||p.urutan||100+i),source:'LOCAL_WEEKLY'}));
     return rows.filter(p=>p.name).sort((a,b)=>{const at=timeRange(a.time,a.start,a.end),bt=timeRange(b.time,b.start,b.end);return (at.allDay?-1:(at.start??9999))-(bt.allDay?-1:(bt.start??9999))||a.order-b.order});
   }
+  function configuredPrograms(raw={}){
+    const out=[];
+    const walk=(node,key='')=>{if(!node)return;if(Array.isArray(node))return node.forEach((value,index)=>walk(value,String(value?.id||`${key}-${index}`)));if(typeof node!=='object')return;const rowLike=node.nama||node.program||node.namaProgram||node.waktu||node.mulai||node.jamMulai||node.wajibAbsen!==undefined||node.wajibLaporan!==undefined;if(rowLike){const name=String(node.nama||node.program||node.namaProgram||node.label||key).trim();if(name)out.push({id:String(node.id||key||norm(name)),name,time:String(node.waktu||''),start:String(node.mulai||node.jamMulai||''),end:String(node.selesai||node.jamSelesai||''),category:String(node.kategori||'Program Asrama'),location:String(node.lokasi||''),group:String(node.kelompok||node.usrah||''),order:Number(node.urutan||node.no||999),days:Array.isArray(node.hariAktif)?node.hariAktif.map(value=>String(value).toLowerCase()):[],active:node.aktif!==false,wajibAbsen:node.wajibAbsen,wajibLaporan:node.wajibLaporan,policyConfigured:node.wajibAbsen!==undefined||node.wajibLaporan!==undefined});return}Object.entries(node).forEach(([child,value])=>walk(value,child))};walk(raw);return out;
+  }
+  function applyProgramPolicy(base=[],raw={},policy='wajibLaporan',date=new Date()){
+    const configured=configuredPrograms(raw),explicit=configured.filter(row=>row.policyConfigured&&row[policy]!==undefined),day=jakartaParts(date).day;
+    if(!explicit.length)return base;
+    const map=new Map(configured.map(row=>[norm(row.name),row])),seen=new Set(),rows=[];
+    base.forEach(item=>{const remote=map.get(norm(item.name));if(remote){seen.add(norm(remote.name));if(!remote.active||remote[policy]===false||remote.days.length&&!remote.days.includes(day))return;rows.push({...item,...remote,time:remote.time||[remote.start,remote.end].filter(Boolean).join('–')||item.time})}else rows.push(item)});
+    configured.forEach(remote=>{const key=norm(remote.name);if(seen.has(key)||!remote.policyConfigured||remote[policy]!==true||!remote.active||remote.days.length&&!remote.days.includes(day))return;rows.push({...remote,time:remote.time||[remote.start,remote.end].filter(Boolean).join('–')})});
+    return rows.sort((a,b)=>{const at=timeRange(a.time,a.start,a.end),bt=timeRange(b.time,b.start,b.end);return (at.start??9999)-(bt.start??9999)||(a.order||999)-(b.order||999)});
+  }
   function picKey(value){const flat=norm(String(value||'').replace(/\b(?:abi|ustadz|ustaz|ust|ummi|naqib|naqibah)\b/gi,' '));for(const [key,aliases] of Object.entries(PIC_ALIASES))if(aliases.some(alias=>flat.includes(alias)))return key;return flat}
   function samePerson(a,b){if(Array.isArray(a))return a.some(value=>samePerson(value,b));if(Array.isArray(b))return b.some(value=>samePerson(a,value));const x=picKey(a),y=picKey(b);return Boolean(x&&y&&(x===y||x.includes(y)||y.includes(x)))}
   function previousDay(day){const i=DAY_KEYS.indexOf(day);return DAY_KEYS[(i+6)%7]}
@@ -59,5 +71,5 @@
   function attendanceDone(rows,program,unit){return (rows||[]).some(row=>unitOf(row)===unit&&recordMatchesProgram(row,program))}
   function reportDone(rows,program,unit,userName){return (rows||[]).some(row=>row?.tipeLaporan==='PROGRAM'&&row?.versiLaporan==='V2'&&unitOf(row)===unit&&(!userName||samePerson(row.naqib||row.petugasTerjadwal,userName))&&(!program.block||!row.blokPiket||norm(row.blokPiket)===norm(program.block))&&recordMatchesProgram(row,program))}
   function context(program,{date,unit,role}){return {programId:program.id,programName:program.name,tanggal:date,unit,activeRole:role,block:program.block||'',blockId:program.blockId||'',scheduleDay:program.scheduleDay||'',assignedNaqib:program.assignedNaqib||'',time:program.time||'',group:program.group||'',location:program.location||''}}
-  return Object.freeze({DAY_KEYS,DEFAULT_BLOCKS,PIC_ALIASES,norm,esc,timeMinutes,timeRange,jakartaParts,basePrograms,picKey,samePerson,normalizeDutySchedule,currentDuty,blockForProgram,applyAssignment,stateFor,unitOf,recordMatchesProgram,attendanceDone,reportDone,context});
+  return Object.freeze({DAY_KEYS,DEFAULT_BLOCKS,PIC_ALIASES,norm,esc,timeMinutes,timeRange,jakartaParts,basePrograms,configuredPrograms,applyProgramPolicy,picKey,samePerson,normalizeDutySchedule,currentDuty,blockForProgram,applyAssignment,stateFor,unitOf,recordMatchesProgram,attendanceDone,reportDone,context});
 });

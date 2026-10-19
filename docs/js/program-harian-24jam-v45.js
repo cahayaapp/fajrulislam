@@ -291,3 +291,24 @@ window.CAHAYA_PROGRAM_PEKANAN_PENGASUHAN = [
   { id:'W-03', no:103, waktu:'17.50–18.00', program:'Buka Puasa Kamis Bersama Usrah', standar:'Memastikan santri berbuka dengan tertib, tepat waktu, dan menjaga adab makan.', kategori:'Spiritual', frekuensi:'Pekanan', hariAktif:['kamis'] },
   { id:'W-04', no:104, waktu:'18.30–19.10', program:'Maulid Pekanan', standar:'Memastikan Maulid pekanan berjalan tertib, santri mengikuti dengan adab, dan program selesai sesuai jadwal.', kategori:'Spiritual', frekuensi:'Pekanan', hariAktif:['kamis'] }
 ];
+
+/* Satu katalog bersama untuk program yang tampil pada Absensi Program Naqib.
+   Admin, Absensi Naqib, dan editor program membaca daftar yang sama. */
+window.CAHAYA_PROGRAM_ABSENSI_DEFAULTS = [
+  {nama:'Maulid Pekanan',kategori:'Spiritual',aliases:['maulidpekanan']},
+  {nama:'Puasa Sunnah Kamis',kategori:'Spiritual',aliases:['puasasunnah']},
+  {nama:"Shalat Ashar Berjama'ah",kategori:'Spiritual',aliases:['shalatashar']},
+  {nama:"Shalat Isya Berjama'ah",kategori:'Spiritual',aliases:['shalatisya']},
+  {nama:"Shalat Maghrib Berjama'ah",kategori:'Spiritual',aliases:['shalatmaghrib']},
+  {nama:"Shalat Subuh Berjama'ah",kategori:'Spiritual',aliases:['shalatsubuh']},
+  {nama:"Shalat Tahajjud Berjama'ah",kategori:'Spiritual',aliases:['qiyamullail','shalattahajjud']},
+  {nama:"Shalat Zuhur Berjama'ah",kategori:'Spiritual',aliases:['shalatzuhur','shalatdhuhur']},
+  {nama:'Piket Kebersihan Usrah Pagi',kategori:'Fisikal',aliases:['piketpagi']},
+  {nama:'Piket Kebersihan Usrah Sore',kategori:'Fisikal',aliases:['piketsore']},
+  {nama:'Upacara Bendera Bulanan',kategori:'Fisikal',aliases:['upacarabendera']},
+  {nama:'Sarapan Bersama Usrah',kategori:'Relasional',aliases:['sarapan']},
+  {nama:'Makan Siang Bersama Usrah',kategori:'Relasional',aliases:['makansiang']},
+  {nama:'Makan Sore Bersama Usrah',kategori:'Relasional',aliases:['makansore']},
+  {nama:'Makan Sahur Bersama',kategori:'Relasional',aliases:['sahurpuasasunnah','makansahur']},
+  {nama:'Buka Puasa Kamis Bersama Usrah',kategori:'Relasional',aliases:['bukapuasasunnah','bukapuasakamis']}
+];
