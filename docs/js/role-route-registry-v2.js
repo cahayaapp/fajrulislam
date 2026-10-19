@@ -136,6 +136,10 @@
     ],
     "policy": "education-report-v2"
   },
+  "supervisor/kontrol-mutu-pendidikan.html": {
+    "menus": ["menu-kontrol-mutu-pendidikan"],
+    "policy": "supervisor-education-v2"
+  },
   "pimpinan/dashboard-pendidikan.html": {
     "menus": [
       "menu-dashboard-pendidikan"

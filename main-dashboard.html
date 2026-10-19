@@ -2422,6 +2422,7 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
         <a class="nav-item menu-akses" id="menu-supervisor-schedule" style="display: none;" onclick="loadPage('supervisor/workspace-v2.html?v=253&amp;view=schedule', this)">📅 Jadwal Supervisor</a>
         <a class="nav-item menu-akses" id="menu-kpi-supervisor" style="display: none;" onclick="loadPage('supervisor/workspace-v2.html?v=253&amp;view=kpi', this)">📊 KPI Supervisor</a>
         <a class="nav-item menu-akses" id="menu-persetujuan-izin-guru" style="display: none;" onclick="loadPage('pendidikan/izin-guru.html?v=5', this)">✅ Persetujuan Izin Guru</a>
+        <a class="nav-item menu-akses" id="menu-kontrol-mutu-pendidikan" style="display: none;" onclick="loadPage('supervisor/kontrol-mutu-pendidikan.html?v=2', this)">📊 Kontrol Mutu Pendidikan</a>
         <a class="nav-item menu-akses" id="menu-supervisi-terpadu" style="display: none;" onclick="loadPage('supervisor/command-center.html?v=192', this)">🧭 Supervisi Pendidikan & Pengasuhan</a>
         <a class="nav-item menu-akses" id="menu-raport-bulanan" style="display: none;" onclick="loadPage('supervisor/raport-bulanan.html', this)">📈 Laporan Bulanan & KPI</a>
         <a class="nav-item menu-akses" id="menu-monitoring-absen-guru" style="display: none;" onclick="loadPage('supervisor/monitoringabsenguru.html', this)">📍 Monitoring Absensi Guru</a>
@@ -3117,6 +3118,16 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       return configured.some(row => row.enabledMenus.includes(menuId));
     }
 
+    window.addEventListener('message', event => {
+      if (event.data?.type !== 'CAHAYA_FEATURE_MANAGEMENT_UPDATED' || !event.data.config) return;
+      const frame = document.getElementById('contentFrame');
+      let isAdminFrame = false;
+      try { isAdminFrame = event.source === frame?.contentWindow && /\/admin\/database\.html$/.test(new URL(frame.src, location.href).pathname); } catch (_) {}
+      if (!isAdminFrame) return;
+      featureManagementRulesCache = event.data.config;
+      try { localStorage.setItem('cahayaFeatureManagementCache', JSON.stringify({t:Date.now(),v:featureManagementRulesCache})); } catch (_) {}
+    });
+
     function ensureActiveRole() {
       if (!myRoles.length) { activeRole = ""; return ""; }
       const allAllowed = !canonicalRoleRuntime && myRoles.length > 1 && activeRole === ALL_ROLES_MODE;
@@ -3651,8 +3662,8 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       "staf-mula":["menu-home","menu-dashboard-operasional","menu-kalender-pendidikan","menu-profil","menu-chat"],
       "mentor-quran":["menu-home","menu-dashboard-operasional","menu-kalender-pendidikan","menu-tahfiz","menu-laporan-murojaah","menu-profil","menu-chat"],
       "manajer-pendidikan":["menu-home","menu-dashboard-operasional","menu-kpi-guru","menu-manajemen-kelas","menu-kontrol-pendidikan","menu-jadwal-manajer","menu-materi-pembelajaran","menu-pembinaan-guru","menu-informasi-izin-guru","menu-observasi-pembelajaran","menu-absensi-ibadah-guru","menu-kalender-pendidikan","menu-nilai","menu-tahfiz","menu-tindak-akademik","menu-profil","menu-chat"],
-      "supervisor-pendidikan":["menu-home","menu-dashboard-operasional","menu-kpi-guru","menu-persetujuan-izin-guru","menu-review-pendidikan","menu-kontrol-pendidikan","menu-observasi-pembelajaran","menu-kalender-pendidikan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
-      "supervisor-pendidikan-pengasuhan":["menu-home","menu-dashboard-operasional","menu-supervisi-terpadu","menu-kpi-guru","menu-persetujuan-izin-guru","menu-review-pendidikan","menu-review-pembinaan","menu-kontrol-pendidikan","menu-kontrol-pembinaan","menu-observasi-pembelajaran","menu-observer-pengasuhan","menu-pantau-asesmen","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
+      "supervisor-pendidikan":["menu-home","menu-dashboard-operasional","menu-kpi-guru","menu-persetujuan-izin-guru","menu-kontrol-mutu-pendidikan","menu-review-pendidikan","menu-kontrol-pendidikan","menu-observasi-pembelajaran","menu-kalender-pendidikan","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
+      "supervisor-pendidikan-pengasuhan":["menu-home","menu-dashboard-operasional","menu-supervisi-terpadu","menu-kpi-guru","menu-persetujuan-izin-guru","menu-kontrol-mutu-pendidikan","menu-review-pendidikan","menu-review-pembinaan","menu-kontrol-pendidikan","menu-kontrol-pembinaan","menu-observasi-pembelajaran","menu-observer-pengasuhan","menu-pantau-asesmen","menu-raport-sdm","menu-tindak-lanjut-sdm","menu-profil","menu-chat"],
       "manajer-pengasuhan":["menu-home","menu-dashboard-operasional","menu-kontrol-pembinaan","menu-observer-pengasuhan","menu-pantau-asesmen","menu-usrah","menu-profil","menu-chat"],
       mentor:["menu-home","menu-mentoring-individu","menu-profil","menu-chat"],
       "konselor-pemula":["menu-home","menu-antrean-kasus","menu-profil","menu-chat"],
@@ -3968,7 +3979,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
           "mentor-quran":["menu-dashboard-operasional","menu-tahfiz","menu-laporan-murojaah"],
           "manajer-pendidikan":["menu-dashboard-operasional","menu-kpi-guru","menu-manajemen-kelas","menu-kontrol-pendidikan","menu-jadwal-manajer","menu-materi-pembelajaran","menu-pembinaan-guru","menu-informasi-izin-guru","menu-observasi-pembelajaran","menu-absensi-ibadah-guru","menu-tindak-akademik","menu-nilai","menu-tahfiz"],
           "supervisor-pendidikan":["menu-dashboard-operasional","menu-kpi-guru","menu-persetujuan-izin-guru","menu-review-pendidikan","menu-kontrol-pendidikan","menu-observasi-pembelajaran","menu-monitoring-absen-guru","menu-raport-sdm","menu-tindak-lanjut-sdm"],
-          "supervisor-pendidikan-pengasuhan":["menu-dashboard-operasional","menu-supervisi-terpadu","menu-kpi-guru","menu-persetujuan-izin-guru","menu-review-pendidikan","menu-review-pembinaan","menu-kontrol-pendidikan","menu-kontrol-pembinaan","menu-observasi-pembelajaran","menu-observer-pengasuhan","menu-pantau-asesmen","menu-raport-sdm","menu-tindak-lanjut-sdm"],
+          "supervisor-pendidikan-pengasuhan":["menu-dashboard-operasional","menu-supervisi-terpadu","menu-kpi-guru","menu-persetujuan-izin-guru","menu-kontrol-mutu-pendidikan","menu-review-pendidikan","menu-review-pembinaan","menu-kontrol-pendidikan","menu-kontrol-pembinaan","menu-observasi-pembelajaran","menu-observer-pengasuhan","menu-pantau-asesmen","menu-raport-sdm","menu-tindak-lanjut-sdm"],
           "manajer-pengasuhan":["menu-dashboard-operasional","menu-kontrol-pembinaan","menu-observer-pengasuhan","menu-pantau-asesmen"],
           mentor:["menu-mentoring-individu"],
           "konselor-pemula":["menu-antrean-kasus"],

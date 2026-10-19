@@ -72,6 +72,7 @@
       if(R.canManageTahsinLevels(role,a))add('menu-penempatan-tahsin','Penempatan Level Tahsin','pendidikan/penempatan-tahsin.html','Manajemen');
       if(R.canManageTahsinLevels(role,a))add('menu-kontrol-publikasi-rapor','Laporan Akademik','supervisor/laporan-akademik.html','Manajemen');
       if(R.canManageTahsinLevels(role,a))add('menu-persetujuan-izin-guru','Persetujuan Izin Guru','pendidikan/izin-guru.html?v=5','Manajemen');
+      if(R.canManageTahsinLevels(role,a))add('menu-kontrol-mutu-pendidikan','Kontrol Mutu Pendidikan','supervisor/kontrol-mutu-pendidikan.html?v=2','Evaluasi');
       if(a.supervisedRoles?.includes('SARPRAS')&&(!a.divisionIds?.length||a.divisionIds.includes('SARPRAS')))add('menu-supervisor-v2--laporan-sarpras','Laporan Sarpras','supervisor/workspace-v2.html?v=253&view=divisions&area=SARPRAS','Evaluasi','menu-supervisor-v2');
       if(a.supervisedRoles?.includes('LAYANAN_KEBERSIHAN')&&(!a.divisionIds?.length||a.divisionIds.includes('LAYANAN_KEBERSIHAN')))add('menu-supervisor-v2--laporan-layanan','Laporan Layanan & Kebersihan','supervisor/workspace-v2.html?v=253&view=divisions&area=LAYANAN_KEBERSIHAN','Evaluasi','menu-supervisor-v2');
       if((a.supervisedRoles||[]).some(item=>['NAQIB','NAQIBAH','MENTOR_USRAH'].includes(item)))add('menu-jurnal-liburan-monitor','Jurnal Liburan Santri','pembinaan/jurnal-liburan-monitor.html','Manajemen');
