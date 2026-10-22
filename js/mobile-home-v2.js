@@ -27,6 +27,21 @@
     moon:'M19 15A9 9 0 0 1 9 3a9 9 0 1 0 10 12Z',
     leave:'M5 2h10l5 5v6M15 2v5h5M5 2v20h7M8 10h4m-4 4h3m6 2v6m-3-3h6',
   };
+  const mentorContacts=[
+    {id:'BENNY',name:'Abi Benny Arizona',phone:'+62 852-6988-8294',wa:'6285269888294',aliases:['benny arizona','abi benny arizona','wadir benny arizona']},
+    {id:'DONY',name:'Abi Dony Setiawan',phone:'+62 877-9734-0185',wa:'6287797340185',aliases:['dony setiawan','doni setiawan','abi dony setiawan','abi doni setiawan']},
+    {id:'DANDI',name:'Abi Dandi',phone:'+62 838-5053-4127',wa:'6283850534127',aliases:['dandi','dandy','abi dandi','abi dandy']},
+    {id:'ALAMANDA',name:'Kak Alamanda',phone:'+62 896-9998-4195',wa:'6289699984195',aliases:['alamanda','kak alamanda','muallimah alamanda']},
+    {id:'FATIMAH',name:'Kak Fatimah',phone:'+62 878-3872-3032',wa:'6287838723032',aliases:['fatimah','kak fatimah','muallimah fatimah']},
+    {id:'DINI',name:'Ummi Dini Indriani',phone:'+62 819-2962-3700',wa:'6281929623700',aliases:['dini indriani','ummi dini indriani']}
+  ];
+  const mentorUsrahAssignments={
+    'Usrah 1':[{id:'DANDI',role:'Mentor Usrah'}],'Usrah 2':[{id:'DANDI',role:'Mentor Usrah'}],
+    'Usrah 3':[{id:'BENNY',role:'Mentor Usrah'}],'Usrah 4':[{id:'BENNY',role:'Mentor Usrah'}],
+    'Usrah 5':[{id:'DONY',role:'Mentor Usrah'}],'Usrah 6':[{id:'DONY',role:'Mentor Usrah'}],
+    'Usrah 7':[{id:'ALAMANDA',role:'Mentor Usrah'},{id:'DINI',role:'Mentor Individu'}],
+    'Usrah 8':[{id:'FATIMAH',role:'Mentor Usrah'},{id:'DINI',role:'Mentor Individu'}]
+  };
   const icon=name=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]||paths.grid}"/></svg>`;
   function iconFor(text){return /riwayat/i.test(text)?'history':/materi|tahsin|tahfiz|panduan/i.test(text)?'book':/nilai|kpi|capaian|skor/i.test(text)?'chart':/pelanggaran|kasus|eskalasi/i.test(text)?'warning':/observasi|kontrol|kondisi/i.test(text)?'eye':/jadwal/i.test(text)?'calendar':/teladan|inisiatif/i.test(text)?'star':/guru|mentor|personil|supervisor|presensi/i.test(text)?'people':/lapor|logbook|url/i.test(text)?'report':'check'}
   const descriptions={
@@ -37,12 +52,70 @@
   };
   const supporting={GURU_PONDOK:'Siap mengajar, mendampingi, dan menebar cahaya hari ini.',GURU_PKBM:'Dampingi pembelajaran dan tumbuhkan potensi santri.',NAQIB:'Dampingi santri dan hadirkan keteladanan setiap hari.',NAQIBAH:'Dampingi santri dan hadirkan keteladanan setiap hari.',MENTOR_USRAH:'Dampingi langkah kecil pertumbuhan santri setiap pekan.',KONSELOR:'Dengarkan, dampingi, dan bantu santri bertumbuh.',MANAJER:'Jaga keteraturan, dampingi personil, tuntaskan tindak lanjut.',SUPERVISOR:'Jaga standar, dampingi tim, dan arahkan perbaikan.',DIREKTUR:'Hadirkan arah, keputusan, dan teladan untuk pesantren.',DAPUR:'Hidangkan kebaikan, jaga kebersihan dapur setiap hari.',MEDIA:'Abadikan kegiatan dan sebarkan cerita kebaikan.',KESEHATAN:'Rawat kesehatan dan dampingi pemulihan santri.',SARPRAS:'Jaga fasilitas agar nyaman dan siap digunakan.',LAYANAN_KEBERSIHAN:'Layani dengan ramah, jaga kenyamanan lingkungan.',WALI_SANTRI:'Bersama mendampingi langkah tumbuh ananda.'};
   const priority={GURU_PONDOK:['menu-absen-guru','menu-absen-kbm','menu-tahfiz','leave'],NAQIB:['menu-absen-asrama','menu-jurnal-piket','menu-gamifikasi','menu-naqib-teladan'],NAQIBAH:['menu-absen-asrama','menu-jurnal-piket','menu-gamifikasi','menu-naqib-teladan'],KONSELOR:['menu-kasus-masuk','menu-kasus-aktif','menu-konseling-konselor','menu-eskalasi-konselor'],MANAJER:['menu-kontrol-pendidikan','menu-materi-pembelajaran','menu-tindak-akademik','menu-absensi-ibadah-guru','menu-absensi-ibadah-naqib','menu-kontrol-pembinaan','menu-kontrol-pembinaan--mentoring','menu-kontrol-pembinaan--counselor','menu-kontrol-pembinaan--followup'],SUPERVISOR:['menu-supervisor-v2','menu-supervisor-v2--escalations','menu-supervisor-v2--observation','menu-supervisor-v2--followup'],DIREKTUR:['menu-direktur-v2','menu-direktur-v2--inbox','menu-direktur-v2--targets','menu-direktur-v2--supervisors'],DAPUR:['menu-dashboard-operasional','menu-dapur-shopping','menu-dapur-received','menu-dapur-menu'],LAYANAN_KEBERSIHAN:['menu-jurnal-pkl','menu-buku-tamu','menu-laporan-murojaah','menu-penitipan-barang']};
-  let session,user,items=[],quick=[],secondary=[],host;
+  let session,user,items=[],quick=[],secondary=[],host,mentorState=null;
+  const norm=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  function mentorContact(name=''){
+    const key=norm(name);if(!key)return null;
+    return mentorContacts.find(contact=>contact.aliases.some(alias=>key===norm(alias)||key.includes(norm(alias))||norm(alias).includes(key)))||null;
+  }
+  function contactById(id){return mentorContacts.find(contact=>contact.id===id)||null}
+  function assignedMentors(usrah=''){return(mentorUsrahAssignments[usrah]||[]).map(item=>({...item,contact:contactById(item.id)})).filter(item=>item.contact)}
+  function mentoringRows(value,depth=0){
+    if(!value||depth>5)return[];
+    if(Array.isArray(value))return value.flatMap(item=>mentoringRows(item,depth+1));
+    if(typeof value!=='object')return[];
+    if(value.mentor||value.namaMentor||value.pelaksana)return[value];
+    return Object.values(value).flatMap(item=>mentoringRows(item,depth+1));
+  }
+  function mentoringTime(record={}){return Date.parse(record.updatedAt||record.tanggal||record.createdAt||record.timestamp||0)||0}
+  async function resolveWaliMentor(){
+    if(mentorState)return mentorState;
+    const student=window.CahayaWaliSession?.getStudent?.()||user||{};
+    const childName=window.CahayaWaliSession?.studentName?.(student)||student.namaAnak||student.namaSantri||'';
+    let usrah=window.CahayaWaliSession?.normalizeUsrahLabel?.(student.usrah||student.namaUsrah)||'';
+    if(!usrah&&childName&&window.CAHAYA_MASTER_DATA?.usrah&&window.CahayaWaliSession?.findStudentUsrah){
+      const localMatch=window.CahayaWaliSession.findStudentUsrah(window.CAHAYA_MASTER_DATA.usrah,childName);
+      usrah=window.CahayaWaliSession.normalizeUsrahLabel(localMatch?.groupName)||'';
+    }
+    if(!usrah&&childName&&window.CahayaWaliSession?.resolveStudentIdentity&&typeof dbRT!=='undefined'){
+      try{
+        const identity=await window.CahayaWaliSession.resolveStudentIdentity(dbRT,childName,student);
+        usrah=window.CahayaWaliSession.normalizeUsrahLabel(identity?.usrah)||'';
+      }catch(error){console.warn('Usrah ananda belum dapat diselaraskan dari master santri.',error)}
+    }
+    const assigned=assignedMentors(usrah);
+    if(assigned.length){mentorState={childName,usrah,mentors:assigned};return mentorState}
+    let mentorName=student.namaMentor||student.mentor||'';
+    try{
+      if(!mentorName&&window.CahayaWaliSession&&typeof dbRT!=='undefined'){
+        const result=await window.CahayaWaliSession.readRTDB(dbRT,'cahaya_app/log_mentoring_naqib',{limit:160,noCache:true});
+        const rows=mentoringRows(result?.value).filter(record=>{
+          const recordChild=record.namaSantri||record.santri||record.studentName||'';
+          return !childName||!recordChild||window.CahayaWaliSession.namesMatch(recordChild,childName);
+        }).sort((a,b)=>mentoringTime(b)-mentoringTime(a));
+        mentorName=rows[0]?.mentor||rows[0]?.namaMentor||rows[0]?.pelaksana||mentorName;
+      }
+    }catch(error){console.warn('Informasi mentor belum dapat diselaraskan.',error)}
+    const contact=mentorContact(mentorName);
+    mentorState={childName,usrah,mentors:mentorName?[{id:contact?.id||'',role:'Mentor Ananda',name:contact?.name||String(mentorName).trim(),contact}]:[]};
+    return mentorState;
+  }
+  function mentorDialogBody(state){
+    if(!state?.mentors?.length)return`<div class="mh-mentor-empty"><span>${icon('people')}</span><b>Informasi mentor belum tersedia</b><p>Penugasan mentor untuk ananda belum tercatat pada profil atau riwayat mentoring.</p></div>`;
+    return`<div class="mh-mentor-list">${state.mentors.map(item=>{const contact=item.contact,name=contact?.name||item.name;return`<section class="mh-mentor-entry"><div class="mh-mentor-profile"><span class="mh-mentor-avatar">${esc(name.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase())}</span><div><small>${esc(item.role||'Mentor Ananda')}</small><h3>${esc(name)}</h3>${contact?`<a href="https://wa.me/${contact.wa}" target="_blank" rel="noopener noreferrer">${esc(contact.phone)}</a>`:'<p>Nomor WhatsApp belum tersedia.</p>'}</div></div>${contact?`<a class="mh-whatsapp" href="https://wa.me/${contact.wa}" target="_blank" rel="noopener noreferrer">${icon('chat')}<span>Kirim Pesan WhatsApp</span></a>`:''}</section>`}).join('')}</div>`;
+  }
+  async function showMentorDialog(){
+    const dialog=host?.querySelector('.mh-mentor-dialog'),body=dialog?.querySelector('.mh-mentor-body');if(!dialog||!body)return;
+    body.innerHTML='<div class="mh-mentor-loading">Menyiapkan informasi mentor ananda…</div>';
+    if(!dialog.open)dialog.showModal();
+    body.innerHTML=mentorDialogBody(await resolveWaliMentor());
+  }
   function summary(item){return descriptions[item.id]||(wali?(/mentoring/i.test(item.label)?'Refleksi, target & perkembangan ananda':/laporan/i.test(item.label)?'Ikuti perkembangan ananda':/kabar/i.test(item.label)?'Cerita dan kabar terbaru ananda':'Informasi untuk keluarga'):(/kpi/i.test(item.label)?'Tinjau capaian dan bukti kerja':/riwayat/i.test(item.label)?'Lihat catatan sebelumnya':/panduan/i.test(item.label)?'Tugas dan standar kerja':/pembinaan/i.test(item.label)?'Dampingi dan arahkan perbaikan':/izin/i.test(item.label)?'Informasi izin santri':'Buka ruang kerja Anda'))}
   function card(item,index,large=false){return `<button type="button" class="mh-card ${large?'mh-quick-card':'mh-menu-card'} mh-tone-${index%6}" data-mh-id="${esc(item.id)}" title="${esc(item.label)}"><span class="mh-icon">${icon(item.icon||iconFor(item.label))}</span><span class="mh-card-copy"><b>${esc(item.label)}</b><small>${esc(item.description||summary(item))}</small></span><span class="mh-card-arrow">${large?icon('arrow'):'›'}</span></button>`}
   function all(){if(embedded&&typeof P.toggleSidebar==='function'){P.toggleSidebar();P.document.querySelector('.sidebar-close')?.focus({preventScroll:true});return}const sheet=host.querySelector('dialog');if(!sheet.open)sheet.showModal()}
   function open(id){
     if(id==='all')return all();
+    if(id==='mentor-contact')return showMentorDialog();
     if(id==='roles')return embedded?P.openCahayaGlobalRoleModal?.():all();
     if(id==='messages'){if(embedded)(wali?P.toggleWaliChat?.():P.openMobileShortcut?.('menu-chat'));return}
     if(id==='profile'){if(embedded){if(wali)P.document.getElementById('navProfil')?.click();else P.openAuthorizedMenu?.('menu-profil')}return}
@@ -139,12 +212,12 @@
     if(name.length>23)host.classList.add('mh-long-name');
     else if(name.length>11)host.classList.add('mh-medium-name');
     host.innerHTML=`<div class="mh-masthead"><header class="mh-header"><div class="mh-brand"><img src="${new URL('assets/cahaya-app/logo-icon.png',root)}" alt=""><span><strong>CAHAYA <em>APP</em></strong><small>Pesantren Cahaya Fajrul Islam</small></span></div><div class="mh-header-actions"><button type="button" data-mh-id="messages" aria-label="Buka pesan" class="mh-bell">${icon('bell')}</button><button type="button" data-mh-id="profile" aria-label="Buka profil" class="mh-avatar">${esc(name.charAt(0))}</button></div></header>
-      <section class="mh-hero"><div class="mh-identity"><span class="mh-greeting">Assalamu’alaikum,</span><h1 title="${esc(name)}">${esc(name)}</h1><button type="button" class="mh-role" data-mh-id="roles" ${session?.roles?.length>1?'':'disabled'}>${icon('people')}<span>${esc(label)}</span>${session?.roles?.length>1?'<span>⌄</span>':''}</button></div><blockquote>“${esc(role==='GURU_PONDOK'?'Mengajar hari ini, menyiapkan generasi cahaya esok hari.':supporting[role])}”</blockquote></section></div>
+      <section class="mh-hero"><div class="mh-identity"><span class="mh-greeting">Assalamu’alaikum,</span><h1 title="${esc(name)}">${esc(name)}</h1><div class="mh-identity-actions"><button type="button" class="mh-role" data-mh-id="roles" ${session?.roles?.length>1?'':'disabled'}>${icon('people')}<span>${esc(label)}</span>${session?.roles?.length>1?'<span>⌄</span>':''}</button>${wali?`<button type="button" class="mh-mentor-trigger" data-mh-id="mentor-contact">${icon('people')}<span>Mentor</span></button>`:''}</div></div><blockquote>“${esc(role==='GURU_PONDOK'?'Mengajar hari ini, menyiapkan generasi cahaya esok hari.':supporting[role])}”</blockquote></section></div>
       <div class="mh-date"><span class="mh-date-icon">${icon('calendar')}</span><div class="mh-date-copy"><span>${esc(date)}</span><small>${esc(hijri)}</small></div><div class="mh-date-message">${icon('sun')}<span>Terus<br>Menebar Manfaat</span></div></div>
       <section class="mh-quick"><div class="mh-heading"><h2>Akses Cepat Hari Ini</h2><button type="button" data-mh-id="all">Lihat Semua →</button></div><div class="mh-quick-grid" style="--mh-quick-rows:${Math.max(1,Math.ceil(quick.length/2))}">${quick.map((x,i)=>card(x,i,true)).join('')}</div></section>
       <section class="mh-menu"><div class="mh-heading"><h2>Menu Lainnya</h2><button type="button" class="mh-more" data-mh-id="all">Lihat Semua →</button></div><div class="mh-menu-grid"></div></section>
       <footer class="mh-banner"><p>Setiap langkah kecil hari ini,<br><strong>membawa perubahan besar esok hari.</strong></p></footer>
-      <dialog class="mh-all"><header><h2>Semua Menu ${esc(label)}</h2><button type="button" data-mh-close aria-label="Tutup menu">×</button></header><div>${items.map((x,i)=>card(x,i)).join('')}</div></dialog>`;
+      <dialog class="mh-all"><header><h2>Semua Menu ${esc(label)}</h2><button type="button" data-mh-close aria-label="Tutup menu">×</button></header><div>${items.map((x,i)=>card(x,i)).join('')}</div></dialog>${wali?`<dialog class="mh-mentor-dialog"><header><div><small>PENDAMPING ANANDA</small><h2>Informasi Mentor</h2></div><button type="button" data-mentor-close aria-label="Tutup informasi mentor">×</button></header><div class="mh-mentor-body"></div></dialog>`:''}`;
     if(wali){
       host.querySelector('.mh-menu h2').textContent='Menu Walisantri';
       host.querySelector('.mh-all h2').textContent='Semua Menu Walisantri';
@@ -155,13 +228,14 @@
     if(!embedded)host.classList.add('mh-standalone');
     const photo=user.fotoProfil||user.foto_profil||user.photoURL||user.profilePhoto||user.avatar||user.foto;
     if(typeof photo==='string'&&/^(https?:|data:image\/|\/)/.test(photo)){const img=new Image();img.alt='';img.src=photo;img.onerror=()=>host.querySelector('.mh-avatar').textContent=name.charAt(0);host.querySelector('.mh-avatar').replaceChildren(img)}
-    host.addEventListener('click',e=>{const b=e.target.closest('[data-mh-id]');if(b)open(b.dataset.mhId);if(e.target.closest('[data-mh-close]'))host.querySelector('dialog').close();if(e.target===host.querySelector('dialog'))e.target.close()});
+    host.addEventListener('click',e=>{const b=e.target.closest('[data-mh-id]');if(b)open(b.dataset.mhId);if(e.target.closest('[data-mh-close]'))host.querySelector('.mh-all')?.close();if(e.target.closest('[data-mentor-close]'))host.querySelector('.mh-mentor-dialog')?.close();if(e.target.matches('dialog'))e.target.close()});
     fill();addEventListener('resize',fill);
+    if(wali){addEventListener('CAHAYA_WALI_SESSION_READY',()=>{mentorState=null});addEventListener('storage',event=>{if(['cahayaCurrentUser','cahayaWaliStudentProfile'].includes(event.key))mentorState=null})}
     // Parent shell owns the one existing bottom navigation and role popup.
     const syncShell=()=>{try{if(embedded)P.document.body.classList.toggle('mh-home-shell',P.document.getElementById('contentFrame')?.contentWindow===window)}catch{}};
     window.CahayaMobileHomeV2={syncShell};syncShell();media.addEventListener('change',syncShell);
     addEventListener('cahaya:resume',syncShell);addEventListener('pageshow',syncShell);
-    const suspend=()=>{try{if(embedded)P.document.body.classList.remove('mh-home-shell')}catch{}host.querySelector('dialog')?.close()};
+    const suspend=()=>{try{if(embedded)P.document.body.classList.remove('mh-home-shell')}catch{}host.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close())};
     addEventListener('cahaya:suspend',suspend);addEventListener('pagehide',suspend);
     addEventListener('message',e=>{if(e.source===P&&e.origin===location.origin&&e.data?.type==='CAHAYA_PAGE_SUSPEND')suspend()});
   }

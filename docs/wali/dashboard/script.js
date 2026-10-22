@@ -327,6 +327,24 @@
         storedStudent.usrah
       ),
 
+      mentor: cleanText(
+        child.mentor ||
+        child.namaMentor ||
+        account.mentor ||
+        account.namaMentor ||
+        storedStudent.mentor ||
+        storedStudent.namaMentor
+      ),
+
+      namaMentor: cleanText(
+        child.namaMentor ||
+        child.mentor ||
+        account.namaMentor ||
+        account.mentor ||
+        storedStudent.namaMentor ||
+        storedStudent.mentor
+      ),
+
       naqib: cleanText(
         account.naqib ||
         account.namaNaqib ||
@@ -1230,6 +1248,16 @@ async function readSnapshot(database, path, options = {}) {
         patch.usrah ||
         patch.namaUsrah ||
         account.usrah,
+
+      mentor:
+        patch.mentor ||
+        patch.namaMentor ||
+        account.mentor,
+
+      namaMentor:
+        patch.namaMentor ||
+        patch.mentor ||
+        account.namaMentor,
 
       naqib:
         patch.naqib ||

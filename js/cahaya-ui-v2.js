@@ -11,9 +11,9 @@
   const wali = path.startsWith('wali/');
   // One responsive Home composition. Existing feature controllers stay intact.
   if(home || path==='wali/dashboard/beranda.html' || shell || path==='wali/dashboard/index.html'){
-    const mobileStyle=document.createElement('link');mobileStyle.rel='stylesheet';mobileStyle.href=new URL('css/mobile-home-v2.css?v=265',root).href;document.head.append(mobileStyle);
+    const mobileStyle=document.createElement('link');mobileStyle.rel='stylesheet';mobileStyle.href=new URL('css/mobile-home-v2.css?v=284',root).href;document.head.append(mobileStyle);
     if(home || path==='wali/dashboard/beranda.html'){
-      const mobileScript=document.createElement('script');mobileScript.src=new URL('js/mobile-home-v2.js?v='+(path.startsWith('wali/')?'269':'273'),root).href;mobileScript.defer=true;document.head.append(mobileScript);
+      const mobileScript=document.createElement('script');mobileScript.src=new URL('js/mobile-home-v2.js?v='+(path.startsWith('wali/')?'284':'273'),root).href;mobileScript.defer=true;document.head.append(mobileScript);
     }
   }
   const mappings = {
