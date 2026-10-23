@@ -9,6 +9,8 @@ assert(implementation.includes("studentKey:key"));
 assert(implementation.includes("wali_index/${key}/mentoring/${id}"));
 assert(implementation.includes("repairWaliMentoringIndex(scoped)"));
 assert(implementation.includes("range('HISTORY')"));
+assert(implementation.includes('orderByKey(),limitToLast(300)'));
+assert(!implementation.includes("orderByChild('usrah')"));
 const menuModel=require('../js/role-menu-v2.js').model(mentor);
 assert(menuModel.find(x=>x.id==='menu-mentoring-individu').route.endsWith('view=form'));
 assert(menuModel.find(x=>x.id==='menu-mentoring-usrah').route.endsWith('view=history'));
@@ -17,8 +19,8 @@ for(const [menu,view] of [['menu-mentoring-individu','form'],['menu-mentoring-us
   assert(!N.decision(mentor,menu,view==='form'?'pembinaan/mentoring-individu.html':'pembinaan/mentoring-usrah.html').ok);
 }
 const dashboard=fs.readFileSync(path.join(__dirname,'../main-dashboard.html'),'utf8');
-assert(dashboard.includes("mentor-usrah-v2.html?v=226&amp;view=form"));
-assert(dashboard.includes("mentor-usrah-v2.html?v=226&amp;view=history"));
+assert(dashboard.includes("mentor-usrah-v2.html?v=227&amp;view=form"));
+assert(dashboard.includes("mentor-usrah-v2.html?v=227&amp;view=history"));
 assert(!dashboard.includes("loadPage('pembinaan/mentoring-individu.html"));
 assert(!dashboard.includes("loadPage('pembinaan/mentoring-usrah.html"));
 console.log('mentor-usrah-v2: ok');

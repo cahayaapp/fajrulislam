@@ -47,8 +47,8 @@
         ['menu-kpi-naqib','KPI Pekan Kerja Naqib','naqib/kpi.html','Evaluasi']
       ].forEach(x=>add(...x));guide();
     }else if(role==='MENTOR_USRAH'){
-      add('menu-mentoring-individu','Form Mentoring','pembinaan/mentor-usrah-v2.html?v=226&view=form');
-      add('menu-mentoring-usrah','Riwayat Mentoring','pembinaan/mentor-usrah-v2.html?v=226&view=history');
+      add('menu-mentoring-individu','Form Mentoring','pembinaan/mentor-usrah-v2.html?v=227&view=form');
+      add('menu-mentoring-usrah','Riwayat Mentoring','pembinaan/mentor-usrah-v2.html?v=227&view=history');
       add('menu-jurnal-liburan-monitor','Jurnal Liburan Santri','pembinaan/jurnal-liburan-monitor.html','Operasional');
     }else if(role==='KONSELOR'){
       const base='konselor/cases-v2.html?view=';
