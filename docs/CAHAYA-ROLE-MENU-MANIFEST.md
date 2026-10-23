@@ -143,13 +143,13 @@ Jadwal: `menu-kasus-masuk`; KPI: `menu-kpi-konselor`.
 
 Assignment: `{"unit":"","area":"","divisionIds":[],"usrahIds":["USRAH_3"],"studentIds":[],"programDomain":"","supervisedRoles":[],"managedRoles":[],"level":""}`.
 
-Home: `home-mentor-usrah.html?v=224`.
+Home: `home-mentor-usrah.html?v=225`.
 
 Jadwal: `menu-jadwal-role`; KPI: `menu-kpi-role`.
 
 | menuId | Label | Group | Route | Guard permission | Status / reason |
 |---|---|---|---|---|---|
-| menu-home | Beranda | Utama | home-mentor-usrah.html?v=224 | menu-home | PASS |
+| menu-home | Beranda | Utama | home-mentor-usrah.html?v=225 | menu-home | PASS |
 | menu-mentoring-individu | Form Mentoring | Operasional | pembinaan/mentor-usrah-v2.html?view=form | menu-mentoring-individu | PASS |
 | menu-mentoring-usrah | Riwayat Mentoring | Operasional | pembinaan/mentor-usrah-v2.html?view=history | menu-mentoring-usrah | PASS |
 | menu-panduan-kerja | Panduan & Manual | Lainnya | panduan-role-v2.html | menu-panduan-kerja | PASS |

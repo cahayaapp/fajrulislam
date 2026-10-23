@@ -15,7 +15,7 @@ assert.deepEqual(fixed.assignments.MANAJER.managedRoles,['NAQIB','MENTOR_USRAH',
 const putri=U.cleanAssignment('MANAJER',{area:'PEMBINAAN_KARAKTER',unit:'PUTRI',managedRoles:['NAQIB','KONSELOR']});
 assert.deepEqual(putri.managedRoles,['NAQIBAH','MENTOR_USRAH','KONSELOR']);
 const multi=R.resolveSession({...old,roles:['MANAJER','MENTOR_USRAH'],assignments:{...old.assignments,MENTOR_USRAH:{usrahIds:['USRAH_1']}}},{getItem:()=>null,setItem(){}});
-const switched=R.switchRole(multi,'MENTOR_USRAH');assert(switched.ok);assert.equal(switched.session.activeRole,'MENTOR_USRAH');assert.equal(R.homeFor(switched.session.activeRole,switched.session.activeAssignment),'home-mentor-usrah.html?v=224');
+const switched=R.switchRole(multi,'MENTOR_USRAH');assert(switched.ok);assert.equal(switched.session.activeRole,'MENTOR_USRAH');assert.equal(R.homeFor(switched.session.activeRole,switched.session.activeAssignment),'home-mentor-usrah.html?v=225');
 assert.equal(N.canAccessRoute(switched.session,'manajer/pembinaan-karakter-v2.html?view=control').ok,false);
 const workspace=fs.readFileSync('js/manager-character-v2.js','utf8');
 const page=fs.readFileSync('manajer/pembinaan-karakter-v2.html','utf8');

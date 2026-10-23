@@ -10,6 +10,7 @@
   function period(type){
     const end=today();let start=end.slice(0,8)+'01';
     if(type==='week'){const d=new Date(end+'T12:00:00+07:00');const dow=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Jakarta',weekday:'short'}).format(d);d.setUTCDate(d.getUTCDate()-['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(dow));start=M.date(d)}
+    if(type==='history'){const d=new Date(end+'T12:00:00+07:00');d.setUTCDate(d.getUTCDate()-89);start=M.date(d)}
     $('mentoringStart').value=start;$('mentoringEnd').value=end;
   }
   function state(message,error=false){$('mentoringState').hidden=!message;$('mentoringState').textContent=message;$('mentoringState').dataset.uiTone=error?'error':'neutral'}
@@ -48,7 +49,7 @@
     finally{busy=false;if(alive)$('mentoringApply').disabled=false}
   }
   async function init(){
-    period('month');
+    period('history');
     $('mentoringFilter').addEventListener('submit',e=>{e.preventDefault();load()});
     document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period(b.dataset.period);load()});
     try{
