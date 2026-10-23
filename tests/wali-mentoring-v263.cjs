@@ -16,5 +16,8 @@ assert(!/searchParams|URLSearchParams/.test(source),'URL cannot select another s
 assert(!source.includes("orderByChild(field).equalTo(name)"),'Wali must not query the global mentoring collection by client-supplied name');
 assert(source.includes("CahayaWaliSession.readSnapshot(db,'cahaya_app/log_mentoring_naqib'"));
 assert(source.includes("period('history')"));
+assert(source.includes("e.preventDefault();records=null;load()"));
+assert(source.includes('Target yang disepakati'));
+assert(source.includes("['Target Pekan Ini',row.target]"));
 assert(page.includes('data-period="history">90 Hari'));
 console.log('Wali mentoring: trusted per-student index, scoped projection, legacy aliases, inclusive calendar, WIB, private-note exclusion passed.');

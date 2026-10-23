@@ -30,8 +30,8 @@
     const rows=M.select(records,child,start,end);
     $('mentoringReports').innerHTML=rows.map(row=>{
       const status=results[String(row.result?.status||'').replace(/ /g,'_').toUpperCase()]||'Belum Dinilai';
-      const fields=[['Yang Disyukuri Pekan Ini',row.gratitude],['Fokus Pertumbuhan',row.target],['Mengapa Ini Penting',row.why],['Strategi Pekan Ini',row.strategy]];
-      return `<article class="ui-record wm-report-card"><div class="wm-report-meta"><span class="ui-status">${esc(format(row.date))}</span>${row.focusType?`<span class="ui-status">${esc(row.focusType==='TINGKATKAN'?'Tingkatkan':row.focusType==='PERBAIKI'?'Perbaiki':row.focusType)}</span>`:''}</div><h2>${esc(row.student)}</h2><p>${esc([row.usrah,row.mentor&&'Mentor: '+row.mentor].filter(Boolean).join(' · '))}</p><div class="wm-reflection">${fields.map(([title,value])=>`<section><h3>${title}</h3><p>${esc(value||'Belum tercatat.')}</p></section>`).join('')}</div><h3>Klarifikasi CAHAYA</h3>${row.clarified||row.legacyCahaya?C.dimensions.map(d=>dimension(row,d)).join(''):'<p>Rincian CAHAYA belum tersedia pada catatan lama ini.</p>'}<section class="wm-result"><h3>Hasil Capaian Target</h3><span class="ui-status ${status==='Tercapai'?'success':'neutral'}">${status}</span>${row.result?.description?`<p>${esc(row.result.description)}</p>`:''}${row.result?.date?`<small>Dicatat ${esc(format(row.result.date))}</small>`:''}</section></article>`;
+      const fields=[['Yang Disyukuri Pekan Ini',row.gratitude],['Target Pekan Ini',row.target],['Mengapa Ini Penting',row.why],['Strategi Pekan Ini',row.strategy]];
+      return `<article class="ui-record wm-report-card"><div class="wm-report-meta"><span class="ui-status">${esc(format(row.date))}</span>${row.focusType?`<span class="ui-status">${esc(row.focusType==='TINGKATKAN'?'Tingkatkan':row.focusType==='PERBAIKI'?'Perbaiki':row.focusType)}</span>`:''}</div><h2>${esc(row.student)}</h2><p>${esc([row.usrah,row.mentor&&'Mentor: '+row.mentor].filter(Boolean).join(' · '))}</p><div class="wm-reflection">${fields.map(([title,value])=>`<section><h3>${title}</h3><p>${esc(value||'Belum tercatat.')}</p></section>`).join('')}</div><h3>Klarifikasi CAHAYA</h3>${row.clarified||row.legacyCahaya?C.dimensions.map(d=>dimension(row,d)).join(''):'<p>Rincian CAHAYA belum tersedia pada catatan lama ini.</p>'}<section class="wm-result"><h3>Hasil Capaian Target</h3><div class="wm-result-target"><strong>Target yang disepakati</strong><p>${esc(row.target||'Target belum tercatat pada sesi ini.')}</p></div><span class="ui-status ${status==='Tercapai'?'success':'neutral'}">${status}</span>${row.result?.description?`<p class="wm-result-note">${esc(row.result.description)}</p>`:''}${row.result?.date?`<small>Dicatat ${esc(format(row.result.date))}</small>`:''}</section></article>`;
     }).join('');
     state(partial?'Sebagian catatan belum dapat dimuat. Silakan coba Lihat Laporan kembali.':rows.length?`${rows.length} sesi mentoring · ${format(start)} – ${format(end)}`:'Belum ada laporan mentoring pada rentang tanggal ini.',partial);
   }
@@ -50,8 +50,8 @@
   }
   async function init(){
     period('history');
-    $('mentoringFilter').addEventListener('submit',e=>{e.preventDefault();load()});
-    document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period(b.dataset.period);load()});
+    $('mentoringFilter').addEventListener('submit',e=>{e.preventDefault();records=null;load()});
+    document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period(b.dataset.period);records=null;load()});
     try{
       if(!firebase.apps.length)firebase.initializeApp(window.CAHAYA_CONFIG.firebase);
       db=firebase.database();
