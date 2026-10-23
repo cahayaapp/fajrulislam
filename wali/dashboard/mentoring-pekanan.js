@@ -22,7 +22,7 @@
       const score=Number(raw),answer=Number.isInteger(score)&&score>=1&&score<=i.options.length?i.options[score-1]:null;
       return `<li><strong>${esc(i.label)}</strong><p>${esc(answer||'Belum tercatat pada sesi ini.')}</p></li>`;
     });
-    return `<details class="wm-dimension"><summary>${esc(d.name)}</summary><ul>${entries.join('')}</ul>${stored?.note?`<p><strong>Catatan klarifikasi:</strong> ${esc(stored.note)}</p>`:''}</details>`;
+    return `<details class="wm-dimension"><summary>${esc(d.name)}</summary><ul>${entries.join('')}</ul>${stored?.note?`<p class="wm-dimension-note"><strong>Catatan observasi:</strong> ${esc(stored.note)}</p>`:''}</details>`;
   }
   function render(){
     const start=$('mentoringStart').value,end=$('mentoringEnd').value;
@@ -30,8 +30,40 @@
     const rows=M.select(records,child,start,end);
     $('mentoringReports').innerHTML=rows.map(row=>{
       const status=results[String(row.result?.status||'').replace(/ /g,'_').toUpperCase()]||'Belum Dinilai';
-      const fields=[['Yang Disyukuri Pekan Ini',row.gratitude],['Target Pekan Ini',row.target],['Mengapa Ini Penting',row.why],['Strategi Pekan Ini',row.strategy]];
-      return `<article class="ui-record wm-report-card"><div class="wm-report-meta"><span class="ui-status">${esc(format(row.date))}</span>${row.focusType?`<span class="ui-status">${esc(row.focusType==='TINGKATKAN'?'Tingkatkan':row.focusType==='PERBAIKI'?'Perbaiki':row.focusType)}</span>`:''}</div><h2>${esc(row.student)}</h2><p>${esc([row.usrah,row.mentor&&'Mentor: '+row.mentor].filter(Boolean).join(' · '))}</p><div class="wm-reflection">${fields.map(([title,value])=>`<section><h3>${title}</h3><p>${esc(value||'Belum tercatat.')}</p></section>`).join('')}</div><h3>Klarifikasi CAHAYA</h3>${row.clarified||row.legacyCahaya?C.dimensions.map(d=>dimension(row,d)).join(''):'<p>Rincian CAHAYA belum tersedia pada catatan lama ini.</p>'}<section class="wm-result"><h3>Hasil Capaian Target</h3><div class="wm-result-target"><strong>Target yang disepakati</strong><p>${esc(row.target||'Target belum tercatat pada sesi ini.')}</p></div><span class="ui-status ${status==='Tercapai'?'success':'neutral'}">${status}</span>${row.result?.description?`<p class="wm-result-note">${esc(row.result.description)}</p>`:''}${row.result?.date?`<small>Dicatat ${esc(format(row.result.date))}</small>`:''}</section></article>`;
+      const fields=[['Hal Positif yang Teramati',row.gratitude],['Target Perkembangan',row.target],['Makna Target bagi Ananda',row.why],['Strategi Pendampingan',row.strategy]];
+      const focus=row.focusType==='TINGKATKAN'?'Tingkatkan':row.focusType==='PERBAIKI'?'Perbaiki':row.focusType||'Pendampingan';
+      return `<article class="ui-record wm-document">
+        <header class="wm-document-head">
+          <div class="wm-brand"><img src="../../assets/logofi.png" alt="Logo Pesantren Cahaya Fajrul Islam"><div class="wm-brand-copy"><small>PESANTREN CAHAYA FAJRUL ISLAM</small><strong>Laporan Perkembangan Santri</strong></div></div>
+          <div class="wm-doc-type"><span>OBSERVASI TIM MENTOR</span><small>${esc(focus)}</small></div>
+        </header>
+        <div class="wm-document-body">
+          <section class="wm-identity" aria-label="Identitas laporan mentoring">
+            <div class="wm-identity-item"><span>Nama Santri</span><strong>${esc(row.student)}</strong></div>
+            <div class="wm-identity-item"><span>Usrah</span><strong>${esc(row.usrah||'—')}</strong></div>
+            <div class="wm-identity-item"><span>Tim Mentor</span><strong>${esc(row.mentor||'—')}</strong></div>
+            <div class="wm-identity-item"><span>Tanggal</span><strong>${esc(format(row.date))}</strong></div>
+          </section>
+          <section class="wm-section">
+            <h2 class="wm-section-title"><span class="wm-section-number">01</span>Catatan Perkembangan Pekanan</h2>
+            <p class="wm-section-subtitle">Rangkuman hasil pengamatan dan pendampingan Tim Mentor bersama ananda.</p>
+            <div class="wm-reflection">${fields.map(([title,value])=>`<section><h3>${title}</h3><p>${esc(value||'Belum tercatat.')}</p></section>`).join('')}</div>
+          </section>
+          <section class="wm-section">
+            <h2 class="wm-section-title"><span class="wm-section-number">02</span>Hasil Observasi Karakter CAHAYA</h2>
+            <p class="wm-section-subtitle">Gambaran perkembangan karakter yang dicatat Tim Mentor selama proses pendampingan. Bagian ini bukan skor kedisiplinan.</p>
+            <div class="wm-dimensions">${row.clarified||row.legacyCahaya?C.dimensions.map(d=>dimension(row,d)).join(''):'<p>Hasil observasi karakter belum tersedia pada catatan lama ini.</p>'}</div>
+          </section>
+          <section class="wm-section">
+            <h2 class="wm-section-title"><span class="wm-section-number">03</span>Target dan Hasil</h2>
+            <section class="wm-result">
+              <div class="wm-result-grid"><div class="wm-result-target"><strong>Target yang disepakati</strong><p>${esc(row.target||'Target belum tercatat pada sesi ini.')}</p></div><div class="wm-result-status"><span class="ui-status ${status==='Tercapai'?'success':'neutral'}">${status}</span>${row.result?.date?`<small>Dinilai ${esc(format(row.result.date))}</small>`:''}</div></div>
+              ${row.result?.description?`<p class="wm-result-note"><strong>Keterangan hasil:</strong><br>${esc(row.result.description)}</p>`:''}
+            </section>
+          </section>
+          <footer class="wm-document-note"><div><strong>Keterangan dokumen</strong><br>Dokumen digital ini disusun berdasarkan catatan hasil observasi dan pendampingan Tim Mentor Pesantren Cahaya Fajrul Islam melalui CAHAYA APP.</div></footer>
+        </div>
+      </article>`;
     }).join('');
     state(partial?'Sebagian catatan belum dapat dimuat. Silakan coba Lihat Laporan kembali.':rows.length?`${rows.length} sesi mentoring · ${format(start)} – ${format(end)}`:'Belum ada laporan mentoring pada rentang tanggal ini.',partial);
   }

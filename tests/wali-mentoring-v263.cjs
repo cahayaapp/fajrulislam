@@ -18,6 +18,12 @@ assert(source.includes("CahayaWaliSession.readSnapshot(db,'cahaya_app/log_mentor
 assert(source.includes("period('history')"));
 assert(source.includes("e.preventDefault();records=null;load()"));
 assert(source.includes('Target yang disepakati'));
-assert(source.includes("['Target Pekan Ini',row.target]"));
+assert(source.includes("['Target Perkembangan',row.target]"));
+assert(source.includes('Laporan Perkembangan Santri'));
+assert(source.includes('Hasil Observasi Karakter CAHAYA'));
+assert(!source.includes('Klarifikasi Karakter CAHAYA'));
+assert(source.includes('Keterangan dokumen'));
+assert(page.includes('Pilih rentang mentoring'));
+assert(page.includes('wm-document'));
 assert(page.includes('data-period="history">90 Hari'));
 console.log('Wali mentoring: trusted per-student index, scoped projection, legacy aliases, inclusive calendar, WIB, private-note exclusion passed.');
