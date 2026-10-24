@@ -5,14 +5,8 @@
   const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const results={TERCAPAI:'Tercapai',CUKUP_BERKEMBANG:'Cukup Berkembang',BELUM_TERCAPAI:'Belum Tercapai'};
   let child='',db,records=null,busy=false,partial=false,alive=true;
-  const today=()=>M.date(new Date());
   const format=value=>value?new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'long',year:'numeric'}).format(new Date(value+'T12:00:00+07:00')):'—';
-  function period(type){
-    const end=today();let start=end.slice(0,8)+'01';
-    if(type==='week'){const d=new Date(end+'T12:00:00+07:00');const dow=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Jakarta',weekday:'short'}).format(d);d.setUTCDate(d.getUTCDate()-['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(dow));start=M.date(d)}
-    if(type==='history'){const d=new Date(end+'T12:00:00+07:00');d.setUTCDate(d.getUTCDate()-89);start=M.date(d)}
-    $('mentoringStart').value=start;$('mentoringEnd').value=end;
-  }
+  const dateParts=value=>{const date=new Date(value+'T12:00:00+07:00'),parts=new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',day:'2-digit',month:'short'}).formatToParts(date),map=Object.fromEntries(parts.map(x=>[x.type,x.value]));return{day:map.day||'—',month:map.month||''}};
   function state(message,error=false){$('mentoringState').hidden=!message;$('mentoringState').textContent=message;$('mentoringState').dataset.uiTone=error?'error':'neutral'}
   function dimension(row,d){
     const clarified=row.clarified,old=row.legacyCahaya?.[d.name];
@@ -25,52 +19,43 @@
     return `<details class="wm-dimension"><summary>${esc(d.name)}</summary><ul>${entries.join('')}</ul>${stored?.note?`<p class="wm-dimension-note"><strong>Catatan observasi:</strong> ${esc(stored.note)}</p>`:''}</details>`;
   }
   function render(){
-    const start=$('mentoringStart').value,end=$('mentoringEnd').value;
-    if(!start||!end||start>end){state('Tanggal mulai harus sama dengan atau sebelum tanggal akhir.',true);return}
-    const rows=M.select(records,child,start,end);
+    const rows=M.select(records,child,'0000-01-01','9999-12-31').slice(0,5);
     $('mentoringReports').innerHTML=rows.map(row=>{
       const status=results[String(row.result?.status||'').replace(/ /g,'_').toUpperCase()]||'Belum Dinilai';
-      const fields=[['Hal Positif yang Teramati',row.gratitude],['Target Perkembangan',row.target],['Makna Target bagi Ananda',row.why],['Strategi Pendampingan',row.strategy]];
-      const focus=row.focusType==='TINGKATKAN'?'Tingkatkan':row.focusType==='PERBAIKI'?'Perbaiki':row.focusType||'Pendampingan';
-      return `<article class="ui-record wm-document">
-        <header class="wm-document-head">
-          <div class="wm-brand"><img src="../../assets/logofi.png" alt="Logo Pesantren Cahaya Fajrul Islam"><div class="wm-brand-copy"><small>PESANTREN CAHAYA FAJRUL ISLAM</small><strong>Laporan Perkembangan Santri</strong></div></div>
-          <div class="wm-doc-type"><span>OBSERVASI TIM MENTOR</span><small>${esc(focus)}</small></div>
-        </header>
+      const improving=String(row.focusType||'').toUpperCase()==='TINGKATKAN',focus=improving?'Peningkatan':'Perbaikan',parts=dateParts(row.date);
+      const targetFields=[[`Target ${focus}`,row.target],['Makna Target bagi Ananda',row.why],[`Strategi ${focus}`,row.strategy]];
+      return `<details class="ui-record wm-document">
+        <summary class="wm-card-summary">
+          <span class="wm-summary-date"><strong>${esc(parts.day)}</strong><span>${esc(parts.month)}</span></span>
+          <span class="wm-summary-main"><small>Laporan Perkembangan Karakter Cahaya Pekanan</small><strong>${esc(format(row.date))}</strong></span>
+        </summary>
         <div class="wm-document-body">
           <section class="wm-identity" aria-label="Identitas laporan mentoring">
             <div class="wm-identity-item"><span>Nama Santri</span><strong>${esc(row.student)}</strong></div>
-            <div class="wm-identity-item"><span>Usrah</span><strong>${esc(row.usrah||'—')}</strong></div>
             <div class="wm-identity-item"><span>Tim Mentor</span><strong>${esc(row.mentor||'—')}</strong></div>
-            <div class="wm-identity-item"><span>Tanggal</span><strong>${esc(format(row.date))}</strong></div>
           </section>
+          <div class="wm-reflection wm-reflection-single"><section><h3>Yang Paling Disyukuri</h3><p>${esc(row.gratitude||'Belum tercatat.')}</p></section></div>
           <section class="wm-section">
-            <h2 class="wm-section-title"><span class="wm-section-number">01</span>Catatan Perkembangan Pekanan</h2>
-            <p class="wm-section-subtitle">Rangkuman hasil pengamatan dan pendampingan Tim Mentor bersama ananda.</p>
-            <div class="wm-reflection">${fields.map(([title,value])=>`<section><h3>${title}</h3><p>${esc(value||'Belum tercatat.')}</p></section>`).join('')}</div>
-          </section>
-          <section class="wm-section">
-            <h2 class="wm-section-title"><span class="wm-section-number">02</span>Hasil Observasi Karakter CAHAYA</h2>
-            <p class="wm-section-subtitle">Gambaran perkembangan karakter yang dicatat Tim Mentor selama proses pendampingan. Bagian ini bukan skor kedisiplinan.</p>
+            <h2 class="wm-section-title"><span class="wm-section-number">01</span>Hasil Observasi Karakter Cahaya</h2>
+            <p class="wm-section-subtitle">Gambaran perkembangan karakter yang dicatat Tim Mentor selama proses pendampingan dan telah melalui proses klarifikasi atau wawancara langsung oleh Mentor dengan Ananda.</p>
             <div class="wm-dimensions">${row.clarified||row.legacyCahaya?C.dimensions.map(d=>dimension(row,d)).join(''):'<p>Hasil observasi karakter belum tersedia pada catatan lama ini.</p>'}</div>
           </section>
           <section class="wm-section">
-            <h2 class="wm-section-title"><span class="wm-section-number">03</span>Target dan Hasil</h2>
+            <h2 class="wm-section-title"><span class="wm-section-number">02</span>Target dan Hasil</h2>
+            <div class="wm-target-details">${targetFields.map(([title,value])=>`<section class="wm-target-item"><strong>${esc(title)}</strong><p>${esc(value||'Belum tercatat.')}</p></section>`).join('')}</div>
             <section class="wm-result">
-              <div class="wm-result-grid"><div class="wm-result-target"><strong>Target yang disepakati</strong><p>${esc(row.target||'Target belum tercatat pada sesi ini.')}</p></div><div class="wm-result-status"><span class="ui-status ${status==='Tercapai'?'success':'neutral'}">${status}</span>${row.result?.date?`<small>Dinilai ${esc(format(row.result.date))}</small>`:''}</div></div>
-              ${row.result?.description?`<p class="wm-result-note"><strong>Keterangan hasil:</strong><br>${esc(row.result.description)}</p>`:''}
+              <div class="wm-result-grid"><div class="wm-result-target"><strong>Hasil Capaian Target</strong><p>${esc(row.result?.description||'Hasil target belum dicatat oleh Tim Mentor.')}</p></div><div class="wm-result-status"><span class="ui-status ${status==='Tercapai'?'success':'neutral'}">${status}</span>${row.result?.date?`<small>Dinilai ${esc(format(row.result.date))}</small>`:''}</div></div>
             </section>
           </section>
           <footer class="wm-document-note"><div><strong>Keterangan dokumen</strong><br>Dokumen digital ini disusun berdasarkan catatan hasil observasi dan pendampingan Tim Mentor Pesantren Cahaya Fajrul Islam melalui CAHAYA APP.</div></footer>
         </div>
-      </article>`;
+      </details>`;
     }).join('');
-    state(partial?'Sebagian catatan belum dapat dimuat. Silakan coba Lihat Laporan kembali.':rows.length?`${rows.length} sesi mentoring · ${format(start)} – ${format(end)}`:'Belum ada laporan mentoring pada rentang tanggal ini.',partial);
+    state(partial?'Sebagian catatan belum dapat dimuat. Silakan buka kembali halaman ini.':rows.length?`Menampilkan ${rows.length} mentoring terbaru.`:'Belum ada laporan mentoring untuk ananda.',partial);
   }
   async function load(){
     if(busy||!child||!alive)return;
-    if($('mentoringStart').value>$('mentoringEnd').value){state('Periksa kembali rentang tanggal.',true);return}
-    busy=true;$('mentoringApply').disabled=true;state('Memuat laporan mentoring…');
+    busy=true;state('Memuat 5 mentoring terbaru…');
     try{
       if(!records||partial){
         const snapshot=await CahayaWaliSession.readSnapshot(db,'cahaya_app/log_mentoring_naqib',{limit:160,noCache:true});if(!alive)return;
@@ -78,12 +63,9 @@
       }
       render();
     }catch(error){if(alive){console.error('Laporan mentoring Wali gagal dimuat',error);$('mentoringReports').replaceChildren();state('Laporan mentoring belum dapat dimuat. Periksa koneksi atau hak akses data, lalu coba Lihat Laporan kembali.',true)}}
-    finally{busy=false;if(alive)$('mentoringApply').disabled=false}
+    finally{busy=false}
   }
   async function init(){
-    period('history');
-    $('mentoringFilter').addEventListener('submit',e=>{e.preventDefault();records=null;load()});
-    document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period(b.dataset.period);records=null;load()});
     try{
       if(!firebase.apps.length)firebase.initializeApp(window.CAHAYA_CONFIG.firebase);
       db=firebase.database();
@@ -94,7 +76,7 @@
       // Identity is the linked session child, never a student supplied in the URL.
       child=CahayaWaliSession.studentName(session.student);
       if(!child){state('Ananda belum terhubung dengan akun Wali.',true);return}
-      $('mentoringChild').textContent=child;await load();
+      await load();
     }catch(error){console.error(error);state('Sesi Wali belum dapat dimuat. Silakan buka kembali dari Beranda Wali.',true)}
   }
   addEventListener('pagehide',()=>{alive=false;records=null});
