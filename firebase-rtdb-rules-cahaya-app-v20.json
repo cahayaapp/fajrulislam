@@ -1,7 +1,7 @@
 {
   "rules": {
-    ".read": true,
-    ".write": true,
+    ".read": false,
+    ".write": false,
     "cahaya_access": {
       ".read": false,
       ".write": false,
@@ -20,91 +20,112 @@
     },
     "cahaya_chat_v2": {
       ".read": false,
-      ".write": false,
-      "rooms": {
-        "$roomId": {
-          ".read": "auth != null && data.child('members').child(auth.uid).child('active').val() === true",
-          "members": { ".write": false },
-          "studentKey": { ".write": false },
-          "studentName": { ".write": false },
-          "lastMessage": { ".write": false },
-          "updatedAt": { ".write": false },
-          "messages": {
-            "$messageId": {
-              ".write": "auth != null && !data.exists() && root.child('cahaya_chat_v2/rooms').child($roomId).child('members').child(auth.uid).child('active').val() === true && newData.child('senderUid').val() === auth.uid",
-              ".validate": "newData.hasOnly(['text','senderUid','senderDisplay','createdAt']) && newData.hasChildren(['text','senderUid','senderDisplay','createdAt']) && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 4000 && newData.child('senderDisplay').val() === root.child('cahaya_chat_v2/rooms').child($roomId).child('members').child(auth.uid).child('label').val() && newData.child('createdAt').isNumber() && newData.child('createdAt').val() <= now + 60000 && newData.child('createdAt').val() >= now - 300000"
-            }
-          },
-          "receipts": {
-            "$uid": {
-              ".read": "auth != null && root.child('cahaya_chat_v2/rooms').child($roomId).child('members').child(auth.uid).child('active').val() === true",
-              ".write": "auth != null && auth.uid === $uid && root.child('cahaya_chat_v2/rooms').child($roomId).child('members').child(auth.uid).child('active').val() === true",
-              ".validate": "newData.hasOnly(['lastReadAt']) && newData.child('lastReadAt').isNumber()"
-            }
-          }
-        }
-      },
-      "user_rooms": {
-        "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".indexOn": ["updatedAt"],
-          "$roomId": {
-            "lastReadAt": {
-              ".write": "auth != null && auth.uid === $uid && root.child('cahaya_chat_v2/rooms').child($roomId).child('members').child(auth.uid).child('active').val() === true",
-              ".validate": "newData.isNumber()"
-            }
-          }
-        }
-      }
+      ".write": false
     },
     "cahaya_app": {
-      ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
-      ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
       "face_attendance_poc": {
         ".read": false,
         ".write": false
       },
       "master_usrah": {
-        ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true"
+        ".read": "(auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true) || (auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true)",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "master_akademik": {
-        ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true"
+        ".read": "(auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true) || (auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true)",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "pengaturan_media": {
-        ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true"
+        ".read": "(auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true) || (auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true)",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pengaturan_notifikasi_web": {
+        ".read": "(auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true) || (auth != null && (root.child('cahaya_access/users').child(auth.uid).child('active').val() === true || root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true))",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "fcm_tokens_wali": {
+        "$waliKey": {
+          "$tokenKey": {
+            ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && newData.child('guardianUid').val() === auth.uid && newData.child('studentKey').isString() && root.child('cahaya_access/wali').child(auth.uid).child('students').child(newData.child('studentKey').val()).child('active').val() === true",
+            ".read": false
+          }
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "fcm_wali_by_student": {
+        "$studentKey": {
+          "$waliKey": {
+            ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true && newData.child('guardianUid').val() === auth.uid && newData.child('studentKey').val() === $studentKey",
+            ".read": false
+          }
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "fcm_tokens_user": {
+        "$userKey": {
+          "$tokenKey": {
+            ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && newData.child('guardianUid').val() === auth.uid && newData.child('studentKey').isString() && root.child('cahaya_access/wali').child(auth.uid).child('students').child(newData.child('studentKey').val()).child('active').val() === true",
+            ".read": false
+          }
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "fcm_users_by_role": {
+        "wali": {
+          "$userKey": {
+            ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && newData.child('guardianUid').val() === auth.uid && newData.child('studentKey').isString() && root.child('cahaya_access/wali').child(auth.uid).child('students').child(newData.child('studentKey').val()).child('active').val() === true",
+            ".read": false
+          }
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "jadwal_program_harian": {
-        ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true"
+        ".read": "(auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true) || (auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true)",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "jadwal_piket_naqib": {
-        ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true"
+        ".read": "(auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true) || (auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true)",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "kalender_pendidikan": {
-        ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true"
+        ".read": "(auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true) || (auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true)",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "direktori_chat_wali": {
-        ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true",
-        ".write": false
+        ".read": "(auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true) || (auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true)",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "absensi_program_harian": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "absensi_pembelajaran": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "log_absensi_guru": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "setoran_tahfiz": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "nilai_ujian_bulanan": {
         ".indexOn": [
@@ -115,7 +136,9 @@
           "nama_santri",
           "guru_penguji",
           "mata_pelajaran"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "nilai_ujian": {
         ".indexOn": [
@@ -126,91 +149,130 @@
           "nama_santri",
           "guru_penguji",
           "mata_pelajaran"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "asesmen_cahaya_santri": {
         ".indexOn": [
           "tanggalAsesmen"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "log_lapor_inisiatif": {
         ".indexOn": [
           "tanggal",
           "caseV2/higherEscalation/requestedAt",
           "caseV2/higherEscalation/response/respondedAt"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "poin_manual": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "laporan_penindakan": {
         ".indexOn": [
           "tanggalPenindakan"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "pemeriksaan_kesehatan": {
         ".indexOn": [
           "tanggalPemeriksaan"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "perizinan_santri": {
         ".indexOn": [
           "tanggalPengajuan"
-        ]
+        ],
+        "$permitId": {
+          ".write": "auth != null && !data.exists() && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && newData.child('namaSantriKey').isString() && root.child('cahaya_access/wali').child(auth.uid).child('students').child(newData.child('namaSantriKey').val()).child('active').val() === true && newData.child('sumberPengajuan').val() === 'WALI' && newData.child('status').val() === 'MENUNGGU_PIMPINAN'"
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "perizinan_ringkas": {
         ".indexOn": [
           "tanggalPengajuan",
           "status",
           "sumberPengajuan"
-        ]
+        ],
+        "$permitId": {
+          ".write": "auth != null && !data.exists() && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && newData.child('namaSantriKey').isString() && root.child('cahaya_access/wali').child(auth.uid).child('students').child(newData.child('namaSantriKey').val()).child('active').val() === true && newData.child('sumberPengajuan').val() === 'WALI' && newData.child('status').val() === 'MENUNGGU_PIMPINAN'"
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "jurnal_piket_naqib": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "jurnal_kesehatan": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "jurnal_sarpras": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "jurnal_sarpras_harian": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "jurnal_keamanan_kebersihan": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "checklist_harian_sarpras": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "tindak_lanjut_sarpras": {
         ".indexOn": [
           "tanggalTindakan",
           "status"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "tindak_lanjut_sdm": {
         ".indexOn": [
           "tanggal",
           "namaSDM"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "keuangan": {
         "transaksi_kantin": {
+          ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && query.orderByChild === 'studentKey' && query.equalTo != null && root.child('cahaya_access/wali').child(auth.uid).child('students').child(query.equalTo).child('active').val() === true",
           ".indexOn": [
             "studentKey",
             "tanggal",
@@ -218,6 +280,7 @@
           ]
         },
         "pembayaran": {
+          ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && query.orderByChild === 'studentKey' && query.equalTo != null && root.child('cahaya_access/wali').child(auth.uid).child('students').child(query.equalTo).child('active').val() === true",
           ".indexOn": [
             "studentKey",
             "tanggal",
@@ -229,9 +292,32 @@
           ".indexOn": [
             "kelas",
             "jenisKelamin"
-          ]
+          ],
+          "$studentKey": {
+            ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true",
+            ".write": false,
+            "limitHarian": {
+              ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true && newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000"
+            },
+            "pinSalt": {
+              ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true && newData.isString() && newData.val().length >= 8 && newData.val().length <= 80"
+            },
+            "pinHash": {
+              ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true && newData.isString() && newData.val().length === 64"
+            },
+            "pinGagal": {
+              ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true && newData.isNumber() && newData.val() >= 0 && newData.val() <= 3"
+            },
+            "pinTerkunciSampai": {
+              ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true && newData.isNumber() && newData.val() >= 0"
+            },
+            "diperbaruiPada": {
+              ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true && newData.isString()"
+            }
+          }
         },
         "tagihan": {
+          ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && query.orderByChild === 'studentKey' && query.equalTo != null && root.child('cahaya_access/wali').child(auth.uid).child('students').child(query.equalTo).child('active').val() === true",
           ".indexOn": [
             "studentKey",
             "tanggal",
@@ -241,6 +327,7 @@
           ]
         },
         "mutasi": {
+          ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && query.orderByChild === 'studentKey' && query.equalTo != null && root.child('cahaya_access/wali').child(auth.uid).child('students').child(query.equalTo).child('active').val() === true",
           ".indexOn": [
             "studentKey",
             "tanggal",
@@ -252,6 +339,7 @@
         "kantin": {
           "putra": {
             "transaksi": {
+              ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && query.orderByChild === 'studentKey' && query.equalTo != null && root.child('cahaya_access/wali').child(auth.uid).child('students').child(query.equalTo).child('active').val() === true",
               ".indexOn": [
                 "studentKey",
                 "tanggal",
@@ -264,6 +352,7 @@
           },
           "putri": {
             "transaksi": {
+              ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && query.orderByChild === 'studentKey' && query.equalTo != null && root.child('cahaya_access/wali').child(auth.uid).child('students').child(query.equalTo).child('active').val() === true",
               ".indexOn": [
                 "studentKey",
                 "tanggal",
@@ -280,8 +369,23 @@
             "tanggal",
             "waktu",
             "action"
-          ]
-        }
+          ],
+          "$auditId": {
+            ".write": "auth != null && !data.exists() && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && newData.child('data/studentKey').isString() && root.child('cahaya_access/wali').child(auth.uid).child('students').child(newData.child('data/studentKey').val()).child('active').val() === true"
+          }
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "jurnal_liburan": {
+        "$section": {
+          "$studentKey": {
+            ".read": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true",
+            ".write": "auth != null && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($studentKey).child('active').val() === true"
+          }
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "wali_index": {
         "$santriKey": {
@@ -344,7 +448,10 @@
           "perizinan": {
             ".indexOn": [
               "tanggalPengajuan"
-            ]
+            ],
+            "$permitId": {
+              ".write": "auth != null && !data.exists() && root.child('cahaya_access/wali').child(auth.uid).child('active').val() === true && root.child('cahaya_access/wali').child(auth.uid).child('students').child($santriKey).child('active').val() === true && newData.child('namaSantriKey').val() === $santriKey && newData.child('sumberPengajuan').val() === 'WALI' && newData.child('status').val() === 'MENUNGGU_PIMPINAN'"
+            }
           },
           "halqah": {
             ".indexOn": [
@@ -365,7 +472,9 @@
               "updatedAt"
             ]
           }
-        }
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "evaluasi_bulanan_naqib": {
         ".indexOn": [
@@ -374,18 +483,24 @@
           "bulan",
           "status",
           "updatedAt"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "jadwal_pelajaran": {
         ".indexOn": [
           "kelas",
           "hari"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "absensi_halqah": {
         ".indexOn": [
           "tanggal"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "manajemen_operasional_v1": {
         "tasks": {
@@ -447,7 +562,9 @@
             "coach",
             "division"
           ]
-        }
+        },
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "guru_berhalangan": {
         ".indexOn": [
@@ -455,7 +572,9 @@
           "guruTerjadwal",
           "guruPengganti",
           "statusKetidakhadiran"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "masalah_pendidikan": {
         ".indexOn": [
@@ -465,34 +584,46 @@
           "kategori",
           "supervisorEscalation/directorEscalation/requestedAt",
           "supervisorEscalation/directorEscalation/response/respondedAt"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "masalah_pembinaan_karakter": {
         ".indexOn": [
           "supervisorEscalation/directorEscalation/requestedAt",
           "supervisorEscalation/directorEscalation/response/respondedAt"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "temuan_supervisor": {
         ".indexOn": [
           "directorEscalation/requestedAt",
           "directorEscalation/response/respondedAt"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "arah_target_direktur": {
         ".indexOn": [
           "deadline"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "perubahan_sistem_direktur": {
         ".indexOn": [
           "reviewDate"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "pembinaan_direktur_supervisor": {
         ".indexOn": [
           "reviewDate"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "kontrol_kelas": {
         ".indexOn": [
@@ -500,7 +631,9 @@
           "unit",
           "kelas",
           "status"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "tindak_lanjut_akademik": {
         ".indexOn": [
@@ -509,7 +642,9 @@
           "namaSantri",
           "mapel",
           "status"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "keputusan_direktur_pendidikan": {
         ".indexOn": [
@@ -517,7 +652,9 @@
           "tanggal",
           "unit",
           "status"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "target_pertumbuhan": {
         ".indexOn": [
@@ -526,7 +663,9 @@
           "status",
           "tanggalMulai",
           "timestamp"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "mentoring_usrah": {
         ".indexOn": [
@@ -535,7 +674,9 @@
           "usrah",
           "asistenNaqib",
           "status"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "review_pembinaan_bulanan": {
         ".indexOn": [
@@ -543,7 +684,9 @@
           "unit",
           "supervisor",
           "timestamp"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "absensi_ibadah_guru": {
         ".indexOn": [
@@ -551,7 +694,9 @@
           "guruKey",
           "guruKode",
           "unit"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       },
       "pengaturan_guru_mukim": {
         ".indexOn": [
@@ -560,7 +705,333 @@
           "mukim",
           "aktif",
           "unit"
-        ]
+        ],
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "absensi_guru": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "absensi_ibadah_naqib": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "asesmen_akhir_semester": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "assesment_cahaya_naqib": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "bukti_pelanggaran": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "buku_kasus_konselor": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "capaian_materi": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "capaian_materi_guru": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "capaian_media_harian": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "capaian_media_pekanan": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "checklist_kebersihan_dapur": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "daftar_belanja_dapur": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "dashboard_operasional_updates": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "data_santri": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "evaluasi_tindak_lanjut": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "foto_sp_santri": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "foto_tindak_sarpras": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "gallery_dokumentasi": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "guru_nilai_ringkas": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "guru_tindak_lanjut_index": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "interaksi_cerita": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "interaksi_cerita_wali": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "interaksi_komentar_admin": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "inventori_bahan_dapur": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "izin_guru": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "izin_sakit_harian": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "keputusan_direktur": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "keputusan_direktur_divisi": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "kpi_mingguan_v2": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "log_manajemen_kelas": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "log_mentoring_naqib": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "logbook_dapur_harian": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "masalah_sistemik_direktur": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "master_asrama": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "master_program_harian": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "master_ruang_kelas": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "media_content_plan": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "menu_harian_dapur": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "meta": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "naqib_teladan_harian": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "nilai_input_final": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "nilai_input_index": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "notifikasi_role": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "notifikasi_semua": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "notifikasi_user": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "notifikasi_wali": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "notulensi_rapat": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pelanggaran_santri": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pembinaan_guru": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pembinaan_personil_karakter": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pembinaan_supervisor": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "penerimaan_bahan_dapur": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pengaturan_absensi_guru": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pesan_dibaca": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pesan_global": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pesan_inbox": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "pesan_meta": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "program_quran_santri": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "rapor_publication": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "review_divisi_bulanan": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "review_operasional_bulanan": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "review_pendidikan_bulanan": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "review_supervisor_terpadu": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "self_asesmen_guru": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "self_asesmen_konselor": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "self_asesmen_naqib": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "standar_kerja_supervisor": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "stok_obat_uks": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "surat_peringatan_santri": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "target_tahfiz": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "tindak_lanjut_guru": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "transaksi_stok_obat_uks": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "asesmen_kinerja_sdm": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "asesmen_mandiri_guru": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "asesmen_mandiri_naqib": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "assesment_cahaya_santri": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "assesment_triwulan_naqib": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "guru_kits_hasil_ai": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "guru_kits_materi": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "kalender_materi_pembelajaran": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
+      },
+      "piket_naqib_saat_ini": {
+        ".read": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true",
+        ".write": "auth != null && root.child('cahaya_access/users').child(auth.uid).child('active').val() === true && root.child('cahaya_access/users').child(auth.uid).child('internal').val() === true"
       }
     },
     "observasi_lapangan": {

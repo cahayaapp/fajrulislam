@@ -13,7 +13,8 @@ for(const unit of ['', 'PUTRA', 'PUTRI']){
   assert(ids.includes('menu-laporan-murojaah'));
   assert(ids.includes('menu-buku-tamu'));
   assert(ids.includes('menu-penitipan-barang'));
-  for(const id of ['menu-kpi-role','menu-panduan-kerja','menu-chat','menu-jadwal-role'])assert(ids.includes(id),id);
+  for(const id of ['menu-kpi-role','menu-panduan-kerja','menu-jadwal-role'])assert(ids.includes(id),id);
+  assert(!ids.includes('menu-chat'));
   assert(!ids.includes('menu-buku-izin'));
   assert(!R.can('LAYANAN_KEBERSIHAN','menu-buku-izin',session.activeAssignment));
   assert(!N.canAccessRoute(session,'layanan/buku-izin.html').ok);

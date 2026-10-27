@@ -11,8 +11,16 @@ assert.match(rules.cahaya_access.wali.$uid['.read'], /auth\.uid === \$uid/);
 assert.match(rules.cahaya_app.wali_index.$santriKey['.read'], /auth\.uid/);
 assert.match(rules.cahaya_app.wali_index.$santriKey['.read'], /students.*\$santriKey/);
 assert.equal(rules.cahaya_app.wali_index.$santriKey['.write'], false);
-assert(!rules.cahaya_app.nilai_ujian?.['.read'], 'Wali must not receive a direct academic collection grant');
-assert(!rules.cahaya_app.nilai_ujian_bulanan?.['.read'], 'Wali must not receive a direct monthly collection grant');
+assert.match(rules.cahaya_app.nilai_ujian['.read'], /internal'\)\.val\(\) === true/, 'academic collection is internal only');
+assert.match(rules.cahaya_app.nilai_ujian_bulanan['.read'], /internal'\)\.val\(\) === true/, 'monthly collection is internal only');
+assert(!rules.cahaya_app.nilai_ujian['.read'].includes('cahaya_access/wali'), 'Wali must not receive a direct academic collection grant');
+assert(!rules.cahaya_app.nilai_ujian_bulanan['.read'].includes('cahaya_access/wali'), 'Wali must not receive a direct monthly collection grant');
+assert.match(rules.cahaya_app.jurnal_liburan.$section.$studentKey['.write'], /students.*\$studentKey/);
+assert.match(rules.cahaya_app.perizinan_santri.$permitId['.write'], /namaSantriKey/);
+assert.match(rules.cahaya_app.perizinan_santri.$permitId['.write'], /MENUNGGU_PIMPINAN/);
+assert.match(rules.cahaya_app.keuangan.tagihan['.read'], /query\.equalTo/);
+assert.match(rules.cahaya_app.keuangan.rekening_santri.$studentKey['.read'], /students.*\$studentKey/);
+assert.match(rules.cahaya_app.fcm_tokens_wali.$waliKey.$tokenKey['.write'], /guardianUid.*auth\.uid/);
 
 const canReadWaliIndex = ({uid, active=true, mapped=[]}, studentKey) => Boolean(uid && active && mapped.includes(studentKey));
 const canWriteOfficialAcademic = () => false;
@@ -21,7 +29,10 @@ const canUseInternalGrant = ({uid, trustedInternal=false}) => Boolean(uid && tru
 
 assert(canReadWaliIndex({uid:'wali-a', mapped:['anak-a']}, 'anak-a'));                       // TEST 1
 assert(!canReadWaliIndex({uid:'wali-a', mapped:['anak-a']}, 'anak-b'));                      // TEST 2
-assert.equal(rules.cahaya_app['.read'].includes("internal').val() === true"), true);          // TEST 3
+assert.equal(rules.cahaya_app['.read'], undefined, 'internal grant must not override scoped child rules');
+assert.match(rules.cahaya_app.log_mentoring_naqib['.read'], /internal'\)\.val\(\) === true/); // TEST 3
+assert.equal(rules.cahaya_app.face_attendance_poc['.read'], false, 'biometric POC must stay private');
+assert.equal(rules.cahaya_app.face_attendance_poc['.write'], false, 'biometric POC is server mediated');
 assert(!canWriteOfficialAcademic());                                                         // TEST 4
 assert(!canWriteOwnMapping());                                                               // TEST 5
 assert(canReadWaliIndex({uid:'wali-a', mapped:['anak-a','anak-c']}, 'anak-c'));               // TEST 6

@@ -1944,10 +1944,6 @@
         <span>CAHAYA APP</span>
       </div>
       <div class="wali-mobile-actions">
-        <button class="wali-mobile-message" type="button" onclick="toggleWaliChat()" aria-label="Buka Pesan" title="Pesan">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7 10h10M7 13h6"/></svg>
-          <span class="wali-chat-badge" id="waliChatBadgeMobile">0</span>
-        </button>
         <button class="wali-mobile-logout" type="button" onclick="logout()" aria-label="Keluar dari aplikasi" title="Keluar">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4"/><path d="M14 8l4 4-4 4M18 12H9"/></svg>
         </button>
@@ -1970,18 +1966,6 @@
       </div>
 
       <div class="top-bar-actions">
-        <button
-          type="button"
-          class="wali-chat-top-button"
-          id="waliChatTopDesktop"
-          onclick="toggleWaliChat()"
-          aria-label="Buka Live Chat"
-          title="Live Chat"
-        >
-          💬
-          <span class="wali-chat-badge" id="waliChatBadgeDesktop">0</span>
-        </button>
-
         <div
           class="student-badge"
           onclick="document.getElementById('navProfil').click()"
@@ -2042,55 +2026,6 @@
     aria-label="Pintasan utama Portal Wali"
   ></nav>
 
-  <section
-    class="wali-chat-window"
-    id="waliChatWindow"
-    aria-label="Live Chat Portal Wali"
-  >
-    <header class="wali-chat-header">
-      <button
-        type="button"
-        class="wali-chat-header-btn"
-        id="waliChatBackButton"
-        onclick="showWaliChatList()"
-        aria-label="Kembali"
-        style="display:none;"
-      >←</button>
-
-      <div class="wali-chat-header-copy">
-        <strong id="waliChatHeaderTitle">Live Chat CAHAYA</strong>
-        <span id="waliChatHeaderSubtitle">Komunikasi wali dan pengurus pesantren</span>
-      </div>
-
-      <button
-        type="button"
-        class="wali-chat-header-btn"
-        onclick="toggleWaliChat()"
-        aria-label="Tutup Live Chat"
-      >✕</button>
-    </header>
-
-    <div class="wali-chat-tabs" id="waliChatTabs">
-      <button type="button" class="wali-chat-tab active" id="waliInboxTab" onclick="switchWaliChatTab('inbox')">Percakapan</button>
-      <button type="button" class="wali-chat-tab" id="waliContactsTab" onclick="switchWaliChatTab('contacts')">Kontak</button>
-    </div>
-
-    <div class="wali-chat-search" id="waliChatSearchWrap">
-      <input type="search" id="waliChatSearch" placeholder="Cari percakapan atau kontak" oninput="filterWaliChatList()" autocomplete="off">
-    </div>
-
-    <div class="wali-chat-list" id="waliChatList">
-      <div class="wali-chat-empty">Menyiapkan Live Chat...</div>
-    </div>
-
-    <div class="wali-chat-messages" id="waliChatMessages"></div>
-
-    <footer class="wali-chat-footer" id="waliChatFooter">
-      <textarea id="waliChatInput" rows="1" placeholder="Ketik pesan" oninput="autoResizeWaliChatInput()" onkeydown="handleWaliChatEnter(event)"></textarea>
-      <button type="button" class="wali-chat-send" id="waliChatSendButton" onclick="sendWaliChatMessage()" aria-label="Kirim pesan">➤</button>
-    </footer>
-  </section>
-
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -2098,7 +2033,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
   <script src="script.js?v=20260923-v17"></script>
-  <script src="../../js/chat-uid-v2.js?v=20260923-v1"></script>
 
   <script>
     const firebaseConfig = window.CAHAYA_CONFIG.firebase;
@@ -3293,7 +3227,6 @@ ${'</bo' + 'dy></ht' + 'ml>'}`;
           await loadWaliAuthorization();
           renderWaliMobileShortcuts();
           await openWaliHome();
-          await initializeWaliChat();
         } catch (error) {
           console.error(
             "Portal Wali gagal dibuka:",

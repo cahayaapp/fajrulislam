@@ -1621,7 +1621,6 @@
  .mobile-shortcut-label{font-size:.58rem!important;font-weight:900!important;color:inherit!important}
 }
 </style>
-  <link rel="stylesheet" href="css/pengurus-whatsapp-chat.css?v=266" />
 <style id="cahaya-v23-mobile-fresh">
 /* =========================================================
    V23 — FRESH MOBILE SHELL
@@ -2144,142 +2143,6 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
     </section>
   </div>
 
-  <button
-    class="pengurus-fab-chat"
-    id="featureChatFab"
-    type="button"
-    style="display:none;"
-    onclick="togglePengurusChat()"
-    aria-label="Buka WhatsApp CAHAYA"
-  >
-    <span class="pw-fab-icon">💬</span>
-    <span id="chatUnreadBadge" class="chat-badge">0</span>
-  </button>
-
-  <section
-    class="pengurus-chat-window"
-    id="pengurusChatWindow"
-    aria-label="WhatsApp CAHAYA"
-  >
-    <header class="pw-chat-header">
-      <button
-        type="button"
-        class="pw-header-button"
-        id="pwBackButton"
-        onclick="showPengurusChatList()"
-        aria-label="Kembali ke daftar obrolan"
-        style="display:none;"
-      >←</button>
-
-      <div class="pw-header-avatar" id="pwHeaderAvatar">C</div>
-
-      <div class="pw-header-copy">
-        <strong id="chatHeaderTitle">WhatsApp CAHAYA</strong>
-        <span id="pwHeaderSubtitle">Pusat komunikasi pengurus</span>
-      </div>
-
-      <button
-        type="button"
-        class="pw-header-button"
-        id="pwSearchToggle"
-        onclick="togglePengurusSearch()"
-        aria-label="Cari kontak"
-      >⌕</button>
-
-      <button
-        type="button"
-        class="pw-header-button pw-close-button"
-        onclick="togglePengurusChat()"
-        aria-label="Tutup obrolan"
-      >✕</button>
-    </header>
-
-    <div class="pw-list-view" id="pwListView">
-      <div class="pw-search-bar" id="pwSearchBar">
-        <label>
-          <span>⌕</span>
-          <input
-            type="search"
-            id="pwContactSearch"
-            placeholder="Cari nama, username, atau role"
-            autocomplete="off"
-            oninput="filterPengurusContacts()"
-          >
-        </label>
-      </div>
-
-      <div class="pw-access-note" id="pwAccessNote">
-        Menyiapkan daftar kontak yang diizinkan...
-      </div>
-
-      <div class="pw-broadcast-list" id="pwBroadcastList"></div>
-
-      <div id="viewInbox" class="p-inbox-list pw-contact-list">
-        <div class="pw-empty">Memuat percakapan...</div>
-      </div>
-    </div>
-
-    <div id="viewNew" style="display:none;">
-      <div id="tabInbox"></div>
-      <div id="tabNew"></div>
-      <select id="pChatRole" style="display:none;"></select>
-      <select id="pChatRecipient" style="display:none;"></select>
-    </div>
-
-    <div class="p-chat-body pw-chat-body" id="pChatBody"></div>
-
-    <footer class="p-chat-footer pw-chat-footer" id="pChatFooter">
-      <div class="pw-input-shell">
-        <textarea
-          id="pChatInput"
-          rows="1"
-          placeholder="Ketik pesan"
-          oninput="autoResizePengurusInput()"
-          onkeydown="handlePengurusChatEnter(event)"
-        ></textarea>
-      </div>
-
-      <button
-        type="button"
-        class="pw-send-button"
-        id="pwSendButton"
-        onclick="sendPengurusMessage()"
-        aria-label="Kirim pesan"
-      >➤</button>
-    </footer>
-
-    <div
-      class="pw-action-overlay"
-      id="pwActionOverlay"
-      onclick="closePengurusActionSheet(event)"
-    >
-      <div class="pw-action-sheet" onclick="event.stopPropagation()">
-        <div class="pw-action-title" id="pwActionTitle">Opsi Pesan</div>
-
-        <button
-          type="button"
-          id="pwEditAction"
-          onclick="editSelectedPengurusMsg()"
-        >✏️ Edit Pesan</button>
-
-        <button
-          type="button"
-          id="pwCopyAction"
-          onclick="copySelectedPengurusMsg()"
-        >📋 Salin Pesan</button>
-
-        <button
-          type="button"
-          class="danger"
-          id="pwDeleteAction"
-          onclick="deleteSelectedPengurusMsg()"
-        >🗑️ Hapus Pesan</button>
-
-        <button type="button" onclick="closePengurusActionSheet()">Batal</button>
-      </div>
-    </div>
-  </section>
-
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -2660,7 +2523,6 @@ function getMobileUtilityItems() {
       { id:'global-jadwal', label:'Jadwal', icon:mobileUtilityIcon.calendar },
       { id:'global-kpi', label:'KPI', icon:mobileUtilityIcon.kpi },
       { id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.homeDirector, center:true },
-      { id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' },
       { id:'utility-menu', label:'Lainnya', icon:mobileUtilityIcon.menu }
     ];
   }
@@ -2669,7 +2531,6 @@ function getMobileUtilityItems() {
     { id:'global-jadwal', label:'Jadwal', icon:mobileUtilityIcon.calendar },
     { id:'global-kpi', label:'KPI', icon:mobileUtilityIcon.kpi },
     { id:'menu-home', label:'Beranda', icon:mobileUtilityIcon.homeDirector, center:true },
-    { id:'menu-chat', label:'Pesan', icon:mobileUtilityIcon.chat, badge:'chat' },
     { id:'utility-menu', label:'Lainnya', icon:mobileUtilityIcon.menu }
   ];
 }
@@ -2785,38 +2646,12 @@ function openMobileShortcut(menuId) {
   }
   if (menuId === 'utility-menu') { toggleSidebar(); return; }
   if (!bolehAksesMenu(menuId)) { tampilkanPesanTidakBerwenang(menuId); return; }
-  if (menuId === 'menu-chat') { togglePengurusChat(); setMobileBottomActive('menu-chat'); return; }
   openAuthorizedMenu(menuId);
 }
 
 function sinkronkanBadgePintasanMobile() {
-  const mobileChatBadge = document.getElementById('mobileChatBadge');
-  const topChatBadge = document.getElementById('topChatBadge');
-  const chatUnreadBadge = document.getElementById('chatUnreadBadge');
-  if (chatUnreadBadge) {
-    const nilai = Number(chatUnreadBadge.textContent || 0);
-    [mobileChatBadge, topChatBadge].forEach(badge => {
-      if (!badge) return;
-      badge.textContent = nilai > 99 ? '99+' : String(nilai);
-      badge.style.display = nilai > 0 ? 'grid' : 'none';
-    });
-  }
+  // Fitur chat dinonaktifkan; tidak ada badge pesan yang perlu disinkronkan.
 }
-
-    const mobileBadgeObserver = new MutationObserver(sinkronkanBadgePintasanMobile);
-    window.addEventListener('DOMContentLoaded', () => {
-      ['chatUnreadBadge'].forEach(id => {
-        const target = document.getElementById(id);
-        if (target) mobileBadgeObserver.observe(target, {
-          childList: true,
-          characterData: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: ['style', 'class']
-        });
-      });
-    });
-
 
 
 function cahayaRoleDescription(role){
@@ -2884,6 +2719,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
     }
 
     function bolehAksesMenu(menuId) {
+      if (menuId === 'menu-chat') return false;
       const active = typeof ensureActiveRole === 'function' ? ensureActiveRole() : '';
       if (typeof featureMenuAllowed === 'function' && !featureMenuAllowed(menuId, [active])) return false;
       if (canonicalRoleRuntime) return roleSystemV2.can(active, document.getElementById(menuId)?.dataset.permission || menuId, roleV2Session.activeAssignment);
@@ -3706,7 +3542,6 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
           });
         });
         const byId = new Map(features.map(item => [item.id,item]));
-        byId.set('menu-chat',{id:'menu-chat',label:'Pesan',group:'Lainnya',route:'pesan.html'});
         return {version:1,features:[...byId.values()],roles:Object.keys(DEFAULT_ROLE_MENUS),defaults:JSON.parse(JSON.stringify(DEFAULT_ROLE_MENUS))};
       }
     });
@@ -3734,15 +3569,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
 
     function terapkanOtorisasiFiturTambahan() {
       const profileButton = document.getElementById('topNavProfile');
-      const topChatButton = document.getElementById('topNavChat');
-      const chatFab = document.getElementById('featureChatFab');
-      const chatWindow = document.getElementById('pengurusChatWindow');
-
-      profileButton.style.display = bolehAksesMenu('menu-profil') ? 'flex' : 'none';
-      if (topChatButton) topChatButton.style.display = bolehAksesMenu('menu-chat') ? 'grid' : 'none';
-      chatFab.style.display = bolehAksesMenu('menu-chat') ? 'flex' : 'none';
-
-      if (!bolehAksesMenu('menu-chat')) chatWindow.style.display = 'none';
+      if (profileButton) profileButton.style.display = bolehAksesMenu('menu-profil') ? 'flex' : 'none';
 
       renderMobileBottomNav();
     }
@@ -4513,34 +4340,6 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       document.querySelector('.mobile-menu-overlay')?.classList.remove('open');
     }
 
-    // V95 hemat bandwidth: chat dan master user baru dimuat ketika Pesan dibuka.
-    window.CAHAYA_CHAT_LAZY = true;
-    window.__cahayaChatUsersLoaded = false;
-    let pListUsers = [];
-    let targetAktifLabel = "";
-    let targetAktifDisplay = "";
-    let pChatListener = null;
-    let editModeId = null;
-
-    window.ensureCahayaChatReady = async function () {
-      if (window.__cahayaChatUsersLoaded) return pListUsers;
-      if (window.__cahayaChatUsersPromise) return window.__cahayaChatUsersPromise;
-      window.__cahayaChatUsersPromise = (async () => {
-        try {
-          const snap = await dbFS.collection('users').get();
-          pListUsers = [];
-          snap.forEach(doc => pListUsers.push(doc.data()));
-        } catch (err) {
-          console.error('Gagal memuat master user saat membuka Pesan:', err);
-          throw err;
-        }
-        window.__cahayaChatUsersLoaded = true;
-        window.dispatchEvent(new CustomEvent('cahaya:chat-users-ready',{detail:{count:pListUsers.length}}));
-        return pListUsers;
-      })();
-      try{return await window.__cahayaChatUsersPromise}finally{window.__cahayaChatUsersPromise=null}
-    };
-
     firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
         console.log("Otorisasi Sesi Berhasil:", user.email);
@@ -4614,11 +4413,6 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
 
         await refreshUserProfileUI();
 
-        if (bolehAksesMenu('menu-chat')) {
-          // V95: jangan download seluruh koleksi user dan jangan pasang listener chat saat startup.
-          // Semua baru diaktifkan ketika pengguna benar-benar membuka menu Pesan.
-          window.__cahayaChatUsersLoaded = false;
-        }
       } else {
         setCahayaLogoutLock(
           12000
@@ -4628,11 +4422,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       }
     });
 
-    /* Chat legacy dihapus. Seluruh chat pengurus memakai js/pengurus-whatsapp-chat.js
-       agar pesan tidak ditimpa, room tidak terhapus, dan inbox tetap sinkron. */
   </script>
-  <script src="js/chat-uid-v2.js?v=20260923-v1"></script>
-  <script src="js/pengurus-whatsapp-chat.js?v=272"></script>
   <script src="js/cahaya-push-global-v68.js?v=204"></script>
 
   <script>

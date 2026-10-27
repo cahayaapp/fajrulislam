@@ -8,7 +8,7 @@
 })(typeof window!=='undefined'?window:globalThis,function(R,N){
   'use strict';
   const entry=(id,label,route,group='Operasional',permission=id)=>({id,label,route,group,permission});
-  const REQUIRED_INTERNAL_UTILITIES=Object.freeze(['kpi','pesan','profil','panduan']);
+  const REQUIRED_INTERNAL_UTILITIES=Object.freeze(['kpi','profil','panduan']);
   const KPI_IDS={GURU_PONDOK:'menu-kpi-guru',NAQIB:'menu-kpi-naqib',NAQIBAH:'menu-kpi-naqib',KONSELOR:'menu-kpi-konselor',MANAJER:'menu-kpi-manajer',SUPERVISOR:'menu-kpi-supervisor',DIREKTUR:'menu-kpi-direktur'};
   const workspace=(base,permission,items)=>items.map(([view,label,group='Manajemen',id])=>entry(id||(view===items[0][0]?permission:`${permission}--${view}`),label,`${base}?view=${view}`,group,permission));
   function candidates(s){
@@ -114,7 +114,6 @@
       for(let i=out.length-1;i>=0;i--)if(out[i].id==='menu-panduan-kerja')out.splice(i,1);
       add('menu-panduan-kerja','Panduan & Manual','panduan-role-v2.html','Lainnya');
       add('menu-profil','Profil','profil.html','Lainnya');
-      out.push({...entry('menu-chat','Pesan','pesan.html','Lainnya'),action:'chat',utility:true});
       if(!out.some(x=>x.id===KPI_IDS[role]))add('menu-kpi-role','KPI — Bukti Kerja','utilitas-role-v2.html?view=kpi','Evaluasi');
       if(!['GURU_PONDOK','NAQIB','NAQIBAH','MANAJER','SUPERVISOR','DIREKTUR'].includes(role))
         out.push({...entry('menu-jadwal-role','Jadwal & Ritme Kerja','utilitas-role-v2.html?view=schedule','Lainnya'),utility:true});

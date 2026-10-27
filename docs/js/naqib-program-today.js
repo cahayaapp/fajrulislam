@@ -69,7 +69,20 @@
   function unitOf(row){const value=norm(row?.unit||row?.unitPengawasan||row?.unitAsrama||row?.labelUsrah||row?.usrah||'');if(value.includes('putri')||/usrah(?:7|8)/.test(value))return'PUTRI';if(value.includes('putra')||/usrah(?:[1-6])/.test(value))return'PUTRA';return''}
   function recordMatchesProgram(row,program){const pid=norm(row?.programId),pname=norm(row?.programName||row?.program||row?.namaProgram),id=norm(program.id),name=norm(program.name);return Boolean((pid&&(pid===id||pid===name))||(pname&&(pname===name||pname===id)))}
   function attendanceDone(rows,program,unit){return (rows||[]).some(row=>unitOf(row)===unit&&recordMatchesProgram(row,program))}
-  function reportDone(rows,program,unit,userName){return (rows||[]).some(row=>row?.tipeLaporan==='PROGRAM'&&row?.versiLaporan==='V2'&&unitOf(row)===unit&&(!userName||samePerson(row.naqib||row.petugasTerjadwal,userName))&&(!program.block||!row.blokPiket||norm(row.blokPiket)===norm(program.block))&&recordMatchesProgram(row,program))}
+  function reportSource(rows,program,unit,userName,date){
+    let legacy=false;
+    for(const row of rows||[]){
+      if(!row||unitOf(row)!==unit||date&&row.tanggal!==date)continue;
+      if(program.block&&row.blokPiket&&norm(row.blokPiket)!==norm(program.block))continue;
+      const reporterMatches=!userName||samePerson(row.naqib,userName)||samePerson(row.naqibKey,userName)||samePerson(row.petugasTerjadwal,userName);
+      if(!reporterMatches)continue;
+      if(row.tipeLaporan==='PROGRAM'&&row.versiLaporan==='V2'&&recordMatchesProgram(row,program))return 'V2';
+      if(!row.versiLaporan&&Array.isArray(row.detailPelaksanaan)&&row.detailPelaksanaan.some(detail=>recordMatchesProgram(detail,program)))legacy=true;
+    }
+    return legacy?'LEGACY':'';
+  }
+  function reportDone(rows,program,unit,userName,date){return Boolean(reportSource(rows,program,unit,userName,date))}
+  function reportState(source,loaded){return source===null?['Tidak dapat dicek','unknown']:loaded?(source?['Sudah','done']:['Belum','todo']):['Memeriksa…','']}
   function context(program,{date,unit,role}){return {programId:program.id,programName:program.name,tanggal:date,unit,activeRole:role,block:program.block||'',blockId:program.blockId||'',scheduleDay:program.scheduleDay||'',assignedNaqib:program.assignedNaqib||'',time:program.time||'',group:program.group||'',location:program.location||''}}
-  return Object.freeze({DAY_KEYS,DEFAULT_BLOCKS,PIC_ALIASES,norm,esc,timeMinutes,timeRange,jakartaParts,basePrograms,configuredPrograms,applyProgramPolicy,picKey,samePerson,normalizeDutySchedule,currentDuty,blockForProgram,applyAssignment,stateFor,unitOf,recordMatchesProgram,attendanceDone,reportDone,context});
+  return Object.freeze({DAY_KEYS,DEFAULT_BLOCKS,PIC_ALIASES,norm,esc,timeMinutes,timeRange,jakartaParts,basePrograms,configuredPrograms,applyProgramPolicy,picKey,samePerson,normalizeDutySchedule,currentDuty,blockForProgram,applyAssignment,stateFor,unitOf,recordMatchesProgram,attendanceDone,reportSource,reportDone,reportState,context});
 });

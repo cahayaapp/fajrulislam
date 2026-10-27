@@ -2,7 +2,6 @@
 (function(root){'use strict';const routes={
   "panduan-role-v2.html": {"menus":["menu-panduan-kerja"],"policy":"internal-utility"},
   "utilitas-role-v2.html": {"menus":["menu-kpi-role","menu-jadwal-role"],"policy":"internal-utility"},
-  "pesan.html": {"menus":["menu-chat"],"policy":"internal-utility"},
   "home.html": {
     "menus": [
       "menu-home"

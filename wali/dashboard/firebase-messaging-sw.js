@@ -35,18 +35,11 @@ messaging.onBackgroundMessage(
       data.roomId ||
       "";
 
-    const relativeLink =
-      roomId
-        ? (
-            "index.html" +
-            "?openChat=1&room=" +
-            encodeURIComponent(roomId)
-          )
-        : "index.html";
+    const relativeLink = "index.html";
 
-    const requestedLink =
-      data.link ||
-      relativeLink;
+    const requestedLink = /[?&]openChat=1(?:&|$)/.test(data.link || "")
+      ? relativeLink
+      : (data.link || relativeLink);
 
     const resolvedLink =
       new URL(

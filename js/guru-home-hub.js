@@ -43,16 +43,11 @@ function renderIdentity(){
   const btn=$('avatarBtn'),photo=USER.fotoProfil||USER.foto_profil||USER.photoURL||USER.profilePhoto||USER.avatar||USER.foto||USER.photo;
   btn.setAttribute('aria-label','Foto profil '+name);btn.textContent=name.charAt(0);
   if(photo){const img=new Image();img.src=photo;img.alt='Foto profil '+name;img.referrerPolicy='no-referrer';img.onerror=()=>{btn.textContent=name.charAt(0)};btn.replaceChildren(img)}
-  $('notifyBadge').style.display='none';
+  if($('notifyBadge'))$('notifyBadge').style.display='none';
 }
 window.openActivities=()=>{
   $('attentionList').innerHTML=menus.filter(x=>['menu-absen-kbm','menu-nilai','menu-guru-menulis'].includes(x[0])).map(([id,title,icon,desc])=>`<button class="attention-item" onclick="closeModal('attentionModal');openMenu('${id}')"><span class="attention-item-icon">${menuIcons[icon]}</span><span class="attention-item-copy"><b>${title}</b><small>${desc}</small></span></button>`).join('');
   $('attentionModal').querySelector('h3').textContent='Aktivitas Hari Ini';
-  $('attentionModal').classList.add('show');
-};
-window.openAttentionModal=()=>{
-  $('attentionModal').querySelector('h3').textContent='Notifikasi';
-  $('attentionList').innerHTML='<button class="attention-item" onclick="closeModal(\'attentionModal\');openMenu(\'menu-chat\')"><span class="attention-item-copy"><b>Buka Pesan</b><small>Lihat pesan dan pemberitahuan Anda.</small></span></button>';
   $('attentionModal').classList.add('show');
 };
 function localScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}

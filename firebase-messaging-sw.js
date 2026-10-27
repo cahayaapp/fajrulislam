@@ -20,8 +20,8 @@ try{
     const data=payload.data||{};const notification=payload.notification||{};
     const title=notification.title||data.title||'Notifikasi CAHAYA';
     const roomId=data.roomId||'';
-    const relativeLink=roomId?`main-dashboard.html?openChat=1&room=${encodeURIComponent(roomId)}`:'main-dashboard.html';
-    const requestedLink=data.link||relativeLink;
+    const relativeLink='main-dashboard.html';
+    const requestedLink=/[?&]openChat=1(?:&|$)/.test(data.link||'')?relativeLink:(data.link||relativeLink);
     const resolvedLink=new URL(requestedLink,self.registration.scope).href;
     const iconUrl=new URL('assets/cahaya-app/app-icon-maskable-192.png',self.registration.scope).href;
     return self.registration.showNotification(title,{body:notification.body||data.body||'Ada pemberitahuan baru.',icon:iconUrl,badge:iconUrl,tag:data.tag||roomId||data.notificationId||'cahaya-global',renotify:true,data:{link:resolvedLink,roomId,notificationId:data.notificationId||''}});

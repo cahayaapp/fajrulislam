@@ -43,8 +43,144 @@ const {
 } = require(
   "firebase-admin/messaging"
 );
+const {getFirestore} = require("firebase-admin/firestore");
+const {getAuth} = require("firebase-admin/auth");
+const {onDocumentWritten} = require("firebase-functions/v2/firestore");
+const AccessIndex = require("./access-index-core");
 
 initializeApp();
+
+const normalizeStudentName = value => String(value || "").normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+async function legacyWaliStudents(profile, db) {
+  const names = [profile.namaAnak, profile.namaSantri, profile.namaAnanda,
+    profile.studentName, profile.anak].filter(value => typeof value === "string" && value.trim());
+  if (!names.length) return {};
+  const [classSnap, indexSnap] = await Promise.all([
+    db.ref("cahaya_app/master_akademik/kelas").get(),
+    db.ref("cahaya_app/wali_index").get()
+  ]);
+  const catalog = new Map();
+  function add(value, fallbackKey) {
+    const row = typeof value === "string" ? {namaSantri:value} : (value || {});
+    const name = String(row.namaSantri || row.nama || row.namaAnak || row.label || "").trim();
+    const key = String(row.studentKey || row.santriId || row.studentId || fallbackKey || "").trim();
+    if (!name || !key || /[.#$\[\]\/]/.test(key)) return;
+    const normalized = normalizeStudentName(name), candidates = catalog.get(normalized) || new Map();
+    candidates.set(key, {active:true, studentKey:key, namaSantri:name});
+    catalog.set(normalized, candidates);
+  }
+  const index = indexSnap.val() || {};
+  const exactKeys = new Map();
+  Object.entries(index).forEach(([key, value]) => {
+    add(value, key);
+    const normalizedKey = normalizeStudentName(key);
+    const keys = exactKeys.get(normalizedKey) || [];
+    keys.push(key);
+    exactKeys.set(normalizedKey, keys);
+    Object.values(value || {}).forEach(events => {
+      Object.values(events || {}).forEach(event => {
+        if (event && typeof event === "object")
+          add({namaSantri:event.namaSantri || event.nama_santri ||
+            event.namaAnak || event.studentName}, key);
+      });
+    });
+  });
+  const indexedNames = new Set(catalog.keys());
+  Object.entries(classSnap.val() || {}).forEach(([, value]) => {
+    const members = Array.isArray(value) ? value :
+      (value?.santri || value?.peserta || value?.students || value?.anggota || value);
+    Object.entries(members || {}).forEach(([key, student]) => {
+      if (/^\d+$/.test(key) && !(student?.studentKey || student?.santriId || student?.studentId)) return;
+      const fallback = key;
+      const name = typeof student === "string" ? student :
+        (student?.namaSantri || student?.nama || student?.namaAnak || "");
+      if (!indexedNames.has(normalizeStudentName(name))) add(student, fallback);
+    });
+  });
+  const students = {};
+  names.forEach(name => {
+    const normalized = normalizeStudentName(name);
+    const direct = exactKeys.get(normalized) || [];
+    if (direct.length === 1) {
+      const key = direct[0];
+      students[key] = {active:true, studentKey:key, namaSantri:name};
+      return;
+    }
+    const candidates = catalog.get(normalized);
+    if (candidates?.size === 1) {
+      const [student] = candidates.values();
+      students[student.studentKey] = student;
+    }
+  });
+  return students;
+}
+
+// Repair an internal account's trusted RTDB index after a successful login.
+// The caller never supplies a role or UID: both come from Firebase Auth and
+// the existing admin-managed Firestore user document.
+exports.syncOwnCahayaAccess = onCall({region: process.env.CAHAYA_DATABASE_REGION || "us-central1"}, async request => {
+  const uid = request.auth?.uid;
+  const email = String(request.auth?.token?.email || "").trim().toLowerCase();
+  if (!uid || !/^[a-z0-9._-]+@cahayaapp\.id$/.test(email))
+    throw new HttpsError("unauthenticated", "Sesi akun CAHAYA diperlukan.");
+  const username = email.split("@")[0];
+  const doc = await getFirestore().collection("users").doc(username).get();
+  if (!doc.exists) throw new HttpsError("permission-denied", "Profil akun resmi belum tersedia.");
+  const profile = doc.data() || {};
+  if (profile.authUid && String(profile.authUid) !== uid)
+    throw new HttpsError("permission-denied", "UID akun tidak sesuai dengan profil resmi.");
+  if (profile.disabled === true || profile.active === false)
+    throw new HttpsError("permission-denied", "Akun tidak aktif.");
+  const {isWali, ...index} = AccessIndex.accessFor(profile, username);
+  const db = getDatabase();
+  await db.ref(`cahaya_access/users/${uid}`).set({...index, updatedAt:new Date().toISOString()});
+  if (isWali) {
+    const waliRef = db.ref(`cahaya_access/wali/${uid}`);
+    let students = AccessIndex.explicitWaliStudents(profile);
+    if (!Object.keys(students).length) students = (await waliRef.get()).val()?.students || {};
+    if (!Object.keys(students).length) students = await legacyWaliStudents(profile, db);
+    const hasActiveStudent = Object.values(students).some(item => item?.active === true);
+    if (hasActiveStudent)
+      await waliRef.set({active:true, students, updatedAt:new Date().toISOString()});
+    else await waliRef.update({active:false, updatedAt:new Date().toISOString()});
+    if (!hasActiveStudent) return {internal:index.internal, ready:index.internal, reason:"WALI_STUDENT_KEY_REQUIRED"};
+  }
+  return {internal:index.internal, ready:index.internal || isWali};
+});
+
+// Keep the trusted access index current when Admin changes a profile or role.
+exports.syncCahayaAccessOnUserChange = onDocumentWritten({document:"users/{username}", region:"us-central1"}, async event => {
+  const username = String(event.params.username || "").toLowerCase();
+  if (!/^[a-z0-9._-]+$/.test(username)) return;
+  const authUser = await getAuth().getUserByEmail(`${username}@cahayaapp.id`).catch(() => null);
+  if (!authUser) return;
+  const profile = event.data?.after?.data();
+  const db = getDatabase(), path = `cahaya_access/users/${authUser.uid}`;
+  if (!profile || profile.disabled === true || profile.active === false ||
+      (profile.authUid && String(profile.authUid) !== authUser.uid)) {
+    await db.ref(path).update({active:false, internal:false, updatedAt:new Date().toISOString()});
+    await db.ref(`cahaya_access/wali/${authUser.uid}`).update({active:false, updatedAt:new Date().toISOString()});
+    return;
+  }
+  const {isWali, ...index} = AccessIndex.accessFor(profile, username);
+  await db.ref(path).set({...index, updatedAt:new Date().toISOString()});
+  const waliPath = `cahaya_access/wali/${authUser.uid}`;
+  if (!isWali) { await db.ref(waliPath).remove(); return; }
+  let students = AccessIndex.explicitWaliStudents(profile);
+  if (!Object.values(students).some(item => item?.active === true)) {
+    const previous = (await db.ref(waliPath).get()).val()?.students || {};
+    const names = [profile.namaAnak, profile.namaSantri, profile.namaAnanda,
+      profile.studentName, profile.anak].map(normalizeStudentName).filter(Boolean);
+    const previousStudents = Object.values(previous).filter(item => item?.active === true);
+    if (names.length && previousStudents.length && previousStudents.every(item =>
+      names.includes(normalizeStudentName(item.namaSantri)))) students = previous;
+    else students = await legacyWaliStudents(profile, db);
+  }
+  if (Object.values(students).some(item => item?.active === true))
+    await db.ref(waliPath).set({active:true, students, updatedAt:new Date().toISOString()});
+  else await db.ref(waliPath).update({active:false, updatedAt:new Date().toISOString()});
+});
 
 const FACE_POC_ROOT = "/cahaya_app/face_attendance_poc";
 

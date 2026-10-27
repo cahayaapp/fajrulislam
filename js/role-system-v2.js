@@ -13,7 +13,7 @@
   const ROLE_SET = new Set(ROLE_IDS);
   const UNIT_IDS = new Set(["PUTRA", "PUTRI", "ALL"]);
   const DOMAIN_IDS = new Set(["KEPONDOKAN", "PKBM"]);
-  const BASE_MENUS = ["menu-home", "menu-profil", "menu-chat", "menu-panduan-kerja", "menu-kpi-role", "menu-jadwal-role"];
+  const BASE_MENUS = ["menu-home", "menu-profil", "menu-panduan-kerja", "menu-kpi-role", "menu-jadwal-role"];
 
   const ROLE_DEFINITIONS = Object.freeze({
     GURU_PONDOK: { label: "Guru Pondok", home: "home-guru.html?v=201", legacyRole: "guru" },

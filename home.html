@@ -264,7 +264,6 @@ body{background:radial-gradient(circle at 100% 0,rgba(62,135,235,.055),transpare
     <header class="v193-brand-row">
       <div class="v193-brand"><img src="assets/cahaya-app/logo-icon.png?v=54" alt="CAHAYA APP"><strong>CAHAYA <em>APP</em></strong></div>
       <div class="v193-actions">
-        <button class="v193-icon-btn" type="button" onclick="openHomeNotification()" aria-label="Notifikasi"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span class="v193-notify" id="homeNotifyBadge">0</span></button>
         <button class="v193-avatar" type="button" onclick="openHomeProfile()" id="homeHeaderAvatar">C</button>
       </div>
     </header>
@@ -367,8 +366,6 @@ body{background:radial-gradient(circle at 100% 0,rgba(62,135,235,.055),transpare
     function formatHomeHijri(){for(const cal of ['islamic-umalqura','islamic']){try{return new Intl.DateTimeFormat(`id-ID-u-ca-${cal}`,{timeZone:'Asia/Jakarta',day:'numeric',month:'long',year:'numeric'}).format(new Date()).replace(/ AH/i,' H')}catch(_){}}return'Kalender Hijriah'}
     function openUnifiedRoleModal(){try{if(window.parent&&window.parent!==window&&typeof window.parent.openCahayaGlobalRoleModal==='function'){window.parent.openCahayaGlobalRoleModal();return}}catch(_){}const sw=document.getElementById('roleSwitcher');if(sw)sw.hidden=false}
     function openHomeProfile(){try{if(window.parent&&window.parent!==window&&typeof window.parent.openAuthorizedMenu==='function'){window.parent.openAuthorizedMenu('menu-profil');return}}catch(_){}}
-    function openHomeNotification(){try{if(window.parent&&window.parent!==window){if(typeof window.parent.togglePengurusChat==='function'){window.parent.togglePengurusChat();return}window.parent.openAuthorizedMenu?.('menu-chat')}}catch(_){}}
-    function syncHomeNotify(){try{const src=window.parent?.document?.getElementById('chatUnreadBadge'),dst=document.getElementById('homeNotifyBadge');if(!dst)return;const n=Number(src?.textContent||0);dst.textContent=n>99?'99+':String(n);dst.style.display=n>0?'grid':'none'}catch(_){}}
     function setProfile(){
       const p=profile(),all=roles(p),active=activeRoleOf(p),nm=nameOf(p);
       document.getElementById('userName').textContent=nm;
@@ -376,9 +373,8 @@ body{background:radial-gradient(circle at 100% 0,rgba(62,135,235,.055),transpare
       const switcher=document.getElementById('roleSwitcher');if(switcher){switcher.hidden=true;switcher.innerHTML=(all.length?all:['']).map(r=>`<button type="button" class="h24-role-chip${r===active?' active':''}" onclick="selectHomeRole('${escapeHtml(r)}')">${escapeHtml(roleDisplay(p,r))}</button>`).join('')}
       const av=document.getElementById('homeHeaderAvatar');if(av){if(p.fotoProfil){av.innerHTML=`<img src="${escapeHtml(p.fotoProfil)}" alt="Foto profil ${escapeHtml(nm)}">`}else{av.textContent=String(nm||'C').trim().charAt(0).toUpperCase()||'C'}}
       const dm=document.getElementById('homeDateM'),dh=document.getElementById('homeDateH');if(dm)dm.textContent=formatHomeDate();if(dh)dh.textContent=formatHomeHijri();
-      syncHomeNotify();setTimeout(syncHomeNotify,600);setTimeout(syncHomeNotify,1800);
     }
-    window.openUnifiedRoleModal=openUnifiedRoleModal;window.openHomeProfile=openHomeProfile;window.openHomeNotification=openHomeNotification;
+    window.openUnifiedRoleModal=openUnifiedRoleModal;window.openHomeProfile=openHomeProfile;
 
     function cleanText(el){const clone=el.cloneNode(true);clone.querySelectorAll('.role-group-count,.nav-arrow').forEach(x=>x.remove());return String(clone.textContent||'').trim().replace(/\s+/g,' ')}
     function stripLeadingIcon(text){return String(text||'').replace(/^[^\p{L}\p{N}]{1,5}\s*/u,'').trim()||'Menu'}

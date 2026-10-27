@@ -298,6 +298,8 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
   <script>
     const loginScene=document.getElementById('loginScene');
     const installScene=document.getElementById('installScene');
@@ -552,6 +554,16 @@
           const isStaff=uname.includes('admin')||uname.includes('guru')||uname==='multazam';
           data={username:uname,label:isStaff?'Pengurus CAHAYA':'Wali Santri',akses:isStaff?['guru']:['wali'],namaAnak:uname};
         }
+        const rawRoles=Number(data.roleSystemVersion)===2?data.roles:(data.roles||data.akses||data.role||[]);
+        const roles=(Array.isArray(rawRoles)?rawRoles:rawRoles&&typeof rawRoles==='object'?Object.keys(rawRoles).filter(role=>rawRoles[role]===true):[rawRoles]).map(value=>String(value||'').trim().toLowerCase().replace(/[\s-]+/g,'_'));
+        const isInternal=roles.some(role=>role&&role!=='wali'&&role!=='wali_santri');
+        const isWali=roles.some(role=>role==='wali'||role==='wali_santri');
+        if(userDoc.exists&&(isInternal||isWali)){
+          txt.textContent='Menyiapkan akses akun...';
+          let ready=false;
+          try{const base=`cahaya_access/${isInternal?'users':'wali'}/${cred.user.uid}`,access=(await firebase.database().ref(base).once('value')).val();ready=access?.active===true&&(isInternal?access?.internal===true:Object.values(access?.students||{}).some(item=>item?.active===true));if(ready&&isInternal&&isWali){const wali=(await firebase.database().ref(`cahaya_access/wali/${cred.user.uid}`).once('value')).val();ready=wali?.active===true&&Object.values(wali?.students||{}).some(item=>item?.active===true)}}catch(error){console.warn('Indeks akses belum terbaca:',error)}
+          if(!ready){const result=await firebase.functions('us-central1').httpsCallable('syncOwnCahayaAccess')();if(result?.data?.ready!==true)throw Object.assign(new Error('Akses akun belum lengkap.'),{code:'functions/failed-precondition'})}
+        }
         let session={...data,uid:cred.user.uid};
         const roleV2=window.CahayaRoleSystemV2?.resolveSession(session,localStorage);
         if(roleV2?.mode==='canonical'){
@@ -562,7 +574,7 @@
         txt.textContent='Membuka CAHAYA APP...';
         setTimeout(()=>location.href=getLoginTarget(session),260);
       }catch(ex){
-        console.error(ex);btn.disabled=false;txt.textContent='Masuk';err.textContent='Username atau kata sandi tidak sesuai.';err.style.display='block';
+        console.error(ex);btn.disabled=false;txt.textContent='Masuk';err.textContent=String(ex?.code||'').startsWith('functions/')?'Akun berhasil masuk, tetapi akses data belum tersinkron. Hubungi admin atau coba lagi setelah pembaruan server.':'Username atau kata sandi tidak sesuai.';err.style.display='block';
       }
     });
 

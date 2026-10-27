@@ -137,24 +137,6 @@
     await registerToken();return true;
   }
 
-  async function openChatFromQuery(){
-    const params=new URLSearchParams(location.search);const room=params.get('room');
-    if(params.get('openChat')!=='1'||!room)return;
-    const user=profile();const username=usernameOf(user);if(!username)return;
-    let attempts=0;
-    const timer=setInterval(async()=>{
-      attempts++;
-      try{
-        if(typeof window.bukaChatDariPanel==='function'){
-          let peerLabel='Pesan CAHAYA';
-          try{const snap=await db().ref(`cahaya_app/pesan_inbox/${safeKey(username)}/${room}`).once('value');const item=snap.val()||{};peerLabel=item.peerLabel||item.peerUsername||peerLabel}catch(_){}
-          clearInterval(timer);await window.bukaChatDariPanel(peerLabel,peerLabel,room);return;
-        }
-      }catch(_){}
-      if(attempts>35)clearInterval(timer);
-    },220);
-  }
-
   // Zero-download role homes defer token/config refresh until Pesan or the
   // existing explicit enable action, never merely because Home is opened.
   function deferGuruPush(){
@@ -170,14 +152,12 @@
           else if(Notification.permission==='default')showPrompt();
         }
       }catch(err){console.warn('Push Global CAHAYA belum siap:',err)}
-      openChatFromQuery();
     },1350);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
   function resumePush(){if(deferGuruPush()||!('Notification'in window))return;if(Notification.permission==='granted')enable(false).catch(()=>{});else if(Notification.permission==='default')showPrompt()}
   window.addEventListener('pageshow',resumePush);
-  window.addEventListener('cahaya:chat-users-ready',resumePush);
 
   window.CahayaPushGlobal={enable,registerToken,deactivateCurrentDevice,showPrompt,showToast,profile,rolesOf};
 })();

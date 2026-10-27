@@ -70,6 +70,8 @@
     const {account,student}=session();
     const username=usernameOf(account);const studentName=studentNameOf(student);
     if(!username||!studentName)throw new Error('Identitas wali atau santri belum siap.');
+    const guardianUid=firebase.auth?.().currentUser?.uid||'';
+    if(!guardianUid)throw new Error('Sesi Firebase Wali belum siap. Muat ulang lalu coba kembali.');
     await prepare();
     const vapidKey=await getVapidKey();
     const options={serviceWorkerRegistration:state.registration};
@@ -77,13 +79,13 @@
     const token=await state.messaging.getToken(options);
     if(!token)throw new Error('Token notifikasi belum terbentuk.');
     const waliKey=safeKey(username);const anakKey=studentKey(studentName);const tokenKey=safeKey(token.slice(-48));
-    const payload={token,username,namaAnak:studentName,studentKey:anakKey,aktif:true,platform:navigator.platform||'',userAgent:navigator.userAgent,updatedAt:new Date().toISOString(),diperbarui:new Date().toISOString()};
+    const payload={token,username,namaAnak:studentName,studentKey:anakKey,guardianUid,aktif:true,platform:navigator.platform||'',userAgent:navigator.userAgent,updatedAt:new Date().toISOString(),diperbarui:new Date().toISOString()};
     const updates={};
     updates[`cahaya_app/fcm_tokens_wali/${waliKey}/${tokenKey}`]=payload;
-    updates[`cahaya_app/fcm_wali_by_student/${anakKey}/${waliKey}`]={username,namaAnak:studentName,aktif:true,updatedAt:payload.updatedAt};
+    updates[`cahaya_app/fcm_wali_by_student/${anakKey}/${waliKey}`]={username,namaAnak:studentName,studentKey:anakKey,guardianUid,aktif:true,updatedAt:payload.updatedAt};
     // Simpan jalur lama khusus wali + jalur global seluruh pengguna.
     updates[`cahaya_app/fcm_tokens_user/${waliKey}/${tokenKey}`]={...payload,label:clean(account.label||account.nama||account.namaTampilan||username),roles:['wali']};
-    updates[`cahaya_app/fcm_users_by_role/wali/${waliKey}`]={username,label:clean(account.label||account.nama||account.namaTampilan||username),roles:['wali'],aktif:true,updatedAt:payload.updatedAt};
+    updates[`cahaya_app/fcm_users_by_role/wali/${waliKey}`]={username,label:clean(account.label||account.nama||account.namaTampilan||username),roles:['wali'],studentKey:anakKey,guardianUid,aktif:true,updatedAt:payload.updatedAt};
     await db().ref().update(updates);
     localStorage.setItem('cahayaPushRegisteredV68',JSON.stringify({token,tokenKey,waliKey,updatedAt:payload.updatedAt}));
     return token;
@@ -120,16 +122,6 @@
     const params=new URLSearchParams(location.search);
     if(params.get('openKabar')==='1'){
       let attempts=0;const t=setInterval(()=>{attempts++;try{if(typeof window.openWaliKabarFromBottom==='function'){clearInterval(t);window.openWaliKabarFromBottom();}}catch(_){}if(attempts>18)clearInterval(t)},180);
-    }
-    const room=params.get('room');
-    if(params.get('openChat')==='1'&&room){
-      let attempts=0;const t=setInterval(()=>{attempts++;try{
-        const inbox=(typeof waliChatInbox!=='undefined'&&Array.isArray(waliChatInbox))?waliChatInbox:[];const item=inbox.find(x=>x.roomId===room);
-        if(item&&typeof window.toggleWaliChat==='function'&&typeof window.openWaliChatRoom==='function'){
-          clearInterval(t);const win=document.getElementById('waliChatWindow');if(win&&win.style.display!=='flex')window.toggleWaliChat();
-          window.openWaliChatRoom(encodeURIComponent(item.actualName||item.peerLabel||item.peerUsername||'Pengurus'),encodeURIComponent(item.displayName||item.peerLabel||'Pengurus Pesantren'),encodeURIComponent(room),false);
-        }
-      }catch(_){}if(attempts>30)clearInterval(t)},220);
     }
   }
 

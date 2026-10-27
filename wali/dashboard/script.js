@@ -529,7 +529,30 @@
           ...selected.account
         };
 
-        const access = null;
+        let access = {};
+        if (options.requireAuthAccess === true) {
+          const authUser = await resolveAuthUser(options.auth);
+          const authorizedStudents = await readAuthorizedStudents(options.database, authUser?.uid || "");
+          if (!authUser?.uid || !authorizedStudents.length) {
+            state = {
+              account,
+              student: null,
+              ready: true,
+              valid: false,
+              source: selected.source,
+              authUid: cleanText(authUser?.uid),
+              authorizedStudents: [],
+              selectedStudentKey: "",
+              reason: authUser?.uid ? "NO_AUTHORIZED_STUDENT" : "NO_AUTH_USER"
+            };
+            return state;
+          }
+          access = {
+            authUid: authUser.uid,
+            authorizedStudents,
+            selectedStudentKey: profileStudentKey(readStorageProfile(KEYS.student) || {})
+          };
+        }
         const remote = await readFirestoreAccount(options.firestore, account);
 
         if (remote) {

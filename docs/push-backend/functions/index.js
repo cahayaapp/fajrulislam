@@ -24,6 +24,7 @@ const {
 } = require("firebase-functions/v2/https");
 
 const {createHash} = require("node:crypto");
+const FacePoc = require("./face-attendance-poc-core");
 
 const {
   initializeApp
@@ -42,8 +43,146 @@ const {
 } = require(
   "firebase-admin/messaging"
 );
+const {getFirestore} = require("firebase-admin/firestore");
+const {getAuth} = require("firebase-admin/auth");
+const {onDocumentWritten} = require("firebase-functions/v2/firestore");
+const AccessIndex = require("./access-index-core");
 
 initializeApp();
+
+const normalizeStudentName = value => String(value || "").normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+async function legacyWaliStudents(profile, db) {
+  const names = [profile.namaAnak, profile.namaSantri, profile.namaAnanda,
+    profile.studentName, profile.anak].filter(value => typeof value === "string" && value.trim());
+  if (!names.length) return {};
+  const [classSnap, indexSnap] = await Promise.all([
+    db.ref("cahaya_app/master_akademik/kelas").get(),
+    db.ref("cahaya_app/wali_index").get()
+  ]);
+  const catalog = new Map();
+  function add(value, fallbackKey) {
+    const row = typeof value === "string" ? {namaSantri:value} : (value || {});
+    const name = String(row.namaSantri || row.nama || row.namaAnak || row.label || "").trim();
+    const key = String(row.studentKey || row.santriId || row.studentId || fallbackKey || "").trim();
+    if (!name || !key || /[.#$\[\]\/]/.test(key)) return;
+    const normalized = normalizeStudentName(name), candidates = catalog.get(normalized) || new Map();
+    candidates.set(key, {active:true, studentKey:key, namaSantri:name});
+    catalog.set(normalized, candidates);
+  }
+  const index = indexSnap.val() || {};
+  const exactKeys = new Map();
+  Object.entries(index).forEach(([key, value]) => {
+    add(value, key);
+    const normalizedKey = normalizeStudentName(key);
+    const keys = exactKeys.get(normalizedKey) || [];
+    keys.push(key);
+    exactKeys.set(normalizedKey, keys);
+    Object.values(value || {}).forEach(events => {
+      Object.values(events || {}).forEach(event => {
+        if (event && typeof event === "object")
+          add({namaSantri:event.namaSantri || event.nama_santri ||
+            event.namaAnak || event.studentName}, key);
+      });
+    });
+  });
+  const indexedNames = new Set(catalog.keys());
+  Object.entries(classSnap.val() || {}).forEach(([, value]) => {
+    const members = Array.isArray(value) ? value :
+      (value?.santri || value?.peserta || value?.students || value?.anggota || value);
+    Object.entries(members || {}).forEach(([key, student]) => {
+      if (/^\d+$/.test(key) && !(student?.studentKey || student?.santriId || student?.studentId)) return;
+      const fallback = key;
+      const name = typeof student === "string" ? student :
+        (student?.namaSantri || student?.nama || student?.namaAnak || "");
+      if (!indexedNames.has(normalizeStudentName(name))) add(student, fallback);
+    });
+  });
+  const students = {};
+  names.forEach(name => {
+    const normalized = normalizeStudentName(name);
+    const direct = exactKeys.get(normalized) || [];
+    if (direct.length === 1) {
+      const key = direct[0];
+      students[key] = {active:true, studentKey:key, namaSantri:name};
+      return;
+    }
+    const candidates = catalog.get(normalized);
+    if (candidates?.size === 1) {
+      const [student] = candidates.values();
+      students[student.studentKey] = student;
+    }
+  });
+  return students;
+}
+
+// Repair an internal account's trusted RTDB index after a successful login.
+// The caller never supplies a role or UID: both come from Firebase Auth and
+// the existing admin-managed Firestore user document.
+exports.syncOwnCahayaAccess = onCall({region: process.env.CAHAYA_DATABASE_REGION || "us-central1"}, async request => {
+  const uid = request.auth?.uid;
+  const email = String(request.auth?.token?.email || "").trim().toLowerCase();
+  if (!uid || !/^[a-z0-9._-]+@cahayaapp\.id$/.test(email))
+    throw new HttpsError("unauthenticated", "Sesi akun CAHAYA diperlukan.");
+  const username = email.split("@")[0];
+  const doc = await getFirestore().collection("users").doc(username).get();
+  if (!doc.exists) throw new HttpsError("permission-denied", "Profil akun resmi belum tersedia.");
+  const profile = doc.data() || {};
+  if (profile.authUid && String(profile.authUid) !== uid)
+    throw new HttpsError("permission-denied", "UID akun tidak sesuai dengan profil resmi.");
+  if (profile.disabled === true || profile.active === false)
+    throw new HttpsError("permission-denied", "Akun tidak aktif.");
+  const {isWali, ...index} = AccessIndex.accessFor(profile, username);
+  const db = getDatabase();
+  await db.ref(`cahaya_access/users/${uid}`).set({...index, updatedAt:new Date().toISOString()});
+  if (isWali) {
+    const waliRef = db.ref(`cahaya_access/wali/${uid}`);
+    let students = AccessIndex.explicitWaliStudents(profile);
+    if (!Object.keys(students).length) students = (await waliRef.get()).val()?.students || {};
+    if (!Object.keys(students).length) students = await legacyWaliStudents(profile, db);
+    const hasActiveStudent = Object.values(students).some(item => item?.active === true);
+    if (hasActiveStudent)
+      await waliRef.set({active:true, students, updatedAt:new Date().toISOString()});
+    else await waliRef.update({active:false, updatedAt:new Date().toISOString()});
+    if (!hasActiveStudent) return {internal:index.internal, ready:index.internal, reason:"WALI_STUDENT_KEY_REQUIRED"};
+  }
+  return {internal:index.internal, ready:index.internal || isWali};
+});
+
+// Keep the trusted access index current when Admin changes a profile or role.
+exports.syncCahayaAccessOnUserChange = onDocumentWritten({document:"users/{username}", region:"us-central1"}, async event => {
+  const username = String(event.params.username || "").toLowerCase();
+  if (!/^[a-z0-9._-]+$/.test(username)) return;
+  const authUser = await getAuth().getUserByEmail(`${username}@cahayaapp.id`).catch(() => null);
+  if (!authUser) return;
+  const profile = event.data?.after?.data();
+  const db = getDatabase(), path = `cahaya_access/users/${authUser.uid}`;
+  if (!profile || profile.disabled === true || profile.active === false ||
+      (profile.authUid && String(profile.authUid) !== authUser.uid)) {
+    await db.ref(path).update({active:false, internal:false, updatedAt:new Date().toISOString()});
+    await db.ref(`cahaya_access/wali/${authUser.uid}`).update({active:false, updatedAt:new Date().toISOString()});
+    return;
+  }
+  const {isWali, ...index} = AccessIndex.accessFor(profile, username);
+  await db.ref(path).set({...index, updatedAt:new Date().toISOString()});
+  const waliPath = `cahaya_access/wali/${authUser.uid}`;
+  if (!isWali) { await db.ref(waliPath).remove(); return; }
+  let students = AccessIndex.explicitWaliStudents(profile);
+  if (!Object.values(students).some(item => item?.active === true)) {
+    const previous = (await db.ref(waliPath).get()).val()?.students || {};
+    const names = [profile.namaAnak, profile.namaSantri, profile.namaAnanda,
+      profile.studentName, profile.anak].map(normalizeStudentName).filter(Boolean);
+    const previousStudents = Object.values(previous).filter(item => item?.active === true);
+    if (names.length && previousStudents.length && previousStudents.every(item =>
+      names.includes(normalizeStudentName(item.namaSantri)))) students = previous;
+    else students = await legacyWaliStudents(profile, db);
+  }
+  if (Object.values(students).some(item => item?.active === true))
+    await db.ref(waliPath).set({active:true, students, updatedAt:new Date().toISOString()});
+  else await db.ref(waliPath).update({active:false, updatedAt:new Date().toISOString()});
+});
+
+const FACE_POC_ROOT = "/cahaya_app/face_attendance_poc";
 
 const DATABASE_INSTANCE =
   process.env.CAHAYA_DATABASE_INSTANCE ||
@@ -1447,3 +1586,99 @@ exports.pushBroadcastSemuaPenggunaToPengurus = onValueCreated(
     });
   }
 );
+
+async function facePocCaller(request) {
+  const uid = request.auth?.uid;
+  if (!uid) throw new HttpsError("unauthenticated", "Firebase Auth diperlukan untuk Face Attendance POC.");
+  const db = getDatabase();
+  const profile = (await db.ref(`/cahaya_access/users/${uid}`).get()).val() || {};
+  if (profile.active !== true || profile.internal !== true) throw new HttpsError("permission-denied", "Akun internal aktif diperlukan.");
+  return {uid, db, profile};
+}
+
+function faceProgramSummary(id, value = {}) {
+  return {
+    id,
+    name:String(value.name || id),
+    active:value.active === true,
+    unit:String(value.unit || ""),
+    startTime:String(value.startTime || "04:00:00"),
+    onTimeCutoff:String(value.onTimeCutoff || "04:45:00"),
+    scanCloseTime:String(value.scanCloseTime || "06:00:00"),
+    timeZone:String(value.timeZone || "Asia/Jakarta"),
+    rosterCount:FacePoc.programRoster(value).length,
+    version:Number(value.version || 1),
+    updatedAt:Number(value.updatedAt || 0)
+  };
+}
+
+/* Returns authorization and program summaries only. It never returns the access
+ * tree, roster, or biometric template to an unauthorized caller. */
+exports.getFaceAttendancePocContext = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request);
+  const programs = (await caller.db.ref(`${FACE_POC_ROOT}/programs`).get()).val() || {};
+  const canEnroll = FacePoc.canEnroll(caller.profile), canScan = FacePoc.canScan(caller.profile);
+  const visible = Object.entries(programs).filter(([, program]) => canEnroll || FacePoc.authorizedForProgram(caller.profile, program, caller.uid)).map(([id, program]) => faceProgramSummary(id, program));
+  return {uid:caller.uid, canEnroll, canScan, modelVersion:FacePoc.MODEL_VERSION, embeddingVersion:FacePoc.EMBEDDING_VERSION, programs:visible};
+});
+
+/* Enrollment writes are server mediated. Admin/Director cannot choose audit UID,
+ * version, timestamps, active status, or overwrite history from the client. */
+exports.saveFaceProfilePoc = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request);
+  if (!FacePoc.canEnroll(caller.profile)) throw new HttpsError("permission-denied", "Role ini tidak boleh melakukan enrollment wajah.");
+  let payload;
+  try { payload = FacePoc.sanitizeEnrollment(request.data || {}); }
+  catch (error) { throw new HttpsError("invalid-argument", error.message); }
+  payload.templateHash = createHash("sha256").update(JSON.stringify(payload.samples)).digest("hex");
+  const profileRef = caller.db.ref(`${FACE_POC_ROOT}/profiles/${payload.studentKey}`);
+  let previousVersion = 0, saved = null;
+  const transaction = await profileRef.transaction(current => {
+    previousVersion = Number(current?.profileVersion || 0);
+    saved = FacePoc.nextProfile(payload, current || {}, {uid:caller.uid}, Date.now());
+    return saved;
+  }, undefined, false);
+  if (!transaction.committed) throw new HttpsError("aborted", "Enrollment tidak tersimpan secara utuh.");
+  const auditRef = caller.db.ref(`${FACE_POC_ROOT}/enrollment_audit`).push();
+  await auditRef.set({studentKey:payload.studentKey, previousVersion, newVersion:saved.profileVersion, performedByUid:caller.uid, performedAt:saved.updatedAt, deviceId:FacePoc.safeKey(request.data?.deviceId), sessionDeviceId:FacePoc.safeKey(request.data?.sessionDeviceId), reason:FacePoc.text(request.data?.reason,300), modelVersion:saved.modelVersion, embeddingVersion:saved.embeddingVersion});
+  return {studentKey:saved.studentKey, profileVersion:saved.profileVersion, templateHash:saved.templateHash, updatedAt:saved.updatedAt, sampleCount:saved.sampleCount};
+});
+
+exports.listFaceProfilesPoc = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request);
+  if (!FacePoc.canEnroll(caller.profile)) throw new HttpsError("permission-denied", "Hanya petugas enrollment yang dapat melihat status seluruh profil.");
+  const profiles = (await caller.db.ref(`${FACE_POC_ROOT}/profiles`).get()).val() || {};
+  return {profiles:Object.values(profiles).map(profile => ({studentKey:profile.studentKey, studentName:profile.studentName, className:profile.className, active:profile.active===true, profileVersion:Number(profile.profileVersion||0), modelVersion:profile.modelVersion, embeddingVersion:profile.embeddingVersion, sampleCount:Number(profile.sampleCount||0), updatedAt:Number(profile.updatedAt||0), templateHash:profile.templateHash}))};
+});
+
+/* Naqib receives only active profiles present in the trusted program roster and
+ * only when their UID is assigned to that program. */
+exports.syncFaceProfilesPoc = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request), programId = FacePoc.safeKey(request.data?.programId);
+  if (!programId) throw new HttpsError("invalid-argument", "Program wajib dipilih.");
+  const program = (await caller.db.ref(`${FACE_POC_ROOT}/programs/${programId}`).get()).val() || {};
+  if (!FacePoc.authorizedForProgram(caller.profile, program, caller.uid)) throw new HttpsError("permission-denied", "Anda tidak memiliki scope program ini.");
+  const allProfiles = (await caller.db.ref(`${FACE_POC_ROOT}/profiles`).get()).val() || {}, profiles = FacePoc.scopedProfiles(allProfiles, program);
+  return {program:faceProgramSummary(programId, program), modelVersion:FacePoc.MODEL_VERSION, embeddingVersion:FacePoc.EMBEDDING_VERSION, syncedAt:Date.now(), profiles};
+});
+
+/* The client submits identity result only. Server validates program scope,
+ * roster, model, duplicate key and authoritative status/time. */
+exports.submitFaceCheckInPoc = onCall({region:DATABASE_REGION}, async request => {
+  const caller = await facePocCaller(request), programId = FacePoc.safeKey(request.data?.programId), studentKey = FacePoc.safeKey(request.data?.studentKey);
+  const program = (await caller.db.ref(`${FACE_POC_ROOT}/programs/${programId}`).get()).val() || {};
+  if (!FacePoc.authorizedForProgram(caller.profile, program, caller.uid)) throw new HttpsError("permission-denied", "Anda tidak memiliki scope program ini.");
+  if (!FacePoc.programRoster(program).includes(studentKey)) throw new HttpsError("permission-denied", "Santri bukan roster program aktif.");
+  const profile = (await caller.db.ref(`${FACE_POC_ROOT}/profiles/${studentKey}`).get()).val() || {};
+  if (profile.active !== true || profile.modelVersion !== FacePoc.MODEL_VERSION) throw new HttpsError("failed-precondition", "Template wajah belum tersedia atau perlu diperbarui.");
+  let record;
+  try { record = FacePoc.sanitizeCheckIn({...request.data, programId, studentKey}, program, Date.now()); }
+  catch (error) { throw new HttpsError("invalid-argument", error.message); }
+  if(record.status === "DITOLAK_DI_LUAR_WAKTU")throw new HttpsError("failed-precondition","Sesi scan program sudah ditutup.");
+  record.submissionId=FacePoc.safeKey(request.data?.submissionId);
+  if(!record.submissionId)throw new HttpsError("invalid-argument","Submission ID wajib untuk idempotensi.");
+  record.submittedByUid=caller.uid;record.profileVersion=Number(profile.profileVersion||0);record.templateHash=String(profile.templateHash||"");
+  const checkRef=caller.db.ref(`${FACE_POC_ROOT}/checkins/${record.sessionId}/${studentKey}`);
+  const transaction=await checkRef.transaction(current=>current||record,undefined,false),stored=transaction.snapshot.val();
+  return {created:stored?.submissionId===record.submissionId, duplicate:stored?.submissionId!==record.submissionId, record:stored};
+});

@@ -102,7 +102,7 @@
     facilities:['menu-jurnal-sarpras','menu-checklist-sarpras','menu-tindak-sarpras'],
     observer:['menu-observer-pembelajaran','menu-observer-pengasuhan','menu-observer-kebersihan','menu-observer-sarpras','menu-observer-dapur','menu-observer-uks'],
     assessment:['menu-asesmen-naqib','menu-asesmen-guru','menu-asesmen-santri','menu-pantau-asesmen','menu-asesmen-sdm'],
-    media:['menu-komentar','menu-media'],chat:['menu-chat'],pkl:['menu-jurnal-pkl'],operationalDashboard:['menu-dashboard-operasional']
+    media:['menu-komentar','menu-media'],pkl:['menu-jurnal-pkl'],operationalDashboard:['menu-dashboard-operasional']
   };
   function disableElement(el){if(!el)return;el.dataset.moduleDisabled='true';el.style.display='none';}
   function applyModules(scope=document){

@@ -117,7 +117,6 @@
     if(id==='all')return all();
     if(id==='mentor-contact')return showMentorDialog();
     if(id==='roles')return embedded?P.openCahayaGlobalRoleModal?.():all();
-    if(id==='messages'){if(embedded)(wali?P.toggleWaliChat?.():P.openMobileShortcut?.('menu-chat'));return}
     if(id==='profile'){if(embedded){if(wali)P.document.getElementById('navProfil')?.click();else P.openAuthorizedMenu?.('menu-profil')}return}
     const special={'menu-absen-guru':'openScheduleModal',schedule:'openScheduleModal',leave:'openLeaveModal',activities:'openActivities'};
     if(special[id]&&typeof window[special[id]]==='function')return window[special[id]]();
@@ -211,7 +210,7 @@
     host=document.createElement('main');host.id='mobileRoleHome';host.className='mh-home';host.dataset.role=role;
     if(name.length>23)host.classList.add('mh-long-name');
     else if(name.length>11)host.classList.add('mh-medium-name');
-    host.innerHTML=`<div class="mh-masthead"><header class="mh-header"><div class="mh-brand"><img src="${new URL('assets/cahaya-app/logo-icon.png',root)}" alt=""><span><strong>CAHAYA <em>APP</em></strong><small>Pesantren Cahaya Fajrul Islam</small></span></div><div class="mh-header-actions"><button type="button" data-mh-id="messages" aria-label="Buka pesan" class="mh-bell">${icon('bell')}</button><button type="button" data-mh-id="profile" aria-label="Buka profil" class="mh-avatar">${esc(name.charAt(0))}</button></div></header>
+    host.innerHTML=`<div class="mh-masthead"><header class="mh-header"><div class="mh-brand"><img src="${new URL('assets/cahaya-app/logo-icon.png',root)}" alt=""><span><strong>CAHAYA <em>APP</em></strong><small>Pesantren Cahaya Fajrul Islam</small></span></div><div class="mh-header-actions"><button type="button" data-mh-id="profile" aria-label="Buka profil" class="mh-avatar">${esc(name.charAt(0))}</button></div></header>
       <section class="mh-hero"><div class="mh-identity"><span class="mh-greeting">Assalamu’alaikum,</span><h1 title="${esc(name)}">${esc(name)}</h1><div class="mh-identity-actions">${wali?'':`<button type="button" class="mh-role" data-mh-id="roles" ${session?.roles?.length>1?'':'disabled'}>${icon('people')}<span>${esc(label)}</span>${session?.roles?.length>1?'<span>⌄</span>':''}</button>`}${wali?`<button type="button" class="mh-mentor-trigger" data-mh-id="mentor-contact">${icon('people')}<span>Mentor</span></button>`:''}</div></div><blockquote>“${esc(role==='GURU_PONDOK'?'Mengajar hari ini, menyiapkan generasi cahaya esok hari.':supporting[role])}”</blockquote></section></div>
       <div class="mh-date"><span class="mh-date-icon">${icon('calendar')}</span><div class="mh-date-copy"><span>${esc(date)}</span><small>${esc(hijri)}</small></div><div class="mh-date-message">${icon('sun')}<span>Terus<br>Menebar Manfaat</span></div></div>
       <section class="mh-quick"><div class="mh-heading"><h2>Akses Cepat Hari Ini</h2><button type="button" data-mh-id="all">Lihat Semua →</button></div><div class="mh-quick-grid" style="--mh-quick-rows:${Math.max(1,Math.ceil(quick.length/2))}">${quick.map((x,i)=>card(x,i,true)).join('')}</div></section>

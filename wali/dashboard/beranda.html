@@ -350,7 +350,6 @@
 </style>
 
   <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="beranda-whatsapp.css">
 <link rel="stylesheet" href="beranda-media-fix.css?v=63">
 <style id="cahaya-v63-media-inline-style">
 .media-description{display:block;margin-top:3px;color:#7b879a;font-size:.64rem;font-weight:730;line-height:1.4}
@@ -524,14 +523,6 @@ body.page-beranda{
 </head>
 <body class="portal-page page-beranda">
 
-<div id="inAppNotif" class="in-app-notif" onclick="bukaChatDariNotif()">
-  <div class="notif-icon">💬</div>
-  <div class="notif-text">
-    <span class="notif-title" id="notifTitle">Pesan Baru</span>
-    <span class="notif-desc" id="notifDesc">Memuat pesan...</span>
-  </div>
-</div>
-
 <div class="app-container">
   <section id="waliMobileDashboard" class="wali-mobile-dashboard" aria-label="Ringkasan ananda"></section>
   
@@ -590,149 +581,6 @@ body.page-beranda{
     <div class="wm-layer-body" id="waliReportLayerBody"></div>
   </div>
 </section>
-
-<button
-  type="button"
-  class="fab-chat"
-  onclick="toggleChat()"
-  aria-label="Buka WhatsApp Pesantren"
->
-  <span class="fab-chat-emoji">💬</span>
-  <span
-    id="chatUnreadBadge"
-    class="chat-badge"
-    style="display:none;"
-  >0</span>
-</button>
-
-<section
-  class="chat-window"
-  id="chatWindow"
-  aria-label="WhatsApp Pesantren"
->
-  <header class="wa-chat-header">
-    <button
-      type="button"
-      class="wa-header-btn"
-      id="chatBackButton"
-      onclick="showChatContactList()"
-      aria-label="Kembali"
-      style="display:none;"
-    >←</button>
-
-    <div
-      class="wa-chat-avatar"
-      id="chatHeaderAvatar"
-    >C</div>
-
-    <div class="wa-header-copy">
-      <strong
-        class="wa-header-title"
-        id="chatHeaderTitle"
-      >WhatsApp Pesantren</strong>
-
-      <span
-        class="wa-header-subtitle"
-        id="chatHeaderSubtitle"
-      >Direktur, Wakil Direktur, Admin, dan Konselor</span>
-    </div>
-
-    <button
-      type="button"
-      class="wa-header-btn"
-      onclick="toggleChat()"
-      aria-label="Tutup"
-    >✕</button>
-  </header>
-
-  <div
-    class="wa-list-view"
-    id="chatListView"
-  >
-    <div class="wa-search">
-      <label class="wa-search-shell">
-        <span>⌕</span>
-        <input
-          type="search"
-          id="chatContactSearch"
-          placeholder="Cari kontak"
-          autocomplete="off"
-          oninput="filterChatContacts()"
-        >
-      </label>
-    </div>
-
-    <div
-      class="wa-contact-list"
-      id="viewInbox"
-    >
-      <div class="wa-empty">
-        Sedang menyiapkan kontak pengurus...
-      </div>
-    </div>
-  </div>
-
-  <div
-    class="wa-chat-body"
-    id="chatBody"
-  ></div>
-
-  <footer
-    class="wa-chat-footer"
-    id="chatFooter"
-  >
-    <div class="wa-input-shell">
-      <textarea
-        id="chatInput"
-        rows="1"
-        placeholder="Ketik pesan"
-        oninput="autoResizeChatInput()"
-        onkeydown="handleChatEnter(event)"
-      ></textarea>
-    </div>
-
-    <button
-      type="button"
-      class="wa-send-button"
-      id="btnSendChat"
-      onclick="sendChatMessage()"
-      aria-label="Kirim"
-    >➤</button>
-  </footer>
-
-  <div
-    id="actionSheetOverlay"
-    class="action-sheet-overlay"
-    onclick="closeActionSheet(event)"
-  >
-    <div
-      class="action-sheet"
-      id="actionSheet"
-      onclick="event.stopPropagation()"
-    >
-      <div class="wa-action-title">
-        Opsi Pesan
-      </div>
-
-      <button
-        type="button"
-        onclick="editSelectedMsg()"
-      >✏️ Edit Pesan</button>
-
-      <button
-        type="button"
-        class="delete-btn"
-        onclick="deleteSelectedMsg()"
-      >🗑️ Hapus Pesan</button>
-
-      <button
-        type="button"
-        onclick="closeActionSheet()"
-      >Batal</button>
-    </div>
-  </div>
-</section>
-
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -1748,15 +1596,6 @@ function ekstrakInstagramId(value) {
       } else {
           alert("Komentar berada di riwayat sebelumnya. Silakan muat cerita yang lebih lama ke bawah.");
       }
-  }
-
-  function bukaChatDariNotifDashboard(act, disp, rid) {
-      const cw = document.getElementById('chatWindow');
-      if (cw.style.display !== 'flex') {
-          cw.style.display = 'flex';
-          switchChatTab('inbox');
-      }
-      startChat(act, disp, rid);
   }
 
   // 5. LOGIKA TIMELINE CERITA SANTRI
@@ -3070,17 +2909,7 @@ async function kirimKomentar(eventId) {
 // ==========================================
 // FITUR LIVE CHAT PUSAT BANTUAN
   // ==========================================
-  function showInAppNotif(title, desc) {
-      document.getElementById('notifTitle').textContent = title;
-      document.getElementById('notifDesc').textContent = desc;
-      const notifEl = document.getElementById('inAppNotif');
-      notifEl.classList.add('show');
-      setTimeout(() => { notifEl.classList.remove('show'); }, 4000);
-  }
-  function bukaChatDariNotif() { document.getElementById('inAppNotif').classList.remove('show'); toggleChat(); }
-
   function listenToGlobalMessages() {
-      // Chat hemat bandwidth ditangani oleh beranda-whatsapp.js melalui indeks inbox per akun.
       return;
   }
 

@@ -61,10 +61,7 @@ assert(merged.messages.legacy && merged.messages.baru);
 assert.equal(merged.updatedAt,'current');
 
 const waliFrontend=fs.readFileSync('wali/dashboard/index.html','utf8');
-assert(waliFrontend.includes('CahayaSecureChat.openRoom'));
-assert(waliFrontend.includes('CahayaSecureChat.listenUserRooms'));
-assert(!waliFrontend.includes('cahaya_app/pesan_global'));
-assert(!waliFrontend.includes('cahaya_app/pesan_inbox'));
-assert(!waliFrontend.includes('direktori_chat_wali'));
-assert(waliFrontend.includes('CahayaSecureChat.markRead'));               // TEST 17
-console.log('PASS 17 secure Wali chat membership, UID, migration, and receipt contracts');
+assert(!waliFrontend.includes('id="waliChatWindow"'));
+assert(!waliFrontend.includes('../../js/chat-uid-v2.js'));
+assert(!waliFrontend.includes('aria-label="Buka Pesan"'));              // TEST 17
+console.log('PASS 17 dormant chat data remains protected while Wali chat UI and client loader are removed');
