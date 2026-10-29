@@ -50,3 +50,30 @@ html,body{background:linear-gradient(155deg,#f7fbfc 0%,#eef8f8 54%,#f5f9ff 100%)
 @media(prefers-reduced-motion:reduce){.ks-back,.ks-menu,.ks-action{transition:none}}
 .ks-toolbar{grid-template-columns:minmax(0,1fr)}.ks-toolbar:has(#statusFilter:not([hidden])){grid-template-columns:minmax(0,1fr) repeat(2,minmax(140px,180px))}
 @media(max-width:620px){.ks-toolbar:has(#statusFilter:not([hidden])){grid-template-columns:1fr}.ks-toolbar:has(#statusFilter:not([hidden]))>*{grid-column:1}}
+
+/* Each timeline row has exactly three tracks: marker, text, and date. */
+.ks-panel-title p{margin:6px 0 0;color:#6c879e;font-size:12px;line-height:1.5}
+.ks-timeline{display:grid;gap:0}
+.ks-event{position:relative;display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:start;gap:15px;min-height:74px;padding:0 0 20px;overflow:visible}
+.ks-event:before{grid-column:1;grid-row:1;width:14px;height:14px;margin:3px 0 0;border:3px solid #d3f3ed;border-radius:50%;background:#08aaa2;box-sizing:border-box}
+.ks-event:not(:last-child):after{position:absolute;left:6px;top:21px;bottom:0;width:2px;background:#ccece9}
+.ks-event-content{grid-column:2;grid-row:1;min-width:0}
+.ks-event-content b{display:block;color:#173c5e;font-size:14px;line-height:1.35}
+.ks-event-content small{display:block;margin-top:4px;color:#708ba2;font-size:11px}
+.ks-event-content p{margin:7px 0 0;color:#3b5973;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.ks-event time{grid-column:3;grid-row:1;max-width:170px;color:#6f8aa3;font-size:11px;line-height:1.4;text-align:right;white-space:normal}
+.ks-primary-actions{position:static;justify-content:flex-end;margin-top:11px;padding:0;border:0;background:transparent;box-shadow:none;backdrop-filter:none}
+.ks-primary-actions .ks-btn{flex:0 1 auto}
+@media(max-width:520px){.ks-event{grid-template-columns:17px minmax(0,1fr);gap:10px;min-height:86px}.ks-event time{grid-column:2;grid-row:2;max-width:none;text-align:left;margin-top:-12px}.ks-event-content b{font-size:12px}.ks-primary-actions .ks-btn{flex:1}}
+
+/* The incoming queue uses the blue reference; active work keeps the teal reference. */
+.ks-cases-page[data-view=incoming] .ks-hero{border-color:#1269bd;background:linear-gradient(112deg,#123f80 0%,#1668bb 58%,#4ea4d9 100%);color:#fff}
+.ks-cases-page[data-view=incoming] .ks-hero:before{opacity:.22}
+.ks-cases-page[data-view=incoming] .ks-hero-symbol{background:rgba(255,255,255,.17);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.ks-cases-page[data-view=incoming] .ks-eyebrow,.ks-cases-page[data-view=incoming] .ks-hero p{color:#e5f3ff}
+.ks-cases-page[data-view=incoming] .ks-meta .ks-chip{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.83);color:#164c81}
+.ks-cases-page[data-view=counseling] .ks-hero{background:linear-gradient(110deg,#e6eafa,#f6f8ff 66%,#d9e8fa);border-color:#d7e0f3}
+.ks-cases-page[data-view=escalations] .ks-hero{background:linear-gradient(110deg,#fff1e8,#fffaf5 66%,#f7dfd4);border-color:#f1dfd5}
+.ks-cases-page[data-view=history] .ks-hero{background:linear-gradient(110deg,#e9f1f7,#f9fbfd 66%,#dce9f1);border-color:#d8e4eb}
+.ks-cases-page.ks-detail-open .ks-hero{border-color:#1269bd;background:linear-gradient(112deg,#123f80 0%,#1668bb 58%,#4ea4d9 100%);color:#fff}
+.ks-cases-page.ks-detail-open .ks-eyebrow,.ks-cases-page.ks-detail-open .ks-hero p{color:#e5f3ff}
