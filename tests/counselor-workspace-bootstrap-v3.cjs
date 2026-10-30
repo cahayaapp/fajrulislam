@@ -107,8 +107,11 @@ test('dua kasus santri yang sama tampil satu baris dan dipilih tanpa kasus santr
   const list=element('caseList').innerHTML;
   assert.equal((list.match(/class="ks-case-row"/g)||[]).length,2);
   assert.match(list,/2 kasus/);
-  assert.match(list,/Terlambat Subuh/);
-  assert.match(list,/Terlambat Zuhur/);
+  assert.match(list,/data-group-detail="0"/);
+  assert.doesNotMatch(list,/Terlambat Zuhur/,'rincian banyak kasus dimuat saat kelompok dibuka');
+  const details=vm.runInNewContext('caseItemsMarkup(visibleGroups[0].cases)',context);
+  assert.match(details,/Terlambat Subuh/);
+  assert.match(details,/Terlambat Zuhur/);
   document.dispatch('change',{target:{matches:selector=>selector==='[data-case-group]',dataset:{caseGroup:'0'},checked:true,id:''}});
   assert.equal(element('processBtn').disabled,false);
   assert.equal(element('selectionCount').textContent,'(2 kasus)');
