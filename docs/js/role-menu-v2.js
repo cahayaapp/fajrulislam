@@ -52,7 +52,7 @@
       add('menu-jurnal-liburan-monitor','Jurnal Liburan Santri','pembinaan/jurnal-liburan-monitor.html','Operasional');
     }else if(role==='KONSELOR'){
       const base='konselor/workspace-v3.html?view=';
-      [['menu-kasus-masuk','Kasus Masuk','cases'],['menu-buku-konseling','Buku Konseling','book'],['menu-evaluasi-pelanggaran','Evaluasi Pelanggaran','evaluation'],['menu-surat-peringatan','Surat Peringatan','warnings']].forEach(([id,label,view])=>add(id,label,base+view+'&v=7'));
+      [['menu-kasus-masuk','Kasus Masuk','cases'],['menu-buku-konseling','Buku Konseling','book'],['menu-evaluasi-pelanggaran','Evaluasi Pelanggaran','evaluation'],['menu-surat-peringatan','Surat Peringatan','warnings']].forEach(([id,label,view])=>add(id,label,base+view+'&v=8'));
       add('menu-kalender-pendidikan','Kalender Pendidikan','kalender.html?mode=view','Lainnya');
       add('menu-panduan-kerja','Panduan & Manual','panduan-role-v2.html','Lainnya');
       add('menu-profil','Profil','profil.html','Lainnya');

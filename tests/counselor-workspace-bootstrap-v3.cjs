@@ -21,16 +21,17 @@ function surface(view,options={}){
     if(!elements.has(id))elements.set(id,{id,value:'',textContent:id==='state'?'Menyiapkan data…':'',innerHTML:'',dataset:{},hidden:false,disabled:false,checked:false,indeterminate:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},querySelector(){return null}});
     return elements.get(id);
   };
-  const report={r1:{tanggal:'2026-10-30',dilaporkan:'Ali',tipe:'Lapor Pelanggaran',kodePelanggaran:'KEDISIPLINAN',keterangan:'Terlambat',unit:'PUTRA'}};
+  const report=options.report||{r1:{tanggal:'2026-10-30',dilaporkan:'Ali',tipe:'Lapor Pelanggaran',kodePelanggaran:'KEDISIPLINAN',keterangan:'Terlambat',unit:'PUTRA'}};
   const warnings={w1:{idSP:'w1',namaSantri:'Ali',jenisSP:1,usrah:'Usrah 1',tanggal:'2026-10-30',deskripsiPelanggaran:'Terlambat',dibuatPada:1}};
   const data={
-    'cahaya_app/master_usrah/Usrah 1':['Ali'],
+    'cahaya_app/master_usrah/Usrah 1':options.roster||['Ali'],
     [C.ROOT]:report,
     'cahaya_app/surat_peringatan_santri':warnings
   };
   const api={getDatabase:()=>({}),ref:(_,p='/')=>({path:p}),get:async target=>{readPaths.push(target.path);if(target.path===options.delayPath)await loadGate;return{val:()=>data[target.path]||{},exists:()=>Boolean(data[target.path])}},set:async()=>{},update:async()=>{},remove:async()=>{},push:()=>({key:'new'}),query:target=>target,orderByChild:()=>()=>{},startAt:()=>()=>{},endAt:()=>()=>{},limitToLast:()=>()=>{},runTransaction:async()=>({committed:true,snapshot:{val:()=>({})}})};
   const window={CahayaCounselorFirebaseV3:api,CahayaCounselorCaseV2:C,CahayaCounselorSimplifiedV3:M,CahayaRoleSystemV2:R,cahayaRoleContext:{assertCurrent(){},usrahKeys(){return['Usrah 1']}},CAHAYA_CONFIG:{}};
-  const document={body:{dataset:{}},getElementById:element,querySelectorAll:()=>[],addEventListener(){}};
+  const listeners={};
+  const document={body:{dataset:{}},getElementById:element,querySelectorAll:()=>[],addEventListener(name,handler){(listeners[name]??=[]).push(handler)},dispatch(name,event){for(const handler of listeners[name]||[])handler(event)}};
   const localStorage={getItem:key=>key==='cahayaCurrentUser'?JSON.stringify(user):null};
   const context={window,document,localStorage,location:{search:'?view='+view},URLSearchParams,parent:window,history:{back(){}},console,setTimeout,clearTimeout,confirm:()=>true,Image:function(){},FileReader:function(){}};
   vm.runInNewContext(source,context,{filename:'counselor-simplified-v3.js'});
@@ -98,6 +99,23 @@ test('halaman Kasus Masuk mulai membaca dan merender data, tanpa tertahan pada p
   await new Promise(setImmediate);
   assert.match(element('state').textContent,/kasus ditampilkan/);
   assert.match(element('caseList').innerHTML,/Ali/);
+});
+test('dua kasus santri yang sama tampil satu baris dan dipilih tanpa kasus santri lain',async()=>{
+  const report={r1:{tanggal:'2026-10-30',dilaporkan:'Ali',tipe:'Lapor Pelanggaran',kodePelanggaran:'KEDISIPLINAN',keterangan:'Terlambat Subuh',unit:'PUTRA'},r2:{tanggal:'2026-10-29',dilaporkan:'Ali',tipe:'Lapor Pelanggaran',kodePelanggaran:'KEDISIPLINAN',keterangan:'Terlambat Zuhur',unit:'PUTRA'},r3:{tanggal:'2026-10-30',dilaporkan:'Budi',tipe:'Lapor Pelanggaran',kodePelanggaran:'KEDISIPLINAN',keterangan:'Terlambat Maghrib',unit:'PUTRA'}};
+  const {element,document,context}=surface('cases',{report,roster:['Ali','Budi']});
+  await new Promise(setImmediate);
+  const list=element('caseList').innerHTML;
+  assert.equal((list.match(/class="ks-case-row"/g)||[]).length,2);
+  assert.match(list,/2 kasus/);
+  assert.match(list,/Terlambat Subuh/);
+  assert.match(list,/Terlambat Zuhur/);
+  document.dispatch('change',{target:{matches:selector=>selector==='[data-case-group]',dataset:{caseGroup:'0'},checked:true,id:''}});
+  assert.equal(element('processBtn').disabled,false);
+  assert.equal(element('selectionCount').textContent,'(2 kasus)');
+  vm.runInNewContext('startProcessing()',context);
+  assert.equal(vm.runInNewContext('processing.length',context),2);
+  assert.equal(vm.runInNewContext('new Set(processing.map(c=>c.id)).size',context),2);
+  assert.equal(vm.runInNewContext('processing.every(c=>c.student===\'Ali\')',context),true);
 });
 test('menu SP membaca riwayat dari koleksi lama dan memisahkan tampilan',async()=>{
   const {element,document}=surface('warnings');
