@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head><!-- ROLE_V2_ENTRY_START -->
-<script src="js/role-system-v2.js?v=285"></script>
+<script src="js/role-system-v2.js?v=287"></script>
 <script src="js/role-route-registry-v2.js?v=266"></script>
 <script src="js/role-navigation-v2.js?v=282"></script>
 <script src="js/role-scope-v2.js?v=206"></script>
@@ -372,50 +372,26 @@
   <link rel="stylesheet" href="css/cahaya-unified-v24.css?v=37" />
 
   <link rel="stylesheet" href="css/cahaya-signature-v87.css?v=87" />
+  <link rel="stylesheet" href="css/profile-v4.css?v=1" />
 </head>
 <body>
 
-<main class="cahaya-container"><div class="profil-grid">
-    <!-- KOLOM KIRI: FOTO PROFIL -->
-    <div class="cahaya-card foto-area">
-      <img id="imgPreview" src="assets/logofi.png" class="foto-preview" alt="Preview Foto" style="display: none;" />
-      
-      <h3 style="color: var(--navy-dark); font-size: 1.1rem; margin-bottom: 5px;" id="dispUsername">@username</h3>
-      <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 20px;" id="dispRole">Role</p>
-
-      <div class="file-input-wrapper">
-        <button class="btn-cahaya" style="background: #e2e8f0; color: var(--navy-dark); width: 100%;">📷 Pilih Foto Baru</button>
-        <input type="file" id="inputFoto" accept="image/png, image/jpeg, image/jpg" onchange="prosesFoto(event)">
-      </div>
-      <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 10px;">Format: JPG/PNG. Ukuran akan dioptimasi otomatis.</p>
+<main class="cahaya-container profile-v4">
+  <header class="profile-page-head"><button type="button" class="profile-back" id="profileBack">← Beranda</button><h1>Profil</h1><p>Kelola informasi profil, peran, dan keamanan akun Anda.</p></header>
+  <div class="profil-grid">
+    <div class="profile-column">
+      <section class="cahaya-card foto-area profile-card">
+        <div class="profile-card-title"><span class="profile-card-icon" aria-hidden="true">♙</span><span><strong>Profil Pengguna</strong><small>Foto, identitas, dan peran Anda di CAHAYA APP.</small></span></div>
+        <div class="profile-avatar-wrap"><img id="imgPreview" src="assets/logofi.png" class="foto-preview" alt="Foto profil" style="display: none;"><div id="inisialPreview" class="foto-preview" aria-hidden="true"></div></div>
+        <h2 id="dispUsername">@username</h2><p id="dispRole">Role</p>
+        <label class="file-input-wrapper profile-photo-action"><span>📷 Pilih Foto Baru</span><input type="file" id="inputFoto" accept="image/png, image/jpeg, image/jpg" onchange="prosesFoto(event)"></label>
+        <p class="profile-photo-hint">Format JPG/PNG. Ukuran akan dioptimasi otomatis.</p>
+      </section>
+      <section class="cahaya-card profile-card profile-role-card" id="profileRoleContext"><div class="profile-card-title"><span class="profile-card-icon" aria-hidden="true">♧</span><span><strong>Peran & Penugasan</strong><small>Peran aktif dan tugas yang Anda miliki.</small></span></div><div id="profileRoleDetails"></div></section>
     </div>
-
-    <!-- KOLOM KANAN: FORM DATA & PASSWORD -->
-    <div>
-      <div class="cahaya-card" style="margin-bottom: 20px;">
-        <h3 class="cahaya-title" style="font-size: 1.2rem; border-bottom: 2px dashed #e2e8f0; padding-bottom: 10px; margin-bottom: 20px;">📝 Identitas Tampilan</h3>
-        
-        <div class="form-group">
-          <label>Nama Sapaan (Label Layar)</label>
-          <input type="text" class="form-control" id="editNama" placeholder="Contoh: Ustadz Multazam">
-        </div>
-
-        <button class="btn-cahaya btn-gold" id="btnSimpanProfil" onclick="simpanProfil()">💾 Simpan Identitas & Foto</button>
-      </div>
-
-      <div class="cahaya-card">
-        <h3 class="cahaya-title" style="font-size: 1.2rem; border-bottom: 2px dashed #e2e8f0; padding-bottom: 10px; margin-bottom: 20px;">🔐 Keamanan Akun</h3>
-        <div class="info-box">
-          <b>Catatan:</b> Jika Anda ingin mengganti kata sandi, pastikan Anda masuk/login secara normal melalui halaman depan.
-        </div>
-        
-        <div class="form-group">
-          <label>Kata Sandi Baru</label>
-          <input type="password" class="form-control" id="editPassword" placeholder="Ketik sandi baru (minimal 6 karakter)">
-        </div>
-
-        <button class="btn-cahaya" style="background: #fee2e2; color: #dc2626; border-color: #fca5a5;" id="btnSimpanSandi" onclick="simpanPassword()">🔑 Ganti Kata Sandi</button>
-      </div>
+    <div class="profile-column">
+      <section class="cahaya-card profile-card profile-form-card"><div class="profile-card-title"><span class="profile-card-icon" aria-hidden="true">▣</span><span><strong>Identitas Tampilan</strong><small>Nama yang ditampilkan pada sistem CAHAYA APP.</small></span></div><div class="form-group"><label for="editNama">Nama Sapaan (Label Layar)</label><input type="text" class="form-control" id="editNama" placeholder="Nama sapaan Anda"></div><button class="btn-cahaya btn-gold" id="btnSimpanProfil" onclick="simpanProfil()">💾 Simpan Identitas & Foto</button></section>
+      <section class="cahaya-card profile-card profile-form-card"><div class="profile-card-title"><span class="profile-card-icon" aria-hidden="true">♢</span><span><strong>Keamanan Akun</strong><small>Kelola kata sandi untuk menjaga keamanan akun Anda.</small></span></div><div class="info-box"><b>Catatan:</b> Untuk mengganti kata sandi, masuk melalui halaman login terlebih dahulu.</div><div class="form-group"><label for="editPassword">Kata Sandi Baru</label><input type="password" class="form-control" id="editPassword" placeholder="Ketik sandi baru (minimal 6 karakter)"></div><button class="btn-cahaya" id="btnSimpanSandi" onclick="simpanPassword()">🔑 Ganti Kata Sandi</button></section>
     </div>
   </div>
 </main>
@@ -438,35 +414,35 @@
     if(!currentUser.username) return alert("Sesi tidak valid!");
 
     document.getElementById('dispUsername').textContent = "@" + currentUser.username;
-    document.getElementById('dispRole').textContent = (currentUser.akses || []).join(' & ').toUpperCase();
+    const rawRoles=Array.isArray(currentUser.akses)?currentUser.akses:[currentUser.akses||currentUser.role].filter(Boolean);
+    document.getElementById('dispRole').textContent = rawRoles.join(' & ').toUpperCase()||'Pengguna CAHAYA APP';
     document.getElementById('editNama').value = currentUser.label || currentUser.nama || currentUser.displayName || currentUser.username;
     const roleSystem=window.CahayaRoleSystemV2,session=roleSystem?.resolveSession(currentUser,localStorage);
-    if(session?.mode==='canonical'&&session.activeRole!=='WALI_SANTRI'){
+    const details=document.getElementById('profileRoleDetails');
+    if(session?.mode==='canonical'){
       document.getElementById('dispRole').textContent=roleSystem.displayLabelFor(session.activeRole,session.activeAssignment);
-      const box=document.createElement('section');box.className='info-box';box.id='profileRoleContext';
-      const title=document.createElement('h3');title.textContent='Peran & Penugasan';box.append(title);
-      const a=session.activeAssignment,scope=document.createElement('p');
+      const a=session.activeAssignment||{},scope=document.createElement('p');
       const labels={PUTRA:'Putra',PUTRI:'Putri',ALL:'Seluruh unit',KEPONDOKAN:'Kepondokan',PKBM:'PKBM',PEMULA:'Pemula',MADYA:'Madya'};
-      scope.textContent=[labels[a.unit],labels[a.programDomain],labels[a.level],a.usrahIds.length?`${a.usrahIds.length} Usrah ditugaskan`:null,a.supervisedRoles.length?'Supervisi: '+a.supervisedRoles.map(roleSystem.labelFor).join(', '):null].filter(Boolean).join(' • ')||'Sesuai penugasan akun';box.append(scope);
-      const owned=document.createElement('p');owned.textContent='Peran yang dimiliki: '+session.roles.map(role=>roleSystem.displayLabelFor(role,roleSystem.assignmentFor(role,currentUser.assignments?.[role]))).join(', ');box.append(owned);
-      if(session.roles.length>1){const button=document.createElement('button');button.type='button';button.className='btn-primary';button.textContent='Pindah Peran';button.onclick=()=>{if(parent!==window&&parent.openCahayaGlobalRoleModal)parent.openCahayaGlobalRoleModal();else location.href='main-dashboard.html'};box.append(button)}
-      document.querySelector('.foto-area').append(box);
+      scope.className='profile-role-scope';
+      scope.textContent=[labels[a.unit],labels[a.programDomain],labels[a.level],Array.isArray(a.usrahIds)&&a.usrahIds.length?`${a.usrahIds.length} Usrah ditugaskan`:null,Array.isArray(a.supervisedRoles)&&a.supervisedRoles.length?'Supervisi: '+a.supervisedRoles.map(roleSystem.labelFor).join(', '):null].filter(Boolean).join(' • ')||'Sesuai penugasan akun';details.append(scope);
+      const owned=document.createElement('p');owned.className='profile-owned-roles';owned.textContent='Peran yang dimiliki: '+(session.roles||[]).map(role=>roleSystem.displayLabelFor(role,roleSystem.assignmentFor(role,currentUser.assignments?.[role]))).join(', ');details.append(owned);
+      if((session.roles||[]).length>1){const button=document.createElement('button');button.type='button';button.className='profile-switch-role';button.textContent='⇄ Pindah Peran';button.onclick=()=>{if(parent!==window&&parent.openCahayaGlobalRoleModal)parent.openCahayaGlobalRoleModal();else location.href='main-dashboard.html'};details.append(button)}
+    }else{
+      details.textContent='Peran aktif: '+(rawRoles.join(', ')||'Pengguna CAHAYA APP');
     }
+    document.getElementById('profileBack').onclick=()=>{if(parent!==window&&typeof parent.openAuthorizedMenu==='function')parent.openAuthorizedMenu('menu-home');else history.back()};
 
     // Logika Pemunculan Foto
     const imgElement = document.getElementById('imgPreview');
+    const avatarDiv = document.getElementById('inisialPreview');
     if(currentUser.fotoProfil) {
       imgElement.src = currentUser.fotoProfil;
-      imgElement.style.display = 'block'; // Pastikan terlihat
+      imgElement.style.display = 'block';
+      avatarDiv.style.display = 'none';
     } else {
-      imgElement.style.display = 'none'; // Sembunyikan gambar kosong
-      const avatarDiv = document.createElement('div');
-      avatarDiv.className = 'foto-preview';
-      avatarDiv.id = 'inisialPreview';
-      avatarDiv.style.display = 'flex'; avatarDiv.style.justifyContent = 'center'; avatarDiv.style.alignItems = 'center';
-      avatarDiv.style.fontSize = '4rem'; avatarDiv.style.fontWeight = 'bold'; avatarDiv.style.color = 'var(--navy-dark)';
+      imgElement.style.display = 'none';
+      avatarDiv.style.display = 'grid';
       avatarDiv.textContent = (currentUser.label || currentUser.nama || currentUser.username).charAt(0).toUpperCase();
-      document.querySelector('.foto-area').insertBefore(avatarDiv, document.getElementById('dispUsername'));
     }
   });
 

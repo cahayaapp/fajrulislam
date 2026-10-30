@@ -22,7 +22,7 @@ document.addEventListener('click',event=>{
     return;
   }
   const views={'menu-kasus-masuk':'cases','menu-buku-konseling':'book','menu-evaluasi-pelanggaran':'evaluation','menu-surat-peringatan':'warnings'};
-  if(views[menu]&&R.can('KONSELOR',menu,assignment))location.href='konselor/workspace-v3.html?view='+views[menu]+'&v=7';
+  if(views[menu]&&R.can('KONSELOR',menu,assignment))location.href='konselor/workspace-v3.html?view='+views[menu]+'&v=10';
 });
 
 function names(value,out){

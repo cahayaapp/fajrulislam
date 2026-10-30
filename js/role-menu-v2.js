@@ -52,10 +52,10 @@
       add('menu-jurnal-liburan-monitor','Jurnal Liburan Santri','pembinaan/jurnal-liburan-monitor.html','Operasional');
     }else if(role==='KONSELOR'){
       const base='konselor/workspace-v3.html?view=';
-      [['menu-kasus-masuk','Kasus Masuk','cases'],['menu-buku-konseling','Buku Konseling','book'],['menu-evaluasi-pelanggaran','Evaluasi Pelanggaran','evaluation'],['menu-surat-peringatan','Surat Peringatan','warnings']].forEach(([id,label,view])=>add(id,label,base+view+'&v=9'));
+      [['menu-kasus-masuk','Kasus Masuk','cases'],['menu-buku-konseling','Buku Konseling','book'],['menu-evaluasi-pelanggaran','Evaluasi Pelanggaran','evaluation'],['menu-surat-peringatan','Surat Peringatan','warnings']].forEach(([id,label,view])=>add(id,label,base+view+'&v=10'));
       add('menu-kalender-pendidikan','Kalender Pendidikan','kalender.html?mode=view','Lainnya');
       add('menu-panduan-kerja','Panduan & Manual','panduan-role-v2.html','Lainnya');
-      add('menu-profil','Profil','profil.html','Lainnya');
+      add('menu-profil','Profil','profil.html?v=2','Lainnya');
     }else if(role==='MANAJER'&&R.isEducationManager(a)){
       [['menu-kontrol-pendidikan','Kontrol Hari Ini','control'],['menu-materi-pembelajaran','Capaian Materi','material'],['menu-tindak-akademik','Tindak Lanjut','followup'],['menu-guru-pondok','Guru Pondok','teachers'],['menu-nilai-manajer','Laporan Akademik','scores'],['menu-observasi-pembelajaran','Observasi Pembelajaran','observation'],['menu-riwayat-temuan','Riwayat Temuan','findings'],['menu-pembinaan-guru','Pembinaan Guru','coaching'],['menu-kpi-manajer','KPI Manajer Pendidikan','kpi'],['menu-panduan-kerja','Panduan Kerja','guide']].forEach(([id,label,view])=>add(id,label,view==='scores'?'supervisor/laporan-akademik.html?mode=progress':`manajer/pendidikan-v2.html?view=${view}`,view==='guide'?'Lainnya':view==='kpi'?'Evaluasi':'Manajemen'));
       out.splice(4,0,entry('menu-absensi-ibadah-guru','Absensi Ibadah Guru Mukim','pendidikan/absensi-ibadah-guru.html','Operasional'));
@@ -114,11 +114,11 @@
       // One utility set, independent of legacy role_menus. Operational routes stay intact.
       for(let i=out.length-1;i>=0;i--)if(out[i].id==='menu-panduan-kerja')out.splice(i,1);
       add('menu-panduan-kerja','Panduan & Manual','panduan-role-v2.html','Lainnya');
-      add('menu-profil','Profil','profil.html','Lainnya');
+      add('menu-profil','Profil','profil.html?v=2','Lainnya');
       if(!out.some(x=>x.id===KPI_IDS[role]))add('menu-kpi-role','KPI — Bukti Kerja','utilitas-role-v2.html?view=kpi','Evaluasi');
       if(!['GURU_PONDOK','NAQIB','NAQIBAH','MANAJER','SUPERVISOR','DIREKTUR'].includes(role))
         out.push({...entry('menu-jadwal-role','Jadwal & Ritme Kerja','utilitas-role-v2.html?view=schedule','Lainnya'),utility:true});
-    }else if(role!=='KONSELOR'&&R.can(role,'menu-profil',a))add('menu-profil','Profil Saya','profil.html','Lainnya');
+    }else if(role!=='KONSELOR'&&R.can(role,'menu-profil',a))add('menu-profil','Profil Saya','profil.html?v=2','Lainnya');
     return out;
   }
   function audit(s){return candidates(s).map(item=>{const v=N.decision(s,item.permission,item.route);return {...item,status:v.ok?(item.conditional?'CONDITIONAL':'PASS'):'BLOCKED',reason:v.reason}})}

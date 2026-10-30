@@ -20,7 +20,7 @@
     GURU_PKBM: { label: "Guru PKBM", home: "role-workspace.html?v=205", legacyRole: "guru" },
     NAQIB: { label: "Naqib", home: "home-naqib.html?v=210", legacyRole: "naqib" },
     NAQIBAH: { label: "Naqibah", home: "home-naqib.html?v=210", legacyRole: "naqib" },
-    KONSELOR: { label: "Konselor", home: "home-konselor.html?v=223", legacyRole: "konselor" },
+    KONSELOR: { label: "Konselor", home: "home-konselor.html?v=224", legacyRole: "konselor" },
     MENTOR_USRAH: { label: "Mentor Usrah", home: "home-mentor-usrah.html?v=225", legacyRole: "mentor" },
     MANAJER: { label: "Manajer", home: "role-workspace.html?v=205", legacyRole: "manajer" },
     SUPERVISOR: { label: "Supervisor", home: "home-supervisor-v2.html?v=240", legacyRole: "supervisor" },
@@ -30,7 +30,7 @@
     DAPUR: { label: "Dapur", home: "home-dapur.html?v=275", legacyRole: "tim-dapur" },
     SARPRAS: { label: "Sarana & Prasarana", home: "role-workspace.html?v=205", legacyRole: "sarpras" },
     MEDIA: { label: "Media", home: "home-media.html?v=226", legacyRole: "media-digital" },
-    WALI_SANTRI: { label: "Wali Santri", home: "wali/dashboard/index.html?v=20260820-v70", legacyRole: "wali" }
+    WALI_SANTRI: { label: "Wali Santri", home: "wali/dashboard/index.html?v=20260820-v71", legacyRole: "wali" }
   });
 
   const ROLE_PERMISSIONS = Object.freeze({

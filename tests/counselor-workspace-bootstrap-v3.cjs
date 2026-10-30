@@ -83,16 +83,34 @@ test('Surat Peringatan tetap memuat saat pencarian dilakukan sebelum data tiba',
   await new Promise(setImmediate);
   assert.match(element('warningList').innerHTML,/Ali/);
 });
-test('Evaluasi menampilkan empat periode dan menyembunyikan ringkasan periode tunggal',async()=>{
+test('Evaluasi perbandingan menampilkan dashboard dan empat periode dari sumber yang sama',async()=>{
   const {element,context}=surface('evaluation');
   vm.runInNewContext("periodMode='WEEK_4';loadEvaluation()",context);
   await new Promise(setImmediate);
   assert.match(element('comparisonPanel').innerHTML,/Perbandingan 4 Pekan Terakhir/);
   assert.equal((element('comparisonPanel').innerHTML.match(/class="ks-comparison-row"/g)||[]).length,4);
-  assert.equal(element('evalMetrics').hidden,true);
+  assert.match(element('evalMetrics').innerHTML,/Total Kasus/);
+  assert.match(element('trendChart').innerHTML,/ks-line-chart/);
+  assert.match(element('comparisonPanel').innerHTML,/Persentase Selesai/);
+  assert.equal(element('evalMetrics').hidden,false);
   vm.runInNewContext("periodMode='MONTH_4';loadEvaluation()",context);
   await new Promise(setImmediate);
   assert.match(element('comparisonPanel').innerHTML,/Perbandingan 4 Bulan Terakhir/);
+  assert.equal((element('comparisonPanel').innerHTML.match(/class="ks-comparison-row"/g)||[]).length,4);
+});
+test('dashboard empat bulan menghitung kasus dan santri unik tanpa menggandakan lintas periode',async()=>{
+  const proven=(tanggal,dilaporkan,kodePelanggaran)=>({tanggal,dilaporkan,unit:'PUTRA',tipe:'Lapor Pelanggaran',kodePelanggaran,caseV2:{status:'SELESAI',tabayyun:{conclusion:'TERBUKTI'}}});
+  const report={r1:proven('2026-09-10','Ali','ALFA'),r2:proven('2026-10-10','Ali','TERLAMBAT'),r3:proven('2026-10-12','Budi','ALFA'),r4:{...proven('2026-10-13','Budi','ALFA'),caseV2:{status:'MENUNGGU',tabayyun:{conclusion:'BELUM_CUKUP_BUKTI'}}}};
+  const {element,context}=surface('evaluation',{report,roster:['Ali','Budi']});
+  element('periodDate').value='2026-10-30';
+  vm.runInNewContext("periodMode='MONTH_4';loadEvaluation()",context);
+  await new Promise(setImmediate);
+  assert.match(element('evalMetrics').innerHTML,/Total Kasus<\/span><b>3<\/b>/);
+  assert.match(element('evalMetrics').innerHTML,/Santri Terlibat<\/span><b>2<\/b>/);
+  assert.match(element('topTypes').innerHTML,/ALFA/);
+  assert.match(element('topStudents').innerHTML,/Ali/);
+  assert.equal((element('comparisonPanel').innerHTML.match(/class="ks-comparison-row"/g)||[]).length,4);
+  assert.match(element('trendChart').innerHTML,/Sep 2026: 1 kasus/);
 });
 test('halaman Kasus Masuk mulai membaca dan merender data, tanpa tertahan pada pesan awal',async()=>{
   const {element}=surface('cases');
