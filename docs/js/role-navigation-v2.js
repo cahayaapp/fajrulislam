@@ -115,6 +115,7 @@
     }
     if(e.policy==='wali')return role==='WALI_SANTRI'?{ok:true,reason:'EXISTING_CHILD_PORTAL'}:deny('PERMISSION_DENIED');
     if(!e.menus.some(m=>R.can(role,m,a)))return deny('PERMISSION_DENIED');
+    if(parsed.path==='kalender.html'&&role==='KONSELOR')return parsed.params.get('mode')==='view'&&!a.studentIds.length?{ok:true,reason:'COUNSELOR_CALENDAR_READ_ONLY'}:deny('PERMISSION_DENIED');
     // Reviewed role-wide legacy tools have no unit adapter. Never grant a
     // narrowed assignment access to their unfiltered records.
     const legacyTools={KESEHATAN:['kesehatan/jurnal.html','kesehatan/pemeriksaan.html','kesehatan/perizinan-uks.html','kesehatan/stokobat.html'],SARPRAS:['sarpras/jurnal.html','sarpras/checklist.html','sarpras/tindak-lanjut.html'],LAYANAN_KEBERSIHAN:['PKL/buku-tamu.html','PKL/penitipan-barang.html']};

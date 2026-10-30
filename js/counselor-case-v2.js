@@ -9,7 +9,7 @@
   const UNITS=Object.freeze(['PUTRA','PUTRI']);
   const ROUTING_PRIORITY=Object.freeze(['MORAL','KRITIS','BERAT','MANUAL_ESCALATION','THREE_CONSECUTIVE_DAYS','ROUTINE']);
   const POINTS=Object.freeze({BIMBINGAN:0,RINGAN:-25,SEDANG:-50,BERAT:-100,KRITIS:-200});
-  const FINAL_STATES=new Set(['SELESAI','TIDAK_TERBUKTI','DIBERSIHKAN']);
+  const FINAL_STATES=new Set(['SELESAI','TIDAK_TERBUKTI','DIBERSIHKAN','DIHAPUS']);
   const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase().replace(/[^A-Z0-9]+/g,'_').replace(/^_|_$/g,'');
   const nameKey=v=>norm(v).replace(/^(SANTRI|ANANDA)_/,'');
   const dateOnly=v=>{const m=String(v||'').match(/\d{4}-\d{2}-\d{2}/);return m?m[0]:''};
@@ -43,7 +43,7 @@
     return raw.kritis===true?'KRITIS':'';
   }
   function normalizeAttendanceStatus(value){const v=norm(value);if(['A','ALFA'].includes(v))return'ALFA';if(['T','TERLAMBAT'].includes(v))return'TERLAMBAT';return''}
-  function isViolation(raw={}){return norm(raw.tipe).includes('LAPOR_PELANGGARAN')||norm(raw.tipe).includes('ATTENDANCE_VIOLATION')||Boolean(raw.bidangPelanggaran||raw.kodePelanggaran||raw.violationCode)}
+  function isViolation(raw={}){const status=norm(raw.caseV2?.status||raw.statusPenanganan||raw.statusKonseling);if(raw.excludedFromViolation||['TIDAK_TERBUKTI','DIBERSIHKAN','DIHAPUS'].includes(status))return false;return norm(raw.tipe).includes('LAPOR_PELANGGARAN')||norm(raw.tipe).includes('ATTENDANCE_VIOLATION')||Boolean(raw.bidangPelanggaran||raw.kodePelanggaran||raw.violationCode)}
   function normalizeCase(raw={},id=''){
     const cv=raw.caseV2&&typeof raw.caseV2==='object'?raw.caseV2:{};
     const student=raw.dilaporkan||raw.santri||raw.namaSantri||raw.nama_santri||'';

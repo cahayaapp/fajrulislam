@@ -66,6 +66,8 @@ for(const menu of ['menu-db-master','menu-admin-sdm','menu-admin-sekolah','menu-
 assert(dashboard.includes("settings').doc('feature_management')"),'dashboard must load feature management overlay');
 assert(dashboard.includes('featureMenuAllowed(gabunganMenu[i], rolesUntukMenu)'),'legacy menus must honor feature management after core menus');
 assert(dashboard.includes('featureFilteredModel'),'Role V2 menus must honor feature management');
+assert(dashboard.includes("role === 'konselor' && Number(row.menuSchemaVersion || 0) < 2"),'existing counselor feature settings must allow newly introduced utility menus');
+assert(js.includes("menuSchemaVersion:2"),'saving feature settings must preserve the ability to disable counselor utility menus');
 assert(dashboard.includes("activeNow === 'admin'"),'admin landing override missing');
 assert(dashboard.includes("activeRoleForPage === 'admin'"),'admin home route override missing');
 assert(dashboard.includes("gabunganMenu.splice(0, gabunganMenu.length, ...adminMenus)"),'legacy admin menu override missing');

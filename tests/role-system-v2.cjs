@@ -62,10 +62,14 @@ test('Mentor USRAH_3 can see only Usrah 3; missing resource scope denied',()=>{
 });
 test('Counselor PEMULA PUTRA / MADYA PUTRI keep competency metadata and unit',()=>{
   for(const [level,unit,other] of [['PEMULA','PUTRA','PUTRI'],['MADYA','PUTRI','PUTRA']]){
-    const s=session('KONSELOR',{level,unit});assert(menu(s,'menu-kasus-masuk'));
+    const s=session('KONSELOR',{level,unit});assert(menu(s,'menu-kasus-masuk'));assert(menu(s,'menu-surat-peringatan'));
     assert(R.authorize(s,'case.read',{unit}));assert(!R.authorize(s,'case.read',{unit:other}));
+    assert(R.authorize(s,'case.warning',{unit}));assert(!R.authorize(s,'case.warning',{unit:other}));
     assert.equal(s.activeRole,'KONSELOR');assert.equal(s.activeAssignment.level,level);
   }
+  const scoped=session('KONSELOR',{level:'PEMULA',unit:'PUTRA',usrahIds:['USRAH_3']});
+  assert(R.authorize(scoped,'case.warning',{unit:'PUTRA',usrahId:'USRAH_3'}));
+  assert(!R.authorize(scoped,'case.warning',{unit:'PUTRA',usrahId:'USRAH_4'}));
   assert(!menu(session('KONSELOR',{level:'UTAMA',unit:'ALL'}),'menu-antrean-kasus'));
 });
 test('PKBM is separate and cannot enter Guru Pondok feature',()=>{
@@ -125,7 +129,7 @@ test('login preserves the existing standalone Wali portal for both legacy and V2
   const start=source.indexOf('function getLoginTarget(user){'),end=source.indexOf('// Tentukan layar',start);
   const context={window:{CahayaRoleSystemV2:R},localStorage:{getItem:()=>null}};
   vm.createContext(context);vm.runInContext(source.slice(start,end),context);
-  for(const role of R.ROLE_IDS)assert.equal(context.getLoginTarget({roleSystemVersion:2,roles:[role]}),role==='WALI_SANTRI'?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=205');
+  for(const role of R.ROLE_IDS)assert.equal(context.getLoginTarget({roleSystemVersion:2,roles:[role]}),role==='WALI_SANTRI'?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=206');
   assert(context.getLoginTarget({akses:['wali']}).startsWith('wali/dashboard'));
 });
 console.log(`${checks} role/assignment/security contract tests passed; no Firebase/network used.`);

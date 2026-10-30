@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <script src="../js/role-system-v2.js?v=285"></script>
+  <script src="../js/role-route-registry-v2.js?v=283"></script>
+  <script src="../js/role-navigation-v2.js?v=282"></script>
+  <script src="../js/role-scope-v2.js?v=221"></script>
+  <script src="../js/role-entry-v2.js?v=266"></script>
+  <script src="../config/tenant-config.js"></script>
+  <script src="../js/counselor-case-v2.js?v=225"></script>
+  <script src="../js/counselor-simplified-v3-model.js?v=3"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src="../js/counselor-firebase-compat-v3.js?v=3"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4f9fc">
+  <title>Ruang Konselor • CAHAYA APP</title>
+  <link rel="stylesheet" href="../css/counselor-v2.css?v=228">
+  <link rel="stylesheet" href="../css/counselor-simplified-v3.css?v=4">
+</head>
+<body>
+  <main class="ks-page ks-simple-page">
+    <div class="ks-top"><button class="ks-back" id="backBtn" type="button">← Beranda</button><span class="ks-role" id="roleChip">Konselor</span></div>
+    <section class="ks-hero ks-simple-hero"><span class="ks-hero-symbol" id="heroIcon" aria-hidden="true">▤</span><div class="ks-hero-copy"><span class="ks-eyebrow" id="eyebrow">RUANG KONSELOR</span><h1 id="pageTitle">Kasus Masuk</h1><p id="pageSubtitle">Periksa dan tangani kasus santri.</p><div class="ks-meta"><span class="ks-chip" id="levelChip">—</span><span class="ks-chip" id="unitChip">—</span></div></div></section>
+    <div class="ks-simple-state" id="state" role="status" aria-live="polite">Menyiapkan data…</div>
+    <section id="casesSection" hidden>
+      <div class="ks-case-filters" role="group" aria-label="Filter kasus"><button class="active" data-case-filter="all" type="button">Semua</button><button data-case-filter="today" type="button">Hari Ini</button><button data-case-filter="week" type="button">Minggu Ini</button></div><div class="ks-simple-toolbar"><label class="ks-search-wrap"><span aria-hidden="true">⌕</span><input class="ks-input" id="caseSearch" type="search" placeholder="Cari santri atau jenis kasus…" aria-label="Cari santri atau jenis kasus"></label><button class="ks-btn" id="processBtn" type="button" disabled>Proses Kasus <span id="selectionCount"></span></button></div>
+      <div class="ks-case-list" id="caseList"></div>
+    </section>
+    <section id="bookSection" hidden>
+      <div class="ks-simple-toolbar"><label class="ks-search-wrap"><span aria-hidden="true">⌕</span><input class="ks-input" id="bookSearch" type="search" placeholder="Cari nama santri…" aria-label="Cari nama santri"></label></div>
+      <div class="ks-book-layout"><div class="ks-book-students" id="bookStudents"></div><div class="ks-book-history" id="bookHistory"><div class="ks-empty">Pilih santri untuk melihat riwayat konseling.</div></div></div>
+    </section>
+    <section id="evaluationSection" hidden>
+      <div class="ks-simple-toolbar ks-period-toolbar"><div class="ks-period-switch" role="group" aria-label="Periode evaluasi"><button id="weekBtn" data-period="WEEK" type="button">Pekanan</button><button id="monthBtn" data-period="MONTH" type="button">Bulanan</button><button id="fourWeeksBtn" data-period="WEEK_4" type="button">Bandingkan 4 pekan terakhir</button><button id="fourMonthsBtn" data-period="MONTH_4" type="button">Bandingkan 4 bulan terakhir</button></div><label class="ks-period-date">Tanggal acuan<input class="ks-input" id="periodDate" type="date"></label></div>
+      <p class="ks-period-label" id="periodLabel"></p><div class="ks-eval-metrics" id="evalMetrics"></div>
+      <div class="ks-eval-grid" id="evalGrid"><section class="ks-panel"><h2>Jenis Pelanggaran Terbanyak</h2><div id="topTypes"></div></section><section class="ks-panel"><h2>Santri Paling Sering Melanggar</h2><div id="topStudents"></div></section></div>
+      <section class="ks-panel ks-trend-panel" id="trendPanel"><h2>Tren Pelanggaran</h2><div class="ks-trend" id="trendChart"></div></section>
+      <section class="ks-panel ks-comparison-panel" id="comparisonPanel" hidden aria-live="polite"></section>
+    </section>
+    <section id="warningsSection" hidden>
+      <div class="ks-simple-toolbar"><label class="ks-search-wrap"><span aria-hidden="true">⌕</span><input class="ks-input" id="warningSearch" type="search" placeholder="Cari santri atau pelanggaran…" aria-label="Cari surat peringatan"></label><button class="ks-btn" id="newWarningBtn" type="button">+ Berikan SP</button></div>
+      <div class="ks-warning-list" id="warningList"></div>
+    </section>
+  </main>
+  <div class="ks-overlay" id="workflowSheet" role="presentation"><div class="ks-sheet ks-simple-sheet" id="workflowBody" role="dialog" aria-modal="true" aria-labelledby="workflowTitle"></div></div>
+  <div class="ks-toast" id="toast" role="status"></div>
+  <script>setTimeout(()=>{const el=document.getElementById('state');if(el&&el.textContent==='Menyiapkan data…'){el.textContent='Halaman belum dapat dimulai. Periksa koneksi Firebase lalu muat ulang.';el.dataset.tone='error'}},8000)</script>
+  <script src="../js/counselor-simplified-v3.js?v=6"></script>
+</body>
+</html>

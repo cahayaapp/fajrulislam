@@ -6,5 +6,5 @@ current=R.switchRole(current,'NAQIBAH').session;assert.throws(()=>roster.require
 const basic={category:'Kedisiplinan',route:'NAQIB'},advanced={category:'Moral/Etika',route:'KONSELOR'};
 assert(S.counselorCaseAllowed('PEMULA',basic));assert(!S.counselorCaseAllowed('PEMULA',advanced));assert(!S.counselorCaseAllowed('PEMULA',{...basic,repeated:true}));assert(S.counselorCaseAllowed('MADYA',advanced));assert(!S.counselorCaseAllowed('UTAMA',advanced));
 assert(S.counselorCaseAllowed('PEMULA',{...basic,route:'KONSELOR',raw:{statusPenanganan:'Menunggu Konselor'}}));
-assert(!S.COUNSELOR_LEVEL_ACTIONS.PEMULA.includes('case.delete'));assert(!S.COUNSELOR_LEVEL_ACTIONS.MADYA.includes('case.warning'));
+assert(!S.COUNSELOR_LEVEL_ACTIONS.PEMULA.includes('case.delete'));assert(S.COUNSELOR_LEVEL_ACTIONS.PEMULA.includes('case.warning'));assert(S.COUNSELOR_LEVEL_ACTIONS.MADYA.includes('case.warning'));
 console.log('PASS exact unit roster, forged selection, role-switch expiry, centralized legacy level boundaries and new report-only routing');

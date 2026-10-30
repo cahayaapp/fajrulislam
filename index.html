@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="assets/cahaya-app/apple-touch-icon.png?v=141">
   <script src="config/tenant-config.js?v=141"></script>
   <script src="config/master-data.js?v=141"></script>
-  <script src="js/role-system-v2.js?v=266"></script>
+  <script src="js/role-system-v2.js?v=284"></script>
   <script src="js/cahaya-config-runtime.js?v=141" defer></script>
   <style>
     :root{
@@ -345,7 +345,7 @@
       const roleV2=window.CahayaRoleSystemV2?.resolveSession(user,localStorage);
       if(roleV2?.mode==='canonical'){
         if(roleV2.activeRole==='WALI_SANTRI') return 'wali/dashboard/index.html?v=20260820-v70';
-        return 'main-dashboard.html?v=205';
+        return 'main-dashboard.html?v=206';
       }
       const roles=(Array.isArray(user?.akses)?user.akses:[user?.akses||user?.role].filter(Boolean)).map(r=>String(r||'').toLowerCase());
       const identity=[user?.cashierUnit,user?.unitKasir,user?.username,user?.email,user?.label].filter(Boolean).join(' ');
@@ -355,7 +355,7 @@
         const unit=/putri/i.test(identity)?'putri':/putra/i.test(identity)?'putra':'';
         return unit?`keuangan/kasir.html?unit=${unit}`:'keuangan/kasir.html';
       }
-      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20260911-v190';
+      return roles.includes('wali')?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=20261030-v191';
     }
 
     // Tentukan layar setelah browser sempat melaporkan status instalasi PWA.

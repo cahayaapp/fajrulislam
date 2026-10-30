@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head><!-- ROLE_V2_ENTRY_START -->
-<script src="js/role-system-v2.js?v=282"></script>
-<script src="js/role-route-registry-v2.js?v=281"></script>
-<script src="js/role-navigation-v2.js?v=281"></script>
-<script src="js/role-menu-v2.js?v=288"></script>
-<script src="js/role-scope-v2.js?v=206"></script>
+<script src="js/role-system-v2.js?v=285"></script>
+<script src="js/role-route-registry-v2.js?v=283"></script>
+<script src="js/role-navigation-v2.js?v=282"></script>
+<script src="js/role-menu-v2.js?v=293"></script>
+<script src="js/role-scope-v2.js?v=221"></script>
 <script src="js/role-entry-v2.js?v=273"></script>
 <!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
@@ -2048,6 +2048,7 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
 }
 </style>
 
+  <link rel="stylesheet" href="css/counselor-shell-v3.css?v=3">
 </head>
 <body class="cahaya-shell-page">
 
@@ -2380,13 +2381,10 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
       <div class="menu-group">
         <div class="group-label">Kasus & Konseling</div>
         <a class="nav-item menu-akses" id="menu-antrean-kasus" style="display: none;" onclick="openRoleAwareCasePage(this)">⏳ Tindak Pelanggaran</a>
-        <a class="nav-item menu-akses" id="menu-kasus-masuk" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=incoming', this)">📥 Kasus Masuk</a>
-        <a class="nav-item menu-akses" id="menu-kasus-aktif" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=active', this)">📂 Kasus Aktif</a>
-        <a class="nav-item menu-akses" id="menu-konseling-konselor" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=counseling', this)">🤝 Konseling & Pembinaan</a>
-        <a class="nav-item menu-akses" id="menu-eskalasi-konselor" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=escalations', this)">↗ Eskalasi Kasus</a>
-        <a class="nav-item menu-akses" id="menu-riwayat-kasus" style="display: none;" onclick="loadPage('konselor/cases-v2.html?view=history', this)">🕘 Riwayat Kasus</a>
-        <a class="nav-item menu-akses" id="menu-kpi-konselor" style="display: none;" onclick="loadPage('konselor/kpi.html', this)">📊 KPI Konselor</a>
-        <a class="nav-item menu-akses" id="menu-self-konselor" style="display: none;" onclick="loadPage('konselor/self-asesmen.html', this)">🧘 Self Asesmen Konselor</a>
+        <a class="nav-item menu-akses" id="menu-kasus-masuk" style="display: none;" onclick="loadPage('konselor/workspace-v3.html?view=cases&amp;v=7', this)">📥 Kasus Masuk</a>
+        <a class="nav-item menu-akses" id="menu-buku-konseling" style="display: none;" onclick="loadPage('konselor/workspace-v3.html?view=book&amp;v=7', this)">📖 Buku Konseling</a>
+        <a class="nav-item menu-akses" id="menu-evaluasi-pelanggaran" style="display: none;" onclick="loadPage('konselor/workspace-v3.html?view=evaluation&amp;v=7', this)">📊 Evaluasi Pelanggaran</a>
+        <a class="nav-item menu-akses" id="menu-surat-peringatan" style="display: none;" onclick="loadPage('konselor/workspace-v3.html?view=warnings&amp;v=7', this)">📄 Surat Peringatan</a>
       </div>
 
       <div class="menu-group">
@@ -2949,9 +2947,12 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       if (menuId === 'menu-home') return true;
       if (menuId === 'menu-admin-features' && roles.some(role => featureRoleKey(role) === 'admin')) return true;
       const rules = featureManagementRulesCache?.roles || {};
-      const configured = roles.map(role => rules[featureRoleKey(role)]).filter(row => row && Array.isArray(row.enabledMenus));
+      const configured = roles.map(role => ({role:featureRoleKey(role), row:rules[featureRoleKey(role)]})).filter(({row}) => row && Array.isArray(row.enabledMenus));
       if (!configured.length) return true;
-      return configured.some(row => row.enabledMenus.includes(menuId));
+      return configured.some(({role,row}) => row.enabledMenus.includes(menuId) || (
+        role === 'konselor' && Number(row.menuSchemaVersion || 0) < 2 &&
+        ['menu-kalender-pendidikan','menu-panduan-kerja','menu-profil'].includes(menuId)
+      ));
     }
 
     window.addEventListener('message', event => {
@@ -2965,9 +2966,10 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
     });
 
     function ensureActiveRole() {
-      if (!myRoles.length) { activeRole = ""; return ""; }
+      if (!myRoles.length) { activeRole = ""; document.body.classList.remove('counselor-role-shell'); return ""; }
       const allAllowed = !canonicalRoleRuntime && myRoles.length > 1 && activeRole === ALL_ROLES_MODE;
       if (!allAllowed && (!activeRole || !myRoles.includes(activeRole))) activeRole = myRoles[0];
+      document.body.classList.toggle('counselor-role-shell', activeRole === 'KONSELOR');
       localStorage.setItem(ACTIVE_ROLE_KEY, activeRole);
       const legacyActive = canonicalRoleRuntime ? roleSystemV2.legacyRoleFor(activeRole) : activeRole;
       localStorage.setItem("cahayaActiveRole", legacyActive);
@@ -3102,6 +3104,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
         window.cahayaRoleV2Session = roleV2Session;
       }
       activeRole = normalized;
+      document.body.classList.toggle('counselor-role-shell', activeRole === 'KONSELOR');
       if (canonicalRoleRuntime) pUserSafe.activeRoleV2 = activeRole;
       else pUserSafe.activeRole = activeRole;
       localStorage.setItem(ACTIVE_ROLE_KEY, activeRole);

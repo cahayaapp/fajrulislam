@@ -5,8 +5,8 @@
   const USRAH_UNITS=Object.freeze({'Usrah 1':'PUTRA','Usrah 2':'PUTRA','Usrah 3':'PUTRA','Usrah 4':'PUTRA','Usrah 5':'PUTRA','Usrah 6':'PUTRA','Usrah 7':'PUTRI','Usrah 8':'PUTRI'});
   const USRAH_IDS=Object.freeze(Object.fromEntries(Object.keys(USRAH_UNITS).map(k=>['USRAH_'+k.slice(6),k])));
   // No new rank privileges; future differences belong here, not in role IDs.
-  const COUNSELOR_LEVEL_ACTIONS=Object.freeze({PEMULA:Object.freeze(['case.read','case.handle','case.escalate','case.complete']),MADYA:Object.freeze(['case.read','case.handle','case.complete'])});
-  // Existing queue split, now checked at action time too. No SP/delete grants.
+  const COUNSELOR_LEVEL_ACTIONS=Object.freeze({PEMULA:Object.freeze(['case.read','case.handle','case.escalate','case.complete','case.warning']),MADYA:Object.freeze(['case.read','case.handle','case.complete','case.warning'])});
+  // Existing queue split, now checked at action time too. No case deletion grant.
   function counselorCaseAllowed(level,item){
     const category=String(item.normalizedCode||item.category||'').toLowerCase();
     const basic=['kedisiplin','kebersihan','kerapian','bolos','terlambat','ketertiban'].some(v=>category.includes(v));

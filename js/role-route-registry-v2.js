@@ -628,6 +628,10 @@
     "menus": ["menu-kasus-masuk","menu-kasus-aktif","menu-konseling-konselor","menu-eskalasi-konselor","menu-riwayat-kasus"],
     "policy": "counselor-v2"
   },
+  "konselor/workspace-v3.html": {
+    "menus": ["menu-kasus-masuk","menu-buku-konseling","menu-evaluasi-pelanggaran","menu-surat-peringatan"],
+    "policy": "counselor-v2"
+  },
   "konselor/kpi.html": {
     "menus": ["menu-kpi-konselor"],
     "policy": "counselor-v2"
