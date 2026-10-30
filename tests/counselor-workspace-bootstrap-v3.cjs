@@ -88,7 +88,8 @@ test('Evaluasi perbandingan menampilkan dashboard dan empat periode dari sumber 
   vm.runInNewContext("periodMode='WEEK_4';loadEvaluation()",context);
   await new Promise(setImmediate);
   assert.match(element('comparisonPanel').innerHTML,/Perbandingan 4 Pekan Terakhir/);
-  assert.equal((element('comparisonPanel').innerHTML.match(/class="ks-comparison-row"/g)||[]).length,4);
+  assert.equal((element('comparisonPanel').innerHTML.match(/class="ks-comparison-table-row"/g)||[]).length,4);
+  assert.doesNotMatch(element('comparisonPanel').innerHTML,/class="ks-comparison-row"/,'baris tabel tidak boleh memakai class kartu perbandingan lama');
   assert.match(element('evalMetrics').innerHTML,/Total Kasus/);
   assert.match(element('trendChart').innerHTML,/ks-line-chart/);
   assert.match(element('comparisonPanel').innerHTML,/Persentase Selesai/);
@@ -96,7 +97,7 @@ test('Evaluasi perbandingan menampilkan dashboard dan empat periode dari sumber 
   vm.runInNewContext("periodMode='MONTH_4';loadEvaluation()",context);
   await new Promise(setImmediate);
   assert.match(element('comparisonPanel').innerHTML,/Perbandingan 4 Bulan Terakhir/);
-  assert.equal((element('comparisonPanel').innerHTML.match(/class="ks-comparison-row"/g)||[]).length,4);
+  assert.equal((element('comparisonPanel').innerHTML.match(/class="ks-comparison-table-row"/g)||[]).length,4);
 });
 test('dashboard empat bulan menghitung kasus dan santri unik tanpa menggandakan lintas periode',async()=>{
   const proven=(tanggal,dilaporkan,kodePelanggaran)=>({tanggal,dilaporkan,unit:'PUTRA',tipe:'Lapor Pelanggaran',kodePelanggaran,caseV2:{status:'SELESAI',tabayyun:{conclusion:'TERBUKTI'}}});
@@ -109,7 +110,7 @@ test('dashboard empat bulan menghitung kasus dan santri unik tanpa menggandakan 
   assert.match(element('evalMetrics').innerHTML,/Santri Terlibat<\/span><b>2<\/b>/);
   assert.match(element('topTypes').innerHTML,/ALFA/);
   assert.match(element('topStudents').innerHTML,/Ali/);
-  assert.equal((element('comparisonPanel').innerHTML.match(/class="ks-comparison-row"/g)||[]).length,4);
+  assert.equal((element('comparisonPanel').innerHTML.match(/class="ks-comparison-table-row"/g)||[]).length,4);
   assert.match(element('trendChart').innerHTML,/Sep 2026: 1 kasus/);
 });
 test('halaman Kasus Masuk mulai membaca dan merender data, tanpa tertahan pada pesan awal',async()=>{
