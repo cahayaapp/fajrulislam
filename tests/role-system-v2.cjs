@@ -129,7 +129,7 @@ test('login preserves the existing standalone Wali portal for both legacy and V2
   const start=source.indexOf('function getLoginTarget(user){'),end=source.indexOf('// Tentukan layar',start);
   const context={window:{CahayaRoleSystemV2:R},localStorage:{getItem:()=>null}};
   vm.createContext(context);vm.runInContext(source.slice(start,end),context);
-  for(const role of R.ROLE_IDS)assert.equal(context.getLoginTarget({roleSystemVersion:2,roles:[role]}),role==='WALI_SANTRI'?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=206');
+  for(const role of R.ROLE_IDS)assert.equal(context.getLoginTarget({roleSystemVersion:2,roles:[role]}),role==='WALI_SANTRI'?'wali/dashboard/index.html?v=20260820-v70':'main-dashboard.html?v=207');
   assert(context.getLoginTarget({akses:['wali']}).startsWith('wali/dashboard'));
 });
 console.log(`${checks} role/assignment/security contract tests passed; no Firebase/network used.`);

@@ -20,7 +20,7 @@
     GURU_PKBM: { label: "Guru PKBM", home: "role-workspace.html?v=205", legacyRole: "guru" },
     NAQIB: { label: "Naqib", home: "home-naqib.html?v=210", legacyRole: "naqib" },
     NAQIBAH: { label: "Naqibah", home: "home-naqib.html?v=210", legacyRole: "naqib" },
-    KONSELOR: { label: "Konselor", home: "home-konselor.html?v=222", legacyRole: "konselor" },
+    KONSELOR: { label: "Konselor", home: "home-konselor.html?v=223", legacyRole: "konselor" },
     MENTOR_USRAH: { label: "Mentor Usrah", home: "home-mentor-usrah.html?v=225", legacyRole: "mentor" },
     MANAJER: { label: "Manajer", home: "role-workspace.html?v=205", legacyRole: "manajer" },
     SUPERVISOR: { label: "Supervisor", home: "home-supervisor-v2.html?v=240", legacyRole: "supervisor" },
