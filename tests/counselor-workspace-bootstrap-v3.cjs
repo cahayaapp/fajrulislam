@@ -14,6 +14,7 @@ const bridge=fs.readFileSync(path.join(__dirname,'../js/counselor-firebase-compa
 const user=profile('KONSELOR');
 function surface(view,options={}){
   let releaseLoad=()=>{};
+  const readPaths=[];
   const loadGate=options.delayPath?new Promise(resolve=>{releaseLoad=resolve}):Promise.resolve();
   const elements=new Map();
   const element=id=>{
@@ -27,14 +28,27 @@ function surface(view,options={}){
     [C.ROOT]:report,
     'cahaya_app/surat_peringatan_santri':warnings
   };
-  const api={getDatabase:()=>({}),ref:(_,p='/')=>({path:p}),get:async target=>{if(target.path===options.delayPath)await loadGate;return{val:()=>data[target.path]||{},exists:()=>Boolean(data[target.path])}},set:async()=>{},update:async()=>{},remove:async()=>{},push:()=>({key:'new'}),query:target=>target,orderByChild:()=>()=>{},startAt:()=>()=>{},endAt:()=>()=>{},limitToLast:()=>()=>{},runTransaction:async()=>({committed:true,snapshot:{val:()=>({})}})};
+  const api={getDatabase:()=>({}),ref:(_,p='/')=>({path:p}),get:async target=>{readPaths.push(target.path);if(target.path===options.delayPath)await loadGate;return{val:()=>data[target.path]||{},exists:()=>Boolean(data[target.path])}},set:async()=>{},update:async()=>{},remove:async()=>{},push:()=>({key:'new'}),query:target=>target,orderByChild:()=>()=>{},startAt:()=>()=>{},endAt:()=>()=>{},limitToLast:()=>()=>{},runTransaction:async()=>({committed:true,snapshot:{val:()=>({})}})};
   const window={CahayaCounselorFirebaseV3:api,CahayaCounselorCaseV2:C,CahayaCounselorSimplifiedV3:M,CahayaRoleSystemV2:R,cahayaRoleContext:{assertCurrent(){},usrahKeys(){return['Usrah 1']}},CAHAYA_CONFIG:{}};
   const document={body:{dataset:{}},getElementById:element,querySelectorAll:()=>[],addEventListener(){}};
   const localStorage={getItem:key=>key==='cahayaCurrentUser'?JSON.stringify(user):null};
   const context={window,document,localStorage,location:{search:'?view='+view},URLSearchParams,parent:window,history:{back(){}},console,setTimeout,clearTimeout,confirm:()=>true,Image:function(){},FileReader:function(){}};
   vm.runInNewContext(source,context,{filename:'counselor-simplified-v3.js'});
-  return {element,document,context,data,releaseLoad};
+  return {element,document,context,data,releaseLoad,readPaths};
 }
+test('Evaluasi mulai membaca data saat roster masih memuat dan memakai cache saat tab diganti',async()=>{
+  const {context,readPaths,releaseLoad}=surface('evaluation',{delayPath:'cahaya_app/master_usrah/Usrah 1'});
+  await new Promise(setImmediate);
+  assert(readPaths.includes(C.ROOT),'pembacaan kasus tidak boleh menunggu roster selesai');
+  assert.equal(readPaths.filter(path=>path==='cahaya_app/laporan_penindakan').length,1,'hindari query ganda pada riwayat penindakan');
+  releaseLoad();await new Promise(setImmediate);
+  const before=readPaths.length;
+  vm.runInNewContext("periodMode='MONTH';loadEvaluation()",context);
+  await new Promise(setImmediate);
+  vm.runInNewContext("periodMode='WEEK';loadEvaluation()",context);
+  await new Promise(setImmediate);
+  assert.equal(readPaths.length,before+4,'tab pekanan memakai data yang baru diambil untuk rentang yang sama');
+});
 test('Kasus Masuk menampilkan loading, termasuk saat filter dijalankan sebelum Firebase selesai',async()=>{
   const {element,context,releaseLoad}=surface('cases',{delayPath:C.ROOT});
   assert.match(element('caseList').innerHTML,/Memuat kasus/);

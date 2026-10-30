@@ -12,6 +12,8 @@ let records=[],visible=[],legacyBook={},selectedIds=new Set(),roster=new Map(),r
 const loadStatus={cases:'idle',book:'idle',warnings:'idle'};
 const loadGeneration={cases:0,book:0,warnings:0};
 let evaluationGeneration=0;
+let rosterLoadPromise=null,rosterReady=false;
+const evaluationCache=new Map(),EVALUATION_CACHE_MS=20000;
 function esc(v){return String(v??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]))}
 function state(message,tone=''){const el=$('state');el.textContent=message;el.dataset.tone=tone}
 function loadingMarkup(message){return '<div class="ks-loading-card" role="status" aria-live="polite"><span class="ks-loading-spinner" aria-hidden="true"></span><span>'+esc(message)+'</span></div>'}
@@ -37,7 +39,7 @@ function waliKey(value){return String(value||'').normalize('NFD').replace(/[\u03
 function nameUnit(value){const key=C.nameKey(value);return roster.get(key)||''}
 function unitOfUsrah(label){return /^Usrah\s*[1-6]$/i.test(label)?'PUTRA':/^Usrah\s*[78]$/i.test(label)?'PUTRI':''}
 function extractRoster(value,group,out){if(typeof value==='string'){if(value.trim()){out.set(C.nameKey(value),group);rosterNames.set(C.nameKey(value),value.trim())}return}if(Array.isArray(value)){value.forEach(x=>extractRoster(x,group,out));return}if(value&&typeof value==='object'){const name=value.nama||value.namaSantri||value.label;if(typeof name==='string'){out.set(C.nameKey(name),group);rosterNames.set(C.nameKey(name),name.trim())}else Object.values(value).forEach(x=>extractRoster(x,group,out))}}
-async function loadRoster(){const keys=ctx?.usrahKeys?.()||(assignment.unit==='PUTRI'?['Usrah 7','Usrah 8']:['Usrah 1','Usrah 2','Usrah 3','Usrah 4','Usrah 5','Usrah 6']);const rows=await Promise.all(keys.map(async key=>{const snap=await get(ref(db,'cahaya_app/master_usrah/'+key)).catch(error=>{console.warn('Roster tidak terbaca:',key,error);return{val:()=>null}});return[key,snap.val()]}));ctx?.assertCurrent();roster=new Map();rosterNames=new Map();rows.forEach(([group,value])=>extractRoster(value,group,roster))}
+function loadRoster(){if(rosterReady)return Promise.resolve();if(rosterLoadPromise)return rosterLoadPromise;rosterLoadPromise=(async()=>{const keys=ctx?.usrahKeys?.()||(assignment.unit==='PUTRI'?['Usrah 7','Usrah 8']:['Usrah 1','Usrah 2','Usrah 3','Usrah 4','Usrah 5','Usrah 6']);const rows=await Promise.all(keys.map(async key=>{const snap=await get(ref(db,'cahaya_app/master_usrah/'+key)).catch(error=>{console.warn('Roster tidak terbaca:',key,error);return{val:()=>null}});return[key,snap.val()]}));ctx?.assertCurrent();roster=new Map();rosterNames=new Map();rows.forEach(([group,value])=>extractRoster(value,group,roster));rosterReady=true})().catch(error=>{rosterLoadPromise=null;throw error});return rosterLoadPromise}
 function scoped(path,field,from,to){return get(query(ref(db,path),orderByChild(field),startAt(from),endAt(to+'\uf8ff')))}
 function optionalScoped(path,field,from,to){return scoped(path,field,from,to).catch(error=>{console.warn('Indeks historis tidak terbaca:',path,error);return{val:()=>({})}})}
 function inUnit(c){const raw=c.raw||{},unit=C.norm(c.unit||raw.unit||raw.jenisKelamin||'');return unit?unit===assignment.unit:Boolean(roster.has(c.studentKey))}
@@ -89,17 +91,21 @@ function renderBookHistory(){const rows=bookRows.filter(x=>x.studentKey===select
 function formatDate(value){const date=new Date(value);return Number.isNaN(date.getTime())?String(value||'Tanggal belum tersedia'):new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'}).format(date)}
 function fillPeriodButtons(){document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x.dataset.period===periodMode))}
 async function evaluationRows(range){
- const [reports,program,learning,actionsByEvent,actionsByProcessing]=await Promise.all([
+ const cached=[...evaluationCache.values()].find(entry=>Date.now()-entry.time<EVALUATION_CACHE_MS&&entry.start<=range.start&&entry.end>=range.end);
+ if(cached)return cached.rows;
+ const [_,reports,program,learning,actionsByProcessing]=await Promise.all([
+  loadRoster(),
   scoped(C.ROOT,'tanggal',C.shiftDate(range.start,-1),C.shiftDate(range.end,1)),
   scoped(C.PROGRAM_ATTENDANCE_ROOT,'tanggal',range.start,range.end),
   scoped(C.LEARNING_ATTENDANCE_ROOT,'tanggal',range.start,range.end),
-  optionalScoped('cahaya_app/laporan_penindakan','tanggalKejadian',range.start,range.end),
-  optionalScoped('cahaya_app/laporan_penindakan','tanggalPenindakan',range.start,range.end)
+  // Penindakan memiliki indeks tanggalPenindakan. Membaca tanggalKejadian di
+  // path ini memaksa unduhan seluruh riwayat ketika indeksnya belum terbit.
+  optionalScoped('cahaya_app/laporan_penindakan','tanggalPenindakan',range.start,C.jakartaDate()>range.end?C.jakartaDate():range.end)
  ]);
  const primary=normalizeSources(reports,program,learning),ids=new Set(primary.filter(x=>M.proven(x)||M.cleared(x)).map(x=>x.id));
- const actions={...actionsByEvent.val(),...actionsByProcessing.val()};
+ const actions=actionsByProcessing.val()||{};
  const legacy=Object.entries(actions).filter(([,x])=>!ids.has(String(x.sumberCaseId||''))&&bookUnit(x)).map(([id,x])=>enrich(C.normalizeCase({...x,tipe:'Lapor Pelanggaran',tanggal:x.tanggalKejadian||x.tanggalPenindakan,dilaporkan:x.santri||x.namaSantri,statusPenanganan:x.status||'SELESAI',kodePelanggaran:x.kodePelanggaran||x.jenisPelanggaran||'PELANGGARAN_LAIN'},'legacy_'+id)));
- return [...primary,...legacy];
+ const rows=[...primary,...legacy];evaluationCache.set(range.start+'|'+range.end,{start:range.start,end:range.end,time:Date.now(),rows});return rows;
 }
 function formatComparisonPeriod(range){
  const start=new Date(range.start+'T12:00:00Z');
@@ -125,7 +131,7 @@ async function loadEvaluation(){
  else{$('evalMetrics').innerHTML=loadingMarkup('Menghitung pelanggaran terbukti…');$('topTypes').innerHTML='';$('topStudents').innerHTML='';$('trendChart').innerHTML=''}
  state(comparing?'Memuat perbandingan periode…':'Menghitung pelanggaran terbukti…');
  try{
-  await loadRoster();const rows=await evaluationRows(range);ctx?.assertCurrent();if(generation!==evaluationGeneration)return;
+  const rows=await evaluationRows(range);ctx?.assertCurrent();if(generation!==evaluationGeneration)return;
   if(comparing){const results=periods.map(item=>M.evaluation(rows,item));renderComparison(results,periodMode);state('Perbandingan '+results.length+' periode berdasarkan kasus terbukti.')}else{const result=M.evaluation(rows,periods[0]);renderEvaluation(result);state('Evaluasi berdasarkan '+result.total+' kasus terbukti pada periode terpilih.')}
  }catch(error){if(generation!==evaluationGeneration)return;console.error(error);if(comparing)$('comparisonPanel').innerHTML=loadErrorMarkup('Perbandingan belum dapat dimuat. Periksa koneksi lalu coba lagi.');else $('evalMetrics').innerHTML=loadErrorMarkup('Evaluasi belum dapat dimuat. Periksa koneksi lalu coba lagi.');state('Evaluasi Pelanggaran belum dapat dimuat.','error')}
 }
