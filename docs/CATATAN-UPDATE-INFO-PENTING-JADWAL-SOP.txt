@@ -1,0 +1,45 @@
+UPDATE INFORMASI PENTING WALI SANTRI
+Versi: 3 Agustus 2026
+
+PERUBAHAN
+1. Menambahkan tab Jadwal Pembelajaran Ananda.
+   - Kelas dibaca dari profil santri aktif pada Portal Wali.
+   - Firebase hanya dimuat saat tab dibuka.
+   - Query difilter berdasarkan kelas dan disimpan dalam cache 6 jam.
+   - Bila Firebase tidak dapat dibaca, aplikasi memakai jadwal bawaan terbaru sebagai cadangan.
+
+2. Menambahkan tab Jadwal Program Harian.
+   - Hari yang ditampilkan dapat dipilih.
+   - Data baru dimuat saat tab dibuka.
+   - Sistem terlebih dahulu membaca cahaya_app/jadwal_program_harian.
+   - Bila jalur khusus belum tersedia, sistem menggunakan data program pengawasan yang sudah ada dan template aplikasi.
+
+3. Memperbarui SOP Pengantaran dan Penitipan Barang.
+   - Dokumen: SOP/ADM-PCFI/002/2026.
+   - Tanggal terbit: 22 Juli 2026.
+   - Revisi: Rev.01.
+   - Waktu pelayanan: Senin-Ahad pukul 13.00-17.00 WIB.
+   - PDF resmi yang dilampirkan ditempatkan langsung pada Portal Wali.
+   - File DOCX lama dihapus agar wali tidak mengunduh SOP yang sudah tidak berlaku.
+
+4. Optimasi bandwidth.
+   - Kedua jadwal memakai lazy loading.
+   - Cache jadwal membedakan kelas/equalTo agar data anak dari kelas berbeda tidak tertukar.
+   - Snippet index Firebase ditambah untuk jadwal_pelajaran: kelas dan hari.
+
+FILE UTAMA YANG BERUBAH
+- wali/dashboard/informasi-penting.html
+- wali/dashboard/sop-penitipan-barang.pdf
+- js/cahaya-bandwidth.js
+- database-indexes-bandwidth-snippet.json
+
+PEMASANGAN PATCH
+1. Ekstrak patch.
+2. Salin isi folder cahayaapp-main ke repository aplikasi dan izinkan replace.
+3. Hapus file lama wali/dashboard/sop-penitipan-barang.docx bila masih tersisa.
+4. Commit dan push ke GitHub.
+5. Hard refresh Portal Wali.
+6. Uji dengan akun wali Putra dan Putri, termasuk akun yang memiliki lebih dari satu anak.
+
+CATATAN FIREBASE
+Index jadwal_pelajaran pada file database-indexes-bandwidth-snippet.json perlu digabungkan ke Firebase Rules agar query kelas bekerja lebih efisien. Jangan mengganti seluruh Rules secara buta; cukup gabungkan bagian index ke Rules yang sedang digunakan.

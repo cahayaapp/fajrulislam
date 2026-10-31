@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
 <head><!-- ROLE_V2_ENTRY_START -->
-<script src="js/role-system-v2.js?v=20261031-role-fix-r1"></script>
-<script src="js/role-route-registry-v2.js?v=20261031-role-fix-r1"></script>
-<script src="js/role-navigation-v2.js?v=20261031-role-fix-r1"></script>
-<script src="js/role-menu-v2.js?v=20261031-role-fix-r1"></script>
-<script src="js/role-scope-v2.js?v=20261031-role-fix-r1"></script>
-<script src="js/role-entry-v2.js?v=20261031-role-fix-r1"></script>
+<script src="js/role-system-v2.js?v=288"></script>
+<script src="js/role-route-registry-v2.js?v=283"></script>
+<script src="js/role-navigation-v2.js?v=282"></script>
+<script src="js/role-menu-v2.js?v=297"></script>
+<script src="js/role-scope-v2.js?v=221"></script>
+<script src="js/role-entry-v2.js?v=274"></script>
 <!-- ROLE_V2_ENTRY_END -->
   <!-- CAHAYA WHITE-LABEL CONFIG -->
   <script src="config/tenant-config.js"></script><script src="config/team-roles-v191.js?v=193"></script>
@@ -2970,9 +2970,6 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       const allAllowed = !canonicalRoleRuntime && myRoles.length > 1 && activeRole === ALL_ROLES_MODE;
       if (!allAllowed && (!activeRole || !myRoles.includes(activeRole))) activeRole = myRoles[0];
       document.body.classList.toggle('counselor-role-shell', activeRole === 'KONSELOR');
-      if (canonicalRoleRuntime && roleV2Session?.userKey) {
-        localStorage.setItem('cahayaRoleUserV2', roleV2Session.userKey);
-      }
       localStorage.setItem(ACTIVE_ROLE_KEY, activeRole);
       const legacyActive = canonicalRoleRuntime ? roleSystemV2.legacyRoleFor(activeRole) : activeRole;
       localStorage.setItem("cahayaActiveRole", legacyActive);
@@ -3253,15 +3250,6 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
         return data;
       }
 
-      // Ensure the stored user and the role session use the SAME authenticated
-      // identity. Previously the session was resolved using the Firestore
-      // username, while the profile written to localStorage later used auth.uid;
-      // a multi-role child frame could therefore restore a different role.
-      if (authUser?.uid) data.uid = authUser.uid;
-      if (authUser?.email) {
-        data.email = authUser.email;
-        if (!data.username) data.username = authUser.email.split('@')[0].toLowerCase();
-      }
       const incomingV2 = roleSystemV2?.resolveSession(data,localStorage);
       if (canonicalRoleRuntime && incomingV2?.mode==='canonical' &&
           (roleV2Session.activeRole!==incomingV2.activeRole || JSON.stringify(roleV2Session.activeAssignment)!==JSON.stringify(incomingV2.activeAssignment))) disposeRoleFrames();
@@ -3702,14 +3690,11 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
     }
 
 
-    let roleUIRefreshSerial = 0;
     async function refreshUserProfileUI() {
-      const requestSerial = ++roleUIRefreshSerial;
       try {
         authorizationReady = false;
         authorizedMenuIds = new Set();
         await loadFeatureManagementRules();
-        if (requestSerial !== roleUIRefreshSerial) return;
 
         const displayNama =
           pUserSafe.label ||
@@ -4081,7 +4066,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
     // Halaman yang sudah dibuka disimpan sebagai iframe hidup. Saat kembali,
     // halaman tidak dimuat ulang sehingga query Firebase dan state form tidak berulang.
     // =========================================================
-    const CAHAYA_RELEASE = '20261031-role-fix-r1';
+    const CAHAYA_RELEASE = '20260921-v266';
     const CAHAYA_PAGE_CACHE_MAX = 10;
     const cahayaPageFrames = new Map();
 
@@ -4475,7 +4460,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       navigator.serviceWorker.addEventListener('message',event=>{
         if(event.data?.type==='CAHAYA_RELEASE_READY')activateBuild(String(event.data.build||build));
       });
-      const check=()=>navigator.serviceWorker.register('./firebase-messaging-sw.js?v=169',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().then(()=>reg).catch(()=>reg)).catch(()=>null);
+      const check=()=>navigator.serviceWorker.register('./firebase-messaging-sw.js?v=168',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().then(()=>reg).catch(()=>reg)).catch(()=>null);
       check().then(()=>activateBuild(build));
       document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
       setInterval(check,300000);

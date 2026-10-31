@@ -529,13 +529,10 @@ body{background:radial-gradient(circle at 100% 0,rgba(62,135,235,.055),transpare
       try{
         const p=window.parent&&window.parent!==window?window.parent:window,cached=p.__cahayaHomeNaqibCacheV57;if(cached&&Date.now()-cached.at<90*1000)return cached.data;if(naqibQuickPromise)return naqibQuickPromise;
         const fb=p.firebase,ctx=jakartaParts(),base={program:currentOperationalProgram(ctx),duty:null,attention:[],ctx};if(!fb||typeof fb.database!=='function')return base;const db=fb.database();
-        // Sebagian data legacy memakai tanggal UTC, yang masih kemarin pada pukul 00-07 WIB.
-        // Baca dua tanggal terindeks; filter akhir tetap dengan recordDateJakarta(...).
-        const dateBefore=new Date(Date.parse(ctx.date+'T12:00:00Z')-86400000).toISOString().slice(0,10);
         naqibQuickPromise=Promise.all([
           db.ref('cahaya_app/jadwal_piket_naqib').once('value').catch(()=>null),
-          db.ref('cahaya_app/absensi_program_harian').orderByChild('tanggal').startAt(dateBefore).endAt(ctx.date).once('value').catch(()=>null),
-          db.ref('cahaya_app/log_lapor_inisiatif').orderByChild('tanggal').startAt(dateBefore).endAt(ctx.date).once('value').catch(()=>null)
+          db.ref('cahaya_app/absensi_program_harian').limitToLast(250).once('value').catch(()=>null),
+          db.ref('cahaya_app/log_lapor_inisiatif').limitToLast(250).once('value').catch(()=>null)
         ]).then(([scheduleSnap,absSnap,reportSnap])=>{const schedule=scheduleSnap?.val?.()||{},data={...base,duty:{putra:currentPutraDuty(schedule,ctx),putri:currentPutriDuty(schedule,ctx)},attention:attentionEntries(absSnap?.val?.()||{},reportSnap?.val?.()||{},ctx)};currentNaqibQuickData=data;p.__cahayaHomeNaqibCacheV57={at:Date.now(),data};return data}).catch(err=>{console.warn('Ringkasan Naqib belum dapat dimuat:',err);currentNaqibQuickData=base;return base}).finally(()=>{naqibQuickPromise=null});return naqibQuickPromise;
       }catch(err){console.warn('Ringkasan Naqib gagal:',err);return currentNaqibQuickData}
     }

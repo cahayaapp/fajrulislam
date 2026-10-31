@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <title>Pusat Admin · CAHAYA APP</title>
+  <script src="../config/tenant-config.js"></script><script src="../config/master-data.js"></script><script src="../js/program-harian-24jam-v45.js?v=278"></script>
+  <script src="../js/role-system-v2.js?v=277"></script><script src="../js/role-route-registry-v2.js?v=277"></script><script src="../js/role-navigation-v2.js?v=277"></script><script src="../js/role-scope-v2.js?v=277"></script><script src="../js/role-entry-v2.js?v=277"></script>
+  <link rel="stylesheet" href="../css/admin-master-v2.css?v=279"><link rel="stylesheet" href="../css/admin-feature-management-v2.css?v=279">
+</head>
+<body>
+  <div id="loading" class="loading"><div class="loader"></div><b id="loadingText">Memuat data pokok pesantren…</b></div>
+  <main class="shell">
+    <header class="hero"><div><span class="eyebrow">ADMINISTRASI INDUK</span><h1>Pusat Admin</h1><p>Kelola data pokok pesantren dan akun dari sumber data yang dipakai seluruh CAHAYA APP.</p></div><button class="btn ghost light" id="refreshBtn" type="button">↻ Muat Ulang</button></header>
+    <nav class="module-nav" id="moduleNav" aria-label="Modul Admin">
+      <button data-view="santri"><span>🎓</span><b>Data Santri</b></button><button data-view="sdm"><span>👥</span><b>Data SDM</b></button><button data-view="sekolah"><span>🏫</span><b>Data Sekolah</b></button><button data-view="asrama"><span>🏠</span><b>Data Asrama</b></button><button data-view="jadwal"><span>🗓️</span><b>Jadwal Pelajaran</b></button><button data-view="program"><span>🌙</span><b>Program Asrama</b></button><button data-view="user"><span>🔐</span><b>Manajemen User</b></button><button data-view="fitur"><span>🎚️</span><b>Manajemen Fitur</b></button>
+    </nav>
+    <section class="view" data-view="santri">
+      <div class="section-head"><div><span class="eyebrow blue">MASTER SANTRI</span><h2>Data Santri</h2><p>Satu nama santri, dengan penempatan kelas, usrah, dan kamar pada roster aktif.</p></div><button class="btn primary" id="addStudent">+ Tambah Santri</button></div>
+      <div class="stats" id="studentStats"></div><div class="card"><div class="toolbar"><label class="search">⌕ <input id="studentSearch" placeholder="Cari nama, kelas, usrah, atau kamar"></label><span id="studentCount" class="muted"></span></div><div class="table-wrap"><table><thead><tr><th>Santri</th><th>Kelas</th><th>Usrah</th><th>Kamar</th><th></th></tr></thead><tbody id="studentRows"></tbody></table></div></div>
+    </section>
+    <section class="view" data-view="sdm">
+      <div class="section-head"><div><span class="eyebrow blue">SUMBER DAYA MANUSIA</span><h2>Data SDM</h2><p>Profil personel dibaca dari koleksi user aktif. Pengaturan akses dilakukan melalui Manajemen User.</p></div><button class="btn primary" data-open="users.html?v=278">Kelola Akun & Role</button></div>
+      <div class="stats" id="staffStats"></div><div class="card"><div class="toolbar"><label class="search">⌕ <input id="staffSearch" placeholder="Cari nama, username, atau role"></label><span id="staffCount" class="muted"></span></div><div class="table-wrap"><table><thead><tr><th>Nama</th><th>Username</th><th>Role</th><th>Status</th></tr></thead><tbody id="staffRows"></tbody></table></div></div>
+    </section>
+    <section class="view" data-view="sekolah">
+      <div class="section-head"><div><span class="eyebrow blue">STRUKTUR AKADEMIK</span><h2>Data Sekolah</h2><p>Atur jenjang, kelas, dan peserta setiap kelas tanpa membuat roster baru.</p></div></div>
+      <div class="split"><article class="card"><div class="card-head"><div><h3>Jenjang</h3><p>Contoh: Kepondokan, PKBM SMP, PKBM SMA.</p></div><button class="btn small" id="addLevel">+ Jenjang</button></div><div id="levelList" class="manage-list"></div></article><article class="card"><div class="card-head"><div><h3>Kelas & Peserta</h3><p>Peserta disimpan pada master akademik aktif.</p></div><button class="btn small" id="addClass">+ Kelas</button></div><div id="classList" class="manage-list"></div></article></div>
+    </section>
+    <section class="view" data-view="asrama">
+      <div class="section-head"><div><span class="eyebrow blue">STRUKTUR KEASRAMAAN</span><h2>Data Asrama</h2><p>Atur kamar, usrah/halaqah, dan anggotanya. Master usrah lama tetap menjadi roster resmi.</p></div></div>
+      <div class="split"><article class="card"><div class="card-head"><div><h3>Kamar</h3><p>Penempatan kamar santri.</p></div><button class="btn small" data-add-group="kamar">+ Kamar</button></div><div id="roomList" class="manage-list"></div></article><article class="card"><div class="card-head"><div><h3>Usrah / Halaqah</h3><p>Kelompok pendampingan dan absensi asrama.</p></div><button class="btn small" data-add-group="usrah">+ Usrah</button></div><div id="usrahList" class="manage-list"></div></article></div>
+    </section>
+    <section class="view" data-view="jadwal">
+      <div class="section-head"><div><span class="eyebrow blue">JADWAL AKADEMIK</span><h2>Jadwal Pelajaran</h2><p>Kelola jadwal PKBM dan Kepondokan pada sumber jadwal yang sama dengan presensi guru.</p></div></div><div class="stats" id="scheduleStats"></div>
+      <div class="card action-card"><div class="action-icon">🗓️</div><div><h3>Editor Jadwal Pelajaran</h3><p>Tambah, ubah, nonaktifkan, atau hapus sesi pembelajaran pada <code>jadwal_pelajaran</code>.</p><div id="scheduleSummary" class="chips"></div></div><button class="btn primary" data-open="atur-jadwal.html?v=277">Buka Editor Jadwal</button></div>
+    </section>
+    <section class="view" data-view="program">
+      <div class="section-head"><div><span class="eyebrow blue">PROGRAM 24 JAM</span><h2>Jadwal Program Keasramaan</h2><p>Tentukan waktu, hari aktif, serta kewajiban absensi dan laporan pelaksanaan.</p></div><button class="btn primary" id="addProgram">+ Tambah Program</button></div><div class="stats" id="programStats"></div>
+      <div class="card"><div class="toolbar"><label class="search">⌕ <input id="programSearch" placeholder="Cari program, kategori, atau waktu"></label><span id="programCount" class="muted"></span></div><div class="program-grid" id="programList"></div></div>
+    </section>
+    <section class="view" data-view="user">
+      <div class="section-head"><div><span class="eyebrow blue">AKSES APLIKASI</span><h2>Manajemen User</h2><p>Tambah user, atur satu atau beberapa role, assignment, dan nonaktifkan akses aplikasi.</p></div></div>
+      <div class="card action-card"><div class="action-icon">🔐</div><div><h3>Editor User & Role V2</h3><p>Pembuatan akun Firebase Auth, profil, role, default role, dan scope tugas dilakukan melalui editor khusus.</p><div id="userSummary" class="chips"></div></div><button class="btn primary" data-open="users.html?v=278">Buka Manajemen User</button></div>
+    </section>
+    <section class="view" data-view="fitur">
+      <div class="section-head"><div><span class="eyebrow blue">KONFIGURASI FITUR</span><h2>Manajemen Fitur</h2><p>Pilih role, lalu aktifkan hanya fitur yang perlu tampil untuk role tersebut.</p></div><div class="feature-actions"><button class="btn ghost" id="resetFeatureRole" type="button">Kembalikan Default</button><button class="btn primary" id="saveFeatureRole" type="button">Simpan Perubahan</button></div></div>
+      <div class="feature-layout">
+        <aside class="card feature-role-panel"><label class="field"><span>Role</span><select id="featureRole"></select></label><div class="feature-role-note" id="featureRoleNote"></div><div class="help">Pengaturan ini mengendalikan tampilan fitur pada dashboard. Hak akses data tetap mengikuti otorisasi dan rules masing-masing modul.</div></aside>
+        <article class="card"><div class="toolbar feature-toolbar"><label class="search">⌕ <input id="featureSearch" placeholder="Cari nama fitur atau kelompok"></label><div class="feature-bulk"><button class="btn small" id="enableVisibleFeatures" type="button">Aktifkan Terlihat</button><button class="btn small" id="disableVisibleFeatures" type="button">Nonaktifkan Terlihat</button></div><span id="featureCount" class="muted"></span></div><div id="featureList" class="feature-list"></div></article>
+      </div>
+    </section>
+  </main>
+  <div class="modal" id="modal" aria-hidden="true"><form class="modal-card" id="modalForm"><header><div><span class="eyebrow blue" id="modalEyebrow">DATA</span><h3 id="modalTitle">Form</h3></div><button class="icon-btn" type="button" data-close>×</button></header><div class="modal-body" id="modalBody"></div><footer><button class="btn ghost" type="button" data-close>Batal</button><button class="btn primary" id="modalSave" type="submit">Simpan</button></footer></form></div>
+  <div class="toast" id="toast" role="status"></div><script src="../js/admin-master-v2-core.js?v=279"></script><script type="module" src="../js/admin-master-v2.js?v=280"></script>
+</body></html>

@@ -1,0 +1,13 @@
+CAHAYA APP v149 — Tahap 1: Fondasi Cepat & Hemat Data
+
+Fokus tahap ini:
+1. Guru langsung masuk Beranda dari sesi lokal tanpa menunggu role_menus Firestore.
+2. Halaman yang sudah pernah dibuka disimpan sebagai iframe hidup (maks. 10 halaman).
+   Saat kembali/back melalui menu, halaman tidak reload dan tidak mengulang query Firebase.
+3. Cache data lintas halaman (CahayaDataCache) disiapkan untuk optimasi modul tahap berikutnya.
+4. Tema Fresh Light Executive Guru diinjeksikan otomatis ke semua halaman kerja Guru.
+5. Service Worker memakai cache on-demand untuk file statis dan halaman berversi; tidak melakukan precache besar.
+6. role_menus memakai cache lokal 6 jam; workspace Guru tidak menjadikannya blocking request.
+7. Beranda Guru tetap memakai UI terbaru; keterangan kedisiplinan = Ketepatan Waktu.
+
+Tahap berikutnya: optimasi query RTDB per modul Guru (Nilai, Tahsin/Tahfiz, Presensi, Pelanggaran, Self Asesmen) agar tidak membaca node besar.

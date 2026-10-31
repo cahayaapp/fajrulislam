@@ -1,0 +1,56 @@
+CAHAYA APP V58 — PENYEMPURNAAN ROLE NAQIB
+Tanggal build: 19 Agustus 2026
+
+Fokus perubahan:
+1. Beranda Naqib
+   - Hero identitas + hadits memakai nuansa cokelat emas.
+   - Card "Tugas Pengawasan Saat Ini" bersifat informatif, tidak membuka menu.
+   - Subtitle pengawasan: "Pastikan program terawasi dengan baik dan menyeluruh".
+   - Absensi Program tidak ditampilkan ulang di grid dashboard.
+   - Bottom navigation Naqib memakai "Absen Program" sebagai center action mengambang.
+   - Ringkasan perhatian santri difilter sesuai unit Naqib Putra/Putri.
+
+2. Skor Kedisiplinan Usrah
+   - Tanpa header dan tanpa input tanggal.
+   - Scene: Hari Ini / Pekan Ini / Bulan Ini.
+   - Tampilan diagram persentase, card Usrah colorful, dan rincian skor per santri.
+   - Data dibatasi otomatis sesuai unit Naqib Putra/Putri.
+
+3. Absensi Program
+   - Scene: pilih Program -> pilih Usrah / Semua Usrah -> daftar santri.
+   - Tidak ada blok tanggal/program/usrah pada layer daftar santri.
+   - Tanggal otomatis mengikuti Asia/Jakarta.
+   - Tombol simpan dibuat tunggal tanpa blok penjelasan tambahan.
+   - Data sakit UKS tetap dipertimbangkan saat menyimpan.
+   - Wali index tetap diperbarui.
+
+4. Lapor Pelanggaran
+   - Header "Form Laporan" dihilangkan.
+
+5. Jurnal Pengawasan
+   - Header internal, informasi piket, tanggal, nama Naqib, unit, blok, dan progres awal disembunyikan.
+   - Sistem membaca tanggal, identitas, unit, blok/program, serta petugas dari Jadwal Piket.
+   - Putra hanya memperoleh daftar tugas bila sesuai petugas blok aktif.
+   - Putri hanya memperoleh program yang memang dijadwalkan kepada Naqib tersebut.
+
+6. Tindak Pelanggaran untuk Naqib
+   - Menu tersedia pada role Naqib tanpa membuka seluruh antrean Konselor.
+   - Hanya kasus jalur NAQIB (Kedisiplinan / Kebersihan & Kerapian) yang tampil.
+   - Putri: Fatimah, Meilisa/Melisa, Alamanda. Selainnya diperlakukan sebagai Putra.
+   - Mode Tindak Satu per Satu dan Tindak Massal.
+   - Mode massal menampilkan checkbox; satu form penindakan ditulis ke setiap kasus/santri terpilih.
+   - Delete/filter administratif Konselor disembunyikan dalam mode Naqib.
+
+7. Asesmen CAHAYA Santri
+   - Scene: Bulan -> Usrah -> Santri -> Form Asesmen.
+   - Identitas tanggal/usrah/santri tidak ditampilkan lagi pada form final.
+   - Usrah dibatasi sesuai unit Naqib.
+   - Periode bulan tersimpan bersama payload asesmen.
+
+Catatan keamanan:
+- RBAC global tidak dilonggarkan. Menu Tindak Pelanggaran diberikan sebagai akses operasional khusus Naqib, lalu data di halaman tetap difilter hanya kasus berjalur NAQIB dan unit asrama yang sesuai.
+- Logo pesantren dan aset logo lama tetap dipertahankan.
+
+QA statis:
+- Seluruh HTML paket diperiksa syntax JavaScript menggunakan node --check.
+- Pengujian Firebase produksi/perangkat nyata belum dilakukan dari lingkungan build ini.

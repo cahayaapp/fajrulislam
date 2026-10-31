@@ -1,6 +1,6 @@
-/* CAHAYA APP v169 — HTML selalu diperiksa ke jaringan; aset versi tetap hemat cache */
-const CAHAYA_SW_BUILD='v169';
-const STATIC_CACHE='cahaya-static-v169';
+/* CAHAYA APP v168 — HTML selalu diperiksa ke jaringan; aset versi tetap hemat cache */
+const CAHAYA_SW_BUILD='v168';
+const STATIC_CACHE='cahaya-static-v168';
 self.addEventListener('install',event=>{self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{
   const keys=await caches.keys();
@@ -68,10 +68,5 @@ self.addEventListener('fetch',event=>{
   const html=path.endsWith('.html')||req.mode==='navigate';
   const shellNavigation=req.mode==='navigate'&&(path==='/'||path.endsWith('/index.html')||path.endsWith('/main-dashboard.html'));
   if(html||shellNavigation){event.respondWith(networkFirst(req));return;}
-  // Role authorization modules must never remain on an older cache-first
-  // edition while the dashboard shell has already fetched the new edition.
-  // Offline fallback is still available through networkFirst().
-  const roleRuntime=/\/js\/role-(?:system|route-registry|navigation|scope|entry|menu)-v2\.js$/i.test(path);
-  if(roleRuntime){event.respondWith(networkFirst(req));return;}
   if(staticAsset){event.respondWith(cacheFirst(req));}
 });

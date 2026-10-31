@@ -1,0 +1,13 @@
+CAHAYA APP v150 — TAHAP 2: PRESENSI SANTRI + NILAI UJIAN
+
+Fokus:
+1. Tema Guru Fresh Light Executive diseragamkan dengan Direktur pada Presensi Santri dan Nilai Ujian.
+2. Presensi tidak lagi full-read master_akademik/jadwal_pelajaran Firebase. Master + jadwal menggunakan file lokal/cache.
+3. Query absensi hanya tanggal hari ini dan tidak memiliki fallback full-read.
+4. Setelah simpan/finalisasi presensi, halaman tidak location.reload(); state + cache diperbarui langsung.
+5. Nilai Ujian tidak lagi full-read master/jadwal Firebase.
+6. Nilai menggunakan exact session index + cache 10 menit. Fallback legacy dibatasi periode aktif maks 600 record.
+7. Simpan nilai digabung menjadi satu multi-location update, bukan banyak set() serial.
+8. Page cache dari v149 tetap dipakai sehingga Back tidak reload iframe.
+
+Catatan RTDB: pastikan .indexOn absensi_pembelajaran/tanggal serta nilai_ujian(_bulanan)/periode_ujian tetap diterapkan.

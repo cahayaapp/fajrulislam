@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="id"><head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=206"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END --><meta charset="utf-8"><title>Role V2 — Read-only profile audit</title></head>
+<body>
+<h1>Audit profil Role V2 — hanya baca</h1>
+<p>Utilitas lokal, bukan halaman aplikasi. Tidak menyimpan, menghapus, atau mengubah profil.</p>
+<p id="auth">Memeriksa sesi...</p>
+<button id="inspect" disabled>Baca field role profil produksi</button>
+<pre id="report"></pre>
+<script>
+if (!['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname)) {
+  document.getElementById('auth').textContent = 'Utilitas audit hanya dapat digunakan melalui localhost.';
+} else {
+  const sources = ['../config/tenant-config.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'];
+  (async function () {
+    for (const src of sources) await new Promise((resolve, reject) => {
+      const script = document.createElement('script'); script.src = src;
+      script.onload = resolve; script.onerror = reject; document.head.appendChild(script);
+    });
+    if (!firebase.apps.length) firebase.initializeApp(window.CAHAYA_CONFIG.firebase);
+    const fields = ['username','label','nama','name','role','akses','jabatan','peran',
+      'workspaceRoles','workspaceAssignments','defaultWorkspaceRole','operationalAssignments',
+      'roleAssignmentsV2','primaryOperationalRole','levelOperasional','divisiOperasional',
+      'roleSystemVersion','roles','rolesV2','assignments','defaultRole','updatedAt','userSettingsVersion'];
+    const waliAudit = new URLSearchParams(location.search).get('wali') === '1';
+    // Existing link fields only; no new mapping, credentials, contacts or business records.
+    if (waliAudit) fields.push('namaAnak','namaSantri','namaAnanda','studentName','anak');
+    const assignmentFields = ['role','roleId','division','divisionId','divisionLabel','unit',
+      'functionKey','functionId','level','standardId','programDomain','domain','usrahIds','studentIds',
+      'managedRoles','supervisedRoles','divisionIds','scopeDivisions','scope'];
+    const safe = value => {
+      if (Array.isArray(value)) return value.map(safe);
+      if (!value || typeof value !== 'object') return value;
+      if (typeof value.toDate === 'function') return value.toDate().toISOString();
+      return Object.fromEntries(Object.entries(value).filter(([key]) =>
+        assignmentFields.includes(key) || /^[A-Z_]+$/.test(key)).map(([key,v]) => [key,safe(v)]));
+    };
+    firebase.auth().onAuthStateChanged(user => {
+      document.getElementById('auth').textContent = user ? 'Sesi Firebase Auth tersedia. Pembacaan belum dimulai.' : 'Tidak ada sesi Firebase Auth. Masuk melalui aplikasi dahulu.';
+      document.getElementById('inspect').disabled = !user;
+    });
+    document.getElementById('inspect').onclick = async () => {
+      const button = document.getElementById('inspect'); button.disabled = true;
+      try {
+        if (!firebase.auth().currentUser) throw new Error('Sesi autentikasi diperlukan.');
+        let query = firebase.firestore().collection('users');
+        if (waliAudit) query = query.where('akses','array-contains','wali');
+        const snap = await query.get({source:'server'});
+        const users = snap.docs.map(doc => ({id:doc.id, ...Object.fromEntries(
+          fields.filter(key => Object.hasOwn(doc.data(),key)).map(key => [key,safe(doc.data()[key])]))}));
+        users.sort((a,b)=>a.id.localeCompare(b.id));
+        document.getElementById('report').textContent = JSON.stringify({
+          projectId:window.CAHAYA_CONFIG.firebase.projectId, source:'Firestore users (server)',
+          inspectedAt:new Date().toISOString(), count:users.length, users
+        },null,2);
+      } catch (error) { document.getElementById('report').textContent = 'Audit gagal: '+error.message; }
+      finally { button.disabled = false; }
+    };
+  })().catch(error => { document.getElementById('auth').textContent = 'SDK tidak tersedia: '+error.message; });
+}
+</script></body></html>

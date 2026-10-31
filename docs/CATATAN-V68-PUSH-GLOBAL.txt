@@ -1,0 +1,43 @@
+CAHAYA APP V68 — PUSH NOTIFICATION GLOBAL
+20 Agustus 2026
+
+FOKUS V68
+- Push Notification tidak lagi khusus Wali Santri.
+- Semua akun yang masuk melalui dashboard utama dapat mendaftarkan perangkat.
+- Akun kasir khusus juga dapat mendaftarkan perangkat untuk notifikasi umum.
+- Portal Wali tetap mempertahankan Kabar Ananda + Pesan dan sekaligus terdaftar pada indeks push global.
+- Multi-device: satu akun dapat memiliki lebih dari satu token/perangkat aktif.
+- Logout menonaktifkan token perangkat yang sedang dipakai agar perangkat lama tidak terus menerima push untuk akun tersebut.
+
+JALUR TOKEN
+- cahaya_app/fcm_tokens_wali/{wali}/{tokenKey}     : kompatibilitas Portal Wali/Kabar Ananda.
+- cahaya_app/fcm_tokens_user/{username}/{tokenKey}: token global seluruh role.
+- cahaya_app/fcm_users_by_role/{role}/{username}  : reverse index role untuk push bertarget.
+
+PUSH YANG AKTIF
+1. Pesan personal ke Wali (fungsi lama, tidak digandakan).
+2. Pesan personal ke pengurus/non-wali.
+3. Notifikasi sistem ke satu username:
+   cahaya_app/notifikasi_user/{username}/{notificationId}
+4. Notifikasi ke satu role:
+   cahaya_app/notifikasi_role/{role}/{notificationId}
+5. Notifikasi ke semua pengguna:
+   cahaya_app/notifikasi_semua/{notificationId}
+6. Kompatibilitas broadcast pengurus dan semua pengguna.
+7. Kabar Ananda tetap aktif untuk wali.
+
+BATAS CHAT
+- Aturan tetap: user biasa hanya dapat membuka chat dengan Direktur, Wakil Direktur, Konselor, atau Admin.
+- Role privileged tersebut dapat berkomunikasi dengan seluruh user.
+- Backend push chat juga menolak push untuk percakapan non-privileged ↔ non-privileged.
+
+DEPLOY BACKEND SETELAH UPLOAD V68
+Dari folder push-backend:
+  npm --prefix functions install
+  npx firebase-tools deploy --only functions
+
+Tidak perlu generate VAPID baru. V68 tetap membaca:
+  cahaya_app/pengaturan_notifikasi_web/vapidKey
+
+CATATAN
+Cloud Functions V63 yang sudah ada tetap dipertahankan. V68 menambahkan fungsi global sehingga backend harus di-deploy ulang sekali setelah upgrade.

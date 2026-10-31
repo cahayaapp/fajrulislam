@@ -1,0 +1,510 @@
+/* CAHAYA APP V63 — Premium Wali Feature System */
+:root{
+  --v63-gold:#f2a51f;
+  --v63-gold-2:#ffbd45;
+  --v63-gold-soft:#fff7df;
+  --v63-blue:#176cf1;
+  --v63-indigo:#635bff;
+  --v63-cyan:#1bbbd3;
+  --v63-green:#18a874;
+  --v63-red:#e84d62;
+  --v63-ink:#14213d;
+  --v63-text:#3c4b66;
+  --v63-muted:#8490a5;
+  --v63-line:#e7ecf4;
+  --v63-bg:#f5f7fb;
+  --v63-card:rgba(255,255,255,.97);
+  --v63-shadow:0 18px 50px rgba(41,58,105,.09);
+  --v63-shadow-soft:0 8px 26px rgba(41,58,105,.065);
+}
+html{background:var(--v63-bg)}
+body.v63-premium-page{
+  min-width:320px;
+  min-height:100vh;
+  color:var(--v63-text);
+  background:
+    radial-gradient(circle at 4% 0%,rgba(242,165,31,.10),transparent 24%),
+    radial-gradient(circle at 100% 0%,rgba(23,108,241,.08),transparent 28%),
+    linear-gradient(180deg,#f7f9fd 0%,#f4f6fa 100%)!important;
+  font-family:"Nunito","Plus Jakarta Sans",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+}
+body.v63-premium-page .app,
+body.v63-premium-page .app-container{
+  width:min(1080px,100%)!important;
+  max-width:1080px!important;
+  margin:0 auto!important;
+  padding:18px 18px 48px!important;
+}
+body.v63-premium-page button,
+body.v63-premium-page input,
+body.v63-premium-page select,
+body.v63-premium-page textarea{font-family:inherit!important}
+
+/* simple title: no heavy identity/header card */
+.v63-page-title{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:16px;
+  margin:2px 2px 16px;
+}
+.v63-page-title-copy small{
+  display:block;
+  margin-bottom:4px;
+  color:var(--v63-gold);
+  font-size:.62rem;
+  font-weight:1000;
+  letter-spacing:1.25px;
+  text-transform:uppercase;
+}
+.v63-page-title h1{
+  margin:0;
+  color:var(--v63-ink);
+  font-size:clamp(1.28rem,3vw,1.72rem);
+  font-weight:1000;
+  line-height:1.18;
+  letter-spacing:-.55px;
+}
+.v63-page-title p{
+  margin:5px 0 0;
+  max-width:650px;
+  color:var(--v63-muted);
+  font-size:.76rem;
+  font-weight:750;
+  line-height:1.6;
+}
+.v63-period-note{
+  color:#9a6a0c!important;
+  font-size:.69rem!important;
+  font-weight:900!important;
+  white-space:nowrap;
+}
+
+/* report pages */
+body.v63-report-page .rg-header-card,
+body.v63-report-page .filter-container{display:none!important}
+body.v63-report-page.v63-await-period .app-container > *:not(.v63-page-title):not(#loadingData):not(.v63-download-footer){visibility:hidden}
+body.v63-report-page.v63-await-period #loadingData{visibility:visible!important}
+body.v63-report-page #loadingData{
+  min-height:115px;
+  display:grid;
+  place-items:center;
+  margin:10px 0 16px;
+  padding:24px;
+  border:1px solid var(--v63-line);
+  border-radius:24px;
+  color:#6f7e96;
+  background:rgba(255,255,255,.84);
+  box-shadow:var(--v63-shadow-soft);
+  font-size:.76rem;
+  font-weight:900;
+}
+body.v63-report-page .kategori-blok{
+  overflow:hidden!important;
+  margin:0 0 16px!important;
+  padding:0!important;
+  border:1px solid rgba(226,232,242,.96)!important;
+  border-radius:26px!important;
+  background:var(--v63-card)!important;
+  box-shadow:var(--v63-shadow-soft)!important;
+}
+body.v63-report-page .kategori-blok .kb-header,
+body.v63-report-page .blok-tahfiz .kb-header,
+body.v63-report-page .blok-cahaya .kb-header,
+body.v63-report-page .blok-evaluasi .kb-header,
+body.v63-report-page .blok-murojaah .kb-header{
+  min-height:72px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:12px!important;
+  margin:0!important;
+  padding:17px 20px!important;
+  border:0!important;
+  border-bottom:1px solid #edf1f7!important;
+  border-radius:0!important;
+  color:var(--v63-ink)!important;
+  background:
+    radial-gradient(circle at 98% 0%,rgba(242,165,31,.09),transparent 31%),
+    linear-gradient(180deg,#fff,#fcfdff)!important;
+}
+body.v63-report-page .kategori-blok .kb-header::after{display:none!important}
+body.v63-report-page .kb-icon{
+  width:42px!important;
+  height:42px!important;
+  flex:0 0 42px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:14px!important;
+  background:linear-gradient(135deg,#fff7dd,#ffe4a2)!important;
+  box-shadow:inset 0 0 0 1px rgba(240,166,35,.16),0 8px 18px rgba(213,145,22,.12)!important;
+  font-size:1.08rem!important;
+}
+body.v63-report-page .kb-title{
+  color:var(--v63-ink)!important;
+  font-family:"Nunito",sans-serif!important;
+  font-size:1rem!important;
+  font-weight:1000!important;
+  letter-spacing:-.2px!important;
+}
+body.v63-report-page .intel-report-container,
+body.v63-report-page .tahfiz-list,
+body.v63-report-page .eval-list,
+body.v63-report-page .tl-body,
+body.v63-report-page .resume-grid,
+body.v63-report-page #kontenIntelektual{
+  padding-left:20px!important;
+  padding-right:20px!important;
+}
+body.v63-report-page .resume-grid{padding-top:16px!important}
+body.v63-report-page .tahfiz-list,
+body.v63-report-page .eval-list{padding-bottom:18px!important}
+body.v63-report-page .observer-info-bar{
+  margin:16px 20px!important;
+  border:1px solid #edf0f5!important;
+  border-radius:17px!important;
+  background:#fbfcff!important;
+  box-shadow:none!important;
+}
+body.page-karakter.v63-report-page .observer-info-bar{display:none!important}
+body.page-karakter.v63-report-page .keterangan-box{
+  margin:0 0 15px!important;
+  padding:14px 16px!important;
+  border:1px solid #f1e5c5!important;
+  border-radius:18px!important;
+  background:#fffaf0!important;
+  box-shadow:none!important;
+}
+body.v63-report-page .intel-narrative-box,
+body.v63-report-page .tl-item,
+body.v63-report-page .eval-card,
+body.v63-report-page .tahfiz-item,
+body.v63-report-page .kasus-card,
+body.v63-report-page .score-card,
+body.v63-report-page .resume-card{
+  border-color:#edf0f5!important;
+  border-radius:18px!important;
+  box-shadow:none!important;
+  background:linear-gradient(180deg,#fff,#fbfcff)!important;
+}
+body.v63-report-page .intel-narrative-text,
+body.v63-report-page .tl-text{
+  color:#43516a!important;
+  font-size:.85rem!important;
+  font-weight:650!important;
+  line-height:1.78!important;
+}
+body.v63-report-page .empty-state{
+  margin:8px 0 16px!important;
+  padding:30px 18px!important;
+  border:1px dashed #dbe2ed!important;
+  border-radius:22px!important;
+  background:rgba(255,255,255,.84)!important;
+  color:#8793a7!important;
+  font-size:.76rem!important;
+  font-weight:850!important;
+}
+
+.v63-download-footer{
+  display:flex;
+  justify-content:center;
+  padding:7px 0 2px;
+}
+.v63-download-footer .btn-download-pdf{
+  width:min(520px,100%)!important;
+  min-height:52px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:9px!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:17px!important;
+  color:#fff!important;
+  background:linear-gradient(135deg,#e79410,#f5b72f)!important;
+  box-shadow:0 13px 28px rgba(219,147,19,.22)!important;
+  font-size:.78rem!important;
+  font-weight:1000!important;
+}
+
+/* premium month chooser */
+.v63-period-overlay{
+  position:fixed;
+  inset:0;
+  z-index:2147483000;
+  display:grid;
+  place-items:center;
+  padding:16px;
+  background:rgba(16,27,48,.50);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  animation:v63Fade .18s ease both;
+}
+.v63-period-overlay[hidden]{display:none!important}
+.v63-period-sheet{
+  width:min(560px,100%);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.88);
+  border-radius:28px;
+  background:rgba(255,255,255,.985);
+  box-shadow:0 30px 90px rgba(8,19,45,.25);
+  animation:v63Rise .28s cubic-bezier(.2,.85,.25,1) both;
+}
+.v63-period-sheet-head{
+  padding:22px 22px 13px;
+  text-align:center;
+}
+.v63-period-mark{
+  width:48px;height:48px;
+  display:grid;place-items:center;
+  margin:0 auto 10px;
+  border-radius:17px;
+  background:linear-gradient(135deg,#fff1c5,#ffd268);
+  box-shadow:0 10px 25px rgba(218,145,20,.18);
+  font-size:1.28rem;
+}
+.v63-period-sheet h2{
+  margin:0;
+  color:var(--v63-ink);
+  font-size:1.2rem;
+  font-weight:1000;
+  letter-spacing:-.35px;
+}
+.v63-period-sheet p{
+  margin:6px auto 0;
+  color:#8490a4;
+  font-size:.72rem;
+  font-weight:750;
+  line-height:1.5;
+}
+.v63-month-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  padding:9px 16px 18px;
+}
+.v63-month-btn{
+  min-height:58px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:2px;
+  padding:10px 12px;
+  border:1px solid #e6eaf1;
+  border-radius:15px;
+  color:#526079;
+  background:#f9fafc;
+  text-align:left;
+  cursor:pointer;
+  transition:.16s ease;
+}
+.v63-month-btn strong{font-size:.74rem;font-weight:1000;color:var(--v63-ink)}
+.v63-month-btn span{font-size:.56rem;font-weight:800;color:#98a3b5}
+.v63-month-btn:hover,.v63-month-btn.active{
+  transform:translateY(-1px);
+  border-color:#f4c461;
+  background:linear-gradient(180deg,#fffaf0,#fff5da);
+  box-shadow:0 9px 18px rgba(207,141,24,.10);
+}
+.v63-month-btn.active strong{color:#a96900}
+@keyframes v63Fade{from{opacity:0}to{opacity:1}}
+@keyframes v63Rise{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+
+/* Informasi Penting */
+body.page-informasi-penting-v63 .hero{display:none!important}
+body.page-informasi-penting-v63 .nav-tabs{
+  position:static!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin:2px 0 16px!important;
+  padding:0!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+body.page-informasi-penting-v63 .tab-btn{
+  min-width:0!important;
+  min-height:82px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  gap:6px!important;
+  padding:14px 15px!important;
+  border:1px solid #e5eaf2!important;
+  border-radius:19px!important;
+  color:#4b5b74!important;
+  background:rgba(255,255,255,.94)!important;
+  box-shadow:var(--v63-shadow-soft)!important;
+  white-space:normal!important;
+  text-align:left!important;
+  font-size:.76rem!important;
+  line-height:1.25!important;
+}
+body.page-informasi-penting-v63 .tab-btn::first-letter{font-size:1.2rem}
+body.page-informasi-penting-v63 .tab-btn.active{
+  color:#8f5b00!important;
+  border-color:#f4d391!important;
+  background:linear-gradient(145deg,#fffdf8,#fff4d7)!important;
+  box-shadow:0 13px 28px rgba(209,143,24,.12)!important;
+}
+body.page-informasi-penting-v63 .section-card{
+  border-color:#e5eaf2!important;
+  border-radius:25px!important;
+  box-shadow:var(--v63-shadow-soft)!important;
+}
+body.page-informasi-penting-v63 .section-head{
+  padding:18px 19px 15px!important;
+  border-bottom:1px solid #edf1f7!important;
+  background:linear-gradient(180deg,#fff,#fcfdff)!important;
+}
+body.page-informasi-penting-v63 .section-icon{
+  width:42px!important;height:42px!important;flex-basis:42px!important;
+  border-radius:14px!important;
+  background:linear-gradient(135deg,#fff1c9,#ffd46f)!important;
+  box-shadow:0 8px 18px rgba(213,146,24,.12)!important;
+}
+body.page-informasi-penting-v63 .section-head h2{font-size:1rem!important;color:var(--v63-ink)!important}
+body.page-informasi-penting-v63 .section-head p{font-size:.72rem!important;line-height:1.55!important}
+body.page-informasi-penting-v63 .body-pad{padding:17px!important}
+
+/* Kesehatan */
+body.page-kesehatan-v63 .hero,
+body.page-kesehatan-v63 .toolbar{display:none!important}
+body.page-kesehatan-v63 .summary{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin:0 0 14px!important;
+}
+body.page-kesehatan-v63 .metric{
+  min-height:100px!important;
+  padding:15px!important;
+  border:1px solid #e6ebf3!important;
+  border-radius:20px!important;
+  background:linear-gradient(180deg,#fff,#fbfcff)!important;
+  box-shadow:var(--v63-shadow-soft)!important;
+}
+body.page-kesehatan-v63 .metric small{font-size:.55rem!important;color:#8d98aa!important}
+body.page-kesehatan-v63 .metric b{font-size:1.48rem!important;color:var(--v63-ink)!important}
+body.page-kesehatan-v63 .metric span{font-size:.60rem!important;line-height:1.45!important}
+body.page-kesehatan-v63 .panel{
+  border:1px solid #e5eaf2!important;
+  border-radius:25px!important;
+  box-shadow:var(--v63-shadow-soft)!important;
+}
+body.page-kesehatan-v63 .panel-head{padding:18px 19px!important;background:linear-gradient(180deg,#fff,#fcfdff)!important}
+body.page-kesehatan-v63 .panel-head h2{font-size:.97rem!important;color:var(--v63-ink)!important}
+body.page-kesehatan-v63 .panel-body{padding:15px!important}
+body.page-kesehatan-v63 .cards{gap:11px!important}
+body.page-kesehatan-v63 .card{
+  padding:16px!important;
+  border:1px solid #e8ecf3!important;
+  border-radius:19px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+body.page-kesehatan-v63 .card h3{font-size:.82rem!important;color:var(--v63-ink)!important}
+body.page-kesehatan-v63 .detail{font-size:.67rem!important;line-height:1.65!important}
+body.page-kesehatan-v63 .card .btn{background:#f4f6fa!important;color:#4b607a!important;border:1px solid #e4e9f1!important}
+
+/* Perizinan */
+body.page-perizinan-v63 .hero{display:none!important}
+body.page-perizinan-v63 .panel{
+  overflow:hidden!important;
+  margin-top:12px!important;
+  border:1px solid #e5eaf2!important;
+  border-radius:25px!important;
+  background:#fff!important;
+  box-shadow:var(--v63-shadow-soft)!important;
+}
+body.page-perizinan-v63 .panel-head{
+  padding:18px 19px!important;
+  background:linear-gradient(180deg,#fff,#fcfdff)!important;
+  border-bottom:1px solid #edf1f7!important;
+}
+body.page-perizinan-v63 .panel-head h2{color:var(--v63-ink)!important;font-size:.98rem!important}
+body.page-perizinan-v63 .panel-body{padding:17px!important}
+body.page-perizinan-v63 .notice{
+  border:1px solid #f2e4bd!important;
+  border-radius:17px!important;
+  background:#fffaf0!important;
+  color:#7b622d!important;
+}
+body.page-perizinan-v63 .form-control{
+  min-height:45px!important;
+  border-color:#e3e8f0!important;
+  border-radius:14px!important;
+  background:#fbfcfe!important;
+}
+body.page-perizinan-v63 .form-control:focus{border-color:#efbd55!important;box-shadow:0 0 0 4px rgba(239,184,62,.13)!important}
+body.page-perizinan-v63 #submitBtn{
+  min-height:49px!important;
+  border-radius:15px!important;
+  background:linear-gradient(135deg,#e69914,#f3b52d)!important;
+  box-shadow:0 12px 24px rgba(211,141,18,.18)!important;
+}
+body.page-perizinan-v63 #history .card{
+  border:1px solid #e7ebf2!important;
+  border-radius:19px!important;
+  background:linear-gradient(180deg,#fff,#fbfcff)!important;
+  box-shadow:none!important;
+}
+.v63-permit-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin:0 0 12px;
+  padding:5px;
+  border:1px solid #e5eaf2;
+  border-radius:17px;
+  background:#eef2f7;
+}
+.v63-permit-tab{
+  min-height:43px;
+  border:0;
+  border-radius:12px;
+  color:#758197;
+  background:transparent;
+  font-size:.72rem;
+  font-weight:1000;
+}
+.v63-permit-tab.active{
+  color:#8c5b03;
+  background:#fff;
+  box-shadow:0 6px 16px rgba(46,58,90,.08),inset 0 0 0 1px #f3d799;
+}
+body.page-perizinan-v63.v63-show-history .panel.v63-permit-form-panel{display:none!important}
+body.page-perizinan-v63:not(.v63-show-history) .panel.v63-permit-history-panel{display:none!important}
+
+/* modal refinements */
+body.v63-premium-page .modal{backdrop-filter:blur(10px)!important}
+body.v63-premium-page .modal-card{
+  border:1px solid rgba(255,255,255,.82)!important;
+  border-radius:25px!important;
+  box-shadow:0 30px 90px rgba(9,22,47,.25)!important;
+}
+
+@media(max-width:720px){
+  body.v63-premium-page .app,body.v63-premium-page .app-container{padding:11px 11px 38px!important}
+  .v63-page-title{margin:3px 2px 12px}
+  .v63-page-title p{font-size:.7rem}
+  .v63-month-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 10px 12px}
+  .v63-month-btn{min-height:54px;padding:8px 9px;border-radius:13px}
+  .v63-period-sheet{border-radius:24px}
+  .v63-period-sheet-head{padding:18px 15px 10px}
+  body.page-informasi-penting-v63 .nav-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  body.page-informasi-penting-v63 .tab-btn{min-height:76px!important;padding:12px!important;border-radius:17px!important}
+  body.page-kesehatan-v63 .summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body.page-kesehatan-v63 .cards{grid-template-columns:1fr!important}
+  body.v63-report-page .kategori-blok{border-radius:22px!important}
+  body.v63-report-page .kategori-blok .kb-header{min-height:66px!important;padding:15px 16px!important}
+  body.v63-report-page .intel-report-container,body.v63-report-page .tahfiz-list,body.v63-report-page .eval-list,body.v63-report-page .tl-body,body.v63-report-page .resume-grid,body.v63-report-page #kontenIntelektual{padding-left:15px!important;padding-right:15px!important}
+}
+@media(max-width:380px){
+  .v63-month-btn strong{font-size:.69rem}
+  .v63-month-btn span{font-size:.52rem}
+}

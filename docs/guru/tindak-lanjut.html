@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="id">
+<head><!-- ROLE_V2_ENTRY_START -->
+<script src="../js/role-system-v2.js?v=266"></script>
+<script src="../js/role-route-registry-v2.js?v=266"></script>
+<script src="../js/role-navigation-v2.js?v=266"></script>
+<script src="../js/role-scope-v2.js?v=206"></script>
+<script src="../js/role-entry-v2.js?v=266"></script>
+<!-- ROLE_V2_ENTRY_END -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#f5faff">
+  <title>Tindak Lanjut Nilai Ujian • CAHAYA APP</title>
+  <script src="../config/tenant-config.js"></script>
+  <script src="../config/master-data.js"></script>
+  <script src="../js/cahaya-config-runtime.js" defer></script>
+  <script src="../js/data-pusat.js"></script>
+  <script src="../js/guru-kpi-v144.js?v=182"></script>
+  <style>
+    :root{
+      --navy:#0b397a;--navy2:#123f83;--blue:#1879ef;--cyan:#25b9d8;
+      --green:#15aa76;--red:#ee5263;--amber:#eea218;--purple:#7556e8;
+      --muted:#7188a7;--line:#dce9f7;--soft:#f5faff;--card:#fff;
+      --shadow:0 18px 48px rgba(22,72,128,.08);--radius:28px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,"Plus Jakarta Sans",Nunito,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#f8fbff,#f3f9ff 55%,#f8fbff);color:var(--navy)}
+    body{padding:16px 14px 110px}
+    button,input,select,textarea{font:inherit}
+    .page{width:min(1040px,100%);margin:0 auto}
+    .hero{position:relative;overflow:hidden;border:1px solid #d9e8f7;border-radius:30px;padding:26px 28px 24px;background:radial-gradient(circle at 89% 20%,rgba(36,185,216,.17),transparent 25%),radial-gradient(circle at 94% 83%,rgba(24,121,239,.08),transparent 26%),linear-gradient(145deg,#fff,#fbfdff 58%,#eff9ff);box-shadow:var(--shadow)}
+    .hero:before{content:"";position:absolute;right:28px;top:25px;width:148px;height:148px;border-radius:50%;background:linear-gradient(145deg,rgba(57,177,255,.14),rgba(54,210,202,.05))}
+    .hero-art{position:absolute;right:42px;bottom:26px;width:116px;height:92px;opacity:.78;pointer-events:none}
+    .hero-copy{position:relative;z-index:2;max-width:660px;padding-right:130px}
+    .kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid #cfe6fb;border-radius:999px;background:#eff8ff;color:#1f73c9;font-size:.68rem;font-weight:950;letter-spacing:.16em;text-transform:uppercase}
+    .hero h1{margin:13px 0 7px;font-size:clamp(1.65rem,4vw,2.35rem);line-height:1.06;letter-spacing:-.035em;color:#0a3471}
+    .hero p{margin:0;color:var(--muted);font-size:.86rem;line-height:1.58;font-weight:650}
+    .hero-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+    .meta-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:12px;background:rgba(255,255,255,.78);border:1px solid #dfebf7;color:#42688f;font-size:.66rem;font-weight:850}
+
+    .period-card{margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:24px;background:#fff;box-shadow:0 12px 34px rgba(25,76,132,.055)}
+    .period-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+    .field{display:grid;gap:6px}.field label{color:#6782a3;font-size:.62rem;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+    .field select,.field input,.field textarea{width:100%;border:1px solid #d9e6f4;background:#fbfdff;color:#17457f;border-radius:15px;min-height:46px;padding:10px 12px;outline:none;font-weight:750}
+    .field textarea{min-height:112px;resize:vertical;line-height:1.5}
+    .field select:focus,.field input:focus,.field textarea:focus{border-color:#69b7ff;background:#fff;box-shadow:0 0 0 4px rgba(31,135,236,.09)}
+    .btn{border:0;min-height:46px;border-radius:15px;padding:10px 16px;cursor:pointer;font-weight:950;transition:.18s ease}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{color:#fff;background:linear-gradient(135deg,#2d96f5,#176be9);box-shadow:0 11px 25px rgba(27,116,232,.22)}
+    .btn.soft{color:#2366ac;background:#f0f7ff;border:1px solid #d9e9f9}
+
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+    .metric{position:relative;overflow:hidden;min-height:104px;padding:16px;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 10px 28px rgba(24,73,128,.045)}
+    .metric:after{content:"";position:absolute;width:68px;height:68px;border-radius:50%;right:-22px;bottom:-30px;background:rgba(29,122,242,.06)}
+    .metric-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:13px;margin-bottom:9px;background:#eaf4ff;color:#1975dc;font-size:1rem;font-weight:900}
+    .metric small{display:block;color:#768da9;font-size:.59rem;font-weight:950;letter-spacing:.05em;text-transform:uppercase}.metric b{display:block;margin-top:3px;color:var(--navy);font-size:1.5rem;line-height:1}
+    .metric.red .metric-icon{background:#fff0f2;color:var(--red)}.metric.red b{color:#d84455}
+    .metric.amber .metric-icon{background:#fff6e3;color:#c77b00}.metric.green .metric-icon{background:#eafaf4;color:#10855b}.metric.green b{color:#10855b}
+
+    .panel{overflow:hidden;border:1px solid var(--line);border-radius:28px;background:#fff;box-shadow:var(--shadow)}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:19px 20px 14px}
+    .title-wrap{display:flex;align-items:center;gap:12px}.title-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,#eaf4ff,#f5fbff);color:#1b72d9;font-size:1.15rem;border:1px solid #deebf9}
+    .panel-head h2{margin:0;color:#0c3775;font-size:1.08rem}.panel-head p{margin:5px 0 0;color:var(--muted);font-size:.69rem;line-height:1.45}
+    .filters{display:grid;grid-template-columns:1.5fr 1fr 1fr auto;gap:9px;padding:14px 18px;border-top:1px solid #edf3fa;border-bottom:1px solid #edf3fa;background:#fbfdff}
+    .filters input,.filters select{min-height:44px;border:1px solid #dce8f5;border-radius:14px;background:#fff;color:#17457f;padding:9px 11px;outline:none;font-weight:700}
+    .list{display:grid;gap:12px;padding:16px}
+    .student{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:17px;border:1px solid #dfeaf6;border-radius:22px;background:linear-gradient(145deg,#fff,#fbfdff);box-shadow:0 8px 22px rgba(25,73,129,.035)}
+    .student:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,#f36b76,#e94456)}
+    .student-main{display:flex;align-items:flex-start;gap:13px;min-width:0}.score{display:grid;place-items:center;flex:0 0 58px;height:58px;border-radius:18px;background:linear-gradient(145deg,#fff1f3,#ffe7eb);border:1px solid #ffd8de;color:#dd4052;font-size:1.14rem;font-weight:1000}
+    .score.mid{background:linear-gradient(145deg,#fff7e6,#ffefca);border-color:#f8df9f;color:#b87407}
+    .student-copy{min-width:0}.student-copy h3{margin:1px 0 4px;color:#0d3978;font-size:.93rem;line-height:1.25}.student-copy .context{color:#7088a7;font-size:.66rem;line-height:1.45;font-weight:750}
+    .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.tag{padding:5px 8px;border-radius:999px;background:#edf6ff;color:#286db5;font-size:.54rem;font-weight:950}.tag.red{background:#fff0f2;color:#c83d4c}.tag.green{background:#eaf9f3;color:#147b57}.tag.amber{background:#fff7e7;color:#a86c0b}
+    .exam-note{margin-top:9px;max-width:650px;padding:8px 10px;border:1px solid #e6edf6;border-radius:12px;background:#f8fbff;color:#667f9f;font-size:.61rem;line-height:1.45;font-weight:700}.exam-note strong{color:#3e638e}
+    .student-actions{display:flex;align-items:center}.student-actions .btn{min-width:132px}
+    .empty,.loading{padding:46px 20px;text-align:center;color:#7e93ad;font-size:.74rem;font-weight:800}.empty-icon{display:grid;place-items:center;width:56px;height:56px;margin:0 auto 10px;border-radius:18px;background:#eff7ff;color:#2773c6;font-size:1.35rem}
+
+    .overlay{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,28,63,.43);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}.overlay.show{display:flex}
+    .modal{width:min(690px,100%);max-height:92vh;overflow:auto;border:1px solid rgba(255,255,255,.95);border-radius:30px;background:linear-gradient(155deg,#fff,#f9fcff);box-shadow:0 34px 100px rgba(7,34,75,.25)}
+    .grabber{width:46px;height:5px;border-radius:999px;background:#c6d4e5;margin:12px auto 2px}
+    .modal-head{position:sticky;top:0;z-index:4;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 20px 14px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid #edf2f8}.modal-head small{display:block;color:#2475c7;font-size:.59rem;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.modal-head h3{margin:5px 0 0;color:#0c3775;font-size:1.18rem}.close{width:40px;height:40px;display:grid;place-items:center;border:1px solid #e1e9f3;border-radius:14px;background:#f3f7fb;color:#58718f;font-size:1.25rem;cursor:pointer}
+    .modal-body{padding:18px 20px 22px}.summary{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:13px;border:1px solid #dfeaf6;border-radius:18px;background:#f7fbff;margin-bottom:14px}.summary-score{display:grid;place-items:center;width:54px;height:54px;border-radius:16px;background:#fff0f2;color:#db4052;font-weight:1000;border:1px solid #ffd9de}.summary b{color:#0e3978;font-size:.82rem}.summary p{margin:4px 0 0;color:#7189a7;font-size:.62rem;line-height:1.45;font-weight:700}
+    .note-source{margin-bottom:14px;padding:11px 12px;border-radius:15px;background:#fff9e9;border:1px solid #f4e3ad;color:#846421;font-size:.64rem;line-height:1.5}.note-source b{display:block;color:#9b6d07;margin-bottom:3px}
+    .form-grid{display:grid;gap:12px}.field-card{padding:13px;border:1px solid #e0eaf5;border-radius:18px;background:#fff}.field-card label{display:flex;align-items:center;gap:8px;margin-bottom:7px;color:#17457f;font-size:.7rem;font-weight:950}.step-no{width:24px;height:24px;display:grid;place-items:center;border-radius:8px;background:#eaf4ff;color:#1a71d3;font-size:.58rem}.field-card textarea{width:100%;min-height:105px;border:1px solid #dce7f4;border-radius:14px;background:#fbfdff;color:#17457f;padding:10px 11px;outline:none;resize:vertical;line-height:1.5}.field-card textarea:focus{background:#fff;border-color:#70baff;box-shadow:0 0 0 4px rgba(39,139,236,.08)}
+    .modal-footer{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:14px}.status-select{min-height:48px;border:1px solid #dce7f4;border-radius:15px;background:#f9fcff;color:#17457f;padding:9px 12px;font-weight:850;outline:none}
+    .toast{position:fixed;right:16px;bottom:18px;z-index:500;max-width:360px;padding:12px 14px;border-radius:15px;background:#103c7a;color:#fff;box-shadow:0 18px 46px rgba(0,0,0,.2);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s;font-size:.68rem;font-weight:850}.toast.show{opacity:1;transform:none}
+
+    @media(max-width:760px){
+      body{padding:10px 9px 100px}.hero{padding:20px 18px;border-radius:25px}.hero-copy{padding-right:0}.hero-art,.hero:before{opacity:.32}.hero h1{max-width:75%}.period-grid{grid-template-columns:1fr 1fr}.period-grid .btn{grid-column:1/-1}.metrics{grid-template-columns:1fr 1fr}.metric{min-height:96px}.filters{grid-template-columns:1fr 1fr}.filters .wide{grid-column:1/-1}.student{grid-template-columns:1fr;padding:15px 14px 15px 17px}.student-actions{justify-content:flex-end}.student-actions .btn{width:100%}.panel-head{padding:16px}.modal{border-radius:26px}.modal-body{padding:15px}.modal-footer{grid-template-columns:1fr}.modal-footer .btn{min-height:50px}
+    }
+    @media(max-width:430px){.hero h1{max-width:100%;font-size:1.65rem}.kicker{font-size:.58rem}.period-grid{grid-template-columns:1fr}.period-grid .btn{grid-column:auto}.metrics{gap:8px}.metric{padding:13px}.filters{grid-template-columns:1fr}.filters .wide{grid-column:auto}.student-copy h3{font-size:.86rem}.score{flex-basis:52px;height:52px}.panel{border-radius:24px}}
+  </style>
+  <link rel="stylesheet" href="guru-theme-v153.css?v=154">
+  <link rel="stylesheet" href="guru-ui-final-v190.css?v=190">
+</head>
+<body class="cahaya-guru-executive">
+<main class="page">
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="kicker">🎯 Tindak Lanjut Akademik</span>
+      <h1 id="heroPeriod">Nilai Ujian Bulanan</h1>
+      <p>Santri dengan nilai <strong>0–75</strong> otomatis masuk daftar tindak lanjut berdasarkan mata pelajaran dan kelas yang diampu guru.</p>
+      <div class="hero-meta"><span class="meta-pill">📚 Sumber: Nilai Ujian Bulanan (sama dengan KPI KKM)</span><span class="meta-pill" id="userBadge">Guru aktif</span><span class="meta-pill" id="sourceStats">Memeriksa data...</span></div>
+    </div>
+    <svg class="hero-art" viewBox="0 0 140 110" fill="none" aria-hidden="true">
+      <rect x="20" y="22" width="92" height="72" rx="18" fill="#E8F6FF" stroke="#7CC7F1" stroke-width="3"/>
+      <path d="M42 16v20M91 16v20" stroke="#2688E8" stroke-width="8" stroke-linecap="round"/>
+      <path d="M38 56l12 12 24-28" stroke="#18A878" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="108" cy="78" r="24" fill="#FFF3D5" stroke="#F5B73E" stroke-width="4"/>
+      <path d="M108 64v15l10 7" stroke="#E99A10" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+  </section>
+
+  <section class="period-card">
+    <div class="period-grid">
+      <div class="field"><label>Periode Nilai</label><select id="period"></select></div>
+      <div class="field"><label>Tahun Ajaran</label><select id="academic"></select></div>
+      <button class="btn soft" id="refresh">↻ Segarkan Data</button>
+    </div>
+  </section>
+
+  <section class="metrics" id="metrics"></section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="title-wrap"><div class="title-icon">📋</div><div><h2>Daftar Santri</h2><p>Nilai 0–75 diprioritaskan dari yang paling rendah.</p></div></div>
+    </div>
+    <div class="filters">
+      <input class="wide" id="search" type="search" placeholder="Cari nama santri, kelas, atau mapel...">
+      <select id="subject"><option value="">Semua Mapel</option></select>
+      <select id="status"><option value="">Semua Status</option><option>Belum Ditindaklanjuti</option><option>Dalam Proses</option><option>Selesai</option></select>
+      <button class="btn soft" id="reset">Reset</button>
+    </div>
+    <div class="list" id="list"><div class="loading">Memuat nilai ujian...</div></div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="grabber"></div>
+    <div class="modal-head"><div><small>Rencana Perbaikan</small><h3>Tindak Lanjut Santri</h3></div><button class="close" id="close" aria-label="Tutup">×</button></div>
+    <div class="modal-body">
+      <form id="form">
+        <input type="hidden" id="recordKey">
+        <div class="summary" id="summary"></div>
+        <div class="note-source" id="sourceNote" hidden></div>
+        <div class="form-grid">
+          <div class="field-card"><label><span class="step-no">01</span>Klarifikasi Sebab</label><textarea id="clarification" required placeholder="Tuliskan hasil klarifikasi: apa penyebab nilai belum mencapai target?"></textarea></div>
+          <div class="field-card"><label><span class="step-no">02</span>Target Perbaikan</label><textarea id="improvementTarget" required placeholder="Tuliskan hasil yang ingin dicapai, misalnya memahami bab tertentu atau nilai minimal 80."></textarea></div>
+          <div class="field-card"><label><span class="step-no">03</span>Strategi Perbaikan</label><textarea id="strategy" required placeholder="Tuliskan langkah konkret: remedial, penjelasan ulang, latihan tambahan, pendampingan, dan sebagainya."></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <select class="status-select" id="followStatus"><option>Dalam Proses</option><option>Selesai</option></select>
+          <button class="btn primary" id="saveBtn" type="submit">Simpan Tindak Lanjut</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {getDatabase,ref,get,update} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const CFG=window.CAHAYA_CONFIG?.firebase;
+if(!CFG) throw new Error('Konfigurasi Firebase tidak tersedia.');
+const app=getApps().length?getApps()[0]:initializeApp(CFG);
+const db=getDatabase(app);
+const $=id=>document.getElementById(id);
+const K=window.CahayaGuruKPI;
+if(!K) throw new Error('Mesin KPI Guru tidak tersedia.');
+const USER=(()=>{try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}catch{return{}}})();
+const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const TEACHER_ALIASES={MULTAZAM:['multazam','multazam zakaria','abah multazam','dr multazam zakaria'],RASYIDIN:['rasyidin','rosyidin'],NAQIEB:['naqieb','muhammad naqieb'],ZAKY:['zaky','zaki','muhammad zaky'],RAHIEL:['rahiel','mika rahiel','mika rahiel yusuf'],FAIQ:['faiq','muhammad faiq'],DONY:['dony','doni','dony setiawan','doni setiawan','donisetiawan'],FATIMAH:['fatimah'],MEILISA:['meilisa','melisa'],ALAMANDA:['alamanda'],HANIF:['hanif'],AHMAD_IMBRON:['ahmad imbron','imbron'],ANDRIYANI:['andriyani','andriyani kusuma dayanti'],CAPPRY:['cappry','cappry yoda pratama'],DELLA:['della','della gustia'],EDWIN:['edwin','edwin romeo'],EVITA:['evita','evita hardyanti'],FENNY:['fenny','fenny ayu anggraeni'],LAILA:['laila','laila nuzlini'],MANDA:['manda','manda saputra'],MARYANA:['maryana'],NURUL_FADLILAH:['nurul fadlilah'],SHAFIRA:['shafira','shafira ramadanty']};
+const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\b(abah|abi|ummi|ustadzah|ustadz|ust|guru|bapak|ibu|pak|bu|dr|s pd|m pd|mpd|se)\b/g,' ').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
+const stable=v=>{const text=String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();let hash=5381;for(let i=0;i<text.length;i++)hash=((hash<<5)+hash)^text.charCodeAt(i);return 'k'+(hash>>>0).toString(36)};
+const rows=v=>Array.isArray(v)?v.filter(Boolean):Object.entries(v||{}).map(([id,x])=>({id,...(x||{})}));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function cacheGet(k,ttl=15*60*1000){try{const x=JSON.parse(sessionStorage.getItem(k)||'null');return x&&Date.now()-x.t<ttl?x.v:null}catch{return null}}
+function cacheSet(k,v){try{sessionStorage.setItem(k,JSON.stringify({t:Date.now(),v}))}catch{}}
+function clearCache(k){try{sessionStorage.removeItem(k)}catch{}}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(window.__tlToast);window.__tlToast=setTimeout(()=>$('toast').classList.remove('show'),2500)}
+function teacherName(){return USER.label||USER.nama||USER.namaTampilan||USER.name||USER.username||'Guru'}
+function academicYear(){const d=new Date(),y=d.getFullYear(),m=d.getMonth();return m>=6?`${y}/${y+1}`:`${y-1}/${y}`}
+function smartDefaultPeriod(){const d=new Date();let m=d.getMonth();if(d.getDate()<=7)m=(m+11)%12;return MONTHS[m]}
+async function localSchedule(){const ck='cahaya:guru:schedule:v183',c=cacheGet(ck,12*3600000);if(c)return c;try{const r=await fetch('../data/jadwal-pelajaran-awal-2026-2027.json?v=183',{cache:'no-cache'});if(r.ok){const v=await r.json();cacheSet(ck,v);return v}}catch(_){}return[]}
+function detectTeacherCode(schedule=[]){const direct=String(USER.teacherCode||USER.guruKode||'').trim().toUpperCase();if(direct)return direct;const names=[teacherName(),USER.username,String(USER.email||'').split('@')[0]].map(norm).filter(Boolean);for(const [code,aliases] of Object.entries(TEACHER_ALIASES)){if(aliases.some(a=>names.some(n=>n===norm(a)||n.includes(norm(a))||norm(a).includes(n))))return code}const match=rows(schedule).find(r=>names.some(n=>{const g=norm(r.guru||r.namaGuru||'');return g&&(g===n||g.includes(n)||n.includes(g))}));return String(match?.guruKode||'').trim().toUpperCase()||stable(teacherName())}
+function sameTeacher(record,code){
+  const codes=[record.guruKode,record.guru_kode,record.guruKodeKalender,record.teacherCode,record.kodeGuru].map(v=>String(v||'').trim().toUpperCase()).filter(Boolean);
+  if(code&&codes.includes(code))return true;
+  if(record.guruUid&&USER.uid&&String(record.guruUid)===String(USER.uid))return true;
+  const source=norm(record.guru_penguji||record.guru||record.nama_guru||record.namaGuru||record.teacher||'');
+  const targets=[teacherName(),USER.nama,USER.name,USER.username,...(TEACHER_ALIASES[code]||[])].map(norm).filter(Boolean);
+  return source&&targets.some(t=>source===t||source.includes(t)||t.includes(source));
+}
+function yearNode(){return stable($('academic').value)}
+function periodNode(){return stable($('period').value)}
+let TEACHER_CODE='',SCORES=[],FOLLOW={},SCHEDULE=[],IDENT=null;
+function followPath(){return `cahaya_app/tindak_lanjut_guru/${stable(TEACHER_CODE)}/${yearNode()}/${periodNode()}`}
+function legacyRecordKey(r){return stable(`${r.kelas||''}|${r.namaSantri||r.nama_santri||r.nama||''}|${r.mapel||r.mata_pelajaran||''}`)}
+function assessmentIdentity(r){
+  const saved=String(r.recordKey||r.firebaseKey||r.sourceRecordKey||r.id||'').trim();
+  if(saved)return saved;
+  return `${r.jenisUjian||r.jenis_ujian||''}|${r.kodePenilaian||r.kode_penilaian||''}|${r.tanggalUjian||r.tanggal_ujian||r.tanggal||''}|${r.sourcePath||''}`;
+}
+function recordKey(r){return stable(`${r.kelas||''}|${r.namaSantri||r.nama_santri||r.nama||''}|${r.mapel||r.mata_pelajaran||''}|${assessmentIdentity(r)}`)}
+function followData(r){return FOLLOW[recordKey(r)]||FOLLOW[legacyRecordKey(r)]||{}}
+function statusOf(r){return followData(r)?.status||'Belum Ditindaklanjuti'}
+function monthInfo(){
+  const monthIndex=Math.max(0,MONTHS.indexOf($('period').value));
+  const parts=String($('academic').value||'').split('/').map(Number);
+  const startYear=parts[0]||new Date().getFullYear(),endYear=parts[1]||startYear+1;
+  const year=monthIndex>=6?startYear:endYear;
+  const mm=String(monthIndex+1).padStart(2,'0');
+  const last=String(new Date(year,monthIndex+1,0).getDate()).padStart(2,'0');
+  return {year,monthIndex,mm,start:`${year}-${mm}-01`,end:`${year}-${mm}-${last}`,prefix:`${year}-${mm}`};
+}
+function periodMatchesRecord(r){return K.monthMatch?K.monthMatch(r,monthInfo().prefix):true}
+function latestRowsExactlyLikeKpi(rows){
+  const latest=new Map();
+  rows.forEach(r=>{
+    const nm=K.key(r.nama_santri||r.namaSantri||r.nama),cls=K.norm(r.kelas_kelompok||r.kelas),sub=K.norm(r.mata_pelajaran||r.mapel);
+    if(!nm||!cls||!sub)return;
+    const k=`${nm}|${cls}|${sub}`,prev=latest.get(k);
+    if(!prev||String(K.dateOf(r)||'')>=String(K.dateOf(prev)||''))latest.set(k,r);
+  });
+  return [...latest.values()];
+}
+function normalizeExamRow(r){
+  return {
+    namaSantri:r.nama_santri||r.namaSantri||r.nama,
+    kelas:r.kelas_kelompok||r.kelas||'',
+    mapel:r.mata_pelajaran||r.mataPelajaran||r.mapel||'',
+    nilai:Number(r.nilai_total??r.nilai),
+    kkm:Number(r.kkm??r.nilai_kkm??r.KKM??75),
+    periode:r.periode_ujian||r.periode||r.bulan||$('period').value,
+    bulan:r.bulan||r.periode_ujian||$('period').value,
+    tahunAkademik:r.tahun_akademik||r.tahunAjaran||$('academic').value,
+    guru:r.guru_penguji||r.guru||r.namaGuru||'',
+    guruKode:r.guruKode||r.guruKodeKalender||TEACHER_CODE,
+    statusInput:r.status_input||r.statusInput||'',
+    statusNilai:r.status_nilai||r.statusNilai||'',
+    recordKey:r.id||r.firebaseKey||'',
+    sourcePath:'cahaya_app/nilai_ujian_bulanan',
+    updatedAt:r.updated_at||r.updatedAt||r.timestamp||r.createdAt||'',
+    keterangan:r.keterangan||r.catatan||'',
+    tanggalUjian:r.tanggal_ujian||r.tanggalUjian||r.tanggal||'',
+    tanggalInput:r.updated_at||r.updatedAt||r.timestamp||r.createdAt||'',
+    jenisUjian:r.jenis_ujian||r.jenisUjian||'Bulanan',
+    kodePenilaian:r.kode_penilaian||r.kodePenilaian||'',
+    sumberData:'Nilai Ujian Bulanan'
+  };
+}
+async function loadKpiSource(force=false){
+  const scheduleCache='cahaya:tl:v184:kpi-schedule';
+  const scoreCache='cahaya:tl:v184:nilai-ujian-bulanan';
+  if(force){clearCache(scheduleCache);clearCache(scoreCache)}
+  let scheduleVal=cacheGet(scheduleCache,5*60*1000),scoreVal=cacheGet(scoreCache,2*60*1000);
+  if(scheduleVal===null){scheduleVal=(await get(ref(db,'cahaya_app/jadwal_pelajaran'))).val()||{};cacheSet(scheduleCache,scheduleVal)}
+  if(scoreVal===null){scoreVal=(await get(ref(db,'cahaya_app/nilai_ujian_bulanan'))).val()||{};cacheSet(scoreCache,scoreVal)}
+  SCHEDULE=K.collect(scheduleVal,x=>x&&('hari' in x)&&('mapel' in x||'mataPelajaran' in x));
+  IDENT=K.identityFromProfile(USER,SCHEDULE);
+  TEACHER_CODE=IDENT.code||detectTeacherCode(SCHEDULE);
+  const kpi=K.compute({month:monthInfo().prefix,identity:IDENT,profile:USER,schedule:SCHEDULE,scores:K.records(scoreVal),attendance:[],tahfiz:[],observations:[],materials:{},learning:[],completions:[],calendar:[],residentSettings:[],worshipAttendance:[]});
+  return latestRowsExactlyLikeKpi(kpi.score.rows||[]).map(normalizeExamRow).filter(r=>Number.isFinite(r.nilai));
+}
+async function loadData(force=false){
+  $('list').innerHTML='<div class="loading">Memuat Nilai Ujian Bulanan periode '+esc($('period').value)+'...</div>';
+  try{
+    SCORES=await loadKpiSource(force);
+    const followCache=`cahaya:tl:follow:${followPath()}`;
+    if(force)clearCache(followCache);
+    let followVal=cacheGet(followCache);
+    if(followVal===null){const snap=await get(ref(db,followPath()));followVal=snap.val()||{};cacheSet(followCache,followVal)}
+    FOLLOW=followVal||{};
+    const low=SCORES.filter(r=>Number(r.nilai)>=0&&Number(r.nilai)<=75).length;
+    $('sourceStats').textContent=`KPI membaca ${SCORES.length} nilai • ${low} nilai 0–75`;
+    $('heroPeriod').textContent=`Tindak Lanjut • ${$('period').value}`;
+    render();
+  }catch(e){console.error(e);$('list').innerHTML='<div class="empty"><div class="empty-icon">!</div>Data belum dapat dimuat. Tekan Segarkan Data.</div>';toast('Gagal memuat Nilai Ujian Bulanan.')}
+}
+function actionableScores(){
+  return SCORES
+    .filter(r=>Number.isFinite(Number(r.nilai))&&Number(r.nilai)>=0&&Number(r.nilai)<=75)
+    .map(r=>({...r,nilai:Number(r.nilai)}))
+    .sort((a,b)=>a.nilai-b.nilai||String(a.namaSantri||'').localeCompare(String(b.namaSantri||''),'id'));
+}
+function render(){
+  const all=actionableScores(),st=$('status').value,sub=$('subject').value,q=norm($('search').value);
+  const subjects=[...new Set(all.map(r=>r.mapel).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+  const cur=$('subject').value;$('subject').innerHTML='<option value="">Semua Mapel</option>'+subjects.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if(subjects.includes(cur))$('subject').value=cur;
+  const filtered=all.filter(r=>(!sub||r.mapel===sub)&&(!st||statusOf(r)===st)&&(!q||norm(`${r.namaSantri} ${r.kelas} ${r.mapel}`).includes(q)));
+  const critical=all.filter(r=>r.nilai<=60).length,belum=all.filter(r=>statusOf(r)==='Belum Ditindaklanjuti').length,proses=all.filter(r=>statusOf(r)==='Dalam Proses').length,done=all.filter(r=>statusOf(r)==='Selesai').length;
+  $('metrics').innerHTML=`<div class="metric red"><div class="metric-icon">!</div><small>Nilai 0–75</small><b>${all.length}</b></div><div class="metric amber"><div class="metric-icon">↓</div><small>Prioritas ≤60</small><b>${critical}</b></div><div class="metric"><div class="metric-icon">↻</div><small>Dalam Proses</small><b>${proses}</b></div><div class="metric green"><div class="metric-icon">✓</div><small>Selesai</small><b>${done}</b></div>`;
+  $('list').innerHTML=filtered.length?filtered.map(r=>{
+    const status=statusOf(r),tagClass=status==='Selesai'?'green':status==='Dalam Proses'?'amber':'red';
+    const note=String(r.keterangan||'').trim();
+    const inputStage=norm(r.statusInput||r.status_input||'');
+    const finalStage=String(r.statusNilai||r.status_nilai||'').toUpperCase();
+    const scoreStage=finalStage==='FINAL'?'FINAL':(inputStage==='parsial'?'Nilai Parsial':'Belum Final');
+    const stageClass=finalStage==='FINAL'?'green':(inputStage==='parsial'?'amber':'');
+    return `<article class="student"><div class="student-main"><div class="score ${r.nilai>60?'mid':''}">${Number(r.nilai).toFixed(Number(r.nilai)%1?1:0)}</div><div class="student-copy"><h3>${esc(r.namaSantri||r.nama_santri||r.nama)}</h3><div class="context">${esc(r.kelas||'Tanpa kelas')} • ${esc(r.mapel||'Mata pelajaran')}</div><div class="tags"><span class="tag red">Nilai ${Number(r.nilai).toFixed(1)}</span><span class="tag">Periode ${esc($('period').value)}</span><span class="tag">${esc(r.jenisUjian||'Ujian')}</span><span class="tag">${esc(r.sumberData||'Nilai Ujian')}</span><span class="tag ${stageClass}">${esc(scoreStage)}</span><span class="tag ${tagClass}">${esc(status)}</span></div>${note?`<div class="exam-note"><strong>Keterangan guru saat input nilai:</strong> ${esc(note)}</div>`:''}</div></div><div class="student-actions"><button class="btn primary" data-key="${esc(recordKey(r))}">${status==='Belum Ditindaklanjuti'?'Tindak Lanjut':'Perbarui'}</button></div></article>`
+  }).join(''):`<div class="empty"><div class="empty-icon">✓</div>Tidak ada Nilai Ujian Bulanan 0–75 pada periode dan filter ini.${belum===0&&all.length?' Semua data yang ada sudah ditindaklanjuti.':''}</div>`;
+  document.querySelectorAll('.student-actions button[data-key]').forEach(btn=>btn.onclick=()=>openModal(btn.dataset.key));
+}
+function openModal(k){
+  const r=actionableScores().find(x=>recordKey(x)===k);if(!r)return;const fu=followData(r);
+  $('recordKey').value=k;
+  $('summary').innerHTML=`<div class="summary-score">${Number(r.nilai).toFixed(Number(r.nilai)%1?1:0)}</div><div><b>${esc(r.namaSantri||r.nama_santri||r.nama)}</b><p>${esc(r.kelas||'')} • ${esc(r.mapel||'')} • Periode ${esc($('period').value)}</p></div>`;
+  const note=String(r.keterangan||'').trim();$('sourceNote').hidden=!note;$('sourceNote').innerHTML=note?`<b>Keterangan dari ${esc(r.sumberData||r.jenisUjian||'Nilai Ujian')}</b>${esc(note)}`:'';
+  $('clarification').value=fu.klarifikasiSebab??fu.analisaPenyebab??'';
+  $('improvementTarget').value=fu.targetPerbaikan??'';
+  $('strategy').value=fu.strategiPerbaikan??fu.rencanaTindakLanjut??'';
+  $('followStatus').value=fu.status||'Dalam Proses';
+  $('overlay').classList.add('show');setTimeout(()=>$('clarification').focus(),120);
+}
+$('form').onsubmit=async e=>{
+  e.preventDefault();const k=$('recordKey').value,r=actionableScores().find(x=>recordKey(x)===k);if(!r)return;
+  const obj={
+    namaSantri:r.namaSantri||r.nama_santri||r.nama,kelas:r.kelas||'',mapel:r.mapel||'',nilaiAwal:Number(r.nilai),kkm:75,
+    periode:$('period').value,tahunAjaran:$('academic').value,klarifikasiSebab:$('clarification').value.trim(),
+    targetPerbaikan:$('improvementTarget').value.trim(),strategiPerbaikan:$('strategy').value.trim(),status:$('followStatus').value,
+    keteranganNilai:r.keterangan||'',tanggalUjian:r.tanggalUjian||'',sourceRecordKey:r.recordKey||'',sumberData:r.sumberData||r.jenisUjian||'Nilai Ujian',jenisUjian:r.jenisUjian||'',kodePenilaian:r.kodePenilaian||'',
+    guru:teacherName(),guruKode:TEACHER_CODE,updatedAt:new Date().toISOString(),
+    analisaPenyebab:$('clarification').value.trim(),rencanaTindakLanjut:$('strategy').value.trim()
+  };
+  $('saveBtn').disabled=true;$('saveBtn').textContent='Menyimpan...';
+  try{await update(ref(db,`${followPath()}/${k}`),obj);FOLLOW[k]=obj;cacheSet(`cahaya:tl:follow:${followPath()}`,FOLLOW);$('overlay').classList.remove('show');render();toast('Tindak lanjut berhasil disimpan.')}catch(err){console.error(err);toast('Gagal menyimpan tindak lanjut.')}finally{$('saveBtn').disabled=false;$('saveBtn').textContent='Simpan Tindak Lanjut'}
+};
+$('close').onclick=()=>$('overlay').classList.remove('show');$('overlay').onclick=e=>{if(e.target===$('overlay'))$('overlay').classList.remove('show')};
+$('refresh').onclick=()=>loadData(true);$('search').oninput=render;$('subject').onchange=render;$('status').onchange=render;$('reset').onclick=()=>{$('search').value='';$('subject').value='';$('status').value='';render()};
+$('period').onchange=()=>loadData();$('academic').onchange=()=>loadData();
+(async()=>{
+  $('userBadge').textContent=teacherName();$('period').innerHTML=MONTHS.map(x=>`<option>${x}</option>`).join('');$('period').value=smartDefaultPeriod();
+  const ay=academicYear(), years=[...new Set([ay,'2026/2027'])];$('academic').innerHTML=years.map(y=>`<option>${y}</option>`).join('');$('academic').value=years.includes('2026/2027')?'2026/2027':years[0];
+  await loadData();
+})().catch(e=>{console.error(e);$('list').innerHTML='<div class="empty"><div class="empty-icon">!</div>Halaman gagal disiapkan.</div>'});
+</script>
+</body>
+</html>

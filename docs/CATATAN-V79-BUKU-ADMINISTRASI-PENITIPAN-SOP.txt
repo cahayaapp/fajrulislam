@@ -1,0 +1,52 @@
+CAHAYA APP — V79 BUKU ADMINISTRASI & PENITIPAN SOP
+Tanggal: 27 Agustus 2026
+
+FITUR BARU / PERUBAHAN
+1. Buku Izin Santri
+   - Data dibaca dari cahaya_app/perizinan_ringkas.
+   - Tampilan berbentuk buku administrasi: nomor urut, periode, unit, jenis izin, waktu keluar/kembali, penjemput, status, catatan.
+   - Filter bulan, unit Putra/Putri, status, pencarian, cetak, CSV.
+
+2. Buku Tamu
+   - Data Putra dan Putri tetap dipisah.
+   - Tampilan dirombak menjadi buku administrasi bernomor dan berperiode.
+   - Filter, pencarian, cetak, CSV, dan QR Putra/Putri tersedia.
+
+3. Buku Penitipan Barang
+   - Tampilan buku administrasi bernomor dan berperiode.
+   - Rekap Wali per bulan: nama, WhatsApp, jumlah penitipan, jumlah pekan aktif, santri penerima, titipan terakhir.
+   - Penanda risiko bila identitas yang sama tercatat lebih dari 1 kali pada pekan yang sama.
+   - Foto paket dapat dilihat dari buku penitipan.
+   - Status barang dapat ditandai SUDAH DIAMBIL.
+   - QR Putra/Putri tetap tersedia.
+
+4. Form Penitipan sesuai SOP terbaru di dalam CAHAYA App
+   - SOP/ADM-PCFI/002/2026 Rev.01.
+   - Layanan Senin-Ahad 13.00-17.00 WIB.
+   - Maksimal 1 kali per pekan di luar kunjungan bulanan.
+   - Di luar jadwal hanya dapat diproses untuk tiga kondisi darurat yang tercantum dalam SOP.
+   - Kategori uang/barang berharga dihapus dari pilihan barang dan ditampilkan dalam daftar barang terlarang.
+   - Foto barang/paket opsional dan dikompresi di perangkat sebelum disimpan.
+   - Form mencatat monthKey, weekKey, identitas wali/pengantar, urutan penitipan bulan berjalan, dan versi SOP.
+
+5. Tombol Scan Penitipan
+   - Portal Wali: shortcut utama Scan Titipan pada bottom navigation dan menu samping.
+   - Role pengurus/front-office (layanan/operasional, admin, direktur, wakil): shortcut Scan Titipan dan menu Personil Layanan.
+   - Unit Putra/Putri dideteksi dari profil bila tersedia; bila tidak, pengguna memilih unit.
+
+PATH DATA
+- Buku tamu: buku_tamu/{putra|putri}/{YYYY-MM}
+- Penitipan: penitipan_barang/{putra|putri}/{YYYY-MM}
+- Buku izin: cahaya_app/perizinan_ringkas
+
+CATATAN FOTO
+Foto penitipan disimpan sebagai data gambar yang telah dikompresi pada record Realtime Database agar tidak menambah dependensi Firebase Storage pada paket saat ini. Gunakan foto seperlunya untuk menjaga bandwidth.
+
+FILE UTAMA BERUBAH
+- main-dashboard.html
+- wali/dashboard/index.html
+- layanan/form-titipan.html
+- layanan/akses-titipan.html (baru)
+- layanan/buku-izin.html (baru)
+- layanan/buku-tamu.html
+- layanan/penitipan-barang.html
