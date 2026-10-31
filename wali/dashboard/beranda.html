@@ -609,6 +609,9 @@ body.page-beranda{
   let timelineListenerSignature = "";
   let timelineListenerBindings = [];
   let timelineIndexedSnapshots = {};
+  let timelineListenerGeneration = 0;
+  let timelineInitialPromise = Promise.resolve();
+  let timelineInitialResolve = null;
   let timelineRefreshTimer = null;
   let initialTimelineReady = false;
   let sourceWarnings = [];
@@ -1169,11 +1172,15 @@ function ekstrakInstagramId(value) {
   }
 
   function lepasListenerTimeline() {
+      timelineListenerGeneration++;
       timelineListenerBindings.forEach(({query, callback}) => {
           try { query.off('value', callback); } catch (error) {}
       });
       timelineListenerBindings = [];
       timelineIndexedSnapshots = {};
+      timelineListenerSignature = "";
+      if (timelineInitialResolve) timelineInitialResolve();
+      timelineInitialResolve = null;
   }
 
   function gabungkanSnapshotTimeline(category) {
@@ -1184,10 +1191,23 @@ function ekstrakInstagramId(value) {
   function pasangListenerTimeline() {
       const studentKeys = kunciIndexSantriTimeline();
       const signature = studentKeys.slice().sort().join('|');
-      if (!signature || signature === timelineListenerSignature) return;
+      if (signature === timelineListenerSignature) return timelineInitialPromise;
 
       lepasListenerTimeline();
+      initialTimelineReady = false;
+      clearTimeout(timelineRefreshTimer);
+      sourceWarnings = [];
+      Object.keys({halqah:1,tahfiz:1,program:1,pembelajaran:1,penindakan:1}).forEach(category => {
+          globalDB[category] = {};
+      });
+      const container = document.getElementById('timelineContainer');
+      if (container) container.innerHTML = '';
+      const loading = document.getElementById('loadingData');
+      if (loading) loading.style.display = 'block';
+      renderWaliMobileDashboard();
+      if (!signature) return Promise.resolve();
       timelineListenerSignature = signature;
+      const generation = timelineListenerGeneration;
 
       const categories = {
           halqah: 60,
@@ -1197,9 +1217,27 @@ function ekstrakInstagramId(value) {
           penindakan: 50
       };
 
-      Object.keys(categories).forEach(category => {
-          globalDB[category] = {};
-      });
+      const pending = new Set(['media', ...Object.keys(categories).flatMap(category =>
+          studentKeys.map(studentKey => `${category}|${studentKey}`))]);
+      timelineInitialPromise = new Promise(resolve => { timelineInitialResolve = resolve; });
+      const settled = key => {
+          if (generation !== timelineListenerGeneration) return;
+          pending.delete(key);
+          if (pending.size) return;
+          initialTimelineReady = true;
+          currentDayOffset = INITIAL_HISTORY_DAYS - 1;
+          renderWaliMobileDashboard();
+          renderRiwayatTerlihat(currentDayOffset);
+          if (loading) loading.style.display = 'none';
+          const diagnostic = document.getElementById('timelineDiagnostic');
+          if (diagnostic) {
+              diagnostic.classList.toggle('show', Boolean(sourceWarnings.length));
+              diagnostic.textContent = sourceWarnings.length
+                  ? 'Sebagian sumber lama tidak dapat dibaca, tetapi linimasa tetap berjalan dari sumber yang tersedia.' : '';
+          }
+          timelineInitialResolve?.();
+          timelineInitialResolve = null;
+      };
 
       Object.entries(categories).forEach(([category, limit]) => {
           timelineIndexedSnapshots[category] = {};
@@ -1208,15 +1246,19 @@ function ekstrakInstagramId(value) {
                   .ref(`cahaya_app/wali_index/${studentKey}/${category}`)
                   .limitToLast(limit);
               const callback = snapshot => {
+                  if (generation !== timelineListenerGeneration) return;
                   timelineIndexedSnapshots[category][studentKey] = snapshot.val() || {};
                   globalDB[category] = gabungkanSnapshotTimeline(category);
                   if (initialTimelineReady) jadwalkanRefreshTimeline();
+                  settled(`${category}|${studentKey}`);
               };
               query.on('value', callback, error => {
+                  if (generation !== timelineListenerGeneration) return;
                   console.warn(`Listener ${category} gagal:`, error);
                   if (!sourceWarnings.some(item => String(item).includes(`/wali_index/`) && String(item).includes(`/${category}`))) {
                       sourceWarnings.push(`cahaya_app/wali_index/[ananda]/${category}: ${error?.message || error}`);
                   }
+                  settled(`${category}|${studentKey}`);
               });
               timelineListenerBindings.push({query, callback});
           });
@@ -1224,16 +1266,21 @@ function ekstrakInstagramId(value) {
 
       const mediaQuery = dbRT.ref('cahaya_app/pengaturan_media');
       const mediaCallback = snapshot => {
+          if (generation !== timelineListenerGeneration) return;
           parsePengaturanMedia(snapshot.val() || {});
           if (initialTimelineReady) jadwalkanRefreshTimeline();
+          settled('media');
       };
       mediaQuery.on('value', mediaCallback, error => {
+          if (generation !== timelineListenerGeneration) return;
           console.warn('Listener media gagal:', error);
           if (!sourceWarnings.some(item => String(item).includes('pengaturan_media'))) {
               sourceWarnings.push(`cahaya_app/pengaturan_media: ${error?.message || error}`);
           }
+          settled('media');
       });
       timelineListenerBindings.push({query: mediaQuery, callback: mediaCallback});
+      return timelineInitialPromise;
   }
 
 
@@ -1412,68 +1459,14 @@ function ekstrakInstagramId(value) {
           }
       } catch (error) {}
 
-      sourceWarnings = [];
-
-      /*
-        Sumber cerita reguler tetap dibaca langsung seperti sebelumnya.
-        Penambahan laporan_penindakan tidak menggantikan sumber kehadiran.
-      */
-      const sourceDefinitions = [
-          {
-              key: 'halqah',
-              path: 'cahaya_app/absensi_halqah'
-          },
-          {
-              key: 'tahfiz',
-              path: 'cahaya_app/setoran_tahfiz'
-          },
-          {
-              key: 'program',
-              path: 'cahaya_app/absensi_program_harian'
-          },
-          {
-              key: 'pembelajaran',
-              path: 'cahaya_app/absensi_pembelajaran'
-          },
-          {
-              key: 'penindakan',
-              path: 'cahaya_app/laporan_penindakan'
-          },
-          {
-              key: 'media',
-              path: 'cahaya_app/pengaturan_media'
-          }
-      ];
-
-      /*
-        Setiap pembacaan menangani error sendiri. Jadi satu path lama
-        yang bermasalah tidak lagi menggagalkan seluruh dashboard.
-      */
-      const results = await Promise.all(
-          sourceDefinitions.map(
-              source => bacaSumberRT(source.path)
-          )
-      );
-
-      results.forEach((result, index) => {
-          const source = sourceDefinitions[index];
-
-          if (source.key === 'media') {
-              parsePengaturanMedia(result.value || {});
-              return;
-          }
-
-          globalDB[source.key] = result.value || {};
-      });
-
-      initialTimelineReady = true;
-      renderWaliMobileDashboard();
-
-      currentDayOffset = INITIAL_HISTORY_DAYS - 1;
-      renderRiwayatTerlihat(currentDayOffset);
+      // Listener Firebase mengirim snapshot awal dan pembaruan berikutnya.
+      // Tunggu semua snapshot awal tanpa mengunduh path yang sama dua kali.
+      await pasangListenerTimeline();
+      while (!initialTimelineReady && timelineListenerSignature) {
+          await timelineInitialPromise;
+      }
       listenInteraksiCerita();
       listenToGlobalMessages();
-      pasangListenerTimeline();
 
       loading.style.display = 'none';
 
