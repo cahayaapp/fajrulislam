@@ -26,9 +26,10 @@ function surface(view,options={}){
   const data={
     'cahaya_app/master_usrah/Usrah 1':options.roster||['Ali'],
     [C.ROOT]:report,
+    'cahaya_app/buku_kasus_konselor':options.book||{},
     'cahaya_app/surat_peringatan_santri':warnings
   };
-  const api={getDatabase:()=>({}),ref:(_,p='/')=>({path:p}),get:async target=>{readPaths.push(target.path);if(target.path===options.delayPath)await loadGate;return{val:()=>data[target.path]||{},exists:()=>Boolean(data[target.path])}},set:async()=>{},update:async()=>{},remove:async()=>{},push:()=>({key:'new'}),query:target=>target,orderByChild:()=>()=>{},startAt:()=>()=>{},endAt:()=>()=>{},limitToLast:()=>()=>{},runTransaction:async()=>({committed:true,snapshot:{val:()=>({})}})};
+  const api={getDatabase:()=>({}),ref:(_,p='/')=>({path:p}),get:async target=>{readPaths.push(target.path);if(target.path===options.delayPath)await loadGate;if(target.path===options.rejectPath)throw Error('mock-index-denied');return{val:()=>data[target.path]||{},exists:()=>Boolean(data[target.path])}},set:async()=>{},update:async()=>{},remove:async()=>{},push:()=>({key:'new'}),query:target=>target,orderByChild:()=>()=>{},startAt:()=>()=>{},endAt:()=>()=>{},limitToLast:()=>()=>{},runTransaction:async()=>({committed:true,snapshot:{val:()=>({})}})};
   const window={CahayaCounselorFirebaseV3:api,CahayaCounselorCaseV2:C,CahayaCounselorSimplifiedV3:M,CahayaRoleSystemV2:R,cahayaRoleContext:{assertCurrent(){},usrahKeys(){return['Usrah 1']}},CAHAYA_CONFIG:{}};
   const listeners={};
   const document={body:{dataset:{}},getElementById:element,querySelectorAll:()=>[],addEventListener(name,handler){(listeners[name]??=[]).push(handler)},dispatch(name,event){for(const handler of listeners[name]||[])handler(event)}};
@@ -71,7 +72,7 @@ test('Buku Konseling membedakan loading dari hasil benar-benar kosong',async()=>
   assert.doesNotMatch(element('bookStudents').innerHTML,/Belum ada santri/);
   releaseLoad();
   await new Promise(setImmediate);
-  assert.match(element('bookStudents').innerHTML,/Belum ada santri/);
+  assert.match(element('bookStudents').innerHTML,/Muat Arsip Lengkap/);
   assert.match(element('bookHistory').innerHTML,/Pilih santri/);
 });
 test('Surat Peringatan tetap memuat saat pencarian dilakukan sebelum data tiba',async()=>{
@@ -231,4 +232,35 @@ test('kasus absensi menunjuk baris santri yang benar dan pesan gagal tidak menud
   assert.equal(vm.runInNewContext('caseRowMatches(testCase,{nama:"Santri Contoh",status:"A"})',context),true);
   assert.equal(vm.runInNewContext('caseRowMatches(testCase,{nama:"Santri Lain",status:"A"})',context),false);
   assert.match(await vm.runInNewContext('caseWriteFailure(testCase)',context),/Kasus masih tersedia/);
+});
+
+test('Buku Konseling tidak mengunduh riwayat 2019 sejak awal; arsip lengkap tetap dapat diminta',async()=>{
+ const report={r1:{tanggal:'2026-10-28',dilaporkan:'Ali',tipe:'Lapor Pelanggaran',unit:'PUTRA',kodePelanggaran:'TERLAMBAT',caseV2:{status:'SELESAI',tabayyun:{conclusion:'TERBUKTI'},counseling:{s1:{what:'Tepat waktu',savedAt:'2026-10-28T02:00:00Z',how:'Alarm'}}}}};
+ const book={older:{santri:'Ali',sumberCaseId:'older',tanggalPenindakan:'2026-06-01',kodePelanggaran:'ALFA',status:'SELESAI',unit:'PUTRA'}};
+ const {element,context,readPaths}=surface('book',{report,book});
+ await new Promise(setImmediate);
+ assert(readPaths.includes('cahaya_app/buku_kasus_konselor'));
+ assert(!readPaths.includes(C.ROOT),'awal Buku Konseling harus memakai indeks riwayat, bukan semua laporan');
+ assert(!readPaths.includes(C.PROGRAM_ATTENDANCE_ROOT));
+ assert(!readPaths.includes(C.LEARNING_ATTENDANCE_ROOT));
+ assert.match(element('bookStudents').innerHTML,/Ali/);
+ assert.match(element('state').textContent,/catatan terindeks/);
+ await vm.runInNewContext('loadBookArchive()',context);
+ assert(readPaths.includes(C.ROOT));
+ assert(readPaths.includes(C.PROGRAM_ATTENDANCE_ROOT));
+ assert(readPaths.includes(C.LEARNING_ATTENDANCE_ROOT));
+ assert.equal(vm.runInNewContext('bookArchiveLoaded',context),true);
+ assert.match(element('state').textContent,/arsip lengkap/);
+ assert.match(element('bookStudents').innerHTML,/2 catatan konseling/);
+ await vm.runInNewContext('loadBookArchive()',context);
+ assert.equal(readPaths.filter(x=>x===C.ROOT).length,1,'membuka ulang tidak mengunduh arsip lagi');
+});
+test('Bila indeks Buku Konseling gagal, opsi arsip lengkap tetap tersedia',async()=>{
+ const report={r1:{tanggal:'2026-10-28',dilaporkan:'Ali',tipe:'Lapor Pelanggaran',unit:'PUTRA',kodePelanggaran:'ALFA',caseV2:{status:'SELESAI',tabayyun:{conclusion:'TERBUKTI'},counseling:{s1:{what:'Disiplin',savedAt:'2026-10-28T02:00:00Z'}}}}};
+ const {context,element}=surface('book',{report,rejectPath:'cahaya_app/buku_kasus_konselor'});
+ await new Promise(setImmediate);
+ assert.match(element('state').textContent,/Muat Arsip Lengkap/);
+ await vm.runInNewContext('loadBookArchive()',context);
+ assert.match(element('bookStudents').innerHTML,/Ali/);
+ assert.equal(vm.runInNewContext('bookArchiveLoaded',context),true);
 });
