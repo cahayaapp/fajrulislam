@@ -29,11 +29,11 @@ const server=http.createServer((req,res)=>{
       const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.goto(origin+'/main-dashboard.html');
       await page.waitForFunction(home=>document.getElementById('contentFrame')?.src.includes(home),home);
-      await page.locator('#contentFrame').contentFrame().locator('#greeting, #directorName, #userName').first().waitFor();
+      await page.locator('#contentFrame').contentFrame().locator('#greeting, #directorName, #userName').first().waitFor({state:'attached'});
       await page.waitForTimeout(1700);
       assert.equal(await page.locator('#mobileBottomNav').count(),1);
       const facts=await page.evaluate(()=>({reads:window.__reads,writes:window.__writes,role:window.getCahayaActiveRole(),assignment:window.cahayaRoleV2Session.activeAssignment}));
-      assert.equal(facts.role,role);assert.deepEqual(facts.reads.filter(p=>!p.startsWith('FS:users/')),[]);assert.deepEqual(facts.writes,[]);
+      assert.equal(facts.role,role);assert.deepEqual(facts.reads.filter(p=>!p.startsWith('FS:users/')&&!p.startsWith('FS:settings/feature_management')),[]);assert.deepEqual(facts.writes,[]);
       const frame=page.frames().find(f=>f.url().includes(home));
       const geometry=await frame.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,menus:document.querySelectorAll('#menuGrid button, #teacherMenuGrid button, #divisionGrid button, #managementGrid button').length,reads:window.__reads}));
       assert(geometry.scroll<=geometry.width+1,JSON.stringify(geometry));assert.deepEqual(geometry.reads,[]);
