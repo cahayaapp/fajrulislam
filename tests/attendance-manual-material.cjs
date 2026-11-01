@@ -1,0 +1,18 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync('guru/absensiPembelajaran.html','utf8');
+const fields=[{dataset:{manualAssignment:'a'},value:'Adab kepada guru'},{dataset:{manualAssignment:'b'},value:'Praktik bertanya'}];
+const ctx={document:{querySelectorAll:()=>fields},selectedMaterials:()=>[],materialMatchesAssignment:(row,a)=>row.assignment===a.id,materialTargetKey:r=>r.key,selectedMaterialKeys:new Set(),currentMaterialRows:[]};vm.createContext(ctx);
+vm.runInContext(source.slice(source.indexOf('  function manualMaterialPatch('),source.indexOf('  function materialCompletionUpdates()')),ctx);
+const result=(...args)=>JSON.parse(JSON.stringify(ctx.manualMaterialPatch(...args)));
+assert.deepEqual(result({id:'a'}),{materiManual:'Adab kepada guru',materiDiajarkan:['Adab kepada guru'],materiTargetKeys:[]});
+assert.deepEqual(result({id:'b'}).materiDiajarkan,['Praktik bertanya']);
+assert.equal(ctx.validateMaterialRequirement([{subject:'Adab'}]),true);
+ctx.selectedMaterials=()=>[{key:'target1',assignment:'a',material:'Materi kalender'}];ctx.selectedMaterialKeys.add('target1');
+assert.deepEqual(result({id:'a'}).materiDiajarkan,['Materi kalender','Adab kepada guru']);assert.deepEqual(result({id:'b'}).materiTargetKeys,[]);
+fields[0].value='';assert.deepEqual(result({id:'a'}).materiDiajarkan,['Materi kalender'],'Clearing manual text removes old manual content');
+ctx.selectedMaterials=()=>[];assert.deepEqual(result({id:'a'},{materiManual:'Lama',materiDiajarkan:['Lama','Materi kalender'],materiTargetKeys:['target1']}).materiDiajarkan,['Materi kalender'],'Preserve selected unloaded calendar records');
+fields.length=0;assert.equal(result({id:'a'},{materiManual:'Tersimpan'}).materiManual,'Tersimpan','Missing field does not erase saved material');
+assert(source.includes('input.value = typeof record.materiManual === "string" ? record.materiManual : ""'));
+assert(source.includes('...manualMaterialPatch(a,rec)'));assert(source.includes('...manualMaterialPatch(assignment,rec)'));
+assert.equal(source,fs.readFileSync('docs/guru/absensiPembelajaran.html','utf8'));
+console.log('PASS manual-only finalization, optional calendar, class isolation, combined material, clearing, reload and mirrors');

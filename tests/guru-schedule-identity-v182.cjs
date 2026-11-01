@@ -42,7 +42,7 @@ assert.equal(
   fs.readFileSync('docs/js/guru-kpi-v144.js','utf8'),
   'mirror docs harus sama'
 );
-assert.match(fs.readFileSync('js/guru-home-hub.js','utf8'),/guru-kpi-v144\.js\?v=182/);
-assert.match(fs.readFileSync('home-guru.html','utf8'),/guru-home-hub\.js\?v=206/);
+assert.match(fs.readFileSync('js/guru-home-hub.js','utf8'),/guru-kpi-v144\.js\?v=288/);
+assert.match(fs.readFileSync('home-guru.html','utf8'),/guru-home-hub\.js\?v=291/);
 
 console.log('PASS Rosyidin/Rasyidin identity, four active schedules, stable teacherCode, mirrors and cache versions');

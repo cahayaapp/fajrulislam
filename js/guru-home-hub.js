@@ -55,9 +55,9 @@ async function actions(){
   if(!actionPromise) actionPromise=(async()=>{
     window.CAHAYA_CONFIG=P.CAHAYA_CONFIG;window.CAHAYA_MASTER_DATA=P.CAHAYA_MASTER_DATA;
     if(!window.CAHAYA_CONFIG)await localScript('config/tenant-config.js?v=149');
-    if(!window.CAHAYA_MASTER_DATA)await localScript('config/master-data.js?v=149');
-    if(!window.CahayaGuruKPI)await localScript('js/guru-kpi-v144.js?v=182');
-    return import('./guru-home-actions.js?v=205');
+    if(!window.CAHAYA_MASTER_DATA)await localScript('config/master-data.js?v=288');
+    if(!window.CahayaGuruKPI)await localScript('js/guru-kpi-v144.js?v=288');
+    return import('./guru-home-actions.js?v=291');
   })().catch(error=>{actionPromise=null;throw error});
   return actionPromise;
 }

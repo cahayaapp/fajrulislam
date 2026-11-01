@@ -1811,9 +1811,14 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     let best="";Object.entries(TEACHER_CODE_ALIASES_QURAN).some(([code,aliases])=>aliases.some(alias=>names.some(n=>{const a=normalizeTeacherQuran(alias);if(n===a||n.includes(a)||a.includes(n)){best=code;return true}return false})));return best;
   }
   function normalizeScheduleRowsQuran(value){return Array.isArray(value)?value.filter(Boolean):Object.entries(value||{}).map(([id,row])=>({id,...(row||{})}))}
+  let quranSchedulePromise;
+  function loadQuranSchedule(){
+    if(!quranSchedulePromise)quranSchedulePromise=(async()=>{try{return normalizeScheduleRowsQuran((await get(ref(db,'cahaya_app/jadwal_pelajaran'))).val()||{})}catch(error){console.warn('Jadwal online belum tersedia.',error)}try{const response=await fetch('../data/jadwal-pelajaran-awal-2026-2027.json?v=291',{cache:'no-cache'});if(response.ok)return normalizeScheduleRowsQuran(await response.json())}catch(_){}return []})();
+    return quranSchedulePromise;
+  }
   async function refreshAutoQuranClasses(scheduleRows=[]){
     let rows=scheduleRows;
-    if(!rows.length){try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json?v=183",{cache:"no-cache"});if(r.ok)rows=normalizeScheduleRowsQuran(await r.json())}catch(_){}}
+    if(!rows.length)rows=await loadQuranSchedule();
     const code=detectTeacherCodeQuran(rows);
     autoQuranClasses=[...new Set(rows.filter(r=>r&&r.aktif!==false&&String(r.guruKode||"").trim().toUpperCase()===code&&/qur|tahsin|tahfiz/i.test(String(r.mapel||""))).map(r=>String(r.kelas||"").trim()).filter(k=>k&&dataKelasCloud[k]))];
     const order=k=>{const i=URUTAN_KELAS.indexOf(k);return i<0?999:i};autoQuranClasses.sort((a,b)=>order(a)-order(b)||a.localeCompare(b,"id",{numeric:true}));
@@ -1853,10 +1858,10 @@ body.c53-quran-focus .tfz-hero,body.c53-quran-focus #quranSceneProgram,body.c53-
     if(cacheMetaQuranSiap) return;
     try{
       const [jadwalRes,kalenderRes]=await Promise.all([
-        fetch('../data/jadwal-pelajaran-awal-2026-2027.json?v=183',{cache:'no-cache'}).catch(()=>null),
+        loadQuranSchedule(),
         fetch('../data/kalender-pendidikan-2026-2027.json',{cache:'force-cache'}).catch(()=>null)
       ]);
-      if(jadwalRes?.ok) cacheJadwalQuran=objectValues(await jadwalRes.json());
+      cacheJadwalQuran=jadwalRes||[];
       if(kalenderRes?.ok) cacheKalenderQuran=objectValues(await kalenderRes.json());
     }catch(e){console.warn('Meta Al-Quran lokal tidak lengkap:',e)}
     cacheMetaQuranSiap=true;

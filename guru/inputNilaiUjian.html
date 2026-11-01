@@ -1930,7 +1930,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     setTimeout(() => { overlay.style.display = "none"; }, 350);
   }
 
-  const TEACHER_CODE_ALIASES = {
+  const TEACHER_CODE_ALIASES = {ZAWAWI:["zawawi","muhammad zawawi","muhammadzawawi"],
     MULTAZAM:["multazam","multazam zakaria","abah multazam","dr multazam zakaria"], RASYIDIN:["rasyidin","rosyidin"],
     NAQIEB:["naqieb","muhammad naqieb"], ZAKY:["zaky","zaki","muhammad zaky"], RAHIEL:["rahiel","mika rahiel","mika rahiel yusuf"],
     FAIQ:["faiq","muhammad faiq"], DONY:["dony","doni","dony setiawan","doni setiawan","donisetiawan"], FATIMAH:["fatimah"],
@@ -1949,15 +1949,12 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const known=new Set(rows.map(r=>String(r?.guruKode||"").trim().toUpperCase()).filter(Boolean)); let best={code:"",score:0};
     Object.entries(TEACHER_CODE_ALIASES).forEach(([code,aliases])=>{if(known.size&&!known.has(code))return;aliases.forEach(alias=>candidates.forEach(c=>{const a=normalizeTeacherIdentity(alias);let score=c===a?100:(c.includes(a)||a.includes(c)?80:0);if(score>best.score)best={code,score}}))}); return best.code;
   }
-  async function loadLocalSchedule(){
-    const key='guru:schedule:2026-2027:v183';
-    const cached=cacheGet(key,12*60*60*1000);
+  async function loadLocalSchedule() {
+    const key='guru:schedule:2026-2027:v291',cached=cacheGet(key,60000);
     if(cached)return normalizeScheduleRows(cached);
-    try{
-      const legacy=JSON.parse(sessionStorage.getItem('cahaya_guru_schedule_v183')||localStorage.getItem('cahaya_guru_schedule_v183')||'null');
-      if(legacy&&legacy.v){cacheSet(key,legacy.v,true);return normalizeScheduleRows(legacy.v)}
-    }catch(_){}
-    try{const r=await fetch("../data/jadwal-pelajaran-awal-2026-2027.json?v=183",{cache:"no-cache"});if(!r.ok)return[];const value=await r.json();cacheSet(key,value,true);return normalizeScheduleRows(value)}catch(_){return[]}
+    try{const snap=await get(ref(db,'cahaya_app/jadwal_pelajaran'));const value=snap.val()||{};cacheSet(key,value,true);return normalizeScheduleRows(value)}catch(error){console.warn('Jadwal online belum tersedia; memakai cadangan lokal.',error)}
+    try{const response=await fetch('../data/jadwal-pelajaran-awal-2026-2027.json?v=291',{cache:'no-cache'});if(response.ok)return normalizeScheduleRows(await response.json())}catch(_){}
+    return [];
   }
 
   function initPageData() {

@@ -258,6 +258,7 @@ window.CAHAYA_MASTER_DATA = {
     ]
   },
   "teachers": [
+    "ZAWAWI",
     "MULTAZAM",
     "ALVIN",
     "RASYIDIN",

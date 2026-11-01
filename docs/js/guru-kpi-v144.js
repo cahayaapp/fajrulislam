@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
   const KPI_VERSION='182';
-  const TEACHER_CODE_ALIASES={
+  const TEACHER_CODE_ALIASES={ZAWAWI:["zawawi","muhammad zawawi","muhammadzawawi"],
     MULTAZAM:['multazam','multazam zakaria','abah multazam','dr multazam zakaria'],
     RASYIDIN:['rasyidin','rosyidin','abi rasyidin','abi rosyidin'],
     NAQIEB:['naqieb','muhammad naqieb'],

@@ -1985,6 +1985,10 @@
     }
   </style>
 
+<style>
+.manual-material-card{margin:16px 0;padding:20px;border:1px solid #d9e8f7;border-radius:20px;background:linear-gradient(135deg,#fff,#f6faff)}
+.manual-material-card[hidden]{display:none!important}.manual-material-field{display:grid;gap:8px;margin-top:16px}.manual-material-field label{font-size:.82rem;font-weight:750;color:#234c72}.manual-material-field textarea{display:block;width:100%;min-height:120px;box-sizing:border-box;resize:vertical;padding:14px;border:1px solid #cfdeed;border-radius:12px;background:white;color:#243e56;font:inherit;font-size:.9rem;line-height:1.7}.manual-material-field textarea:focus{outline:2px solid #2878ff;outline-offset:2px}.manual-material-note{font-size:.76rem;color:#6b8096;line-height:1.6;margin:12px 0 0}
+</style>
 </head>
 <body class="cahaya-guru-executive">
   <div id="loadingOverlay" style="display:none" aria-hidden="true">
@@ -2148,18 +2152,23 @@
       </div>
     </section>
 
+    <section class="panel-card manual-material-card" id="manualMaterialCard" hidden aria-labelledby="manualMaterialTitle">
+      <div class="material-section-head"><div class="material-section-icon">✍️</div><div class="material-section-copy"><h3 id="manualMaterialTitle">Tulis Materi Pembelajaran</h3><p>Tuliskan materi yang benar-benar diajarkan pada pertemuan ini. Tidak wajib memilih materi dari kalender.</p></div></div>
+      <div id="manualMaterialFields"></div>
+      <p class="manual-material-note">Tersimpan bersama presensi akhir. Pilihan materi kalender tetap tersedia sebagai pelengkap.</p>
+    </section>
     <section class="panel-card journal-card">
       <div class="form-group">
         <div class="material-section-head">
           <div class="material-section-icon">📝</div>
           <div class="material-section-copy">
             <h3>Materi Pembelajaran</h3>
-            <p>Pilih dan centang target materi yang diajarkan pada pertemuan ini.</p>
+            <p>Opsional: centang materi dari kalender jika sesuai dengan pembelajaran hari ini.</p>
           </div>
         </div>
         <input type="hidden" id="kbmCatatan" value="" />
         <div class="material-picker-actions">
-          <button type="button" class="btn-pilih-materi" id="btnPilihMateri" onclick="toggleMaterialPicker()">✓ Pilih Materi</button>
+          <button type="button" class="btn-pilih-materi" id="btnPilihMateri" onclick="toggleMaterialPicker()">✓ Pilih Materi Kalender (Opsional)</button>
           <button type="button" class="btn-target-materi" onclick="bukaTargetMateri()">Atur Target Materi</button>
         </div>
         <div class="selected-materials" id="selectedMaterials"></div>
@@ -2237,21 +2246,11 @@
   }
 
   async function loadLiteSchedule() {
-    const key = 'guru:schedule:2026-2027:v183';
-    const shared = cacheGet(key, 12 * 60 * 60 * 1000);
-    if (shared) return normalizeLiteScheduleRows(shared);
-    // kompatibel dengan cache beranda Guru v148/v149
-    try {
-      const legacy = JSON.parse(sessionStorage.getItem('cahaya_guru_schedule_v183') || localStorage.getItem('cahaya_guru_schedule_v183') || 'null');
-      if (legacy && legacy.v) { cacheSet(key, legacy.v, true); return normalizeLiteScheduleRows(legacy.v); }
-    } catch (_) {}
-    try {
-      const response = await fetch('../data/jadwal-pelajaran-awal-2026-2027.json?v=183', { cache: 'no-cache' });
-      if (!response.ok) return [];
-      const value = await response.json();
-      cacheSet(key, value, true);
-      return normalizeLiteScheduleRows(value);
-    } catch (error) { console.warn('Jadwal lokal belum tersedia:', error); return []; }
+    const key='guru:schedule:2026-2027:v291',cached=cacheGet(key,60000);
+    if(cached)return normalizeLiteScheduleRows(cached);
+    try{const snap=await get(ref(db,'cahaya_app/jadwal_pelajaran'));const value=snap.val()||{};cacheSet(key,value,true);return normalizeLiteScheduleRows(value)}catch(error){console.warn('Jadwal online belum tersedia; memakai cadangan lokal.',error)}
+    try{const response=await fetch('../data/jadwal-pelajaran-awal-2026-2027.json?v=291',{cache:'no-cache'});if(response.ok)return normalizeLiteScheduleRows(await response.json())}catch(_){}
+    return [];
   }
 
   async function loadReplacementRowsToday() {
@@ -2414,28 +2413,28 @@
 
   const CLASS_SCHEDULE = {
     1: { 1: "Aqidah", 2: "Fiqih", 3: "Shirah", 4: "Adab" },
-    2: { 1: "Fiqih", 2: "Adab", 3: "Shirah", 4: "Hadits" },
+    2: { 1: "Fiqih", 2: "Hadits", 3: "Shirah", 4: "Adab" },
     3: { 1: "Adab", 2: "Shirah", 3: "Hadits", 4: "Fiqih" },
     4: {
       1: "Aqidah Tasawuf",
-      2: "Hadits Ahkam",
+      4: "Hadits Ahkam",
       3: "Nahwu Sharaf",
-      4: "Shirah"
+      2: "Shirah"
     },
     5: {
       1: "Aqidah Tasawuf",
-      2: "Hadits Ahkam",
+      4: "Hadits Ahkam",
       3: "Balaghah",
-      4: "Manajemen dan Bisnis"
+      2: "Manajemen dan Bisnis"
     }
   };
 
   const CLASS_TEACHERS = {
-    1: { 1: "FAIQ", 2: "RASYIDIN", 3: "NAQIEB", 4: "NAQIEB" },
-    2: { 1: "RASYIDIN", 2: "NAQIEB", 3: "RAHIEL", 4: "FAIQ" },
-    3: { 1: "NAQIEB", 2: "RAHIEL", 3: "FAIQ", 4: "RASYIDIN" },
-    4: { 1: "MULTAZAM", 2: "MULTAZAM", 3: "RASYIDIN", 4: "RAHIEL" },
-    5: { 1: "MULTAZAM", 2: "MULTAZAM", 3: "MULTAZAM", 4: "MULTAZAM" }
+    1: { 1: "DONY", 2: "RASYIDIN", 3: "NAQIEB", 4: "NAQIEB" },
+    2: { 1: "RASYIDIN", 2: "ZAWAWI", 3: "RAHIEL", 4: "ZAKY" },
+    3: { 1: "ZAWAWI", 2: "RAHIEL", 3: "ZAWAWI", 4: "RASYIDIN" },
+    4: { 1: "MULTAZAM", 4: "ZAWAWI", 3: "RASYIDIN", 2: "RAHIEL" },
+    5: { 1: "MULTAZAM", 4: "ZAWAWI", 3: "MULTAZAM", 2: "MULTAZAM" }
   };
 
   const PUTRI_CLASS_SCHEDULE = {
@@ -2444,7 +2443,7 @@
     3: { 1: "Adab", 2: "Shirah", 3: "Fiqih", 4: "Hadits" },
     4: {
       1: "Aqidah Tasawuf",
-      2: "Hadits Ahkam",
+      4: "Hadits Ahkam",
       5: ["Nahwu Sharaf", "Shirah"]
     }
   };
@@ -2455,7 +2454,7 @@
     3: { 1: "MEILISA", 2: "MEILISA", 3: "ALAMANDA", 4: "FATIMAH" },
     4: {
       1: "MULTAZAM",
-      2: "MULTAZAM",
+      4: "ZAWAWI",
       5: ["MULTAZAM", "MULTAZAM"]
     }
   };
@@ -2468,7 +2467,7 @@
     ],
     2: [
       { subject: "Bahasa Arab", teacher: "RAHIEL" },
-      { subject: "Bahasa Arab", teacher: "FAIQ" },
+
       { subject: "Al-Qur’an", teacher: "DONY" }
     ],
     3: [
@@ -2477,7 +2476,7 @@
     ],
     4: [
       { subject: "Bahasa Arab", teacher: "MULTAZAM" },
-      { subject: "Al-Qur’an", teacher: "FAIQ" }
+      { subject: "Al-Qur’an", teacher: "MULTAZAM" }
     ],
     5: [
       { subject: "Bahasa Arab", teacher: "MULTAZAM" },
@@ -2521,7 +2520,7 @@
     }
   ];
 
-  const TEACHER_ALIASES = {
+  const TEACHER_ALIASES = {ZAWAWI:["zawawi","muhammad zawawi","muhammadzawawi"],
     MULTAZAM: [
       "multazam",
       "multazam zakaria",
@@ -2925,7 +2924,7 @@
       const exemptQuran = assignments.length && assignments.every(isQuranMaterialExempt);
       panel.innerHTML = exemptQuran
         ? '<div class="material-empty"><strong>Materi tidak diwajibkan untuk pembelajaran Al-Qur’an.</strong><br>Presensi tetap dapat disimpan tanpa memilih target materi, termasuk untuk Tahsin/Tahfiz.</div>'
-        : '<div class="material-empty"><strong>Target materi belum tersedia.</strong><br>Presensi tetap dapat disimpan. Jika target materi sudah dibuat, pemilihan materi akan menjadi syarat saat finalisasi.</div>';
+        : '<div class="material-empty"><strong>Target materi belum tersedia.</strong><br>Presensi tetap dapat disimpan. Materi dapat ditulis langsung pada kartu Tulis Materi Pembelajaran saat presensi akhir.</div>';
       updateSelectedMaterialSummary();
       return;
     }
@@ -2999,28 +2998,43 @@
     renderMaterialPicker();
   }
 
-  function validateMaterialRequirement(assignments = []) {
-    // Al-Qur'an/Tahsin/Tahfiz tidak pernah diwajibkan memilih materi.
-    const wajibMateri = assignments.filter(assignment => !isQuranMaterialExempt(assignment));
-    if (!wajibMateri.length) return true;
+  function renderManualMaterialFields() {
+    const card = document.getElementById("manualMaterialCard"), host = document.getElementById("manualMaterialFields");
+    if (!card || !host) return;
+    card.hidden = attendanceStageMode === "AWAL";
+    host.replaceChildren();
+    if (card.hidden) return;
+    const assignments = daftarJadwalTerpilih(selectedAssignment || getSelectedAssignment());
+    assignments.forEach((assignment, index) => {
+      const record = existingAttendanceByAssignment.get(assignment.id) || {};
+      const field = document.createElement("div"); field.className = "manual-material-field";
+      const label = document.createElement("label"); label.htmlFor = `manualMaterial_${index}`;
+      label.textContent = `${assignment.subject || "Materi pembelajaran"} • ${assignment.virtualJuzLabel || assignment.className || "Kelas"}`;
+      const input = document.createElement("textarea"); input.id = label.htmlFor; input.dataset.manualAssignment = assignment.id;
+      input.rows = 4; input.placeholder = "Contoh: Adab kepada guru — menghormati, menyimak penjelasan, dan praktik bertanya dengan sopan.";
+      input.value = typeof record.materiManual === "string" ? record.materiManual : "";
+      field.append(label, input); host.appendChild(field);
+    });
+  }
 
-    // Bila target belum pernah dibuat, presensi tetap boleh disimpan.
-    // Kewajiban baru aktif pada penugasan yang memang sudah memiliki target.
-    const assignmentsWithTargets = wajibMateri.filter(assignment =>
-      materialTargetRows.some(row => materialMatchesAssignment(row, assignment))
-    );
-    if (!assignmentsWithTargets.length) return true;
-
-    const missingSelections = assignmentsWithTargets.filter(assignment =>
-      !selectedMaterials().some(row => materialMatchesAssignment(row, assignment))
-    );
-    if (missingSelections.length) {
-      const labels = [...new Set(missingSelections.map(item => item.virtualJuzLabel || item.className))];
-      showToast(`Target materi sudah tersedia. Pilih materi yang diajarkan untuk ${labels.join(", ")} sebelum menyimpan.`, "error", "Materi wajib dipilih");
-      document.getElementById("materialPickerPanel")?.classList.add("show");
-      renderMaterialPicker();
-      return false;
+  function manualMaterialPatch(assignment, record = {}) {
+    const input = [...document.querySelectorAll("textarea[data-manual-assignment]")].find(el => el.dataset.manualAssignment === String(assignment.id));
+    const text = input ? input.value.trim() : (record.materiManual || "");
+    const selected = selectedMaterials().filter(row => materialMatchesAssignment(row, assignment));
+    const keys = selected.map(materialTargetKey);
+    const calendar = selected.map(row => row.material);
+    // Keep saved calendar text when its selected targets have not loaded yet.
+    const oldKeys = record.materiTargetKeys || record.materialTargetKeys || [];
+    const unresolved = oldKeys.filter(key => selectedMaterialKeys.has(key) && !currentMaterialRows.some(row => materialTargetKey(row) === key));
+    if (unresolved.length) {
+      keys.push(...unresolved);
+      calendar.push(...(record.materiDiajarkan || []).filter(item => item !== record.materiManual));
     }
+    return {materiManual:text,materiDiajarkan:[...new Set([...calendar,text].filter(Boolean))],materiTargetKeys:[...new Set(keys)]};
+  }
+
+  function validateMaterialRequirement() {
+    // Calendar selection is optional for all subjects, including final attendance.
     return true;
   }
 
@@ -4318,6 +4332,7 @@
 
   function setTwoStageLabels(mode) {
     attendanceStageMode = mode;
+    renderManualMaterialFields();
     document.body.classList.toggle("cahaya-attendance-final", mode !== "AWAL");
     updateAttendanceTitleCard(mode);
     const p = document.getElementById("sumLabelPending");
@@ -4421,7 +4436,7 @@
       });
       const nilaiTerisi = newData.map(item=>item.nilaiUlanganHarian).filter(Number.isFinite);
       const materi = selectedMaterials().filter(row=>materialMatchesAssignment(row,a));
-      const patch = {data:newData,catatan:catatan||rec.catatan||"",materiDiajarkan:materi.map(item=>item.material),materiTargetKeys:materi.map(materialTargetKey),adaNilaiUlanganHarian:nilaiTerisi.length>0,jumlahNilaiUlanganHarian:nilaiTerisi.length,rataRataNilaiUlanganHarian:nilaiTerisi.length?Number((nilaiTerisi.reduce((sum,nilai)=>sum+nilai,0)/nilaiTerisi.length).toFixed(2)):null,tahapAbsensi:"FINAL",statusFinalisasi:"FINAL",waktuFinalisasi:new Date().toISOString(),waktuSimpan:new Date().toISOString()};
+      const patch = {data:newData,catatan:catatan||rec.catatan||"",...manualMaterialPatch(a,rec),adaNilaiUlanganHarian:nilaiTerisi.length>0,jumlahNilaiUlanganHarian:nilaiTerisi.length,rataRataNilaiUlanganHarian:nilaiTerisi.length?Number((nilaiTerisi.reduce((sum,nilai)=>sum+nilai,0)/nilaiTerisi.length).toFixed(2)):null,tahapAbsensi:"FINAL",statusFinalisasi:"FINAL",waktuFinalisasi:new Date().toISOString(),waktuSimpan:new Date().toISOString()};
       const finalizedRecord = {...rec,...patch};
       updates[`cahaya_app/absensi_pembelajaran/${rec.id}`] = finalizedRecord;
       finalizedRows.push({ id: rec.id, ...finalizedRecord });
@@ -4450,7 +4465,7 @@
       });
       const nilaiTerisi=data.map(item=>item.nilaiUlanganHarian).filter(Number.isFinite);
       const materi=selectedMaterials().filter(row=>materialMatchesAssignment(row,assignment));
-      const patch={...rec,data,catatan:catatan||rec.catatan||"",materiDiajarkan:materi.map(item=>item.material),materiTargetKeys:materi.map(materialTargetKey),adaNilaiUlanganHarian:nilaiTerisi.length>0,jumlahNilaiUlanganHarian:nilaiTerisi.length,rataRataNilaiUlanganHarian:nilaiTerisi.length?Number((nilaiTerisi.reduce((sum,nilai)=>sum+nilai,0)/nilaiTerisi.length).toFixed(2)):null,waktuSimpan:new Date().toISOString()};
+      const patch={...rec,data,catatan:catatan||rec.catatan||"",...manualMaterialPatch(assignment,rec),adaNilaiUlanganHarian:nilaiTerisi.length>0,jumlahNilaiUlanganHarian:nilaiTerisi.length,rataRataNilaiUlanganHarian:nilaiTerisi.length?Number((nilaiTerisi.reduce((sum,nilai)=>sum+nilai,0)/nilaiTerisi.length).toFixed(2)):null,waktuSimpan:new Date().toISOString()};
       updates[`cahaya_app/absensi_pembelajaran/${rec.id}`]=patch;
       savedRows.push({id:rec.id,...patch});
       data.forEach(item=>{const waliKey=String(item.nama||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");if(waliKey)updates[`cahaya_app/wali_index/${waliKey}/pembelajaran/${rec.id}`]={...patch,data:[item]}});

@@ -59,8 +59,8 @@ functionalFiles.forEach(file => {
 });
 
 const homeActions = fs.readFileSync(path.join(root, 'js/guru-home-actions.js'), 'utf8');
-assert.match(homeActions, /cahaya_guru_schedule_v183/,'quick access harus mengabaikan cache jadwal lama');
-assert.match(homeActions, /jadwal-pelajaran-awal-2026-2027\.json\?v=183/,'quick access harus meminta jadwal versi baru');
+assert.match(homeActions, /cahaya_guru_schedule_v291/,'quick access harus mengabaikan cache jadwal lama');
+assert.match(homeActions, /jadwal-pelajaran-awal-2026-2027\.json\?v=291/,'quick access harus meminta jadwal versi baru');
 
 const master = require(path.join(root, 'data/jadwal-pelajaran-awal-2026-2027.json'));
 const vm = require('node:vm');
