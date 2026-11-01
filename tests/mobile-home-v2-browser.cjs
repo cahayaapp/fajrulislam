@@ -90,7 +90,7 @@ const firestore=`export const getFirestore=()=>({}),collection=(d,p)=>({p}),doc=
           const overlapping=cards.filter((a,i)=>cards.some((b,j)=>j>i&&Math.min(a.rect.right,b.rect.right)-Math.max(a.rect.x,b.rect.x)>1&&Math.min(a.rect.bottom,b.rect.bottom)-Math.max(a.rect.y,b.rect.y)>1));
           const cs=getComputedStyle(home),sm=getComputedStyle(home.querySelector('.mh-menu-card small')||home);
           const hero=home.querySelector('.mh-identity'),last=[...hero.children].filter(e=>e.getClientRects().length).at(-1);
-          return {w:innerWidth,h:innerHeight,docH:document.documentElement.scrollHeight,docW:document.documentElement.scrollWidth,home:box(home),header:box(home.querySelector('.mh-header')),hero:box(home.querySelector('.mh-hero')),masthead:box(home.querySelector('.mh-masthead')),date:box(home.querySelector('.mh-date')),heroBottom:box(last).bottom,dateTop:box(home.querySelector('.mh-date')).y,style:cs.gridTemplateRows,padding:cs.padding,small:{font:sm.font,line:sm.lineHeight},cards,overlapping,footer:{y:box(home).bottom},reads:window.__reads};
+          return {w:innerWidth,h:innerHeight,docH:document.documentElement.scrollHeight,docW:document.documentElement.scrollWidth,home:box(home),header:box(home.querySelector('.mh-header')),hero:box(home.querySelector('.mh-hero')),masthead:box(home.querySelector('.mh-masthead')),date:box(home.querySelector('.mh-date')),heroBottom:box(last).bottom,dateTop:box(home.querySelector('.mh-date')).y,style:cs.gridTemplateRows,padding:cs.padding,small:{font:sm.font,line:sm.lineHeight},cards,overlapping,footer:{y:box(home).y+home.scrollHeight},reads:window.__reads};
         });
         if(process.env.CAHAYA_HOME_DEBUG==='2')console.log(await f.locator('#mobileRoleHome').evaluate(el=>[document.documentElement,document.body,el].map(n=>({tag:n.tagName,classes:n.className,rect:n.getBoundingClientRect().toJSON(),width:getComputedStyle(n).width,maxWidth:getComputedStyle(n).maxWidth,padding:getComputedStyle(n).padding}))));
         else if(process.env.CAHAYA_HOME_DEBUG)console.log(JSON.stringify(g));
@@ -99,7 +99,8 @@ const firestore=`export const getFirestore=()=>({}),collection=(d,p)=>({p}),doc=
         assert.equal(g.overlapping.length,0,fixture.name+' cards overlap');
         assert(g.heroBottom<=g.dateTop+1,fixture.name+' identity/date collision '+JSON.stringify({bottom:g.heroBottom,date:g.dateTop}));
         assert(g.header.bottom<=g.hero.y,fixture.name+' brand must sit above greeting');
-        assert(g.date.y<g.masthead.bottom&&g.date.bottom>g.masthead.bottom,fixture.name+' date card must straddle the masthead edge');
+        if(g.w>768)assert(g.date.y>=g.masthead.bottom+15,fixture.name+' desktop date strip has clear spacing');
+        else assert(g.date.y<g.masthead.bottom&&g.date.bottom>g.masthead.bottom,fixture.name+' mobile date card must straddle the masthead edge');
         assert.equal(await f.locator('.mh-heading h2').count(),2);
         assert.equal(await f.locator('.mh-heading>div>span').count(),0,'no duplicate eyebrow titles');
         for(const card of g.cards){assert(card.rect.bottom<=g.footer.y+1,fixture.name+' card collides with banner '+JSON.stringify(card));assert(card.children.every(r=>r.bottom<=card.rect.bottom&&r.right<=card.rect.right),fixture.name+' clipped content '+JSON.stringify(card));assert(card.rect.h>=43,fixture.name+' small target');}
