@@ -15,6 +15,7 @@
     star:'m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z',
     warning:'m12 3 10 17H2zM12 9v5m0 3v.1',
     history:'M3 4v6h6M3 10a9 9 0 1 1 1 9M12 7v6l4 2',
+    search:'M21 21l-6-6M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',
     eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12m13 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
     report:'M5 2h10l5 5v15H5zM15 2v5h5M9 11h7m-7 4h7m-7 4h5',
     pen:'m4 16 12-12 4 4L8 20l-5 1zM14 6l4 4M4 16l4 4',
@@ -112,7 +113,7 @@
   }
   function summary(item){return descriptions[item.id]||(wali?(/mentoring/i.test(item.label)?'Refleksi, target & perkembangan ananda':/laporan/i.test(item.label)?'Ikuti perkembangan ananda':/kabar/i.test(item.label)?'Cerita dan kabar terbaru ananda':'Informasi untuk keluarga'):(/kpi/i.test(item.label)?'Tinjau capaian dan bukti kerja':/riwayat/i.test(item.label)?'Lihat catatan sebelumnya':/panduan/i.test(item.label)?'Tugas dan standar kerja':/pembinaan/i.test(item.label)?'Dampingi dan arahkan perbaikan':/izin/i.test(item.label)?'Informasi izin santri':'Buka ruang kerja Anda'))}
   function card(item,index,large=false){return `<button type="button" class="mh-card ${large?'mh-quick-card':'mh-menu-card'} mh-tone-${index%6}" data-mh-id="${esc(item.id)}" title="${esc(item.label)}"><span class="mh-icon">${icon(item.icon||iconFor(item.label))}</span><span class="mh-card-copy"><b>${esc(item.label)}</b><small>${esc(item.description||summary(item))}</small></span><span class="mh-card-arrow">${large?icon('arrow'):'›'}</span></button>`}
-  function all(){if(embedded&&typeof P.toggleSidebar==='function'){P.toggleSidebar();P.document.querySelector('.sidebar-close')?.focus({preventScroll:true});return}const sheet=host.querySelector('dialog');if(!sheet.open)sheet.showModal()}
+  function all(){if(media.matches&&embedded&&typeof P.toggleSidebar==='function'){P.toggleSidebar();P.document.querySelector('.sidebar-close')?.focus({preventScroll:true});return}const sheet=host.querySelector('dialog');if(!sheet.open)sheet.showModal()}
   function open(id){
     if(id==='all')return all();
     if(id==='mentor-contact')return showMentorDialog();
@@ -138,7 +139,7 @@
   async function init(){
     if(document.getElementById('roleAccessDenied')||document.getElementById('mobileRoleHome'))return;
     try{user=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}catch{user={}}
-    session=R?.resolveSession(user,localStorage);if(!session?.activeRole&&!wali)return;
+    session=R?.resolveSession(user,localStorage);if(!session?.activeRole&&!wali)return;if(session?.activeRole==='ADMIN')return;
     if(!wali&&!window.CahayaRoleMenuV2){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('js/role-menu-v2.js?v=274',root);script.onload=resolve;script.onerror=reject;document.head.append(script)})}
     const role=wali?'WALI_SANTRI':session.activeRole,label=wali?'Wali Santri':R.displayLabelFor(role,session.activeAssignment);
     if(wali){
@@ -210,8 +211,8 @@
     host=document.createElement('main');host.id='mobileRoleHome';host.className='mh-home';host.dataset.role=role;
     if(name.length>23)host.classList.add('mh-long-name');
     else if(name.length>11)host.classList.add('mh-medium-name');
-    host.innerHTML=`<div class="mh-masthead"><header class="mh-header"><div class="mh-brand"><img src="${new URL('assets/cahaya-app/logo-icon.png',root)}" alt=""><span><strong>CAHAYA <em>APP</em></strong><small>Pesantren Cahaya Fajrul Islam</small></span></div><div class="mh-header-actions"><button type="button" data-mh-id="profile" aria-label="Buka profil" class="mh-avatar">${esc(name.charAt(0))}</button></div></header>
-      <section class="mh-hero"><div class="mh-identity"><span class="mh-greeting">Assalamu’alaikum,</span><h1 title="${esc(name)}">${esc(name)}</h1><div class="mh-identity-actions">${wali?'':`<button type="button" class="mh-role" data-mh-id="roles" ${session?.roles?.length>1?'':'disabled'}>${icon('people')}<span>${esc(label)}</span>${session?.roles?.length>1?'<span>⌄</span>':''}</button>`}${wali?`<button type="button" class="mh-mentor-trigger" data-mh-id="mentor-contact">${icon('people')}<span>Mentor</span></button>`:''}</div></div><blockquote>“${esc(role==='GURU_PONDOK'?'Mengajar hari ini, menyiapkan generasi cahaya esok hari.':supporting[role])}”</blockquote></section></div>
+    host.innerHTML=`<div class="mh-desktop-toolbar"><label class="mh-search"><span aria-hidden="true">${icon('search')}</span><input type="search" placeholder="Cari menu atau fitur…" aria-label="Cari menu sesuai role" autocomplete="off"></label><button type="button" data-mh-id="profile" class="mh-desktop-profile" aria-label="Buka profil">${esc(name.charAt(0))}</button></div><div class="mh-masthead"><header class="mh-header"><div class="mh-brand"><img src="${new URL('assets/cahaya-app/logo-icon.png',root)}" alt=""><span><span class="mh-desktop-kicker">PESANTREN CAHAYA FAJRUL ISLAM</span><strong>CAHAYA <em>APP</em><span class="mh-desktop-version"> 2.0</span></strong><small class="mh-mobile-school">Pesantren Cahaya Fajrul Islam</small><small class="mh-desktop-subtitle">Sistem Manajemen Pesantren Terpadu</small></span></div><div class="mh-header-actions"><button type="button" data-mh-id="profile" aria-label="Buka profil" class="mh-avatar">${esc(name.charAt(0))}</button></div></header>
+      <section class="mh-hero"><div class="mh-identity"><span class="mh-greeting">Assalamu’alaikum,</span><h1 title="${esc(name)}">${esc(name)}</h1><div class="mh-identity-actions">${wali?'':`<button type="button" class="mh-role" data-mh-id="roles" ${session?.roles?.length>1?'':'disabled'}>${icon('people')}<span>${esc(label)}</span>${session?.roles?.length>1?'<span>⌄</span>':''}</button>`}${wali?`<button type="button" class="mh-mentor-trigger" data-mh-id="mentor-contact">${icon('people')}<span>Mentor</span></button>`:''}</div></div><blockquote>“${esc(role==='GURU_PONDOK'?'Mengajar hari ini, menyiapkan generasi cahaya esok hari.':(supporting[role]||'Bersama melayani, mendampingi, dan menebar manfaat setiap hari.'))}”</blockquote></section></div>
       <div class="mh-date"><span class="mh-date-icon">${icon('calendar')}</span><div class="mh-date-copy"><span>${esc(date)}</span><small>${esc(hijri)}</small></div><div class="mh-date-message">${icon('sun')}<span>Terus<br>Menebar Manfaat</span></div></div>
       <section class="mh-quick"><div class="mh-heading"><h2>Akses Cepat Hari Ini</h2><button type="button" data-mh-id="all">Lihat Semua →</button></div><div class="mh-quick-grid" style="--mh-quick-rows:${Math.max(1,Math.ceil(quick.length/2))}">${quick.map((x,i)=>card(x,i,true)).join('')}</div></section>
       <section class="mh-menu"><div class="mh-heading"><h2>Menu Lainnya</h2><button type="button" class="mh-more" data-mh-id="all">Lihat Semua →</button></div><div class="mh-menu-grid"></div></section>
@@ -226,8 +227,13 @@
     document.body.prepend(host);document.body.classList.add('mh-enabled');document.documentElement.classList.add('mh-document');
     if(!embedded)host.classList.add('mh-standalone');
     const photo=user.fotoProfil||user.foto_profil||user.photoURL||user.profilePhoto||user.avatar||user.foto;
-    if(typeof photo==='string'&&/^(https?:|data:image\/|\/)/.test(photo)){const img=new Image();img.alt='';img.src=photo;img.onerror=()=>host.querySelector('.mh-avatar').textContent=name.charAt(0);host.querySelector('.mh-avatar').replaceChildren(img)}
+    if(typeof photo==='string'&&/^(https?:|data:image\/|\/)/.test(photo)){const img=new Image();img.alt='';img.src=photo;img.onerror=()=>host.querySelector('.mh-avatar').textContent=name.charAt(0);host.querySelector('.mh-avatar').replaceChildren(img);host.querySelector('.mh-desktop-profile').appendChild(img.cloneNode())}
     host.addEventListener('click',e=>{const b=e.target.closest('[data-mh-id]');if(b)open(b.dataset.mhId);if(e.target.closest('[data-mh-close]'))host.querySelector('.mh-all')?.close();if(e.target.closest('[data-mentor-close]'))host.querySelector('.mh-mentor-dialog')?.close();if(e.target.matches('dialog'))e.target.close()});
+    const search=host.querySelector('.mh-search input'),all=host.querySelector('.mh-all');
+    search.addEventListener('input',()=>{const q=norm(search.value);if(!q)return;all.showModal();const field=all.querySelector('.mh-dialog-search');field.value=search.value;field.dispatchEvent(new Event('input'));field.focus()});
+    const field=document.createElement('input');field.type='search';field.className='mh-dialog-search';field.placeholder='Cari menu sesuai role…';field.setAttribute('aria-label','Cari semua menu');all.querySelector('header').after(field);
+    field.addEventListener('input',()=>{const q=norm(field.value);all.querySelectorAll('.mh-card').forEach(card=>card.hidden=!norm(card.textContent).includes(q))});
+    all.addEventListener('close',()=>{search.value='';field.value='';field.dispatchEvent(new Event('input'))});
     fill();addEventListener('resize',fill);
     if(wali){addEventListener('CAHAYA_WALI_SESSION_READY',()=>{mentorState=null});addEventListener('storage',event=>{if(['cahayaCurrentUser','cahayaWaliStudentProfile'].includes(event.key))mentorState=null})}
     // Parent shell owns the one existing bottom navigation and role popup.
