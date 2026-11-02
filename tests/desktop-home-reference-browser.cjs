@@ -44,6 +44,12 @@ const firestore=`export const getFirestore=()=>({}),collection=(d,p)=>({p}),doc=
       const f=p.locator('#contentFrame').contentFrame();await f.locator('#mobileRoleHome').waitFor();
       assert.equal(await f.locator('.mh-desktop-toolbar').isVisible(),true,fixture.name+' toolbar');
       const overflow=await f.locator('#mobileRoleHome').evaluate(e=>e.scrollWidth>e.clientWidth+2);assert(!overflow,fixture.name+' horizontal overflow');
+      for(const height of [720,850,1000]){
+        await p.setViewportSize({width:1440,height});
+        const fit=await f.locator('#mobileRoleHome').evaluate(e=>({height:e.clientHeight,scroll:e.scrollHeight,cards:[...e.querySelectorAll('.mh-quick-grid .mh-card,.mh-menu-grid .mh-card')].map(c=>({h:c.clientHeight,s:c.scrollHeight}))}));
+        assert(fit.scroll<=fit.height+2,fixture.name+' vertical fit '+height);
+        assert(fit.cards.every(c=>c.s<=c.h+2),fixture.name+' cards fit '+height);
+      }
       await f.locator('.mh-search input').fill('zz-no-menu');
       assert(await f.locator('.mh-all').evaluate(e=>e.open));
       assert.equal(await f.locator('.mh-all .mh-card:visible').count(),0);
