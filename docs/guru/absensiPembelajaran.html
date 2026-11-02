@@ -2623,16 +2623,7 @@
   }
 
   function jadwalMendukungAbsensiGabungan(item = {}) {
-    if (teacherCodeAktif === "MULTAZAM") return true;
-
-    if (teacherCodeAktif !== "ALAMANDA") return false;
-
-    const subject = compactIdentity(item.subject || "");
-    const className = String(item.className || "").trim();
-    const isTargetSubject = subject === "bahasaarab" || subject === "alquran";
-    const isTargetClass = className === "Kelas 3 Putri" || className === "Kelas 4 Putri";
-
-    return isTargetSubject && isTargetClass;
+    return Boolean(item.scheduleStart && item.scheduleEnd);
   }
 
   function kunciSesiGabungan(item = {}) {
@@ -3004,13 +2995,15 @@
     card.hidden = attendanceStageMode === "AWAL";
     host.replaceChildren();
     if (card.hidden) return;
-    const assignments = daftarJadwalTerpilih(selectedAssignment || getSelectedAssignment());
+    const group = selectedAssignment || getSelectedAssignment();
+    const assignments = group ? [group] : [];
     assignments.forEach((assignment, index) => {
-      const record = existingAttendanceByAssignment.get(assignment.id) || {};
+      const members = daftarJadwalTerpilih(assignment);
+      const record = existingAttendanceByAssignment.get(assignment.id) || members.map(item => existingAttendanceByAssignment.get(item.id)).find(Boolean) || {};
       const field = document.createElement("div"); field.className = "manual-material-field";
       const label = document.createElement("label"); label.htmlFor = `manualMaterial_${index}`;
       label.textContent = `${assignment.subject || "Materi pembelajaran"} • ${assignment.virtualJuzLabel || assignment.className || "Kelas"}`;
-      const input = document.createElement("textarea"); input.id = label.htmlFor; input.dataset.manualAssignment = assignment.id;
+      const input = document.createElement("textarea"); input.id = label.htmlFor; input.dataset.manualAssignment = assignment.id; input.dataset.manualMembers = JSON.stringify(members.map(item => String(item.id)));
       input.rows = 4; input.placeholder = "Contoh: Adab kepada guru — menghormati, menyimak penjelasan, dan praktik bertanya dengan sopan.";
       input.value = typeof record.materiManual === "string" ? record.materiManual : "";
       field.append(label, input); host.appendChild(field);
@@ -3018,7 +3011,7 @@
   }
 
   function manualMaterialPatch(assignment, record = {}) {
-    const input = [...document.querySelectorAll("textarea[data-manual-assignment]")].find(el => el.dataset.manualAssignment === String(assignment.id));
+    const input = [...document.querySelectorAll("textarea[data-manual-assignment]")].find(el => el.dataset.manualAssignment === String(assignment.id) || JSON.parse(el.dataset.manualMembers || "[]").includes(String(assignment.id)));
     const text = input ? input.value.trim() : (record.materiManual || "");
     const selected = selectedMaterials().filter(row => materialMatchesAssignment(row, assignment));
     const keys = selected.map(materialTargetKey);

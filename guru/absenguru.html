@@ -2361,7 +2361,7 @@
     }
 
     function akunGuruMendukungAbsensiGabungan() {
-      return teacherCode === "MULTAZAM";
+      return true;
     }
 
     function attendanceGroupKey(item = {}) {
@@ -2403,7 +2403,7 @@
         seen.add(key);
 
         const members = allTeacherAssignments.filter(item => attendanceGroupKey(item) === key);
-        const classNames = [...new Set(members.map(item => item.className))];
+        const classNames = [...new Set(members.map(item => item.className))].sort();
         const units = [...new Set(members.map(item => item.unit).filter(Boolean))];
 
         if (members.length <= 1) {
@@ -2427,7 +2427,15 @@
         });
       });
 
-      return groups;
+      return groups.flatMap(item => {
+        if (activeTeacherCode !== "MULTAZAM" || compactIdentity(item.subject) !== "bahasaarab") return [item];
+        return ["JUZ_1", "JUZ_2"].map(virtualJuz => ({
+          ...item,
+          id: `${item.id}-${virtualJuz.toLowerCase()}`,
+          virtualJuz,
+          virtualJuzLabel: virtualJuz === "JUZ_1" ? "Juz 1" : "Juz 2"
+        }));
+      });
     }
 
     function assignmentMembers(assignment) {
@@ -3112,7 +3120,7 @@
           assignments
             .map(item => `
               <option value="${item.id}">
-                ${escapeHtml(item.subject)} •
+                ${escapeHtml(item.subject)} ${escapeHtml(item.virtualJuzLabel || "")} •
                 ${escapeHtml(item.sessionLabel)} •
                 ${escapeHtml(item.scheduleLabel)} •
                 ${escapeHtml(item.isCombined ? item.classNames.join(" + ") : item.className)}
@@ -3156,7 +3164,7 @@
             : assignments[0].isCombined
               ? `${assignments[0].classNames.length} kelas diajar bersamaan. Satu konfirmasi akan mencatat kehadiran guru untuk seluruh kelas tersebut.`
               : `Mapel dan ruang sudah sesuai. Jadwal ${assignments[0].scheduleLabel}. Tekan konfirmasi untuk mencatat waktu tiba.`;
-        if (AUTO_ATTENDANCE) {
+        if (AUTO_ATTENDANCE && !assignments.some(item => item.virtualJuz)) {
           showAutoAttendanceToast("Kelas ditemukan", "Mencatat kehadiran secara otomatis…");
           await new Promise(resolve => setTimeout(resolve, 120));
           await confirmAttendance();
@@ -3485,7 +3493,7 @@
       );
 
       try {
-        const attendanceRefs = members.map(item => ({
+        const attendanceRefs = [assignment].map(item => ({
           assignment: item,
           reference: ref(db, `${PATHS.attendance}/${dateKey}/${teacherKey}/${item.id}`)
         }));
@@ -3506,7 +3514,7 @@
             assignment.isCombined ? "Kehadiran Gabungan Sudah Tercatat" : "Kehadiran Sudah Tercatat",
             [
               { label: "Guru", value: teacherName },
-              { label: "Mapel", value: assignment.subject },
+              { label: "Mapel", value: [assignment.subject, assignment.virtualJuzLabel].filter(Boolean).join(" • ") },
               {
                 label: assignment.isCombined ? "Kelas Gabungan" : "Kelas",
                 value: assignment.isCombined ? assignment.classNames.join(", ") : assignment.className
@@ -3528,7 +3536,7 @@
         const attendanceResult = attendanceStatus(localTime, assignment.scheduleStart);
         const batchUpdates = {};
         const groupId = assignment.isCombined
-          ? safeKey(`gabungan-${dateKey}-${teacherKey}-${assignment.subject}-${assignment.scheduleStart}`)
+          ? safeKey(`gabungan-${dateKey}-${teacherKey}-${assignment.subject}-${assignment.scheduleStart}-${assignment.virtualJuz || ""}`)
           : "";
 
         missing.forEach(({ assignment: item }) => {
@@ -3554,7 +3562,11 @@
             jadwalSelesai: item.scheduleEnd,
             jadwalLabel: item.scheduleLabel,
             mapel: item.subject,
-            kelas: item.className,
+            kelas: item.isCombined ? item.classNames.join(" + ") : item.className,
+            classNames: assignment.classNames,
+            sourceAssignmentIds: members.map(member => member.id),
+            virtualJuz: assignment.virtualJuz || "",
+            virtualJuzLabel: assignment.virtualJuzLabel || "",
             nomorKelas: item.classNumber,
             unit: item.unit,
             ruangId: verifiedRoom.id,
@@ -3611,12 +3623,12 @@
           assignment.isCombined ? "Absensi Guru Gabungan Berhasil" : "Absensi Berhasil Disimpan",
           [
             { label: "Guru", value: teacherName },
-            { label: "Mapel", value: assignment.subject },
+            { label: "Mapel", value: [assignment.subject, assignment.virtualJuzLabel].filter(Boolean).join(" • ") },
             {
               label: assignment.isCombined ? "Kelas Tercatat" : "Kelas",
               value: assignment.isCombined ? assignment.classNames.join(", ") : assignment.className
             },
-            { label: "Jumlah Kelas", value: String(missing.length) },
+            { label: "Jumlah Kelas", value: String(assignment.classNames.length) },
             { label: "Ruang Verifikasi", value: verifiedRoom.namaRuang },
             { label: "Jadwal", value: assignment.scheduleLabel },
             { label: "Waktu Tiba", value: localTime },

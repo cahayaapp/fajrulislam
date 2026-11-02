@@ -1,0 +1,27 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const read=p=>fs.readFileSync(p,'utf8');
+const schedule=JSON.parse(read('data/jadwal-pelajaran-awal-2026-2027.json'));
+const c={window:{},Date};vm.createContext(c);vm.runInContext(read('js/guru-kpi-v144.js'),c);
+Object.assign(c,{K:c.window.CahayaGuruKPI,schedule,ident:{code:'MULTAZAM'},norm:c.window.CahayaGuruKPI.norm,DAYS:{1:'Senin',2:'Selasa',3:'Rabu',4:'Kamis',5:'Jumat'}});
+let src=read('guru/capaian-materi.html');vm.runInContext(src.slice(src.indexOf('function sectionIdOf('),src.indexOf('function assignmentGroupLabel(')),c);
+const mats=c.buildAssignments(),aq=mats.filter(x=>x.subject==='Aqidah Tasawuf'),arab=mats.filter(x=>x.subject==='Bahasa Arab');
+assert.equal(aq.length,1);assert(aq[0].classNames.includes('Kelas 4 Putra'));assert(aq[0].classNames.includes('Kelas 5 Putra'));
+assert.equal(arab.length,2);assert.notEqual(arab[0].assignmentKey,arab[1].assignmentKey,'Juz storage keys must not collide after truncation');
+const normalized=schedule.filter(r=>r.hari===1&&r.guruKode==='MULTAZAM').map(r=>({...r,teacher:r.guruKode,subject:r.mapel,className:r.kelas,scheduleStart:r.jamMulai,scheduleEnd:r.jamSelesai,sessionLabel:r.sesi}));
+Object.assign(c,{teacherCode:'MULTAZAM',compactIdentity:v=>String(v||'').toLowerCase().replace(/[^a-z0-9]/g,''),safeKey:v=>v,activeTeacherAssignments:()=>normalized});
+src=read('guru/absenguru.html');vm.runInContext(src.slice(src.indexOf('    function assignmentsForTeacherAndRoom('),src.indexOf('    function assignmentMembers(')),c);
+const groups=c.combinedAssignmentsForTeacherAndRoom('2026-11-02','MULTAZAM',{unit:'PUTRA',kelas:'Kelas 4 Putra'});
+assert.equal(groups.filter(x=>x.subject==='Aqidah Tasawuf').length,1);
+const juz=groups.filter(x=>x.subject==='Bahasa Arab');assert.equal(juz.length,2);assert.notEqual(juz[0].id,juz[1].id);
+const otherRoom=c.combinedAssignmentsForTeacherAndRoom('2026-11-02','MULTAZAM',{unit:'PUTRA',kelas:'Kelas 5 Putra'});
+assert.equal(juz[0].id,otherRoom.find(x=>x.virtualJuz===juz[0].virtualJuz).id,'room scans address the same attendance');
+c.teacherCode='ALAMANDA';assert(c.combinedAssignmentsForTeacherAndRoom('', 'ALAMANDA',{unit:'PUTRA',kelas:'Kelas 4 Putra'}).find(x=>x.subject==='Aqidah Tasawuf').isCombined);
+assert(src.includes('const attendanceRefs = [assignment].map('),'one teacher record per group');
+// One manual field propagates to all member records, including a reload/clear.
+const fields=[{dataset:{manualAssignment:'group',manualMembers:'["a","b"]'},value:'Materi bersama'}];
+Object.assign(c,{document:{querySelectorAll:()=>fields},selectedMaterials:()=>[],materialMatchesAssignment:()=>false,materialTargetKey:r=>r.key,selectedMaterialKeys:new Set(),currentMaterialRows:[]});
+src=read('guru/absensiPembelajaran.html');vm.runInContext(src.slice(src.indexOf('  function manualMaterialPatch('),src.indexOf('  function materialCompletionUpdates()')),c);
+for(const id of ['a','b'])assert.equal(c.manualMaterialPatch({id}).materiManual,'Materi bersama');
+fields[0].value='';assert.equal(c.manualMaterialPatch({id:'b'},{materiManual:'Lama'}).materiManual,'');
+for(const p of ['guru/absenguru.html','guru/absensiPembelajaran.html','guru/capaian-materi.html','js/guru-kpi-v144.js'])assert.equal(read(p),read('docs/'+p));
+console.log('PASS combined materials, unique Juz targets, teacher groups across rooms, shared manual material, and mirrors');
