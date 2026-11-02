@@ -1,0 +1,24 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const read=p=>fs.readFileSync(p,'utf8'),schedule=JSON.parse(read('data/jadwal-pelajaran-awal-2026-2027.json'));
+const window={CAHAYA_CONFIG:{firebase:{}},CahayaGuruHub:{profile:()=>({uid:'fixture',nama:'Multazam'})}};window.parent=window;
+const elements=new Map(),el=id=>{if(!elements.has(id))elements.set(id,{classList:{add(){}},innerHTML:'',textContent:''});return elements.get(id)};
+const writes=[];const c={window,document:{getElementById:el,querySelector:()=>null},console,Date,Intl,Map,Promise,schedule,writes,ensureFirebase:async()=>{},ref:(_,p)=>p,get:async()=>({exists:()=>false}),push:()=>({key:'log'}),serverTimestamp:()=>123,update:async(_,v)=>writes.push(v),sessionStorage:{removeItem(){}},db:{}};vm.createContext(c);vm.runInContext(read('js/guru-kpi-v144.js'),c);
+window.CahayaGuruKPI.jakartaNow=()=>({date:'2026-11-02',minutes:600});
+vm.runInContext(read('js/guru-home-actions.js').slice(read('js/guru-home-actions.js').indexOf('const P=')).replace('export async function','async function'),c);
+vm.runInContext("D.schedule=schedule;IDENT=K.identityFromProfile({nama:'Multazam'},schedule);render();",c);
+const rows=vm.runInContext('TODAY_SCHEDULE',c);assert.equal(rows.length,5,'Monday has five teaching groups');
+assert.equal(rows.filter(r=>r.mapel==='Aqidah Tasawuf').length,1);
+assert.equal(rows.filter(r=>r.mapel==='Al-Qur’an').length,2,'morning and afternoon stay separate');
+assert.equal(rows.filter(r=>r.mapel==='Bahasa Arab').length,2);
+assert.notEqual(rows[0].id,rows[1].id);
+(async()=>{
+ await window.openAutoAttendance(0);
+ assert.equal(writes.length,1);assert.equal(Object.keys(writes[0]).length,2,'one attendance plus one audit log');
+ const record=Object.values(writes[0])[0];assert.equal(record.virtualJuz,'JUZ_1');assert.equal(record.validasiRadiusDiberlakukan,false);assert.equal(record.metodeAbsensi,'JADWAL_TANPA_GPS');assert.equal(record.latitude,undefined,'no fabricated coordinates');assert.equal(record.sourceAssignmentIds.length,3);
+ assert(vm.runInContext('matchAttendance(TODAY_SCHEDULE[0],"2026-11-02")',c));
+ assert.equal(vm.runInContext('matchAttendance(TODAY_SCHEDULE[1],"2026-11-02")',c),null,'Juz 1 does not mark Juz 2 present');
+ await window.openAutoAttendance(0);assert.equal(writes.length,1,'repeat click does not create another record');
+ await window.openAutoAttendance(1);assert.equal(writes.length,2);
+ for(const p of ['js/guru-home-actions.js','js/guru-home-hub.js','home-guru.html'])assert.equal(read(p),read('docs/'+p));
+ console.log('PASS five dashboard groups, separate sessions/Juz, one write per group, repeat protection, mirrors');
+})().catch(e=>{console.error(e);process.exitCode=1});

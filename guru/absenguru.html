@@ -1400,7 +1400,7 @@
         <span class="hero-label">CAHAYA APP • Absensi Guru</span>
         <h1>Absen Kehadiran Guru</h1>
         <p>
-          Scan QR kelas atau masukkan kode ruang. Lokasi diperiksa otomatis agar absensi tercatat sesuai area pembelajaran.
+          Scan QR kelas atau masukkan kode ruang. Syarat GPS dinonaktifkan sementara.
         </p>
       </div>
 
@@ -1428,7 +1428,7 @@
 
         <div class="step">
           <span>2</span>
-          <strong>Izinkan browser membaca lokasi</strong>
+          <strong>Periksa jadwal mengajar</strong>
         </div>
 
         <div class="step">
@@ -1502,13 +1502,13 @@
             class="button button-primary"
             id="checkCodeButton"
           >
-            ✓ Periksa Kode & Lokasi
+            ✓ Periksa Kode Kelas
           </button>
         </div>
 
         <div class="helper">
           Kode terdapat pada poster QR di ruang kelas.
-          Lokasi tetap diperiksa meskipun menggunakan kode.
+          Presensi sementara tidak memerlukan izin lokasi atau GPS.
         </div>
       </div>
 
@@ -1548,10 +1548,8 @@
       </section>
 
       <div class="notice">
-        Saat pertama kali digunakan, browser akan meminta izin kamera
-        dan lokasi. Pilih <b>Izinkan</b>. Jangan menutup permintaan lokasi
-        sebelum posisi berhasil ditemukan. Setiap presensi guru tetap diverifikasi
-        berdasarkan zona lokasi dan jarak yang ditetapkan.
+        Untuk scan QR, izinkan akses kamera. Syarat GPS dan pemeriksaan jarak
+        presensi guru dinonaktifkan sementara.
       </div>
     </section>
   </main>
@@ -2875,14 +2873,13 @@
         return;
       }
 
-      // V171: presensi guru wajib menggunakan verifikasi area/jarak untuk semua ruang.
-      // Konfigurasi bebasRadius lama sengaja tidak lagi membypass geofence.
-      const radiusExempt = false;
+      // Sementara: ubah ke false untuk memberlakukan kembali syarat GPS.
+      const radiusExempt = true;
 
       showResult(
         "",
         radiusExempt
-          ? "Memeriksa QR/Kode Kelas Online..."
+          ? "Memeriksa QR/Kode Kelas..."
           : "Memeriksa Lokasi Perangkat...",
         [
           {
@@ -2893,7 +2890,7 @@
             label: "Validasi Lokasi",
             value:
               radiusExempt
-                ? "Tidak diberlakukan untuk kelas ini"
+                ? "GPS dinonaktifkan sementara"
                 : location.nama
           }
         ]
@@ -3055,7 +3052,7 @@
           radiusExempt,
           status:
             radiusExempt
-              ? "DIKECUALIKAN"
+              ? "DINONAKTIFKAN_SEMENTARA"
               : "VALID"
         };
 
@@ -3066,7 +3063,7 @@
 
         showResult(
           "success",
-          "Ruang dan Lokasi Berhasil Diverifikasi",
+          radiusExempt ? "Ruang Berhasil Diverifikasi" : "Ruang dan Lokasi Berhasil Diverifikasi",
           [
             {
               label: "Guru",
@@ -3587,7 +3584,7 @@
               validasiRadiusDiberlakukan: !verifiedPosition.radiusExempt,
               status: verifiedPosition.status,
               alasanPengecualian: verifiedPosition.radiusExempt
-                ? (verifiedRoom.alasanBebasRadius || "Kelas online.")
+                ? "Syarat GPS presensi guru dinonaktifkan sementara."
                 : ""
             },
             statusKehadiran: attendanceResult.status,

@@ -57,7 +57,7 @@ async function actions(){
     if(!window.CAHAYA_CONFIG)await localScript('config/tenant-config.js?v=149');
     if(!window.CAHAYA_MASTER_DATA)await localScript('config/master-data.js?v=288');
     if(!window.CahayaGuruKPI)await localScript('js/guru-kpi-v144.js?v=288');
-    return import('./guru-home-actions.js?v=291');
+    return import('./guru-home-actions.js?v=293');
   })().catch(error=>{actionPromise=null;throw error});
   return actionPromise;
 }
