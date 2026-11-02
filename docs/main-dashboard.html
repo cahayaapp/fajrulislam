@@ -4237,6 +4237,15 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       if (menuId === 'menu-home' && activeRoleForPage === 'guru') url = 'home-guru.html?v=202';
       if (menuId === 'menu-home' && ['naqib','naqib-operasional'].includes(activeRoleForPage)) url = 'home-naqib.html?v=216';
       if (canonicalRoleRuntime && menuId === 'menu-home') url = roleSystemV2.homeFor(activeRoleForPage, roleV2Session.activeAssignment);
+      // A Home release must change the iframe URL as well as the outer shell assets.
+      // Retain action parameters such as openSchedule while retiring old live frames.
+      if (activeRoleForPage !== 'admin') {
+        const homeUrl = new URL(url, location.href);
+        if (/\/(?:home(?:-[^/]+)?|role-workspace)\.html$/.test(homeUrl.pathname) || /\/wali\/dashboard\/(?:index|beranda)\.html$/.test(homeUrl.pathname)) {
+          homeUrl.searchParams.set('v', '296');
+          url = url.split(/[?#]/)[0] + homeUrl.search + homeUrl.hash;
+        }
+      }
       if (canonicalRoleRuntime && activeRoleForPage === 'WALI_SANTRI' && menuId === 'menu-home') {
         // Keep the existing standalone Portal Wali and its child/session engine.
         // Never nest a second portal shell/nav inside the staff shell.
@@ -4452,7 +4461,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
     /* V182: pemeriksa rilis kecil. HTML tidak lagi dikunci cache lama. */
     (()=>{
       if(!('serviceWorker' in navigator))return;
-      const build='v168',storageKey='cahaya:active-sw-build';
+      const build='v296',storageKey='cahaya:active-sw-build';
       const activateBuild=next=>{
         const previous=sessionStorage.getItem(storageKey)||'';
         sessionStorage.setItem(storageKey,next);
@@ -4464,7 +4473,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
       navigator.serviceWorker.addEventListener('message',event=>{
         if(event.data?.type==='CAHAYA_RELEASE_READY')activateBuild(String(event.data.build||build));
       });
-      const check=()=>navigator.serviceWorker.register('./firebase-messaging-sw.js?v=168',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().then(()=>reg).catch(()=>reg)).catch(()=>null);
+      const check=()=>navigator.serviceWorker.register('./firebase-messaging-sw.js?v=296',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update().then(()=>reg).catch(()=>reg)).catch(()=>null);
       check().then(()=>activateBuild(build));
       document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
       setInterval(check,300000);

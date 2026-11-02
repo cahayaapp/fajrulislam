@@ -1,9 +1,10 @@
 /* Explicit, idempotent assignment migration. Never changes IDs or attendance history. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CahayaTeacherReassignment=api})(typeof window!=='undefined'?window:globalThis,function(){
-  const version='20261101-kelas2-zawawi-zaky',names={ZAKY:'Zaky',ZAWAWI:'Muhammad Zawawi',DONY:'Dony Setiawan',MULTAZAM:'Multazam'};
+  const version='20261102-adab1-zaky',names={ZAKY:'Zaky',ZAWAWI:'Muhammad Zawawi',DONY:'Dony Setiawan',MULTAZAM:'Multazam'};
   const norm=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   function target(row){
     const teacher=String(row.guruKode||row.teacherCode||'').toUpperCase(),subject=norm(row.mapel||row.mataPelajaran),cls=String(row.kelas||'');
+    if(teacher==='NAQIEB'&&subject==='adab'&&cls==='Kelas 1 Putra')return 'ZAKY';
     if(teacher==='MULTAZAM'&&subject==='haditsahkam')return 'ZAWAWI';
     if(['NAQIEB','ZAWAWI'].includes(teacher)&&subject==='adab'&&cls==='Kelas 2 Putra')return 'ZAKY';
     if(teacher==='NAQIEB'&&subject==='adab'&&cls==='Kelas 3 Putra')return 'ZAWAWI';
@@ -20,6 +21,10 @@
     if(Number(row.hari)===4&&((cls==='Kelas 4 Putra'&&subject==='shirah'&&teacher==='RAHIEL')||(cls==='Kelas 5 Putra'&&subject==='manajemendanbisnis'&&teacher==='MULTAZAM'))){result.hari=2;result.hariLabel='Selasa'}
     if(cls==='Kelas 2 Putra'&&subject==='hadits'&&teacher==='ZAWAWI'&&Number(row.hari)===4){result.hari=2;result.hariLabel='Selasa'}
     if(cls==='Kelas 2 Putra'&&subject==='adab'&&teacher==='ZAKY'&&Number(row.hari)===2){result.hari=4;result.hariLabel='Kamis'}
+    if(cls==="Kelas 1 Putra"&&subject==="fiqih"&&teacher==="RASYIDIN"&&Number(row.hari)===2){result.hari=4;result.hariLabel="Kamis"}
+    if(cls==="Kelas 1 Putra"&&subject==="adab"&&teacher==="ZAKY"&&Number(row.hari)===4){result.hari=2;result.hariLabel="Selasa"}
+    if(cls==="Kelas 3 Putra"&&subject==="shirah"&&teacher==="RAHIEL"&&Number(row.hari)===2){result.hari=4;result.hariLabel="Kamis"}
+    if(cls==="Kelas 3 Putra"&&subject==="fiqih"&&teacher==="RASYIDIN"&&Number(row.hari)===4){result.hari=2;result.hariLabel="Selasa"}
     return Object.keys(result).length?result:null;
   }
 

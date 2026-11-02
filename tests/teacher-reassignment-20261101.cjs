@@ -12,7 +12,7 @@ assert.equal(counts.MULTAZAM.filter(r=>/qur/i.test(r.mapel)&&r.kelas==='Kelas 4 
 assert.equal(rows.filter(r=>r.guruKode==='FAIQ'&&/qur/i.test(r.mapel)).length,0);
 assert(rows.every(r=>migration.patch(r)===null),'Migration must be idempotent');
 assert.equal(migration.patch({guruKode:'FAIQ',mapel:'Hadits',kelas:'Kelas 2 Putra',hari:4}).guruKode,'ZAWAWI','Transfer Faiq Hadits class 2');
-assert.equal(migration.patch({guruKode:'NAQIEB',mapel:'Adab',kelas:'Kelas 1 Putra'}),null,'Retain Nagib Adab class 1');
+assert.deepEqual(migration.patch({guruKode:'NAQIEB',mapel:'Adab',kelas:'Kelas 1 Putra',hari:4}),{guruKode:'ZAKY',guruNama:'Zaky',hari:2,hariLabel:'Selasa'},'Correct Adab class 1 teacher and original day');
 assert.equal(migration.patch({guruKode:'FATIMAH',mapel:'Aqidah',kelas:'Kelas 1 Putri'}),null,'Retain unrelated Putri assignment');
 const original={id:'stable-id',guruKode:'FAIQ',guruNama:'Faiq Akbar Firdaus',mapel:'Al-Qur’an',kelas:'Kelas 4 Putra',jamMulai:'07:00'};
 assert.deepEqual({...original,...migration.patch(original)},{...original,guruKode:'MULTAZAM',guruNama:'Multazam'});

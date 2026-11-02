@@ -3,7 +3,7 @@
   'use strict';
 
   const VERSION='69';
-  const SERVICE_WORKER_VERSION='168';
+  const SERVICE_WORKER_VERSION='296';
   const state={registration:null,messaging:null,ready:false,currentToken:''};
   const db=()=>firebase.database();
   const clean=(v='')=>String(v??'').trim();

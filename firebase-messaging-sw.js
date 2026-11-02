@@ -1,6 +1,6 @@
-/* CAHAYA APP v168 — HTML selalu diperiksa ke jaringan; aset versi tetap hemat cache */
-const CAHAYA_SW_BUILD='v168';
-const STATIC_CACHE='cahaya-static-v168';
+/* CAHAYA APP v296 — HTML selalu diperiksa ke jaringan; aset versi tetap hemat cache */
+const CAHAYA_SW_BUILD='v296';
+const STATIC_CACHE='cahaya-static-v296';
 self.addEventListener('install',event=>{self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{
   const keys=await caches.keys();
@@ -48,7 +48,7 @@ async function cacheFirst(request){
 async function networkFirst(request){
   const cache=await caches.open(STATIC_CACHE);
   try{
-    const response=await fetch(request);
+    const response=await fetch(request,{cache:'no-cache'});
     if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
     return response;
   }catch(e){
