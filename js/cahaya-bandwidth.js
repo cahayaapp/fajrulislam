@@ -1,6 +1,7 @@
 (function(global){
   'use strict';
-  const VERSION='2026-09-02-v96';
+  const VERSION='2026-11-05-v300';
+  const inFlight=new WeakMap();
   const PREFIX='cahaya_bw_cache_';
   const DAY=86400000;
   const DEFAULT_TTL=5*60000;
@@ -66,17 +67,37 @@
     }
     return opts;
   }
-  function safeKey(s){return btoa(unescape(encodeURIComponent(s))).replace(/[^a-zA-Z0-9]/g,'').slice(0,120)}
-  function cacheKey(path,opts){return PREFIX+safeKey(VERSION+'|'+path+'|'+JSON.stringify({start:opts.start,end:opts.end,limit:opts.limit,orderBy:opts.dateField||opts.orderByChild||'',equalTo:opts.equalTo}))}
+  function safeKey(s){return encodeURIComponent(s)}
+  function cacheKey(path,opts,scope=''){return PREFIX+safeKey(VERSION+'|'+scope+'|'+path+'|'+JSON.stringify({start:opts.start,end:opts.end,limit:opts.limit,orderBy:opts.orderByChild||opts.dateField||'',orderByKey:!!opts.orderByKey,equalTo:opts.equalTo}))}
   function loadCache(key,ttl){try{const v=JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null');if(v&&Date.now()-v.t<(ttl||DEFAULT_TTL))return v.v}catch(e){}return undefined}
-  function saveCache(key,value,ttl){try{const raw=JSON.stringify({t:Date.now(),v:value});if((ttl||0)>=60*60000)localStorage.setItem(key,raw);else sessionStorage.setItem(key,raw)}catch(e){}}
+  function pruneCache(storage){
+    const currentPrefix=PREFIX+safeKey(VERSION+'|');
+    try{for(let i=storage.length-1;i>=0;i--){const key=storage.key(i);if(!key?.startsWith(PREFIX))continue;
+      let item;try{item=JSON.parse(storage.getItem(key))}catch{}
+      if(!key.startsWith(currentPrefix)||!item||Date.now()-item.t>=(item.ttl||MASTER_TTL))storage.removeItem(key);
+    }}catch{}
+  }
+  function saveCache(key,value,ttl){
+    try{const storage=(ttl||0)>=60*60000?localStorage:sessionStorage,raw=JSON.stringify({t:Date.now(),ttl:ttl||DEFAULT_TTL,v:value});
+      try{storage.setItem(key,raw)}catch{pruneCache(storage);storage.setItem(key,raw)}
+    }catch{}
+  }
+  try{pruneCache(localStorage);pruneCache(sessionStorage)}catch{}
   function fakeSnapshot(value,key=null){return{key,val:()=>value,exists:()=>value!==null&&value!==undefined&&(typeof value!=='object'||Object.keys(value).length>0),forEach(cb){if(value&&typeof value==='object')Object.entries(value).forEach(([k,v])=>cb(fakeSnapshot(v,k)))}}}
   function applyCompatQuery(ref,opts){let q=ref;const field=opts.orderByChild||opts.dateField;if(field){q=q.orderByChild(field);if(opts.start!==undefined)q=q.startAt(opts.start);if(opts.end!==undefined)q=q.endAt(opts.end)}else if(opts.orderByKey){q=q.orderByKey();if(opts.start!==undefined)q=q.startAt(opts.start);if(opts.end!==undefined)q=q.endAt(opts.end)}if(opts.equalTo!==undefined)q=q.equalTo(opts.equalTo);if(opts.limit)q=q.limitToLast(Number(opts.limit));return q}
   async function readCompat(database,path,overrides={}){
-    const opts=optionsFor(path,overrides),ck=cacheKey(path,opts),cached=overrides.noCache?undefined:loadCache(ck,opts.ttl);
+    // Keep account/tenant caches separate; never truncate the query identity.
+    let user={};try{user=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')||{}}catch{}
+    const scope=JSON.stringify([database.app?.options?.databaseURL||database.app?.name||'',user.uid||user.authUid||user.username||user.email||'',user.activeRole||user.role||'',user.assignments||{}]);
+    const opts=optionsFor(path,overrides),ck=cacheKey(path,opts,scope),cached=overrides.noCache?undefined:loadCache(ck,opts.ttl);
     if(cached!==undefined)return fakeSnapshot(cached);
-    const snap=await applyCompatQuery(database.ref(path),opts).once('value');
-    const value=snap.val();saveCache(ck,value,opts.ttl);record(path,value,'read');return snap;
+    let pending=inFlight.get(database);if(!pending){pending=new Map();inFlight.set(database,pending)}
+    const requestKey=ck+(overrides.noCache?'|fresh':'');
+    if(pending.has(requestKey))return pending.get(requestKey);
+    const request=(async()=>{const snap=await applyCompatQuery(database.ref(path),opts).once('value');
+      const value=snap.val();saveCache(ck,value,opts.ttl);record(path,value,'read');return snap;})();
+    pending.set(requestKey,request);
+    try{return await request}finally{pending.delete(requestKey)}
   }
   function listenCompat(database,path,overrides,callback,error){
     const opts=optionsFor(path,overrides||{}),q=applyCompatQuery(database.ref(path),opts);

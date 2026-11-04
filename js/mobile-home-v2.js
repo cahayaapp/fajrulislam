@@ -140,7 +140,7 @@
     if(document.getElementById('roleAccessDenied')||document.getElementById('mobileRoleHome'))return;
     try{user=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}catch{user={}}
     session=R?.resolveSession(user,localStorage);if(!session?.activeRole&&!wali)return;if(session?.activeRole==='ADMIN')return;
-    if(!wali&&!window.CahayaRoleMenuV2){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('js/role-menu-v2.js?v=274',root);script.onload=resolve;script.onerror=reject;document.head.append(script)})}
+    if(!wali&&!window.CahayaRoleMenuV2){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('js/role-menu-v2.js?v=299',root);script.onload=resolve;script.onerror=reject;document.head.append(script)})}
     const role=wali?'WALI_SANTRI':session.activeRole,label=wali?'Wali Santri':R.displayLabelFor(role,session.activeAssignment);
     if(wali){
       const allowed=embedded?[...P.document.querySelectorAll('.nav-item[data-menu-id]')].filter(x=>!x.hidden&&x.dataset.moduleDisabled!=='true'&&x.dataset.menuId!=='menu-beranda-wali'):[];

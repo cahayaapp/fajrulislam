@@ -4,8 +4,9 @@ const root=path.resolve(__dirname,'..');
 const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://local').pathname));if(!file.startsWith(root+path.sep))return res.writeHead(403).end();try{res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css'})[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file))}catch{res.writeHead(404).end()}});
 const app=`export const initializeApp=()=>({}),getApps=()=>[];`;
 const db=`export const getDatabase=()=>({});export const ref=(d,p='')=>({p});
+export const query=(r,...cs)=>({...r,...Object.assign({},...cs)}),orderByChild=field=>({field}),startAt=start=>({start}),endAt=end=>({end});
 function data(){return JSON.parse(localStorage.getItem('mock-db')||'{}')}function save(v){localStorage.setItem('mock-db',JSON.stringify(v))}function at(v,p){return p.split('/').filter(Boolean).reduce((x,k)=>x?.[k],v)}function put(v,p,value){const parts=p.split('/').filter(Boolean);let x=v;for(const k of parts.slice(0,-1))x=x[k]||(x[k]={});x[parts.at(-1)]=value}
-export async function get(r){window.__reads.push(r.p);const v=at(data(),r.p);return{val:()=>v??null,exists:()=>v!=null}}
+export async function get(r){window.__reads.push(r.p);let v=at(data(),r.p);if(r.field)v=Object.fromEntries(Object.entries(v||{}).filter(([,row])=>row[r.field]>=r.start&&row[r.field]<=r.end));return{val:()=>v??null,exists:()=>v!=null}}
 let seq=0;export function push(r){return{p:r.p+'/mock-'+(++seq),key:'mock-'+seq}}
 export async function set(r,value){const v=data();put(v,r.p,value);save(v);window.__writes.push({p:r.p,value})}
 export async function update(r,value){const v=data(),old=at(v,r.p)||{};put(v,r.p,{...old,...value});save(v);window.__writes.push({p:r.p,value})}`;

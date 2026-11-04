@@ -106,7 +106,8 @@ async function fixturePage(browser, ids) {
       window.__calls=[];window.CAHAYA_CONFIG={firebase:{}};
       window.CahayaWorkspace={monthKey:()=> '2026-10',unitFromProfile:()=> 'Putra',name:()=> 'Supervisor',norm:value=>String(value||'').toLowerCase(),records:value=>Object.values(value||{}),toast:()=>{}};
       const getApps=()=>[{}],initializeApp=()=>({}),getDatabase=()=>({}),ref=(_db,name)=>name;
-      const get=async name=>{window.__calls.push(name);return {exists:()=>true,val:()=>name==='observasi_lapangan'?{a:{tanggal:'2026-10-30',unit:'Putra',jenis:'pembelajaran',persentase:80},b:{tanggal:'2026-10-30',unit:'Putra',jenis:'pengasuhan',persentase:70}}:{}}};
+      const query=(path,...cs)=>({path,...Object.assign({},...cs)}),orderByChild=field=>({field}),startAt=start=>({start}),endAt=end=>({end});
+      const get=async target=>{const name=target.path||target;window.__calls.push(name);return {exists:()=>true,val:()=>name==='observasi_lapangan'?{a:{tanggal:'2026-10-30',unit:'Putra',jenis:'pembelajaran',persentase:80},b:{tanggal:'2026-10-30',unit:'Putra',jenis:'pengasuhan',persentase:70}}:{}}};
       const push=()=>({key:'unused'}),set=async()=>{throw Error('writes forbidden')};
     `});
     await commandPage.addScriptTag({content:commandCode});

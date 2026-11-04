@@ -17,7 +17,7 @@ function source() {
 }
 
 test('Command Center memakai satu pembacaan observasi untuk dua indikator', async () => {
-  const calls = [];
+  const calls = [],queries=[];
   const nodes = new Map();
   const values = {
     'cahaya_app/absensi_pembelajaran': { a: { tanggal: '2026-10-30', unit: 'Putra', status: 'Hadir' } },
@@ -43,13 +43,15 @@ test('Command Center memakai satu pembacaan observasi untuk dua indikator', asyn
     } },
     getApps: () => [{}], initializeApp: () => ({}), getDatabase: () => ({}),
     ref: (_database, target) => target,
-    get: async target => { calls.push(target); return { exists: () => true, val: () => values[target] || {} }; },
+    query: (path,...clauses)=>{const q={path,...Object.assign({},...clauses)};queries.push(q);return q},orderByChild:field=>({field}),startAt:start=>({start}),endAt:end=>({end}),
+    get: async target => { const p=target.path||target;calls.push(p);const data=Object.fromEntries(Object.entries(values[p]||{}).filter(([,r])=>!target.field||(r[target.field]>=target.start&&r[target.field]<=target.end)));return { exists: () => true, val: () => data }; },
     push: () => ({ key: 'unused' }), set: async () => {},
     location: { href: '' }, console
   });
   vm.runInContext(source(), context);
   await context.firstLoad;
 
+  assert.equal(queries.length,3);assert(queries.every(q=>q.start==='2026-10-01'&&q.end==='2026-10-31\uf8ff'));
   assert.equal(calls.length, 7, 'tujuh sumber unik saja yang diunduh');
   assert.equal(calls.filter(target => target === 'observasi_lapangan').length, 1);
   assert.equal(calls.includes('cahaya_app/capaian_materi'), false, 'sumber tidak terpakai tidak diunduh');

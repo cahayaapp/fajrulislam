@@ -425,6 +425,7 @@
     "menus": ["menu-penempatan-tahsin"],
     "policy": "tahsin-placement-v2"
   },
+  "guru/sertifikat-setoran.html": {"menus": ["menu-tahfiz"], "policy": "teacher"},
   "guru/inputSetoranTahfiz.html": {
     "menus": [
       "menu-tahfiz"

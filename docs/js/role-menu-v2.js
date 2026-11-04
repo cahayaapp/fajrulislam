@@ -23,6 +23,7 @@
         ['menu-kalender-materi','Materi Pembelajaran','guru/capaian-materi.html'],
         ['menu-nilai','Nilai Ujian','guru/inputNilaiUjian.html'],
         ['menu-tahfiz','Tahsin / Tahfiz','guru/inputSetoranTahfiz.html'],
+        ['menu-sertifikat-setoran','Sertifikat Setoran Sekali Duduk','guru/sertifikat-setoran.html?v=299','Operasional','menu-tahfiz'],
         ['menu-tindak-lanjut-guru','Tindak Lanjut Akademik','guru/tindak-lanjut.html'],
         ['menu-laporan-murojaah','Lapor Kasus / Pelanggaran','guru/lapor-pelanggaran.html'],
         ['menu-guru-menulis','Guru Menulis','guru/gurumenulis.html'],

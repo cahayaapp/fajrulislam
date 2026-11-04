@@ -1,5 +1,5 @@
 import{initializeApp,getApps}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import{getDatabase,ref,get,push,set,update}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import{getDatabase,ref,get,push,set,update,query,orderByChild,startAt,endAt}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 const K=window.CahayaWeeklyKpiV2,W=window.CahayaNaqibWeekendModeV2,R=window.CahayaRoleSystemV2,C=window.CAHAYA_KPI_WEEKLY_PAGE||{},ROLE=C.role==='NAQIB'?'NAQIB':'GURU',$=id=>document.getElementById(id),app=getApps().length?getApps()[0]:initializeApp(window.CAHAYA_CONFIG.firebase),db=getDatabase(app);
 const user=(()=>{try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}catch{return{}}})(),session=R?.resolveSession?.(user,localStorage)||{},activeRole=session.activeRole||'',assignment=session.activeAssignment||{},unit=String(assignment.unit||user.unit||'').toUpperCase(),isManager=activeRole==='MANAJER'&&(ROLE==='GURU'?R.isEducationManager(assignment):R.isCharacterManager(assignment)),isSupervisor=activeRole==='SUPERVISOR',isDirector=activeRole==='DIREKTUR',canManage=isManager,canSelect=isManager||isSupervisor||isDirector;
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])),norm=K.norm,rows=K.values;
@@ -12,7 +12,7 @@ function samePerson(row,person=current){const code=personCode(row);if(code&&pers
 function unitOf(row){const text=norm([row?.unit,row?.area,row?.kelas,row?.rombel,row?.unitAsrama,row?.labelUsrah,row?.usrah].filter(Boolean).join(' '));return text.includes('putri')?'PUTRI':text.includes('putra')?'PUTRA':''}
 function scoped(row){const rowUnit=unitOf(row);return !unit||unit==='ALL'||!rowUnit||rowUnit===unit}
 function flatten(node,test=()=>true,out=[]){if(!node||typeof node!=='object')return out;if(!Array.isArray(node)&&test(node)){out.push(node);return out}Object.values(node).forEach(value=>flatten(value,test,out));return out}
-async function val(path){try{return(await get(ref(db,path))).val()||{}}catch(error){console.warn('KPI source unavailable',path,error);return{}}}
+async function val(path){try{const dated=['cahaya_app/log_absensi_guru','cahaya_app/absensi_pembelajaran','cahaya_app/absensi_program_harian','cahaya_app/jurnal_piket_naqib'].includes(path);const target=dated?query(ref(db,path),orderByChild('tanggal'),startAt(currentWeek.weekStart),endAt(currentWeek.weekEnd+'\uf8ff')):ref(db,path);return(await get(target)).val()||{}}catch(error){console.warn('KPI source unavailable',path,error);return{}}}
 function localDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 function weekday(date){return['ahad','senin','selasa','rabu','kamis','jumat','sabtu'][new Date(`${date}T12:00:00+07:00`).getDay()]}
 function score(done,total){return total?Math.round(Math.min(done,total)*100/total):null}
