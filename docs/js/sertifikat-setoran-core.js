@@ -30,11 +30,13 @@ ar('تقديرًا لإتمام تسميع حفظ القرآن الكريم في
 text('Atas pencapaian setoran hafalan Al-Qur’an dalam sekali duduk',427,16);
 ar(`عدد الأجزاء: ${arabicNumber(record.jumlahJuz)}`,464,26,'#a17a34');
 text(`${record.jumlahJuz} JUZ`,489,18,'#a17a34','Arial');
-ar(`التاريخ: ${arabicDate(record.tanggal)}    •    الدرجة: ${arabicNumber(record.nilai)} من ${arabicNumber(100)}`,524,18);
-text(`Tanggal ${dateLabel(record.tanggal)}    •    Nilai ${record.nilai} / 100`,549,14,'#173e51','Arial');
-ar('مُتَلَقِّي التسميع',594,20,'#637681');
-text('Penerima Setoran',615,13,'#637681','Arial');
-text(record.guruNama,642,20);
+ar(`التاريخ: ${arabicDate(record.tanggal)}    •    الدرجة: ${arabicNumber(record.nilai)} من ${arabicNumber(100)}`,511,18);
+text(`Tanggal ${dateLabel(record.tanggal)}    •    Nilai ${record.nilai} / 100`,536,14,'#173e51','Arial');
+ar('مُتَلَقِّي التسميع',561,18,'#637681');
+text('Penerima Setoran',579,12,'#637681','Arial');
+// Blank area between the role and name is reserved for a handwritten signature.
+x.save();x.strokeStyle='#b7b1a1';x.lineWidth=.5;x.beginPath();x.moveTo(390,622);x.lineTo(600,622);x.stroke();x.restore();
+text(record.guruNama,640,17);
 return c}
 // Single-page A4 landscape PDF containing the high-resolution certificate artwork.
 async function pdf(record){const c=await canvas(record),jpg=await new Promise(resolve=>c.toBlob(resolve,'image/jpeg',.96));if(!jpg)throw Error('Gagal menyiapkan gambar sertifikat.');const bytes=new Uint8Array(await jpg.arrayBuffer()),enc=new TextEncoder(),parts=[],offsets=[0];let length=0;function add(s){const b=typeof s==='string'?enc.encode(s):s;parts.push(b);length+=b.length}function obj(id,s){offsets[id]=length;add(`${id} 0 obj\n${s}\nendobj\n`)}add('%PDF-1.4\n');obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 841.89 595.28] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');offsets[4]=length;add(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${c.width} /Height ${c.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${bytes.length} >>\nstream\n`);add(bytes);add('\nendstream\nendobj\n');const commands='q 841.89 0 0 595.28 0 0 cm /Im0 Do Q';obj(5,`<< /Length ${commands.length} >>\nstream\n${commands}\nendstream`);const start=length;add('xref\n0 6\n0000000000 65535 f \n');for(let i=1;i<6;i++)add(String(offsets[i]).padStart(10,'0')+' 00000 n \n');add(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${start}\n%%EOF`);return new Blob(parts,{type:'application/pdf'})}
