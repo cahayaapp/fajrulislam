@@ -1504,6 +1504,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   <section class="c53-scene-shell" id="examWizard">
     <section class="panel-card c53-scene c53-scene-card active" id="sceneAssessment" data-scene="assessment">
       <div class="c53-scene-nav"><div class="c53-scene-copy"><small>Mulai dari sini</small><h2>Pilih Jenis Penilaian</h2><p>Bobot nilai sudah tetap. Pilih sesuai jenis pelajaran yang akan dinilai.</p></div></div>
+      <label id="faiqOctoberOption" hidden><input type="checkbox" id="faiqOctoberToggle"> Nilai Oktober 2026 • mapel Faiq</label>
       <div class="c53-choice-grid c74-assessment-grid">
         <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('tahfiz')">
           <span class="n172-assessment-icon n172-icon-blue" aria-hidden="true">📖</span>
@@ -1684,7 +1685,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
 <script src="../js/quran-menu-roster.js?v=4"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, get, remove, set, update, query, orderByChild, equalTo, startAt, endAt, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, get, remove, set, update, query, orderByChild, equalTo, startAt, endAt, endBefore, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = window.CAHAYA_CONFIG.firebase;
 
@@ -1984,16 +1985,52 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   }
   // Confirmed former assignment: Multazam may complete the October 2026 exam.
   const HISTORICAL_HADITS_CLASSES = ['Kelas 4 Putra','Kelas 5 Putra','Kelas 4 Putri'];
+  // Faiq's October timetable, before the November teacher reassignment.
+  const faiqOctoberClasses = {
+    Aqidah: ['Kelas 1 Putra'],
+    Hadits: ['Kelas 2 Putra', 'Kelas 3 Putra'],
+    'Al-Qur’an': ['Kelas 4 Putra']
+  };
+  let gradingForFaiq = false;
+  function canGradeForFaiq() {
+    if (teacherCodeAktif !== 'DONY') return false;
+    const assignment = activeUser.assignments?.GURU_PONDOK || activeUser.assignment || {};
+    const code = activeUser.teacherCode || activeUser.guruKode || assignment.teacherCode || assignment.guruKode;
+    if (code) return String(code).trim().toUpperCase() === 'DONY';
+    const aliases = TEACHER_CODE_ALIASES.DONY.map(compactTeacherIdentity);
+    return [getActiveUserName(), activeUser.username, String(activeUser.email || '').split('@')[0]]
+      .some(name => aliases.includes(compactTeacherIdentity(name)));
+  }
+  function faiqClassesForAssessment(subject, assessment) {
+    if (['kitab_tanpa_praktek','kitab_dengan_praktek'].includes(assessment)) {
+      return subject === 'Aqidah' || subject === 'Hadits' ? faiqOctoberClasses[subject] : [];
+    }
+    if (['tahfiz','tahsin_level_1','tahsin_level_2','tahsin_level_3'].includes(assessment)
+        && ASSESSMENT_TYPES[assessment].mapel === subject) return faiqOctoberClasses['Al-Qur’an'];
+    return [];
+  }
   function isHistoricalHadits(subject=document.getElementById('mapel').value){
     return teacherCodeAktif==='MULTAZAM' && String(subject||'').trim().toLowerCase()==='hadits ahkam';
   }
   function historicalExamAllowed(params){
+    if (gradingForFaiq) {
+      const allowed = faiqClassesForAssessment(params.mapel, params.kodePenilaian || currentAssessmentKey);
+      const classes = params.kelasList || String(params.kelas || '').split('|').map(x=>x.trim()).filter(Boolean);
+      return canGradeForFaiq() && params.tahun === '2026/2027' && params.jenis === 'Bulanan'
+        && params.periode === 'Oktober' && classes.length === 1 && allowed.includes(classes[0]);
+    }
     if(!isHistoricalHadits(params.mapel))return true;
     const classes=params.kelasList||String(params.kelas||'').split('|').map(x=>x.trim()).filter(Boolean);
     return params.tahun==='2026/2027' && params.jenis==='Bulanan' && params.periode==='Oktober' && classes.length>0 && classes.every(x=>HISTORICAL_HADITS_CLASSES.includes(x));
   }
   function buildTeacherSubjectMap(){
     const source=buildClassSource(); teacherSubjectClasses={};
+    if (gradingForFaiq && canGradeForFaiq()) {
+      for (const [subject, classes] of Object.entries(faiqOctoberClasses)) {
+        teacherSubjectClasses[subject] = classes.filter(cls=>Object.hasOwn(source,cls));
+      }
+      return;
+    }
     scheduleRows.filter(r=>r&&r.aktif!==false&&String(r.jenis||"").toLowerCase()!=="ekskul"&&String(r.guruKode||"").trim().toUpperCase()===teacherCodeAktif).forEach(r=>{
       const subject=String(r.mapel||"").trim(), cls=String(r.kelas||"").trim(); if(!subject||!cls)return;
       if(!teacherSubjectClasses[subject])teacherSubjectClasses[subject]=new Set(); teacherSubjectClasses[subject].add(cls);
@@ -2007,6 +2044,14 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const teachers=normalizeArray(masterDataAkademik.guru), teacherSelect=document.getElementById("guruPenguji");
     teacherSelect.innerHTML=""; teacherSelect.add(new Option(getActiveUserName(),getActiveUserName())); teacherSelect.value=getActiveUserName();
     teacherCodeAktif=detectTeacherCode(scheduleRows); buildTeacherSubjectMap();
+    const option=document.getElementById('faiqOctoberOption');
+    option.hidden=!(canGradeForFaiq() && document.getElementById('tahunAkademik').value==='2026/2027');
+    document.getElementById('faiqOctoberToggle').onchange=event=>{
+      gradingForFaiq=canGradeForFaiq() && event.target.checked;
+      resetExamPeriod();
+      buildTeacherSubjectMap();
+      document.getElementById('activeTeacherRole').textContent=gradingForFaiq?'Pengisian nilai Faiq • Oktober 2026':getRoleLabel();
+    };
     const mapel=document.getElementById("mapel"); mapel.innerHTML='<option value="">-- Pilih Mata Pelajaran --</option>';
     Object.keys(teacherSubjectClasses).sort((a,b)=>a.localeCompare(b,"id")).forEach(subject=>mapel.add(new Option(subject,subject)));
     if(!teacherCodeAktif||!Object.keys(teacherSubjectClasses).length){mapel.disabled=true;showToast("error","Jadwal guru belum terdeteksi","Mata pelajaran hanya ditampilkan dari jadwal guru yang sedang login.");}
@@ -2075,6 +2120,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
 
   window.selectAssessmentType=function(key){
     const config=ASSESSMENT_TYPES[key]; if(!config)return;
+    if(gradingForFaiq && key==='bahasa_arab'){showToast('info','Mapel Faiq','Pilih Kitab, Tahsin, atau Tahfiz untuk sesi Oktober Faiq.');return;}
     currentAssessmentKey=key; document.getElementById('assessmentType').value=key; resetExamPeriod();
     if(config.requiresSubject){
       setMapelValue(''); renderSubjectButtons(); showExamScene('subject');
@@ -2092,6 +2138,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     else if(type==='Triwulan'){title.textContent='Pilih Triwulan';[1,2,3,4].forEach(n=>items.push([`Triwulan ${n}`,`Triwulan ${n}`]));}
     else{title.textContent='Pilih Semester';[1,2].forEach(n=>items.push([`Semester ${n}`,`Semester ${n}`]));}
     if(desc)desc.textContent=type==='Bulanan'?'Setelah periode dipilih, daftar santri langsung dibuka.':`Pilih ${type.toLowerCase()} untuk membuka daftar santri.`;
+    if(gradingForFaiq){items.splice(0,items.length,...(type==='Bulanan'?[['Oktober','Oktober']]:[]));if(desc)desc.textContent='Pengisian nilai Oktober 2026 untuk mapel Faiq.';}
     if(isHistoricalHadits()){items.splice(0,items.length,...(type==='Bulanan'?[['Oktober','Oktober']]:[]));if(desc)desc.textContent='Pengajar sebelumnya • khusus nilai Hadits Ahkam Oktober 2026.';}
     const selected=document.getElementById('periodChooser')?.value||'';
     const calendarIcon='<span class="c53-month-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></span>';
@@ -2122,6 +2169,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     document.getElementById('scorePanel').hidden=true;setupConfirmed=false;currentSessionFinal=false;
   };
   window.selectExamType=function(type){
+    if(gradingForFaiq && type!=='Bulanan'){showToast('info','Periode Faiq','Pilih Bulanan untuk nilai Oktober 2026.');return;}
     if(isHistoricalHadits()&&type!=='Bulanan'){showToast('info','Periode pengajar sebelumnya','Hadits Ahkam tersedia khusus ujian Bulanan Oktober 2026.');return;}
     rosterRevision++;
     scoreStatusVerified=false;currentRevisionMarker=null;
@@ -2158,7 +2206,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     setupConfirmed=false;activeStudentList=[];document.getElementById('scorePanel').hidden=true;
     const config=activeAssessment(), jenis=document.getElementById('jenisUjian').value, period=document.getElementById('periodChooser').value, subject=document.getElementById('mapel').value, active=getKomponenAktif(), total=active.reduce((a,b)=>a+b.bobot,0);
     if(!config||!jenis||!period||!subject){showToast('error','Pilihan belum lengkap','Pilih jenis penilaian, jenis ujian, dan periode.');return}
-    if(!historicalExamAllowed({mapel:subject,tahun:document.getElementById('tahunAkademik').value,jenis,periode:period,kelas:document.getElementById('examClassSelect').value})){showToast('error','Periode tidak sesuai','Akses pengajar sebelumnya hanya untuk Hadits Ahkam Oktober 2026 pada kelas 4/5 Putra dan kelas 4 Putri.');return;}
+    if(!historicalExamAllowed({mapel:subject,tahun:document.getElementById('tahunAkademik').value,jenis,periode:period,kelas:document.getElementById('examClassSelect').value})){showToast('error','Periode tidak sesuai',gradingForFaiq?'Pilih kelas yang diampu Faiq untuk ujian Bulanan Oktober 2026.':'Akses pengajar sebelumnya hanya untuk Hadits Ahkam Oktober 2026 pada kelas 4/5 Putra dan kelas 4 Putri.');return;}
     if(!active.length||!isWeightValid(total)){showToast('error','Skema bobot bermasalah','Bobot tetap jenis penilaian harus berjumlah 100%.');return}
     if(!document.getElementById('examClassSelect').value){showToast('error','Pilih kelas','Pilih kelas atau TeachingGroup pada jadwal Anda.');return}
     if(CahayaStudentProgramApplicability.subject(currentAssessmentKey)){
@@ -2330,7 +2378,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const kelasElement = document.getElementById("kelasKelompok");
     const kelas = String(kelasElement?.value || document.getElementById('examClassSelect')?.value || "").trim();
     const kelasList = kelas.split("|").map(item => item.trim()).filter(Boolean);
-    const guru = document.getElementById("guruPenguji").value;
+    const guru = gradingForFaiq ? 'Faiq' : document.getElementById("guruPenguji").value;
     return {
       jenis: document.getElementById("jenisUjian").value || "Bulanan",
       jenisPenilaian: activeAssessment()?.label || "",
@@ -2342,11 +2390,12 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
       tanggal: document.getElementById("tanggalUjian").value,
       mapel: document.getElementById("mapel").value,
       guru,
-      guruKode: String(teacherCodeAktif || "").trim().toUpperCase(),
-      guruUid: String(activeUser.uid || activeUser.authUid || "").trim(),
-      guruAccountKey: activeTeacherAccountKey(),
-      guruAliases: activeTeacherAliases(),
-      guruKey: String(teacherCodeAktif || "").trim().toUpperCase() || activeTeacherAccountKey() || normalizeTeacherIdentity(guru),
+      delegatedFromFaiq: gradingForFaiq,
+      guruKode: gradingForFaiq ? "FAIQ" : String(teacherCodeAktif || "").trim().toUpperCase(),
+      guruUid: gradingForFaiq ? "" : String(activeUser.uid || activeUser.authUid || "").trim(),
+      guruAccountKey: gradingForFaiq ? "" : activeTeacherAccountKey(),
+      guruAliases: gradingForFaiq ? TEACHER_CODE_ALIASES.FAIQ : activeTeacherAliases(),
+      guruKey: gradingForFaiq ? "FAIQ" : String(teacherCodeAktif || "").trim().toUpperCase() || activeTeacherAccountKey() || normalizeTeacherIdentity(guru),
       kkm: 70,
       kelas,
       kelasList
@@ -2414,7 +2463,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     return `cahaya_app/nilai_input_final/${scoreSessionKey(params)}`;
   }
   async function verifyWritableScoreSession(params,changedRows=[]){
-    if(!historicalExamAllowed(params))throw new Error('Hadits Ahkam untuk pengajar sebelumnya hanya tersedia pada Oktober 2026.');
+    if(!historicalExamAllowed(params))throw new Error('Akses pengisian untuk pengajar lain hanya tersedia pada mapel dan kelas yang ditetapkan untuk Oktober 2026.');
     if(!scoreStatusVerified)throw new Error('Status sesi belum terverifikasi. Muat ulang periode.');
     const marker=(await get(ref(db,scoreFinalPath(params)))).val();
     if(marker?.status==='FINAL'||marker?.locked===true)throw new Error('Sesi telah Final. Muat ulang untuk melihat status terbaru.');
@@ -2441,7 +2490,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   function teacherMatchesSession(value, params = {}) {
     const source = normalizeTeacherIdentity(value || "");
     if (!source) return false;
-    const targets = [...new Set([params.guru, ...(params.guruAliases || []), ...activeTeacherAliases()].map(normalizeTeacherIdentity).filter(Boolean))];
+    const targets = [...new Set([params.guru, ...(params.guruAliases || []), ...(params.delegatedFromFaiq ? [] : activeTeacherAliases())].map(normalizeTeacherIdentity).filter(Boolean))];
     if (targets.includes(source)) return true;
     const code = String(params.guruKode || "").trim().toUpperCase();
     const aliases = (TEACHER_CODE_ALIASES[code] || []).map(normalizeTeacherIdentity).filter(Boolean);
@@ -2531,26 +2580,35 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const activeKeys = new Set(activeStudentList.map(item => scoreStudentKey(item.name, item.className)));
     const period = String(params.periode || params.bulan || '').trim();
     if (!period) return {};
-    const cacheKey = `guru:nilai:legacy:v2:${stableKey([dbPath,period,params.guruKode||params.guruUid||params.guruAccountKey||params.guru,params.mapel,params.kodePenilaian].join('|'))}`;
+    const cacheKey = `guru:nilai:legacy:v3:${stableKey([scoreSessionKey(params),dbPath,period,params.guruKode||params.guruUid||params.guruAccountKey||params.guru,params.mapel,params.kodePenilaian].join('|'))}`;
     const cached = cacheGet(cacheKey, 15 * 60 * 1000);
-    if (cached !== null) return cached;
+    if (!params.delegatedFromFaiq && cached !== null) return cached;
     try {
       // Fallback data lama hanya mengambil periode yang dipilih (maks 600 record), bukan 1.200–1.800 record terbaru seluruh database.
-      const snap = await get(query(ref(db, dbPath), orderByChild("periode_ujian"), equalTo(period), limitToLast(600)));
-      const data = snap.val() || {};
       const result = {};
-      Object.entries(data).forEach(([recordKey, record]) => {
-        if (!recordMatchesSession(record, params)) return;
-        const name = String(record.nama_santri || record.namaSantri || record.nama || "");
-        const cls = String(record.kelas_kelompok || record.kelas || "");
-        if (!name || !cls) return;
-        const studentKey = scoreStudentKey(name, cls);
-        if (activeKeys.size && !activeKeys.has(studentKey)) return;
-        result[studentKey] = { recordKey, dbPath, data: record };
-      });
-      cacheSet(cacheKey, result);
+      let beforeKey;
+      do {
+        const range = beforeKey ? [startAt(period), endBefore(period,beforeKey)] : [equalTo(period)];
+        const snap = await get(query(ref(db,dbPath), orderByChild("periode_ujian"), ...range, limitToLast(600)));
+        const data = snap.val() || {};
+        Object.entries(data).forEach(([recordKey, record]) => {
+          if (!recordMatchesSession(record, params)) return;
+          const name = String(record.nama_santri || record.namaSantri || record.nama || "");
+          const cls = String(record.kelas_kelompok || record.kelas || "");
+          if (!name || !cls) return;
+          const studentKey = scoreStudentKey(name, cls);
+          if (activeKeys.size && !activeKeys.has(studentKey)) return;
+          result[studentKey] = { recordKey, dbPath, data: record };
+        });
+        beforeKey = undefined;
+        if (params.delegatedFromFaiq && snap.size === 600) {
+          snap.forEach(child=>{beforeKey=child.key;return true});
+        }
+      } while (beforeKey);
+      if (!params.delegatedFromFaiq) cacheSet(cacheKey, result);
       return result;
     } catch (error) {
+      if (params.delegatedFromFaiq) throw error;
       console.warn("Data nilai lama tidak dimuat agar tidak melakukan full-read:", error);
       return {};
     }
@@ -2598,10 +2656,10 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
       }
 
       // 3) Fallback record lama apabila indeks belum tersedia.
-      if (!Object.keys(existingScoreRecords).length) {
+      if (!Object.keys(existingScoreRecords).length || (params.delegatedFromFaiq && activeStudentList.some(student=>!existingScoreRecords[scoreStudentKey(student.name,student.className)]))) {
         const legacyRecords = await loadLegacySessionRecords(params);
         if(revision!==rosterRevision)return;
-        existingScoreRecords = legacyRecords;
+        existingScoreRecords = {...legacyRecords,...existingScoreRecords};
       }
 
       let loadedCount = 0;
@@ -2946,10 +3004,11 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
           periode_ujian: params.periode,
           mata_pelajaran: params.mapel,
           materi_ujian: params.materi,
-          guru_penguji: params.guru,
+          guru_penguji: params.delegatedFromFaiq ? oldData.guru_penguji || params.guru : params.guru,
+          ...(params.delegatedFromFaiq ? {updated_by:getActiveUserName()} : {}),
           guruKode: params.guruKode || "",
-          guruUid: params.guruUid || "",
-          guruAccountKey: params.guruAccountKey || "",
+          guruUid: params.guruUid || (params.delegatedFromFaiq && oldData.guruUid) || "",
+          guruAccountKey: params.guruAccountKey || (params.delegatedFromFaiq && oldData.guruAccountKey) || "",
           tanggal: params.tanggal,
           tanggal_ujian: params.tanggal,
           komponen_aktif: activeComponents.map(component => component.nama),
@@ -3138,7 +3197,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
         const history=[...(Array.isArray(old.final_history)?old.final_history:[])];
         if(old.final_at&&!history.some(x=>x.at===old.final_at))history.push({at:old.final_at,by:old.final_by||''});
         history.push({at:nowIso,by:finalBy,revisionCycle:priorMarker?.revisionCycle||0});
-        const finalData = {...old, guru_penguji:params.guru, guruKode:old.guruKode||params.guruKode||"", guruUid:old.guruUid||params.guruUid||"", guruAccountKey:old.guruAccountKey||params.guruAccountKey||"", is_remedial:old.is_remedial===true, status_nilai:"FINAL", status_input:"lengkap", locked:true, final_at:nowIso, final_by:finalBy, final_history:history, updated_at:nowIso};
+        const finalData = {...old, guru_penguji:params.delegatedFromFaiq ? old.guru_penguji || params.guru : params.guru, guruKode:old.guruKode||params.guruKode||"", guruUid:old.guruUid||params.guruUid||"", guruAccountKey:old.guruAccountKey||params.guruAccountKey||"", is_remedial:old.is_remedial===true, status_nilai:"FINAL", status_input:"lengkap", locked:true, final_at:nowIso, final_by:finalBy, final_history:history, updated_at:nowIso};
         const indexData = {...item, data:finalData, updatedAt:nowIso, status:"FINAL"};
         updates[`${item.dbPath}/${item.recordKey}`] = finalData;
         updates[`${scoreIndexPath(params)}/${studentKey}`] = indexData;
