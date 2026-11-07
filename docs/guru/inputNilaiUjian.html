@@ -1504,6 +1504,14 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   <section class="c53-scene-shell" id="examWizard">
     <section class="panel-card c53-scene c53-scene-card active" id="sceneAssessment" data-scene="assessment">
       <div class="c53-scene-nav"><div class="c53-scene-copy"><small>Mulai dari sini</small><h2>Pilih Jenis Penilaian</h2><p>Bobot nilai sudah tetap. Pilih sesuai jenis pelajaran yang akan dinilai.</p></div></div>
+      <section id="faiqDraftSessions" hidden aria-label="Draf Oktober Faiq">
+        <h3>Draf Oktober Faiq</h3>
+        <div class="c53-choice-grid">
+          <button type="button" class="c53-subject-btn" data-faiq-subject="Aqidah" data-class="Kelas 1 Putra">Aqidah • Kelas 1 Putra</button>
+          <button type="button" class="c53-subject-btn" data-faiq-subject="Hadits" data-class="Kelas 2 Putra">Hadits • Kelas 2 Putra</button>
+          <button type="button" class="c53-subject-btn" data-faiq-subject="Hadits" data-class="Kelas 3 Putra">Hadits • Kelas 3 Putra</button>
+        </div>
+      </section>
       <label id="faiqOctoberOption" hidden><input type="checkbox" id="faiqOctoberToggle"> Nilai Oktober 2026 • mapel Faiq</label>
       <div class="c53-choice-grid c74-assessment-grid">
         <button type="button" class="c53-choice c74-assessment" onclick="selectAssessmentType('tahfiz')">
@@ -1934,7 +1942,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   const TEACHER_CODE_ALIASES = {ZAWAWI:["zawawi","muhammad zawawi","muhammadzawawi"],
     MULTAZAM:["multazam","multazam zakaria","abah multazam","dr multazam zakaria"], RASYIDIN:["rasyidin","rosyidin"],
     NAQIEB:["naqieb","muhammad naqieb"], ZAKY:["zaky","zaki","muhammad zaky"], RAHIEL:["rahiel","mika rahiel","mika rahiel yusuf"],
-    FAIQ:["faiq","muhammad faiq"], DONY:["dony","doni","dony setiawan","doni setiawan","donisetiawan"], FATIMAH:["fatimah"],
+    FAIQ:["faiq","muhammad faiq","Faiq Akbar Firdaus"], DONY:["dony","doni","dony setiawan","doni setiawan","donisetiawan"], FATIMAH:["fatimah"],
     MEILISA:["meilisa","melisa"], ALAMANDA:["alamanda"], HANIF:["hanif"], AHMAD_IMBRON:["ahmad imbron","imbron"],
     ANDRIYANI:["andriyani","andriyani kusuma dayanti"], CAPPRY:["cappry","cappry yoda pratama"], DELLA:["della","della gustia"],
     EDWIN:["edwin","edwin romeo"], EVITA:["evita","evita hardyanti"], FENNY:["fenny","fenny ayu anggraeni"],
@@ -2046,6 +2054,22 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     teacherCodeAktif=detectTeacherCode(scheduleRows); buildTeacherSubjectMap();
     const option=document.getElementById('faiqOctoberOption');
     option.hidden=!(canGradeForFaiq() && document.getElementById('tahunAkademik').value==='2026/2027');
+    const shortcuts=document.getElementById('faiqDraftSessions');
+    shortcuts.hidden=option.hidden;
+    shortcuts.querySelectorAll('[data-faiq-subject]').forEach(button=>{
+      button.onclick=async ()=>{
+        if (!canGradeForFaiq() || option.hidden) return;
+        const toggle=document.getElementById('faiqOctoberToggle');
+        toggle.checked=true;
+        toggle.dispatchEvent(new Event('change'));
+        selectAssessmentType('kitab_tanpa_praktek');
+        selectExamSubject(button.dataset.faiqSubject);
+        document.getElementById('examClassSelect').value=button.dataset.class;
+        document.getElementById('semester').value='Ganjil';
+        selectExamType('Bulanan');
+        await selectExamPeriod('Oktober');
+      };
+    });
     document.getElementById('faiqOctoberToggle').onchange=event=>{
       gradingForFaiq=canGradeForFaiq() && event.target.checked;
       resetExamPeriod();
@@ -2614,6 +2638,31 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     }
   }
 
+  // Recover missing rows using the original record keys in Faiq's monthly summary.
+  // Students without a saved grade do not require a school-wide period query.
+  async function loadFaiqSummaryScores(params, indexed, activeKeys) {
+    const summary = await get(ref(db,guruRingkasPath(params)));
+    if (!summary.exists()) {
+      if (Object.keys(indexed).length) return {};
+      return loadLegacySessionRecords(params);
+    }
+    const dbPath = 'cahaya_app/nilai_ujian_bulanan';
+    const result = {};
+    const missing = Object.values(summary.val()).filter(item=>{
+      if (!item || item.mapel!==params.mapel || item.kelas!==params.kelas || !item.recordKey) return false;
+      const key=scoreStudentKey(item.namaSantri,item.kelas);
+      return activeKeys.has(key) && !indexed[key];
+    });
+    await Promise.all(missing.map(async item=>{
+      const record=(await get(ref(db,dbPath+'/'+item.recordKey))).val();
+      if (!record) throw new Error('Data sumber draf Faiq belum tersedia.');
+      if (!recordMatchesSession(record,params)) return;
+      const key=scoreStudentKey(record.nama_santri || record.namaSantri,record.kelas_kelompok || record.kelas);
+      if (activeKeys.has(key)) result[key]={recordKey:item.recordKey,dbPath,data:record};
+    }));
+    return result;
+  }
+
   async function loadExistingScoresForCurrentSetup() {
     const revision=rosterRevision;
     scoreStatusVerified=false;
@@ -2657,7 +2706,9 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
 
       // 3) Fallback record lama apabila indeks belum tersedia.
       if (!Object.keys(existingScoreRecords).length || (params.delegatedFromFaiq && activeStudentList.some(student=>!existingScoreRecords[scoreStudentKey(student.name,student.className)]))) {
-        const legacyRecords = await loadLegacySessionRecords(params);
+        const legacyRecords = params.delegatedFromFaiq
+          ? await loadFaiqSummaryScores(params,existingScoreRecords,activeKeys)
+          : await loadLegacySessionRecords(params);
         if(revision!==rosterRevision)return;
         existingScoreRecords = {...legacyRecords,...existingScoreRecords};
       }
@@ -2724,6 +2775,13 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
       if (!currentSessionFinal) setScorePageState("unchanged");
       updateStats();
       if (currentSessionFinal) showToast("info", "Nilai sudah FINAL", "Nilai pada sesi ini telah dikunci dan tidak dapat diedit lagi.");
+      else if (params.delegatedFromFaiq) {
+        const message=loadedCount
+          ? `${loadedCount} nilai Faiq dimuat dari ${activeStudentList.length} santri dalam daftar kelas.`
+          : 'Belum ada nilai Faiq yang cocok dengan jenis penilaian dan kelas ini.';
+        document.getElementById('scoreContext')?.append(document.createTextNode(' • '+message));
+        showToast(loadedCount?'success':'info','Nilai Oktober Faiq',message);
+      }
       else if (loadedCount) showToast("success", "Nilai sebelumnya dimuat", `${loadedCount} data santri sudah terisi dan dapat dilanjutkan atau diedit.`);
     } catch (error) {
       currentSessionFinal = true;
