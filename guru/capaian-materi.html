@@ -220,7 +220,32 @@ function completionId(r){return`${key(ident.code||ident.display||USER.username||
 window.saveReport=async function(){const rows=[...reportMaterialKeys].map(findReportMaterial).filter(Boolean);if(!rows.length){toast('Centang satu atau beberapa materi.');return}if(!reportStatus){toast('Pilih status capaian.');return}const cause=$('analysisCause').value.trim(),plan=$('followUpPlan').value.trim();if(reportStatus==='BELUM_TERCAPAI'&&(!cause||!plan)){toast('Lengkapi analisa penyebab dan rencana tindak lanjut.');return}const btn=$('saveReportBtn');btn.disabled=true;btn.textContent='Menyimpan...';try{const updates={},saved=[];rows.forEach(r=>{const id=completionId(r),rec={id,targetId:reportRowId(r),materialKey:K.materialKey(r),teacherKey:key(ident.code||ident.display||USER.username||'guru'),teacher:ident.display||r.teacher||USER.label||USER.username||'',guruKode:ident.code||r.teacher||'',assignmentId:r.assignmentId||'',assignmentKey:r.assignmentKey||'',materialGroupKey:r.materialGroupKey||'',kelas:r.kelas||'',kelasLabel:r.kelasLabel||'',classNames:r.classNames||[],virtualJuz:r.virtualJuz||'',virtualJuzLabel:r.virtualJuzLabel||'',subject:r.subject||'',meetingNo:r.meetingNo||'',targetDate:String(r.date||'').slice(0,10),material:r.material||'',completedDate:reportStatus==='TERCAPAI'?today():'',checkedAt:nowIso(),updatedAt:nowIso(),status:reportStatus,statusAktif:reportStatus==='TERCAPAI',analisaPenyebab:reportStatus==='BELUM_TERCAPAI'?cause:'',rencanaTindakLanjut:reportStatus==='BELUM_TERCAPAI'?plan:'',source:'Guru Capaian Materi Multi Checklist'};updates[`cahaya_app/capaian_materi_guru/${id}`]=rec;saved.push([id,rec,r])});await update(ref(db),updates);saved.forEach(([id,rec])=>{completions=K.records(completions).filter(c=>String(c.id||c._id)!==id);completions.push(rec)});reportMaterialKeys.clear();renderSuccess(rows[0],saved[0][1]);$('viewSuccess').querySelector('h2').textContent=`${rows.length} Materi Tersimpan!`;showView('success')}catch(e){console.error(e);toast('Gagal menyimpan laporan.')}finally{btn.disabled=false;btn.textContent='Simpan Laporan'}};
 function renderSuccess(r,c){$('successSummary').innerHTML=`<div class="summary-line"><span class="summary-line-icon">${bookIcon()}</span><span><small>Pelajaran</small><b>${esc(r.subject||'-')} • ${esc(r.virtualJuzLabel?`${r.virtualJuzLabel} • ${(r.classNames||[]).join(' + ')||r.kelas||'-'}`:((r.classNames||[]).join(' + ')||`${r.section||''} Kelas ${r.kelas||'-'}`))}</b></span></div><div class="summary-line"><span class="summary-line-icon">${bookIcon()}</span><span><small>Materi</small><b>${esc(r.material||'-')}</b></span></div><div class="summary-line"><span class="summary-line-icon green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="m8 12 3 3 5-6"/></svg></span><span><small>Status</small><b>${c.status==='TERCAPAI'?'Tercapai':'Belum Tercapai'}</b></span></div><div class="summary-line"><span class="summary-line-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></span><span><small>Waktu Laporan</small><b>${esc(new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short'}).format(new Date(c.checkedAt)))}</b></span></div>`}
 window.showHistory=function(){const rows=K.records(completions).filter(c=>K.teacherMatches({guru:c.teacher||c.guruKode},ident)).sort((a,b)=>String(b.checkedAt||b.updatedAt||'').localeCompare(String(a.checkedAt||a.updatedAt||'')));$('historyList').innerHTML=rows.length?rows.map(c=>`<article class="history-card"><div class="history-head"><b>${esc(c.material||'-')}</b><span class="history-status ${c.statusAktif===false?'bad':''}">${c.statusAktif===false?'Belum Tercapai':'Tercapai'}</span></div><small>${esc(c.subject||'-')} • Target ${esc(c.targetDate||'-')} • Dilaporkan ${esc(String(c.checkedAt||c.updatedAt||'').slice(0,10))}</small>${c.analisaPenyebab?`<small><b>Penyebab:</b> ${esc(c.analisaPenyebab)}</small>`:''}${c.rencanaTindakLanjut?`<small><b>Tindak lanjut:</b> ${esc(c.rencanaTindakLanjut)}</small>`:''}</article>`).join(''):'<div class="empty-box">Belum ada laporan capaian materi.</div>';showView('history')};
-async function load(){const[local,remote,events,mats,oldMats,comp]=await Promise.all([loadLocalSchedule(),val('cahaya_app/jadwal_pelajaran'),val(CALENDAR_PATH),val(MATERIAL_PATH),val(OLD_MATERIAL_PATH),val('cahaya_app/capaian_materi_guru')]);schedule=sanitizeSchedule(K.records(local).length?local:remote);ident=K.identityFromProfile(USER,schedule);assignments=buildAssignments();calendarEvents=K.records(events).map(normalizeEvent);materialRoot=mats||{};oldMaterialRoot=oldMats||{};completions=K.records(comp);await seedMultazamBahasaArabTargets();populateAssignmentSelects();renderTarget();renderReportMaterials();const mode=new URLSearchParams(location.search).get('mode')||'target';showView(mode==='report'?'report':'target')}
+async function readAssignedMaterialFolders(root,keys){
+  const folders=await Promise.all(keys.map(async key=>{
+    const snapshot=await get(ref(db,root+'/'+key));
+    return [key,snapshot.val()||{}];
+  }));
+  return Object.fromEntries(folders);
+}
+async function load(){
+  const local=await loadLocalSchedule();
+  schedule=sanitizeSchedule(K.records(local).length?local:await val('cahaya_app/jadwal_pelajaran'));
+  ident=K.identityFromProfile(USER,schedule);
+  assignments=buildAssignments();
+  const keys=[...new Set(assignments.flatMap(a=>[
+    a.assignmentKey,a.previousAssignmentKey,...(a.legacyAssignmentKeys||[])
+  ]).filter(Boolean))];
+  const [events,mats,oldMats,comp]=await Promise.all([
+    val(CALENDAR_PATH),readAssignedMaterialFolders(MATERIAL_PATH,keys),
+    readAssignedMaterialFolders(OLD_MATERIAL_PATH,keys),val('cahaya_app/capaian_materi_guru')
+  ]);
+  calendarEvents=K.records(events).map(normalizeEvent);
+  materialRoot=mats;oldMaterialRoot=oldMats;completions=K.records(comp);
+  await seedMultazamBahasaArabTargets();
+  populateAssignmentSelects();renderTarget();renderReportMaterials();
+  const mode=new URLSearchParams(location.search).get('mode')||'target';
+  showView(mode==='report'?'report':'target');
+}
 load().catch(e=>{console.error(e);toast('Data materi belum dapat dimuat.')});
 </script>
 </body>

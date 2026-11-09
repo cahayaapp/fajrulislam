@@ -2997,11 +2997,23 @@
     updateSelectedMaterialSummary();
   }
 
-  window.toggleMaterialPicker = function() {
+  let materialLoadPromise;
+  window.toggleMaterialPicker = async function() {
     const panel = document.getElementById("materialPickerPanel");
     if (!panel) return;
-    panel.classList.toggle("show");
-    renderMaterialPicker();
+    if (!panel.classList.toggle("show")) return;
+    panel.textContent="Memuat target materi…";
+    if (!materialLoadPromise) materialLoadPromise=loadMaterialData().catch(error=>{
+      materialLoadPromise=null;
+      throw error;
+    });
+    try {
+      await materialLoadPromise;
+      renderMaterialPicker();
+    } catch (error) {
+      console.warn("Target materi belum dapat dimuat:",error);
+      panel.textContent="Target materi belum dapat dimuat. Tutup dan buka kembali untuk mencoba lagi.";
+    }
   };
 
   window.bukaTargetMateri = function() {
@@ -3015,19 +3027,11 @@
   };
 
   async function loadMaterialData() {
-    try {
-      const [targetSnap, completionSnap] = await Promise.all([
-        get(ref(db, MATERIAL_TARGET_PATH)),
-        get(ref(db, MATERIAL_COMPLETION_PATH))
-      ]);
-      materialTargetRows = collectMaterialRows(targetSnap.val() || {});
-      materialCompletionRows = Object.entries(completionSnap.val() || {}).map(([id, value]) => ({ id, ...(value || {}) }));
-    } catch (error) {
-      console.warn("Target materi belum dapat dimuat:", error);
-      materialTargetRows = [];
-      materialCompletionRows = [];
-    }
-    renderMaterialPicker();
+    const [targetSnap,completionSnap]=await Promise.all([
+      get(ref(db,MATERIAL_TARGET_PATH)),get(ref(db,MATERIAL_COMPLETION_PATH))
+    ]);
+    materialTargetRows=collectMaterialRows(targetSnap.val()||{});
+    materialCompletionRows=Object.entries(completionSnap.val()||{}).map(([id,value])=>({id,...value}));
   }
 
   function renderManualMaterialFields() {
@@ -3973,7 +3977,6 @@
       if (!selectedAssignment && onlineScheduleRows.length) loadTeacherScheduleForDate({ notify: false });
     });
 
-    loadMaterialData();
 
     get(ref(db,'cahaya_app/master_akademik/kelas')).then(classSnap => {
       if (!classSnap.exists()) return;

@@ -35,11 +35,16 @@ function requestSessions(request){
     return norm(marker.jenisUjian)===type&&String(marker.tahunAkademik||'')===String(request.tahunAkademik||'')&&norm(marker.periode)===norm(request.period)&&(!request.kelas||classes.some(name=>norm(name)===norm(request.kelas)))&&sessionHasStudent(session,request);
   });
 }
-function scoreSessionScope(marker,records){
+function scoreMarkerScope(marker){
   const classes=sessionClasses(marker);
-  if(marker.sessionVersion!=='v805'||!marker.sessionKey||!classes.length||!records.length||isPkbm(marker))return false;
+  if(marker.sessionVersion!=='v805'||!marker.sessionKey||!classes.length||isPkbm(marker))return false;
   if(!classes.every(c=>['PUTRA','PUTRI'].includes(unitOf({kelas:c}))&&(unit==='ALL'||unitOf({kelas:c})===unit)))return false;
   if(!classes.every(c=>state.schedule.some(s=>norm(s.mapel||s.mataPelajaran)===norm(marker.mapel)&&norm(s.guruKode||s.guruNama||s.guru)===norm(marker.guruKode||marker.guru)&&[s.kelas,...(s.classNames||[])].some(name=>norm(name)===norm(c)))))return false;
+  return true;
+}
+function scoreSessionScope(marker,records){
+  const classes=sessionClasses(marker);
+  if(!records.length || !scoreMarkerScope(marker))return false;
   if(records.some(item=>!item?.recordKey||!item.dbPath||!item.data||isPkbm(item.data)||!['PUTRA','PUTRI'].includes(unitOf(item.data))||(unit!=='ALL'&&unitOf(item.data)!==unit)))return false;
   return records.every(item=>norm(item.data.guru_penguji)===norm(marker.guru)&&norm(item.data.mata_pelajaran)===norm(marker.mapel)&&norm(item.data.jenis_ujian)===norm(marker.jenisUjian)&&String(item.data.tahun_akademik)===String(marker.tahunAkademik)&&norm(item.data.periode_ujian)===norm(marker.periode)&&String(item.data.kode_penilaian||'')===String(marker.kodePenilaian||'')&&classes.some(c=>norm(c)===norm(item.data.kelas_kelompok||item.data.kelas)));
 }
@@ -139,22 +144,48 @@ async function loadControl(){
 }
 function deepTargets(node,out=[]){if(!node||typeof node!=='object')return out;if(typeof node.material==='string'&&(node.date||node.targetDate))out.push(node);else Object.values(node).forEach(x=>deepTargets(x,out));return out}
 async function loadMaterial(){setState('Memuat target dan capaian materi pada tanggal terpilih…');const date=$('selectedDate').value;await loadSchedule();let comp=[];try{comp=await read(PATH.completion,query(ref(db,PATH.completion),orderByChild('targetDate'),equalTo(date)))}catch{}let targetRoot=await cachedRoot(PATH.targets);if(!Object.keys(targetRoot).length)targetRoot=await cachedRoot(PATH.legacyTargets);const targets=education(deepTargets(targetRoot).filter(x=>String(x.date||x.targetDate).slice(0,10)===date)),sessions=todaySchedule(date),list=sessions.map(s=>{const target=targets.find(x=>norm(x.subject||x.mapel)===norm(s.mapel)&&([x.kelas,x.kelasLabel,...(x.classNames||[])].map(norm).includes(norm(s.kelas))||x.sourceAssignmentIds?.includes?.(s.id))),c=education(comp).filter(x=>norm(x.subject||x.mapel)===norm(s.mapel)&&([x.kelas,x.kelasLabel,...(x.classNames||[])].map(norm).includes(norm(s.kelas))||x.sourceAssignmentIds?.includes?.(s.id)));return{s,target,c}}),done=list.filter(x=>x.c.some(c=>c.status==='TERCAPAI'||c.statusAktif===true)).length,miss=list.filter(x=>x.c.some(c=>c.status==='BELUM_TERCAPAI')).length;stat([[list.filter(x=>x.target).length,'Target terjadwal'],[done,'Tercapai'],[miss,'Belum tercapai']]);$('content').innerHTML=list.length?list.map(({s,target,c})=>{const latest=c.sort((x,y)=>String(y.updatedAt||'').localeCompare(String(x.updatedAt||'')))[0],label=!target?'Target Belum Dibuat':!latest?'Belum Dilaporkan':latest.status==='TERCAPAI'?'Tercapai':'Belum Tercapai',tone=label==='Tercapai'?'ok':label==='Belum Tercapai'?'att':'bad',detail=`Target: ${esc(target?.material||'belum tersedia')}<br>${latest?`Laporan: ${esc(latest.material||target?.material||'Materi')}`:'Belum ada laporan capaian.'}${latest?.analisaPenyebab?`<br>Alasan: ${esc(latest.analisaPenyebab)}`:''}${latest?.rencanaTindakLanjut?`<br>Rencana Guru: ${esc(latest.rencanaTindakLanjut)}`:''}`,summary=label==='Target Belum Dibuat'?'Target materi belum dibuat.':label==='Belum Dilaporkan'?'Capaian materi belum dilaporkan.':`Target materi belum tercapai${latest?.analisaPenyebab?`: ${latest.analisaPenyebab}`:'.'}`;return rowCard(`${s.mapel||'Mapel'} • ${s.kelas||''}`,`${esc(s.guruNama||s.guruKode||'Guru')}<br>${detail}`,status(label,tone),label!=='Tercapai'?`<button class="me-btn warn" data-new-finding="${esc(latest?.id||target?.id||s.id||'')}" data-source="MATERI" data-source-path="${PATH.completion}" data-personnel="${esc(s.guruNama||s.guruKode||'')}" data-subject="${esc([s.mapel,s.kelas].filter(Boolean).join(' • '))}" data-summary="${esc(summary)}">Buat Temuan</button>`:'')}).join(''):'<div class="me-empty">Tidak ada sesi Kepondokan pada tanggal terpilih.</div>';hideState()}
+const scoreSourceCache = new Map();
+let scoreLoadVersion = 0;
+async function readScoreSource(path) {
+  const previous=scoreSourceCache.get(path);
+  if (previous && Date.now()-previous.started<120000) return previous.promise;
+  const entry={started:Date.now(),promise:read(path)};
+  scoreSourceCache.set(path,entry);
+  try{return await entry.promise}
+  catch(error){if(scoreSourceCache.get(path)===entry)scoreSourceCache.delete(path);throw error}
+}
 async function loadScores(){
+  const version=++scoreLoadVersion;
   setState('Memuat progres nilai dan permintaan perbaikan dalam scope…');await loadSchedule();const type=$('scoreType').value,year=$('scoreYear').value,period=$('scorePeriod').value,sourcePath=type==='bulanan'?PATH.scores:PATH.periodicScores;let scores=[];
-  try{scores=education(await read(sourcePath))}catch(error){console.warn('Nilai belum dapat dimuat',error)}
+  scores=education(await readScoreSource(sourcePath));
+  if(version!==scoreLoadVersion)return;
   const teachers=window.CahayaAcademicInputProgress.summarize({schedule:state.schedule,scores,master:window.CAHAYA_MASTER_DATA||{},type,year,period,unit}),expected=teachers.reduce((n,x)=>n+x.expected,0),entered=teachers.reduce((n,x)=>n+x.entered,0),final=teachers.reduce((n,x)=>n+x.final,0),done=teachers.filter(x=>x.expected&&x.final===x.expected).length;
   stat([[teachers.length,'Guru terjadwal'],[expected?Math.round(entered/expected*100)+'%':'0%','Input terisi'],[expected?Math.round(final/expected*100)+'%':'0%','Sudah Final'],[done,'Guru selesai']]);
   $('content').innerHTML=teachers.length?teachers.map(teacher=>{const complete=teacher.expected&&teacher.final===teacher.expected,label=complete?'Selesai':teacher.entered?'Berjalan':'Belum Input',tone=complete?'ok':teacher.entered?'att':'bad',details=teacher.assignments.map(item=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #e5edf7"><span><b>${esc(item.subject)}</b><br>${esc(item.classes.join(' + '))}</span><span style="text-align:right"><b>${item.progress}% terisi</b><br>${item.final} Final • ${item.partial} Parsial</span></div>`).join(''),summary=!teacher.entered?`${PLabel(type)} ${period} belum diinput.`:`Input ${PLabel(type)} ${period} belum seluruhnya Final.`,action=complete?'':`<button class="me-btn warn" data-new-finding="${esc(teacher.teacherCode||teacher.id)}" data-source="NILAI_UJIAN" data-source-path="${sourcePath}" data-personnel="${esc(teacher.teacher)}" data-subject="${esc(`${PLabel(type)} • ${period}`)}" data-summary="${esc(summary)}">Buat Temuan</button>`;return rowCard(teacher.teacher,`${teacher.entered}/${teacher.expected} nilai terisi • ${teacher.finalProgress}% Final<br>${details}`,status(label,tone),action)}).join(''):'<div class="me-empty">Jadwal Kepondokan aktif belum tersedia.</div>';
-  await loadFinalScoreSessions(type,year,period);await loadReportCorrectionRequests();hideState()
+  const requests=await readReportCorrectionRequests();
+  if(version!==scoreLoadVersion)return;
+  await loadFinalScoreSessions(type,year,period,requests,version);
+  if(version!==scoreLoadVersion)return;
+  renderReportCorrectionRequests(requests);hideState()
 }
 function PLabel(type){return type==='triwulan'?'Triwulan':type==='semester'?'Semester':'Bulanan'}
-async function loadFinalScoreSessions(type,year,period){
+async function loadFinalScoreSessions(type,year,period,requests,version){
+  const markers=await readOne(PATH.final);
+  if(version!==scoreLoadVersion)return;
+  const candidates=Object.entries(markers).filter(([key,marker])=>{
+    if(!marker || marker.sessionKey!==key || !['FINAL','REVISION_OPEN'].includes(marker.status) || !scoreMarkerScope(marker))return false;
+    const matchesPeriod=(reportType,academicYear,reportPeriod)=>
+      norm(marker.jenisUjian)===norm(reportType) && marker.tahunAkademik===academicYear && norm(marker.periode)===norm(reportPeriod);
+    return matchesPeriod(PLabel(type),year,period) || requests.some(request=>
+      matchesPeriod(request.reportType,request.tahunAkademik,request.period) &&
+      (!request.kelas || sessionClasses(marker).some(cls=>norm(cls)===norm(request.kelas))));
+  });
+  const indexes=await Promise.all(candidates.map(([key])=>readOne(PATH.scoreIndex+'/'+key)));
+  if(version!==scoreLoadVersion)return;
   state.scoreSessions.clear();
-  const [markers,indexes]=await Promise.all([readOne(PATH.final),readOne(PATH.scoreIndex)]);
   const cards=[];
-  for(const [key,marker] of Object.entries(markers)){
-    if(!marker||!['FINAL','REVISION_OPEN'].includes(marker.status)||marker.sessionKey!==key)continue;
-    const records=Object.entries(indexes[key]||{}).map(([studentKey,item])=>({...item,studentKey}));
+  for(const [i,[key,marker]] of candidates.entries()){
+    const records=Object.entries(indexes[i]).map(([studentKey,item])=>({...item,studentKey}));
     if(!scoreSessionScope(marker,records))continue;
     state.scoreSessions.set(key,{marker,records});
     if(norm(marker.jenisUjian)!==norm(PLabel(type))||norm(marker.tahunAkademik)!==norm(year)||norm(marker.periode)!==norm(period))continue;
@@ -163,12 +194,16 @@ async function loadFinalScoreSessions(type,year,period){
   }
   $('content').insertAdjacentHTML('afterbegin',`<div class="me-empty"><b>Sesi ${esc(PLabel(type))} • ${esc(period)}</b><br>Sesi Final dapat dibuka kembali melalui mekanisme revisi.</div>`+(cards.join('')||'<div class="me-empty">Belum ada sesi Final pada periode ini.</div>'));
 }
-async function loadReportCorrectionRequests(){
+async function readReportCorrectionRequests(){
+  if(session.activeRole!=='MANAJER'||!R.isEducationManager(a))return [];
+  let root={};
+  try{root=await readOne(PATH.publication)}catch(error){console.warn('Permintaan perbaikan rapor belum dapat dimuat',error);throw error}
+  const requests=publicationRequests(root).filter(item=>item.status==='NEEDS_REVISION'&&unitOf({kelas:item.kelas})===unit&&inScope({kelas:item.kelas})).sort((a,b)=>String(b.managerRequest?.requestedAt||b.reviewedAt||b.updatedAt||'').localeCompare(String(a.managerRequest?.requestedAt||a.reviewedAt||a.updatedAt||'')));
+  return requests;
+}
+function renderReportCorrectionRequests(requests){
   state.reportRequests.clear();
   if(session.activeRole!=='MANAJER'||!R.isEducationManager(a))return;
-  let root={};
-  try{root=await readOne(PATH.publication)}catch(error){console.warn('Permintaan perbaikan rapor belum dapat dimuat',error);return}
-  const requests=publicationRequests(root).filter(item=>item.status==='NEEDS_REVISION'&&unitOf({kelas:item.kelas})===unit&&inScope({kelas:item.kelas})).sort((a,b)=>String(b.managerRequest?.requestedAt||b.reviewedAt||b.updatedAt||'').localeCompare(String(a.managerRequest?.requestedAt||a.reviewedAt||a.updatedAt||'')));
   const cards=requests.map(request=>{
     state.reportRequests.set(request._path,request);
     const sessions=requestSessions(request),workflow=request.managerRequest?.status||'PENDING_MANAGER',forwarded=workflow==='FORWARDED_TO_TEACHER';
@@ -320,6 +355,7 @@ async function openScoreRevision(key,reason,reportRequest=null){
   }
   // RTDB multi-location update is atomic. The source and all known projections change together.
   await update(ref(db),updates);
+  scoreSourceCache.clear();
   sharedCache?.clear(`${cacheKey}:scores`);
 }
 async function loadCurrent(){assert();$('guide').hidden=true;if(view==='control')return loadControl();if(view==='material')return loadMaterial();if(view==='scores')return loadScores();if(view==='teachers')return loadTeachers();if(view==='followup')return loadFindings(false);if(view==='findings')return loadFindings(true);if(view==='coaching')return loadCoaching();if(view==='observation')return loadObservations();if(view==='kpi')return loadKpi();if(view==='guide')return guide()}
@@ -334,5 +370,5 @@ document.addEventListener('click',event=>{
 function currentAcademicYear(){const d=new Date(),year=d.getFullYear(),start=d.getMonth()>=6?year:year-1;return`${start}/${start+1}`}
 function populateScorePeriods(){const type=$('scoreType').value,periods=type==='triwulan'?['Triwulan 1','Triwulan 2','Triwulan 3','Triwulan 4']:type==='semester'?['Semester 1','Semester 2']:window.CahayaAcademicInputProgress.MONTHS,current=$('scorePeriod').value;$('scorePeriod').innerHTML=periods.map(item=>`<option ${item===current?'selected':''}>${item}</option>`).join('');if(type==='bulanan'&&!current)$('scorePeriod').value=window.CahayaAcademicInputProgress.MONTHS[new Date().getMonth()]}
 async function setup(){assert();const c=config[view]||config.control;$('eyebrow').textContent=c[0];$('pageTitle').textContent=c[1];$('pageSubtitle').textContent=c[2];$('identityChip').textContent=identity.name;$('unitChip').textContent=unitLabel;$('scopeChip').textContent=`${unitLabel} • Kepondokan`;const today=jakartaDate(),r=range('MONTH');$('selectedDate').value=today;$('startDate').value=r.start;$('endDate').value=r.end;$('scoreYear').innerHTML=`<option>${currentAcademicYear()}</option>`;populateScorePeriods();const daily=['control','material'].includes(view),monthly=view==='scores',ranged=['followup','findings','coaching','observation','kpi'].includes(view);$('dateTools').hidden=!daily;$('monthTools').hidden=!monthly;$('rangeTools').hidden=!ranged;if(view==='guide'){$('dateTools').hidden=$('monthTools').hidden=$('rangeTools').hidden=true}await loadCurrent();const teacher=params.get('guru')||'';if(teacher&&view==='coaching')openSheet('coach',{guru:teacher});if(teacher&&view==='observation')openSheet('observe',{guru:teacher});if(params.get('createFinding')==='1')openSheet('finding',{tanggal:params.get('tanggal')||today,sourceId:params.get('sourceId')||'',sourceType:params.get('sourceType')||'MANUAL',sourcePath:params.get('sourcePath')||'',personil:params.get('personil')||'',subject:params.get('subject')||'',summary:params.get('summary')||''})}
-function refreshCurrent(){state.schedule=[];sharedCache?.clear(`${cacheKey}:schedule:v2`);return loadCurrent()}
+function refreshCurrent(){scoreSourceCache.clear();state.schedule=[];sharedCache?.clear(`${cacheKey}:schedule:v2`);return loadCurrent()}
 document.addEventListener('click',e=>{const d=e.target.closest('[data-date]'),r=e.target.closest('[data-range]'),nf=e.target.closest('[data-new-finding]'),follow=e.target.closest('[data-follow]'),coach=e.target.closest('[data-coach]'),observe=e.target.closest('[data-observe]'),feature=e.target.closest('[data-open-feature]');if(d){$('selectedDate').value=jakartaDate();loadCurrent()}if(r){const x=range(r.dataset.range);$('startDate').value=x.start;$('endDate').value=x.end;loadCurrent()}if(nf)openSheet('finding',{tanggal:nf.dataset.sourceDate,sourceId:nf.dataset.newFinding,sourceType:nf.dataset.source,sourcePath:nf.dataset.sourcePath,personil:nf.dataset.personnel,subject:nf.dataset.subject,summary:nf.dataset.summary});if(follow)openSheet('follow',state.findings.find(x=>x.id===follow.dataset.follow)||{});if(coach)openSheet('coach',{guru:coach.dataset.coach});if(observe)openSheet('observe',{guru:observe.dataset.observe});if(feature)openManagerFeature(feature.dataset.openFeature,feature.dataset.teacher,feature.dataset.menu)});$('closeSheet').onclick=()=>$('sheet').classList.remove('open');$('actionForm').onsubmit=saveAction;$('reloadBtn').onclick=refreshCurrent;$('reloadMonthBtn').onclick=refreshCurrent;$('scoreType').onchange=()=>{populateScorePeriods();loadCurrent()};['selectedDate','scoreYear','scorePeriod','startDate','endDate'].forEach(id=>$(id).onchange=loadCurrent);$('backBtn').onclick=()=>parent!==window&&typeof parent.openAuthorizedMenu==='function'?parent.openAuthorizedMenu('menu-home'):history.back();addEventListener('cahaya:suspend',()=>{state.suspended=true;state.schedule=[];state.rows=[];state.findings=[]});document.addEventListener('visibilitychange',()=>{if(document.hidden)state.suspended=true;else if(state.suspended){state.suspended=false;refreshCurrent()}});setup().catch(error=>{console.error('Gagal memuat workspace Manajer Pendidikan',error);const message=String(error?.message||'').startsWith('Jadwal Kepondokan')?error.message:'Data belum dapat dimuat. Coba Segarkan.';setState(message);toast(message)});

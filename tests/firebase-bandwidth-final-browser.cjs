@@ -119,13 +119,14 @@ async function fixturePage(browser, ids) {
     console.log('PASS Supervisor Command Center browser: seven reads and no duplicate observation read');
     await commandPage.close();
 
-    const academicPage=await fixturePage(browser,['list']);
+    const academicPage=await fixturePage(browser,['list','year','period']);
     const arrayCode=academicHtml.slice(academicHtml.indexOf('function array(v)'),academicHtml.indexOf('function profile()'));
     const dataCode=academicHtml.slice(academicHtml.indexOf('function flattenTahfiz(value)'),academicHtml.indexOf('const requestedMode='));
     await academicPage.addScriptTag({content:`
       window.__calls=[];
       const fixture={'cahaya_app/nilai_ujian_bulanan':{a:{status:'FINAL',nilai_total:88,is_remedial:true}},'cahaya_app/nilai_ujian':{b:{status:'FINAL',nilai_total:90},c:{status:'DRAFT',nilai_total:75}},'cahaya_app/rapor_publication':{student:{published:true}},'cahaya_app/program_quran_santri':{student:{program:'TAHFIZ'}},'cahaya_app/setoran_tahfiz':{one:{program:'tahfiz',tanggal:'2026-10-01',data:{a:{namaSantri:'A',surah:'Al-Mulk'}}}}};
-      const db={ref(path){return {once:async()=>{window.__calls.push(path);return {val:()=>fixture[path]||{}}}}}};
+      const R={periodBounds:()=>({start:'2026-10-01',end:'2026-12-31'})};
+      const db={ref(path){let end;return {orderByChild(){return this},startAt(){return this},endAt(value){end=value;return this},once:async()=>{window.__calls.push(path);return {val:()=>end===''?{}:fixture[path]||{}}}}}};
       const loadSchedule=async()=>{},populateFilters=()=>{},$=id=>document.getElementById(id),esc=value=>String(value);
       let rows=[],tahfizRows=[],tahfizHistoryPromise=null,markers={},quranAssignments={};
       ${arrayCode}${dataCode}
@@ -133,14 +134,14 @@ async function fixturePage(browser, ids) {
     `});
     await academicPage.evaluate(()=>academic.load());
     let academic=await academicPage.evaluate(()=>({calls:window.__calls,state:academic.inspect()}));
-    assert.equal(academic.calls.length,4);
-    assert.equal(academic.state.rows.length,3);
+    assert.equal(academic.calls.length,3);
+    assert.equal(academic.state.rows.length,1);
     assert.equal(academic.state.rows[0].is_remedial,true);
-    await academicPage.evaluate(()=>academic.loadTahfizHistory());
+    const history=await academicPage.evaluate(()=>academic.loadTahfizHistory());
     academic=await academicPage.evaluate(()=>({calls:window.__calls,state:academic.inspect()}));
     assert.equal(academic.calls.length,5);
-    assert.equal(academic.state.tahfizRows[0].surah,'Al-Mulk');
-    console.log('PASS Supervisor Academic browser: four initial reads, Tahfiz lazy read, report values retained');
+    assert.equal(history[0].surah,'Al-Mulk');
+    console.log('PASS Supervisor Academic browser: three initial reads, Tahfiz lazy read, report values retained');
     await academicPage.close();
   } finally { await browser.close(); }
 })().catch(error=>{console.error(error);process.exitCode=1});

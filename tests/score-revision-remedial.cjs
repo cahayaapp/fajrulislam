@@ -13,7 +13,7 @@ const context={
   unitOf:x=>String(x.kelas||x.kelas_kelompok||'').toLowerCase().includes('putri')?'PUTRI':String(x.kelas||x.kelas_kelompok||'').toLowerCase().includes('putra')?'PUTRA':''
 };
 vm.createContext(context);
-vm.runInContext(pick('sessionClasses')+'\n'+pick('scoreSessionScope'),context);
+vm.runInContext(pick('sessionClasses')+'\n'+pick('scoreMarkerScope')+'\n'+pick('scoreSessionScope'),context);
 const marker={sessionVersion:'v805',sessionKey:'k123',status:'FINAL',mapel:'Fiqih',guru:'Guru A',guruKode:'G01',jenisUjian:'Bulanan',periode:'September 2026',tahunAkademik:'2026/2027',kodePenilaian:'kitab',kelasScope:'Kelas 4 Putra'};
 const item={recordKey:'rec-1',dbPath:'cahaya_app/nilai_ujian_bulanan',data:{kelas_kelompok:'Kelas 4 Putra',guru_penguji:'Guru A',mata_pelajaran:'Fiqih',jenis_ujian:'Bulanan',periode_ujian:'September 2026',tahun_akademik:'2026/2027',kode_penilaian:'kitab'}};
 assert.equal(context.scoreSessionScope(marker,[item]),true);
@@ -36,3 +36,30 @@ assert(report.includes('Telah melakukan Remedial'));
 assert(manager.includes('await update(ref(db),updates)'));
 assert(fs.readFileSync('supervisor/review-pendidikan.html','utf8').includes('../manajer/pendidikan-v2.html?view=scores'));
 console.log('PASS: session scope, role routes, draft/final/remedial contracts and docs mirrors (fixture/static checks, no Firebase writes).');
+
+// Loading a period should fetch only the session indexes needed for review,
+// including a supervisor request that refers to another period.
+(async()=>{
+ const reads=[];
+ const markers=Object.fromEntries([
+  ['selected','Oktober','Kelas 4 Putra'],['requested','September','Kelas 4 Putra'],
+  ['unrelated','Agustus','Kelas 4 Putra'],['other-unit','Oktober','Kelas 4 Putri']
+ ].map(([key,periode,kelasScope])=>[key,{...marker,sessionKey:key,periode,kelasScope}]));
+ Object.assign(context,{
+  PATH:{final:'final',scoreIndex:'index'},scoreLoadVersion:1,
+  PLabel:()=> 'Bulanan',esc:String,status:String,rowCard:()=>'', $:()=>({insertAdjacentHTML(){}}),
+  readOne:async path=>{
+    reads.push(path);
+    if(path==='final')return markers;
+    const selected=markers[path.slice('index/'.length)];
+    assert(selected,'index must be read per session');
+    return {student:{...item,data:{...item.data,periode_ujian:selected.periode}}};
+  }
+ });
+ context.state.scoreSessions=new Map();
+ vm.runInContext('async '+pick('loadFinalScoreSessions'),context);
+ await context.loadFinalScoreSessions('bulanan','2026/2027','Oktober',[{reportType:'bulanan',tahunAkademik:'2026/2027',period:'September',kelas:'Kelas 4 Putra'}],1);
+ assert.deepEqual(reads.sort(),['final','index/requested','index/selected']);
+ assert.deepEqual([...context.state.scoreSessions.keys()].sort(),['requested','selected']);
+ console.log('PASS scoped session reads for selected period and pending corrections');
+})().catch(error=>{console.error(error);process.exitCode=1});

@@ -59,7 +59,7 @@ function monthLabel(m){const a=['Januari','Februari','Maret','April','Mei','Juni
 function isSameMonth(date,m){return String(date||'').slice(0,7)===m}
 function dayNo(date){const d=new Date(`${date}T12:00:00`);return d.getDay()}
 function statusBadge(s){const n=norm(s);if(/selesai|aman|baik|final|terlaksana|hadir|tepat waktu/.test(n))return'ok';if(/kritis|alfa|kosong|tidak hadir|belum ditangani|belum terlaksana/.test(n))return'bad';if(/proses|perhatian|terlambat|belum|izin|sakit/.test(n))return'att';return'info'}
-async function fetchAll(path){const s=await get(['cahaya_app/absensi_pembelajaran','cahaya_app/log_absensi_guru'].includes(path)?query(ref(db,path),orderByChild('tanggal'),startAt($('date').value),endAt($('date').value+'\uf8ff')):ref(db,path));return rows(s.val())}
+async function fetchAll(path){const s=await get(['cahaya_app/absensi_pembelajaran','cahaya_app/log_absensi_guru','cahaya_app/absensi_halqah','cahaya_app/setoran_tahfiz'].includes(path)?query(ref(db,path),orderByChild('tanggal'),startAt($('date').value),endAt($('date').value+'\uf8ff')):ref(db,path));return rows(s.val())}
 
 let DATA={},schedule=[];const dfltUnit=unitFromProfile();$('date').value=localDate();$('unit').value=dfltUnit||'Putra';$('issueDeadline').value=localDate();
 function scheduleId(r,i){return String(r.id||[r.unit,r.kelas,r.hari,r.mapel,r.guruKode,r.sesi,i].join('|')).toLowerCase().replace(/[^a-z0-9|]+/g,'_')}
