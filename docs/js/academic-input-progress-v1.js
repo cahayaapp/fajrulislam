@@ -38,6 +38,30 @@
   const isFinal=record=>norm(record?.status_nilai||record?.statusNilai||record?.status)==='final'&&record?.locked!==false;
   function recordsForPeriod(source,{type='bulanan',year='',period=''}={}){return values(source).filter(row=>typeOf(row)===type&&(!year||norm(yearOf(row))===norm(year))&&(!period||norm(periodOf(row,type))===norm(period)))}
   function masterRoster(master,classList){const source=master?.santriByClass||master||{};return classList.flatMap(className=>values(source[className]||[]).map(item=>({name:typeof item==='string'?item:String(item?.namaSantri||item?.nama||item?.name||''),studentKey:String(item?.studentKey||item?.santriId||item?.id||''),kelas:className}))).filter(x=>x.name)}
+  // November reassignments. Keep October's teacher when an October score is missing.
+  const octoberTransfers = [
+    {subject:'Hadits Ahkam', classes:['Kelas 4 Putra','Kelas 5 Putra','Kelas 4 Putri'], current:'ZAWAWI', prior:'MULTAZAM', name:'Multazam'},
+    {subject:'Hadits', classes:['Kelas 2 Putra','Kelas 3 Putra'], current:'ZAWAWI', prior:'FAIQ', name:'Faiq Akbar Firdaus'},
+    {subject:'Aqidah', classes:['Kelas 1 Putra'], current:'DONY', prior:'FAIQ', name:'Faiq Akbar Firdaus'},
+    {subject:'Al-Qur’an', classes:['Kelas 4 Putra'], current:'MULTAZAM', prior:'FAIQ', name:'Faiq Akbar Firdaus'},
+    {subject:'Adab', classes:['Kelas 2 Putra'], current:'ZAKY', prior:'NAQIEB', name:'Naqieb'},
+    {subject:'Adab', classes:['Kelas 3 Putra'], current:'ZAWAWI', prior:'NAQIEB', name:'Naqieb'}
+  ];
+
+  function scheduleForReport(schedule,{type,year,period}) {
+    if (type!=='bulanan' || year!=='2026/2027' || norm(period)!=='oktober') return schedule;
+    return schedule.flatMap(row=>{
+      const classes=[...new Set(classesOf(row))];
+      const transferFor=cls=>octoberTransfers.find(entry=>entry.current===teacherCode(row)
+        && key(entry.subject)===key(subject(row)) && entry.classes.includes(cls));
+      if (!classes.some(transferFor)) return [row];
+      return classes.map(cls=>{
+        const transfer=transferFor(cls);
+        const scoped={...row,kelas:cls,classNames:[cls]};
+        return transfer ? {...scoped,guruKode:transfer.prior,guruNama:transfer.name} : scoped;
+      });
+    });
+  }
   function assignments(schedule,{classFilter=''}={}){
     const map=new Map();
     activeSchedule(schedule).forEach(row=>{const classList=classesOf(row);if(classFilter&&!classList.some(name=>norm(name)===norm(classFilter)))return;const id=[teacherCode(row)||norm(teacherName(row)),norm(subject(row)),...classList.map(norm).sort()].join('|');if(!map.has(id))map.set(id,{id,teacherCode:teacherCode(row),teacher:teacherName(row),subject:subject(row),classes:classList,sourceIds:[]});map.get(id).sourceIds.push(row.id||'')});
@@ -46,7 +70,7 @@
   function teacherMatches(record,assignment){const code=String(record?.guruKode||record?.teacherCode||'').trim().toUpperCase();if(code&&assignment.teacherCode)return code===assignment.teacherCode;const actual=norm(record?.guru_penguji||record?.guru||record?.nama_guru||'');return actual&&[norm(assignment.teacher),norm(assignment.teacherCode)].some(value=>value&&(actual===value||actual.includes(value)||value.includes(actual)))}
   function scoreMatches(record,assignment){return assignment.classes.some(name=>norm(name)===norm(classOf(record)))&&sameSubject(record,assignment)&&teacherMatches(record,assignment)}
   function summarize({schedule=[],scores=[],master={},type='bulanan',year='',period='',unit='ALL',classFilter=''}={}){
-    const scoped=activeSchedule(schedule,{unit}),periodScores=recordsForPeriod(scores,{type,year,period}),list=assignments(scoped,{classFilter}).map(assignment=>{
+    const scoped=scheduleForReport(activeSchedule(schedule,{unit}),{type,year,period}),periodScores=recordsForPeriod(scores,{type,year,period}),list=assignments(scoped,{classFilter}).map(assignment=>{
       const roster=masterRoster(master,assignment.classes),expected=roster.length;
       const matched=periodScores.filter(record=>scoreMatches(record,assignment)),latest=new Map();
       matched.forEach((record,index)=>{const id=key(record.studentKey||record.santriId||record.studentId||studentName(record)||index),previous=latest.get(id),stamp=Date.parse(record.updated_at||record.updatedAt||record.final_at||record.finalAt||0)||0,prior=previous?(Date.parse(previous.updated_at||previous.updatedAt||previous.final_at||previous.finalAt||0)||0):-1;if(!previous||stamp>=prior)latest.set(id,record)});
@@ -56,5 +80,5 @@
     const teachers=new Map();list.forEach(item=>{const id=item.teacherCode||norm(item.teacher);if(!teachers.has(id))teachers.set(id,{id,teacher:item.teacher,teacherCode:item.teacherCode,assignments:[],expected:0,entered:0,final:0,partial:0});const group=teachers.get(id);group.assignments.push(item);group.expected+=item.expected;group.entered+=item.entered;group.final+=item.final;group.partial+=item.partial});
     return[...teachers.values()].map(group=>({...group,progress:group.expected?Math.round(group.entered/group.expected*100):0,finalProgress:group.expected?Math.round(group.final/group.expected*100):0})).sort((a,b)=>a.teacher.localeCompare(b.teacher,'id'));
   }
-  return{MONTHS,norm,key,values,classesOf,unitOf,isPkbm,activeSchedule,classNames,teacherCode,teacherName,subject,isQuran,sameSubject,typeOf,periodOf,yearOf,studentName,classOf,isFinal,recordsForPeriod,masterRoster,assignments,scoreMatches,summarize};
+  return{MONTHS,norm,key,values,classesOf,unitOf,isPkbm,activeSchedule,classNames,scheduleForReport,teacherCode,teacherName,subject,isQuran,sameSubject,typeOf,periodOf,yearOf,studentName,classOf,isFinal,recordsForPeriod,masterRoster,assignments,scoreMatches,summarize};
 });

@@ -1504,6 +1504,10 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
   <section class="c53-scene-shell" id="examWizard">
     <section class="panel-card c53-scene c53-scene-card active" id="sceneAssessment" data-scene="assessment">
       <div class="c53-scene-nav"><div class="c53-scene-copy"><small>Mulai dari sini</small><h2>Pilih Jenis Penilaian</h2><p>Bobot nilai sudah tetap. Pilih sesuai jenis pelajaran yang akan dinilai.</p></div></div>
+      <section id="multazamOctoberSessions" hidden aria-label="Nilai Hadits Ahkam Oktober">
+        <h3>Hadits Ahkam • Oktober 2026</h3>
+        <div class="c53-choice-grid"></div>
+      </section>
       <section id="faiqDraftSessions" hidden aria-label="Draf Oktober Faiq">
         <h3>Draf Oktober Faiq</h3>
         <div class="c53-choice-grid">
@@ -2052,6 +2056,21 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const teachers=normalizeArray(masterDataAkademik.guru), teacherSelect=document.getElementById("guruPenguji");
     teacherSelect.innerHTML=""; teacherSelect.add(new Option(getActiveUserName(),getActiveUserName())); teacherSelect.value=getActiveUserName();
     teacherCodeAktif=detectTeacherCode(scheduleRows); buildTeacherSubjectMap();
+    const haditsShortcuts=document.getElementById('multazamOctoberSessions');
+    haditsShortcuts.hidden=!(isHistoricalHadits('Hadits Ahkam') && document.getElementById('tahunAkademik').value==='2026/2027');
+    if (!haditsShortcuts.hidden) {
+      const grid=haditsShortcuts.querySelector('.c53-choice-grid');
+      grid.replaceChildren();
+      for (const kelas of HISTORICAL_HADITS_CLASSES) {
+        const button=document.createElement('button');
+        button.type='button';
+        button.className='c53-subject-btn';
+        button.textContent=kelas;
+        button.setAttribute('aria-label',kelas);
+        button.onclick=()=>openOctoberKitabSession('Hadits Ahkam',kelas);
+        grid.append(button);
+      }
+    }
     const option=document.getElementById('faiqOctoberOption');
     option.hidden=!(canGradeForFaiq() && document.getElementById('tahunAkademik').value==='2026/2027');
     const shortcuts=document.getElementById('faiqDraftSessions');
@@ -2062,12 +2081,7 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
         const toggle=document.getElementById('faiqOctoberToggle');
         toggle.checked=true;
         toggle.dispatchEvent(new Event('change'));
-        selectAssessmentType('kitab_tanpa_praktek');
-        selectExamSubject(button.dataset.faiqSubject);
-        document.getElementById('examClassSelect').value=button.dataset.class;
-        document.getElementById('semester').value='Ganjil';
-        selectExamType('Bulanan');
-        await selectExamPeriod('Oktober');
+        await openOctoberKitabSession(button.dataset.faiqSubject,button.dataset.class);
       };
     });
     document.getElementById('faiqOctoberToggle').onchange=event=>{
@@ -2079,6 +2093,15 @@ body.c53-score-focus.c53-month-focus #scorePanel{display:block!important}
     const mapel=document.getElementById("mapel"); mapel.innerHTML='<option value="">-- Pilih Mata Pelajaran --</option>';
     Object.keys(teacherSubjectClasses).sort((a,b)=>a.localeCompare(b,"id")).forEach(subject=>mapel.add(new Option(subject,subject)));
     if(!teacherCodeAktif||!Object.keys(teacherSubjectClasses).length){mapel.disabled=true;showToast("error","Jadwal guru belum terdeteksi","Mata pelajaran hanya ditampilkan dari jadwal guru yang sedang login.");}
+  }
+
+  async function openOctoberKitabSession(subject,kelas) {
+    selectAssessmentType('kitab_tanpa_praktek');
+    selectExamSubject(subject);
+    document.getElementById('examClassSelect').value=kelas;
+    document.getElementById('semester').value='Ganjil';
+    selectExamType('Bulanan');
+    await selectExamPeriod('Oktober');
   }
 
   const examSceneMap={assessment:'sceneAssessment',subject:'sceneSubject',type:'sceneType',period:'scenePeriod'};

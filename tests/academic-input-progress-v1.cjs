@@ -21,4 +21,22 @@ test('Quran progress includes Tahfiz records that have no Tahsin level',()=>{con
 test('Supervisor and Manager use the same schedule progress resolver',()=>{const supervisor=fs.readFileSync(path.join(root,'supervisor/laporan-akademik.html'),'utf8'),manager=fs.readFileSync(path.join(root,'js/manager-education-v2.js'),'utf8');for(const source of [supervisor,manager]){assert(source.includes('CahayaAcademicInputProgress'));assert(source.includes('.summarize('))}});
 test('Supervisor review merges every scheduled subject with Final and visible Draft records',()=>{const html=fs.readFileSync(path.join(root,'supervisor/laporan-akademik.html'),'utf8');for(const text of ['Review Rapor','Progres Input Nilai','expectedSubjects(student)','P.reviewScoreRecords','P.reportRows(x.reviewRecords,x.expected)','showWorkflowStatus:true','cahaya_app/jadwal_pelajaran'])assert(html.includes(text),text)});
 
+test('October preview and progress use the previous teacher without borrowing a score from another month',()=>{
+  const P=require('../js/academic-report-publication-v1.js');
+  const october={type:'bulanan',period:'Oktober',year:'2026/2027'};
+  const cls='Kelas 4 Putra';
+  const schedule=[{aktif:true,kelas:cls,mapel:'Hadits Ahkam',guruKode:'ZAWAWI',guruNama:'Muhammad Zawawi'}];
+  const [assignment]=G.scheduleForReport(schedule,october);
+  assert.equal(assignment.guruKode,'MULTAZAM');
+  const scores=['Agustus','Oktober'].map((bulan,i)=>({...score('a','ANAK A','Hadits Ahkam','FINAL'),kelas_kelompok:cls,guruKode:'MULTAZAM',guru_penguji:'Multazam',bulan,nilai_total:i?82:56}));
+  const expected=[{label:assignment.mapel,teacher:assignment.guruNama,teacherCode:assignment.guruKode}];
+  const absent=G.recordsForPeriod(scores.slice(0,1),october);
+  assert.deepEqual(P.reportRows(absent,expected),[{__missing:true,label:'Hadits Ahkam',teacher:'Multazam'}]);
+  const records=G.recordsForPeriod(scores,october);
+  assert.equal(P.reportRows(records,expected)[0].nilai_total,82);
+  assert.equal(G.summarize({...october,schedule,scores})[0].final,1);
+  assert.equal(G.scheduleForReport(schedule,{...october,period:'November'})[0].guruKode,'ZAWAWI');
+  const mixed=[{kelas:'Kelas 4 Putra',classNames:['Kelas 5 Putra'],mapel:'Al-Qur’an',guruKode:'MULTAZAM'}];
+  assert.deepEqual(G.scheduleForReport(mixed,october).map(r=>[r.kelas,r.guruKode]),[['Kelas 4 Putra','FAIQ'],['Kelas 5 Putra','MULTAZAM']]);
+});
 console.log(`${checks} academic input progress tests passed.`);
