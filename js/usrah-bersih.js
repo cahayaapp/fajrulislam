@@ -21,11 +21,12 @@ let busy = false;
 for (const group of groups) fields.usrah.add(new Option('Usrah ' + group, group));
 
 function showPanel() {
-  const active = location.hash === '#rekap' ? 'rekap' : 'formulir';
-  for (const link of document.querySelectorAll('.switcher a')) {
+  const links = Array.from(document.querySelectorAll('.switcher a'));
+  const active = links.find(link => link.hash === location.hash) || links[0];
+  for (const link of links) {
     const id = link.hash.slice(1);
-    el(id).hidden = id !== active;
-    if (id === active) link.setAttribute('aria-current', 'page');
+    el(id).hidden = link !== active;
+    if (link === active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   }
 }
