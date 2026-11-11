@@ -2081,6 +2081,7 @@ body.admin-brand-shell .sidebar{background:linear-gradient(160deg,#12385f,#0b254
     </div>
 
     <div class="sidebar-scroll">
+      <a id="usrahBersihMenu" class="nav-item" style="display:none" href="pembinaan/usrah-bersih.html">Penilaian Usrah Bersih</a>
       <nav class="nav-menu" id="dynamicMenu"></nav>
     </div>
 
@@ -4357,6 +4358,8 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
     }
 
     firebase.auth().onAuthStateChanged(async (user) => {
+      const akunLomba = ['multazam@cahayaapp.id', 'bennyarizona@cahayaapp.id', 'donisetiawan@cahayaapp.id'];
+      document.getElementById('usrahBersihMenu').style.display = akunLomba.includes(user?.email) ? 'flex' : 'none';
       if (user) {
         console.log("Otorisasi Sesi Berhasil:", user.email);
 

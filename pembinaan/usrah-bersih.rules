@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /penilaian/{id} {
+      function anggota() {
+        return request.auth != null && request.auth.token.email in [
+          'multazam@cahayaapp.id', 'bennyarizona@cahayaapp.id', 'donisetiawan@cahayaapp.id'
+        ];
+      }
+      function skor(n) { return n is int && n >= 0 && n <= 100; }
+      function sah() {
+        let d = request.resource.data;
+        let lokal = d.waktu + duration.value(7, 'h');
+        return d.keys().hasOnly(['usrah','sesi','waktu','penilai','kamar','piket','kompak','akun','disimpan'])
+          && lokal.year() == 2026 && lokal.month() == 11 && lokal.day() >= 11 && lokal.day() <= 21
+          && d.waktu <= request.time && d.disimpan == request.time
+          && request.time < timestamp.date(2026,11,22) - duration.value(7,'h')
+          && d.akun == request.auth.token.email
+          && d.usrah is int && d.usrah >= 1 && d.usrah <= 8
+          && d.sesi in [1,2,3] && d.penilai in ['Abah Multazam Zakaria','Abi Dandy',"Mu'allim Zaky"]
+          && id == string(lokal.day()) + '-' + string(d.usrah) + '-' + string(d.sesi)
+          && skor(d.kamar) && skor(d.piket) && skor(d.kompak);
+      }
+      allow read: if anggota();
+      allow create: if anggota() && sah();
+    }
+  }
+}

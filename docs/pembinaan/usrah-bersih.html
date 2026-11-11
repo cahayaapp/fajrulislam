@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="id" class="cahaya-v2">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#12345b">
+  <title>Penilaian Usrah Bersih · CAHAYA</title>
+  <link rel="icon" href="../assets/cahaya-app/favicon.ico">
+  <link rel="stylesheet" href="../css/cahaya-ui-v2.css">
+  <link rel="stylesheet" href="../css/usrah-bersih.css">
+  <script src="../config/tenant-config.js"></script>
+</head>
+<body>
+<main class="contest">
+  <header class="masthead">
+    <img src="../assets/cahaya-app/logo-horizontal.png" alt="CAHAYA App">
+    <a href="../main-dashboard.html"><span aria-hidden="true">←</span> Beranda</a>
+  </header>
+  <section class="cover" aria-labelledby="judul">
+    <div class="cover-copy">
+      <p class="period">11–21 November 2026</p>
+      <h1 id="judul">Usrah Bersih</h1>
+      <p>Tiga pemeriksaan mendadak setiap hari.</p>
+    </div>
+    <div class="prize"><span>Total hadiah</span><strong>Rp500.000</strong></div>
+  </section>
+  <div class="judges"><strong>Tim penilai</strong><span>Abah Multazam Zakaria, Abi Dandy, dan Mu’allim Zaky</span></div>
+  <p id="status" class="notice" role="status">Memeriksa akses akun…</p>
+  <div hidden id="isi">
+    <nav class="switcher" aria-label="Menu penilaian">
+      <a href="#formulir" aria-current="page">Form penilaian</a>
+      <a href="#rekap">Rekap hasil</a>
+    </nav>
+    <section id="formulir" aria-labelledby="judul-form">
+      <form id="form">
+        <div class="panel">
+          <h2 id="judul-form">Detail pemeriksaan</h2>
+          <div class="fields">
+            <label>Usrah<select name="usrah" required></select></label>
+            <label>Sesi pemeriksaan<select name="sesi"><option value="1">Pemeriksaan ke-1</option><option value="2">Pemeriksaan ke-2</option><option value="3">Pemeriksaan ke-3</option></select></label>
+            <label>Waktu pemeriksaan (WIB)<input type="datetime-local" name="waktu" min="2026-11-11T00:00" max="2026-11-21T23:59" required></label>
+            <label>Penilai lapangan<select name="penilai" required><option value="">Pilih penilai</option><option>Abah Multazam Zakaria</option><option>Abi Dandy</option><option>Mu'allim Zaky</option></select></label>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Nilai per kriteria</h2>
+          <p class="intro">Gunakan skala 0–100. Ketiga kriteria berbobot sama.</p>
+          <label class="criterion"><span><strong>Kamar</strong><small>Kebersihan dan kerapian lantai, lemari, ranjang, dan jendela.</small></span><input name="kamar" type="number" inputmode="numeric" placeholder="0–100" min="0" max="100" required></label>
+          <label class="criterion"><span><strong>Tempat piket</strong><small>Kebersihan dan kerapian tempat piket.</small></span><input name="piket" type="number" inputmode="numeric" placeholder="0–100" min="0" max="100" required></label>
+          <label class="criterion"><span><strong>Kekompakan anggota</strong><small>Kerja sama anggota dalam menjaga kebersihan dan kerapian.</small></span><input name="kompak" type="number" inputmode="numeric" placeholder="0–100" min="0" max="100" required></label>
+          <button type="submit">Simpan penilaian</button>
+          <output aria-live="polite"></output>
+        </div>
+      </form>
+    </section>
+    <section id="rekap" class="panel" aria-labelledby="judul-rekap" hidden>
+      <h2 id="judul-rekap">Rekap hasil penilaian</h2>
+      <p class="intro">Peringkat berdasarkan rata-rata nilai yang masuk. Target tiap usrah 33 pemeriksaan.</p>
+      <p id="rekapStatus" role="status">Memuat hasil…</p>
+      <div class="scroll"><table class="standings" aria-label="Peringkat usrah"><thead><tr><th>Peringkat</th><th>Usrah</th><th>Pemeriksaan</th><th>Rata-rata</th></tr></thead><tbody id="ranking"></tbody></table></div>
+      <details><summary>Rincian tiap pemeriksaan</summary><div class="scroll" tabindex="0" role="region" aria-label="Rincian pemeriksaan"><table><thead><tr><th>Waktu (WIB)</th><th>Usrah</th><th>Sesi</th><th>Penilai</th><th>Kamar</th><th>Piket</th><th>Kekompakan</th><th>Akun penginput</th></tr></thead><tbody id="rincian"></tbody></table></div></details>
+    </section>
+  </div>
+</main>
+<script type="module" src="../js/usrah-bersih.js"></script>
+</body>
+</html>
