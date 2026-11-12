@@ -1,3 +1,4 @@
+import {rankingPath, standings} from '../js/usrah-ranking.mjs';
 const $ = id => document.getElementById(id);
 const zone = 'Asia/Jakarta';
 const day = date => new Date(+date + 7*3600000).toISOString().slice(0,10);
@@ -22,6 +23,10 @@ const info={Konselor:'Panggilan konselor hari ini',Setoran:'Peserta Tahfiz · Se
 const populations={Setoran:'peserta Tahfiz',Guru:'guru dalam rekap',Santri:'santri dengan presensi tercatat',Konselor:'santri yang dipanggil'};
 const percent=new Intl.NumberFormat('id-ID',{style:'percent',maximumFractionDigits:1});
 const unit=document.documentElement.dataset.unit;
+const competition = 'Usrah Bersih';
+let ranking = null, rankingDown = false;
+const scoreFormat = new Intl.NumberFormat('id-ID',{maximumFractionDigits:2});
+if(unit==='putra') channels.splice(2,0,competition);
 const feed=`https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com/cahaya_public/live_tv/${unit}.json`;
 const prayerAPI='https://api.myquran.com/v3/sholat/jadwal/3988c7f88ebcb58c6ce932b957b6f332/';
 let snapshot=null, times={}, slides=[], position=0, quoteIndex=0, paused=false, currentDay='', lastClock='', alarm='', fetching=false, sourceDown=false, nextSlide=0;
@@ -42,6 +47,7 @@ function prayerInfo(date){
 function build(){
   const old=slides[position];
   const pages=[{channel:'Renungan'},{channel:'Salat'}];
+  if(unit==='putra')pages.push({channel:competition});
   const size=innerWidth<=650?8:12;
   for(const [channel,[section,labels]] of Object.entries(categories)){
     if(!snapshot){pages.push({channel});continue;}
@@ -60,7 +66,7 @@ function paint(){
   const s=slides[position];if(!s)return;
   const scene=element('article','scene'), heading=(text)=>scene.append(element('h1','',text));
   const description=(text)=>scene.append(element('p','meta',text));
-  scene.append(element('p','kicker',s.channel==='Renungan'?'Renungan hari ini':s.channel==='Salat'?'Kabupaten Belitung':info[s.channel]));
+  scene.append(element('p','kicker',s.channel==='Renungan'?'Renungan hari ini':s.channel==='Salat'?'Kabupaten Belitung':s.channel===competition?'Lomba Usrah Bersih · 11–21 November 2026':info[s.channel]));
   if(s.channel==='Renungan'){
     scene.classList.add('quote');heading(quotes[quoteIndex%quotes.length]);scene.append(element('div','rule'));
   }else if(s.channel==='Salat'){
@@ -68,6 +74,21 @@ function paint(){
     heading(p.next?'Menjelang '+names[p.next]:'Jadwal salat');
     if(p.at)scene.append(element('strong','big-time',p.at+' WIB'));
     description(p.next?(p.tomorrow?'Subuh berikutnya · besok':'Waktu salat berikutnya'):'Menunggu jadwal Belitung hari ini.');
+  }else if(s.channel===competition){
+    heading('Peringkat sementara');
+    description(rankingDown?'Pembaruan tertunda'+(ranking?' · menampilkan rekap terakhir.':'.'):
+      !ranking?'Menunggu rekap penilai.':ranking.sessions?'Akumulasi seluruh sesi penilaian.':'Belum ada sesi yang dinilai.');
+    const table=element('table','standings');
+    const header=table.createTHead().insertRow();
+    for(const label of ['Peringkat','Usrah','Rata-rata','Sesi dinilai'])header.append(element('th','',label));
+    const body=table.createTBody();
+    const rows=ranking?.rows ?? Array.from({length:6},(_,i)=>({usrah:i+1}));
+    for(const item of rows){
+      const row=body.insertRow();
+      for(const value of [item.rank??'—','Usrah '+item.usrah,item.average==null?'—':scoreFormat.format(item.average),ranking?ranking.sessions+' / 33':'—'])
+        row.insertCell().textContent=value;
+    }
+    scene.append(table);
   }else if(!snapshot){
     heading(s.channel==='Setoran'?'Setoran tahfiz':s.channel==='Konselor'?'Panggilan konselor':'Presensi '+s.channel.toLowerCase());
     description(sourceDown?'Koneksi ringkasan belum tersedia. Layar akan mencoba lagi.':'Menunggu ringkasan hari ini.');
@@ -109,6 +130,14 @@ async function json(url){
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
   try{const r=await fetch(url,{signal:controller.signal,cache:'no-cache'});if(!r.ok)throw Error('HTTP '+r.status);return await r.json();}
   finally{clearTimeout(timer);}
+}
+async function updateRanking(){
+  try{
+    const data=await json('https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com/'+rankingPath+'.json');
+    ranking=data===null?null:{sessions:data.sessions,rows:standings(data)};
+    rankingDown=false;
+  }catch{rankingDown=true;}
+  if(slides[position]?.channel===competition)paint();
 }
 async function updateFeed(){
   if(fetching)return;
@@ -167,3 +196,5 @@ document.addEventListener('keydown',e=>{
 });
 window.matchMedia('(max-width:650px)').addEventListener('change',build);
 tick();setInterval(tick,1000);setInterval(updateFeed,300000);setInterval(updatePrayer,3600000);
+
+if(unit==='putra'){updateRanking();setInterval(updateRanking,300000);}

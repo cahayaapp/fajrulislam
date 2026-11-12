@@ -2,9 +2,13 @@ import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase
 import {getAuth, onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 import {collection, doc, getFirestore, onSnapshot, runTransaction, serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
+import {getDatabase, ref, runTransaction as updateRanking} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js';
+import {rankingPath, standings} from './usrah-ranking.mjs';
+
 const app = initializeApp(window.CAHAYA_CONFIG.firebase);
 const auth = getAuth(app);
 const db = getFirestore(app, 'usrah-bersih');
+const publicRanking = ref(getDatabase(app), rankingPath);
 const scores = collection(db, 'penilaian');
 const accounts = ['multazam@cahayaapp.id', 'bennyarizona@cahayaapp.id', 'donisetiawan@cahayaapp.id'];
 const el = id => document.getElementById(id);
@@ -47,7 +51,7 @@ function row(body, cells) {
 }
 
 function render(records) {
-  const totals = groups.map(usrah => ({usrah, count:0, sum:0}));
+  const sums = groups.map(() => 0);
   const detail = el('rincian');
   detail.replaceChildren();
   const archive = el('nilaiLama');
@@ -62,23 +66,17 @@ function render(records) {
       continue;
     }
     sessions++;
-    totals.forEach((item,index) => {
-      item.sum += nilai[index];
-      item.count++;
-    });
+    nilai.forEach((score,index) => { sums[index] += score; });
     row(detail, [when, criteria[kriteria], penilai, ...nilai, akun.split('@')[0]]);
   }
   el('arsip').hidden = !archive.rows.length;
-  const average = item => item.count ? item.sum / item.count : -1;
-  totals.sort((a,b) => average(b) - average(a));
+  const summary = {sessions, sums};
   const ranking = el('ranking');
   ranking.replaceChildren();
-  let rank = 0;
-  totals.forEach((item,index) => {
-    if (!index || average(totals[index-1]) !== average(item)) rank = index + 1;
-    row(ranking,[item.count ? rank : '—','Usrah ' + item.usrah,item.count + '/33',item.count ? format.format(average(item)) : '—']);
-  });
-  return sessions;
+  for (const item of standings(summary)) {
+    row(ranking,[item.rank ?? '—','Usrah ' + item.usrah,sessions + '/33',item.average === null ? '—' : format.format(item.average)]);
+  }
+  return summary;
 }
 
 onAuthStateChanged(auth, user => {
@@ -95,7 +93,17 @@ onAuthStateChanged(auth, user => {
   el('isi').hidden = false;
   if (updatePeriod()) fields.waktu.value = wib(new Date());
   unsubscribe = onSnapshot(scores, {includeMetadataChanges:true}, snapshot => {
-    const sessions = render(snapshot.docs.map(item => item.data()));
+    const summary = render(snapshot.docs.map(item => item.data()));
+    const {sessions} = summary;
+    if (!snapshot.metadata.fromCache && !snapshot.metadata.hasPendingWrites) {
+      updateRanking(publicRanking, previous => {
+        if (previous?.sessions > sessions || (previous?.sessions === sessions &&
+            JSON.stringify(previous.sums) === JSON.stringify(summary.sums))) return;
+        return summary;
+      }, {applyLocally:false}).catch(() => {
+        if (auth.currentUser?.uid === user.uid) el('rekapStatus').textContent += ' Sinkronisasi ke Live Putra tertunda. Muat ulang untuk mencoba lagi.';
+      });
+    }
     el('rekapStatus').textContent = snapshot.metadata.fromCache ? 'Menunggu sinkronisasi dengan server…' :
       sessions ? sessions + ' dari 33 sesi tercatat.' : 'Belum ada sesi penilaian.';
   }, () => { el('rekapStatus').textContent = 'Rekap gagal dimuat. Periksa koneksi dan akses Firebase, lalu muat ulang halaman.'; });
