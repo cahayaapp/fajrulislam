@@ -9,7 +9,7 @@ test('ringkasan harian memisahkan izin, belum absen, dan alfa; buka hanya bidang
     placements:{dua:{programQuran:'TAHSIN',effectiveFrom:'2026-01-01'}},
     deposits:{a:{tanggal:date,program:'Tahfiz',data:[{nama:'SATU',setoran:'1–5',baris:4,keterangan:'rahasia'}]},b:{tanggal:date,program:'Tahsin',data:[{nama:'Dua'}]}},
     lessons:{a:{tanggal:date,jamMulaiJadwal:'06:00',data:[{nama:'Satu',status:'Alfa'},{nama:'Dua',status:'Sakit'},{nama:'Tiga',status:'Belum Hadir'},{nama:'Empat',status:'Izin'}]},
-      b:{tanggal:date,jamMulaiJadwal:'09:00',data:[{nama:'Satu',statusFinal:'Terlambat'}]}},
+      b:{tanggal:date,jamMulaiJadwal:'09:00',kelas:'Kelas 3 Putra',mapel:'Bahasa Arab',data:[{nama:'Satu',statusFinal:'Terlambat'}]}},
     staffLog:{a:{tanggal:date,namaGuru:'Guru Satu',guruKodeKalender:'A',unit:'PUTRA',statusKehadiran:'TEPAT_WAKTU',emailGuru:'rahasia'}},
     schedule:['A','B','C','D'].map((code,i)=>({hari:4,unit:'PUTRA',kelas:'Kelas 3 Putra',mapel:'Al Quran',guruKode:code,guruNama:['Guru Satu','Guru Dua','Guru Tiga','Guru Empat'][i],jamMulai:i===3?'17:00':'07:00'})),
     leave:{x:{units:['PUTRA'],teacherCode:'B',teacherName:'Guru Dua',startDate:date,endDate:date,review:{status:'APPROVED'},reason:'rahasia'}}};
@@ -27,6 +27,7 @@ test('ringkasan harian memisahkan izin, belum absen, dan alfa; buka hanya bidang
   assert.deepEqual(putri.guru,{masuk:[],izin:[],belum:[]});
   assert(!JSON.stringify(result).includes('"Putri"'));
   assert.deepEqual(result.tahfiz.baris,[6]);assert.deepEqual(result.tahfiz.sudah,['Satu']);assert.equal(result.tahfiz.belum.length,2);
+  assert.equal(result.kbm.labels[result.kbm.byStatus.masuk[0]],'Bahasa Arab · Kelas 3 Putra · 09:00');
   assert.deepEqual(result.santri,{masuk:['Satu'],izin:['Empat'],sakit:['Dua'],alfa:[]});
   assert.deepEqual(result.guru,{masuk:['Guru Satu'],izin:['Guru Dua'],belum:['Guru Tiga']});
   assert(!JSON.stringify(result).includes('rahasia'));

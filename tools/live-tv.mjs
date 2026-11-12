@@ -75,11 +75,20 @@ export function project(data,now,unit){
   for(const r of ordered) for(const item of values(r.data)){
     const n=name(item.nama||item.namaSantri), status=known[key(item.statusFinal||item.statusAkhir||item.status||item.statusAwal)];
     const id=Placement.identityKey(n,r.kelas);
-    if(n && status && belongs(id,groupUnit(r)))attendance.set(id,{n:students.get(id)||n,status});
+    if(n && status && belongs(id,groupUnit(r)))attendance.set(id,{n:students.get(id)||n,status,
+      lesson:[name(r.mapel||r.mataPelajaran),name(r.kelas),name(r.jamMulaiJadwal)].filter(Boolean).join(' · ')});
   }
   const pupils={masuk:[],izin:[],sakit:[],alfa:[]};
-  for(const {n,status} of attendance.values())pupils[status].push(n);
-  for(const list of Object.values(pupils))list.sort((a,b)=>a.localeCompare(b,'id'));
+  const lessonLabels=[], lessonByStatus={};
+  for(const [status,list] of Object.entries(pupils)){
+    const rows=[...attendance.values()].filter(row=>row.status===status).sort((a,b)=>a.n.localeCompare(b.n,'id'));
+    lessonByStatus[status]=rows.map(({n,lesson})=>{
+      list.push(n);
+      if(!lesson)return -1;
+      if(!lessonLabels.includes(lesson))lessonLabels.push(lesson);
+      return lessonLabels.indexOf(lesson);
+    });
+  }
 
   const teachers=new Map(), aliases=new Map();
   function identify(code,display){
@@ -132,7 +141,7 @@ export function project(data,now,unit){
   }
   const sudah=sorted(recorded.values());
   return {unit,date,konselor:{muda:sorted(queue.muda),madya:sorted(queue.madya)},updatedAt:now.toISOString(),tahfiz:{sudah,baris:sudah.map(student=>lines.get(student)??-1),belum:sorted([...participants].filter(([k])=>!recorded.has(k)).map(([,n])=>n))},
-    guru:{masuk:names(present),izin:names([...excused].filter(id=>!present.has(id))),belum:names([...due].filter(id=>!present.has(id)&&!excused.has(id)))},santri:pupils};
+    guru:{masuk:names(present),izin:names([...excused].filter(id=>!present.has(id))),belum:names([...due].filter(id=>!present.has(id)&&!excused.has(id)))},santri:pupils,kbm:{labels:lessonLabels,byStatus:lessonByStatus}};
 }
 
 async function database(path,query={},options={}){

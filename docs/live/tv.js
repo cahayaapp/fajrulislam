@@ -19,7 +19,7 @@ const categories = {
   Konselor:['konselor',{muda:'Menghadap Konselor Muda',madya:'Menghadap Konselor Madya'}],
   Santri:['santri',{masuk:'Santri hadir',izin:'Santri izin',sakit:'Santri sakit',alfa:'Santri alfa'}]
 };
-const info={Konselor:'Panggilan konselor hari ini',Setoran:'Peserta Tahfiz · Setoran hari ini',Guru:'Presensi mengajar hari ini',Santri:'Status KBM terakhir yang tercatat'};
+const info={Konselor:'Panggilan konselor hari ini',Setoran:'Peserta Tahfiz · Setoran hari ini',Guru:'Jadwal mengajar · Rekap guru hari ini',Santri:'Absensi pembelajaran · Pelajaran terakhir tiap santri hari ini'};
 const populations={Setoran:'peserta Tahfiz',Guru:'guru dalam rekap',Santri:'santri dengan presensi tercatat',Konselor:'santri yang dipanggil'};
 const percent=new Intl.NumberFormat('id-ID',{style:'percent',maximumFractionDigits:1});
 const unit=document.documentElement.dataset.unit;
@@ -94,7 +94,15 @@ function paint(){
     scene.append(element('strong','share','Persentase —'));
     description(sourceDown?'Koneksi ringkasan belum tersedia. Layar akan mencoba lagi.':'Menunggu ringkasan hari ini.');
   }else{
-    heading(s.title);
+    const titles={Santri:{masuk:'Hadir di kelas',izin:'Izin belajar',sakit:'Sakit saat KBM',alfa:'Alfa saat KBM'},
+      Guru:{masuk:'Guru hadir mengajar',izin:'Guru izin mengajar',belum:'Guru belum absen mengajar'}};
+    heading(titles[s.channel]?.[s.key]??s.title);
+    if(s.channel==='Guru'){
+      const details={masuk:'Sudah tercatat hadir mengajar setidaknya sekali hari ini.',
+        izin:'Izin atau berhalangan mengajar hari ini, tanpa catatan hadir.',
+        belum:'Jadwal mengajar sudah mulai, presensi dan izin belum tercatat.'};
+      description(details[s.key]);
+    }
     const count=s.list.length, stamp=time.format(new Date(snapshot.updatedAt));
     const hours=(Date.now()-Date.parse(snapshot.updatedAt))/3600000;
     const status=sourceDown||hours>1.25?'Pembaruan tertunda · data pukul ':'Data pukul ';
@@ -119,6 +127,11 @@ function paint(){
       const grid=element('div','names');
       s.list.slice(s.start,s.start+s.size).forEach((n,i)=>{
         const label=element('div','person',n);
+        if(s.channel==='Santri'){
+          const ref=snapshot.kbm?.byStatus?.[s.key]?.[s.start+i];
+          const lesson=snapshot.kbm?.labels?.[ref];
+          label.append(element('small','line-count',lesson||'Rincian pelajaran belum tersedia'));
+        }
         if(showLines){
           const value=lines?.[s.start+i];
           label.append(element('small','line-count',Number.isFinite(value)&&value>=0?value+' baris':'Baris belum tercatat'));
