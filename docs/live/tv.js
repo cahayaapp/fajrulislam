@@ -45,6 +45,32 @@ function prayerInfo(date){
   if(next)return {next,at:row[next],row};
   return {next:'subuh',at:times[day(new Date(+date+86400000))]?.subuh,row,tomorrow:true};
 }
+const prayerLeadMinutes=10, quietPrayerMinutes=20;
+let activePrayerScreen='';
+function updatePrayerScreen(date, row){
+  let mode='', label='', at='';
+  for(const [key,prayer] of Object.entries(names)){
+    const scheduled=row?.[key];
+    if(!/^\d{2}:\d{2}$/.test(scheduled))continue;
+    const elapsed=(date-Date.parse(day(date)+'T'+scheduled+':00+07:00'))/60000;
+    if(elapsed>=-prayerLeadMinutes && elapsed<quietPrayerMinutes){
+      mode=elapsed<0?'approaching':'quiet';
+      label=prayer;at=scheduled;break;
+    }
+  }
+  const signature=mode?mode+' '+label+' '+at:'';
+  if(signature===activePrayerScreen)return;
+  activePrayerScreen=signature;
+  const panel=$('prayer-screen');
+  document.body.dataset.prayerMode=mode;
+  panel.hidden=!mode;
+  if(!mode){paint();return;}
+  panel.replaceChildren(element('h1','',mode==='quiet'?'Waktunya salat '+label:'Menjelang waktu salat '+label));
+  if(mode==='approaching'){
+    panel.prepend(element('p','kicker',label+' · '+at+' WIB'));
+    panel.append(element('p','prayer-invitation','Semua santri, mari segera bergegas ke masjid.'));
+  }
+}
 function build(){
   const old=slides[position];
   const pages=[{channel:'Renungan'},{channel:'Salat'}];
@@ -256,9 +282,10 @@ function tick(){
     $('date').textContent=calendar.format(now);
     build();updateFeed();updatePrayer();
   }
-  updateNotice();
+  if(document.body.dataset.prayerMode!=='quiet')updateNotice();
   if(lastClock!==t){lastClock=t;$('clock').textContent=t;}
   const p=prayerInfo(now), signature=d+JSON.stringify(p);
+  updatePrayerScreen(now,p.row);
   if(alarm!==signature){
     alarm=signature;
     $('prayers').replaceChildren(...Object.entries(names).map(([k,label])=>{
@@ -267,7 +294,7 @@ function tick(){
     }));
     if(slides[position]?.channel==='Salat')paint();
   }
-  if(!paused&&Date.now()>=nextSlide)advance();
+  if(!activePrayerScreen&&!paused&&Date.now()>=nextSlide)advance();
 }
 function togglePause(){
   paused=!paused;document.body.classList.toggle('paused',paused);
@@ -281,6 +308,7 @@ $('next').onclick=()=>advance();$('pause').onclick=togglePause;
 $('full').hidden=!document.fullscreenEnabled;
 $('full').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{}};
 document.addEventListener('keydown',e=>{
+  if(activePrayerScreen)return;
   if(e.key==='ArrowRight')advance();
   if(e.key==='ArrowLeft')advance(-1);
   if(e.code==='Space'&&e.target.tagName!=='BUTTON'){e.preventDefault();togglePause();}
