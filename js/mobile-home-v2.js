@@ -7,6 +7,7 @@
   const media=matchMedia('(max-width: 768px)');
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const paths={
+    screen:'M3 4h18v13H3zM12 17v3m-4 0h8',
     calendar:'M5 4h14v17H5zM8 2v5m8-5v5M5 10h14M8 13h2m4 0h2m-8 4h2m4 0h2',
     book:'M12 5v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z',
     check:'M7 3h10v3H7zM6 5H4v16h16V5h-2M7 11l2 2 3-3m2 2h3m-10 5 2 2 3-3m2 2h3',
@@ -115,6 +116,7 @@
   function card(item,index,large=false){return `<button type="button" class="mh-card ${large?'mh-quick-card':'mh-menu-card'} mh-tone-${index%6}" data-mh-id="${esc(item.id)}" title="${esc(item.label)}"><span class="mh-icon">${icon(item.icon||iconFor(item.label))}</span><span class="mh-card-copy"><b>${esc(item.label)}</b><small>${esc(item.description||summary(item))}</small></span><span class="mh-card-arrow">${large?icon('arrow'):'›'}</span></button>`}
   function all(){if(media.matches&&embedded&&typeof P.toggleSidebar==='function'){P.toggleSidebar();P.document.querySelector('.sidebar-close')?.focus({preventScroll:true});return}const sheet=host.querySelector('dialog');if(!sheet.open)sheet.showModal()}
   function open(id){
+    if(id==='cahaya-live')return window.open(new URL('live/',root).href,'_blank','noopener');
     if(id==='all')return all();
     if(id==='mentor-contact')return showMentorDialog();
     if(id==='roles')return embedded?P.openCahayaGlobalRoleModal?.():all();
@@ -155,6 +157,11 @@
     const wanted=priority[role]||items.filter(x=>!x.utility&&x.group!=='Lainnya'&&x.group!=='Evaluasi').map(x=>x.id);
     quick=wanted.map(id=>items.find(x=>x.id===id)).filter(Boolean).slice(0,4);
     if(!quick.length)quick=items.slice(0,2);
+    if(['DIREKTUR','WAKIL_DIREKTUR','SUPERVISOR'].includes(role)){
+      const live={id:'cahaya-live',label:'Cahaya Live',description:'Pilih tayangan TV Putra atau Putri',icon:'screen'};
+      items=[live,...items];
+      quick=[live,...quick.slice(0,3)];
+    }
     if(role==='GURU_PONDOK'){
       const labels={'menu-absen-guru':'Presensi Guru','menu-absen-kbm':'Presensi Santri','menu-tahfiz':'Tahsin & Tahfiz'};
       quick=quick.map(item=>({...item,label:labels[item.id]||item.label,icon:item.id==='menu-absen-guru'?'calendar':item.id==='leave'?'leave':iconFor(item.label)}));
