@@ -52,13 +52,18 @@ export function project(data,now,unit){
     if(m.placement.programQuran && m.placement.programQuran!=='TAHFIZ')continue;
     if(belongs(id,unitOf(m.academicClass)))participants.set(id,m.name);
   }
-  const recorded=new Map();
+  const recorded=new Map(), lines=new Map();
   for(const r of values(deposits)){
     if(r.tanggal!==date || (r.program ? key(r.program)!=='tahfiz' : r.jenisInput!=='setoran_hafalan'))continue;
     for(const item of values(r.data)){
       const n=name(item.nama||item.namaSantri);
       const id=Placement.identityKey(n,r.kelas);
-      if(participants.has(id)&&belongs(id,groupUnit(r))&&!/^(tidak|belum) setor/i.test(name(item.setoran)))recorded.set(id,participants.get(id));
+      if(!participants.has(id)||!belongs(id,groupUnit(r))||/^(tidak|belum) setor/i.test(name(item.setoran)))continue;
+      const student=participants.get(id);
+      recorded.set(id,student);
+      const raw=item.baris??item.jumlahBaris;
+      if((typeof raw==='number'||typeof raw==='string'&&raw.trim())&&Number.isFinite(Number(raw))&&Number(raw)>=0)
+        lines.set(student,(lines.get(student)??0)+Number(raw));
     }
   }
 
@@ -125,7 +130,8 @@ export function project(data,now,unit){
     const level=c.routeLevel||Cases.routeCase(c,candidates).level;
     queue[level==='MADYA'?'madya':'muda'].add(students.get(Placement.identityKey(c.student))||c.student);
   }
-  return {unit,date,konselor:{muda:sorted(queue.muda),madya:sorted(queue.madya)},updatedAt:now.toISOString(),tahfiz:{sudah:sorted(recorded.values()),belum:sorted([...participants].filter(([k])=>!recorded.has(k)).map(([,n])=>n))},
+  const sudah=sorted(recorded.values());
+  return {unit,date,konselor:{muda:sorted(queue.muda),madya:sorted(queue.madya)},updatedAt:now.toISOString(),tahfiz:{sudah,baris:sudah.map(student=>lines.get(student)??-1),belum:sorted([...participants].filter(([k])=>!recorded.has(k)).map(([,n])=>n))},
     guru:{masuk:names(present),izin:names([...excused].filter(id=>!present.has(id))),belum:names([...due].filter(id=>!present.has(id)&&!excused.has(id)))},santri:pupils};
 }
 

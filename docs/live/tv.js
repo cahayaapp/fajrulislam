@@ -77,7 +77,7 @@ function paint(){
   }else if(s.channel===competition){
     heading('Peringkat sementara');
     description(rankingDown?'Pembaruan tertunda'+(ranking?' · menampilkan rekap terakhir.':'.'):
-      !ranking?'Menunggu rekap penilai.':ranking.sessions?'Akumulasi seluruh sesi penilaian.':'Belum ada sesi yang dinilai.');
+      !ranking?'Memuat peringkat.':ranking.sessions?'Progres penilaian · '+percent.format(ranking.sessions/33)+' dari 33 sesi':'Progres penilaian · 0% dari 33 sesi.');
     const table=element('table','standings');
     const header=table.createTHead().insertRow();
     for(const label of ['Peringkat','Usrah','Rata-rata','Sesi dinilai'])header.append(element('th','',label));
@@ -91,6 +91,7 @@ function paint(){
     scene.append(table);
   }else if(!snapshot){
     heading(s.channel==='Setoran'?'Setoran tahfiz':s.channel==='Konselor'?'Panggilan konselor':'Presensi '+s.channel.toLowerCase());
+    scene.append(element('strong','share','Persentase —'));
     description(sourceDown?'Koneksi ringkasan belum tersedia. Layar akan mencoba lagi.':'Menunggu ringkasan hari ini.');
   }else{
     heading(s.title);
@@ -100,17 +101,29 @@ function paint(){
     const page=count>s.size?' · Halaman '+(s.start/s.size+1)+'/'+Math.ceil(count/s.size):'';
     const summary=element('p','meta');
     if(s.total){
-      summary.append(element('strong','share',percent.format(count/s.total)),
+      summary.append(element('strong','share','Persentase '+percent.format(count/s.total)),
         document.createTextNode(' · '+count+' dari '+s.total+' '+populations[s.channel]));
     }else{
-      summary.textContent='0 '+populations[s.channel];
+      summary.append(element('strong','share','Persentase —'),document.createTextNode(' · 0 '+populations[s.channel]));
     }
     summary.append(document.createTextNode(' · '+status+stamp+' WIB'+page));
+    const showLines=s.channel==='Setoran'&&s.key==='sudah';
+    const lines=showLines?snapshot.tahfiz?.baris:null;
+    if(showLines){
+      const known=(lines??[]).filter(value=>Number.isFinite(value)&&value>=0);
+      const total=known.length?known.reduce((sum,value)=>sum+value,0):count?'—':0;
+      summary.append(document.createTextNode(' · '+total+' baris tercatat hari ini'));
+    }
     scene.append(summary);
     if(count){
       const grid=element('div','names');
       s.list.slice(s.start,s.start+s.size).forEach((n,i)=>{
-        const label=element('div','person',n);label.style.setProperty('--i',i);grid.append(label);
+        const label=element('div','person',n);
+        if(showLines){
+          const value=lines?.[s.start+i];
+          label.append(element('small','line-count',Number.isFinite(value)&&value>=0?value+' baris':'Baris belum tercatat'));
+        }
+        label.style.setProperty('--i',i);grid.append(label);
       });
       scene.append(grid);
     }else description('Belum ada nama pada kategori ini.');
