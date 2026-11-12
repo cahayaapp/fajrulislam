@@ -19,6 +19,8 @@ const categories = {
   Santri:['santri',{masuk:'Santri hadir',izin:'Santri izin',sakit:'Santri sakit',alfa:'Santri alfa'}]
 };
 const info={Konselor:'Panggilan konselor hari ini',Setoran:'Peserta Tahfiz · Setoran hari ini',Guru:'Presensi mengajar hari ini',Santri:'Status KBM terakhir yang tercatat'};
+const populations={Setoran:'peserta Tahfiz',Guru:'guru dalam rekap',Santri:'santri dengan presensi tercatat',Konselor:'santri yang dipanggil'};
+const percent=new Intl.NumberFormat('id-ID',{style:'percent',maximumFractionDigits:1});
 const unit=document.documentElement.dataset.unit;
 const feed=`https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com/cahaya_public/live_tv/${unit}.json`;
 const prayerAPI='https://api.myquran.com/v3/sholat/jadwal/3988c7f88ebcb58c6ce932b957b6f332/';
@@ -43,10 +45,11 @@ function build(){
   const size=innerWidth<=650?8:12;
   for(const [channel,[section,labels]] of Object.entries(categories)){
     if(!snapshot){pages.push({channel});continue;}
+    const total=new Set(Object.keys(labels).flatMap(key=>snapshot[section]?.[key]||[])).size;
     for(const [key,title] of Object.entries(labels)){
       const list=snapshot[section]?.[key]||[];
       for(let start=0;start<Math.max(1,list.length);start+=size)
-        pages.push({channel,key,title,list,start,size});
+        pages.push({channel,key,title,list,start,size,total});
     }
   }
   slides=pages;
@@ -74,7 +77,15 @@ function paint(){
     const hours=(Date.now()-Date.parse(snapshot.updatedAt))/3600000;
     const status=sourceDown||hours>1.25?'Pembaruan tertunda · data pukul ':'Data pukul ';
     const page=count>s.size?' · Halaman '+(s.start/s.size+1)+'/'+Math.ceil(count/s.size):'';
-    description(count+' orang · '+status+stamp+' WIB'+page);
+    const summary=element('p','meta');
+    if(s.total){
+      summary.append(element('strong','share',percent.format(count/s.total)),
+        document.createTextNode(' · '+count+' dari '+s.total+' '+populations[s.channel]));
+    }else{
+      summary.textContent='0 '+populations[s.channel];
+    }
+    summary.append(document.createTextNode(' · '+status+stamp+' WIB'+page));
+    scene.append(summary);
     if(count){
       const grid=element('div','names');
       s.list.slice(s.start,s.start+s.size).forEach((n,i)=>{
