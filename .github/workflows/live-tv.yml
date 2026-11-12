@@ -1,0 +1,26 @@
+name: Ringkasan TV CAHAYA
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7,37 * * * *'
+  push:
+    branches: [main]
+    paths: ['tools/live-tv.mjs', '.github/workflows/live-tv.yml']
+permissions:
+  contents: read
+concurrency:
+  group: cahaya-live-tv
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: tools/live-tv.mjs
+          sparse-checkout-cone-mode: false
+      - run: node tools/live-tv.mjs
+        env:
+          LIVE_FIREBASE_ID_TOKEN: ${{ secrets.LIVE_FIREBASE_ID_TOKEN }}
