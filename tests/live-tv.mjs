@@ -40,3 +40,14 @@ test('riwayat dua hari menentukan rute hari ini dan menunggu pimpinan dikecualik
   reports['12'].caseV2={higherEscalation:{requestedAt:date}};
   assert.deepEqual(project(data,now,'putra').konselor,{muda:[],madya:[]});
 });
+
+test('setiap sesi KBM dan naqib hari ini tetap terpisah per unit',()=>{
+  const record=(status)=>({tanggal:date,unit:'Putra',program:'Subuh',data:[{nama:'Ali',statusAwal:'T',statusFinal:status}]});
+  const data={program:{p1:record('H'),p2:record('I'),kemarin:{...record('A'),tanggal:'2026-11-11'}},
+    lessons:{l1:{...record('Terlambat'),mapel:'Bahasa Arab'},l2:{...record('Sakit'),mapel:'Bahasa Arab'}}};
+  const now=new Date(date+'T11:00:00+07:00'),{presensi}=project(data,now,'putra');
+  assert.deepEqual(presensi.names,['Ali']);
+  assert.deepEqual(Object.fromEntries(presensi.sessions.map(row=>[row.id,row.groups])),{
+    p1:{hadir:[0]},p2:{izin:[0]},l1:{terlambat:[0]},l2:{sakit:[0]}});
+  assert.equal(project(data,now,'putri').presensi.sessions.length,0);
+});

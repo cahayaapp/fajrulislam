@@ -90,6 +90,38 @@ export function project(data,now,unit){
     });
   }
 
+  const attendanceCodes={h:'hadir',t:'terlambat',i:'izin',s:'sakit',a:'alfa',hadir:'hadir',terlambat:'terlambat',izin:'izin',sakit:'sakit',alfa:'alfa',alpha:'alfa','belum hadir':'belum'};
+  const attendanceNames=[], attendanceIds=new Map(), sessions=[];
+  const hour=new Intl.DateTimeFormat('en-GB',{timeZone:zone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+  for(const [kind,records] of [['kbm',lessons],['program',program]]){
+    for(const [id,r] of Object.entries(records||{})){
+      if(r?.tanggal!==date)continue;
+      const roll=new Map(), side=groupUnit(r)||unitOf(r.usrah);
+      for(const item of values(r.data)){
+        const n=name(item.namaSantri||item.nama), student=Placement.identityKey(n,r.kelas);
+        if(!n||!belongs(student,unitOf(item.usrahAsal)||side))continue;
+        const code=key(item.statusFinal||item.statusAkhir||item.status||item.statusAwal);
+        roll.set(students.get(student)||n,attendanceCodes[code]||'belum');
+      }
+      if(!roll.size && side!==unit)continue;
+      const groups={};
+      for(const n of sorted(roll.keys())){
+        if(!attendanceIds.has(n)){attendanceIds.set(n,attendanceNames.length);attendanceNames.push(n);}
+        (groups[roll.get(n)]??=[]).push(attendanceIds.get(n));
+      }
+      const title=kind==='program'?name(r.program||r.namaProgram)||'Program naqib':name(r.mapel||r.mataPelajaran)||'Pembelajaran';
+      const scope=name(kind==='program'?r.labelUsrah||r.usrah:r.kelas||r.sub);
+      const stamp=r.waktuAbsensiAwal||r.waktuSimpan||r.waktu;
+      const start=name(r.jamMulaiJadwal||r.jamMulai);
+      const logged=Number.isFinite(Date.parse(stamp))?hour.format(new Date(stamp)):'';
+      const timeLabel=start?start+' WIB':logged?'Dicatat '+logged+' WIB':'';
+      const context=[scope,name(r.sesiJadwal),timeLabel].filter(Boolean).join(' · ');
+      sessions.push({id,kind,title,context,groups,order:start||logged||''});
+    }
+  }
+  sessions.sort((a,b)=>a.order.localeCompare(b.order)||a.title.localeCompare(b.title,'id'));
+  const presensi={version:1,names:attendanceNames,sessions:sessions.map(({order,...session})=>session)};
+
   const teachers=new Map(), aliases=new Map();
   function identify(code,display){
     const n=name(display), id=key(code)||aliases.get(key(n))||key(n);
@@ -140,7 +172,7 @@ export function project(data,now,unit){
     queue[level==='MADYA'?'madya':'muda'].add(students.get(Placement.identityKey(c.student))||c.student);
   }
   const sudah=sorted(recorded.values());
-  return {unit,date,konselor:{muda:sorted(queue.muda),madya:sorted(queue.madya)},updatedAt:now.toISOString(),tahfiz:{sudah,baris:sudah.map(student=>lines.get(student)??-1),belum:sorted([...participants].filter(([k])=>!recorded.has(k)).map(([,n])=>n))},
+  return {unit,date,presensi,konselor:{muda:sorted(queue.muda),madya:sorted(queue.madya)},updatedAt:now.toISOString(),tahfiz:{sudah,baris:sudah.map(student=>lines.get(student)??-1),belum:sorted([...participants].filter(([k])=>!recorded.has(k)).map(([,n])=>n))},
     guru:{masuk:names(present),izin:names([...excused].filter(id=>!present.has(id))),belum:names([...due].filter(id=>!present.has(id)&&!excused.has(id)))},santri:pupils,kbm:{labels:lessonLabels,byStatus:lessonByStatus}};
 }
 
