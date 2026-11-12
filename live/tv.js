@@ -214,6 +214,8 @@ function paint(){
     }else description('Belum ada nama pada kategori ini.');
   }
   $('stage').replaceChildren(scene);
+  $('channel-picker').value=s.channel;
+  fitScene();
   for(const button of $('channels').children){
     if(button.textContent===s.channel)button.setAttribute('aria-current','true');else button.removeAttribute('aria-current');
   }
@@ -313,14 +315,34 @@ function togglePause(){
   const b=$('pause');b.textContent=paused?'▶':'Ⅱ';b.title=paused?'Lanjutkan tayangan':'Jeda tayangan';
   b.setAttribute('aria-label',b.title);nextSlide=Date.now()+10000;
 }
+function fitScene(){
+  const stage=$('stage'),scene=stage.firstElementChild;
+  if(!scene)return;
+  scene.style.zoom='';
+  if(!matchMedia('(max-width:768px)').matches || !stage.clientHeight)return;
+  // Zoom changes line wrapping. Find the largest size that fits this slide.
+  if(scene.offsetHeight<=stage.clientHeight)return;
+  let low=0,high=1;
+  for(let i=0;i<9;i++){
+    const scale=(low+high)/2;
+    scene.style.zoom=scale;
+    if(scene.offsetHeight*scale<=stage.clientHeight)low=scale;else high=scale;
+  }
+  scene.style.zoom=low;
+}
+new ResizeObserver(fitScene).observe($('stage'));
+$('channel-picker').onchange=e=>{
+  position=slides.findIndex(s=>s.channel===e.target.value);paint();
+};
 for(const channel of channels){
+  $('channel-picker').add(new Option(channel,channel));
   const b=element('button','',channel);b.onclick=()=>{position=slides.findIndex(s=>s.channel===channel);paint();};$('channels').append(b);
 }
 $('next').onclick=()=>advance();$('pause').onclick=togglePause;
 $('full').hidden=!document.fullscreenEnabled;
 $('full').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{}};
 document.addEventListener('keydown',e=>{
-  if(activePrayerScreen)return;
+  if(activePrayerScreen || e.target.tagName==='SELECT')return;
   if(e.key==='ArrowRight')advance();
   if(e.key==='ArrowLeft')advance(-1);
   if(e.code==='Space'&&e.target.tagName!=='BUTTON'){e.preventDefault();togglePause();}

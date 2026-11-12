@@ -116,7 +116,21 @@
   function card(item,index,large=false){return `<button type="button" class="mh-card ${large?'mh-quick-card':'mh-menu-card'} mh-tone-${index%6}" data-mh-id="${esc(item.id)}" title="${esc(item.label)}"><span class="mh-icon">${icon(item.icon||iconFor(item.label))}</span><span class="mh-card-copy"><b>${esc(item.label)}</b><small>${esc(item.description||summary(item))}</small></span><span class="mh-card-arrow">${large?icon('arrow'):'›'}</span></button>`}
   function all(){if(media.matches&&embedded&&typeof P.toggleSidebar==='function'){P.toggleSidebar();P.document.querySelector('.sidebar-close')?.focus({preventScroll:true});return}const sheet=host.querySelector('dialog');if(!sheet.open)sheet.showModal()}
   function open(id){
-    if(id==='cahaya-live')return window.open(new URL('live/',root).href,'_blank','noopener');
+    if(id==='cahaya-live'){
+      const url=new URL('live/',root).href;
+      if(!media.matches)return window.open(url,'_blank','noopener');
+      host.querySelector('dialog[open]')?.close();
+      if(host.querySelector('.mh-live-panel'))return;
+      const panel=document.createElement('section');
+      panel.className='mh-live-panel';
+      const back=document.createElement('button');
+      back.textContent='‹ Beranda';
+      back.onclick=()=>{panel.remove();host.classList.remove('mh-live-open');host.querySelector('[data-mh-id="cahaya-live"]')?.focus()};
+      const frame=document.createElement('iframe');
+      frame.title='Cahaya Live';frame.src=url;
+      panel.append(back,frame);host.append(panel);host.classList.add('mh-live-open');back.focus();
+      return;
+    }
     if(id==='all')return all();
     if(id==='mentor-contact')return showMentorDialog();
     if(id==='roles')return embedded?P.openCahayaGlobalRoleModal?.():all();
@@ -247,7 +261,7 @@
     const syncShell=()=>{try{if(embedded)P.document.body.classList.toggle('mh-home-shell',P.document.getElementById('contentFrame')?.contentWindow===window)}catch{}};
     window.CahayaMobileHomeV2={syncShell};syncShell();media.addEventListener('change',syncShell);
     addEventListener('cahaya:resume',syncShell);addEventListener('pageshow',syncShell);
-    const suspend=()=>{try{if(embedded)P.document.body.classList.remove('mh-home-shell')}catch{}host.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close())};
+    const suspend=()=>{host.querySelector('.mh-live-panel')?.remove();host.classList.remove('mh-live-open');try{if(embedded)P.document.body.classList.remove('mh-home-shell')}catch{}host.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close())};
     addEventListener('cahaya:suspend',suspend);addEventListener('pagehide',suspend);
     addEventListener('message',e=>{if(e.source===P&&e.origin===location.origin&&e.data?.type==='CAHAYA_PAGE_SUSPEND')suspend()});
   }
