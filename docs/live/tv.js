@@ -4,7 +4,7 @@ const day = date => new Date(+date + 7*3600000).toISOString().slice(0,10);
 const time = new Intl.DateTimeFormat('id-ID',{timeZone:zone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
 const calendar = new Intl.DateTimeFormat('id-ID',{timeZone:zone,weekday:'long',day:'numeric',month:'long',year:'numeric'});
 const names = {subuh:'Subuh',dzuhur:'Zuhur',ashar:'Asar',maghrib:'Magrib',isya:'Isya'};
-const channels = ['Renungan','Salat','Setoran','Guru','Santri'];
+const channels = ['Renungan','Salat','Setoran','Guru','Santri','Konselor'];
 const quotes = [
   'Satu ayat yang dijaga hari ini menjadi bekal untuk esok.',
   'Ilmu tumbuh saat kita berani bertanya dan tekun mengulang.',
@@ -15,10 +15,12 @@ const quotes = [
 const categories = {
   Setoran:['tahfiz',{sudah:'Sudah setoran',belum:'Belum tercatat setoran'}],
   Guru:['guru',{masuk:'Guru hadir',izin:'Guru izin',belum:'Guru belum absen'}],
+  Konselor:['konselor',{muda:'Menghadap Konselor Muda',madya:'Menghadap Konselor Madya'}],
   Santri:['santri',{masuk:'Santri hadir',izin:'Santri izin',sakit:'Santri sakit',alfa:'Santri alfa'}]
 };
-const info={Setoran:'Setoran hafalan hari ini',Guru:'Presensi mengajar hari ini',Santri:'Status KBM terakhir yang tercatat'};
-const feed='https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com/cahaya_public/live_tv.json';
+const info={Konselor:'Panggilan konselor hari ini',Setoran:'Peserta Tahfiz · Setoran hari ini',Guru:'Presensi mengajar hari ini',Santri:'Status KBM terakhir yang tercatat'};
+const unit=document.documentElement.dataset.unit;
+const feed=`https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com/cahaya_public/live_tv/${unit}.json`;
 const prayerAPI='https://api.myquran.com/v3/sholat/jadwal/3988c7f88ebcb58c6ce932b957b6f332/';
 let snapshot=null, times={}, slides=[], position=0, quoteIndex=0, paused=false, currentDay='', lastClock='', alarm='', fetching=false, sourceDown=false, nextSlide=0;
 function element(tag,cls,text){
@@ -64,7 +66,7 @@ function paint(){
     if(p.at)scene.append(element('strong','big-time',p.at+' WIB'));
     description(p.next?(p.tomorrow?'Subuh berikutnya · besok':'Waktu salat berikutnya'):'Menunggu jadwal Belitung hari ini.');
   }else if(!snapshot){
-    heading(s.channel==='Setoran'?'Setoran tahfiz':'Presensi '+s.channel.toLowerCase());
+    heading(s.channel==='Setoran'?'Setoran tahfiz':s.channel==='Konselor'?'Panggilan konselor':'Presensi '+s.channel.toLowerCase());
     description(sourceDown?'Koneksi ringkasan belum tersedia. Layar akan mencoba lagi.':'Menunggu ringkasan hari ini.');
   }else{
     heading(s.title);
@@ -102,7 +104,7 @@ async function updateFeed(){
   fetching=true;
   try{
     const data=await json(feed);
-    snapshot=data?.date===day(new Date())&&Number.isFinite(Date.parse(data.updatedAt))?data:null;
+    snapshot=data?.unit===unit&&data.date===day(new Date())&&Number.isFinite(Date.parse(data.updatedAt))?data:null;
     sourceDown=false;
   }catch{sourceDown=true;}
   finally{fetching=false;build();}
