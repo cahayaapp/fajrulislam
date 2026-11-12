@@ -14,16 +14,17 @@ const quotes = [
   'Saat hafalan terasa sulit, mulai lagi dari satu ayat.',
   'Jaga niat, rapikan langkah, lalu tuntaskan yang sudah dimulai.'
 ];
+const unit=document.documentElement.dataset.unit;
+const counselor=unit==='putra'?{muda:'Abi Dandi',madya:'Abi Dony'}:{muda:'Kak Meilisa',madya:'Umi Dini'};
 const categories = {
   Setoran:['tahfiz',{sudah:'Sudah setoran',belum:'Belum tercatat setoran'}],
   Guru:['guru',{masuk:'Guru hadir',izin:'Guru izin',belum:'Guru belum absen'}],
-  Konselor:['konselor',{muda:'Menghadap Konselor Muda',madya:'Menghadap Konselor Madya'}],
+  Konselor:['konselor',{muda:'Menghadap '+counselor.muda,madya:'Menghadap '+counselor.madya}],
   Santri:['santri',{masuk:'Santri hadir',izin:'Santri izin',sakit:'Santri sakit',alfa:'Santri alfa'}]
 };
 const info={Program:'Kehadiran program · Absensi naqib',Konselor:'Panggilan konselor hari ini',Setoran:'Peserta Tahfiz · Setoran hari ini',Guru:'Jadwal mengajar · Rekap guru hari ini',Santri:'Absensi pembelajaran · Sesi KBM hari ini'};
 const populations={Program:'santri yang diabsen pada program ini',Setoran:'peserta Tahfiz',Guru:'guru dalam rekap',Santri:'santri dengan presensi tercatat',Konselor:'santri yang dipanggil'};
 const percent=new Intl.NumberFormat('id-ID',{style:'percent',maximumFractionDigits:1});
-const unit=document.documentElement.dataset.unit;
 const competition = 'Usrah Bersih';
 let ranking = null, rankingDown = false;
 
@@ -48,27 +49,38 @@ function prayerInfo(date){
 const prayerLeadMinutes=10, quietPrayerMinutes=20;
 let activePrayerScreen='';
 function updatePrayerScreen(date, row){
-  let mode='', label='', at='';
+  let mode='', label='', at='', remaining=0;
   for(const [key,prayer] of Object.entries(names)){
     const scheduled=row?.[key];
     if(!/^\d{2}:\d{2}$/.test(scheduled))continue;
     const elapsed=(date-Date.parse(day(date)+'T'+scheduled+':00+07:00'))/60000;
     if(elapsed>=-prayerLeadMinutes && elapsed<quietPrayerMinutes){
       mode=elapsed<0?'approaching':'quiet';
-      label=prayer;at=scheduled;break;
+      label=prayer;at=scheduled;remaining=Math.ceil(-elapsed*60);break;
     }
   }
   const signature=mode?mode+' '+label+' '+at:'';
-  if(signature===activePrayerScreen)return;
-  activePrayerScreen=signature;
-  const panel=$('prayer-screen');
-  document.body.dataset.prayerMode=mode;
-  panel.hidden=!mode;
-  if(!mode){paint();return;}
-  panel.replaceChildren(element('h1','',mode==='quiet'?'Waktunya salat '+label:'Menjelang waktu salat '+label));
+  if(signature!==activePrayerScreen){
+    activePrayerScreen=signature;
+    const panel=$('prayer-screen');
+    document.body.dataset.prayerMode=mode;
+    panel.hidden=!mode;
+    if(!mode){paint();return;}
+    panel.replaceChildren(element('h1','',mode==='quiet'?'Waktunya salat '+label:'Menjelang waktu salat '+label));
+    if(mode==='approaching'){
+      panel.prepend(element('p','kicker',label+' · '+at+' WIB'));
+      const timer=element('strong','prayer-countdown');
+      timer.id='prayer-countdown';
+      timer.setAttribute('role','timer');
+      timer.setAttribute('aria-live','off');
+      timer.setAttribute('aria-label','Waktu tersisa sebelum salat');
+      panel.append(timer,element('p','prayer-invitation','Semua santri, mari segera bergegas ke masjid.'));
+    }
+  }
   if(mode==='approaching'){
-    panel.prepend(element('p','kicker',label+' · '+at+' WIB'));
-    panel.append(element('p','prayer-invitation','Semua santri, mari segera bergegas ke masjid.'));
+    const minutes=String(Math.floor(remaining/60)).padStart(2,'0');
+    const seconds=String(remaining%60).padStart(2,'0');
+    $('prayer-countdown').textContent=minutes+':'+seconds;
   }
 }
 function build(){
@@ -270,7 +282,7 @@ function updateNotice(){
   const cards=element('div','notice-cards');
   for(const {n,level} of noticeEntries.slice(page*5,page*5+5)){
     const card=element('div','notice-card');
-    card.append(element('span','notice-name',n),element('small','notice-level','Konselor '+(level==='muda'?'Muda':'Madya')));
+    card.append(element('span','notice-name',n),element('small','notice-level','Menghadap '+counselor[level]));
     cards.append(card);
   }
   banner.replaceChildren(head,cards);
