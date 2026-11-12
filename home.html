@@ -276,6 +276,9 @@ body{background:radial-gradient(circle at 100% 0,rgba(62,135,235,.055),transpare
     </section>
 
 
+    <section class="h24-section" id="deputyLiveQuick" hidden>
+      <h2>Akses Cepat</h2><a href="live/" target="_blank" rel="noopener">▣ Cahaya Live · Pilih tayangan Putra atau Putri ↗</a>
+    </section>
     <section class="h24-role-wrap" id="roleCardsSection" hidden>
       <div class="h24-role-head"><h2 id="roleCardsTitle">Ringkasan Cepat</h2></div>
       <div class="h24-role-cards" id="roleCards"></div>
@@ -632,6 +635,7 @@ body{background:radial-gradient(circle at 100% 0,rgba(62,135,235,.055),transpare
     let roleRenderToken=0;
     async function renderRoleCards(){
       const token=++roleRenderToken,p=profile(),currentRoles=activeRoles(),activeMode=activeRoleOf(p),group=roleCardGroup(currentRoles),section=document.getElementById('roleCardsSection'),box=document.getElementById('roleCards');
+      document.getElementById('deputyLiveQuick').hidden=activeMode!=='wakil';
       const teacherHadith=document.getElementById('teacherHadith');if(teacherHadith)teacherHadith.hidden=activeMode===ALL_ROLE_MODE||!currentRoles.includes('guru');
       const homeHero=document.getElementById('homeHero');if(activeMode===ALL_ROLE_MODE){if(homeHero){homeHero.classList.remove('is-teacher','is-naqib')}if(section)section.hidden=true;return}
       if(!section||!box||!group){if(section)section.hidden=true;return}
