@@ -48,39 +48,63 @@ function prayerInfo(date){
 }
 const prayerLeadMinutes=10, quietPrayerMinutes=20;
 let activePrayerScreen='';
-const soundButton=$('prayer-sound'), synth=window.speechSynthesis;
-let soundEnabled=false, lastAnnouncement='';
-function setSound(enabled,label){
-  soundEnabled=enabled;
-  soundButton.setAttribute('aria-pressed',String(enabled));
-  soundButton.textContent=label;
+const soundButton=$('prayer-sound');
+const preferenceKey='cahaya.live.prayerSound.'+unit;
+const announcedKey=preferenceKey+'.last';
+const speaker=new Audio();
+speaker.preload='none';
+let soundEnabled=false, lastAnnouncement='', playbackBlocked=false, playbackId=0;
+try{
+  soundEnabled=localStorage.getItem(preferenceKey)==='on';
+  lastAnnouncement=sessionStorage.getItem(announcedKey)||'';
+}catch{}
+function showSoundState(){
+  soundButton.setAttribute('aria-pressed',String(soundEnabled));
+  soundButton.textContent=playbackBlocked?'Izinkan suara':soundEnabled?'Suara aktif':'Aktifkan suara';
 }
-function speak(text){
-  const utterance=new SpeechSynthesisUtterance(text);
-  utterance.lang='id-ID';
-  const voice=synth.getVoices().find(v=>/^id(?:[-_]|$)/i.test(v.lang));
-  if(voice)utterance.voice=voice;
-  utterance.onerror=e=>{
-    if(!['interrupted','canceled'].includes(e.error)){
-      lastAnnouncement='';setSound(false,'Coba suara lagi');
+function stopSound(){
+  playbackId++;
+  speaker.onended=null;
+  speaker.onerror=null;
+  speaker.pause();
+}
+function playClips(clips,eventKey){
+  stopSound();
+  const id=playbackId;
+  function failed(){
+    if(id!==playbackId)return;
+    stopSound();
+    if(eventKey)lastAnnouncement='';
+    playbackBlocked=true;
+    showSoundState();
+  }
+  function next(){
+    if(id!==playbackId)return;
+    const clip=clips.shift();
+    if(clip===undefined){
+      if(eventKey)try{sessionStorage.setItem(announcedKey,eventKey)}catch{}
+      return;
     }
-  };
-  synth.speak(utterance);
+    speaker.src=new URL('audio/'+unit+'/'+clip+'.mp3',document.baseURI).href;
+    speaker.onended=next;
+    speaker.onerror=failed;
+    speaker.play().catch(failed);
+  }
+  next();
 }
-if(!synth || !window.SpeechSynthesisUtterance){
-  soundButton.disabled=true;soundButton.textContent='Suara tidak tersedia';
-}else{
-  soundButton.onclick=()=>{
-    synth.cancel();
-    setSound(!soundEnabled,soundEnabled?'Aktifkan suara':'Suara aktif');
-    if(soundEnabled){
-      const now=new Date();
-      const previous=lastAnnouncement;
-      updatePrayerScreen(now,times[day(now)]);
-      if(previous===lastAnnouncement)speak('Suara pengingat salat aktif.');
-    }
-  };
-}
+showSoundState();
+soundButton.onclick=()=>{
+  soundEnabled=playbackBlocked || !soundEnabled;
+  playbackBlocked=false;
+  try{localStorage.setItem(preferenceKey,soundEnabled?'on':'off')}catch{}
+  stopSound();
+  showSoundState();
+  if(soundEnabled){
+    const now=new Date(), previous=lastAnnouncement;
+    updatePrayerScreen(now,times[day(now)]);
+    if(previous===lastAnnouncement && document.body.dataset.prayerMode!=='quiet')playClips(['aktif']);
+  }
+};
 
 function updatePrayerScreen(date, row){
   let mode='', label='', at='', remaining=0;
@@ -99,7 +123,7 @@ function updatePrayerScreen(date, row){
     const panel=$('prayer-screen');
     document.body.dataset.prayerMode=mode;
     panel.hidden=!mode;
-    if(mode==='quiet' && soundEnabled)synth.cancel();
+    if(mode==='quiet')stopSound();
     if(!mode){paint();return;}
     panel.replaceChildren(element('h1','',mode==='quiet'?'Waktunya salat '+label:'Menjelang waktu salat '+label));
     if(mode==='approaching'){
@@ -114,10 +138,9 @@ function updatePrayerScreen(date, row){
   }
   if(mode==='approaching'){
     const eventKey=day(date)+' '+label;
-    if(soundEnabled && lastAnnouncement!==eventKey && !document.hidden){
+    if(soundEnabled && !playbackBlocked && lastAnnouncement!==eventKey && !document.hidden){
       lastAnnouncement=eventKey;
-      const lead=remaining<60?'kurang dari satu menit':Math.ceil(remaining/60)+' menit';
-      speak('Waktu salat '+label+' akan masuk '+lead+' lagi. Semua santri, mari segera bergegas ke masjid.');
+      playClips([label.toLowerCase(),remaining<60?0:Math.ceil(remaining/60)],eventKey);
     }
     const minutes=String(Math.floor(remaining/60)).padStart(2,'0');
     const seconds=String(remaining%60).padStart(2,'0');
