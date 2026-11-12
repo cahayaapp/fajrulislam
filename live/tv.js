@@ -1,4 +1,4 @@
-import {rankingPath, standings} from '../js/usrah-ranking.mjs';
+import {standings} from '../js/usrah-ranking.mjs';
 const $ = id => document.getElementById(id);
 const zone = 'Asia/Jakarta';
 const day = date => new Date(+date + 7*3600000).toISOString().slice(0,10);
@@ -159,8 +159,11 @@ async function json(url){
 }
 async function updateRanking(){
   try{
-    const data=await json('https://absensi-santri-fajrul-islam-default-rtdb.firebaseio.com/'+rankingPath+'.json');
-    ranking=data===null?null:{sessions:data.sessions,rows:standings(data)};
+    const url='https://firestore.googleapis.com/v1/projects/absensi-santri-fajrul-islam/databases/(default)/documents/usrah_bersih_202611/rekap';
+    const fields=(await json(url)).fields;
+    const sessions=Number(fields.sessions.integerValue);
+    const sums=fields.sums.arrayValue.values.map(v=>Number(v.integerValue));
+    ranking={sessions,rows:standings({sessions,sums})};
     rankingDown=false;
   }catch{rankingDown=true;}
   if(slides[position]?.channel===competition)paint();

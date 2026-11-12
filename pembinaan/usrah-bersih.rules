@@ -1,12 +1,19 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /penilaian/{id} {
-      function anggota() {
-        return request.auth != null && request.auth.token.email in [
-          'multazam@cahayaapp.id', 'bennyarizona@cahayaapp.id', 'donisetiawan@cahayaapp.id'
-        ];
-      }
+    // Preserve the existing access policy for collections outside this competition.
+    match /{collection}/{rest=**} {
+      allow read, write: if collection != 'usrah_bersih_202611';
+    }
+    function anggota() {
+      return request.auth != null && request.auth.token.email in [
+        'multazam@cahayaapp.id', 'bennyarizona@cahayaapp.id', 'donisetiawan@cahayaapp.id'
+      ];
+    }
+    function ranking() {
+      return /databases/$(database)/documents/usrah_bersih_202611/rekap;
+    }
+    match /usrah_bersih_202611/rekap/sesi/{id} {
       function skor(n) { return n is int && n >= 0 && n <= 100; }
       function sah() {
         let d = request.resource.data;
@@ -18,13 +25,30 @@ service cloud.firestore {
           && d.akun == request.auth.token.email
           && d.kriteria in ['kamar','piket','kompak']
           && d.penilai in ['Abah Multazam Zakaria','Abi Dandy',"Mu'allim Zaky"]
-          && id == '2026-11-' + string(lokal.day()) + '-' + d.kriteria
+          && id.matches('2026-11-(1[1-9]|2[01])-' + d.kriteria)
+          && int(id.split('-')[2]) == lokal.day()
           && d.nilai is list && d.nilai.size() == 6
           && skor(d.nilai[0]) && skor(d.nilai[1]) && skor(d.nilai[2])
           && skor(d.nilai[3]) && skor(d.nilai[4]) && skor(d.nilai[5]);
       }
       allow read: if anggota();
-      allow create: if anggota() && sah();
+      allow create: if anggota() && sah()
+        && getAfter(ranking()).data.lastSession == id;
+    }
+    match /usrah_bersih_202611/rekap {
+      allow get: if true;
+      function validUpdate() {
+        let next = request.resource.data;
+        let path = /databases/$(database)/documents/usrah_bersih_202611/rekap/sesi/$(next.lastSession);
+        let scores = getAfter(path).data.nilai;
+        let prev = exists(ranking()) ? resource.data : {'sessions':0,'sums':[0,0,0,0,0,0]};
+        return !exists(path) && next.keys().hasOnly(['sessions','sums','lastSession'])
+          && next.sessions == prev.sessions + 1 && next.sessions <= 33
+          && next.sums == [prev.sums[0]+scores[0], prev.sums[1]+scores[1],
+                           prev.sums[2]+scores[2], prev.sums[3]+scores[3],
+                           prev.sums[4]+scores[4], prev.sums[5]+scores[5]];
+      }
+      allow create, update: if anggota() && validUpdate();
     }
   }
 }

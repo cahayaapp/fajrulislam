@@ -2,14 +2,13 @@ import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase
 import {getAuth, onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 import {collection, doc, getFirestore, onSnapshot, runTransaction, serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
-import {getDatabase, ref, runTransaction as updateRanking} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js';
-import {rankingPath, standings} from './usrah-ranking.mjs';
+import {standings} from './usrah-ranking.mjs';
 
 const app = initializeApp(window.CAHAYA_CONFIG.firebase);
 const auth = getAuth(app);
-const db = getFirestore(app, 'usrah-bersih');
-const publicRanking = ref(getDatabase(app), rankingPath);
-const scores = collection(db, 'penilaian');
+const db = getFirestore(app);
+const publicRanking = doc(db, 'usrah_bersih_202611', 'rekap');
+const scores = collection(publicRanking, 'sesi');
 const accounts = ['multazam@cahayaapp.id', 'bennyarizona@cahayaapp.id', 'donisetiawan@cahayaapp.id'];
 const el = id => document.getElementById(id);
 const form = el('form');
@@ -95,15 +94,6 @@ onAuthStateChanged(auth, user => {
   unsubscribe = onSnapshot(scores, {includeMetadataChanges:true}, snapshot => {
     const summary = render(snapshot.docs.map(item => item.data()));
     const {sessions} = summary;
-    if (!snapshot.metadata.fromCache && !snapshot.metadata.hasPendingWrites) {
-      updateRanking(publicRanking, previous => {
-        if (previous?.sessions > sessions || (previous?.sessions === sessions &&
-            JSON.stringify(previous.sums) === JSON.stringify(summary.sums))) return;
-        return summary;
-      }, {applyLocally:false}).catch(() => {
-        if (auth.currentUser?.uid === user.uid) el('rekapStatus').textContent += ' Sinkronisasi ke Live Putra tertunda. Muat ulang untuk mencoba lagi.';
-      });
-    }
     el('rekapStatus').textContent = snapshot.metadata.fromCache ? 'Menunggu sinkronisasi dengan server…' :
       sessions ? sessions + ' dari 33 sesi tercatat.' : 'Belum ada sesi penilaian.';
   }, () => { el('rekapStatus').textContent = 'Rekap gagal dimuat. Periksa koneksi dan akses Firebase, lalu muat ulang halaman.'; });
@@ -129,7 +119,10 @@ form.addEventListener('submit', async event => {
   try {
     await runTransaction(db, async transaction => {
       if ((await transaction.get(ref)).exists()) throw new Error('sesi-terisi');
+      const summary = (await transaction.get(publicRanking)).data() ?? {sessions:0, sums:groups.map(() => 0)};
       transaction.set(ref,record);
+      transaction.set(publicRanking,{sessions:summary.sessions+1,
+        sums:summary.sums.map((sum,i) => sum+nilai[i]),lastSession:ref.id});
     });
     message.textContent = 'Sesi ' + criteria[kriteria] + ' untuk Usrah 1–6 tersimpan.';
     for (const group of groups) fields['usrah' + group].value = '';
