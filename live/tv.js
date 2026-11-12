@@ -48,6 +48,40 @@ function prayerInfo(date){
 }
 const prayerLeadMinutes=10, quietPrayerMinutes=20;
 let activePrayerScreen='';
+const soundButton=$('prayer-sound'), synth=window.speechSynthesis;
+let soundEnabled=false, lastAnnouncement='';
+function setSound(enabled,label){
+  soundEnabled=enabled;
+  soundButton.setAttribute('aria-pressed',String(enabled));
+  soundButton.textContent=label;
+}
+function speak(text){
+  const utterance=new SpeechSynthesisUtterance(text);
+  utterance.lang='id-ID';
+  const voice=synth.getVoices().find(v=>/^id(?:[-_]|$)/i.test(v.lang));
+  if(voice)utterance.voice=voice;
+  utterance.onerror=e=>{
+    if(!['interrupted','canceled'].includes(e.error)){
+      lastAnnouncement='';setSound(false,'Coba suara lagi');
+    }
+  };
+  synth.speak(utterance);
+}
+if(!synth || !window.SpeechSynthesisUtterance){
+  soundButton.disabled=true;soundButton.textContent='Suara tidak tersedia';
+}else{
+  soundButton.onclick=()=>{
+    synth.cancel();
+    setSound(!soundEnabled,soundEnabled?'Aktifkan suara':'Suara aktif');
+    if(soundEnabled){
+      const now=new Date();
+      const previous=lastAnnouncement;
+      updatePrayerScreen(now,times[day(now)]);
+      if(previous===lastAnnouncement)speak('Suara pengingat salat aktif.');
+    }
+  };
+}
+
 function updatePrayerScreen(date, row){
   let mode='', label='', at='', remaining=0;
   for(const [key,prayer] of Object.entries(names)){
@@ -65,6 +99,7 @@ function updatePrayerScreen(date, row){
     const panel=$('prayer-screen');
     document.body.dataset.prayerMode=mode;
     panel.hidden=!mode;
+    if(mode==='quiet' && soundEnabled)synth.cancel();
     if(!mode){paint();return;}
     panel.replaceChildren(element('h1','',mode==='quiet'?'Waktunya salat '+label:'Menjelang waktu salat '+label));
     if(mode==='approaching'){
@@ -78,6 +113,12 @@ function updatePrayerScreen(date, row){
     }
   }
   if(mode==='approaching'){
+    const eventKey=day(date)+' '+label;
+    if(soundEnabled && lastAnnouncement!==eventKey && !document.hidden){
+      lastAnnouncement=eventKey;
+      const lead=remaining<60?'kurang dari satu menit':Math.ceil(remaining/60)+' menit';
+      speak('Waktu salat '+label+' akan masuk '+lead+' lagi. Semua santri, mari segera bergegas ke masjid.');
+    }
     const minutes=String(Math.floor(remaining/60)).padStart(2,'0');
     const seconds=String(remaining%60).padStart(2,'0');
     $('prayer-countdown').textContent=minutes+':'+seconds;
