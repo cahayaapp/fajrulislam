@@ -37,6 +37,9 @@ function names(value,out){
 
 async function badge(){
   const element=document.getElementById('incomingBadge');
+  if(element.disabled)return;
+  element.disabled=true;
+  element.textContent='Menghitung…';
   const today=C.jakartaDate(),from='2019-01-01';
   const usrahKeys=assignment.unit==='PUTRI'?['Usrah 7','Usrah 8']:['Usrah 1','Usrah 2','Usrah 3','Usrah 4','Usrah 5','Usrah 6'];
   const ranged=(path,field,to=today)=>get(query(ref(db,path),orderByChild(field),startAt(from),endAt(to)));
@@ -67,8 +70,9 @@ async function badge(){
     element.textContent=count+' kasus aktif';
   }catch(error){
     console.warn('Badge Konselor belum tersedia',error);
-    element.textContent='Buka daftar';
+    element.textContent='Coba hitung kembali';
+  }finally{
+    element.disabled=false;
   }
 }
-badge();
-setTimeout(()=>{const element=document.getElementById('incomingBadge');if(element.textContent==='Memuat…')element.textContent='Buka daftar'},10000);
+document.getElementById('incomingBadge').addEventListener('click',badge);

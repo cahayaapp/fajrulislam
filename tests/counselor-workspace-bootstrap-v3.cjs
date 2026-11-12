@@ -64,7 +64,7 @@ test('Kasus Masuk menampilkan loading, termasuk saat filter dijalankan sebelum F
   assert.doesNotMatch(element('caseList').innerHTML,/Memuat kasus/);
 });
 test('Buku Konseling membedakan loading dari hasil benar-benar kosong',async()=>{
-  const {element,context,releaseLoad}=surface('book',{delayPath:C.ROOT});
+  const {element,context,releaseLoad}=surface('book',{delayPath:'cahaya_app/buku_kasus_konselor'});
   assert.match(element('bookStudents').innerHTML,/Memuat Buku Konseling/);
   assert.match(element('bookHistory').innerHTML,/Memuat Buku Konseling/);
   vm.runInNewContext('renderBookStudents()',context);
@@ -73,6 +73,16 @@ test('Buku Konseling membedakan loading dari hasil benar-benar kosong',async()=>
   await new Promise(setImmediate);
   assert.match(element('bookStudents').innerHTML,/Belum ada santri/);
   assert.match(element('bookHistory').innerHTML,/Pilih santri/);
+});
+test('Buku mengunduh tiga arsip historis sekali hanya setelah diminta',async()=>{
+  const {context,readPaths,element}=surface('book');
+  await new Promise(setImmediate);
+  const sources=[C.ROOT,C.PROGRAM_ATTENDANCE_ROOT,C.LEARNING_ATTENDANCE_ROOT];
+  assert(sources.every(path=>!readPaths.includes(path)));
+  assert(readPaths.includes('cahaya_app/buku_kasus_konselor'));
+  await vm.runInNewContext('Promise.all([loadBookArchive(),loadBookArchive()])',context);
+  assert(sources.every(path=>readPaths.filter(p=>p===path).length===1));
+  assert(element('bookArchive').hidden);
 });
 test('Surat Peringatan tetap memuat saat pencarian dilakukan sebelum data tiba',async()=>{
   const {element,context,releaseLoad}=surface('warnings',{delayPath:'cahaya_app/surat_peringatan_santri'});
@@ -147,15 +157,19 @@ test('menu SP membaca riwayat dari koleksi lama dan memisahkan tampilan',async()
   assert.match(element('warningList').innerHTML,/SP 1/);
   assert.match(element('state').textContent,/Surat Peringatan ditampilkan/);
 });
-test('beranda Konselor mulai membaca badge tanpa gagal pada saat inisialisasi',async()=>{
+test('beranda Konselor hanya membaca jumlah kasus saat diminta',async()=>{
   const elements=new Map();
-  const element=id=>{if(!elements.has(id))elements.set(id,{textContent:id==='incomingBadge'?'Memuat…':'',addEventListener(){}});return elements.get(id)};
-  const api={getDatabase:()=>({}),ref:(_,p)=>({path:p}),get:async target=>({val:()=>target.path.endsWith('/Usrah 1')?['Ali']:{}}),query:target=>target,orderByChild:()=>()=>{},startAt:()=>()=>{},endAt:()=>()=>{}};
+  const element=id=>{if(!elements.has(id))elements.set(id,{textContent:id==='incomingBadge'?'Hitung kasus aktif':'',addEventListener(type,fn){this[type]=fn}});return elements.get(id)};
+  const reads=[];
+  const api={getDatabase:()=>({}),ref:(_,p)=>({path:p}),get:async target=>{reads.push(target.path);return{val:()=>target.path.endsWith('/Usrah 1')?['Ali']:{}}},query:target=>target,orderByChild:()=>()=>{},startAt:()=>()=>{},endAt:()=>()=>{}};
   const window={CahayaCounselorFirebaseV3:api,CahayaCounselorCaseV2:C,CahayaRoleSystemV2:R};
   const document={getElementById:element,addEventListener(){}};
   const localStorage={getItem:key=>key==='cahayaCurrentUser'?JSON.stringify(user):null};
   vm.runInNewContext(home,{window,document,localStorage,parent:window,location:{},console,setTimeout:()=>0,clearTimeout},{filename:'counselor-home-v3.js'});
   await new Promise(setImmediate);
+  assert.deepEqual(reads,[]);
+  await element('incomingBadge').click();
+  assert(reads.includes(C.PROGRAM_ATTENDANCE_ROOT));
   assert.equal(element('incomingBadge').textContent,'0 kasus aktif');
 });
 test('adapter Firebase klasik mempertahankan query dan transaksi',async()=>{
