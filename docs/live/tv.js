@@ -1,3 +1,4 @@
+import {attendanceBoards} from './attendance.mjs';
 import {standings} from '../js/usrah-ranking.mjs';
 const $ = id => document.getElementById(id);
 const zone = 'Asia/Jakarta';
@@ -50,30 +51,20 @@ function build(){
   if(unit==='putra')pages.push({channel:competition});
   const size=innerWidth<=650?8:12;
   for(const [channel,[section,labels]] of Object.entries(categories)){
-    if(channel==='Santri'&&snapshot?.presensi)continue;
+    if(channel==='Santri')continue;
     if(!snapshot){pages.push({channel});continue;}
     const total=new Set(Object.keys(labels).flatMap(key=>snapshot[section]?.[key]||[])).size;
     for(const [key,title] of Object.entries(labels)){
       const list=snapshot[section]?.[key]||[];
-      for(let start=0;start<Math.max(1,list.length);start+=size)
-        pages.push({channel,key,title,list,start,size,total});
+      const pageSize=channel==='Konselor'?5:size;
+      for(let start=0;start<Math.max(1,list.length);start+=pageSize)
+        pages.push({channel,key,title,list,start,size:pageSize,total});
     }
   }
-  const labels={hadir:'Hadir',terlambat:'Terlambat',izin:'Izin',sakit:'Sakit',alfa:'Alfa',belum:'Belum dikonfirmasi'};
   for(const channel of ['Santri','Program']){
-    if(channel==='Santri'&&!snapshot?.presensi)continue;
-    const sessions=(snapshot?.presensi?.sessions||[]).filter(row=>row.kind===(channel==='Santri'?'kbm':'program'));
-    if(!sessions.length){pages.push({channel,emptySessions:true});continue;}
-    for(const session of sessions){
-      const groups=session.groups||{};
-      const total=Object.values(groups).reduce((sum,ids)=>sum+ids.length,0);
-      if(!total)pages.push({channel,title:session.title,context:session.context,id:session.id,list:[],total:0,size,start:0});
-      for(const [key,status] of Object.entries(labels)){
-        const list=(groups[key]||[]).map(id=>snapshot.presensi.names[id]);
-        for(let start=0;start<list.length;start+=size)
-          pages.push({channel,key,title:session.title,context:session.context,id:session.id,status,list,start,size,total});
-      }
-    }
+    const boards=attendanceBoards(snapshot?.presensi,channel==='Santri'?'kbm':'program');
+    if(!boards.length)pages.push({channel,emptySessions:true});
+    for(const board of boards)pages.push({channel,board,id:board.id});
   }
   prepareNotice();
   slides=pages;
@@ -106,6 +97,28 @@ function paint(){
       track.append(bar);row.append(track);chart.append(row);
     }
     scene.append(chart);
+  }else if(s.board){
+    const {title,slot,subjects,groups,total}=s.board;
+    heading([title,slot].filter(Boolean).join(' · '));
+    description([...subjects,total+' santri tercatat'].join(' · '));
+    const chart=element('div','attendance-chart');
+    for(const [key,label] of Object.entries({hadir:'Hadir',izin:'Izin',alfa:'Alfa',sakit:'Sakit'})){
+      const people=groups[key],count=key==='hadir'?people:people.length;
+      const ratio=total?count/total:0;
+      const card=element('div','att-card att-'+key);
+      card.append(element('span','att-label',label),element('strong','att-share',total?percent.format(ratio):'—'));
+      const track=element('div','att-track'),bar=element('i');
+      bar.style.width=(100*ratio)+'%';track.append(bar);card.append(track);
+      chart.append(card);
+    }
+    scene.append(chart);
+    for(const [key,label] of [['izin','Izin'],['alfa','Alfa'],['sakit','Sakit']]){
+      if(!groups[key].length)continue;
+      const line=element('div','att-names');
+      line.append(element('b','',label+' ('+groups[key].length+')'),element('span','',groups[key].join(' · ')));
+      scene.append(line);
+    }
+    if(groups.belum)description(groups.belum+' santri belum dikonfirmasi · '+percent.format(groups.belum/total));
   }else if(s.emptySessions){
     heading(s.channel==='Program'?'Kehadiran program naqib':'Kehadiran KBM');
     description(!snapshot?'Menunggu ringkasan hari ini.':'Belum ada sesi yang tercatat hari ini.');
@@ -166,7 +179,7 @@ function paint(){
   for(const button of $('channels').children){
     if(button.textContent===s.channel)button.setAttribute('aria-current','true');else button.removeAttribute('aria-current');
   }
-  nextSlide=Date.now()+ (s.list?.length?13000:9000);
+  nextSlide=Date.now()+ (s.board?18000:s.list?.length?13000:9000);
 }
 function advance(step=1){
   position=(position+step+slides.length)%slides.length;
@@ -211,7 +224,9 @@ async function updatePrayer(){
 }
 let noticeEntries=[], noticePage=-1;
 function prepareNotice(){
-  noticeEntries=['muda','madya'].flatMap(level=>(snapshot?.konselor?.[level]||[]).map(n=>({n,level})));
+  const calls=new Map();
+  for(const level of ['muda','madya'])for(const n of snapshot?.konselor?.[level]||[])calls.set(n,level);
+  noticeEntries=[...calls].map(([n,level])=>({n,level}));
   noticePage=-1;
   updateNotice();
 }
@@ -220,12 +235,19 @@ function updateNotice(){
   if(!banner)return;
   banner.hidden=!noticeEntries.length;
   if(banner.hidden)return;
-  const page=Math.floor(Date.now()/6000)%noticeEntries.length;
+  const pages=Math.ceil(noticeEntries.length/5),page=Math.floor(Date.now()/10000)%pages;
   if(page===noticePage)return;
   noticePage=page;
-  const {n,level}=noticeEntries[page];
-  banner.replaceChildren(element('strong','notice-label','!  Panggilan konselor'),
-    element('span','notice-name',n),element('span','notice-level','Konselor '+(level==='muda'?'Muda':'Madya')));
+  const head=element('div','notice-head');
+  head.append(element('strong','notice-label','Panggilan konselor'));
+  if(pages>1)head.append(element('small','','Kelompok '+(page+1)+' / '+pages));
+  const cards=element('div','notice-cards');
+  for(const {n,level} of noticeEntries.slice(page*5,page*5+5)){
+    const card=element('div','notice-card');
+    card.append(element('span','notice-name',n),element('small','notice-level','Konselor '+(level==='muda'?'Muda':'Madya')));
+    cards.append(card);
+  }
+  banner.replaceChildren(head,cards);
 }
 function tick(){
   const now=new Date(), d=day(now), t=time.format(now);

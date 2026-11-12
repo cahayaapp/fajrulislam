@@ -51,3 +51,16 @@ test('setiap sesi KBM dan naqib hari ini tetap terpisah per unit',()=>{
     p1:{hadir:[0]},p2:{izin:[0]},l1:{terlambat:[0]},l2:{sakit:[0]}});
   assert.equal(project(data,now,'putri').presensi.sessions.length,0);
 });
+
+test('diagram lintas kelas menghitung satu status terbaru per peserta pada tiap jam',async()=>{
+  const {attendanceBoards}=await import('../live/attendance.mjs');
+  const session={kind:'kbm',title:'Fiqih',slot:'09:20 WIB',sessionLabel:'Sesi Utama'};
+  const feed={names:['A','B','C'],sessions:[
+    {...session,groups:{izin:[0],terlambat:[1]},updated:1},
+    {...session,title:'Adab',groups:{hadir:[0],sakit:[2]},updated:2},
+    {...session,slot:'10:30 WIB',groups:{alfa:[1]}}]};
+  const boards=attendanceBoards(feed,'kbm');
+  assert.equal(boards.length,2);
+  assert.equal(boards[0].total,3);
+  assert.deepEqual(boards[0].groups,{hadir:2,izin:[],alfa:[],sakit:['C'],belum:0});
+});

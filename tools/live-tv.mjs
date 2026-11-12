@@ -116,7 +116,8 @@ export function project(data,now,unit){
       const logged=Number.isFinite(Date.parse(stamp))?hour.format(new Date(stamp)):'';
       const timeLabel=start?start+' WIB':logged?'Dicatat '+logged+' WIB':'';
       const context=[scope,name(r.sesiJadwal),timeLabel].filter(Boolean).join(' · ');
-      sessions.push({id,kind,title,context,groups,order:start||logged||''});
+      sessions.push({id,kind,title,context,groups,slot:start?start+' WIB':'',sessionLabel:name(r.sesiJadwal),
+        updated:Date.parse(r.waktuFinalisasi||r.waktuSimpan||r.waktu)||0,order:start||logged||''});
     }
   }
   sessions.sort((a,b)=>a.order.localeCompare(b.order)||a.title.localeCompare(b.title,'id'));
