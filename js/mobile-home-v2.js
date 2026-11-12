@@ -116,18 +116,18 @@
   function card(item,index,large=false){return `<button type="button" class="mh-card ${large?'mh-quick-card':'mh-menu-card'} mh-tone-${index%6}" data-mh-id="${esc(item.id)}" title="${esc(item.label)}"><span class="mh-icon">${icon(item.icon||iconFor(item.label))}</span><span class="mh-card-copy"><b>${esc(item.label)}</b><small>${esc(item.description||summary(item))}</small></span><span class="mh-card-arrow">${large?icon('arrow'):'›'}</span></button>`}
   function all(){if(media.matches&&embedded&&typeof P.toggleSidebar==='function'){P.toggleSidebar();P.document.querySelector('.sidebar-close')?.focus({preventScroll:true});return}const sheet=host.querySelector('dialog');if(!sheet.open)sheet.showModal()}
   function open(id){
-    if(id==='cahaya-live'){
-      const url=new URL('live/',root).href;
-      if(!media.matches)return window.open(url,'_blank','noopener');
+    if(id==='cahaya-today'){
+      const url=new URL('today/',root).href;
+      if(!media.matches)return location.assign(url);
       host.querySelector('dialog[open]')?.close();
       if(host.querySelector('.mh-live-panel'))return;
       const panel=document.createElement('section');
       panel.className='mh-live-panel';
       const back=document.createElement('button');
       back.textContent='‹ Beranda';
-      back.onclick=()=>{panel.remove();host.classList.remove('mh-live-open');host.querySelector('[data-mh-id="cahaya-live"]')?.focus()};
+      back.onclick=()=>{panel.remove();host.classList.remove('mh-live-open');host.querySelector('[data-mh-id="cahaya-today"]')?.focus()};
       const frame=document.createElement('iframe');
-      frame.title='Cahaya Live';frame.src=url;
+      frame.title='Cahaya Today';frame.src=url;
       panel.append(back,frame);host.append(panel);host.classList.add('mh-live-open');back.focus();
       return;
     }
@@ -172,7 +172,7 @@
     quick=wanted.map(id=>items.find(x=>x.id===id)).filter(Boolean).slice(0,4);
     if(!quick.length)quick=items.slice(0,2);
     if(['DIREKTUR','WAKIL_DIREKTUR','SUPERVISOR'].includes(role)){
-      const live={id:'cahaya-live',label:'Cahaya Live',description:'Pilih tayangan TV Putra atau Putri',icon:'screen'};
+      const live={id:'cahaya-today',label:'Cahaya Today',description:'Kontrol harian Putra dan Putri',icon:'screen'};
       items=[live,...items];
       quick=[live,...quick.slice(0,3)];
     }
