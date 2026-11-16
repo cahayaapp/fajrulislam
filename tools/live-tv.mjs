@@ -52,12 +52,16 @@ export function project(data,now,unit){
   const {roster,classes,placements,deposits,lessons,staffLog,schedule,leave,blocked,reports,program,actions,book}=data;
   const date=day(now), clock=new Intl.DateTimeFormat('en-GB',{timeZone:zone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
   const weekday=new Date(date+'T12:00:00Z').getUTCDay();
-  const students=new Map(), other=new Set();
+  const students=new Map(), other=new Set(), nicknames={};
   for(const [label,group] of [...Object.entries(roster||{}),...Object.entries(classes||{})]){
     const side=unitOf(label);
     for(const item of values(group)){
       const n=Quran.studentName(item), id=Placement.identityKey(n,label);
-      if(side===unit && n)students.set(id,n);
+      if(side===unit && n){
+        students.set(id,n);
+        const nickname=name(item?.namaPanggilan||item?.nama_panggilan||item?.nickname);
+        if(nickname)nicknames[n]=nickname;
+      }
       else if(side && n)other.add(id);
     }
   }
@@ -192,7 +196,7 @@ export function project(data,now,unit){
     queue[level==='MADYA'?'madya':'muda'].add(students.get(Placement.identityKey(c.student))||c.student);
   }
   const sudah=sorted(recorded.values());
-  return {unit,date,presensi,konselorWindow:{start:new Date(window.start).toISOString(),end:new Date(window.end).toISOString()},konselor:{muda:sorted(queue.muda),madya:sorted(queue.madya)},updatedAt:now.toISOString(),tahfiz:{sudah,baris:sudah.map(student=>lines.get(student)??-1),belum:sorted([...participants].filter(([k])=>!recorded.has(k)).map(([,n])=>n))},
+  return {unit,date,presensi,nicknames,konselorWindow:{start:new Date(window.start).toISOString(),end:new Date(window.end).toISOString()},konselor:{muda:sorted(queue.muda),madya:sorted(queue.madya)},updatedAt:now.toISOString(),tahfiz:{sudah,baris:sudah.map(student=>lines.get(student)??-1),belum:sorted([...participants].filter(([k])=>!recorded.has(k)).map(([,n])=>n))},
     guru:{masuk:names(present),izin:names([...excused].filter(id=>!present.has(id))),belum:names([...due].filter(id=>!present.has(id)&&!excused.has(id)))},santri:pupils,kbm:{labels:lessonLabels,byStatus:lessonByStatus}};
 }
 

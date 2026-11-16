@@ -79,3 +79,19 @@ test('panggilan konselor mengikuti batas 12 WIB dan waktu laporan',()=>{
   assert.deepEqual(result.konselor.muda,['awal','malam','pagi']);
   assert.deepEqual(project(data,new Date('2026-11-12T09:00:00+07:00'),'putra').konselor.muda,['awal','malam']);
 });
+
+test('ketidakhadiran digabung lintas KBM/program tanpa menggabungkan identitas panggilan',async()=>{
+  const {absentStudents,familiarName}=await import('../live/attendance.mjs');
+  const presensi={names:['Muhammad Ali','Ali Hasan','Siti Aminah'],sessions:[
+    {kind:'kbm',title:'Fiqih',slot:'07:00 WIB',updated:1,groups:{alfa:[0],izin:[1]}},
+    {kind:'kbm',title:'Fiqih',slot:'07:00 WIB',updated:2,groups:{hadir:[0]}},
+    {kind:'program',title:'Subuh',groups:{sakit:[0],alfa:[1],belum:[2]}},
+    {kind:'program',title:'Asar',groups:{izin:[0]}}
+  ]};
+  const absent=absentStudents(presensi);
+  assert.equal(absent.length,2);
+  assert.deepEqual(absent.find(x=>x.name==='Muhammad Ali').activities,['Subuh — sakit','Asar — izin']);
+  assert.equal(familiarName('Muhammad Ali'),'Ali');
+  assert.equal(familiarName('Ali Hasan'),'Ali');
+  assert.equal(familiarName('Siti Aminah',{'Siti Aminah':'Minah'}),'Minah');
+});

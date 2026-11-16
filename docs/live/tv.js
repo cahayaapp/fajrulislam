@@ -1,4 +1,4 @@
-import {attendanceBoards} from './attendance.mjs';
+import {attendanceBoards,absentStudents,familiarName} from './attendance.mjs';
 import {standings} from '../js/usrah-ranking.mjs';
 const $ = id => document.getElementById(id);
 const zone = 'Asia/Jakarta';
@@ -6,7 +6,7 @@ const day = date => new Date(+date + 7*3600000).toISOString().slice(0,10);
 const time = new Intl.DateTimeFormat('id-ID',{timeZone:zone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
 const calendar = new Intl.DateTimeFormat('id-ID',{timeZone:zone,weekday:'long',day:'numeric',month:'long',year:'numeric'});
 const names = {subuh:'Subuh',dzuhur:'Zuhur',ashar:'Asar',maghrib:'Magrib',isya:'Isya'};
-const channels = ['Renungan','Salat','Setoran','Guru','Santri','Program','Konselor'];
+const channels = ['Renungan','Salat','Setoran','Guru','Santri','Program','Tidak Hadir','Konselor'];
 const quotes = [
   'Satu ayat yang dijaga hari ini menjadi bekal untuk esok.',
   'Ilmu tumbuh saat kita berani bertanya dan tekun mengulang.',
@@ -22,7 +22,7 @@ const categories = {
   Konselor:['konselor',{muda:'Menghadap '+counselor.muda,madya:'Menghadap '+counselor.madya}],
   Santri:['santri',{masuk:'Santri hadir',izin:'Santri izin',sakit:'Santri sakit',alfa:'Santri alfa'}]
 };
-const info={Program:'Kehadiran program · Absensi naqib',Konselor:'Panggilan konselor hari ini',Setoran:'Peserta Tahfiz · Setoran hari ini',Guru:'Jadwal mengajar · Rekap guru hari ini',Santri:'Absensi pembelajaran · Sesi KBM hari ini'};
+const info={'Tidak Hadir':'Presensi belajar dan program hari ini',Program:'Kehadiran program · Absensi naqib',Konselor:'Panggilan konselor hari ini',Setoran:'Peserta Tahfiz · Setoran hari ini',Guru:'Jadwal mengajar · Rekap guru hari ini',Santri:'Absensi pembelajaran · Sesi KBM hari ini'};
 const populations={Program:'santri yang diabsen pada program ini',Setoran:'peserta Tahfiz',Guru:'guru dalam rekap',Santri:'santri dengan presensi tercatat',Konselor:'santri yang dipanggil'};
 const percent=new Intl.NumberFormat('id-ID',{style:'percent',maximumFractionDigits:1});
 const competition = 'Usrah Bersih';
@@ -163,12 +163,13 @@ function build(){
   }
   for(const channel of ['Santri','Program']){
     const boards=attendanceBoards(snapshot?.presensi,channel==='Santri'?'kbm':'program');
-    if(!boards.length)pages.push({channel,emptySessions:true});
+    if(!boards.some(board=>board.presentNames.length))pages.push({channel,emptySessions:true,hasSessions:!!boards.length});
     for(const board of boards){
       if(board.presentNames.length)pages.push({channel,board,id:board.id+'-apresiasi',appreciation:true,list:board.presentNames});
-      pages.push({channel,board,id:board.id});
+
     }
   }
+  pages.push({channel:'Tidak Hadir',absent:absentStudents(snapshot?.presensi)});
   prepareNotice();
   slides=pages;
   position=Math.max(0,slides.findIndex(s=>s.channel===old?.channel&&s.id===old?.id&&s.key===old?.key&&s.title===old?.title));
@@ -179,7 +180,18 @@ function paint(){
   const scene=element('article','scene'), heading=(text)=>scene.append(element('h1','',text));
   const description=(text)=>scene.append(element('p','meta',text));
   scene.append(element('p','kicker',s.channel==='Renungan'?'Renungan hari ini':s.channel==='Salat'?'Kabupaten Belitung':s.channel===competition?'Lomba Usrah Bersih · 11–21 November 2026':info[s.channel]));
-  if(s.appreciation){
+  if(s.absent){
+    scene.classList.add('list-screen');
+    heading('Santri tidak hadir');
+    description('Belajar dan program hari ini · '+s.absent.length+' santri · izin, sakit, dan alfa');
+    const grid=element('div','appreciation-names');
+    for(const {name,activities} of s.absent){
+      const label=element('div','appreciation-person',familiarName(name,snapshot?.nicknames)+' ('+activities.join('; ')+')');
+      grid.append(label);
+    }
+    if(s.absent.length)scene.append(grid);
+    else description(snapshot?'Belum ada santri tercatat tidak hadir.':'Menunggu ringkasan hari ini.');
+  }else if(s.appreciation){
     scene.classList.add('appreciation');
     scene.querySelector('.kicker').textContent='Apresiasi hari ini';
     const teacher=s.channel==='Guru';
@@ -188,7 +200,7 @@ function paint(){
     description('Pengurus Pesantren Cahaya Fajrul Islam menyampaikan terima kasih dan penghargaan kepada '+(teacher?'Bapak dan Ibu guru':'ananda')+' karena sudah '+activity+' hari ini.');
     const grid=element('div','appreciation-names');
     for(const [i,n] of s.list.entries()){
-      const label=element('div','appreciation-person',n);
+      const label=element('div','appreciation-person',s.channel==='Guru'?n:familiarName(n,snapshot?.nicknames));
       if(s.channel==='Setoran'){
         const lines=snapshot?.tahfiz?.baris?.[i];
         label.append(element('small','line-count',Number.isFinite(lines)&&lines>=0?lines+' baris':'Baris belum tercatat'));
@@ -217,31 +229,9 @@ function paint(){
       track.append(bar);row.append(track);chart.append(row);
     }
     scene.append(chart);
-  }else if(s.board){
-    const {title,slot,subjects,groups,total}=s.board;
-    heading([title,slot].filter(Boolean).join(' · '));
-    description([...subjects,total+' santri tercatat'].join(' · '));
-    const chart=element('div','attendance-chart');
-    for(const [key,label] of Object.entries({hadir:'Hadir',izin:'Izin',alfa:'Alfa',sakit:'Sakit'})){
-      const people=groups[key],count=key==='hadir'?people:people.length;
-      const ratio=total?count/total:0;
-      const card=element('div','att-card att-'+key);
-      card.append(element('span','att-label',label),element('strong','att-share',total?percent.format(ratio):'—'));
-      const track=element('div','att-track'),bar=element('i');
-      bar.style.width=(100*ratio)+'%';track.append(bar);card.append(track);
-      chart.append(card);
-    }
-    scene.append(chart);
-    for(const [key,label] of [['izin','Izin'],['alfa','Alfa'],['sakit','Sakit']]){
-      if(!groups[key].length)continue;
-      const line=element('div','att-names');
-      line.append(element('b','',label+' ('+groups[key].length+')'),element('span','',groups[key].join(' · ')));
-      scene.append(line);
-    }
-    if(groups.belum)description(groups.belum+' santri belum dikonfirmasi · '+percent.format(groups.belum/total));
   }else if(s.emptySessions){
     heading(s.channel==='Program'?'Kehadiran program naqib':'Kehadiran KBM');
-    description(!snapshot?'Menunggu ringkasan hari ini.':'Belum ada sesi yang tercatat hari ini.');
+    description(!snapshot?'Menunggu ringkasan hari ini.':s.hasSessions?'Belum ada santri tercatat hadir. Lihat daftar Tidak Hadir.':'Belum ada sesi yang tercatat hari ini.');
   }else if(!snapshot){
     heading(s.channel==='Setoran'?'Setoran tahfiz':s.channel==='Konselor'?'Panggilan konselor':'Presensi '+s.channel.toLowerCase());
     scene.append(element('strong','share','Persentase —'));
@@ -280,7 +270,7 @@ function paint(){
       scene.classList.add('list-screen');
       const grid=element('div','appreciation-names');
       s.list.forEach((n,i)=>{
-        const label=element('div','appreciation-person',n);
+        const label=element('div','appreciation-person',s.channel==='Guru'?n:familiarName(n,snapshot?.nicknames));
         if(s.channel==='Santri'&&!s.id){
           const ref=snapshot.kbm?.byStatus?.[s.key]?.[i];
           const lesson=snapshot.kbm?.labels?.[ref];
@@ -365,7 +355,7 @@ function updateNotice(){
   const cards=element('div','notice-cards');
   for(const {n,level} of noticeEntries){
     const card=element('div','notice-card');
-    card.append(element('span','notice-name',n),element('small','notice-level','Menghadap '+counselor[level]));
+    card.append(element('span','notice-name',familiarName(n,snapshot?.nicknames)),element('small','notice-level','Menghadap '+counselor[level]));
     cards.append(card);
   }
   banner.replaceChildren(head,cards);

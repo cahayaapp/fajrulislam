@@ -34,3 +34,42 @@ export function attendanceBoards(presensi,kind){
     return {...board,presentNames,subjects:[...subjects],groups,total:roll.size};
   });
 }
+
+// Keep identity and attendance corrections independent of display names.
+export function absentStudents(presensi){
+  const sessions=new Map(), students=new Map();
+  for(const row of presensi?.sessions||[]){
+    if(!['kbm','program'].includes(row.kind))continue;
+    const id=JSON.stringify([row.kind,row.title,row.slot||row.sessionLabel||'']);
+    if(!sessions.has(id))sessions.set(id,{label:[row.title,row.slot||row.sessionLabel].filter(Boolean).join(' · '),roll:new Map()});
+    const session=sessions.get(id);
+    for(const [status,ids] of Object.entries(row.groups||{})){
+      for(const index of ids){
+        const name=presensi.names?.[index];
+        if(!name)continue;
+        const previous=session.roll.get(name),updated=row.updated||0;
+        if(!previous||updated>=previous.updated)session.roll.set(name,{status,updated});
+      }
+    }
+  }
+  for(const {label,roll} of sessions.values()){
+    for(const [name,{status}] of roll){
+      if(!['izin','sakit','alfa'].includes(status))continue;
+      if(!students.has(name))students.set(name,new Set());
+      students.get(name).add(label+' — '+status);
+    }
+  }
+  return [...students].sort(([a],[b])=>a.localeCompare(b,'id')).map(([name,activities])=>({name,activities:[...activities]}));
+}
+
+// Same fallback convention as the Cahaya parent portal.
+export function familiarName(fullName,nicknames={}){
+  const explicit=nicknames[fullName];
+  if(typeof explicit==='string'&&explicit.trim())return explicit.trim();
+  const parts=String(fullName||'').trim().split(/\s+/);
+  let short=parts[0]||'Santri';
+  if(/^(m\.|m|muhammad|mohammad|mochammad|moch\.|moch|mohd\.|mohd|mhd\.|mhd)$/i.test(short)&&parts.length>1){
+    short=parts.slice(1).join(' ').replace(/^(al-|al\s|el-|el\s)/i,'').trim().split(/\s|-/).pop();
+  }
+  return short.charAt(0).toUpperCase()+short.slice(1).toLowerCase();
+}
