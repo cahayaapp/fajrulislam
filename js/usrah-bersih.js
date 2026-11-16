@@ -9,7 +9,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const publicRanking = doc(db, 'usrah_bersih_202611', 'rekap');
 const scores = collection(publicRanking, 'sesi');
-const accounts = ['multazam@cahayaapp.id', 'bennyarizona@cahayaapp.id', 'donisetiawan@cahayaapp.id'];
+const accounts = ['multazam@cahayaapp.id', 'bennyarizona@cahayaapp.id', 'donisetiawan@cahayaapp.id', 'dandi@cahayaapp.id', 'zaky@cahayaapp.id'];
 const el = id => document.getElementById(id);
 const form = el('form');
 const fields = form.elements;
