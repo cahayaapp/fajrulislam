@@ -151,7 +151,6 @@ function build(){
   const old=slides[position];
   const pages=[{channel:'Renungan'},{channel:'Salat'}];
   if(unit==='putra')pages.push({channel:competition});
-  const size=innerWidth<=650?8:12;
   for(const [channel,[section,labels]] of Object.entries(categories)){
     if(channel==='Santri')continue;
     if(!snapshot){pages.push({channel});continue;}
@@ -159,9 +158,7 @@ function build(){
     for(const [key,title] of Object.entries(labels)){
       const list=snapshot[section]?.[key]||[];
       const appreciation=channel==='Setoran'&&key==='sudah'||channel==='Guru'&&key==='masuk';
-      const pageSize=appreciation?Math.max(1,list.length):channel==='Konselor'?5:size;
-      for(let start=0;start<Math.max(1,list.length);start+=pageSize)
-        pages.push({channel,key,title,list,start,size:pageSize,total,appreciation});
+      pages.push({channel,key,title,list,total,appreciation});
     }
   }
   for(const channel of ['Santri','Program']){
@@ -174,7 +171,7 @@ function build(){
   }
   prepareNotice();
   slides=pages;
-  position=Math.max(0,slides.findIndex(s=>s.channel===old?.channel&&s.id===old?.id&&s.key===old?.key&&s.title===old?.title&&s.start===old?.start));
+  position=Math.max(0,slides.findIndex(s=>s.channel===old?.channel&&s.id===old?.id&&s.key===old?.key&&s.title===old?.title));
   paint();
 }
 function paint(){
@@ -263,7 +260,6 @@ function paint(){
     const count=s.list.length, stamp=time.format(new Date(snapshot.updatedAt));
     const hours=(Date.now()-Date.parse(snapshot.updatedAt))/3600000;
     const status=sourceDown||hours>1.25?'Pembaruan tertunda · data pukul ':'Data pukul ';
-    const page=count>s.size?' · Halaman '+(s.start/s.size+1)+'/'+Math.ceil(count/s.size):'';
     const summary=element('p','meta');
     if(s.total){
       summary.append(element('strong','share','Persentase '+percent.format(count/s.total)),
@@ -271,7 +267,7 @@ function paint(){
     }else{
       summary.append(element('strong','share','Persentase —'),document.createTextNode(' · 0 '+populations[s.channel]));
     }
-    summary.append(document.createTextNode(' · '+status+stamp+' WIB'+page));
+    summary.append(document.createTextNode(' · '+status+stamp+' WIB'));
     const showLines=s.channel==='Setoran'&&s.key==='sudah';
     const lines=showLines?snapshot.tahfiz?.baris:null;
     if(showLines){
@@ -281,16 +277,17 @@ function paint(){
     }
     scene.append(summary);
     if(count){
-      const grid=element('div','names');
-      s.list.slice(s.start,s.start+s.size).forEach((n,i)=>{
-        const label=element('div','person',n);
+      scene.classList.add('list-screen');
+      const grid=element('div','appreciation-names');
+      s.list.forEach((n,i)=>{
+        const label=element('div','appreciation-person',n);
         if(s.channel==='Santri'&&!s.id){
-          const ref=snapshot.kbm?.byStatus?.[s.key]?.[s.start+i];
+          const ref=snapshot.kbm?.byStatus?.[s.key]?.[i];
           const lesson=snapshot.kbm?.labels?.[ref];
           label.append(element('small','line-count',lesson||'Rincian pelajaran belum tersedia'));
         }
         if(showLines){
-          const value=lines?.[s.start+i];
+          const value=lines?.[i];
           label.append(element('small','line-count',Number.isFinite(value)&&value>=0?value+' baris':'Baris belum tercatat'));
         }
         label.style.setProperty('--i',i);grid.append(label);
@@ -348,12 +345,12 @@ async function updatePrayer(){
   }
   alarm='';tick();
 }
-let noticeEntries=[], noticePage=-1;
+let noticeEntries=[], noticeDirty=true;
 function prepareNotice(){
   const calls=new Map();
   for(const level of ['muda','madya'])for(const n of snapshot?.konselor?.[level]||[])calls.set(n,level);
   noticeEntries=[...calls].map(([n,level])=>({n,level}));
-  noticePage=-1;
+  noticeDirty=true;
   updateNotice();
 }
 function updateNotice(){
@@ -361,19 +358,18 @@ function updateNotice(){
   if(!banner)return;
   banner.hidden=!noticeEntries.length;
   if(banner.hidden)return;
-  const pages=Math.ceil(noticeEntries.length/5),page=Math.floor(Date.now()/10000)%pages;
-  if(page===noticePage)return;
-  noticePage=page;
+  if(!noticeDirty)return;
+  noticeDirty=false;
   const head=element('div','notice-head');
   head.append(element('strong','notice-label','Panggilan konselor'),element('small','','Kemarin 12.00–hari ini 12.00 WIB'));
-  if(pages>1)head.append(element('small','','Kelompok '+(page+1)+' / '+pages));
   const cards=element('div','notice-cards');
-  for(const {n,level} of noticeEntries.slice(page*5,page*5+5)){
+  for(const {n,level} of noticeEntries){
     const card=element('div','notice-card');
     card.append(element('span','notice-name',n),element('small','notice-level','Menghadap '+counselor[level]));
     cards.append(card);
   }
   banner.replaceChildren(head,cards);
+  fitGrid(cards,22);
 }
 function tick(){
   const now=new Date(), d=day(now), t=time.format(now);
@@ -401,22 +397,18 @@ function togglePause(){
   const b=$('pause');b.textContent=paused?'▶':'Ⅱ';b.title=paused?'Lanjutkan tayangan':'Jeda tayangan';
   b.setAttribute('aria-label',b.title);nextSlide=Date.now()+10000;
 }
-function fitScene(){
-  const stage=$('stage'),scene=stage.firstElementChild;
-  if(!scene)return;
-  scene.style.zoom='';
-  if(scene.classList.contains('appreciation')){
-    const grid=scene.querySelector('.appreciation-names');
+function fitGrid(grid,maxFont=50){
+  if(!grid?.children.length||!grid.clientHeight||!grid.clientWidth)return;
     const available=grid.clientHeight, width=grid.clientWidth, count=grid.children.length;
     let best=0,bestColumns=1;
     // Measure full names at each column count, preserving every name and line.
     for(let columns=1;columns<=Math.min(count,Math.max(1,Math.floor(width/75)));columns++){
       grid.style.gridTemplateColumns='repeat('+columns+',minmax(0,1fr))';
-      let low=1,high=Math.min(50,Math.max(22,width/7));
+      let low=.1,high=Math.min(maxFont,Math.max(22,width/7));
       for(let i=0;i<9;i++){
         const size=(low+high)/2;grid.style.fontSize=size+'px';
         const cells=[...grid.children], rows=[];
-        for(let j=0;j<cells.length;j+=columns)rows.push(Math.max(...cells.slice(j,j+columns).map(n=>n.scrollHeight)));
+        for(let j=0;j<cells.length;j+=columns)rows.push(Math.max(...cells.slice(j,j+columns).map(n=>n.getBoundingClientRect().height)));
         const height=rows.reduce((a,b)=>a+b,0)+(rows.length-1)*parseFloat(getComputedStyle(grid).rowGap);
         if(height<=available)low=size;else high=size;
       }
@@ -424,9 +416,14 @@ function fitScene(){
     }
     grid.style.gridTemplateColumns='repeat('+bestColumns+',minmax(0,1fr))';
     grid.style.fontSize=best+'px';
-    return;
-  }
-  if(!matchMedia('(max-width:768px)').matches || !stage.clientHeight)return;
+}
+function fitScene(){
+  const stage=$('stage'),scene=stage.firstElementChild;
+  if(!scene)return;
+  scene.style.zoom='';
+  const grid=scene.querySelector('.appreciation-names');
+  if(grid){fitGrid(grid);return;}
+  if(!stage.clientHeight)return;
   // Zoom changes line wrapping. Find the largest size that fits this slide.
   if(scene.offsetHeight<=stage.clientHeight)return;
   let low=0,high=1;
@@ -438,6 +435,7 @@ function fitScene(){
   scene.style.zoom=low;
 }
 new ResizeObserver(fitScene).observe($('stage'));
+new ResizeObserver(()=>fitGrid($('counselor-notice').querySelector('.notice-cards'),22)).observe($('counselor-notice'));
 $('channel-picker').onchange=e=>{
   position=slides.findIndex(s=>s.channel===e.target.value);paint();
 };
