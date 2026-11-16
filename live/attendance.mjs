@@ -36,7 +36,7 @@ export function attendanceBoards(presensi,kind){
 }
 
 // Keep identity and attendance corrections independent of display names.
-export function absentStudents(presensi){
+function attendanceStudents(presensi,present){
   const sessions=new Map(), students=new Map();
   for(const row of presensi?.sessions||[]){
     if(!['kbm','program'].includes(row.kind))continue;
@@ -54,13 +54,16 @@ export function absentStudents(presensi){
   }
   for(const {label,roll} of sessions.values()){
     for(const [name,{status}] of roll){
-      if(!['izin','sakit','alfa'].includes(status))continue;
+      if(!(present?['hadir','terlambat']:['izin','sakit','alfa']).includes(status))continue;
       if(!students.has(name))students.set(name,new Set());
-      students.get(name).add(label+' — '+status);
+      students.get(name).add(present?label:label+' — '+status);
     }
   }
   return [...students].sort(([a],[b])=>a.localeCompare(b,'id')).map(([name,activities])=>({name,activities:[...activities]}));
 }
+
+export function absentStudents(presensi){return attendanceStudents(presensi,false)}
+export function presentStudents(presensi){return attendanceStudents(presensi,true)}
 
 // Same fallback convention as the Cahaya parent portal.
 export function familiarName(fullName,nicknames={}){

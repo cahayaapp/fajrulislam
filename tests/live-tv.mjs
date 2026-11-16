@@ -95,3 +95,14 @@ test('ketidakhadiran digabung lintas KBM/program tanpa menggabungkan identitas p
   assert.equal(familiarName('Ali Hasan'),'Ali');
   assert.equal(familiarName('Siti Aminah',{'Siti Aminah':'Minah'}),'Minah');
 });
+
+test('apresiasi menggabungkan kegiatan hadir dan terlambat dengan koreksi terbaru',async()=>{
+  const {presentStudents}=await import('../live/attendance.mjs');
+  const rows=presentStudents({names:['Muhammad Ali','Ali Hasan'],sessions:[
+    {kind:'kbm',title:'Fiqih',slot:'07:00 WIB',updated:1,groups:{hadir:[0,1]}},
+    {kind:'kbm',title:'Fiqih',slot:'07:00 WIB',updated:2,groups:{alfa:[1]}},
+    {kind:'program',title:'Subuh',groups:{terlambat:[0],hadir:[1]}},
+    {kind:'program',title:'Asar',groups:{izin:[0],belum:[1]}}
+  ]});
+  assert.deepEqual(rows,[{name:'Ali Hasan',activities:['Subuh']},{name:'Muhammad Ali',activities:['Fiqih · 07:00 WIB','Subuh']}]);
+});

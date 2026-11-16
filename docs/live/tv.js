@@ -1,4 +1,4 @@
-import {attendanceBoards,absentStudents,familiarName} from './attendance.mjs';
+import {presentStudents,absentStudents,familiarName} from './attendance.mjs';
 import {standings} from '../js/usrah-ranking.mjs';
 const $ = id => document.getElementById(id);
 const zone = 'Asia/Jakarta';
@@ -6,7 +6,7 @@ const day = date => new Date(+date + 7*3600000).toISOString().slice(0,10);
 const time = new Intl.DateTimeFormat('id-ID',{timeZone:zone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
 const calendar = new Intl.DateTimeFormat('id-ID',{timeZone:zone,weekday:'long',day:'numeric',month:'long',year:'numeric'});
 const names = {subuh:'Subuh',dzuhur:'Zuhur',ashar:'Asar',maghrib:'Magrib',isya:'Isya'};
-const channels = ['Renungan','Salat','Setoran','Guru','Santri','Program','Tidak Hadir','Konselor'];
+const channels = ['Renungan','Salat','Setoran','Guru','Apresiasi','Tidak Hadir','Konselor'];
 const quotes = [
   'Satu ayat yang dijaga hari ini menjadi bekal untuk esok.',
   'Ilmu tumbuh saat kita berani bertanya dan tekun mengulang.',
@@ -161,14 +161,8 @@ function build(){
       pages.push({channel,key,title,list,total,appreciation});
     }
   }
-  for(const channel of ['Santri','Program']){
-    const boards=attendanceBoards(snapshot?.presensi,channel==='Santri'?'kbm':'program');
-    if(!boards.some(board=>board.presentNames.length))pages.push({channel,emptySessions:true,hasSessions:!!boards.length});
-    for(const board of boards){
-      if(board.presentNames.length)pages.push({channel,board,id:board.id+'-apresiasi',appreciation:true,list:board.presentNames});
-
-    }
-  }
+  const present=presentStudents(snapshot?.presensi);
+  pages.push({channel:'Apresiasi',appreciation:true,present,list:present.map(row=>row.name)});
   pages.push({channel:'Tidak Hadir',absent:absentStudents(snapshot?.presensi)});
   prepareNotice();
   slides=pages;
@@ -186,7 +180,8 @@ function paint(){
     description('Belajar dan program hari ini · '+s.absent.length+' santri · izin, sakit, dan alfa');
     const grid=element('div','appreciation-names');
     for(const {name,activities} of s.absent){
-      const label=element('div','appreciation-person',familiarName(name,snapshot?.nicknames)+' ('+activities.join('; ')+')');
+      const label=element('div','appreciation-person attendance-person',familiarName(name,snapshot?.nicknames));
+      label.append(document.createTextNode(' '),element('span','attended-activities','('+activities.join('; ')+')'));
       grid.append(label);
     }
     if(s.absent.length)scene.append(grid);
@@ -195,18 +190,23 @@ function paint(){
     scene.classList.add('appreciation');
     scene.querySelector('.kicker').textContent='Apresiasi hari ini';
     const teacher=s.channel==='Guru';
-    const activity=s.channel==='Setoran'?'menyetorkan hafalan':s.board?'hadir dalam '+[s.board.title,s.board.slot,...s.board.subjects].filter(Boolean).join(' · '):'hadir mengajar';
+    const activity=s.channel==='Setoran'?'menyetorkan hafalan':s.present?'mengikuti pembelajaran dan kegiatan pesantren':'hadir mengajar';
     heading(s.channel==='Setoran'?'Terima kasih sudah setoran':teacher?'Terima kasih, para guru':'Terima kasih sudah hadir');
     description('Pengurus Pesantren Cahaya Fajrul Islam menyampaikan terima kasih dan penghargaan kepada '+(teacher?'Bapak dan Ibu guru':'ananda')+' karena sudah '+activity+' hari ini.');
     const grid=element('div','appreciation-names');
     for(const [i,n] of s.list.entries()){
       const label=element('div','appreciation-person',s.channel==='Guru'?n:familiarName(n,snapshot?.nicknames));
+      if(s.present){
+        label.classList.add('attendance-person');
+        label.append(document.createTextNode(' '),element('span','attended-activities','('+s.present[i].activities.join('; ')+')'));
+      }
       if(s.channel==='Setoran'){
         const lines=snapshot?.tahfiz?.baris?.[i];
         label.append(element('small','line-count',Number.isFinite(lines)&&lines>=0?lines+' baris':'Baris belum tercatat'));
       }
       grid.append(label);
     }
+    if(!s.list.length)description(snapshot?'Belum ada kehadiran tercatat hari ini.':'Menunggu ringkasan hari ini.');
     scene.append(grid,element('p','appreciation-wish','Semoga '+(teacher?'Bapak dan Ibu':'ananda')+' semakin sukses dan diberkahi Allah di dunia dan akhirat.'));
   }else if(s.channel==='Renungan'){
     scene.classList.add('quote');heading(quotes[quoteIndex%quotes.length]);scene.append(element('div','rule'));
