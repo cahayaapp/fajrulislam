@@ -22,13 +22,15 @@ export function attendanceBoards(presensi,kind){
     }
   }
   return [...boards.values()].map(({roll,subjects,...board})=>{
+    const presentNames=[];
     const groups={hadir:0,izin:[],alfa:[],sakit:[],belum:0};
     for(const [n,{status}] of roll){
-      if(status==='hadir')groups.hadir++;
+      if(status==='hadir'){groups.hadir++;presentNames.push(n);}
       else if(Array.isArray(groups[status]))groups[status].push(n);
       else groups.belum++;
     }
     for(const key of ['izin','alfa','sakit'])groups[key].sort((a,b)=>a.localeCompare(b,'id'));
-    return {...board,subjects:[...subjects],groups,total:roll.size};
+    presentNames.sort((a,b)=>a.localeCompare(b,'id'));
+    return {...board,presentNames,subjects:[...subjects],groups,total:roll.size};
   });
 }

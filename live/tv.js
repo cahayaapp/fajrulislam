@@ -158,15 +158,19 @@ function build(){
     const total=new Set(Object.keys(labels).flatMap(key=>snapshot[section]?.[key]||[])).size;
     for(const [key,title] of Object.entries(labels)){
       const list=snapshot[section]?.[key]||[];
-      const pageSize=channel==='Konselor'?5:size;
+      const appreciation=channel==='Setoran'&&key==='sudah'||channel==='Guru'&&key==='masuk';
+      const pageSize=appreciation?Math.max(1,list.length):channel==='Konselor'?5:size;
       for(let start=0;start<Math.max(1,list.length);start+=pageSize)
-        pages.push({channel,key,title,list,start,size:pageSize,total});
+        pages.push({channel,key,title,list,start,size:pageSize,total,appreciation});
     }
   }
   for(const channel of ['Santri','Program']){
     const boards=attendanceBoards(snapshot?.presensi,channel==='Santri'?'kbm':'program');
     if(!boards.length)pages.push({channel,emptySessions:true});
-    for(const board of boards)pages.push({channel,board,id:board.id});
+    for(const board of boards){
+      if(board.presentNames.length)pages.push({channel,board,id:board.id+'-apresiasi',appreciation:true,list:board.presentNames});
+      pages.push({channel,board,id:board.id});
+    }
   }
   prepareNotice();
   slides=pages;
@@ -178,7 +182,24 @@ function paint(){
   const scene=element('article','scene'), heading=(text)=>scene.append(element('h1','',text));
   const description=(text)=>scene.append(element('p','meta',text));
   scene.append(element('p','kicker',s.channel==='Renungan'?'Renungan hari ini':s.channel==='Salat'?'Kabupaten Belitung':s.channel===competition?'Lomba Usrah Bersih · 11–21 November 2026':info[s.channel]));
-  if(s.channel==='Renungan'){
+  if(s.appreciation){
+    scene.classList.add('appreciation');
+    scene.querySelector('.kicker').textContent='Apresiasi hari ini';
+    const teacher=s.channel==='Guru';
+    const activity=s.channel==='Setoran'?'menyetorkan hafalan':s.board?'hadir dalam '+[s.board.title,s.board.slot,...s.board.subjects].filter(Boolean).join(' · '):'hadir mengajar';
+    heading(s.channel==='Setoran'?'Terima kasih sudah setoran':teacher?'Terima kasih, para guru':'Terima kasih sudah hadir');
+    description('Pengurus Pesantren Cahaya Fajrul Islam menyampaikan terima kasih dan penghargaan kepada '+(teacher?'Bapak dan Ibu guru':'ananda')+' karena sudah '+activity+' hari ini.');
+    const grid=element('div','appreciation-names');
+    for(const [i,n] of s.list.entries()){
+      const label=element('div','appreciation-person',n);
+      if(s.channel==='Setoran'){
+        const lines=snapshot?.tahfiz?.baris?.[i];
+        label.append(element('small','line-count',Number.isFinite(lines)&&lines>=0?lines+' baris':'Baris belum tercatat'));
+      }
+      grid.append(label);
+    }
+    scene.append(grid,element('p','appreciation-wish','Semoga '+(teacher?'Bapak dan Ibu':'ananda')+' semakin sukses dan diberkahi Allah di dunia dan akhirat.'));
+  }else if(s.channel==='Renungan'){
     scene.classList.add('quote');heading(quotes[quoteIndex%quotes.length]);scene.append(element('div','rule'));
   }else if(s.channel==='Salat'){
     const p=prayerInfo(new Date());
@@ -277,6 +298,7 @@ function paint(){
       scene.append(grid);
     }else description('Belum ada nama pada kategori ini.');
   }
+  if(s.channel==='Konselor')description('Periode laporan · kemarin 12.00–hari ini 12.00 WIB');
   $('stage').replaceChildren(scene);
   $('channel-picker').value=s.channel;
   fitScene();
@@ -343,7 +365,7 @@ function updateNotice(){
   if(page===noticePage)return;
   noticePage=page;
   const head=element('div','notice-head');
-  head.append(element('strong','notice-label','Panggilan konselor'));
+  head.append(element('strong','notice-label','Panggilan konselor'),element('small','','Kemarin 12.00–hari ini 12.00 WIB'));
   if(pages>1)head.append(element('small','','Kelompok '+(page+1)+' / '+pages));
   const cards=element('div','notice-cards');
   for(const {n,level} of noticeEntries.slice(page*5,page*5+5)){
@@ -383,6 +405,27 @@ function fitScene(){
   const stage=$('stage'),scene=stage.firstElementChild;
   if(!scene)return;
   scene.style.zoom='';
+  if(scene.classList.contains('appreciation')){
+    const grid=scene.querySelector('.appreciation-names');
+    const available=grid.clientHeight, width=grid.clientWidth, count=grid.children.length;
+    let best=0,bestColumns=1;
+    // Measure full names at each column count, preserving every name and line.
+    for(let columns=1;columns<=Math.min(count,Math.max(1,Math.floor(width/75)));columns++){
+      grid.style.gridTemplateColumns='repeat('+columns+',minmax(0,1fr))';
+      let low=1,high=Math.min(50,Math.max(22,width/7));
+      for(let i=0;i<9;i++){
+        const size=(low+high)/2;grid.style.fontSize=size+'px';
+        const cells=[...grid.children], rows=[];
+        for(let j=0;j<cells.length;j+=columns)rows.push(Math.max(...cells.slice(j,j+columns).map(n=>n.scrollHeight)));
+        const height=rows.reduce((a,b)=>a+b,0)+(rows.length-1)*parseFloat(getComputedStyle(grid).rowGap);
+        if(height<=available)low=size;else high=size;
+      }
+      if(low>best){best=low;bestColumns=columns}
+    }
+    grid.style.gridTemplateColumns='repeat('+bestColumns+',minmax(0,1fr))';
+    grid.style.fontSize=best+'px';
+    return;
+  }
   if(!matchMedia('(max-width:768px)').matches || !stage.clientHeight)return;
   // Zoom changes line wrapping. Find the largest size that fits this slide.
   if(scene.offsetHeight<=stage.clientHeight)return;

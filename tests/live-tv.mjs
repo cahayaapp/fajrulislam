@@ -64,3 +64,18 @@ test('diagram lintas kelas menghitung satu status terbaru per peserta pada tiap 
   assert.equal(boards[0].total,3);
   assert.deepEqual(boards[0].groups,{hadir:2,izin:[],alfa:[],sakit:['C'],belum:0});
 });
+
+test('panggilan konselor mengikuti batas 12 WIB dan waktu laporan',()=>{
+  const reports=Object.fromEntries([
+    ['lama','2026-11-11T11:59:59+07:00'],
+    ['awal','2026-11-11T12:00:00+07:00'],
+    ['malam','2026-11-11T21:00:00+07:00'],
+    ['pagi','2026-11-12T11:59:59+07:00'],
+    ['akhir','2026-11-12T12:00:00+07:00'],
+    ['sore','2026-11-12T13:00:00+07:00']
+  ].map(([student,waktu])=>[student,{tanggal:waktu.slice(0,10),waktu,dilaporkan:student,tipe:'Lapor Pelanggaran',kodePelanggaran:'DISIPLIN'}]));
+  const data={reports,roster:{'Usrah 1':Object.keys(reports)}};
+  const result=project(data,new Date('2026-11-12T15:00:00+07:00'),'putra');
+  assert.deepEqual(result.konselor.muda,['awal','malam','pagi']);
+  assert.deepEqual(project(data,new Date('2026-11-12T09:00:00+07:00'),'putra').konselor.muda,['awal','malam']);
+});

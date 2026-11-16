@@ -29,6 +29,24 @@ function unitOf(label){
 function groupUnit(row){
   return unitOf(row.unit)||unitOf(row.unitPembelajaran)||unitOf(row.kelas)||unitOf(row.className);
 }
+// Historical date-only records use midnight WIB when no report time exists.
+export function counselorWindow(date){
+  const end=Date.parse(date+'T12:00:00+07:00');
+  return {start:end-86400000,end};
+}
+export function reportTimestamp(c){
+  const raw=c.raw||{};
+  for(const value of [c.reportTime,raw.waktuSimpan,raw.createdAt]){
+    if(!value)continue;
+    if(typeof value==='number'&&Number.isFinite(value))return value;
+    const text=String(value);
+    const local=/^\d{2}:\d{2}(:\d{2})?$/.test(text)?c.reportDate+'T'+text:text;
+    const normalized=/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(local)?local.replace(' ','T')+'+07:00':local;
+    const timestamp=Date.parse(normalized);
+    if(Number.isFinite(timestamp))return timestamp;
+  }
+  return Date.parse(c.reportDate+'T00:00:00+07:00');
+}
 export function project(data,now,unit){
   if(!units.includes(unit))throw Error('Unit TV wajib dipilih.');
   const {roster,classes,placements,deposits,lessons,staffLog,schedule,leave,blocked,reports,program,actions,book}=data;
@@ -165,15 +183,16 @@ export function project(data,now,unit){
   const names=ids=>sorted(new Set([...ids].map(id=>teachers.get(id))));
   const candidates=Model.sourceCases(reports||{},program||{},lessons||{},[...values(actions),...values(book)])
     .filter(c=>belongs(Placement.identityKey(c.student),unitOf(c.unit)||unitOf(c.raw.kelas)||unitOf(c.context.usrah))&&!Model.cleared(c));
-  const queue={muda:new Set(),madya:new Set()};
+  const queue={muda:new Set(),madya:new Set()}, window=counselorWindow(date);
   for(const c of candidates){
     const h=c.caseV2?.higherEscalation;
-    if(!c.student||c.reportDate!==date||Cases.FINAL_STATES.has(c.status)||(h?.requestedAt&&!h.response?.respondedAt))continue;
+    const timestamp=reportTimestamp(c);
+    if(!c.student||!Number.isFinite(timestamp)||timestamp<window.start||timestamp>=window.end||timestamp>now.getTime()||Cases.FINAL_STATES.has(c.status)||(h?.requestedAt&&!h.response?.respondedAt))continue;
     const level=c.routeLevel||Cases.routeCase(c,candidates).level;
     queue[level==='MADYA'?'madya':'muda'].add(students.get(Placement.identityKey(c.student))||c.student);
   }
   const sudah=sorted(recorded.values());
-  return {unit,date,presensi,konselor:{muda:sorted(queue.muda),madya:sorted(queue.madya)},updatedAt:now.toISOString(),tahfiz:{sudah,baris:sudah.map(student=>lines.get(student)??-1),belum:sorted([...participants].filter(([k])=>!recorded.has(k)).map(([,n])=>n))},
+  return {unit,date,presensi,konselorWindow:{start:new Date(window.start).toISOString(),end:new Date(window.end).toISOString()},konselor:{muda:sorted(queue.muda),madya:sorted(queue.madya)},updatedAt:now.toISOString(),tahfiz:{sudah,baris:sudah.map(student=>lines.get(student)??-1),belum:sorted([...participants].filter(([k])=>!recorded.has(k)).map(([,n])=>n))},
     guru:{masuk:names(present),izin:names([...excused].filter(id=>!present.has(id))),belum:names([...due].filter(id=>!present.has(id)&&!excused.has(id)))},santri:pupils,kbm:{labels:lessonLabels,byStatus:lessonByStatus}};
 }
 
@@ -189,8 +208,8 @@ export async function publish(){
   const now=new Date(),date=day(now);
   const daily={orderBy:'tanggal',equalTo:date};
   const read=(path,query)=>database('/cahaya_app/'+path,query);
-  // Two preceding days are sufficient for the existing three-consecutive-days routing rule.
-  const range={orderBy:'tanggal',startAt:Cases.shiftDate(date,-2),endAt:date+'\uf8ff'};
+  // Yesterday’s afternoon cases also need their two preceding days for routing.
+  const range={orderBy:'tanggal',startAt:Cases.shiftDate(date,-3),endAt:date+'\uf8ff'};
   const [roster,classes,placements,deposits,lessons,staffLog,schedule,leave,blocked,reports,program,actions,book]=await Promise.all([
     read('master_usrah'),read('master_akademik/kelas'),read('program_quran_santri'),
     read('setoran_tahfiz',daily),read('absensi_pembelajaran',range),read('log_absensi_guru',daily),
