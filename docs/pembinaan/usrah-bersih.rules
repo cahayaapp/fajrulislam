@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Preserve the existing access policy for collections outside this competition.
+    match /{collection}/{rest=**} {
+      allow read, write: if !(collection in ['usrah_bersih_202611', 'psb_applications', 'psb_announcements', 'psb_reviews', 'psb_updates']);
+    }
+    // PSB on Spark: owner-only applications; published updates separate from private review.
+    function psbStaff() {
+      return request.auth != null && request.auth.uid == 'gGuAzKpiIcNfOlh1YmCivnuIKZl1'
+        && request.auth.token.get('psbStaff', false) == true;
+    }
+    function psbOwner(uid) { return request.auth != null && request.auth.uid == uid; }
+    function psbRegistered() { return request.auth != null && exists(/databases/$(database)/documents/psb_applications/$(request.auth.uid)); }
+    function text(v, max) { return v is string && v.size() <= max; }
+    function psbAssessment(v) {
+      return v is map && v.keys().hasOnly(['motivation','readiness','support'])
+        && text(v.get('motivation',''),2000) && text(v.get('readiness',''),2000) && text(v.get('support',''),2000);
+    }
+    function psbRegistration(v) {
+      return v is map && v.keys().hasOnly(['parentName','studentName','school','level','address'])
+        && text(v.get('parentName',''),2000) && text(v.get('studentName',''),2000)
+        && text(v.get('school',''),2000) && text(v.get('address',''),600)
+        && v.get('level','') in ['', 'SMP', 'SMA'];
+    }
+    function psbValid(d) {
+      return d.keys().hasOnly(['uid','email','phone','status','createdAt','updatedAt','contentVersion','registration','waliAssessment','santriAssessment','submittedAt'])
+        && d.status in ['DRAFT','SUBMITTED'] && d.updatedAt == request.time
+        && psbRegistration(d.get('registration',{})) && psbAssessment(d.get('waliAssessment',{})) && psbAssessment(d.get('santriAssessment',{}))
+        && (d.status == 'DRAFT' || (d.registration.parentName.size() > 0 && d.registration.studentName.size() > 0
+          && d.registration.level in ['SMP','SMA'] && d.waliAssessment.motivation.size() > 0 && d.santriAssessment.motivation.size() > 0));
+    }
+    match /psb_applications/{uid} {
+      allow get: if psbOwner(uid) || psbStaff();
+      allow list: if psbStaff() && request.query.limit <= 300;
+      allow create: if psbOwner(uid) && psbValid(request.resource.data)
+        && request.resource.data.uid == uid && request.resource.data.email == request.auth.token.email
+        && request.resource.data.phone.matches('08[0-9]{8,12}') && request.resource.data.createdAt == request.time
+        && request.resource.data.contentVersion == 'DUMMY_V1' && request.resource.data.status == 'DRAFT';
+      allow update: if psbOwner(uid) && psbValid(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registration','waliAssessment','santriAssessment','status','submittedAt','updatedAt']);
+    }
+    match /psb_reviews/{uid} {
+      allow read: if psbStaff();
+      allow create, update: if psbStaff() && exists(/databases/$(database)/documents/psb_applications/$(uid))
+        && request.resource.data.keys().hasOnly(['interview','result']);
+    }
+    match /psb_updates/{uid} {
+      allow get: if psbOwner(uid) || psbStaff();
+      allow create, update: if psbStaff() && exists(/databases/$(database)/documents/psb_applications/$(uid))
+        && request.resource.data.keys().hasOnly(['schedule','result'])
+        && (request.resource.data.get('result',null) == null || request.resource.data.result.published == true);
+    }
+    match /psb_announcements/{id} {
+      allow read: if psbRegistered() || psbStaff();
+      allow create: if psbStaff() && request.resource.data.keys().hasOnly(['title','body','createdAt','createdBy'])
+        && text(request.resource.data.title,2000) && request.resource.data.title.size() > 0
+        && text(request.resource.data.body,2000) && request.resource.data.body.size() > 0
+        && request.resource.data.createdBy == request.auth.uid && request.resource.data.createdAt == request.time;
+    }
+    function anggota() {
+      return request.auth != null && request.auth.token.email in [
+        'multazam@cahayaapp.id', 'bennyarizona@cahayaapp.id', 'donisetiawan@cahayaapp.id', 'dandi@cahayaapp.id', 'zaky@cahayaapp.id'
+      ];
+    }
+    function ranking() {
+      return /databases/$(database)/documents/usrah_bersih_202611/rekap;
+    }
+    match /usrah_bersih_202611/rekap/sesi/{id} {
+      function skor(n) { return n is int && n >= 0 && n <= 100; }
+      function sah() {
+        let d = request.resource.data;
+        let lokal = d.waktu + duration.value(7, 'h');
+        return d.keys().hasOnly(['kriteria','nilai','waktu','penilai','akun','disimpan'])
+          && lokal.year() == 2026 && lokal.month() == 11 && lokal.day() >= 11 && lokal.day() <= 21
+          && d.waktu <= request.time && d.disimpan == request.time
+          && request.time < timestamp.date(2026,11,22) - duration.value(7,'h')
+          && d.akun == request.auth.token.email
+          && d.kriteria in ['kamar','piket','kompak']
+          && d.penilai in ['Abah Multazam Zakaria','Abi Dandy',"Mu'allim Zaky"]
+          && id.matches('2026-11-(1[1-9]|2[01])-' + d.kriteria)
+          && int(id.split('-')[2]) == lokal.day()
+          && d.nilai is list && d.nilai.size() == 6
+          && skor(d.nilai[0]) && skor(d.nilai[1]) && skor(d.nilai[2])
+          && skor(d.nilai[3]) && skor(d.nilai[4]) && skor(d.nilai[5]);
+      }
+      allow read: if anggota();
+      allow create: if anggota() && sah()
+        && getAfter(ranking()).data.lastSession == id;
+    }
+    match /usrah_bersih_202611/rekap {
+      allow get: if true;
+      function validUpdate() {
+        let next = request.resource.data;
+        let path = /databases/$(database)/documents/usrah_bersih_202611/rekap/sesi/$(next.lastSession);
+        let scores = getAfter(path).data.nilai;
+        let prev = exists(ranking()) ? resource.data : {'sessions':0,'sums':[0,0,0,0,0,0]};
+        return !exists(path) && next.keys().hasOnly(['sessions','sums','lastSession'])
+          && next.sessions == prev.sessions + 1 && next.sessions <= 33
+          && next.sums == [prev.sums[0]+scores[0], prev.sums[1]+scores[1],
+                           prev.sums[2]+scores[2], prev.sums[3]+scores[3],
+                           prev.sums[4]+scores[4], prev.sums[5]+scores[5]];
+      }
+      allow create, update: if anggota() && validUpdate();
+    }
+  }
+}

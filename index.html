@@ -219,7 +219,7 @@
       </header>
       <main class="content login-content">
         <h1 class="title">Masuk ke CAHAYA APP</h1>
-        <form id="loginForm" class="form" autocomplete="on">
+        <p style="text-align:center;font-size:13px"><a href="psb/">Pendaftaran santri baru · PSB</a></p><form id="loginForm" class="form" autocomplete="on">
           <div class="field">
             <span class="field-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21v-2.3A5.7 5.7 0 0 1 10.7 13h2.6a5.7 5.7 0 0 1 5.7 5.7V21"></path></svg></span>
             <input id="username" type="text" autocomplete="username" placeholder="Username" required>
@@ -342,6 +342,7 @@
       try{return JSON.parse(localStorage.getItem('cahayaCurrentUser')||'null')}catch(_){return null}
     }
     function getLoginTarget(user){
+      if(user?.psbApplicant===true)return 'psb/akun.html';
       const roleV2=window.CahayaRoleSystemV2?.resolveSession(user,localStorage);
       if(roleV2?.mode==='canonical'){
         if(roleV2.activeRole==='WALI_SANTRI') return 'wali/dashboard/index.html?v=20260820-v71';
@@ -546,6 +547,10 @@
       const uname=email.split('@')[0];
       try{
         const cred=await firebase.auth().signInWithEmailAndPassword(email,password);
+        const token=await cred.user.getIdTokenResult();
+        const psbDoc=await db.collection('psb_applications').doc(cred.user.uid).get();
+        if(psbDoc.exists&&token.claims.psbStaff!==true){localStorage.setItem('cahayaCurrentUser',JSON.stringify({uid:cred.user.uid,email:cred.user.email,psbApplicant:true,akses:['calon-wali']}));location.href='psb/akun.html';return;}
+        if(token.claims.psbApplicant===true&&token.claims.psbStaff!==true){localStorage.setItem('cahayaCurrentUser',JSON.stringify({uid:cred.user.uid,email:cred.user.email,psbApplicant:true,akses:['calon-wali']}));location.href='psb/akun.html';return;}
         const userDoc=await db.collection('users').doc(uname).get();
         let data;
         if(userDoc.exists){data=userDoc.data();if(!data.akses && Number(data.roleSystemVersion)!==2)data.akses=['wali'];}

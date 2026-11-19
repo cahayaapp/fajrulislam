@@ -1,5 +1,6 @@
 // Exact route inventory. Unknown pages fail closed for V2; no prefix grants.
 (function(root){'use strict';const routes={
+  "psb/pengurus.html": {"menus":["menu-psb"],"policy":"psb-staff"},
   "panduan-role-v2.html": {"menus":["menu-panduan-kerja"],"policy":"internal-utility"},
   "utilitas-role-v2.html": {"menus":["menu-kpi-role","menu-jadwal-role"],"policy":"internal-utility"},
   "home.html": {

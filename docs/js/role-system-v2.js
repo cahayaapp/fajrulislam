@@ -13,7 +13,7 @@
   const ROLE_SET = new Set(ROLE_IDS);
   const UNIT_IDS = new Set(["PUTRA", "PUTRI", "ALL"]);
   const DOMAIN_IDS = new Set(["KEPONDOKAN", "PKBM"]);
-  const BASE_MENUS = ["menu-home", "menu-profil", "menu-panduan-kerja", "menu-kpi-role", "menu-jadwal-role"];
+  const BASE_MENUS = ["menu-home", "menu-profil", "menu-panduan-kerja", "menu-kpi-role", "menu-jadwal-role", "menu-psb"];
 
   const ROLE_DEFINITIONS = Object.freeze({
     GURU_PONDOK: { label: "Guru Pondok", home: "home-guru.html?v=201", legacyRole: "guru" },
@@ -216,7 +216,7 @@
       mode: canonical ? "canonical" : "compatibility",
       roleSystemVersion: 2, roles: Object.freeze(roles), defaultRole,
       assignments, scopes: assignments, assignmentErrors,
-      unresolved, userKey: String(user.uid || user.username || "")
+      unresolved, psbOperator: user.psbStaff===true||user.username==='multazam'||user.uid==='gGuAzKpiIcNfOlh1YmCivnuIKZl1', userKey: String(user.uid || user.username || "")
     });
   }
   function storageGet(storage, key) { try { return storage?.getItem(key) || ""; } catch (_) { return ""; } }

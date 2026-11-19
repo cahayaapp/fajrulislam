@@ -121,6 +121,7 @@
       if(!['GURU_PONDOK','NAQIB','NAQIBAH','MANAJER','SUPERVISOR','DIREKTUR'].includes(role))
         out.push({...entry('menu-jadwal-role','Jadwal & Ritme Kerja','utilitas-role-v2.html?view=schedule','Lainnya'),utility:true});
     }else if(role!=='KONSELOR'&&R.can(role,'menu-profil',a))add('menu-profil','Profil Saya','profil.html?v=2','Lainnya');
+    if(role!=='WALI_SANTRI'&&s.psbOperator)add('menu-psb','PSB · Penerimaan Santri Baru','psb/pengurus.html','Manajemen');
     return out;
   }
   function audit(s){return candidates(s).map(item=>{const v=N.decision(s,item.permission,item.route);return {...item,status:v.ok?(item.conditional?'CONDITIONAL':'PASS'):'BLOCKED',reason:v.reason}})}

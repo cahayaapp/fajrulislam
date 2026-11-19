@@ -1,0 +1,21 @@
+import{createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,sendPasswordResetEmail}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import{auth,call,$,esc,message,busy,phone,errorMessage}from'./api.js?v=2';
+let signup=new URLSearchParams(location.search).get('mode')==='signup',authBusy=false,application=null;
+function authMode(){$('authTitle').textContent=signup?'Buat akun calon wali':'Masuk akun PSB';$('authSubmit').textContent=signup?'Buat akun':'Masuk';$('switchAuth').textContent=signup?'Sudah punya akun? Masuk':'Belum punya akun? Daftar';$('authHelp').textContent=signup?'Cukup email dan nomor HP untuk mulai.':'Masuk dengan email dan kata sandi akun PSB.';$('authForm').elements.phone.autocomplete=signup?'new-password':'current-password'}
+function tab(name){document.querySelectorAll('[data-panel]').forEach(e=>e.hidden=e.dataset.panel!==name);document.querySelectorAll('[data-tab]').forEach(e=>e.classList.toggle('active',e.dataset.tab===name))}
+function render(data,fill=true){application=data.application;$('authView').hidden=true;$('portal').hidden=false;$('logout').hidden=false;$('accountLabel').textContent=application.email;$('applicationStatus').textContent=application.status==='SUBMITTED'?'Pendaftaran terkirim':'Pendaftaran belum dikirim';
+ if(fill)for(const key of ['registration','waliAssessment','santriAssessment'])for(const field of $(`${key}Form`).elements)if(field.name)field.value=application[key]?.[field.name]||'';
+ $('schedule').textContent=application.schedule?`${application.schedule.date.replace('T',' · ')} WIB\n${application.schedule.location}\n${application.schedule.note||''}`:'Jadwal tes belum diumumkan.';
+ $('result').textContent=application.result?`${application.result.status.replaceAll('_',' ')}\n${application.result.message||''}`:'Hasil tes belum diumumkan.';
+ $('announcements').innerHTML=data.announcements.length?data.announcements.map(a=>`<article class="card"><h3>${esc(a.title)}</h3><p class="detail">${esc(a.body)}</p></article>`).join(''):'<p>Belum ada pengumuman.</p>';
+}
+async function load(fill=true){const uid=auth.currentUser?.uid;const data=await call('get');if(uid&&auth.currentUser?.uid===uid)render(data,fill)}
+$('switchAuth').onclick=()=>{signup=!signup;authMode()};
+$('authForm').onsubmit=e=>{e.preventDefault();busy(e.target,async()=>{authBusy=true;try{const email=e.target.elements.email.value.trim(),raw=e.target.elements.phone.value;const password=signup?phone(raw):(/^(?:\+?62|08)[\d\s()-]+$/.test(raw)?phone(raw):raw);message(signup?'Membuat akun…':'Memeriksa akun…');if(signup){await createUserWithEmailAndPassword(auth,email,password);await call('register',{phone:password});await auth.currentUser.getIdToken(true)}else{await signInWithEmailAndPassword(auth,email,password);try{await call('get')}catch(error){if(error.code!=='functions/not-found')throw error;await call('register',{phone:phone(raw)});await auth.currentUser.getIdToken(true)}}await load();e.target.elements.phone.value='';message('Akun PSB siap digunakan.')}finally{authBusy=false}})};
+$('resetPassword').onclick=()=>busy($('authView'),async()=>{const email=$('authForm').elements.email.value.trim();if(!email)throw new Error('Isi email terlebih dahulu.');await sendPasswordResetEmail(auth,email);message('Jika email terdaftar, tautan penggantian kata sandi akan dikirim.');});
+$('logout').onclick=()=>busy(document.querySelector('header'),async()=>{await signOut(auth);message('Anda sudah keluar.')});
+for(const key of ['registration','waliAssessment','santriAssessment'])$(`${key}Form`).onsubmit=e=>{e.preventDefault();busy(e.target,async()=>{await call(key,Object.fromEntries(new FormData(e.target)));message('Data tersimpan.');await load(false)})};
+$('submitApplication').onclick=()=>busy($('portal'),async()=>{await call('submit');await load(false);message('Pendaftaran terkirim untuk ditinjau pengurus.')});
+$('refresh').onclick=()=>busy($('portal'),async()=>{await load(false);message('Pengumuman diperbarui.')});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+onAuthStateChanged(auth,async user=>{if(authBusy)return;if(!user){application=null;$('portal').hidden=true;$('authView').hidden=false;$('logout').hidden=true;return}try{await load()}catch(e){$('logout').hidden=false;message(errorMessage(e),true)}});authMode();

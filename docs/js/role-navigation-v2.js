@@ -24,6 +24,7 @@
     if(menuId&&(!e.menus.includes(menuId)||!R.can(role,menuId,a)))return deny('PERMISSION_DENIED');
     // Local utilities confer no operational authority. Wali is deliberately excluded.
     if(e.policy==='internal-utility')return role!=='WALI_SANTRI'&&e.menus.some(m=>R.can(role,m,a))?{ok:true,reason:'INTERNAL_LOCAL_UTILITY'}:deny('PERMISSION_DENIED');
+    if(e.policy==='psb-staff')return role!=='WALI_SANTRI'?{ok:true,reason:'PSB_SERVER_AUTHORIZATION_REQUIRED'}:deny('PERMISSION_DENIED');
     if(e.policy==='workspace')return {ok:true,reason:'LOCAL_WORKSPACE'};
     if(e.policy==='legacy-home')return deny('LEGACY_HOME_DISABLED');
     if(e.policy==='manager-area-home')return role==='MANAJER'&&R.managerHomeFor(a).startsWith(parsed.path)&&['PUTRA','PUTRI','ALL'].includes(a.unit)?{ok:true,reason:'MANAGER_AREA_HOME'}:deny('ROLE_HOME_MISMATCH');
