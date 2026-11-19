@@ -49,6 +49,7 @@
       ].forEach(x=>add(...x));guide();
     }else if(role==='MENTOR_USRAH'){
       add('menu-mentoring-individu','Form Mentoring','pembinaan/mentor-usrah-v2.html?v=227&view=form');
+      add('menu-mentoring-tindak-lanjut','Tindak Lanjut Self Asesmen','pembinaan/mentor-usrah-v2.html?v=296&view=followup');
       add('menu-mentoring-usrah','Riwayat Mentoring','pembinaan/mentor-usrah-v2.html?v=227&view=history');
       add('menu-jurnal-liburan-monitor','Jurnal Liburan Santri','pembinaan/jurnal-liburan-monitor.html','Operasional');
     }else if(role==='KONSELOR'){

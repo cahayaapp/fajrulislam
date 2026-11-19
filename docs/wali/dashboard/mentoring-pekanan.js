@@ -34,7 +34,7 @@
             <div class="wm-identity-item"><span>Nama Santri</span><strong>${esc(row.student)}</strong></div>
             <div class="wm-identity-item"><span>Tim Mentor</span><strong>${esc(row.mentor||'—')}</strong></div>
           </section>
-          <div class="wm-reflection wm-reflection-single"><section><h3>Yang Paling Disyukuri</h3><p>${esc(row.gratitude||'Belum tercatat.')}</p></section></div>
+          ${row.appreciation||row.evaluation?`<div class="wm-reflection"><section><h3>Yang perlu diapresiasi</h3><p>${esc(row.appreciation||'—')}</p></section><section><h3>Yang perlu dievaluasi/klarifikasi</h3><p>${esc(row.evaluation||'—')}</p></section></div>`:''}<div class="wm-reflection wm-reflection-single"><section><h3>Yang Paling Disyukuri</h3><p>${esc(row.gratitude||'Belum tercatat.')}</p></section></div>
           <section class="wm-section">
             <h2 class="wm-section-title"><span class="wm-section-number">01</span>Hasil Observasi Karakter Cahaya</h2>
             <p class="wm-section-subtitle">Gambaran perkembangan karakter yang dicatat Tim Mentor selama proses pendampingan dan telah melalui proses klarifikasi atau wawancara langsung oleh Mentor dengan Ananda.</p>

@@ -177,7 +177,7 @@
     "roles": ["MENTOR_USRAH"]
   },
   "pembinaan/mentor-usrah-v2.html": {
-    "menus": ["menu-mentoring-individu", "menu-mentoring-usrah"],
+    "menus": ["menu-mentoring-individu", "menu-mentoring-tindak-lanjut", "menu-mentoring-usrah"],
     "policy": "mentor-usrah-v2"
   },
   "pembinaan/jurnal-liburan-monitor.html": {

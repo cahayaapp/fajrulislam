@@ -10,7 +10,7 @@
     const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}`;
   }
   function normalize(record,key,child){
-    if(!record||typeof record!=='object'||!name(child))return null;
+    if(!record||record.status==='DRAFT'||typeof record!=='object'||!name(child))return null;
     const student=record.namaSantri||record.santri||record.studentName;
     if(name(student)!==name(child))return null;
     const result=record.hasilTarget;
@@ -18,7 +18,7 @@
     // are never passed to the Wali renderer.
     return {id:key,date:date(record.tanggal||record.mentoringDate||record.timestamp||record.createdAt),
       student,usrah:record.usrah||record.namaUsrah||'',mentor:record.mentor||record.pelaksana||'',
-      gratitude:record.syukurPekan||record.gratitude||'',focusType:record.fokusTipe||record.focusType||'',
+      appreciation:record.appreciation||'',evaluation:record.evaluation||'',gratitude:record.syukurPekan||record.gratitude||'',focusType:record.fokusTipe||record.focusType||'',
       target:record.targetBaru||record.target||record.targetPertumbuhan||'',why:record.strongWhy||record.whySantri||'',
       strategy:record.strategi||record.strategy||'',clarified:record.cahayaKlarifikasi||null,legacyCahaya:record.checkinCahaya||null,
       result:result?{status:result.status,description:result.keterangan||'',date:date(result.dinilaiAt)}:null};
