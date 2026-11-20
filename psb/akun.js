@@ -24,8 +24,8 @@ async function signIn(identity, password){
   return signInWithEmailAndPassword(auth,identity.email,initial);
  }
 }
-function tab(name){document.querySelectorAll('[data-panel]').forEach(e=>e.hidden=e.dataset.panel!==name);document.querySelectorAll('[data-tab]').forEach(e=>{e.classList.toggle('active',e.dataset.tab===name);e.setAttribute('aria-pressed',String(e.dataset.tab===name))})}
-function render(data,fill=true){application=data.application;$('authView').hidden=true;$('portal').hidden=false;$('logout').hidden=false;$('accountLabel').textContent=accountIdentity(application);$('applicationStatus').textContent=application.status==='SUBMITTED'?'Pendaftaran terkirim':'Pendaftaran belum dikirim';
+function tab(name){closeMenu();document.querySelectorAll('[data-panel]').forEach(e=>e.hidden=e.dataset.panel!==name);document.querySelectorAll('[data-tab]').forEach(e=>{e.classList.toggle('active',e.dataset.tab===name);e.setAttribute('aria-pressed',String(e.dataset.tab===name))})}
+function render(data,fill=true){application=data.application;$('authView').hidden=true;$('portal').hidden=false;$('logout').hidden=false;$('menuToggle').hidden=false;$('accountLabel').textContent=accountIdentity(application);$('applicationStatus').textContent=application.status==='SUBMITTED'?'Pendaftaran terkirim':'Pendaftaran belum dikirim';
  const name=application.profile?.studentName||application.registration?.studentName||'';
  $('greeting').textContent=name?`Assalamu ‘alaikum, ${name}.`:'Assalamu ‘alaikum.';
  if(fill){for(const key of ['registration','waliAssessment','santriAssessment'])$(`${key}Form`).reset();$('profileForm').elements.studentName.value=name;for(const key of ['registration','waliAssessment','santriAssessment'])fillForm($(`${key}Form`),key,application[key]);$('registrationForm').elements.studentName.value=name;}
@@ -68,7 +68,7 @@ for(const key of ['registration','waliAssessment','santriAssessment'])$(`${key}F
 $('submitApplication').onclick=()=>busy($('portal'),async()=>{await call('submit');await load(false);message('Pendaftaran terkirim untuk ditinjau pengurus.')});
 $('refresh').onclick=()=>busy($('portal'),async()=>{await load(false);message('Pengumuman diperbarui.')});
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
-onAuthStateChanged(auth,async user=>{if(authBusy)return;if(!user){application=null;$('portal').hidden=true;$('authView').hidden=false;$('logout').hidden=true;return}try{await load()}catch(e){$('logout').hidden=false;message(errorMessage(e),true)}});authMode();
+onAuthStateChanged(auth,async user=>{if(authBusy)return;if(!user){application=null;closeMenu();$('menuToggle').hidden=true;$('portal').hidden=true;$('authView').hidden=false;$('logout').hidden=true;return}try{await load()}catch(e){$('logout').hidden=false;message(errorMessage(e),true)}});authMode();
 
 $('registrationFields').innerHTML=registrationMarkup();
 $('profileForm').onsubmit=e=>{e.preventDefault();busy(e.target,async()=>{await call('profile',{studentName:e.target.elements.studentName.value});await load();message('Profil diperbarui.');})};
@@ -82,3 +82,34 @@ function info(id){if(!sections.some(s=>s[0]===id))return;infoSection=id;document
 $('infoTabs').onclick=e=>{const b=e.target.closest('[data-info]');if(b)info(b.dataset.info)};
 $('infoFrame').onload=()=>info(infoSection);
 window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==$('infoFrame').contentWindow)return;if(e.data?.type==='psb-ready')info(infoSection);if(e.data?.type==='psb-select')info(e.data.id);if(e.data?.type==='psb-register')tab('registration')});
+
+// Mobile navigation keeps the existing menu cards in a dismissible drawer.
+const mobileMenuQuery=window.matchMedia('(max-width:760px)');
+function closeMenu(){
+ const wasOpen=document.body.classList.contains('menu-open');
+ document.body.classList.remove('menu-open');
+ $('menuToggle').setAttribute('aria-expanded','false');
+ $('menuBackdrop').hidden=true;
+ $('portalMenu').removeAttribute('role');$('portalMenu').removeAttribute('aria-modal');
+ if(wasOpen)$('menuToggle').focus();
+}
+$('menuToggle').onclick=()=>{
+ if(!mobileMenuQuery.matches)return;
+ if(document.body.classList.contains('menu-open')){closeMenu();return}
+ document.body.classList.add('menu-open');$('menuBackdrop').hidden=false;
+ $('menuToggle').setAttribute('aria-expanded','true');
+ $('portalMenu').setAttribute('role','dialog');$('portalMenu').setAttribute('aria-modal','true');
+ requestAnimationFrame(()=>{if(document.body.classList.contains('menu-open'))$('menuClose').focus()});
+};
+$('menuClose').onclick=closeMenu;$('menuBackdrop').onclick=closeMenu;
+mobileMenuQuery.addEventListener('change',closeMenu);
+document.addEventListener('keydown',e=>{
+ if(!document.body.classList.contains('menu-open'))return;
+ if(e.key==='Escape'){e.preventDefault();closeMenu()}
+ if(e.key==='Tab'){
+  const items=[...$('portalMenu').querySelectorAll('button')];
+  const first=items[0],last=items[items.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+ }
+});
