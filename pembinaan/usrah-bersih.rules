@@ -3,7 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Preserve the existing access policy for collections outside this competition.
     match /{collection}/{rest=**} {
-      allow read, write: if !(collection in ['usrah_bersih_202611', 'psb_applications', 'psb_announcements', 'psb_reviews', 'psb_updates']);
+      allow read, write: if !(collection in ['usrah_bersih_202611', 'psb_applications', 'psb_announcements', 'psb_reviews', 'psb_updates', 'psb_receipts']);
     }
     // PSB on Spark: owner-only applications; published updates separate from private review.
     function psbStaff() {
@@ -13,23 +13,131 @@ service cloud.firestore {
     function psbOwner(uid) { return request.auth != null && request.auth.uid == uid; }
     function psbRegistered() { return request.auth != null && exists(/databases/$(database)/documents/psb_applications/$(request.auth.uid)); }
     function text(v, max) { return v is string && v.size() <= max; }
-    function psbAssessment(v) {
-      return v is map && v.keys().hasOnly(['motivation','readiness','support'])
-        && text(v.get('motivation',''),2000) && text(v.get('readiness',''),2000) && text(v.get('support',''),2000);
-    }
-    function psbRegistration(v) {
-      return v is map && v.keys().hasOnly(['parentName','studentName','school','level','address'])
-        && text(v.get('parentName',''),2000) && text(v.get('studentName',''),2000)
-        && text(v.get('school',''),2000) && text(v.get('address',''),600)
-        && v.get('level','') in ['', 'SMP', 'SMA'];
-    }
+    function psbRegistration(v) { return v is map && v.keys().hasOnly(["studentName","birthPlace","birthDate","nisn","studentNik","address","parentPhone","school","lastEducation","level","tpa","weight","height","diseases","studentCondition","familyStatus","familyCardNumber","fatherName","fatherNik","fatherEducation","fatherJob","fatherIncome","motherName","motherNik","motherEducation","motherJob","motherIncome","parentName"]) && text(v.get('studentName',''),2000)
+      && text(v.get('birthPlace',''),2000)
+      && text(v.get('birthDate',''),2000)
+      && text(v.get('nisn',''),2000)
+      && text(v.get('studentNik',''),2000)
+      && text(v.get('address',''),600)
+      && text(v.get('parentPhone',''),2000)
+      && text(v.get('school',''),2000)
+      && text(v.get('lastEducation',''),2000)
+      && text(v.get('level',''),2000)
+      && text(v.get('tpa',''),2000)
+      && text(v.get('weight',''),2000)
+      && text(v.get('height',''),2000)
+      && v.get('diseases',[]) is list && v.get('diseases',[]).size() <= 9 && v.get('diseases',[]).hasOnly(["Magh/Asam Lambung","Penyakit Kulit (Scabies/Panu/Kurap/Gatal-Gatal)","Gigi Berlubang","Migrain","Alergi","Asma/Sesak Nafas/Infeksi Saluran Pernafasan","Amandel","Tipes","Tidak ada"])
+      && text(v.get('studentCondition',''),2000)
+      && text(v.get('familyStatus',''),2000)
+      && text(v.get('familyCardNumber',''),2000)
+      && text(v.get('fatherName',''),2000)
+      && text(v.get('fatherNik',''),2000)
+      && text(v.get('fatherEducation',''),2000)
+      && text(v.get('fatherJob',''),2000)
+      && text(v.get('fatherIncome',''),2000)
+      && text(v.get('motherName',''),2000)
+      && text(v.get('motherNik',''),2000)
+      && text(v.get('motherEducation',''),2000)
+      && text(v.get('motherJob',''),2000)
+      && text(v.get('motherIncome',''),2000)
+      && text(v.get('parentName',''),2000); }
+    function psbWali(v) { return v is map && v.keys().hasOnly(["namaWali","namaAnak","waWali","penyakit","pelanggaran","motivasiWali","keuangan","hadir","sikap","agree","motivation","readiness","support"]) && text(v.get('namaWali',''),2000)
+      && text(v.get('namaAnak',''),2000)
+      && text(v.get('waWali',''),2000)
+      && text(v.get('penyakit',''),2000)
+      && text(v.get('pelanggaran',''),2000)
+      && text(v.get('motivasiWali',''),2000)
+      && text(v.get('keuangan',''),2000)
+      && text(v.get('hadir',''),2000)
+      && text(v.get('sikap',''),2000)
+      && v.get('agree',[]) is list && v.get('agree',[]).size() <= 1 && v.get('agree',[]).hasOnly(["on"]); }
+    function psbSantri(v) { return v is map && v.keys().hasOnly(["nama","sekolah","wa","skalaTekad","pendorong","shalat","ngaji","responEjek","pernahBully","sukaPondok","takutPondok","pelanggaranList","kelebihan","motivation","readiness","support"]) && text(v.get('nama',''),2000)
+      && text(v.get('sekolah',''),2000)
+      && text(v.get('wa',''),2000)
+      && text(v.get('skalaTekad',''),2000)
+      && text(v.get('pendorong',''),2000)
+      && text(v.get('shalat',''),2000)
+      && text(v.get('ngaji',''),2000)
+      && text(v.get('responEjek',''),2000)
+      && text(v.get('pernahBully',''),2000)
+      && text(v.get('sukaPondok',''),2000)
+      && text(v.get('takutPondok',''),2000)
+      && v.get('pelanggaranList',[]) is list && v.get('pelanggaranList',[]).size() <= 6 && v.get('pelanggaranList',[]).hasOnly(["Merokok","Pacaran","Kabur","Begadang","Bully","Bersih"])
+      && text(v.get('kelebihan',''),2000); }
     function psbValid(d) {
-      return d.keys().hasOnly(['uid','email','phone','status','createdAt','updatedAt','contentVersion','registration','waliAssessment','santriAssessment','submittedAt'])
+      return d.keys().hasOnly(['uid','email','phone','status','createdAt','updatedAt','contentVersion','registration','waliAssessment','santriAssessment','submittedAt','profile','receiptName'])
         && d.status in ['DRAFT','SUBMITTED'] && d.updatedAt == request.time
-        && psbRegistration(d.get('registration',{})) && psbAssessment(d.get('waliAssessment',{})) && psbAssessment(d.get('santriAssessment',{}))
-        && (d.status == 'DRAFT' || (d.registration.parentName.size() > 0 && d.registration.studentName.size() > 0
-          && d.registration.level in ['SMP','SMA'] && d.waliAssessment.motivation.size() > 0 && d.santriAssessment.motivation.size() > 0));
+        && psbRegistration(d.get('registration',{})) && psbWali(d.get('waliAssessment',{})) && psbSantri(d.get('santriAssessment',{}))
+        && text(d.get('receiptName',''),200)
+        && d.get('profile',{}) is map && d.get('profile',{}).keys().hasOnly(['studentName']) && text(d.get('profile',{}).get('studentName',''),120);
     }
+    function completeregistration(v){return v.get('studentName','').size() > 0
+      && v.get('birthPlace','').size() > 0
+      && v.get('birthDate','').size() > 0
+      && v.get('nisn','').size() > 0
+      && v.get('studentNik','').size() > 0
+      && v.get('address','').size() > 0
+      && v.get('parentPhone','').size() > 0
+      && v.get('school','').size() > 0
+      && v.get('lastEducation','').size() > 0
+      && v.get('lastEducation','') in ["SD/MI","SMP/MTS","SMA/MA"]
+      && v.get('level','').size() > 0
+      && v.get('level','') in ["SMP","SMA"]
+      && v.get('tpa','').size() > 0
+      && v.get('weight','').size() > 0
+      && v.get('height','').size() > 0
+      && v.get('diseases',[]).size() > 0
+      && v.get('diseases',[]).hasOnly(["Magh/Asam Lambung","Penyakit Kulit (Scabies/Panu/Kurap/Gatal-Gatal)","Gigi Berlubang","Migrain","Alergi","Asma/Sesak Nafas/Infeksi Saluran Pernafasan","Amandel","Tipes","Tidak ada"])
+      && v.get('studentCondition','').size() > 0
+      && v.get('studentCondition','') in ["Orang Tua Lengkap","Yatim","Piatu","Yatim Piatu"]
+      && v.get('familyStatus','').size() > 0
+      && v.get('familyStatus','') in ["Anak Kandung","Anak Angkat/Adopsi","Anak Tiri"]
+      && v.get('familyCardNumber','').size() > 0
+      && v.get('fatherName','').size() > 0
+      && v.get('fatherNik','').size() > 0
+      && v.get('fatherEducation','').size() > 0
+      && v.get('fatherEducation','') in ["SD","SMP","SMA","D3","S1","S2"]
+      && v.get('fatherJob','').size() > 0
+      && v.get('fatherJob','') in ["Pegawai Negeri Sipil (PNS)","Pegawai Pemerintah dengan Perjanjian Kerja (P3K)","TNI","POLRI","Guru","Dosen","Karyawan Swasta","Pegawai BUMN","Pegawai Honorer","Buruh Harian Lepas","Wiraswasta","Tenaga Kesehatan (Dokter/Perawat)","Pedagang","Nelayan","Petani","Pensiunan","Tidak Bekerja"]
+      && v.get('fatherIncome','').size() > 0
+      && v.get('fatherIncome','') in ["Tidak Berpenghasilan","Rp. 500.000 – Rp. 1.000.000","Rp. 1.000.000 – Rp. 2.000.000","Rp. 2.000.000 – Rp. 3.000.000","Rp. 3.000.000 – Rp. 4.000.000","Rp. 4.000.000 – Rp. 5.000.000","> Rp. 5.000.000"]
+      && v.get('motherName','').size() > 0
+      && v.get('motherNik','').size() > 0
+      && v.get('motherEducation','').size() > 0
+      && v.get('motherEducation','') in ["SD","SMP","SMA","D3","S1","S2"]
+      && v.get('motherJob','').size() > 0
+      && v.get('motherJob','') in ["Pegawai Negeri Sipil (PNS)","Pegawai Pemerintah dengan Perjanjian Kerja (P3K)","TNI","POLRI","Guru","Dosen","Karyawan Swasta","Pegawai BUMN","Pegawai Honorer","Wiraswasta","Tenaga Kesehatan (Dokter/Perawat/Bidan)","Pedagang","Nelayan","Petani","Ibu Rumah Tangga","Pensiunan"]
+      && v.get('motherIncome','').size() > 0
+      && v.get('motherIncome','') in ["Tidak Berpenghasilan","Rp. 500.000 – Rp. 1.000.000","Rp. 1.000.000 – Rp. 2.000.000","Rp. 2.000.000 – Rp. 3.000.000","Rp. 3.000.000 – Rp. 4.000.000","Rp. 4.000.000 – Rp. 5.000.000","> Rp. 5.000.000"]
+      && v.get('parentName','').size() > 0;}
+    function completesantriAssessment(v){return v.get('nama','').size() > 0
+      && v.get('sekolah','').size() > 0
+      && v.get('wa','').size() > 0
+      && v.get('pendorong','') in ["Sendiri","Ortu","Bersama"]
+      && v.get('shalat','').size() > 0
+      && v.get('shalat','') in ["Lengkap","BolongDikit","SeringBolong"]
+      && v.get('ngaji','').size() > 0
+      && v.get('ngaji','') in ["TiapHari","Mingguan","Jarang"]
+      && v.get('responEjek','').size() > 0
+      && v.get('responEjek','') in ["Diam","BalasLisan","BalasFisik"]
+      && v.get('pernahBully','') in ["Tidak","Ya"]
+      && v.get('sukaPondok','').size() > 0
+      && v.get('takutPondok','').size() > 0
+      && v.get('pelanggaranList',[]).hasOnly(["Merokok","Pacaran","Kabur","Begadang","Bully","Bersih"])
+      && v.get('kelebihan','').size() > 0;}
+    function completewaliAssessment(v){return v.get('namaWali','').size() > 0
+      && v.get('namaAnak','').size() > 0
+      && v.get('waWali','').size() > 0
+      && v.get('motivasiWali','').size() > 0
+      && v.get('motivasiWali','') in ["VisiMisi","Mandiri","BiayaLokasi"]
+      && v.get('keuangan','').size() > 0
+      && v.get('keuangan','') in ["Sanggup","ButuhBicara"]
+      && v.get('hadir','').size() > 0
+      && v.get('hadir','') in ["Ya","Tidak"]
+      && v.get('sikap','').size() > 0
+      && v.get('sikap','') in ["","Tabayyun","Pasrah","Protes"]
+      && v.get('agree',[]).size() > 0
+      && v.get('agree',[]).hasOnly(["on"]);}
     match /psb_applications/{uid} {
       allow get: if psbOwner(uid) || psbStaff();
       allow list: if psbStaff() && request.query.limit <= 300;
@@ -38,7 +146,18 @@ service cloud.firestore {
         && request.resource.data.phone.matches('08[0-9]{8,12}') && request.resource.data.createdAt == request.time
         && request.resource.data.contentVersion == 'DUMMY_V1' && request.resource.data.status == 'DRAFT';
       allow update: if psbOwner(uid) && psbValid(request.resource.data)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registration','waliAssessment','santriAssessment','status','submittedAt','updatedAt']);
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['submittedAt','status']) || request.resource.data.status == 'DRAFT' || (completeregistration(request.resource.data.get('registration',{})) && completewaliAssessment(request.resource.data.get('waliAssessment',{})) && completesantriAssessment(request.resource.data.get('santriAssessment',{})) && exists(/databases/$(database)/documents/psb_receipts/$(uid))))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registration','waliAssessment','santriAssessment','status','submittedAt','updatedAt','profile','receiptName']);
+    }
+    match /psb_receipts/{uid} {
+      allow get: if psbOwner(uid) || psbStaff();
+      allow create, update: if psbOwner(uid) && psbRegistered()
+        && request.resource.data.keys().hasOnly(['name','type','size','data','updatedAt'])
+        && text(request.resource.data.name,200) && request.resource.data.name.size() > 0
+        && request.resource.data.type in ['image/jpeg','image/png','image/webp','application/pdf']
+        && request.resource.data.size is int && request.resource.data.size > 0 && request.resource.data.size <= 614400
+        && text(request.resource.data.data,819200) && request.resource.data.data.size() > 0
+        && request.resource.data.updatedAt == request.time;
     }
     match /psb_reviews/{uid} {
       allow read: if psbStaff();

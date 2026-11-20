@@ -29,3 +29,12 @@ Pemberian/pencabutan claim tersedia di `push-backend/functions/scripts/set-psb-s
 Akun baru memilih email atau nomor HP. Nomor HP dinormalisasi ke 08 dan dipetakan ke identifier internal `08…@phone.psb.cahayaapp.invalid` untuk Firebase Email/Password; bukan alamat email yang menerima pesan dan bukan verifikasi SMS. Identifier ini tidak ditampilkan ke pengguna atau pengurus. Dokumen Firestore tetap terikat ke UID dan token email, sehingga aturan akses tidak berubah.
 
 Akun email lama tetap login dengan email; nomor kontak bukan alias login akun tersebut. Password awal tetap nomor HP. Login mencoba password persis terlebih dahulu, lalu normalisasi nomor hanya untuk kompatibilitas password awal jika autentikasi gagal. Pemulihan email hanya untuk akun email; pengguna akun nomor HP diarahkan menghubungi pengurus untuk penanganan manual jika lupa password. Tidak ada lookup publik nomor HP ke email, SMS, atau Cloud Functions.
+
+### Portal formulir lengkap (November 2026)
+
+- Nama calon santri disimpan di `application.profile.studentName`; akun lama memakai nama dari pendaftaran sampai profil diperbarui.
+- Informasi menggunakan landing page yang sama dalam iframe asal yang sama. Pesan `postMessage` memeriksa origin dan sumber; pergantian subtab tidak memuat ulang dokumen.
+- Formulir dan label asesmen dipetakan di `form-schema.js`. Pertanyaan/pilihan diambil dari halaman publik `psb.cahayaapp.com/santri.html` dan `wali.html`; roster nama lama diganti identitas akun sendiri. Nilai lama tetap terbaca pengurus.
+- Bukti transfer disimpan terpisah di `psb_receipts/{uid}` (maksimal 600 KiB; JPG/PNG/WebP/PDF), hanya dapat dibaca pemilik dan pengurus PSB. Tidak menggunakan Cloud Storage atau Cloud Functions berbayar. Unduhan memakai blob lokal, tanpa URL publik.
+- Jalankan `node tests/psb-forms.mjs` untuk validasi formulir, identitas, pilihan, persetujuan, dan berkas.
+- **Urutan rilis:** deploy aturan `pembinaan/usrah-bersih.rules` terlebih dahulu, baru terbitkan `docs/psb`. Jangan menerbitkan frontend baru sebelum aturan sukses.

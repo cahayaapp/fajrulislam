@@ -1,3 +1,4 @@
+import {schemas,cleanForm,validateForm} from './form-schema.js';
 import {normalizePhone} from './identity.js?v=1';
 import{initializeApp,getApps,getApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import{getAuth}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -10,7 +11,7 @@ export async function call(action,payload={}){
  const user=auth.currentUser;if(!user)throw Error('Silakan masuk terlebih dahulu.');
  const own=doc(db,'psb_applications',user.uid),target=doc(db,'psb_applications',payload.uid||user.uid);
  if(action==='register'){
-  const mobile=phone(payload.phone);await runTransaction(db,async tx=>{const snap=await tx.get(own);if(!snap.exists())tx.set(own,{uid:user.uid,email:user.email,phone:mobile,status:'DRAFT',createdAt:serverTimestamp(),updatedAt:serverTimestamp(),contentVersion:'DUMMY_V1'})});return{ok:true};
+  const mobile=phone(payload.phone);await runTransaction(db,async tx=>{const snap=await tx.get(own);if(!snap.exists())tx.set(own,{uid:user.uid,email:user.email,phone:mobile,status:'DRAFT',createdAt:serverTimestamp(),updatedAt:serverTimestamp(),contentVersion:'DUMMY_V1',profile:{studentName:clean(payload.studentName,120)}})});return{ok:true};
  }
  if(action==='get'){
   const snap=await getDoc(own);if(!snap.exists())throw Object.assign(Error('Akun belum terdaftar sebagai calon wali.'),{code:'functions/not-found'});
@@ -18,11 +19,14 @@ export async function call(action,payload={}){
   return{application:{...snap.data(),...updates.data()},announcements:announcements.docs.map(d=>({id:d.id,...d.data()}))};
  }
  if(['registration','waliAssessment','santriAssessment'].includes(action)){
-  const data=action==='registration'?values(payload,['parentName','studentName','school','level','address']):values(payload,['motivation','readiness','support']);await updateDoc(own,{[action]:data,updatedAt:serverTimestamp()});return{ok:true};
+  const data=cleanForm(action,payload);validateForm(action,data);if(action==='registration'){await runTransaction(db,async tx=>{const snap=await tx.get(own),d=snap.data(),name=data.studentName;const patch={registration:data,profile:{studentName:name},updatedAt:serverTimestamp()};if(d.waliAssessment?.namaAnak)patch.waliAssessment={...d.waliAssessment,namaAnak:name};if(d.santriAssessment?.nama)patch.santriAssessment={...d.santriAssessment,nama:name};tx.update(own,patch)});}else await updateDoc(own,{[action]:data,updatedAt:serverTimestamp()});return{ok:true};
  }
  if(action==='submit'){
-  await runTransaction(db,async tx=>{const snap=await tx.get(own),d=snap.data();if(!d?.registration?.parentName||!d.registration?.studentName||!d.registration?.level||!d.waliAssessment?.motivation||!d.santriAssessment?.motivation)throw Error('Lengkapi pendaftaran dan kedua asesmen sebelum mengirim.');tx.update(own,{status:'SUBMITTED',submittedAt:serverTimestamp(),updatedAt:serverTimestamp()})});return{ok:true};
+  await runTransaction(db,async tx=>{const snap=await tx.get(own),d=snap.data();for(const key of Object.keys(schemas))validateForm(key,d?.[key]);const receipt=await tx.get(doc(db,'psb_receipts',user.uid));if(!receipt.exists())throw Error('Unggah bukti pembayaran terlebih dahulu.');tx.update(own,{status:'SUBMITTED',submittedAt:serverTimestamp(),updatedAt:serverTimestamp()})});return{ok:true};
  }
+ if(action==='profile'){const name=clean(payload.studentName,120);if(!name)throw Error('Isi nama calon santri.');await runTransaction(db,async tx=>{const snap=await tx.get(own),d=snap.data();const patch={profile:{studentName:name},updatedAt:serverTimestamp()};if(d.registration)patch.registration={...d.registration,studentName:name};if(d.waliAssessment?.namaAnak)patch.waliAssessment={...d.waliAssessment,namaAnak:name};if(d.santriAssessment?.nama)patch.santriAssessment={...d.santriAssessment,nama:name};tx.update(own,patch)});return{ok:true}}
+ if(action==='receipt'){const batch=writeBatch(db);batch.set(doc(db,'psb_receipts',user.uid),{name:clean(payload.name,200),type:payload.type,size:payload.size,data:payload.data,updatedAt:serverTimestamp()});batch.update(own,{receiptName:clean(payload.name,200),updatedAt:serverTimestamp()});await batch.commit();return{ok:true}}
+ if(action==='getReceipt'){const snap=await getDoc(doc(db,'psb_receipts',payload.uid||user.uid));return{receipt:snap.exists()?snap.data():null}}
  if(action==='list'){const snap=await getDocs(query(collection(db,'psb_applications'),orderBy('createdAt','desc'),limit(300)));return{applications:snap.docs.map(d=>d.data())}}
  if(action==='detail'){const [snap,review,updates]=await Promise.all([getDoc(target),getDoc(doc(db,'psb_reviews',payload.uid)),getDoc(doc(db,'psb_updates',payload.uid))]);if(!snap.exists())throw Error('Pendaftar tidak ditemukan.');return{application:{...snap.data(),...updates.data(),...review.data()}}}
  if(action==='interview'){await setDoc(doc(db,'psb_reviews',payload.uid),{interview:{...values(payload,['date','interviewer','notes','recommendation']),updatedBy:user.uid,updatedAt:new Date().toISOString()}},{merge:true});return{ok:true}}
