@@ -2,7 +2,7 @@ import {schemas} from './form-schema.js';
 import {downloadReceipt} from './portal-forms.js';
 import {accountIdentity, phoneFromAuthEmail} from './identity.js?v=1';
 import{onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import{auth,call,$,esc,message,busy,errorMessage}from'./api.js?v=4';
+import{auth,call,$,esc,message,busy,errorMessage}from'./api.js?v=5';
 let rows=[],selected='',token=0;
 const field=(label,value)=>`<div class="row"><b>${esc(label)}</b><div class="detail">${esc(value||'Belum diisi')}</div></div>`;
 function list(){const q=$('search').value.toLowerCase(),shown=rows.filter(x=>`${x.profile?.studentName} ${x.registration?.parentName} ${x.registration?.studentName} ${accountIdentity(x)} ${x.phone}`.toLowerCase().includes(q));$('count').textContent=`${shown.length} pendaftar · maksimal 300 terbaru`;$('applicants').innerHTML=shown.length?shown.map(x=>`<article class="row"><h3>${esc(x.profile?.studentName||x.registration?.studentName||'Nama belum diisi')}</h3><p class="muted">${esc(accountIdentity(x))} · ${x.status==='SUBMITTED'?'Terkirim':'Draft'}</p><button data-open="${esc(x.uid)}">Lihat data</button></article>`).join(''):'<p>Belum ada pendaftar yang sesuai.</p>'}

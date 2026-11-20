@@ -64,10 +64,12 @@ service cloud.firestore {
       && text(v.get('takutPondok',''),2000)
       && v.get('pelanggaranList',[]) is list && v.get('pelanggaranList',[]).size() <= 6 && v.get('pelanggaranList',[]).hasOnly(["Merokok","Pacaran","Kabur","Begadang","Bully","Bersih"])
       && text(v.get('kelebihan',''),2000); }
+    function psbUnchanged(d, key) { return request.method == 'update' && d.get(key,{}) == resource.data.get(key,{}); }
+    function psbNameOnly(d, key, name) { return request.method == 'update' && key in resource.data && d[key].diff(resource.data[key]).affectedKeys().hasOnly([name]) && text(d[key].get(name,''),120); }
     function psbValid(d) {
       return d.keys().hasOnly(['uid','email','phone','status','createdAt','updatedAt','contentVersion','registration','waliAssessment','santriAssessment','submittedAt','profile','receiptName'])
         && d.status in ['DRAFT','SUBMITTED'] && d.updatedAt == request.time
-        && psbRegistration(d.get('registration',{})) && psbWali(d.get('waliAssessment',{})) && psbSantri(d.get('santriAssessment',{}))
+        && (!('registration' in d) || psbUnchanged(d,'registration') || psbNameOnly(d,'registration','studentName') || psbRegistration(d.registration)) && (!('waliAssessment' in d) || psbUnchanged(d,'waliAssessment') || psbNameOnly(d,'waliAssessment','namaAnak') || psbWali(d.waliAssessment)) && (!('santriAssessment' in d) || psbUnchanged(d,'santriAssessment') || psbNameOnly(d,'santriAssessment','nama') || psbSantri(d.santriAssessment))
         && text(d.get('receiptName',''),200)
         && d.get('profile',{}) is map && d.get('profile',{}).keys().hasOnly(['studentName']) && text(d.get('profile',{}).get('studentName',''),120);
     }

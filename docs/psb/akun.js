@@ -1,6 +1,6 @@
 import {registrationMarkup,readForm,fillForm,readReceipt,downloadReceipt} from './portal-forms.js?v=2';
 import{createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,sendPasswordResetEmail}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import{auth,call,$,esc,message,busy,phone,errorMessage}from'./api.js?v=4';
+import{auth,call,$,esc,message,busy,phone,errorMessage}from'./api.js?v=5';
 import {loginIdentity, accountIdentity} from './identity.js?v=1';
 let signup=new URLSearchParams(location.search).get('mode')==='signup',authBusy=false,application=null;
 function authMode(){
