@@ -1,4 +1,4 @@
-import {registrationMarkup,readForm,fillForm,readReceipt,downloadReceipt} from './portal-forms.js';
+import {registrationMarkup,readForm,fillForm,readReceipt,downloadReceipt} from './portal-forms.js?v=2';
 import{createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,sendPasswordResetEmail}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import{auth,call,$,esc,message,busy,phone,errorMessage}from'./api.js?v=4';
 import {loginIdentity, accountIdentity} from './identity.js?v=1';
@@ -75,7 +75,7 @@ $('profileForm').onsubmit=e=>{e.preventDefault();busy(e.target,async()=>{await c
 $('viewReceipt').onclick=()=>busy($('registrationForm'),async()=>downloadReceipt((await call('getReceipt')).receipt));
 $('santri-skalaTekad').oninput=e=>$('santri-valTekad').textContent=e.target.value;
 for(const [form,name,exclusive] of [[$('registrationForm'),'diseases','Tidak ada'],[$('santriAssessmentForm'),'pelanggaranList','Bersih']])form.addEventListener('change',e=>{if(e.target.name!==name||!e.target.checked)return;for(const el of form.querySelectorAll(`[name="${name}"]`))if(el!==e.target&&(e.target.value===exclusive||el.value===exclusive))el.checked=false});
-const sections=[['testimoni','Testimoni'],['alumni','Alumni'],['mengenal','Mengenal Cahaya'],['pengasuh','Pengasuh'],['pendidikan','Kurikulum'],['karakter','Penanaman karakter'],['minat-bakat','Minat & bakat'],['digital','Digitalisasi'],['jenjang','Jenjang pendidikan'],['biaya-psb','Biaya PSB'],['syarat-ketentuan','Syarat & ketentuan'],['pendaftaran','Alur pendaftaran']];
+const sections=[['testimoni','Testimoni'],['alumni','Alumni'],['mengenal','Mengenal Cahaya'],['pengasuh','Pengasuh'],['pendidikan','Kurikulum'],['karakter','Penanaman karakter'],['minat-bakat','Minat & bakat'],['digital','Digitalisasi'],['jenjang','Jenjang pendidikan'],['biaya-psb','Biaya PSB']];
 let infoSection='testimoni';
 $('infoTabs').innerHTML=sections.map(([id,label])=>`<button type="button" data-info="${id}" aria-pressed="${id===infoSection}">${label}</button>`).join('');
 function info(id){if(!sections.some(s=>s[0]===id))return;infoSection=id;document.querySelectorAll('[data-info]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.info===id)));$('infoFrame').contentWindow.postMessage({type:'psb-section',id},location.origin)}
