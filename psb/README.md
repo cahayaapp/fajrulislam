@@ -23,3 +23,9 @@ Pemberian/pencabutan claim tersedia di `push-backend/functions/scripts/set-psb-s
 ## Verifikasi
 
 `tests/psb-browser.cjs` memakai Firebase tiruan untuk menguji signup, pendaftaran, asesmen, wawancara, jadwal dan hasil. Pengujian produksi memakai satu akun sementara dan membersihkannya setelah memverifikasi akses pemilik serta penolakan membaca data orang lain, catatan internal, dan menulis hasil sendiri.
+
+## Identitas login email atau nomor HP
+
+Akun baru memilih email atau nomor HP. Nomor HP dinormalisasi ke 08 dan dipetakan ke identifier internal `08…@phone.psb.cahayaapp.invalid` untuk Firebase Email/Password; bukan alamat email yang menerima pesan dan bukan verifikasi SMS. Identifier ini tidak ditampilkan ke pengguna atau pengurus. Dokumen Firestore tetap terikat ke UID dan token email, sehingga aturan akses tidak berubah.
+
+Akun email lama tetap login dengan email; nomor kontak bukan alias login akun tersebut. Password awal tetap nomor HP. Login mencoba password persis terlebih dahulu, lalu normalisasi nomor hanya untuk kompatibilitas password awal jika autentikasi gagal. Pemulihan email hanya untuk akun email; pengguna akun nomor HP diarahkan menghubungi pengurus untuk penanganan manual jika lupa password. Tidak ada lookup publik nomor HP ke email, SMS, atau Cloud Functions.

@@ -1,3 +1,4 @@
+import {normalizePhone} from './identity.js?v=1';
 import{initializeApp,getApps,getApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import{getAuth}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import{getFirestore,doc,collection,getDoc,getDocs,setDoc,updateDoc,addDoc,query,orderBy,limit,runTransaction,writeBatch,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -31,7 +32,7 @@ export async function call(action,payload={}){
  throw Error('Tindakan tidak dikenal.');
 }
 export const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export function errorMessage(e){return ({'permission-denied':'Akses PSB belum tersedia untuk akun ini. Akun multazam perlu keluar lalu masuk kembali.','unavailable':'Koneksi database belum tersedia. Coba lagi nanti.','auth/email-already-in-use':'Email sudah terdaftar. Silakan masuk.','auth/invalid-email':'Periksa kembali alamat email.','auth/invalid-credential':'Email atau kata sandi tidak sesuai.','auth/wrong-password':'Email atau kata sandi tidak sesuai.','auth/weak-password':'Kata sandi belum memenuhi ketentuan akun.','auth/too-many-requests':'Terlalu banyak percobaan. Coba beberapa saat lagi.','functions/unavailable':'Layanan PSB belum tersedia. Coba lagi nanti.','functions/internal':'Layanan PSB belum siap. Hubungi pengurus.'})[e.code]||e.message||'Belum berhasil. Silakan coba lagi.'}
+export function errorMessage(e){return ({'permission-denied':'Akses PSB belum tersedia untuk akun ini. Akun multazam perlu keluar lalu masuk kembali.','unavailable':'Koneksi database belum tersedia. Coba lagi nanti.','auth/email-already-in-use':'Email atau nomor HP sudah terdaftar. Silakan masuk.','auth/invalid-email':'Periksa kembali alamat email.','auth/invalid-credential':'Email/nomor HP atau password tidak sesuai.','auth/wrong-password':'Email/nomor HP atau password tidak sesuai.','auth/weak-password':'Kata sandi belum memenuhi ketentuan akun.','auth/too-many-requests':'Terlalu banyak percobaan. Coba beberapa saat lagi.','functions/unavailable':'Layanan PSB belum tersedia. Coba lagi nanti.','functions/internal':'Layanan PSB belum siap. Hubungi pengurus.'})[e.code]||e.message||'Belum berhasil. Silakan coba lagi.'}
 export function message(text,error=false){$('message').textContent=text;$('message').classList.toggle('error',error)}
 export async function busy(form,fn){const buttons=[...form.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);try{await fn()}catch(e){console.error(e);message(errorMessage(e),true)}finally{buttons.forEach(b=>b.disabled=false)}}
-export const phone=v=>{let n=v.trim().replace(/[\s()+-]/g,'');if(n.startsWith('62'))n='0'+n.slice(2);if(!/^08\d{8,12}$/.test(n))throw new Error('Gunakan nomor HP yang valid, format 08… atau +62….');return n};
+export const phone=normalizePhone;
