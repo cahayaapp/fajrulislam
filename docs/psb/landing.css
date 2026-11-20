@@ -627,3 +627,12 @@
 .testimonial-opening{min-height:100svh;display:flex;flex-direction:column;background:#fbf7ef}
 .testimonial-opening .testimonial-next{flex:1;align-content:flex-start;align-items:flex-start;padding-bottom:100px}
 @media(max-width:600px){.testimonial-opening .testimonial-next{flex:none;align-items:center;padding-bottom:70px}}
+
+/* Quiet animated ornament beneath the testimonial actions. */
+.testimonial-opening .testimonial-next{position:relative;isolation:isolate;overflow:hidden}
+.testimonial-opening .testimonial-next a{position:relative;z-index:1}
+.testimonial-opening .testimonial-next:before{content:'';position:absolute;z-index:-1;inset:48px -100px -60px;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23bd944b' stroke-width='.8'%3E%3Cpath d='M50 12 61 29 79 21 71 39 88 50 71 61 79 79 61 71 50 88 39 71 21 79 29 61 12 50 29 39 21 21 39 29Z'/%3E%3Cpath d='M50 29 71 50 50 71 29 50Z'/%3E%3Cpath d='M0 0 21 21M79 21 100 0M79 79 100 100M21 79 0 100'/%3E%3C/g%3E%3C/svg%3E");background-size:100px 100px;opacity:.36;mask-image:linear-gradient(transparent,#000 75%);animation:ornament-drift 28s linear infinite}
+.testimonial-opening .testimonial-next:after{content:'';position:absolute;z-index:-1;pointer-events:none;left:15%;right:15%;bottom:-100px;height:200px;border-radius:50%;background:radial-gradient(ellipse,#dcb85a30,transparent 68%);animation:ornament-glow 8s ease-in-out infinite alternate}
+@keyframes ornament-drift{from{transform:translateX(0)}to{transform:translateX(100px)}}
+@keyframes ornament-glow{from{opacity:.4;transform:scaleX(.8)}to{opacity:1;transform:scaleX(1.2)}}
+@media(prefers-reduced-motion:reduce){.testimonial-opening .testimonial-next:before,.testimonial-opening .testimonial-next:after{animation:none}}
