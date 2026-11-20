@@ -67,7 +67,11 @@ document.querySelectorAll('[data-program]').forEach(button => {
     }));
     const hasPhotos = activeProgram.photos.length > 0;
     galleryView.hidden = !hasPhotos;
-    programDialog.querySelector('.program-gallery-empty').hidden = hasPhotos;
+    const empty = programDialog.querySelector('.program-gallery-empty');
+    empty.hidden = hasPhotos;
+    const symbol = button.closest('article')?.querySelector('.program-symbol');
+    empty.replaceChildren();
+    if (!hasPhotos && symbol) empty.append(symbol.cloneNode(true));
     galleryView.querySelector('.program-gallery-controls').hidden = activeProgram.photos.length < 2;
     const thumbnails = galleryView.querySelector('.program-thumbnails');
     thumbnails.replaceChildren(...activeProgram.photos.map((photo, i) => {
