@@ -83,33 +83,9 @@ $('infoTabs').onclick=e=>{const b=e.target.closest('[data-info]');if(b)info(b.da
 $('infoFrame').onload=()=>info(infoSection);
 window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==$('infoFrame').contentWindow)return;if(e.data?.type==='psb-ready')info(infoSection);if(e.data?.type==='psb-select')info(e.data.id);if(e.data?.type==='psb-register')tab('registration')});
 
-// Mobile navigation keeps the existing menu cards in a dismissible drawer.
-const mobileMenuQuery=window.matchMedia('(max-width:760px)');
-function closeMenu(){
- const wasOpen=document.body.classList.contains('menu-open');
- document.body.classList.remove('menu-open');
- $('menuToggle').setAttribute('aria-expanded','false');
- $('menuBackdrop').hidden=true;
- $('portalMenu').removeAttribute('role');$('portalMenu').removeAttribute('aria-modal');
- if(wasOpen)$('menuToggle').focus();
-}
+// Header shortcut returns to the app menu cards on the portal home.
+function closeMenu(){}
 $('menuToggle').onclick=()=>{
- if(!mobileMenuQuery.matches)return;
- if(document.body.classList.contains('menu-open')){closeMenu();return}
- document.body.classList.add('menu-open');$('menuBackdrop').hidden=false;
- $('menuToggle').setAttribute('aria-expanded','true');
- $('portalMenu').setAttribute('role','dialog');$('portalMenu').setAttribute('aria-modal','true');
- requestAnimationFrame(()=>{if(document.body.classList.contains('menu-open'))$('menuClose').focus()});
+ $('portalMenu').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});
+ $('portalMenu').querySelector('[data-tab].active')?.focus({preventScroll:true});
 };
-$('menuClose').onclick=closeMenu;$('menuBackdrop').onclick=closeMenu;
-mobileMenuQuery.addEventListener('change',closeMenu);
-document.addEventListener('keydown',e=>{
- if(!document.body.classList.contains('menu-open'))return;
- if(e.key==='Escape'){e.preventDefault();closeMenu()}
- if(e.key==='Tab'){
-  const items=[...$('portalMenu').querySelectorAll('button')];
-  const first=items[0],last=items[items.length-1];
-  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
-  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
- }
-});
