@@ -23,7 +23,7 @@ async function signIn(identity, password){
   return signInWithEmailAndPassword(auth,identity.email,initial);
  }
 }
-function tab(name){document.querySelectorAll('[data-panel]').forEach(e=>e.hidden=e.dataset.panel!==name);document.querySelectorAll('[data-tab]').forEach(e=>e.classList.toggle('active',e.dataset.tab===name))}
+function tab(name){document.querySelectorAll('[data-panel]').forEach(e=>e.hidden=e.dataset.panel!==name);document.querySelectorAll('[data-tab]').forEach(e=>{e.classList.toggle('active',e.dataset.tab===name);e.setAttribute('aria-pressed',String(e.dataset.tab===name))})}
 function render(data,fill=true){application=data.application;$('authView').hidden=true;$('portal').hidden=false;$('logout').hidden=false;$('accountLabel').textContent=accountIdentity(application);$('applicationStatus').textContent=application.status==='SUBMITTED'?'Pendaftaran terkirim':'Pendaftaran belum dikirim';
  if(fill)for(const key of ['registration','waliAssessment','santriAssessment'])for(const field of $(`${key}Form`).elements)if(field.name)field.value=application[key]?.[field.name]||'';
  $('schedule').textContent=application.schedule?`${application.schedule.date.replace('T',' · ')} WIB\n${application.schedule.location}\n${application.schedule.note||''}`:'Jadwal tes belum diumumkan.';
