@@ -354,11 +354,18 @@
 #rihlah .rihlah-photo:hover img{transform:none}
 #rihlah .rihlah-photo:focus-visible{outline:3px solid #35634a;outline-offset:-3px}
 
-.testimonial-slide[hidden]{display:none!important}
-.testimonial-navigation{max-width:1480px;width:calc(100% - 64px);margin:18px auto 0;display:flex;align-items:center;justify-content:space-between;padding:0 14px;color:#56654f;font-size:.85rem}
-.story-buttons{display:flex;gap:10px}
-.story-buttons button{display:grid;place-items:center;width:48px;height:48px;border:1px solid #cbd3c5;border-radius:50%;background:#fafbf6;color:#203e31;font-size:1.35rem;cursor:pointer;transition:background .2s}
-.story-buttons button:hover{background:#e5eadc}
-.story-buttons button:focus-visible{outline:3px solid #9e8654;outline-offset:3px}
 .testimonial-photo-syauqi>img{object-position:50% 48%}
-@media(max-width:800px){.testimonial-navigation{width:calc(100% - 32px);padding:0 4px;margin-top:14px}.testimonial-photo-syauqi{height:clamp(420px,125vw,620px)}.testimonial-photo-syauqi>img{object-position:center 45%}}
+@media(max-width:800px){.testimonial-photo-syauqi{height:clamp(420px,125vw,620px)}.testimonial-photo-syauqi>img{object-position:center 45%}}
+
+.testimonial-stories .testimonial-hero+.testimonial-hero{margin-top:28px}
+@media(max-width:800px){.testimonial-stories .testimonial-hero+.testimonial-hero{margin-top:20px}}
+/* Both family stories remain visible, side by side on wide screens. */
+@media(min-width:1001px){
+ .testimonial-stories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;max-width:1480px;width:calc(100% - 32px);margin:16px auto 0;align-items:start}
+ .testimonial-stories .testimonial-hero{width:100%;margin:0;grid-template-columns:1fr;grid-template-areas:"photo" "story"}
+ .testimonial-stories .testimonial-hero+.testimonial-hero{margin-top:0}
+ .testimonial-stories .testimonial-photo{grid-area:photo;min-height:0;height:420px}
+ .testimonial-stories .testimonial-copy{grid-area:story;padding:34px 32px}
+ .testimonial-stories .testimonial-copy h1{font-size:clamp(2.4rem,3vw,3.2rem)}
+ .testimonial-stories .testimonial-photo-syauqi>img{object-fit:contain;background:#203c32}
+}

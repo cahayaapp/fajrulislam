@@ -36,18 +36,3 @@ photoDialog.addEventListener('click', event => {
   if (event.target === photoDialog) photoDialog.close();
 });
 photoDialog.addEventListener('close', () => photoTrigger?.focus());
-
-// Manual navigation keeps each family story readable without timed changes.
-const storySlides = Array.from(document.querySelectorAll('.testimonial-slide'));
-let activeStory = 0;
-function changeStory(direction) {
-  if (storySlides.length < 2) return;
-  activeStory = (activeStory + direction + storySlides.length) % storySlides.length;
-  storySlides.forEach((slide, index) => { slide.hidden = index !== activeStory; });
-  document.querySelector('.story-counter').textContent = `Cerita ${activeStory + 1} dari ${storySlides.length}`;
-  const photo = storySlides[activeStory].querySelector('.testimonial-photo img');
-  photo.loading = 'eager';
-  document.querySelector('.testimonial-stories').scrollIntoView({ behavior: 'instant', block: 'start' });
-}
-document.querySelector('.story-prev')?.addEventListener('click', () => changeStory(-1));
-document.querySelector('.story-next')?.addEventListener('click', () => changeStory(1));
