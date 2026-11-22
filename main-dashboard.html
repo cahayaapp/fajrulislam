@@ -2052,6 +2052,13 @@ body.director-home-shell .cahaya-page-loader{inset:0!important}
 <style>
 body.admin-brand-shell .sidebar{background:linear-gradient(160deg,#12385f,#0b2543)!important}body.admin-brand-shell .nav-item.active{background:linear-gradient(100deg,#2474b866,#e7a72f26)!important;border-color:#e7a72f66!important;box-shadow:inset 3px 0 #f4c75e!important}body.admin-brand-shell .main-content{background:#f4f8ff!important}
 </style>
+<style>
+@media(min-width:901px){
+ html body.cahaya-shell-page .sidebar-close,html body.cahaya-shell-page .menu-btn{display:grid!important;place-items:center}
+ body.desktop-sidebar-collapsed #mainSidebar{display:none!important}
+ body.desktop-sidebar-collapsed .main-content{width:100%;max-width:100%;margin-left:0}
+}
+</style>
 </head>
 <body class="cahaya-shell-page">
 
@@ -2708,6 +2715,15 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
 }});
 
     function toggleSidebar() {
+      if (matchMedia('(min-width: 901px)').matches) {
+        const collapsed=document.body.classList.toggle('desktop-sidebar-collapsed');
+        const button=document.querySelector('.menu-btn');
+        button?.setAttribute('aria-expanded',String(!collapsed));
+        button?.setAttribute('aria-label',collapsed?'Buka menu':'Tutup menu');
+        document.getElementById('mainSidebar').inert=collapsed;
+        if(collapsed)button?.focus();
+        return;
+      }
       const sidebar = document.getElementById('mainSidebar');
       const overlay = document.querySelector('.mobile-menu-overlay');
       const akanDibuka = !sidebar.classList.contains('open');
@@ -2721,6 +2737,8 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
         if(canonicalRoleRuntime)(matchMedia('(max-width: 900px)').matches?sidebar.querySelector('.sidebar-close'):active)?.focus({preventScroll:true});
       }
     }
+
+    window.addEventListener('resize',()=>{document.getElementById('mainSidebar').inert=matchMedia('(min-width: 901px)').matches&&document.body.classList.contains('desktop-sidebar-collapsed')});
 
     function bolehAksesMenu(menuId) {
       if (menuId === 'menu-chat') return false;

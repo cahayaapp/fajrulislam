@@ -1,3 +1,4 @@
+import {cleanInterview} from './interview-model.js';
 import {schemas,cleanForm,validateForm} from './form-schema.js';
 import {normalizePhone} from './identity.js?v=1';
 import{initializeApp,getApps,getApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -29,7 +30,8 @@ export async function call(action,payload={}){
  if(action==='getReceipt'){const snap=await getDoc(doc(db,'psb_receipts',payload.uid||user.uid));return{receipt:snap.exists()?snap.data():null}}
  if(action==='list'){const snap=await getDocs(query(collection(db,'psb_applications'),orderBy('createdAt','desc'),limit(300)));return{applications:snap.docs.map(d=>d.data())}}
  if(action==='detail'){const [snap,review,updates]=await Promise.all([getDoc(target),getDoc(doc(db,'psb_reviews',payload.uid)),getDoc(doc(db,'psb_updates',payload.uid))]);if(!snap.exists())throw Error('Pendaftar tidak ditemukan.');return{application:{...snap.data(),...updates.data(),...review.data()}}}
- if(action==='interview'){await setDoc(doc(db,'psb_reviews',payload.uid),{interview:{...values(payload,['date','interviewer','notes','recommendation']),updatedBy:user.uid,updatedAt:new Date().toISOString()}},{merge:true});return{ok:true}}
+ if(action==='interviews'){const [apps,reviews]=await Promise.all([getDocs(collection(db,'psb_applications')),getDocs(collection(db,'psb_reviews'))]);const byId=new Map(apps.docs.map(d=>[d.id,{...d.data(),uid:d.id}]));return{applications:reviews.docs.filter(d=>d.data().interview&&byId.has(d.id)).map(d=>({...byId.get(d.id),interview:d.data().interview}))}}
+ if(action==='interview'){const data=cleanInterview(payload),[snap,previous]=await Promise.all([getDoc(target),getDoc(doc(db,'psb_reviews',payload.uid))]);data.notes=previous.data()?.interview?.notes||'';data.recommendation=previous.data()?.interview?.recommendation||'';if(!snap.exists())throw Error('Pendaftar tidak ditemukan.');const d=snap.data();await setDoc(doc(db,'psb_reviews',payload.uid),{interview:{...data,sourceSnapshot:{registration:d.registration||{},waliAssessment:d.waliAssessment||{},santriAssessment:d.santriAssessment||{}},updatedBy:user.uid,updatedAt:new Date().toISOString()}},{merge:true});return{ok:true}}
  if(action==='schedule'){await setDoc(doc(db,'psb_updates',payload.uid),{schedule:values(payload,['date','location','note'])},{merge:true});return{ok:true}}
  if(action==='result'){const result={...values(payload,['status','message']),published:payload.published===true,updatedAt:new Date().toISOString()},batch=writeBatch(db);batch.set(doc(db,'psb_reviews',payload.uid),{result},{merge:true});batch.set(doc(db,'psb_updates',payload.uid),{result:result.published?result:null},{merge:true});await batch.commit();return{ok:true}}
  if(action==='announce'){await addDoc(collection(db,'psb_announcements'),{...values(payload,['title','body']),createdAt:serverTimestamp(),createdBy:user.uid});return{ok:true}}

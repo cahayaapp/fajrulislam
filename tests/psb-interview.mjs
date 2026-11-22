@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {cleanInterview,interviewSections,initialAnswers,filterInterviews} from '../psb/interview-model.js';
+import {interviewForm,interviewReport} from '../psb/interview-ui.js';
+const payload={date:'2026-11-22',interviewer:'Penguji',catatan_global:'Kesimpulan',status_kelulusan:'CADANGAN',...Object.fromEntries(interviewSections.map(([k])=>[k,'Catatan '+k]))};
+const i=cleanInterview(payload);
+assert.equal(interviewSections.length,8);
+for(const [k] of interviewSections)assert.equal(i[k],payload[k]);
+assert.throws(()=>cleanInterview({...payload,status_kelulusan:'unknown'}));
+assert.throws(()=>cleanInterview({...payload,catatan_global:''}));
+assert.throws(()=>cleanInterview({...payload,catatan_niat:'x'.repeat(2001)}));
+const d={profile:{studentName:'<script>Nama</script>'},santriAssessment:{skalaTekad:0},interview:i};
+assert.equal(initialAnswers(d,'santriAssessment',['skalaTekad'])[0][1],'0');
+assert(interviewForm(d).includes('catatan_komitmen_wali'));
+assert(!interviewReport(d).includes('<script>'));
+assert(interviewReport({...d,interview:{notes:'Catatan lama',recommendation:'Rekomendasi lama'}}).includes('Rekomendasi lama'));
+assert.equal(filterInterviews([d],'catatan_niat','CADANGAN').length,1);
+assert.equal(filterInterviews([d],'','DITERIMA').length,0);
+console.log('PASS: all eight notes, validation, initial answers, legacy notes, escaping and results filters');
