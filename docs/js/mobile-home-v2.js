@@ -163,6 +163,10 @@
       items=allowed.map(x=>({id:x.dataset.menuId,label:x.querySelector('.nav-label')?.textContent?.trim()||x.textContent.trim().replace(/^[^a-zA-Z]+/,'').replace(/›/g,'')}));
       items.unshift({id:'utility-kabar',label:'Kabar Ananda',description:'Cerita dan kabar terbaru ananda',icon:'bell'});
     }else items=window.CahayaRoleMenuV2.model(session).filter(x=>!['menu-home','menu-profil'].includes(x.id));
+    if(embedded&&!wali&&!items.some(x=>x.id==='menu-psb')){
+      const link=P.document.getElementById('menu-psb');
+      if(link&&!link.hidden&&getComputedStyle(link).display!=='none')items.unshift({id:'menu-psb',permission:'menu-psb',label:'PSB · Penerimaan Santri Baru',route:'psb/pengurus.html',group:'PSB'});
+    }
     if(role==='GURU_PONDOK'){
       const labels={'menu-tahfiz':'Tahsin & Tahfiz','menu-tindak-lanjut-guru':'Tindak Lanjut','menu-laporan-murojaah':'Lapor Pelanggaran','menu-asesmen-guru':'Self Asesmen'};
       items=items.map(item=>({...item,label:labels[item.id]||item.label}));
