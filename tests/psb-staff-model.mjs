@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {studentName,completeness,displayAnswer} from '../psb/staff-model.js';
+assert.equal(studentName({profile:{studentName:'Nama baru'},registration:{studentName:'Nama lama'}}),'Nama baru');
+assert.equal(studentName({registration:{studentName:'Akun lama'}}),'Akun lama');
+assert.equal(displayAnswer({options:[['yes','Ya'],['no','Tidak']]},['yes','no']),'Ya, Tidak');
+assert.equal(displayAnswer({},0),'0');
+assert.equal(displayAnswer({},[]),'Belum diisi');
+assert.equal(completeness({},'registration').filled,0);
+assert.equal(completeness({registration:{studentName:'Santri'}},'registration').filled,1);
+console.log('PASS: profile priority, legacy name, assessment labels and completeness');
