@@ -121,11 +121,11 @@
       if(!['GURU_PONDOK','NAQIB','NAQIBAH','MANAJER','SUPERVISOR','DIREKTUR'].includes(role))
         out.push({...entry('menu-jadwal-role','Jadwal & Ritme Kerja','utilitas-role-v2.html?view=schedule','Lainnya'),utility:true});
     }else if(role!=='KONSELOR'&&R.can(role,'menu-profil',a))add('menu-profil','Profil Saya','profil.html?v=2','Lainnya');
-    if(role!=='WALI_SANTRI'&&s.psbOperator)add('menu-psb','PSB · Penerimaan Santri Baru','psb/pengurus.html','Manajemen');
+    if(role!=='WALI_SANTRI'&&s.psbOperator)add('menu-psb','PSB · Penerimaan Santri Baru','psb/pengurus.html','PSB');
     return out;
   }
   function audit(s){return candidates(s).map(item=>{const v=N.decision(s,item.permission,item.route);return {...item,status:v.ok?(item.conditional?'CONDITIONAL':'PASS'):'BLOCKED',reason:v.reason}})}
-  function model(s){const groups=['Utama','Operasional','Manajemen','Evaluasi','Lainnya'];return audit(s).filter(x=>x.status!=='BLOCKED').sort((a,b)=>groups.indexOf(a.group)-groups.indexOf(b.group))}
+  function model(s){const groups=['PSB','Utama','Operasional','Manajemen','Evaluasi','Lainnya'];return audit(s).filter(x=>x.status!=='BLOCKED').sort((a,b)=>groups.indexOf(a.group)-groups.indexOf(b.group))}
   function key(route){const p=N.parse(route);if(!p)return '';const keys=['view','openSchedule','guide','intent','area'];return p.path+'?'+keys.map(k=>`${k}=${p.params.get(k)||''}`).join('&')}
   function match(s,route){const k=key(route);return model(s).find(x=>key(x.route)===k)}
   function resolve(s,id,route){

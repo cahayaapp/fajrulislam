@@ -216,7 +216,7 @@
       mode: canonical ? "canonical" : "compatibility",
       roleSystemVersion: 2, roles: Object.freeze(roles), defaultRole,
       assignments, scopes: assignments, assignmentErrors,
-      unresolved, psbOperator: user.psbStaff===true||user.username==='multazam'||user.uid==='gGuAzKpiIcNfOlh1YmCivnuIKZl1', userKey: String(user.uid || user.username || "")
+      unresolved, psbOperator: user.psbStaff===true||['multazam','diniindriani','donisetiawan','bennyarizona'].includes(user.username)||['gGuAzKpiIcNfOlh1YmCivnuIKZl1','Dji4ovCfn4QnWRSFznoHiK1mspj2','WxzGvoC870fRPJ9YGFVFOInbE3i2','wl8IQ7DUSLcysBDaYLkyvNCsKIP2'].includes(user.uid), userKey: String(user.uid || user.username || "")
     });
   }
   function storageGet(storage, key) { try { return storage?.getItem(key) || ""; } catch (_) { return ""; } }

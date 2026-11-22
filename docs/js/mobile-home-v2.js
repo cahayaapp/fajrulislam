@@ -156,7 +156,7 @@
     if(document.getElementById('roleAccessDenied')||document.getElementById('mobileRoleHome'))return;
     try{user=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')}catch{user={}}
     session=R?.resolveSession(user,localStorage);if(!session?.activeRole&&!wali)return;if(session?.activeRole==='ADMIN')return;
-    if(!wali&&!window.CahayaRoleMenuV2){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('js/role-menu-v2.js?v=306',root);script.onload=resolve;script.onerror=reject;document.head.append(script)})}
+    if(!wali&&!window.CahayaRoleMenuV2){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('js/role-menu-v2.js?v=307',root);script.onload=resolve;script.onerror=reject;document.head.append(script)})}
     const role=wali?'WALI_SANTRI':session.activeRole,label=wali?'Wali Santri':R.displayLabelFor(role,session.activeAssignment);
     if(wali){
       const allowed=embedded?[...P.document.querySelectorAll('.nav-item[data-menu-id]')].filter(x=>!x.hidden&&x.dataset.moduleDisabled!=='true'&&x.dataset.menuId!=='menu-beranda-wali'):[];
@@ -200,6 +200,8 @@
         return item?{...item,...meta}:null;
       }).filter(Boolean);
     }
+    const psb=items.find(x=>x.id==='menu-psb');
+    if(psb)quick=[{...psb,label:'PSB · Santri Baru',icon:'people',description:'Pendaftaran dan seleksi calon santri'},...quick.filter(x=>x.id!=='menu-psb')].slice(0,4);
     const skip=new Set([...quick.map(x=>x.id),'menu-absen-guru']);
     secondary=items.filter(x=>!skip.has(x.id));
     if(role==='SUPERVISOR'){

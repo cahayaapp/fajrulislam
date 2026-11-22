@@ -5,7 +5,7 @@ import {schemas} from './form-schema.js';
 import {downloadReceipt} from './portal-forms.js';
 import {accountIdentity, phoneFromAuthEmail} from './identity.js?v=1';
 import{onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import{auth,call,$,esc,message,busy,errorMessage}from'./api.js?v=6';
+import{auth,call,$,esc,message,busy,errorMessage}from'./api.js?v=7';
 let rows=[],interviewRows=[],selected='',token=0,detailTab='registration';
 const field=(label,value)=>`<div class="row"><b>${esc(label)}</b><div class="detail">${esc(value||'Belum diisi')}</div></div>`;
 function list(){const q=$('search').value.trim().toLowerCase(),filter=$('statusFilter').value;const shown=rows.filter(x=>`${studentName(x)} ${x.registration?.fatherName||''} ${x.registration?.motherName||''} ${accountIdentity(x)} ${x.phone||''}`.toLowerCase().includes(q)).filter(x=>filter==='all'||(filter==='receipt'?!!x.receiptName:filter==='SUBMITTED'?x.status==='SUBMITTED':x.status!=='SUBMITTED'));

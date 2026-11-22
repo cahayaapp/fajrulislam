@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="id">
 <head><!-- ROLE_V2_ENTRY_START -->
-<script src="js/role-system-v2.js?v=306"></script>
+<script src="js/role-system-v2.js?v=307"></script>
 <script src="js/role-route-registry-v2.js?v=306"></script>
 <script src="js/role-navigation-v2.js?v=306"></script>
-<script src="js/role-menu-v2.js?v=306"></script>
+<script src="js/role-menu-v2.js?v=307"></script>
 <script src="js/role-scope-v2.js?v=221"></script>
 <script src="js/role-entry-v2.js?v=295"></script>
 <!-- ROLE_V2_ENTRY_END -->
@@ -3766,7 +3766,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
             link.dataset.route='konselor/higher-response.html';nav.appendChild(link);
           }
           authorizedMenuIds = new Set(featureFilteredModel.map(item=>item.id));
-          if(pUserSafe?.username!=='multazam'&&pUserSafe?.uid!=='gGuAzKpiIcNfOlh1YmCivnuIKZl1')authorizedMenuIds.delete('menu-psb');
+          if(!roleSystemV2.resolveSession(pUserSafe,localStorage).psbOperator)authorizedMenuIds.delete('menu-psb');
         authorizationReady = true;
           window.CahayaUIV2?.enhance(nav);terapkanOtorisasiFiturTambahan();
           bukaHalamanAwalYangDiizinkan();
@@ -3955,7 +3955,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
           )
         );
 
-        if(pUserSafe?.username!=='multazam'&&pUserSafe?.uid!=='gGuAzKpiIcNfOlh1YmCivnuIKZl1')authorizedMenuIds.delete('menu-psb');
+        if(!roleSystemV2.resolveSession(pUserSafe,localStorage).psbOperator)authorizedMenuIds.delete('menu-psb');
         authorizationReady = true;
 
         document.querySelectorAll('#dynamicMenu .nav-item.menu-akses').forEach(menu => {
@@ -3972,7 +3972,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){
         bukaHalamanAwalYangDiizinkan();
 
       } catch (error) {
-        if(pUserSafe?.username!=='multazam'&&pUserSafe?.uid!=='gGuAzKpiIcNfOlh1YmCivnuIKZl1')authorizedMenuIds.delete('menu-psb');
+        if(!roleSystemV2.resolveSession(pUserSafe,localStorage).psbOperator)authorizedMenuIds.delete('menu-psb');
         authorizationReady = true;
         const active = ensureActiveRole();
         if (active === 'direktur') {
