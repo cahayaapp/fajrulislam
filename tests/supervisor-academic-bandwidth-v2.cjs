@@ -14,19 +14,19 @@ function harness(values) {
   const context = vm.createContext({
     R:require('../js/wali-academic-report-v2.js'),
     db: { ref(path) {
-      let from,to,field;
-      return {orderByChild(value){field=value;return this},startAt(value){from=value;return this},endAt(value){to=value;return this},async once(){
+      let from,to,field,equality,hasEquality=false;
+      return {equalTo(value){equality=value;hasEquality=true;return this},orderByChild(value){field=value;return this},startAt(value){from=value;return this},endAt(value){to=value;return this},async once(){
         calls.push(path);
         if(values.failOnce && path.endsWith('setoran_tahfiz')){values.failOnce=false;throw Error('offline')}
         const data=Object.fromEntries(Object.entries(values[path]||{}).filter(([,row])=>{
           const date=row[field]||'';
-          return (!from||date>=from)&&(to===undefined||date<=to);
+          return (!hasEquality||(row[field]??null)===equality)&&(!from||date>=from)&&(to===undefined||date<=to);
         }));
         return {val:()=>data};
       }};
     } },
     loadSchedule: async () => {}, populateFilters: () => {},
-    $: id => id==='type'?type:id==='year'?{value:'2026/2027'}:id==='period'?{value:'Triwulan 2'}:({ innerHTML: '' }), esc: value => String(value), console
+    $: id => id==='dataMode'?{value:values.mode||'lengkap'}:id==='type'?type:id==='year'?{value:'2026/2027'}:id==='period'?{value:'Triwulan 2'}:({ innerHTML: '' }), esc: value => String(value), console
   });
   vm.runInContext(`let rows=[],tahfizRows=[],tahfizHistoryPromise=null,markers={},quranAssignments={};
     ${arraySource}${dataSource}
@@ -78,3 +78,15 @@ test('gagal memuat setoran dapat dicoba lagi tanpa mengganggu daftar rapor', asy
 });
 
 test('mirror publikasi sama dengan source utama', () => assert.equal(mirror, html));
+
+ test('mode hemat mengambil hanya tahun terpilih termasuk alias lama dan memakai cache',async()=>{
+  const h=harness({mode:'hemat','cahaya_app/nilai_ujian_bulanan':{
+    current:{tahun_akademik:'2026/2027',nilai_total:88},
+    old:{tahun_akademik:'2025/2026',nilai_total:70},
+    legacy:{tahunAkademik:'2026/2027',nilai_total:90},
+    legacyOld:{tahunAjaran:'2025/2026',nilai_total:60}
+  }});
+  await h.load();
+  assert.deepEqual(Array.from(h.inspect().rows,row=>row.nilai_total),[88,90]);
+  const count=h.calls.length;await h.load();assert.equal(h.calls.length,count);
+ });
