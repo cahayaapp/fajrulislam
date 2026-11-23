@@ -900,7 +900,7 @@
     const records=selectedPeriodicScores(),summary=academicReport.summary(records),period=selectedPeriod(),label=activeReportTab==='triwulan'?`Rapor ${period}`:`Rapor ${period}`;
     renderAcademicSummary(records);
     const list=document.getElementById('periodReportList');
-    if(!records.length)list.innerHTML=`<div class="empty-state"><strong>${label} belum tersedia.</strong><br><small>Laporan akan tampil setelah nilai akademik difinalisasi.</small></div>`;
+    if(!records.length)list.innerHTML=`<div class="empty-state"><strong>${label} sudah diterbitkan.</strong><br><small>Belum ada nilai Final pada periode ini. Rapor tetap dapat diunduh sebagai PDF.</small></div>`;
     else list.innerHTML=reportPublication.renderScoreCards(records,{formatTeacher:formatGelarAkademik});
     renderPeriodicTahfizHistory(records);
   }
@@ -1022,7 +1022,7 @@
     container.innerHTML = '';
     let filtered = academicReport.filterScores(globalExams,{tab:'bulanan',year:activeYear(),period:currentMonthFilter,student:activeStudentProfile,applicable:examBelongsToStudentProgram});
     sec.style.display = 'block';
-    if(filtered.length === 0) { container.innerHTML = `<div class="empty-state"><strong>Laporan akademik ${escapeAcademic(currentMonthFilter)} belum tersedia.</strong><br><small>Laporan akan tampil setelah nilai akademik difinalisasi.</small></div>`; return; }
+    if(filtered.length === 0) { container.innerHTML = `<div class="empty-state"><strong>Laporan akademik ${escapeAcademic(currentMonthFilter)} sudah diterbitkan.</strong><br><small>Belum ada nilai Final pada periode ini. Rapor tetap dapat diunduh sebagai PDF.</small></div>`; return; }
 
     filtered.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
     filtered.forEach(ev => {
@@ -1690,7 +1690,7 @@
       tahunAkademik:teksPdf(tahun),
       academicRanking:ranking?.complete&&ranking?.rank&&ranking?.total?`${ranking.rank} dari ${ranking.total} santri`:'Belum tersedia',
       bestRanking:bestRanking?.complete&&bestRanking?.eligible&&bestRanking?.rank&&bestRanking?.total?`${bestRanking.rank} dari ${bestRanking.total} santri`:'Belum tersedia',
-      averageScore:Number.isFinite(Number(pdfSummary.average))?Number(pdfSummary.average).toFixed(1):'Belum tersedia',
+      averageScore:Number.isFinite(pdfSummary.average)?Number(pdfSummary.average).toFixed(1):'Belum tersedia',
       titleLines:activeReportTab==='bulanan'?["LAPORAN","AKADEMIK","BULANAN"]:activeReportTab==='triwulan'?["RAPOR","TRIWULAN"]:["RAPOR","SEMESTER"],
       tanggalCetak: new Date().toLocaleDateString("id-ID", {
         day: "2-digit",
