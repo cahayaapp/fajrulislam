@@ -35,3 +35,5 @@ document.addEventListener('fullscreenchange',()=>{document.getElementById('fulls
 document.addEventListener('visibilitychange',()=>{lastTime=null});
 document.addEventListener('keydown',e=>{if(e.target.closest('a,button,input,select,textarea'))return;if(e.code==='Space'){e.preventDefault();togglePlay()}else if(e.key==='ArrowRight')advance(1);else if(e.key==='ArrowLeft')advance(-1)});
 update();requestAnimationFrame(tick);
+
+document.getElementById('narrated-video').onplay=()=>{if(!paused)togglePlay()};
