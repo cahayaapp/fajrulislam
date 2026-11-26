@@ -1,5 +1,5 @@
 import{initializeApp,getApps,getApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import{getDatabase,ref,get,set,update,query,orderByKey,limitToLast}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import{getDatabase,ref,get,set,update,runTransaction,query,orderByKey,limitToLast}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 const R=window.CahayaRoleSystemV2,C=window.CahayaAssessmentRegistry,ctx=window.cahayaRoleContext;
 let user={};try{user=JSON.parse(localStorage.getItem('cahayaCurrentUser')||'{}')||{}}catch{}
 const session=R.resolveSession(user,localStorage),assignment=session.activeAssignment,identity={id:user.uid||user.username||'',name:user.label||user.nama||user.displayName||user.username||'Mentor'};
@@ -68,16 +68,40 @@ async function loadQueue(){
  const usrah=selectedUsrah();$('draftQueue').textContent='Memuat draft self asesmen…';
  try{requireScope(usrah);const snap=await get(ref(db,selfPath(usrah)));ctx.assertCurrent();if(selectedUsrah()!==usrah)return;
  const rows=Object.entries(snap.val()||{}).filter(([,v])=>v.status==='DRAFT'&&v.usrah===usrah&&studentRows(usrah).includes(v.namaSantri)).sort((a,b)=>b[1].tanggal.localeCompare(a[1].tanggal));
- $('draftQueue').innerHTML=rows.length?rows.map(([id,v])=>`<article class="mu-history-card"><h3>${esc(v.namaSantri)}</h3><p>${esc(v.tanggal)} · Menunggu klarifikasi mentor</p><button class="mu-primary" data-draft="${esc(id)}" data-name="${esc(v.namaSantri)}" data-date="${esc(v.tanggal)}">Tindak Lanjut</button></article>`).join(''):'<div class="mu-note">Belum ada draft self asesmen yang menunggu tindak lanjut.</div>';
+ $('draftQueue').innerHTML=rows.length?rows.map(([id,v])=>`<article class="mu-history-card"><h3>${esc(v.namaSantri)}</h3><p>${esc(v.tanggal)} · Menunggu klarifikasi mentor</p><div class="mu-draft-actions"><button type="button" class="mu-primary" data-draft="${esc(id)}" data-name="${esc(v.namaSantri)}" data-date="${esc(v.tanggal)}">Tindak Lanjut</button><button type="button" class="mu-delete-draft" data-delete-draft="${esc(id)}" data-name="${esc(v.namaSantri)}" data-date="${esc(v.tanggal)}">Hapus asesmen</button></div></article>`).join(''):'<div class="mu-note">Belum ada draft self asesmen yang menunggu tindak lanjut.</div>';
  }catch(e){console.error(e);$('draftQueue').textContent='Draft belum dapat dimuat. Silakan buka ulang menu ini.'}
+}
+async function deleteAssessment(id,name,date){
+ if(busy||loadingStudent||view!=='followup'||session.activeRole!=='MENTOR_USRAH')return;
+ const usrah=selectedUsrah();
+ try{
+  requireScope(usrah,name);
+  if(!id||/[.#$\[\]\/]/.test(id))throw new Error('INVALID_DRAFT_ID');
+  if(!window.confirm(`Hapus asesmen ${name} tanggal ${date} (${usrah}) dari daftar tindak lanjut?\n\nPastikan ini asesmen yang salah. Asesmen yang sudah selesai ditindaklanjuti tidak dapat dihapus di sini.`))return;
+  requireScope(usrah,name);busy=true;
+  $('formUsrah').disabled=true;$('saveMentoring').disabled=true;
+  document.querySelectorAll('[data-delete-draft]').forEach(b=>b.disabled=true);
+  const deletedAt=new Date().toISOString();
+  const result=await runTransaction(ref(db,`${selfPath(usrah)}/${id}`),current=>{
+   requireScope(usrah,name);
+   if(!current||current.status!=='DRAFT'||current.usrah!==usrah||current.namaSantri!==name||current.tanggal!==date)return;
+   return {...current,status:'DELETED',deletedAt,deletedBy:identity.id,deletedByName:identity.name};
+  },{applyLocally:false});
+  ctx.assertCurrent();
+  if(!result.committed){toast('Asesmen sudah berubah atau ditindaklanjuti. Daftar diperbarui.');await loadQueue();return}
+  if(activeDraft?.id===id){clearSavedDraft(usrah,name,date);clearForm()}
+  else{try{draftStore?.removeItem(draftKey(usrah,name,date))}catch{}}
+  await loadQueue();toast('Asesmen dihapus dari daftar tindak lanjut.');
+ }catch(e){console.error(e);toast('Asesmen belum dapat dihapus. Silakan coba lagi.')}
+ finally{busy=false;$('formUsrah').disabled=false;$('saveMentoring').disabled=false;document.querySelectorAll('[data-delete-draft]').forEach(b=>b.disabled=false)}
 }
 async function selectStudent(name,draftId=''){
  if(busy)return;captureDraft();draftDirty=false;activeDraft=null;conclusionPicks=new Set();selectedStudent=name;const token=++selectionToken;if(!name){clearForm();return}
  loadingStudent=true;$('mentoringForm').hidden=true;$('saveMentoring').disabled=true;
  try{const usrah=selectedUsrah(),date=$('mentoringDate').value;requireScope(usrah,name);const id=draftId||recordId(date,usrah,name),snap=await get(ref(db,`${selfPath(usrah)}/${id}`));ctx.assertCurrent();if(token!==selectionToken||selectedStudent!==name||selectedUsrah()!==usrah||$('mentoringDate').value!==date)return;
  if(snap.exists()&&snap.val().status==='FINAL'){toast('Self asesmen ini sudah ditindaklanjuti. Lihat Riwayat Mentoring.');return}
- if(view==='followup'&&!snap.exists()){toast('Draft self asesmen tidak ditemukan.');return}
- activeDraft=snap.exists()?{...snap.val(),id}:null;
+ if(view==='followup'&&(!snap.exists()||snap.val().status!=='DRAFT')){toast('Draft self asesmen tidak ditemukan.');return}
+ activeDraft=snap.exists()&&snap.val().status==='DRAFT'?{...snap.val(),id}:null;
  document.querySelectorAll('#mentoringForm input[type=radio]').forEach(x=>x.checked=false);
  ['gratitude','target','strongWhy','strategy','mentorNote','appreciation','evaluation'].forEach(k=>$(k).value='');C.dimensions.forEach(d=>$(`note-${d.id}`).value='');
  if(activeDraft)hydrate(activeDraft);else refreshCompletion();
@@ -98,6 +122,7 @@ async function saveResult(form){if(busy||!selectedResult)return;const status=new
 function showView(){const self=view==='form';document.body.classList.toggle('mu-self',self);document.body.classList.toggle('mu-review',view==='followup');$('selfProgress').hidden=!self;$('draftHelp').hidden=!self;if(self&&!selectedStudent)$('selectedStudent').textContent='Pilih namamu untuk mulai refleksi.';$('pickerTitle').textContent=self?'Mulai dari namamu':'Pilih santri';$('searchLabel').textContent=self?'Cari namamu':'Cari santri';$('studentSearch').placeholder=self?'Ketik namamu di sini…':'Cari nama santri…';$('assessmentEyebrow').textContent=self?'WAKTU UNTUK DIRIMU':'KLARIFIKASI BERSAMA';$('assessmentTitle').textContent=self?'Aku, pekan ini':'Jawaban santri';$('reflectionTitle').textContent=self?'Satu hal baik pekan ini':'Target pekan depan';$('gratitudeLabel').textContent=self?'Apa yang paling kamu syukuri?':'Yang Paling Disyukuri Pekan Ini';$('gratitude').placeholder=self?'Boleh hal kecil. Misalnya, aku bisa membantu teman atau lebih berani bertanya.':'Apa yang paling kamu syukuri dari pekan ini?';$('roleChip').textContent=self?'Ruang refleksi santri':'Mentor Usrah';$('mentorChip').hidden=self;$('dimensionNav').innerHTML=C.dimensions.map(d=>`<button type="button" data-dimension-link="${d.id}">${d.icon} <span>${esc(d.name)}</span></button>`).join('');refreshCompletion();const history=view==='history',followup=view==='followup';$('formView').hidden=history;$('historyView').hidden=!history;$('selfPicker').hidden=followup;$('selfPickerDate').hidden=followup;$('draftQueue').hidden=!followup;$('mentorFields').hidden=!followup;$('reviewSummary').hidden=!followup;document.querySelectorAll('.mu-dimension-note').forEach(e=>e.hidden=!followup);$('eyebrow').textContent=history?'PERKEMBANGAN TARGET':followup?'DIALOG & RENCANA PEKAN DEPAN':'REFLEKSI SANTRI';$('title').textContent=history?'Riwayat Mentoring':followup?'Tindak Lanjut Self Asesmen':'Kenali diri, tumbuh lagi.';$('subtitle').textContent=history?'Lihat proses pertumbuhan dan catat hasil target.':followup?'Klarifikasi jawaban santri, catat apresiasi dan evaluasi, lalu sepakati target pekan mendatang.':'Luangkan waktu untuk melihat kembali pekanmu. Setiap langkah kecilmu berarti.';$('assessmentHelp').textContent=followup?'Baca jawaban santri. Pilih Ubah jawaban jika perlu revisi setelah berdialog.':'Tidak perlu memilih yang terlihat paling baik. Pilih yang paling menggambarkan dirimu selama sepekan terakhir.';$('saveMentoring').textContent=followup?'Simpan mentoring':'Simpan refleksiku';if(history)loadHistory();if(followup)loadQueue()}
 document.addEventListener('click',e=>{
 
+ const deletion=e.target.closest('[data-delete-draft]');if(deletion){deleteAssessment(deletion.dataset.deleteDraft,deletion.dataset.name,deletion.dataset.date);return}
  const reset=e.target.closest('[data-reset-answer]');if(reset&&activeDraft){const id=reset.dataset.resetAnswer,value=activeDraft.selfAssessment.answers[id],radio=document.querySelector(`input[name="${id}"][value="${value}"]`);if(radio){radio.checked=true;draftDirty=true;refreshCompletion();refreshReview();captureDraft()}}
  const jump=e.target.closest('[data-dimension-link]');if(jump){const section=$(`dimension-${jump.dataset.dimensionLink}`);section.open=true;section.scrollIntoView({behavior:'smooth',block:'start'})}const s=e.target.closest('[data-student]'),r=e.target.closest('[data-range]'),h=e.target.closest('[data-result]');const draft=e.target.closest('[data-draft]');if(draft&&!busy){$('mentoringDate').value=draft.dataset.date;selectStudent(draft.dataset.name,draft.dataset.draft)}if(s)selectStudent(s.dataset.student);if(h)openResult(h.dataset.result);if(r){const x=range(r.dataset.range);$('startDate').value=x.start;$('endDate').value=x.end;document.querySelectorAll('[data-range]').forEach(v=>v.classList.toggle('active',v===r));loadHistory()}if(e.target.id==='closeResult')$('resultSheet').classList.remove('open')});document.addEventListener('input',e=>{if(e.target.closest('#mentoringForm')){draftDirty=true;captureDraft()}});document.addEventListener('change',e=>{if(e.target.matches('[data-conclusion-pick]')){const id=e.target.dataset.conclusionPick;if(e.target.checked)conclusionPicks.add(id);else conclusionPicks.delete(id)}if(e.target.closest('.mu-options')){refreshCompletion();refreshReview()}if(e.target.closest('#mentoringForm')){draftDirty=true;captureDraft()}if(e.target.id==='formUsrah'){clearForm();fillStudents();if(view==='followup')loadQueue()}if(e.target.id==='mentoringDate'&&selectedStudent)selectStudent(selectedStudent);if(e.target.id==='historyUsrah'){fillHistoryStudents();loadHistory()}if(['historyStudent','startDate','endDate'].includes(e.target.id)){document.querySelectorAll('[data-range]').forEach(v=>v.classList.remove('active'));loadHistory()}});$('studentSearch').addEventListener('input',fillStudents);$('saveMentoring').onclick=saveMentoring;$('resultForm').onsubmit=e=>{e.preventDefault();saveResult(e.target)};$('backBtn').onclick=()=>parent!==window&&typeof parent.openAuthorizedMenu==='function'?parent.openAuthorizedMenu('menu-home'):history.back();
 async function init(){if(requestedUsrah&&!ctx.allowsUsrah(requestedUsrah)){document.documentElement.innerHTML='<body><main class="mu-shell"><div class="mu-note">Akses ditolak. Usrah tersebut berada di luar penugasan aktif Anda.</div></main></body>';return}renderDimensions();const draft=draftContext();$('mentoringDate').value=draft?.date||jakartaDate();const history=range('HISTORY');$('startDate').value=history.start;$('endDate').value=history.end;try{master=await ctx.loadUsrah(async path=>(await get(ref(db,path))).val());ctx.assertCurrent();roster=ctx.roster(master);fillUsrah();$('mentorChip').textContent=identity.name;$('scopeChip').textContent=ctx.usrahKeys().join(' • ');showView();if(view==='form'&&draft?.student&&ctx.allowsUsrah(draft.usrah)){const option=[...$('formUsrah').options].find(x=>x.value===draft.usrah);if(option){$('formUsrah').value=draft.usrah;fillStudents();if(studentRows(draft.usrah).includes(draft.student))await selectStudent(draft.student)}}}catch(e){console.error(e);toast('Data Usrah belum dapat dimuat.')}}
