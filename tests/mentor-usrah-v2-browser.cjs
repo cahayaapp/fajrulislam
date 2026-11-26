@@ -7,6 +7,7 @@ const data={'cahaya_app/master_usrah/Usrah 3':['Ahmad','Bilal'],'cahaya_app/mast
 const stored=JSON.parse(localStorage.getItem('fixtureDB')||'{}');Object.assign(data,stored);
 function value(p){if(Object.hasOwn(data,p))return data[p];const keys=Object.keys(data).filter(k=>p.startsWith(k+'/')).sort((a,b)=>b.length-a.length);if(keys.length)return p.slice(keys[0].length+1).split('/').reduce((v,k)=>v?.[k],data[keys[0]])??null;const entries=Object.entries(data).filter(([k])=>k.startsWith(p+'/'));return entries.length?Object.fromEntries(entries.map(([k,v])=>[k.slice(p.length+1),v])):null}
 export async function get(r){window.__reads.push(r.p);window.__queries.push({p:r.p,q:r.q||[]});const v=value(r.p);return{exists:()=>v!==null&&v!==undefined,val:()=>v}}
+export async function runTransaction(r,fn){const next=fn(value(r.p));if(next===undefined)return{committed:false};await set(r,next);return{committed:true}}
 export async function set(r,v){window.__writes.push({type:'set',p:r.p,v});data[r.p]=v;localStorage.setItem('fixtureDB',JSON.stringify(data))}
 export async function update(r,v){window.__writes.push({type:'update',p:r.p,v});if(!r.p){for(const [k,x] of Object.entries(v)){data[k]=x;if(k.startsWith('cahaya_app/log_mentoring_naqib/'))data['cahaya_app/log_mentoring_naqib'][k.split('/')[2]]=x}}else {data[r.p]={...(value(r.p)||{}),...v}}localStorage.setItem('fixtureDB',JSON.stringify(data))}
 
